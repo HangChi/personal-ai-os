@@ -1,0 +1,13 @@
+# 前端局部忽略规则（根 .gitignore 已覆盖大部分，这里仅作补充）
+
+node_modules/
+dist/
+dist-ssr/
+
+# Vite 本地环境文件
+.env.local
+.env.*.local
+
+# 构建缓存
+.vite/
+*.tsbuildinfo

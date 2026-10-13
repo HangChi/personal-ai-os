@@ -1,9 +1,154 @@
-# personal-ai-os
+# Personal AI OS
 
-个人 AI OS 工作区。
+开源、自托管、可扩展的**个人智能操作系统**。
 
-## 开始
+用自然语言和个人 AI 助手交互，让它帮你管理任务、检索自己的知识库、安排日程与提醒——全部跑在你自己的机器上。
+
+> **当前状态**：阶段 0（项目骨架）已完成。后端可构建可启动、数据库迁移真实执行、前后端链路已打通。
+> AI 能力自阶段 1 起逐步接入。
+
+## 这个项目要做什么
+
+1. 用自然语言与个人 AI 助手交互
+2. 通过 AI 工具调用管理个人任务
+3. 构建个人知识库，支持 RAG 检索问答
+4. 管理个人日程与定时提醒
+5. 多轮对话与可持久化的会话记忆
+6. 通过 MCP 扩展外部工具
+7. 未来扩展 Coding Agent、资讯 Agent 等独立模块
+
+**明确不做**（第一版）：多租户 SaaS、支付系统、复杂权限管理。
+第一版只支持**本地单用户**；若需对公网开放，必须先完成身份认证设计。
+
+## 技术栈
+
+| 层 | 技术 | 版本 |
+|---|---|---|
+| 后端 | Java / Spring Boot / Spring AI (BOM) | 21 / 4.1.1 / 2.0.1 |
+| Web | Spring Web MVC + SSE | — |
+| 持久化 | Spring Data JPA + Flyway | Flyway 12.4.0 |
+| 数据库 | PostgreSQL + pgvector | 17（镜像 `pgvector/pgvector:pg17`） |
+| 构建 | Maven（含 Wrapper） | 3.9+ |
+| 前端 | Vue 3 / TypeScript / Vite | 3.5 / — / 8 |
+| 前端生态 | Vue Router / Pinia / Element Plus / Axios | 5 / 4 / 2 / 1 |
+| 测试 | JUnit 5 + Mockito + Testcontainers | 由 Boot BOM 管理 |
+
+版本选择依据与兼容性论证见 [`specs/001-project-skeleton/research.md`](specs/001-project-skeleton/research.md)。
+
+## 目录结构
+
+```
+personal-ai-os/
+├── backend/                    Spring Boot 应用（根包 com.personalos）
+│   ├── mvnw / mvnw.cmd         Maven Wrapper（无需预装 Maven）
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/personalos/
+│       │   ├── PersonalOsApplication.java
+│       │   ├── common/         统一响应 / 错误码 / 全局异常 / 健康检查 / 公共配置
+│       │   ├── ai/             阶段 1：模型接入与 ChatClient
+│       │   ├── chat/           阶段 1：会话与消息
+│       │   ├── memory/         阶段 1：会话记忆
+│       │   ├── agent/          阶段 2：Agent 编排与工具调用
+│       │   ├── task/           阶段 2：任务
+│       │   ├── knowledge/      阶段 3：知识库与 RAG
+│       │   └── calendar/       阶段 4：日程与提醒
+│       ├── main/resources/
+│       │   ├── application.yml
+│       │   └── db/migration/   Flyway 迁移脚本
+│       └── test/java/com/personalos/
+│           ├── PersonalOsApplicationTests.java      （Testcontainers 集成测试）
+│           └── common/                              （单元测试）
+├── frontend/                   Vue 3 + TypeScript + Vite
+│   └── src/{api,router,stores,types,views,styles}
+├── docs/                       架构与开发文档
+├── specs/                      Spec Kit 特性规格
+├── .specify/                   Spec Kit 配置与项目宪法
+├── compose.yml                 PostgreSQL + pgvector
+├── .env.example                环境变量模板
+└── LICENSE                     Apache-2.0
+```
+
+## 快速开始
+
+前置：JDK 21、Docker（含 `docker compose`）、Node.js `^20.19.0 || >=22.12.0`。
+**无需预装 Maven** —— 使用仓库自带的 `backend/mvnw`。
+
+### 1. 启动基础设施
 
 ```bash
-git status
+cp .env.example .env
+docker compose up -d
+docker compose ps      # 等待 postgres 变为 healthy
 ```
+
+### 2. 启动后端
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+自检：
+
+```bash
+curl http://localhost:8080/api/v1/health
+curl http://localhost:8080/actuator/health
+```
+
+### 3. 启动前端
+
+```bash
+cd frontend
+npm install
+npm run dev            # http://localhost:5173
+```
+
+首页会实时展示后端健康状态。更详细的步骤、配置项与排错见 [`docs/development.md`](docs/development.md)。
+
+## 构建与测试
+
+```bash
+# 后端：单元测试 + Testcontainers 集成测试（需 Docker 运行）
+cd backend && ./mvnw -B verify
+
+# 前端：类型检查 + 生产构建
+cd frontend && npm run type-check && npm run build
+```
+
+## 阶段路线图
+
+| 阶段 | 内容 | 状态 |
+|---|---|---|
+| 0 | 项目骨架：Monorepo、后端基座、数据库迁移、前端基座、文档 | ✅ |
+| 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | ⏳ |
+| 2 | 任务 CRUD 与 Tool Calling | ⏳ |
+| 3 | 个人知识库与 RAG（pgvector） | ⏳ |
+| 4 | 日程和定时提醒 | ⏳ |
+| 5 | Docker 部署、测试、文档、开源发布 | ⏳ |
+
+## 开发约定
+
+本项目使用 [Spec Kit](https://github.com/github/spec-kit) 做规格驱动开发，**项目宪法是全仓库最高约束**：
+
+- 宪法：[`.specify/memory/constitution.md`](.specify/memory/constitution.md)
+- 规格：`specs/NNN-<feature>/`（spec → plan → research → data-model → contracts → tasks）
+- 阶段严格串行，不提前实现后续阶段
+
+关键工程约定：
+
+- 结构变更一律走 Flyway，`ddl-auto` 只能是 `validate`
+- 所有写操作经过 Service 层；不向前端暴露 JPA Entity
+- 统一响应结构；错误响应不得泄漏堆栈
+- 统一构造器注入，禁止字段注入
+- 仓库中不得出现任何密钥
+
+## 文档
+
+- [架构说明](docs/architecture.md)
+- [本地开发指南](docs/development.md)
+- [阶段 0 规格](specs/001-project-skeleton/spec.md) ｜ [实现计划](specs/001-project-skeleton/plan.md) ｜ [版本决策与踩坑](specs/001-project-skeleton/research.md)
+
+## 许可证
+
+[Apache License 2.0](LICENSE)

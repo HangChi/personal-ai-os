@@ -1,0 +1,39 @@
+# ============================================================
+# Personal AI OS — 本地基础设施
+#
+# 用法：
+#   cp .env.example .env
+#   docker compose up -d
+#
+# 说明：默认把容器内 5432 映射到宿主机 55432，用于避开常见的
+#       5432/5433 端口占用。可经 .env 的 POSTGRES_PORT 覆盖。
+# ============================================================
+name: personal-ai-os
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: personal-ai-os-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-personal_ai_os}
+      POSTGRES_USER: ${POSTGRES_USER:-personalos}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-personalos}
+      # 与后端保持一致的时区，避免时间戳歧义
+      TZ: UTC
+    ports:
+      - "${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-personalos} -d ${POSTGRES_DB:-personal_ai_os}
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres-data:
+    name: personal-ai-os-postgres-data

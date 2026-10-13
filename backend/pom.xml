@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      Spring Boot 4.1.1：Maven Central 上 4.1.x 线的最新稳定版（2026-08-20）。
+      4.2.x 目前只有里程碑版，不作为基线。版本依据见
+      specs/001-project-skeleton/research.md R-01。
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.1</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.personalos</groupId>
+    <artifactId>personal-ai-os-backend</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <name>personal-ai-os-backend</name>
+    <description>Personal AI OS 后端服务</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <!-- Spring AI 2.0.1：要求 Spring Boot 4.0.x / 4.1.x，与上方 parent 对齐 -->
+        <spring-ai.version>2.0.1</spring-ai.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!--
+              只导入 Spring AI 的版本清单，不引入任何 spring-ai-starter-*。
+              原因：模型 Starter 会要求 API Key，使骨架在无密钥时无法启动，
+              与「开箱可跑」目标冲突。阶段 1 再按需引入。
+              真实 artifact 名称见 research.md R-02。
+            -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Web：Spring Web MVC + 内嵌 Tomcat -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 持久化 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- 参数校验（Jakarta Bean Validation） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- 健康检查 / 构建信息 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!--
+          数据库迁移：结构变更一律走 Flyway（宪法原则 IV）。
+
+          注意（Boot 4 模块化实测结论）：Flyway 的自动配置已从
+          spring-boot-autoconfigure 拆到独立模块 spring-boot-flyway。
+          只引入 flyway-core 时，应用能启动但**迁移根本不执行**
+          （flyway_schema_history 不生成、V1 的扩展未创建），
+          因为检测不到 FlywayAutoConfiguration。必须使用本 starter。
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ================= 测试 ================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+          注意：Testcontainers 2.x 起 artifact 更名为 testcontainers-<module>。
+          旧名 org.testcontainers:postgresql / junit-jupiter 在 2.0.5 上已不存在（404）。
+          类也从 org.testcontainers.containers.* 迁到 org.testcontainers.postgresql.*。
+        -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,20 +1,55 @@
+# ============================================================
+# Personal AI OS — .gitignore
+# 注意：gitignore 不支持行内注释；说明必须独占一行并以 # 开头，
+#       否则整条模式会失效（文件看似配好、实则未生效）。
+# ============================================================
+
 # ---- macOS ----
 .DS_Store
 .AppleDouble
 .LSOverride
 ._*
+.Spotlight-V100
+.Trashes
 
-# ---- Editor / IDE ----
+# ---- IDE / 编辑器 ----
 .vscode/
 .idea/
+*.iml
+*.ipr
+*.iws
 *.swp
 *.swo
 
-# ---- 密钥 / 环境变量 ----
-# 注意：模板文件 .env.example 需保留（下方 ! 规则），切勿写入真实密钥
+# ---- 环境变量 / 密钥 ----
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+.secrets/
+
+# ---- Java / Maven ----
+target/
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+replay_pid*
+!.mvn/wrapper/maven-wrapper.jar
+
+# ---- Node / 前端 ----
+node_modules/
+dist/
+dist-ssr/
+.vite/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # ---- 日志 / 临时文件 ----
 *.log
@@ -22,5 +57,9 @@ logs/
 tmp/
 .cache/
 
-# ---- WorkBuddy 本地会话数据（如需版本化，删除下面这一行）----
+# ---- WorkBuddy 本地工作区数据 ----
 .workbuddy/
+
+# ---- 运行时数据目录 ----
+/data/
+/uploads/
