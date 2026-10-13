@@ -25,6 +25,12 @@ public enum ErrorCode {
     /** 业务规则冲突（如状态不允许的流转）。 */
     BUSINESS_CONFLICT(40900, "业务规则冲突", HttpStatus.CONFLICT),
 
+    /** AI 服务调用失败（上游模型不可用或返回错误）。 */
+    AI_UPSTREAM_ERROR(50200, "AI 服务调用失败，请稍后重试或检查模型配置", HttpStatus.BAD_GATEWAY),
+
+    /** AI 模型未配置（未提供任何可用的 ChatModel）。 */
+    AI_NOT_CONFIGURED(50300, "AI 模型未配置，请设置 AI_CHAT_PROVIDER 为 ollama 或 openai", HttpStatus.SERVICE_UNAVAILABLE),
+
     /** 服务器内部错误。对外只返回通用文案，不泄漏内部细节。 */
     INTERNAL_ERROR(50000, "服务器内部错误", HttpStatus.INTERNAL_SERVER_ERROR);
 

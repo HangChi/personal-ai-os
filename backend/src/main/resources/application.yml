@@ -35,11 +35,56 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+  ai:
+    # 重试策略。默认值（多次重试 + 指数退避）会让「模型不可达」时
+    # 客户端长时间停留在无输出的流上，与本特性的 SC-006
+    #（错误应在 10 秒内以 error 事件推送）冲突，故显式收紧。
+    retry:
+      max-attempts: ${AI_RETRY_MAX_ATTEMPTS:2}
+      backoff:
+        initial-interval: 500ms
+        multiplier: 2
+        max-interval: 2s
+    model:
+      # 聊天模型提供商：ollama | openai | none
+      # 默认 ollama（本地、无需密钥），可用 AI_CHAT_PROVIDER 切换。
+      # 该属性同时决定「哪一套 Starter 的自动配置生效」（research.md R-01）。
+      chat: ${AI_CHAT_PROVIDER:ollama}
+      # 阶段 1 不需要 embedding / 图像 / 音频 / 审核。
+      # 必须显式关闭：否则这些自动配置会尝试创建需要 API Key 的 Bean，
+      # 使应用在无密钥时启动失败，破坏「开箱可跑」（research.md R-06）。
+      embedding: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      # 注意：Spring AI 2.0 的模型参数是「扁平」的，不是 chat.options.model
+      # （实测 CONFIG_PREFIX = "spring.ai.ollama.chat"）。写错路径不会报错，只会静默不生效。
+      chat:
+        model: ${OLLAMA_CHAT_MODEL:qwen2.5:7b}
+        temperature: 0.7
+    openai:
+      # 留空即可：仅在 AI_CHAT_PROVIDER=openai 时才会被读取
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      chat:
+        model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+        temperature: 0.7
+
 # 应用自身元信息，供健康检查接口读取
 app:
   name: personal-ai-os
   # 由 Maven 资源过滤在构建时替换为 pom 中的 version
   version: @project.version@
+  ai:
+    # 送给模型的上下文条数上限。
+    # 只影响「送给模型的内容」，不影响库中历史（见 data-model.md 的读写语义约定）。
+    memory:
+      max-messages: ${AI_MEMORY_MAX_MESSAGES:20}
+    system-prompt: ${AI_SYSTEM_PROMPT:你是 Personal AI OS 的个人助手。回答简洁、准确，默认使用中文，必要时使用列表。}
 
 management:
   endpoints:

@@ -28,3 +28,24 @@ export interface HealthStatus {
   version: string
   timestamp: string
 }
+
+/** 会话视图，对应后端 ChatSessionDto */
+export interface ChatSession {
+  conversationId: string
+  title: string
+  createdAt: string
+  updatedAt: string
+  messageCount: number
+}
+
+/** 消息角色 */
+export type ChatRole = 'USER' | 'ASSISTANT' | 'SYSTEM'
+
+/** 消息视图，对应后端 ChatMessageDto */
+export interface ChatMessage {
+  id: number
+  role: ChatRole
+  content: string
+  sequenceNo: number
+  createdAt: string
+}

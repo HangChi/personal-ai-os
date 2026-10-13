@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * 应用根组件：仅负责整体布局与路由出口。
+ * 应用根组件：整体布局 + 顶部导航 + 路由出口。
  * 业务状态一律放在 Pinia store 中，不做跨组件透传。
  */
 </script>
@@ -12,7 +12,13 @@
         <span class="app-shell__logo">AI</span>
         <span class="app-shell__title">Personal AI OS</span>
       </div>
-      <span class="app-shell__phase">阶段 0 · 项目骨架</span>
+
+      <el-menu class="app-shell__nav" mode="horizontal" :router="true" :ellipsis="false">
+        <el-menu-item index="/">总览</el-menu-item>
+        <el-menu-item index="/chat">对话</el-menu-item>
+      </el-menu>
+
+      <span class="app-shell__phase">阶段 1 · AI 对话</span>
     </el-header>
 
     <el-main class="app-shell__main">
@@ -33,7 +39,7 @@
 .app-shell__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 24px;
   border-bottom: 1px solid var(--el-border-color-light);
   background: #ffffff;
 }
@@ -42,6 +48,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: none;
 }
 
 .app-shell__logo {
@@ -60,15 +67,22 @@
 .app-shell__title {
   font-size: 16px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.app-shell__nav {
+  flex: 1;
+  border-bottom: none;
 }
 
 .app-shell__phase {
+  flex: none;
   color: var(--el-text-color-secondary);
   font-size: 13px;
 }
 
 .app-shell__main {
-  max-width: 960px;
+  max-width: 1080px;
   width: 100%;
   margin: 0 auto;
 }

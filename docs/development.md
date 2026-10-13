@@ -68,6 +68,13 @@ curl -s http://localhost:8080/actuator/health
 | `POSTGRES_DB` | personal_ai_os | 数据库名 |
 | `POSTGRES_USER` | personalos | 用户名 |
 | `POSTGRES_PASSWORD` | personalos | 密码（**仅本地默认值**） |
+| `AI_CHAT_PROVIDER` | ollama | 聊天模型提供商：`ollama` / `openai` / `none` |
+| `AI_MEMORY_MAX_MESSAGES` | 20 | 送给模型的上下文条数上限（**不影响库中历史**） |
+| `OLLAMA_BASE_URL` | http://localhost:11434 | 本地 Ollama 地址 |
+| `OLLAMA_CHAT_MODEL` | qwen2.5:7b | 本地模型名 |
+| `OPENAI_API_KEY` | （空） | 仅 `AI_CHAT_PROVIDER=openai` 时需要 |
+| `OPENAI_BASE_URL` | https://api.openai.com | 可指向任意 OpenAI 兼容服务 |
+| `OPENAI_CHAT_MODEL` | gpt-4o-mini | 模型名 |
 
 > `docker compose` 会自动读取根目录 `.env`；如需让后端也读取这些变量，
 > 在 shell 中 `set -a && source .env && set +a` 后再启动，或直接使用默认值（默认值与 `.env.example` 一致）。
@@ -110,7 +117,30 @@ npm run preview      # 预览构建产物
 
 开发期 `/api` 由 Vite 代理到 `http://localhost:8080`（见 `vite.config.ts`），因此不需要配置 CORS。
 
-## 五、常见问题
+## 五、没有模型时如何联调
+
+AI 能力默认走本地 Ollama（`AI_CHAT_PROVIDER=ollama`）。若你**既没装 Ollama、也不想申请 API Key**，
+可以用仓库自带的 mock 服务把整条链路跑通 —— 它只依赖 Python 标准库：
+
+```bash
+# 终端 1：启动 mock（OpenAI 兼容的流式服务）
+python3 scripts/dev/mock-openai-server.py --port 9099
+
+# 终端 2：把后端指向 mock
+cd backend
+AI_CHAT_PROVIDER=openai \
+OPENAI_BASE_URL=http://127.0.0.1:9099 \
+OPENAI_API_KEY=mock-key \
+OPENAI_CHAT_MODEL=mock-model \
+./mvnw spring-boot:run
+```
+
+之后在 `http://localhost:5173/chat` 就能看到逐字返回的回复。
+
+> 该 mock **不是产品代码**，不参与构建与测试；集成测试用的是 Java 侧的桩 `ChatModel`。
+> 它存在的意义是让「前端流式渲染 + SSE 契约」在没有真实模型时也可复现验证。
+
+## 六、常见问题
 
 **Q：`docker compose up -d` 报端口被占用**
 本机 5432/5433 可能已被其它 PostgreSQL 容器占用。改 `.env` 的 `POSTGRES_PORT` 为一个空闲端口（默认 55432 已避开）。
@@ -132,7 +162,7 @@ npm run preview      # 预览构建产物
 `./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8080`，或直接启动 jar 时加 `--server.port=8080`。
 启动日志里的 `Tomcat started on port xxxxx` 是权威结论。
 
-## 六、数据库结构变更流程
+## 七、数据库结构变更流程
 
 1. 在 `backend/src/main/resources/db/migration/` 新增脚本，命名 `V<n>__<snake_case>.sql`。
 2. **不要**改已有迁移脚本（Flyway 会校验 checksum）。需要修正时新增一个更高版本的脚本。

@@ -16,6 +16,12 @@ const router = createRouter({
       meta: { title: '总览' },
     },
     {
+      path: '/chat',
+      name: 'chat',
+      component: () => import('@/views/ChatView.vue'),
+      meta: { title: '对话' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),

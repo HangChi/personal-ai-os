@@ -4,8 +4,9 @@
 
 用自然语言和个人 AI 助手交互，让它帮你管理任务、检索自己的知识库、安排日程与提醒——全部跑在你自己的机器上。
 
-> **当前状态**：阶段 0（项目骨架）已完成。后端可构建可启动、数据库迁移真实执行、前后端链路已打通。
-> AI 能力自阶段 1 起逐步接入。
+> **当前状态**：阶段 1（AI 对话与聊天历史）已完成。
+> 支持多轮上下文、PostgreSQL 聊天历史持久化、SSE 流式输出与会话管理。
+> 模型可通过配置在本地（Ollama）与 OpenAI 兼容服务之间切换。
 
 ## 这个项目要做什么
 
@@ -121,11 +122,29 @@ cd frontend && npm run type-check && npm run build
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | 0 | 项目骨架：Monorepo、后端基座、数据库迁移、前端基座、文档 | ✅ |
-| 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | ⏳ |
+| 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | ✅ |
 | 2 | 任务 CRUD 与 Tool Calling | ⏳ |
 | 3 | 个人知识库与 RAG（pgvector） | ⏳ |
 | 4 | 日程和定时提醒 | ⏳ |
 | 5 | Docker 部署、测试、文档、开源发布 | ⏳ |
+
+## 配置模型提供商
+
+默认走**本地 Ollama**（无需密钥）；也可以指向任意 OpenAI 兼容服务（DeepSeek / 通义 / Kimi / 智谱 / vLLM 等）：
+
+```bash
+# 本地 Ollama（默认）
+AI_CHAT_PROVIDER=ollama OLLAMA_CHAT_MODEL=qwen2.5:7b
+
+# 云端 OpenAI 兼容服务
+AI_CHAT_PROVIDER=openai \
+OPENAI_BASE_URL=https://api.deepseek.com \
+OPENAI_API_KEY=sk-xxx \
+OPENAI_CHAT_MODEL=deepseek-chat
+```
+
+**没有任何模型也能跑**：不配置模型时应用照常启动（健康检查可用），对话接口返回明确的 `50300 AI 模型未配置`。
+用于本地联调的 OpenAI 兼容 mock 见 [`docs/development.md`](docs/development.md) 第五节。
 
 ## 开发约定
 

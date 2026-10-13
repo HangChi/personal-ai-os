@@ -45,9 +45,9 @@ personal-ai-os/
 
 | 模块 | 职责 | 落地阶段 |
 |---|---|---|
-| `common` | 统一响应、错误码、全局异常、健康检查、公共配置 | 阶段 0 ✅ |
-| `ai` | 模型接入、`ChatClient` 装配、Advisor 链、Embedding 模型选择 | 阶段 1 |
-| `chat` | 会话管理、消息历史、SSE 流式输出 | 阶段 1 |
+| `common` | 统一响应、错误码、全局异常、健康检查、公共配置、**ChatClient 装配** | 阶段 0 ✅ / 阶段 1 ✅ |
+| `ai` | 模型接入、`ChatClient` 装配、Advisor 链、Embedding 模型选择 | 阶段 1 ✅（装配落在 `common/ai`，业务编排在 `chat`） |
+| `chat` | 会话管理、消息历史、SSE 流式输出 | 阶段 1 ✅ |
 | `memory` | 会话记忆的持久化与检索策略 | 阶段 1 |
 | `agent` | Agent 编排与工具（Tool Calling）注册 | 阶段 2 |
 | `task` | 个人任务 CRUD 与状态流转 | 阶段 2 |
@@ -126,10 +126,36 @@ controller  →  service  →  repository  →  database
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | 0 | 项目骨架：Monorepo、后端基座、数据库迁移、前端基座、文档 | ✅ 完成 |
-| 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | 待开始 |
+| 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | ✅ 完成 |
 | 2 | 任务 CRUD 与 Tool Calling | 待开始 |
 | 3 | 个人知识库与 RAG（pgvector + vector_store 表） | 待开始 |
 | 4 | 日程和定时提醒（Spring Scheduling） | 待开始 |
 | 5 | Docker 部署、测试补全、文档、GitHub 开源 | 待开始 |
 
 **阶段严格串行**：不提前实现未进入当前阶段的模块。
+
+## 10. 对话链路（阶段 1）
+
+```
+前端 ChatView.vue
+   │  fetch + ReadableStream（POST，非 EventSource）
+   ▼
+ChatSessionController  ──POST /api/v1/chat/sessions/{id}/stream──▶  返回 SseEmitter
+   │
+   ▼
+ChatCompletionService
+   │  ① 先校验（会话存在 / 模型已配置 / 入参合法）——失败则返回普通 JSON 错误
+   │  ② ChatClient.prompt().user(...).advisors(conversationId).stream().content()
+   ▼
+MessageChatMemoryAdvisor ── 读：ChatMemory.get() 取最近 N 条历史注入 prompt
+   │                      └─ 写：用户消息（调用前）、助手消息（完成后）
+   ▼
+JpaChatMemory ──▶ chat_message 表（**追加式，永不裁剪**）
+```
+
+两个容易踩的点，都已固化在实现里：
+
+1. **上下文窗口 ≠ 历史裁剪**。`MessageWindowChatMemory` 会把裁剪后的窗口整体写回仓库，
+   等于用窗口覆盖历史。因此本项目自行实现 `ChatMemory`：`add` 只追加，`get` 才做窗口。
+2. **失败轮次只落用户消息**。用户消息在模型调用前写入、助手消息在完成后写入，
+   所以失败时不会产生「半截助手回复」；前端收到 `error` 后应重新拉取消息，而不是本地伪造。
