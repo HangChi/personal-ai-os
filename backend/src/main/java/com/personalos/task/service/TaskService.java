@@ -1,0 +1,259 @@
+package com.personalos.task.service;
+
+import com.personalos.common.api.ErrorCode;
+import com.personalos.common.exception.BusinessException;
+import com.personalos.common.exception.ResourceNotFoundException;
+import com.personalos.task.dto.CreateTaskRequest;
+import com.personalos.task.dto.TaskDto;
+import com.personalos.task.dto.TaskQuery;
+import com.personalos.task.dto.UpdateTaskRequest;
+import com.personalos.task.entity.TaskEntity;
+import com.personalos.task.entity.TaskPriority;
+import com.personalos.task.entity.TaskStatus;
+import com.personalos.task.repository.TaskRepository;
+import jakarta.persistence.criteria.Predicate;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+/**
+ * 任务写路径与查询。
+ *
+ * <p>所有写操作都在这里（宪法原则 III）。Agent 工具是**适配器**，
+ * 内部调用本服务，不直接接触仓储。
+ */
+@Service
+public class TaskService {
+
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
+
+    /** 单次批量操作上限（FR-006）。超过则要求拆分，而不是静默截断 */
+    public static final int MAX_BULK_SIZE = 50;
+
+    /**
+     * 展示顺序：未完成在前 → 截止时间早的在前（无截止时间排最后）→ 新建的在前。
+     *
+     * <p>排序放在内存里做，而不是 SQL：因为「未完成优先」需要一个 CASE 表达式，
+     * 而条件筛选已经用 Specification 表达。个人任务规模（千级以内）下内存排序成本可忽略，
+     * 且行为完全确定、可单元测试；若将来需要分页，再改为带 CASE 的 SQL 排序。
+     */
+    private static final Comparator<TaskEntity> DISPLAY_ORDER = Comparator
+            .comparingInt((TaskEntity task) -> task.getStatus() == TaskStatus.DONE ? 1 : 0)
+            .thenComparing(TaskEntity::getDueAt, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(TaskEntity::getCreatedAt, Comparator.reverseOrder());
+
+    private final TaskRepository taskRepository;
+
+    public TaskService(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
+    }
+
+    @Transactional
+    public TaskDto create(CreateTaskRequest request) {
+        String title = requireTitle(request.title());
+        String description = trimToNull(request.description());
+        TaskPriority priority = request.priority() == null ? TaskPriority.MEDIUM : request.priority();
+
+        TaskEntity task = new TaskEntity(title, description, priority, request.dueAt(), Instant.now());
+        TaskEntity saved = taskRepository.save(task);
+        log.info("创建任务 id={} title={}", saved.getId(), saved.getTitle());
+        return toDto(saved, Instant.now());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskDto> search(TaskQuery query) {
+        List<TaskEntity> matched = taskRepository.findAll(buildSpecification(query));
+        Instant now = Instant.now();
+        return matched.stream()
+                .sorted(DISPLAY_ORDER)
+                .limit(query.limit())
+                .map(task -> toDto(task, now))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public TaskDto get(UUID id) {
+        return toDto(requireTask(id), Instant.now());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskDto> findByIds(List<UUID> ids) {
+        Instant now = Instant.now();
+        return taskRepository.findAllById(ids).stream()
+                .sorted(DISPLAY_ORDER)
+                .map(task -> toDto(task, now))
+                .toList();
+    }
+
+    @Transactional
+    public TaskDto update(UUID id, UpdateTaskRequest request) {
+        TaskEntity task = requireTask(id);
+        Instant now = Instant.now();
+
+        if (request.title() != null) {
+            task.setTitle(requireTitle(request.title()));
+        }
+        if (request.description() != null) {
+            task.setDescription(trimToNull(request.description()));
+        }
+        if (request.priority() != null) {
+            task.setPriority(request.priority());
+        }
+        if (request.status() != null) {
+            task.setStatus(request.status(), now);
+        }
+        // 截止时间的「设置」与「清除」必须可区分：仅凭 record 的 null 无法表达
+        // 「字段未提供」与「显式置空」，故由 clearDueAt 显式表达清除意图
+        if (request.dueAt() != null) {
+            task.setDueAt(request.dueAt());
+        } else if (Boolean.TRUE.equals(request.clearDueAt())) {
+            task.setDueAt(null);
+        }
+
+        task.touch(now);
+        return toDto(taskRepository.save(task), now);
+    }
+
+    @Transactional
+    public TaskDto setCompleted(UUID id, boolean completed) {
+        TaskEntity task = requireTask(id);
+        Instant now = Instant.now();
+        task.setStatus(completed ? TaskStatus.DONE : TaskStatus.TODO, now);
+        task.touch(now);
+        log.info("任务完成状态变更 id={} completed={}", id, completed);
+        return toDto(taskRepository.save(task), now);
+    }
+
+    /**
+     * 修改截止时间（关键字段，Agent 通道需人工确认后才会走到这里）。
+     *
+     * @param dueAt 新截止时间；{@code null} 表示清除
+     */
+    @Transactional
+    public TaskDto reschedule(UUID id, Instant dueAt) {
+        TaskEntity task = requireTask(id);
+        Instant now = Instant.now();
+        task.setDueAt(dueAt);
+        task.touch(now);
+        return toDto(taskRepository.save(task), now);
+    }
+
+    /**
+     * 修改优先级（关键字段，Agent 通道需人工确认后才会走到这里）。
+     */
+    @Transactional
+    public TaskDto changePriority(UUID id, TaskPriority priority) {
+        TaskEntity task = requireTask(id);
+        Instant now = Instant.now();
+        task.setPriority(priority);
+        task.touch(now);
+        return toDto(taskRepository.save(task), now);
+    }
+
+    @Transactional
+    public void delete(UUID id) {
+        TaskEntity task = requireTask(id);
+        taskRepository.delete(task);
+        log.info("删除任务 id={} title={}", id, task.getTitle());
+    }
+
+    /**
+     * 批量删除。
+     *
+     * <p>在一个事务内完成，保证「要么全删要么不删」，不留下部分成功的假象。
+     *
+     * @return 实际删除的行数
+     */
+    @Transactional
+    public int deleteAll(List<UUID> ids) {
+        List<UUID> distinctIds = ids == null ? List.of() : ids.stream().distinct().toList();
+        if (distinctIds.isEmpty()) {
+            return 0;
+        }
+        if (distinctIds.size() > MAX_BULK_SIZE) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED,
+                    "一次最多处理 " + MAX_BULK_SIZE + " 个任务，请拆分后重试");
+        }
+        List<TaskEntity> found = taskRepository.findAllById(distinctIds);
+        taskRepository.deleteAllInBatch(found);
+        log.info("批量删除任务 请求={} 实际删除={}", distinctIds.size(), found.size());
+        return found.size();
+    }
+
+    @Transactional(readOnly = true)
+    public long countAll() {
+        return taskRepository.count();
+    }
+
+    /**
+     * 取回任务实体；不存在时抛「资源不存在」（FR-016）。
+     */
+    @Transactional(readOnly = true)
+    public TaskEntity requireTask(UUID id) {
+        if (id == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "任务标识不能为空");
+        }
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("任务不存在：" + id));
+    }
+
+    private Specification<TaskEntity> buildSpecification(TaskQuery query) {
+        return (root, criteriaQuery, builder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (query.status() != null) {
+                predicates.add(builder.equal(root.get("status"), query.status()));
+            }
+            if (StringUtils.hasText(query.keyword())) {
+                String pattern = "%" + query.keyword().strip().toLowerCase() + "%";
+                predicates.add(builder.or(
+                        builder.like(builder.lower(root.get("title")), pattern),
+                        builder.like(builder.lower(builder.coalesce(root.get("description"), "")), pattern)));
+            }
+            return builder.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    private String requireTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "标题不能为空");
+        }
+        String stripped = title.strip();
+        if (stripped.length() > 200) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "标题长度不能超过 200");
+        }
+        return stripped;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String stripped = value.strip();
+        return stripped.isEmpty() ? null : stripped;
+    }
+
+    private TaskDto toDto(TaskEntity task, Instant now) {
+        boolean overdue = task.getStatus() != TaskStatus.DONE
+                && task.getDueAt() != null
+                && task.getDueAt().isBefore(now);
+        return new TaskDto(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getStatus().name(),
+                task.getPriority().name(),
+                task.getDueAt(),
+                task.getCompletedAt(),
+                task.getCreatedAt(),
+                task.getUpdatedAt(),
+                overdue);
+    }
+}

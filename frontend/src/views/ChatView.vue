@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { useChatStore } from '@/stores/chat'
-import type { ChatRole } from '@/types/api'
+import type { ChatRole, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
 const {
@@ -14,10 +15,12 @@ const {
   streaming,
   loadingMessages,
   error,
+  pendingConfirmations,
 } = storeToRefs(chatStore)
 
 const draft = ref('')
 const messageArea = ref<HTMLElement | null>(null)
+const resolvingId = ref<string | null>(null)
 
 const canSend = computed(() => draft.value.trim().length > 0 && !streaming.value)
 
@@ -25,6 +28,50 @@ const currentTitle = computed(() => {
   const current = sessions.value.find((item) => item.conversationId === currentConversationId.value)
   return current ? current.title : '未选择会话'
 })
+
+/** 高风险操作的中文名；未识别时直接展示原始动作码，避免"未知操作"这类无用提示 */
+function actionLabel(action: string): string {
+  switch (action) {
+    case 'DELETE_TASK':
+      return '删除任务'
+    case 'SCHEDULE_TASK':
+      return '修改截止时间'
+    case 'SET_PRIORITY':
+      return '修改优先级'
+    default:
+      return action
+  }
+}
+
+/**
+ * 处理待确认操作。
+ *
+ * 删除类操作额外弹一次二次确认 —— 服务端的确认接口是「人做出的决定」，
+ * 这里再确认一次是为了防止误点，而不是替代服务端的确认流程。
+ */
+async function handleConfirmation(confirmation: TaskConfirmation, approve: boolean): Promise<void> {
+  if (approve && confirmation.action === 'DELETE_TASK') {
+    try {
+      await ElMessageBox.confirm(`确认执行「${confirmation.summary}」？该操作不可撤销。`, '高风险操作确认', {
+        type: 'warning',
+        confirmButtonText: '确认执行',
+        cancelButtonText: '再想想',
+      })
+    } catch {
+      return
+    }
+  }
+
+  resolvingId.value = confirmation.id
+  try {
+    const result = await chatStore.resolveConfirmation(confirmation, approve)
+    if (result) {
+      ElMessage.success(result)
+    }
+  } finally {
+    resolvingId.value = null
+  }
+}
 
 function roleLabel(role: ChatRole): string {
   switch (role) {
@@ -147,6 +194,45 @@ async function handleNewSession(): Promise<void> {
         >
           <div class="chat__message-role">助手</div>
           <div class="chat__message-content">{{ streamingContent }}</div>
+        </div>
+      </div>
+
+      <div class="chat__confirmations" v-if="pendingConfirmations.length > 0">
+        <el-alert
+          type="warning"
+          :closable="false"
+          show-icon
+          title="助手申请执行高风险操作，需要你确认后才会真正生效"
+        />
+        <div
+          v-for="confirmation in pendingConfirmations"
+          :key="confirmation.id"
+          class="chat__confirmation"
+        >
+          <div class="chat__confirmation-body">
+            <el-tag type="warning" size="small" effect="plain">
+              {{ actionLabel(confirmation.action) }}
+            </el-tag>
+            <span class="chat__confirmation-summary">{{ confirmation.summary }}</span>
+            <span class="chat__confirmation-meta">影响 {{ confirmation.affectedCount }} 项</span>
+          </div>
+          <div class="chat__confirmation-actions">
+            <el-button
+              size="small"
+              :loading="resolvingId === confirmation.id"
+              @click="handleConfirmation(confirmation, false)"
+            >
+              取消
+            </el-button>
+            <el-button
+              size="small"
+              type="danger"
+              :loading="resolvingId === confirmation.id"
+              @click="handleConfirmation(confirmation, true)"
+            >
+              确认执行
+            </el-button>
+          </div>
         </div>
       </div>
 
@@ -284,6 +370,48 @@ async function handleNewSession(): Promise<void> {
 
 .chat__composer {
   margin-top: 12px;
+}
+
+.chat__confirmations {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chat__confirmation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--el-color-warning-light-5);
+  border-radius: 8px;
+  background: var(--el-color-warning-light-9);
+}
+
+.chat__confirmation-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chat__confirmation-summary {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat__confirmation-meta {
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.chat__confirmation-actions {
+  flex: none;
 }
 
 .chat__composer-actions {

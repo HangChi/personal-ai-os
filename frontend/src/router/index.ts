@@ -22,6 +22,12 @@ const router = createRouter({
       meta: { title: '对话' },
     },
     {
+      path: '/tasks',
+      name: 'tasks',
+      component: () => import('@/views/TasksView.vue'),
+      meta: { title: '任务' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),

@@ -2,8 +2,10 @@ package com.personalos.chat.service;
 
 import com.personalos.chat.dto.ChatStreamEvents;
 import com.personalos.common.ai.AiChatClientProvider;
+import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.api.ErrorCode;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,9 +58,12 @@ public class ChatCompletionService {
      *
      * @param conversationId 会话标识（隔离边界）
      * @param userContent    本条用户消息
+     * @param turnId         本轮标识。客户端可用 {@code Idempotency-Key} 头传入；
+     *                       它同时是工具层幂等的范围边界 —— 客户端重试整个请求时，
+     *                       若复用同一个键，模型重复发出的工具调用就不会二次执行
      * @return SSE 发射器
      */
-    public SseEmitter stream(String conversationId, String userContent) {
+    public SseEmitter stream(String conversationId, String userContent, String turnId) {
         sessionService.requireSession(conversationId);
         ChatClient chatClient = aiProvider.requireChatClient();
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
@@ -76,6 +81,10 @@ public class ChatCompletionService {
                 .user(userContent)
                 // 会话标识通过 advisor 参数传入，Advisor 据此装载并回写该会话的上下文
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
+                // 工具调用时需要的上下文：工具方法通过 ToolContext 参数读取
+                .toolContext(Map.of(
+                        ToolContextKeys.CONVERSATION_ID, conversationId,
+                        ToolContextKeys.TURN_ID, turnId))
                 .stream()
                 .content();
 

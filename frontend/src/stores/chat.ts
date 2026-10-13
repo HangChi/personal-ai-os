@@ -8,7 +8,12 @@ import {
   listSessions,
   streamChat,
 } from '@/api/chat'
-import type { ChatMessage, ChatSession } from '@/types/api'
+import {
+  cancelOperation,
+  confirmOperation,
+  listConfirmations,
+} from '@/api/confirmations'
+import type { ChatMessage, ChatSession, TaskConfirmation } from '@/types/api'
 
 /**
  * 聊天状态：会话列表 + 当前会话消息 + 流式中的临时内容。
@@ -25,6 +30,14 @@ export const useChatStore = defineStore('chat', () => {
   const loadingSessions = ref(false)
   const loadingMessages = ref(false)
   const error = ref<string | null>(null)
+
+  /**
+   * 当前会话的待确认操作。
+   *
+   * 助手只能**申请**执行高风险操作；真正执行必须由人在这里点确认。
+   * 理论上模型也可以「在回复里说已删除」，但只有这里才真的会删。
+   */
+  const pendingConfirmations = ref<TaskConfirmation[]>([])
 
   let abortController: AbortController | null = null
 
@@ -60,11 +73,53 @@ export const useChatStore = defineStore('chat', () => {
     streamingContent.value = ''
     try {
       messages.value = await listMessages(conversationId)
+      await loadConfirmations()
     } catch (cause) {
       messages.value = []
+      pendingConfirmations.value = []
       error.value = cause instanceof Error ? cause.message : '加载消息失败'
     } finally {
       loadingMessages.value = false
+    }
+  }
+
+  /** 拉取当前会话的待确认操作 */
+  async function loadConfirmations(): Promise<void> {
+    if (!currentConversationId.value) {
+      pendingConfirmations.value = []
+      return
+    }
+    try {
+      pendingConfirmations.value = await listConfirmations(currentConversationId.value)
+    } catch {
+      // 待确认列表拉取失败不应影响对话本身
+      pendingConfirmations.value = []
+    }
+  }
+
+  /**
+   * 处理一条待确认操作。
+   *
+   * @param approve true 确认执行，false 取消
+   * @returns 执行结果描述，失败时返回 null
+   */
+  async function resolveConfirmation(
+    confirmation: TaskConfirmation,
+    approve: boolean,
+  ): Promise<string | null> {
+    error.value = null
+    try {
+      if (!approve) {
+        await cancelOperation(confirmation.id, confirmation.token)
+        return '已取消'
+      }
+      const result = await confirmOperation(confirmation.id, confirmation.token)
+      return result.summary
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '处理确认失败'
+      return null
+    } finally {
+      await loadConfirmations()
     }
   }
 
@@ -149,6 +204,8 @@ export const useChatStore = defineStore('chat', () => {
           // 刷新失败不影响本轮已展示的内容
         }
         await loadSessions()
+        // 助手可能刚生成了待确认操作，本轮结束后立即拉一次
+        await loadConfirmations()
       }
     }
   }
@@ -167,11 +224,14 @@ export const useChatStore = defineStore('chat', () => {
     loadingSessions,
     loadingMessages,
     error,
+    pendingConfirmations,
     loadSessions,
     createSession,
     selectSession,
     removeSession,
     send,
     stopStreaming,
+    loadConfirmations,
+    resolveConfirmation,
   }
 })

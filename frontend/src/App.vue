@@ -16,9 +16,10 @@
       <el-menu class="app-shell__nav" mode="horizontal" :router="true" :ellipsis="false">
         <el-menu-item index="/">总览</el-menu-item>
         <el-menu-item index="/chat">对话</el-menu-item>
+        <el-menu-item index="/tasks">任务</el-menu-item>
       </el-menu>
 
-      <span class="app-shell__phase">阶段 1 · AI 对话</span>
+      <span class="app-shell__phase">阶段 2 · 任务 Agent</span>
     </el-header>
 
     <el-main class="app-shell__main">

@@ -11,6 +11,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -64,6 +65,21 @@ public class GlobalExceptionHandler {
         String message = ErrorCode.VALIDATION_FAILED.getDefaultMessage()
                 + (detail.isBlank() ? "" : ": " + detail);
         log.warn("约束校验失败: {}", message);
+        return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus())
+                .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED, message));
+    }
+
+    /**
+     * 请求参数类型不匹配（例如把非法字符串传给枚举类型的查询参数）。
+     *
+     * <p>若不显式处理，这类错误会被兜底分支吞成 50000 —— 明明是客户端传错了，
+     * 却报成服务器错误，会误导排错方向。
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String message = ErrorCode.VALIDATION_FAILED.getDefaultMessage()
+                + ": 参数 " + ex.getName() + " 取值非法";
+        log.warn("参数类型不匹配: name={}, value={}", ex.getName(), ex.getValue());
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus())
                 .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED, message));
     }

@@ -16,6 +16,12 @@ public enum ErrorCode {
     /** 参数校验失败（Bean Validation）。 */
     VALIDATION_FAILED(40000, "参数校验失败", HttpStatus.BAD_REQUEST),
 
+    /** 幂等键与请求内容不一致。 */
+    IDEMPOTENCY_KEY_CONFLICT(40001, "幂等键与请求内容不一致，同一幂等键必须对应相同请求", HttpStatus.CONFLICT),
+
+    /** 待确认操作已失效（已确认、已取消或已过期）。 */
+    CONFIRMATION_NOT_ACTIVE(40002, "该确认已失效或已被使用", HttpStatus.CONFLICT),
+
     /** 资源不存在。 */
     RESOURCE_NOT_FOUND(40004, "资源不存在", HttpStatus.NOT_FOUND),
 

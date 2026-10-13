@@ -127,12 +127,42 @@ controller  →  service  →  repository  →  database
 |---|---|---|
 | 0 | 项目骨架：Monorepo、后端基座、数据库迁移、前端基座、文档 | ✅ 完成 |
 | 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | ✅ 完成 |
-| 2 | 任务 CRUD 与 Tool Calling | 待开始 |
+| 2 | 任务 CRUD 与 Tool Calling（含两阶段人工确认与两层幂等） | ✅ 完成 |
 | 3 | 个人知识库与 RAG（pgvector + vector_store 表） | 待开始 |
 | 4 | 日程和定时提醒（Spring Scheduling） | 待开始 |
 | 5 | Docker 部署、测试补全、文档、GitHub 开源 | 待开始 |
 
 **阶段严格串行**：不提前实现未进入当前阶段的模块。
+
+## 11. 任务 Agent 链路（阶段 2）
+
+```
+自然语言「把'写周报'删掉」
+   ▼
+ChatClient → 模型决定调用工具
+   ▼
+ToolCallingAdvisor（必须显式装配，见 research R-10）
+   ▼
+TaskTools（@Tool 适配器）→ ToolExecutor（幂等 + 审计 + 异常归一）
+   ▼
+TaskService（唯一的写路径）→ task 表
+```
+
+### 三条必须记住的约束
+
+1. **模型只能「申请」高风险操作。** `deleteTask` / `scheduleTask` / `setTaskPriority`
+   不执行变更，只创建一条待确认记录；执行它们的是面向人类的确认接口。
+   工具集合中**不存在**任何确认类能力 —— 防线是结构性的，不依赖令牌保密（SC-003）。
+
+2. **确认范围是有意划定的**：删除 / 批量 / 关键字段（截止时间、优先级）需确认；
+   创建、查询、改标题描述、标记完成**不需要** —— 后者可逆且是最高频动作，
+   每次都弹确认会与「用自然语言操作任务」的目标直接冲突（见 research R-07）。
+
+3. **两层幂等，范围不同**：
+   - 工具层按「会话 + 轮次 + 工具 + 参数摘要」去重 → 防模型在同一轮里重复调用；
+     刻意**不**跨轮次去重，因为用户在同一分钟内真诚地建两个同名任务是合法的。
+   - HTTP 层按客户端提供的 `Idempotency-Key` 去重 → 防网络重试。
+   两者共用 `operation_record` 一张表，它同时就是工具执行审计日志。
 
 ## 10. 对话链路（阶段 1）
 

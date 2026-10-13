@@ -49,3 +49,45 @@ export interface ChatMessage {
   sequenceNo: number
   createdAt: string
 }
+
+/** 任务状态 */
+export type TaskStatus = 'TODO' | 'DOING' | 'DONE'
+
+/** 任务优先级 */
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH'
+
+/** 任务视图，对应后端 TaskDto */
+export interface TaskItem {
+  id: string
+  title: string
+  description: string | null
+  status: TaskStatus
+  priority: TaskPriority
+  dueAt: string | null
+  completedAt: string | null
+  createdAt: string
+  updatedAt: string
+  /** 由服务端计算，避免各客户端各算各的 */
+  overdue: boolean
+}
+
+/** 待人工确认的操作，对应后端 TaskConfirmationDto */
+export interface TaskConfirmation {
+  id: string
+  /** 一次性确认令牌 */
+  token: string
+  action: string
+  /** 服务端生成的可读描述 */
+  summary: string
+  affectedCount: number
+  status: string
+  expiresAt: string
+  createdAt: string
+}
+
+/** 确认执行结果 */
+export interface ConfirmationExecutionResult {
+  executed: boolean
+  affectedCount: number
+  summary: string
+}

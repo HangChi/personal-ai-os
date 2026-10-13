@@ -137,8 +137,26 @@ OPENAI_CHAT_MODEL=mock-model \
 
 之后在 `http://localhost:5173/chat` 就能看到逐字返回的回复。
 
+**验证 Agent 工具调用**：该 mock 已支持工具调用，用以下前缀模拟「模型决定调工具」：
+
+| 你输入 | mock 会调用 |
+|---|---|
+| `创建任务：写周报` | `createTask` |
+| `创建任务：写周报\|HIGH` | `createTask`（带优先级） |
+| `查看待办` | `findTasks` |
+| `删除任务：<任务 uuid>` | `deleteTask`（**仍需人工确认**） |
+| 其他任意内容 | 纯文本回复 |
+
+试完之后可查数据库确认「助手不是口头答应」：
+
+```bash
+curl -s "http://localhost:8080/api/v1/tasks" | python3 -m json.tool
+curl -s "http://localhost:8080/api/v1/agent/tool-invocations" | python3 -m json.tool
+curl -s "http://localhost:8080/api/v1/agent/confirmations?status=PENDING" | python3 -m json.tool
+```
+
 > 该 mock **不是产品代码**，不参与构建与测试；集成测试用的是 Java 侧的桩 `ChatModel`。
-> 它存在的意义是让「前端流式渲染 + SSE 契约」在没有真实模型时也可复现验证。
+> 它存在的意义是让「前端流式渲染 + SSE 契约 + Agent 工具调用」在没有真实模型时也可复现验证。
 
 ## 六、常见问题
 
