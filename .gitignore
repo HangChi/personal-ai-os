@@ -1,0 +1,26 @@
+# ---- macOS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ---- Editor / IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---- 密钥 / 环境变量 ----
+# 注意：模板文件 .env.example 需保留（下方 ! 规则），切勿写入真实密钥
+.env
+.env.*
+!.env.example
+
+# ---- 日志 / 临时文件 ----
+*.log
+logs/
+tmp/
+.cache/
+
+# ---- WorkBuddy 本地会话数据（如需版本化，删除下面这一行）----
+.workbuddy/
