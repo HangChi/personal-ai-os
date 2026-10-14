@@ -12,6 +12,8 @@ import org.springframework.ai.chat.client.advisor.ToolCallingAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.model.tool.ToolCallingManager;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
@@ -46,6 +48,7 @@ public class AiChatClientProvider {
     public AiChatClientProvider(ObjectProvider<ChatModel> chatModels,
                                 ObjectProvider<ToolCallingManager> toolCallingManagers,
                                 ObjectProvider<ToolContributor> toolContributors,
+                                ObjectProvider<ToolCallbackProvider> toolCallbackProviders,
                                 ChatMemory chatMemory,
                                 AiProperties aiProperties) {
         ChatModel chatModel = chatModels.getIfAvailable();
@@ -75,21 +78,33 @@ public class AiChatClientProvider {
         // 因此 chat 模块无需知道「任务」「知识库」这些业务概念的存在。
         List<Object> tools = new ArrayList<>();
         toolContributors.forEach(contributor -> tools.addAll(contributor.toolObjects()));
-        if (!tools.isEmpty()) {
+
+        // 收集「已成型」的工具回调（阶段 6：MCP 工具经 mcp 模块的装饰层以
+        // ToolCallbackProvider 形态提供）。本类不认识 MCP 这个概念——
+        // 它只是多收集一类 Provider，与 @Tool 那条路径并列。
+        List<ToolCallback> toolCallbacks = new ArrayList<>();
+        toolCallbackProviders.forEach(provider -> toolCallbacks.addAll(List.of(provider.getToolCallbacks())));
+
+        if (!tools.isEmpty() || !toolCallbacks.isEmpty()) {
             ToolCallingAdvisor.Builder<?> advisorBuilder = ToolCallingAdvisor.builder();
             ToolCallingManager toolCallingManager = toolCallingManagers.getIfAvailable();
             if (toolCallingManager != null) {
                 advisorBuilder = advisorBuilder.toolCallingManager(toolCallingManager);
             }
-            builder = builder
-                    .defaultTools(tools.toArray())
-                    .defaultAdvisors(advisorBuilder.build());
+            builder = builder.defaultAdvisors(advisorBuilder.build());
+        }
+        if (!tools.isEmpty()) {
+            builder = builder.defaultTools(tools.toArray());
+        }
+        if (!toolCallbacks.isEmpty()) {
+            builder = builder.defaultToolCallbacks(toolCallbacks.toArray(new ToolCallback[0]));
         }
 
         this.chatClient = builder.build();
 
-        log.info("AI 聊天能力已启用：model={}, maxMessages={}, tools={}",
-                chatModel.getClass().getSimpleName(), aiProperties.memory().maxMessages(), tools.size());
+        log.info("AI 聊天能力已启用：model={}, maxMessages={}, tools={}, toolCallbacks={}",
+                chatModel.getClass().getSimpleName(), aiProperties.memory().maxMessages(),
+                tools.size(), toolCallbacks.size());
     }
 
     /**

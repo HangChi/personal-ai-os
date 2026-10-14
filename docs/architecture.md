@@ -131,9 +131,12 @@ controller  →  service  →  repository  →  database
 | 2 | 任务 CRUD 与 Tool Calling（含两阶段人工确认与两层幂等） | ✅ 完成 |
 | 3 | 个人知识库与 RAG（pgvector + 引用溯源） | ✅ 完成 |
 | 4 | 日程与定时提醒（重复规则 + 提醒物化） | ✅ 完成 |
+| 6 | MCP 客户端接入（外部工具 + 策略分级 + 确认） | 实现中 |
 | 5 | Docker 部署、测试补全、文档、GitHub 开源 | 待开始 |
 
 **阶段严格串行**：不提前实现未进入当前阶段的模块。
+（阶段 6 是「暂不发布、继续做功能」的插入阶段，编号在 5 之后但先于 5 实施；
+路线图按实施顺序调整，阶段 5 的部署发布仍排在其后。）
 
 ## 11. 任务 Agent 链路（阶段 2）
 
@@ -278,3 +281,47 @@ JpaChatMemory ──▶ chat_message 表（**追加式，永不裁剪**）
    等于用窗口覆盖历史。因此本项目自行实现 `ChatMemory`：`add` 只追加，`get` 才做窗口。
 2. **失败轮次只落用户消息**。用户消息在模型调用前写入、助手消息在完成后写入，
    所以失败时不会产生「半截助手回复」；前端收到 `error` 后应重新拉取消息，而不是本地伪造。
+
+## 14. MCP 接入链路（阶段 6）
+
+```
+.mcp 环境变量（MCP_ENABLED + MCP_SERVERS_<名>_*）
+   ▼
+McpClientRegistry —— 逐个拉起 stdio 子进程、握手、列举工具（单个失败只降级）
+   ▼
+McpToolCallbackProvider —— SyncMcpToolCallbackProvider（协议 → ToolCallback）
+   │                        再逐层装饰：命名 / 策略 / 审计 / 确认
+   ▼
+McpToolCallback（显式 Java 装饰层）—— 宪法原则 II 的落点
+   ├── 策略 AUTO    → 直接调用 MCP 工具，结果进入对话（经 ToolExecutor 记审计）
+   └── 策略 CONFIRM → 不触达 server，生成待确认事项（MCP_TOOL_CALL）
+                         ▼
+                    用户在界面确认 → McpConfirmationHandler 真正调用
+   ▼
+AiChatClientProvider 收集 ToolCallbackProvider → 挂到 ChatClient（对话模块不认识 MCP）
+```
+
+### 三条必须记住的约束
+
+1. **外部工具经显式 Java 装饰层收敛**。MCP 工具由外部 server 声明，不满足「显式 Java 接口」；
+   `McpToolCallback` 让每个 MCP 工具成为一个 Java 对象的方法，副作用路径回到本进程内。
+   前缀 `mcp_<server>_<tool>` 同时避免与内置工具重名、区分跨 server 同名工具。
+
+2. **策略分级 + 默认 CONFIRM（fail-closed）**。只读工具（`AUTO_TOOLS` 清单声明的）直接执行，
+   其余一律人工确认。漏配的代价是多弹一次确认，而不是一次未授权的写入。
+   策略只来自配置——对话里说「不用确认」不构成豁免。
+
+3. **两类故障区别对待**。server 连不上 / 超时 → 标记不可用，应用照常启动（可用性问题）；
+   工具名冲突 → **启动失败**（正确性问题，模型按名调用会落到错误的工具上）。
+   这条区分是刻意的，两个方向都有测试守着。
+
+### 与既有机制的关系
+
+- **确认机制零特例**：`MCP_TOOL_CALL` 是既有 `ConfirmationService` 的第 5 个动作，
+  令牌 / 有效期 / 单次性 / CAS 占位全部复用。动态工具名经一个通用动作 + payload 桥接，
+  不为每个工具生成枚举值（`research.md` R-05）。
+- **审计同一张表**：MCP 调用经 `ToolExecutor` 写入 `operation_record`，
+  与内置工具一致；工具名带 `mcp_` 前缀即可区分来源。
+- **测试 server 在 JVM 内自建**：SDK 2.0.0 没有 in-memory 传输（实测），
+  测试用「本 JVM 类路径派生 stdio 子进程」跑真实协议；断言落在可观测副作用上
+  （拦截时文件不存在，确认后才落盘）。

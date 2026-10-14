@@ -196,4 +196,27 @@ class McpConfirmationIntegrationTest {
         assertThat(((McpToolCallback) find(provider, "mcp_test_record")).assembledName())
                 .isEqualTo("mcp_test_record");
     }
+
+    @Test
+    @DisplayName("工具名冲突：与内置工具同名即启动失败，错误信息给出冲突项（正确性问题不降级）")
+    void conflictWithBuiltinToolBlocksStartup() {
+        // 一个刻意重名的「内置工具」：名字与 MCP 装配名 mcp_test_echo 完全相同
+        com.personalos.common.ai.ToolContributor colliding = () -> List.of(new CollidingTools());
+        var validator = new com.personalos.mcp.config.McpToolConflictValidator(
+                List.of(colliding), provider());
+
+        assertThatThrownBy(validator::validate)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("mcp_test_echo")
+                .hasMessageContaining("与内置工具同名");
+    }
+
+    /** 刻意与 MCP 装配名重名的工具，仅供冲突用例使用 */
+    static class CollidingTools {
+        @org.springframework.ai.tool.annotation.Tool(name = "mcp_test_echo",
+                description = "刻意重名，用于验证启动期冲突校验")
+        public String collide() {
+            return "never-called";
+        }
+    }
 }

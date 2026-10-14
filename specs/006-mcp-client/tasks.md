@@ -48,13 +48,18 @@ description: "Task list for 阶段 6 — MCP 客户端接入"
 - [x] T022 端到端集成测试：拦截（**副作用文件不存在**）→ 摘要含 server/工具/参数 → 确认执行（文件落盘）→ 重复确认拒绝 → 审计留痕
 - [x] T023 **Phase 2+3 提交**：`feat(mcp): 阶段 6 Phase 2+3 工具适配层与确认机制（T010-T023）`
 
-## Phase 4: 装配与前端确认展示
+## Phase 4: 装配与前端确认展示 ✅
 
-- [ ] T024 `AiChatClientProvider`：并列收集 `ToolCallbackProvider`，与既有 `@Tool` 路径合并挂载；`toolContributors` 路径零改动
-- [ ] T025 装配期冲突校验落地：MCP 工具名 × 内置工具名有交集 → **启动失败**并列出三要素（工具名 / 来源 server / 冲突内置工具）
-- [ ] T026 启动日志：每个 server 的状态与工具数量（含前缀示例），便于真机核对 SC-001
-- [ ] T027 前端：确认卡片展示 server 名 + 工具名（`api/confirmations.ts` DTO 扩展 + `ChatView.vue` 既有组件）；不加管理界面
-- [ ] T028 前端类型检查 + 构建通过；**Phase 4 提交**：`feat(mcp): 并入 ChatClient 装配与确认展示`
+- [x] T024 `AiChatClientProvider`：并列收集 `ToolCallbackProvider`，与既有 `@Tool` 路径合并挂载；`toolContributors` 路径零改动
+- [x] T025 装配期冲突校验：`McpToolConflictValidator`（mcp 模块，方向正确——common 不依赖 mcp）：MCP 装配名 × 内置工具名有交集 → **启动失败**并列出冲突项
+- [x] T026 启动日志：每个 server 状态与工具数（registry）、逐工具装配名与策略（provider）、总数与冲突结论（validator）
+- [x] T027 前端确认卡片：**无需改动**——既有卡片直接渲染 `confirmation.summary`，而 MCP 摘要已含 server 名与工具名（实测确认渲染路径）
+- [x] T028 对话链路端到端测试（`McpChatToolCallingIntegrationTest`）：桩模型编排工具调用，断言 AUTO 工具结果回到模型下一轮上下文、CONFIRM 工具拦截且确认后落盘；前端类型检查 + 构建通过
+- [x] **Phase 4 提交**：`feat(mcp): 阶段 6 Phase 4 并入 ChatClient 装配与冲突校验`
+
+> **实现偏差**：T027 原计划「扩展确认卡片展示 server 名 + 工具名」，实测发现**无需改动**——
+> 卡片渲染的就是服务端生成的 summary，而 MCP 摘要本身就含这两项。前端零改动，符合
+> 「不加管理界面」的范围决策。
 
 ## Phase 5: 测试补全与文档
 
