@@ -53,12 +53,17 @@ export const useCalendarStore = defineStore('calendar', () => {
    *
    * 显式传入 from/to 视为「换了查询窗口」，页码归零；
    * 不传则沿用当前窗口与页码（增删改后的刷新用）。
+   *
+   * 这条归零规则最初只在注释里成立、代码没实现——是
+   * test/calendar-store.test.mjs 抓出来的（文档与实现漂移的典型）。
    */
   async function loadOccurrences(from?: string, to?: string, nextPage?: number): Promise<void> {
     loadingOccurrences.value = true
     error.value = null
+    const windowChanged = from !== undefined || to !== undefined
+    const targetPage = nextPage ?? (windowChanged ? 0 : page.value)
     try {
-      const result = await listOccurrences(from, to, nextPage ?? page.value, size.value)
+      const result = await listOccurrences(from, to, targetPage, size.value)
       occurrences.value = result.items
       total.value = result.total
       page.value = result.page

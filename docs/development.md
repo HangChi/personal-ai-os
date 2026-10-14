@@ -113,9 +113,24 @@ npm run dev                  # http://localhost:5173
 npm run type-check   # vue-tsc 类型检查
 npm run build        # 生产构建，产物在 frontend/dist
 npm run preview      # 预览构建产物
+npm run test:logic   # 前端逻辑测试（零依赖，见下）
 ```
 
 开发期 `/api` 由 Vite 代理到 `http://localhost:8080`（见 `vite.config.ts`），因此不需要配置 CORS。
+
+### 前端逻辑测试（零依赖）
+
+`npm run test:logic` 不引 vitest / jest，靠 **Node 的 ESM 解析钩子 + 类型剥离**直接跑真实源码：
+
+- `test/resolve-hook.mjs` 把 Vite 风格导入（`@/x`、省略扩展名）翻译成 Node 能解析的形式；
+  唯一使用 `import.meta.env` 的 `@/api/http` 被整体别名到 `test/stub-api.mjs`（测试替身），
+  被测模块真正用到的导出由替身提供、行为由各测试注入；
+- `test/assert.mjs` 是极简断言（累计通过/失败），`test/run.mjs` 顺序跑所有 `*.test.mjs` 并出汇总；
+- 覆盖：`api/envelope.ts` 的错误分类（4xx/5xx 信封 vs 连接层错误，d0df5de 修的那个 bug）、
+  三个 store 的分页状态与失败路径。
+
+**运行要求 Node ≥ 22.18**（类型剥离默认开启；20.x 会因无法解析 TS 语法而失败）。
+本机 `node --version` 为 22.22.2，满足。测试替身与断言都不进生产构建。
 
 ## 五、没有模型时如何联调
 
