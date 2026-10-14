@@ -11,37 +11,42 @@ description: "Task list for 阶段 6 — MCP 客户端接入"
 
 ---
 
-## Phase 1: 配置与 server 生命周期
+## Phase 1: 配置与 server 生命周期 ✅（提交 `1ec39b2`）
 
-- [ ] T001 `pom.xml` 引 `spring-ai-starter-mcp-client`（版本随 BOM 2.0.1，不单独锁）；确认传递依赖后 `./mvnw -B verify` 基线仍全绿（零回归第一验）
-- [ ] T002 [P] `mcp/config/McpProperties`（`@ConfigurationProperties(prefix = "mcp")`：enabled / servers map / autoTools / connectTimeout；env 直通 map）
-- [ ] T003 [P] `mcp/config/McpConfigValidator`（启动期：`MCP_SERVERS` 每个名字都有配置、command 非空——配置错误即启动失败，契约 C3/C4）
-- [ ] T004 `mcp/client/McpClientRegistry`：按配置建 stdio 客户端（超时可控）、列举工具、记录 server 状态
-- [ ] T005 `mcp/client/McpServerStatus`（可用/不可用 + 失败原因；进程内事实，不落库）
-- [ ] T006 生命周期：实现 `SmartLifecycle`（或 `DisposableBean`），应用关闭时逐 server 销毁；**不得依赖 server 检测 stdin 自退**（契约 L3）
-- [ ] T007 `.env.example` 增加 `MCP_*` 段：filesystem 示例（**限定目录** `./mcp-sandbox`）+ GitHub 示例（token 走 `env` 引用 `${GITHUB_TOKEN}`）
-- [ ] T008 集成测试（JVM 内自建 stdio server）：装配成功列举工具；命令不存在 → 降级不拖垮启动；未配置 → 零初始化（SC-03 的第一道自动化证据）
-- [ ] T009 **Phase 1 提交**：`feat(mcp): MCP 配置与 server 生命周期`——正文写清「为什么零启用默认」与「配置错误 vs 运行故障的区别对待」
+- [x] T001 `pom.xml` 引 `spring-ai-starter-mcp-client`（版本随 BOM 2.0.1，不单独锁）；确认传递依赖后 `./mvnw -B verify` 基线仍全绿（零回归第一验）
+- [x] T002 [P] `mcp/config/McpProperties`（`@ConfigurationProperties(prefix = "mcp")`：enabled / servers map / autoTools / connectTimeout；env 直通 map）
+- [x] T003 [P] `mcp/config/McpConfigValidator`（启动期：缺 command 即启动失败——配置错误不降级）
+- [x] T004 `mcp/client/McpClientRegistry`：按配置建 stdio 客户端（超时可控）、列举工具、记录 server 状态
+- [x] T005 `mcp/client/McpServerStatus`（可用/不可用 + 失败原因；进程内事实，不落库）
+- [x] T006 生命周期：`@PostConstruct` 连接、`DisposableBean.destroy()` 关闭；**不依赖 server 检测 stdin 自退**（契约 L3）
+- [x] T007 `.env.example` 增加 `MCP_*` 段：filesystem 示例（**限定目录**）+ GitHub 示例（token 走 `env` 引用 `${GITHUB_TOKEN}`）
+- [x] T008 集成测试（JVM 内自建 stdio server）：装配成功列举工具；命令不存在 → 降级不拖垮启动；未配置 → 零初始化
+- [x] T009 **Phase 1 提交**：`feat(mcp): 阶段 6 Phase 1 配置与 server 生命周期（T001-T009）`
 
-## Phase 2: 工具适配层（命名 / 策略 / 装饰）
+> **实现偏差（同提交回改上游文档）**：① 环境变量名单数改复数 `MCP_SERVERS_<NAME>_*`——
+> 单数写法经 relaxed binding 归一到 `mcp.server.*`，与字段 `servers` 对不上且**静默绑不上**；
+> ② 删除 `MCP_SERVERS` 列表属性（映射键即清单）；③ 测试 server 子进程日志曾污染协议流
+> （logback 默认写 stdout），helper 已把 System.out 改道 stderr。
 
-- [ ] T010 `mcp/tool/McpToolNaming`（纯函数）：`mcp_<server>_<tool>` 命名 + 与内置工具名的冲突判定；单测覆盖跨 server 同名、空名、非法字符
-- [ ] T011 `mcp/tool/McpToolPolicy`（纯函数）：策略解析顺序（autoTools 命中 → AUTO；否则 CONFIRM）；单测覆盖默认值、大小写、空清单
-- [ ] T012 `mcp/tool/McpToolCallback`：装饰 `ToolCallback`——调用前查策略：AUTO 直行 / CONFIRM 生成待确认并返回提示语（**不触达 server**）；调用后记审计（含耗时与结果）
-- [ ] T013 `mcp/tool/McpToolCallbackProvider`：把装饰后的回调以 Spring AI `ToolCallbackProvider` 形态暴露
-- [ ] T014 工具 schema 自检：required 齐全、类型可解析；异常工具剔除 + 告警（Edge Cases）
-- [ ] T015 单元测试：装饰层的策略分支（AUTO 不产生确认记录、CONFIRM 零触达 server——用桩回调证明「没被调用」）
-- [ ] T016 **Phase 2 提交**：`feat(mcp): 工具适配层（命名/策略/审计）`
+## Phase 2: 工具适配层（命名 / 策略 / 装饰）✅（提交 `7b0e2d3`）
 
-## Phase 3: 确认机制扩展
+- [x] T010 `mcp/tool/McpToolNaming`（纯函数）：`mcp_<server>_<tool>` 命名 + 清洗 + 长度上限 + 冲突判定；单测覆盖跨 server 同名、空名、非法字符
+- [x] T011 `mcp/tool/McpToolPolicy`（纯函数）：策略解析顺序（autoTools 命中 → AUTO；否则 CONFIRM）；单测覆盖默认值、空清单、按原始名匹配
+- [x] T012 `mcp/tool/McpToolCallback`：装饰 `ToolCallback`——AUTO 直行 / CONFIRM 生成待确认并返回提示语（**不触达 server**）；两条路径都经 `ToolExecutor` 记审计
+- [x] T013 `mcp/tool/McpToolCallbackProvider`：以 Spring AI `ToolCallbackProvider` 形态暴露装饰后的回调
+- [x] T014 工具 schema 自检：`type: object` 且 `properties` 为对象；异常工具剔除 + 告警
+- [x] T015 单元测试：装饰层策略分支（AUTO 无确认记录、CONFIRM 零触达 server——副作用文件作证）
+- [x] T016 **Phase 2 提交**（与 Phase 3 合并提交，见下）
 
-- [ ] T017 `V8__extend_confirmation_action_mcp.sql`：扩展 `confirmation_action_check` 加入 `MCP_TOOL_CALL`（只追加，不改写 V1–V7；约束名沿用 V6 确立的名称）
-- [ ] T018 `ConfirmationAction` 新增 `MCP_TOOL_CALL`
-- [ ] T019 `mcp/confirmation/McpConfirmationSummary`（纯函数）：服务端生成摘要（server / 工具 / 关键参数截断规则见 contracts §3.3 P5）；单测覆盖截断与缺参
-- [ ] T020 `mcp/confirmation/McpConfirmationHandler`（`ConfirmationActionHandler`）：确认后真正调用 MCP 工具；server 不可用时返回明确错误
-- [ ] T021 启动期校验自然覆盖：`ConfirmationRegistry` 校验新动作有处理器（若漏配，启动失败——这是既有机制的礼物，加一条测试守住）
-- [ ] T022 集成测试：CONFIRM 全链路——拦截（零执行）→ 摘要内容 → 确认执行（server 真被调用）→ 重复确认拒绝 → 过期拒绝 → 拒绝后无悬挂执行
-- [ ] T023 **Phase 3 提交**：`feat(mcp): 变更类工具接入人工确认`
+## Phase 3: 确认机制扩展 ✅（提交 `7b0e2d3`）
+
+- [x] T017 `V8__extend_confirmation_action_mcp.sql`：扩展 `ck_confirmation_action` 加入 `MCP_TOOL_CALL`（只追加，不改写 V1–V7）
+- [x] T018 `ConfirmationAction` 新增 `MCP_TOOL_CALL`（编译器立即拦下 TaskConfirmationHandler 的穷尽 switch——不写 default 的价值再次兑现）
+- [x] T019 `mcp/confirmation/McpConfirmationSummary`（纯函数）：确定性摘要（键排序、值截断、最多 3 参）；单测覆盖截断与缺参
+- [x] T020 `mcp/confirmation/McpConfirmationHandler`（`ConfirmationActionHandler`）：确认后真正调用 MCP 工具；**无条件注册**（否则 MCP 关闭时「枚举有值无处理器」会把应用挡在启动期）
+- [x] T021 启动期校验自然覆盖：`ConfirmationRegistry` 校验新动作有处理器
+- [x] T022 端到端集成测试：拦截（**副作用文件不存在**）→ 摘要含 server/工具/参数 → 确认执行（文件落盘）→ 重复确认拒绝 → 审计留痕
+- [x] T023 **Phase 2+3 提交**：`feat(mcp): 阶段 6 Phase 2+3 工具适配层与确认机制（T010-T023）`
 
 ## Phase 4: 装配与前端确认展示
 

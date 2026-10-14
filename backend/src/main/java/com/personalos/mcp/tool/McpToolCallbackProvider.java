@@ -1,0 +1,106 @@
+package com.personalos.mcp.tool;
+
+import com.personalos.common.ai.tool.ToolExecutor;
+import com.personalos.common.json.JsonCodec;
+import com.personalos.mcp.config.McpProperties;
+import com.personalos.mcp.confirmation.McpConfirmationService;
+import io.modelcontextprotocol.client.McpSyncClient;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.tool.definition.ToolDefinition;
+
+/**
+ * 把已连接的 MCP server 的工具包装成 Spring AI 的 {@link ToolCallbackProvider}。
+ *
+ * <p>每个工具的转换链：SDK 的 {@link SyncMcpToolCallbackProvider}（MCP 协议 → ToolCallback）
+ * → 我们的 {@link McpToolCallback} 装饰（命名 / 策略 / 审计 / 确认）。
+ * 前缀由装饰层负责，故这里用**不带**前缀生成器的构造——命名只有一处真相。
+ *
+ * <p>schema 自检（spec Edge Cases）：server 声明的工具缺 {@code type: object} 或
+ * {@code properties} 不是对象时，该工具剔除并告警，不把坏工具暴露给模型。
+ */
+public class McpToolCallbackProvider implements ToolCallbackProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(McpToolCallbackProvider.class);
+
+    private final List<McpToolCallback> callbacks;
+
+    private McpToolCallbackProvider(List<McpToolCallback> callbacks) {
+        this.callbacks = List.copyOf(callbacks);
+    }
+
+    /**
+     * 从已连接的客户端构建工具提供者。
+     *
+     * @param clients            已连接的 MCP 客户端（来自 {@code McpClientRegistry}，只含可用的）
+     * @param properties         配置（autoTools 策略清单来源）
+     * @param toolExecutor       幂等 + 审计外壳
+     * @param confirmationService 变更类工具的确认申请入口
+     * @param jsonCodec          JSON 编解码（schema 自检用）
+     */
+    public static McpToolCallbackProvider create(Map<String, McpSyncClient> clients,
+                                                 McpProperties properties,
+                                                 ToolExecutor toolExecutor,
+                                                 McpConfirmationService confirmationService,
+                                                 JsonCodec jsonCodec) {
+        List<McpToolCallback> wrapped = new ArrayList<>();
+        for (Map.Entry<String, McpSyncClient> entry : clients.entrySet()) {
+            String serverName = entry.getKey();
+            McpProperties.ServerConfig config = properties.servers().get(serverName);
+            Set<String> autoTools = config == null ? Set.of() : config.autoTools();
+
+            for (ToolCallback raw : new SyncMcpToolCallbackProvider(entry.getValue()).getToolCallbacks()) {
+                String originalName = raw.getToolDefinition().name();
+                if (!hasUsableSchema(raw.getToolDefinition(), jsonCodec)) {
+                    log.warn("MCP 工具 schema 异常，已剔除：server={}, tool={}", serverName, originalName);
+                    continue;
+                }
+                McpToolPolicy policy = McpToolPolicy.resolve(originalName, autoTools);
+                wrapped.add(new McpToolCallback(raw, serverName, originalName, policy,
+                        toolExecutor, confirmationService, jsonCodec));
+                log.info("MCP 工具已装配：{}（策略 {}）",
+                        McpToolNaming.prefixedName(serverName, originalName), policy);
+            }
+        }
+        return new McpToolCallbackProvider(wrapped);
+    }
+
+    /** 供启动期冲突校验使用：全部装配名（已加前缀） */
+    public List<String> toolNames() {
+        return callbacks.stream().map(McpToolCallback::assembledName).toList();
+    }
+
+    @Override
+    public ToolCallback[] getToolCallbacks() {
+        return callbacks.toArray(new ToolCallback[0]);
+    }
+
+    /**
+     * 最小 schema 检查：是 JSON 对象、{@code type} 为 {@code object}、{@code properties} 是对象。
+     *
+     * <p>刻意薄：深度校验 schema 是 server 的职责，我们只保证「不把明显坏的声明交给模型」。
+     */
+    @SuppressWarnings("unchecked")
+    private static boolean hasUsableSchema(ToolDefinition definition, JsonCodec jsonCodec) {
+        String schema = definition.inputSchema();
+        if (schema == null || schema.isBlank()) {
+            return false;
+        }
+        try {
+            Map<String, Object> parsed = jsonCodec.fromJson(schema, Map.class);
+            if (parsed == null || !"object".equals(parsed.get("type"))) {
+                return false;
+            }
+            return parsed.get("properties") instanceof Map<?, ?>;
+        } catch (RuntimeException ex) {
+            return false;
+        }
+    }
+}

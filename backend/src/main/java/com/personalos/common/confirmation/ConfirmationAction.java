@@ -18,5 +18,14 @@ public enum ConfirmationAction {
     /** 修改任务优先级 */
     SET_PRIORITY,
     /** 删除日程（可含批量） */
-    DELETE_CALENDAR_EVENT
+    DELETE_CALENDAR_EVENT,
+    /**
+     * 调用外部 MCP server 的变更类工具（阶段 6）。
+     *
+     * <p>具体是哪个 server 的哪个工具在 payload 里——MCP 工具名是运行期动态的，
+     * 用通用动作桥接动态内容与静态枚举（research.md R-05）。
+     * 处理器：{@code mcp} 模块的 {@code McpConfirmationHandler}（无条件注册：
+     * MCP 关闭时也不能让「枚举有值但无处理器」把应用挡在启动期）。
+     */
+    MCP_TOOL_CALL
 }

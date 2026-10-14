@@ -44,11 +44,11 @@ class McpClientRegistryIntegrationTest {
 
     private List<String> spawnHelperArgs(Path marker) {
         return List.of("-cp", System.getProperty("java.class.path"),
-                TestMcpServerMain.class.getName(), marker.toString());
+                TestMcpServerMain.class.getName(), marker.toString(), tempDir.resolve("journal.txt").toString());
     }
 
     @Test
-    @DisplayName("连接成功：列举工具（echo + ping 共 2 个）、调用 echo 返回真实结果")
+    @DisplayName("连接成功：列举工具（echo + ping + record 共 3 个）、调用 echo 返回真实结果")
     void connectsListsToolsAndCalls() {
         Path marker = tempDir.resolve("closed.marker");
         McpProperties properties = properties("test", JAVA, spawnHelperArgs(marker), Duration.ofSeconds(15));
@@ -59,7 +59,7 @@ class McpClientRegistryIntegrationTest {
         McpServerStatus status = registry.statuses().get("test");
         assertThat(status).isNotNull();
         assertThat(status.available()).isTrue();
-        assertThat(status.toolCount()).isEqualTo(2);
+        assertThat(status.toolCount()).isEqualTo(3);
         assertThat(registry.isAvailable("test")).isTrue();
 
         McpSchema.CallToolResult result = registry.clients().get("test").callTool(

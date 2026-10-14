@@ -1,0 +1,199 @@
+package com.personalos.mcp;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.personalos.common.api.ErrorCode;
+import com.personalos.common.ai.tool.ToolExecutor;
+import com.personalos.common.confirmation.ConfirmationDto;
+import com.personalos.common.confirmation.ConfirmationRepository;
+import com.personalos.common.confirmation.ConfirmationService;
+import com.personalos.common.confirmation.ConfirmationStatus;
+import com.personalos.common.exception.BusinessException;
+import com.personalos.common.idempotency.OperationRecordEntity;
+import com.personalos.common.idempotency.OperationRecordRepository;
+import com.personalos.common.json.JsonCodec;
+import com.personalos.mcp.client.McpClientRegistry;
+import com.personalos.mcp.config.McpProperties;
+import com.personalos.mcp.confirmation.McpConfirmationService;
+import com.personalos.mcp.tool.McpToolCallback;
+import com.personalos.mcp.tool.McpToolCallbackProvider;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
+
+/**
+ * MCP 策略 + 确认链路的端到端集成测试。
+ *
+ * <p><b>链路全部是真的</b>：应用按真实配置装配（{@code mcp.enabled=true} + server 配置经
+ * {@code @DynamicPropertySource} 注入），registry 是容器里的那个 bean——与
+ * {@code McpConfirmationHandler} 执行时取到的是**同一个实例**。工具走真实的
+ * stdio 子进程 server（{@link TestMcpServerMain}）与真实的
+ * {@code SyncMcpToolCallbackProvider} 协议转换；确认走真实的两阶段机制（Testcontainers 上的
+ * {@code ConfirmationService}：CAS 占位 / 令牌 / 单次性）。
+ *
+ * <p><b>断言落在可观测的副作用上</b>：CONFIRM 工具（{@code record}）拦截时日志文件不得出现，
+ * 用户确认后才出现——「没执行」不是读代码看出来的，是文件系统作证。
+ */
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "mcp.enabled=true")
+@Testcontainers
+class McpConfirmationIntegrationTest {
+
+    @Container
+    @ServiceConnection
+    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
+
+    private static final String JAVA = System.getProperty("java.home") + "/bin/java";
+
+    /** surefire 的工作目录是 backend/，因此这些文件落在 target/ 下（已被 git 忽略） */
+    private static final Path WORK_DIR = Path.of("target", "mcp-it");
+    private static final Path MARKER = WORK_DIR.resolve("closed.marker");
+    private static final Path JOURNAL = WORK_DIR.resolve("journal.txt");
+
+    @DynamicPropertySource
+    static void mcpServerProperties(DynamicPropertyRegistry registry) throws Exception {
+        // 目录必须先存在：子进程在上下文启动时就拉起了，晚于此处的 @BeforeEach 来不及
+        Files.createDirectories(WORK_DIR);
+        String classpath = System.getProperty("java.class.path");
+        if (classpath.contains(",")) {
+            // args 是逗号分隔的字符串属性；类路径里出现逗号会让参数被拆错。
+            // 刻意响亮失败：这种环境下应当改用别的方式注入参数，而不是让它静默跑歪。
+            throw new IllegalStateException("测试类路径含逗号，无法用逗号分隔的属性注入 args");
+        }
+        registry.add("mcp.servers.test.command", () -> JAVA);
+        registry.add("mcp.servers.test.args", () -> String.join(",", List.of(
+                "-cp", classpath,
+                TestMcpServerMain.class.getName(),
+                MARKER.toString(), JOURNAL.toString())));
+        registry.add("mcp.servers.test.auto-tools", () -> "echo,ping");
+    }
+
+    @Autowired
+    private McpClientRegistry registry;
+
+    @Autowired
+    private McpProperties mcpProperties;
+
+    @Autowired
+    private ToolExecutor toolExecutor;
+
+    @Autowired
+    private ConfirmationService confirmationService;
+
+    @Autowired
+    private ConfirmationRepository confirmationRepository;
+
+    @Autowired
+    private OperationRecordRepository operationRecordRepository;
+
+    @Autowired
+    private JsonCodec jsonCodec;
+
+    @BeforeEach
+    void cleanState() throws Exception {
+        confirmationRepository.deleteAll();
+        operationRecordRepository.deleteAll();
+        Files.deleteIfExists(JOURNAL);
+        Files.deleteIfExists(MARKER);
+    }
+
+    private McpToolCallbackProvider provider() {
+        return McpToolCallbackProvider.create(registry.clients(), mcpProperties,
+                toolExecutor, new McpConfirmationService(confirmationService), jsonCodec);
+    }
+
+    private ToolCallback find(McpToolCallbackProvider provider, String assembledName) {
+        for (ToolCallback callback : provider.getToolCallbacks()) {
+            if (callback.getToolDefinition().name().equals(assembledName)) {
+                return callback;
+            }
+        }
+        throw new IllegalStateException("provider 里没有工具：" + assembledName);
+    }
+
+    @Test
+    @DisplayName("CONFIRM 全链路：拦截不执行 → 确认后才真正调用 → 副作用落盘 → 重复确认被拒")
+    void confirmToolCallRunsFullChain() throws Exception {
+        assertThat(registry.isAvailable("test")).isTrue();
+        McpToolCallbackProvider provider = provider();
+        ToolCallback record = find(provider, "mcp_test_record");
+
+        // 1) 调用即拦截：不触达 server
+        String intercepted = record.call("{\"text\":\"first\"}", null);
+        assertThat(intercepted).contains("REQUIRES_CONFIRMATION");
+        assertThat(Files.exists(JOURNAL))
+                .as("拦截阶段不得触达 server——副作用文件不应出现")
+                .isFalse();
+
+        // 2) 待确认记录：摘要有 server 与工具名（用户在点确认前必须知道是什么操作）
+        ConfirmationDto pending = confirmationService.list(null, ConfirmationStatus.PENDING).stream()
+                .filter(c -> "MCP_TOOL_CALL".equals(c.action()))
+                .findFirst()
+                .orElseThrow();
+        assertThat(pending.summary())
+                .contains("server=test").contains("工具=record").contains("text=first");
+
+        // 3) 确认 → 真正执行 → 副作用落盘
+        var execution = confirmationService.confirm(pending.id(), pending.token());
+        assertThat(execution.executed()).isTrue();
+        assertThat(Files.readString(JOURNAL).trim()).isEqualTo("recorded:first");
+
+        // 4) 重复确认被拒（单次性）
+        assertThatThrownBy(() -> confirmationService.confirm(pending.id(), pending.token()))
+                .isInstanceOf(BusinessException.class)
+                .extracting(ex -> ((BusinessException) ex).getErrorCode())
+                .isEqualTo(ErrorCode.CONFIRMATION_NOT_ACTIVE);
+
+        // 5) 审计：工具名带 mcp_ 前缀可区分来源；拦截与执行都留痕
+        List<OperationRecordEntity> records = operationRecordRepository.findAll().stream()
+                .filter(r -> r.getOperation().startsWith("mcp_test_record"))
+                .toList();
+        assertThat(records).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("AUTO 全链路：直接执行不弹确认，结果进入信封，零待确认记录")
+    void autoToolExecutesDirectly() {
+        McpToolCallbackProvider provider = provider();
+
+        String result = find(provider, "mcp_test_echo").call("{\"text\":\"hello\"}", null);
+
+        assertThat(result).contains("echo:hello").doesNotContain("REQUIRES_CONFIRMATION");
+        assertThat(confirmationService.list(null, ConfirmationStatus.PENDING)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("server 侧错误：转成可读错误结果且保留原始原因（审计能区分挂了还是参数不对）")
+    void serverErrorSurfacesReadableMessage() {
+        McpToolCallbackProvider provider = provider();
+
+        // 缺 required 参数 text：server 报参数错误
+        String result = find(provider, "mcp_test_echo").call("{}", null);
+
+        assertThat(result).contains("ERROR").contains("MCP server 执行失败");
+    }
+
+    @Test
+    @DisplayName("装配：三个工具全部就位，record 未列入 autoTools 故走 CONFIRM")
+    void toolNamesAndPoliciesAssembled() {
+        McpToolCallbackProvider provider = provider();
+
+        assertThat(provider.toolNames())
+                .containsExactlyInAnyOrder("mcp_test_echo", "mcp_test_ping", "mcp_test_record");
+        assertThat(((McpToolCallback) find(provider, "mcp_test_record")).assembledName())
+                .isEqualTo("mcp_test_record");
+    }
+}

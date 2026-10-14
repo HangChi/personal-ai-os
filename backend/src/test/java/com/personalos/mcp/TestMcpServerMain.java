@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -25,12 +26,19 @@ import java.util.concurrent.CountDownLatch;
  * 客户端走的就是**生产同一条路径**（进程派生 + stdio 帧），fidelity 最高。
  * SDK 2.0.0 没有 in-memory 传输（spec research.md R-08 已实测）。
  *
- * <p><b>用法</b>：{@code java -cp <测试类路径> com.personalos.mcp.TestMcpServerMain <标记文件路径>}。
+ * <p><b>用法</b>：{@code java -cp <测试类路径> com.personalos.mcp.TestMcpServerMain
+ * <标记文件路径> <日志文件路径>}。
  * 客户端断开（stdin EOF）后主线程主动退出；关闭标记文件由 shutdown hook 写入——
  * 测试据此断言「server 进程真的退了」，而不是假设它礼貌。
  *
- * <p>工具清单刻意小而准：{@code echo}（回显，验参数）、{@code ping}（无参，验最简形态）。
- * 后续阶段的策略 / 审计 / 确认测试都基于这两个工具展开。
+ * <p>工具清单刻意覆盖三种形态：
+ * <ul>
+ *   <li>{@code echo}：回显输入（验参数传递，AUTO 策略用）；</li>
+ *   <li>{@code ping}：无参最简形态（验 schema 自检不误伤）；</li>
+ *   <li>{@code record}：把文本**追加写入日志文件**——有可观测的副作用，
+ *       确认链路的断言落在真实效果上（CONFIRM 策略用：拦截时文件不出现，
+ *       确认后才出现）。</li>
+ * </ul>
  */
 public final class TestMcpServerMain {
 
@@ -39,6 +47,7 @@ public final class TestMcpServerMain {
 
     public static void main(String[] args) throws Exception {
         Path marker = Path.of(args[0]);
+        Path journal = Path.of(args[1]);
         CountDownLatch stdinClosed = new CountDownLatch(1);
 
         // stdio 协议的 stdout 只准承载 JSON-RPC 帧。
@@ -93,6 +102,27 @@ public final class TestMcpServerMain {
                         (exchange, request) -> McpSchema.CallToolResult.builder()
                                 .textContent(List.of("pong"))
                                 .build())
+                .toolCall(McpSchema.Tool.builder()
+                                .name("record")
+                                .description("把文本追加写入日志文件（有副作用，用于验证确认链路）")
+                                .inputSchema(Map.of(
+                                        "type", "object",
+                                        "properties", Map.of("text", Map.of("type", "string")),
+                                        "required", List.of("text")))
+                                .build(),
+                        (exchange, request) -> {
+                            try {
+                                Files.writeString(journal, "recorded:" + request.arguments().get("text") + "\n",
+                                        StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                            } catch (IOException ex) {
+                                // 工具处理器不允许抛受检异常；转成运行时异常，
+                                // SDK 会把它作为工具错误返回给客户端（也是真实 server 的常见形态）
+                                throw new IllegalStateException("写入日志文件失败", ex);
+                            }
+                            return McpSchema.CallToolResult.builder()
+                                    .textContent(List.of("recorded"))
+                                    .build();
+                        })
                 .build();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
