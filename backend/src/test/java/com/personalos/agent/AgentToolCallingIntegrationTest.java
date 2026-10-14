@@ -2,12 +2,12 @@ package com.personalos.agent;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.personalos.agent.confirmation.ConfirmationAction;
-import com.personalos.agent.confirmation.ConfirmationExecution;
-import com.personalos.agent.confirmation.ConfirmationService;
-import com.personalos.agent.confirmation.ConfirmationStatus;
-import com.personalos.agent.confirmation.TaskConfirmationEntity;
-import com.personalos.agent.confirmation.TaskConfirmationRepository;
+import com.personalos.common.confirmation.ConfirmationAction;
+import com.personalos.common.confirmation.ConfirmationEntity;
+import com.personalos.common.confirmation.ConfirmationExecution;
+import com.personalos.common.confirmation.ConfirmationRepository;
+import com.personalos.common.confirmation.ConfirmationService;
+import com.personalos.common.confirmation.ConfirmationStatus;
 import com.personalos.agent.tool.TaskTools;
 import com.personalos.common.ai.ToolContributor;
 import com.personalos.common.idempotency.IdempotencyOutcome;
@@ -75,7 +75,7 @@ class AgentToolCallingIntegrationTest {
     private final HttpTestClient http;
     private final ScriptedToolCallingChatModel model;
     private final TaskRepository taskRepository;
-    private final TaskConfirmationRepository confirmationRepository;
+    private final ConfirmationRepository confirmationRepository;
     private final OperationRecordRepository operationRecordRepository;
     private final TaskService taskService;
     private final ConfirmationService confirmationService;
@@ -86,7 +86,7 @@ class AgentToolCallingIntegrationTest {
     AgentToolCallingIntegrationTest(@Value("${local.server.port}") int port,
                                     ScriptedToolCallingChatModel model,
                                     TaskRepository taskRepository,
-                                    TaskConfirmationRepository confirmationRepository,
+                                    ConfirmationRepository confirmationRepository,
                                     OperationRecordRepository operationRecordRepository,
                                     TaskService taskService,
                                     ConfirmationService confirmationService,
@@ -148,7 +148,7 @@ class AgentToolCallingIntegrationTest {
         assertThat(taskRepository.existsById(task.id())).isTrue();
         assertThat(taskRepository.count()).isEqualTo(1);
 
-        List<TaskConfirmationEntity> pending =
+        List<ConfirmationEntity> pending =
                 confirmationRepository.findByStatusOrderByCreatedAtDesc(ConfirmationStatus.PENDING);
         assertThat(pending).hasSize(1);
         assertThat(pending.get(0).getAction()).isEqualTo(ConfirmationAction.DELETE_TASK);
@@ -184,7 +184,7 @@ class AgentToolCallingIntegrationTest {
 
         assertThat(taskRepository.findById(task.id()).orElseThrow().getPriority()).isEqualTo(TaskPriority.LOW);
 
-        TaskConfirmationEntity confirmation =
+        ConfirmationEntity confirmation =
                 confirmationRepository.findByStatusOrderByCreatedAtDesc(ConfirmationStatus.PENDING).get(0);
         assertThat(confirmation.getAction()).isEqualTo(ConfirmationAction.SET_PRIORITY);
 

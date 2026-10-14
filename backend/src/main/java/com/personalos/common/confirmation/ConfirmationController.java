@@ -1,4 +1,4 @@
-package com.personalos.agent.confirmation;
+package com.personalos.common.confirmation;
 
 import com.personalos.common.api.ApiResponse;
 import jakarta.validation.Valid;
@@ -32,7 +32,7 @@ public class ConfirmationController {
      * 列出待确认操作。
      */
     @GetMapping
-    public ApiResponse<List<TaskConfirmationDto>> list(
+    public ApiResponse<List<ConfirmationDto>> list(
             @RequestParam(required = false) String conversationId,
             @RequestParam(required = false) ConfirmationStatus status) {
         return ApiResponse.ok(confirmationService.list(conversationId, status));

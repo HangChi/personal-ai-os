@@ -1,4 +1,4 @@
-package com.personalos.agent.confirmation;
+package com.personalos.common.confirmation;
 
 /**
  * 待确认操作的状态。

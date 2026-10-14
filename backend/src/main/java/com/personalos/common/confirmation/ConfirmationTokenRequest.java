@@ -1,4 +1,4 @@
-package com.personalos.agent.confirmation;
+package com.personalos.common.confirmation;
 
 import jakarta.validation.constraints.NotBlank;
 

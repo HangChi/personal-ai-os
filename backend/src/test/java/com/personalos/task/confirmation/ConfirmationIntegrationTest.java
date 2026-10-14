@@ -1,14 +1,14 @@
-package com.personalos.agent;
+package com.personalos.task.confirmation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.personalos.agent.confirmation.ConfirmationAction;
-import com.personalos.agent.confirmation.ConfirmationExecution;
-import com.personalos.agent.confirmation.ConfirmationService;
-import com.personalos.agent.confirmation.ConfirmationStatus;
-import com.personalos.agent.confirmation.TaskConfirmationEntity;
-import com.personalos.agent.confirmation.TaskConfirmationRepository;
+import com.personalos.common.confirmation.ConfirmationAction;
+import com.personalos.common.confirmation.ConfirmationEntity;
+import com.personalos.common.confirmation.ConfirmationExecution;
+import com.personalos.common.confirmation.ConfirmationRepository;
+import com.personalos.common.confirmation.ConfirmationService;
+import com.personalos.common.confirmation.ConfirmationStatus;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.task.dto.CreateTaskRequest;
@@ -46,9 +46,9 @@ class ConfirmationIntegrationTest {
     @Autowired
     ConfirmationService confirmationService;
     @Autowired
-    ConfirmationService secondConfirmationService;
+    TaskConfirmationService taskConfirmationService;
     @Autowired
-    TaskConfirmationRepository confirmationRepository;
+    ConfirmationRepository confirmationRepository;
     @Autowired
     TaskService taskService;
     @Autowired
@@ -64,7 +64,7 @@ class ConfirmationIntegrationTest {
     @DisplayName("令牌不匹配 → 拒绝，且目标数据不受影响")
     void wrongTokenIsRejected() {
         TaskDto task = taskService.create(new CreateTaskRequest("受保护的任务", null, null, null));
-        var confirmation = confirmationService.requestDeleteTasks(
+        var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 
         assertThatThrownBy(() -> confirmationService.confirm(confirmation.id(), "wrong-token"))
@@ -80,7 +80,7 @@ class ConfirmationIntegrationTest {
     @DisplayName("单次性：确认后再确认 → 拒绝，且不会二次执行")
     void confirmationIsSingleUse() {
         TaskDto task = taskService.create(new CreateTaskRequest("只删一次", null, null, null));
-        var confirmation = confirmationService.requestDeleteTasks(
+        var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 
         ConfirmationExecution first = confirmationService.confirm(confirmation.id(), confirmation.token());
@@ -95,7 +95,7 @@ class ConfirmationIntegrationTest {
     @Test
     @DisplayName("过期 → 拒绝，并把记录置为已过期（SC-008）")
     void expiredConfirmationIsRejected() {
-        TaskConfirmationEntity expired = confirmationRepository.save(new TaskConfirmationEntity(
+        ConfirmationEntity expired = confirmationRepository.save(new ConfirmationEntity(
                 "expired-token", "conv-1", ConfirmationAction.DELETE_TASK, "过期测试",
                 "{\"taskIds\":[],\"titles\":[]}", 1,
                 Instant.now().minusSeconds(1800), Instant.now().minusSeconds(60)));
@@ -113,7 +113,7 @@ class ConfirmationIntegrationTest {
     @DisplayName("取消之后不可再确认")
     void cancelledConfirmationCannotBeConfirmed() {
         TaskDto task = taskService.create(new CreateTaskRequest("先取消", null, null, null));
-        var confirmation = confirmationService.requestDeleteTasks(
+        var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 
         confirmationService.cancel(confirmation.id(), confirmation.token());
@@ -129,7 +129,7 @@ class ConfirmationIntegrationTest {
     @DisplayName("确认时目标已被删除 → 优雅返回，不报 500，记录置为已取消")
     void missingTargetIsHandledGracefully() {
         TaskDto task = taskService.create(new CreateTaskRequest("稍后会被删掉", null, null, null));
-        var confirmation = confirmationService.requestDeleteTasks(
+        var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 
         // 模拟：确认之前目标已经不在了
@@ -152,9 +152,9 @@ class ConfirmationIntegrationTest {
                 "关键字段任务", null, TaskPriority.LOW, null));
         Instant newDueAt = Instant.parse("2026-12-01T09:00:00Z");
 
-        var scheduleConfirmation = confirmationService.requestScheduleTask(
+        var scheduleConfirmation = taskConfirmationService.requestScheduleTask(
                 task.id(), task.title(), newDueAt, "conv-1");
-        var priorityConfirmation = confirmationService.requestSetPriority(
+        var priorityConfirmation = taskConfirmationService.requestSetPriority(
                 task.id(), task.title(), TaskPriority.HIGH, "conv-1");
 
         // 确认前：两项都没变
@@ -174,8 +174,8 @@ class ConfirmationIntegrationTest {
     @DisplayName("待确认列表：可按会话过滤，且 summary 由服务端生成（含目标标题）")
     void listFiltersByConversationAndStatus() {
         TaskDto task = taskService.create(new CreateTaskRequest("列表演示", null, null, null));
-        confirmationService.requestDeleteTasks(List.of(task.id()), List.of(task.title()), "conv-A");
-        confirmationService.requestDeleteTasks(List.of(task.id()), List.of(task.title()), "conv-B");
+        taskConfirmationService.requestDeleteTasks(List.of(task.id()), List.of(task.title()), "conv-A");
+        taskConfirmationService.requestDeleteTasks(List.of(task.id()), List.of(task.title()), "conv-B");
 
         assertThat(confirmationService.list("conv-A", ConfirmationStatus.PENDING)).hasSize(1);
         assertThat(confirmationService.list(null, ConfirmationStatus.PENDING)).hasSize(2);
@@ -194,13 +194,13 @@ class ConfirmationIntegrationTest {
     @DisplayName("并发确认同一记录：只有一个能进入执行（compare-and-set）")
     void onlyOneConcurrentConfirmWins() {
         TaskDto task = taskService.create(new CreateTaskRequest("并发确认", null, null, null));
-        var confirmation = confirmationService.requestDeleteTasks(
+        var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 
         // 先手工把状态改成已确认，模拟「另一个请求已经赢了」。
         // 用实体持久化而不是 @Modifying 的 compareAndSetStatus —— 后者要求调用方自带事务，
         // 而这里只是想造出一个「已被处理」的状态。
-        TaskConfirmationEntity alreadyResolved = confirmationRepository.findById(confirmation.id()).orElseThrow();
+        ConfirmationEntity alreadyResolved = confirmationRepository.findById(confirmation.id()).orElseThrow();
         alreadyResolved.markResolved(ConfirmationStatus.CONFIRMED, Instant.now());
         confirmationRepository.save(alreadyResolved);
 

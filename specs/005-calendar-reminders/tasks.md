@@ -14,10 +14,10 @@ description: "Task list for 阶段 4 — 日程与定时提醒"
 > ⚠️ 这一步改动**已在跑**的阶段 2 代码。完成后阶段 2 的 21 个测试必须**仍然全绿**；
 > 若行为发生变化，属于回归，必须修代码而不是改测试。
 
-- [ ] T001 `ConfirmationActionHandler` SPI（`supports(action)` + `execute(payload)`）+ `ConfirmationRegistry`（按 action 路由，启动期校验每种取值都有处理器）
-- [ ] T002 `ConfirmationService` / 实体 / 仓储 / DTO / 控制器 从 `agent/confirmation` 迁到 `common/confirmation`，`applyPayload` 的 `switch` 改为委派给 registry
-- [ ] T003 阶段 2 的三个动作搬到 `task/confirmation/TaskConfirmationHandler`
-- [ ] T004 阶段 2 的确认测试（9 例）与 Agent 工具测试（12 例）保持全绿 —— 回归验证
+- [x] T001 `ConfirmationActionHandler` SPI（`supportedActions()` + `execute(action, payloadJson)`）+ `ConfirmationRegistry`（按 action 路由，**启动期校验**每种取值都有处理器、且无重复注册）
+- [x] T002 `ConfirmationService` / 实体 / 仓储 / DTO / 控制器 从 `agent/confirmation` 迁到 `common/confirmation`，`applyPayload` 的 `switch` 改为委派给 registry；表名 `task_confirmation` → `confirmation`（V5）
+- [x] T003 阶段 2 的三个动作搬到 `task/confirmation/{TaskConfirmationService, TaskConfirmationHandler, TaskConfirmationPayloads}`
+- [x] T004 阶段 2 的确认测试（9 例）与 Agent 工具测试（12 例）保持全绿 —— **回归验证通过：87 测试全绿**
 
 ## Phase 2: 表与领域
 
@@ -78,9 +78,24 @@ description: "Task list for 阶段 4 — 日程与定时提醒"
 
 ## 依赖关系
 
-- Phase 1（前置重构）**必须先做**：Phase 6 的日程删除确认依赖它
+- Phase 1（前置重构）**必须先做**：Phase 6 的日程删除确认依赖它 ✅ 已完成
 - Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8
 - Phase 3 可先于 Phase 2 完成（`RecurrenceCalculator` 是纯函数，不依赖数据库）
+
+## Phase 1 实施记录（已完成）
+
+| 项 | 结果 |
+|---|---|
+| 搬移范围 | 8 个文件迁到 `common/confirmation`，2 个业务文件落到 `task/confirmation` |
+| 新增 | `ConfirmationActionHandler`（SPI）、`ConfirmationRegistry`（路由 + 启动期校验） |
+| 迁移 | `V5` 重命名表与约束；`V6` 补上 V5 遗漏的主键约束改名 |
+| 回归 | `./mvnw -B verify` → **87 测试全绿，零回归** |
+| 真机 | `Migrating schema "public" to version "5/6"`；约束名全部为 `confirmation_*`；`待确认动作处理器注册完成：[DELETE_TASK, SCHEDULE_TASK, SET_PRIORITY]`；数据未受影响 |
+
+**偏差 K1-D1**：V5 只改表名与约束名，未同时改主键约束名（PostgreSQL 的
+`ALTER TABLE ... RENAME TO` 不连带重命名主键）。发现后**没有改写 V5** ——
+V5 已应用到本地开发库，改写会让校验和与 `flyway_schema_history` 不一致，应用下次启动会拒绝启动。
+改用 `V6` 追加修正。**纪律：已应用的迁移只追加，不改写。**
 
 ## 必须覆盖的测试用例（关键不变量）
 

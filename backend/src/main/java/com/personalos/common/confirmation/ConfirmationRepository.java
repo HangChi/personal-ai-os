@@ -1,4 +1,4 @@
-package com.personalos.agent.confirmation;
+package com.personalos.common.confirmation;
 
 import java.time.Instant;
 import java.util.List;
@@ -12,14 +12,14 @@ import org.springframework.data.repository.query.Param;
 /**
  * 待确认操作仓储。
  */
-public interface TaskConfirmationRepository extends JpaRepository<TaskConfirmationEntity, UUID> {
+public interface ConfirmationRepository extends JpaRepository<ConfirmationEntity, UUID> {
 
-    List<TaskConfirmationEntity> findByStatusOrderByCreatedAtDesc(ConfirmationStatus status);
+    List<ConfirmationEntity> findByStatusOrderByCreatedAtDesc(ConfirmationStatus status);
 
-    List<TaskConfirmationEntity> findByStatusAndConversationIdOrderByCreatedAtDesc(ConfirmationStatus status,
+    List<ConfirmationEntity> findByStatusAndConversationIdOrderByCreatedAtDesc(ConfirmationStatus status,
                                                                                   String conversationId);
 
-    Optional<TaskConfirmationEntity> findByIdAndStatus(UUID id, ConfirmationStatus status);
+    Optional<ConfirmationEntity> findByIdAndStatus(UUID id, ConfirmationStatus status);
 
     /**
      * 原子地把待确认记录从 {@code expected} 迁到 {@code newStatus}（compare-and-set）。
@@ -31,7 +31,7 @@ public interface TaskConfirmationRepository extends JpaRepository<TaskConfirmati
      * @return 受影响行数；0 表示状态已不是 {@code expected}
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("update TaskConfirmationEntity c set c.status = :newStatus, c.resolvedAt = :resolvedAt "
+    @Query("update ConfirmationEntity c set c.status = :newStatus, c.resolvedAt = :resolvedAt "
             + "where c.id = :id and c.status = :expected")
     int compareAndSetStatus(@Param("id") UUID id,
                             @Param("expected") ConfirmationStatus expected,

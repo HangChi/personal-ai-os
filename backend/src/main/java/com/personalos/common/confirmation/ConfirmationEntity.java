@@ -1,4 +1,4 @@
-package com.personalos.agent.confirmation;
+package com.personalos.common.confirmation;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,10 +16,14 @@ import java.util.UUID;
  *
  * <p>本实体是「模型不能自作主张」这条约束的落点：模型可以创建它，但**没有任何工具**能把它变成
  * {@link ConfirmationStatus#CONFIRMED} —— 那只能通过面向人类的接口。
+ *
+ * <p><b>为什么是通用的而不是任务专用</b>：确认机制（令牌 / 有效期 / 单次性 / 原子占位）
+ * 与具体业务无关。表名从 {@code task_confirmation} 改为 {@code confirmation}，
+ * 是因为它现在也承载日程删除等其它模块的高风险操作 —— 名字要跟得上事实。
  */
 @Entity
-@Table(name = "task_confirmation")
-public class TaskConfirmationEntity {
+@Table(name = "confirmation")
+public class ConfirmationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -62,12 +66,12 @@ public class TaskConfirmationEntity {
     private Instant resolvedAt;
 
     /** 供 JPA 使用 */
-    protected TaskConfirmationEntity() {
+    protected ConfirmationEntity() {
     }
 
-    public TaskConfirmationEntity(String token, String conversationId, ConfirmationAction action,
-                                  String summary, String payload, Integer affectedCount,
-                                  Instant createdAt, Instant expiresAt) {
+    public ConfirmationEntity(String token, String conversationId, ConfirmationAction action,
+                              String summary, String payload, Integer affectedCount,
+                              Instant createdAt, Instant expiresAt) {
         this.token = token;
         this.conversationId = conversationId;
         this.action = action;

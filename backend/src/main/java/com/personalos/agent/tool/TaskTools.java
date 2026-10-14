@@ -1,12 +1,12 @@
 package com.personalos.agent.tool;
 
-import com.personalos.agent.confirmation.ConfirmationService;
-import com.personalos.agent.confirmation.TaskConfirmationDto;
 import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.ai.tool.ToolExecutionResult;
 import com.personalos.common.ai.tool.ToolExecutor;
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.confirmation.ConfirmationDto;
 import com.personalos.common.exception.BusinessException;
+import com.personalos.task.confirmation.TaskConfirmationService;
 import com.personalos.task.dto.CreateTaskRequest;
 import com.personalos.task.dto.TaskDto;
 import com.personalos.task.dto.TaskQuery;
@@ -44,9 +44,9 @@ public class TaskTools {
 
     private final ToolExecutor toolExecutor;
     private final TaskService taskService;
-    private final ConfirmationService confirmationService;
+    private final TaskConfirmationService confirmationService;
 
-    public TaskTools(ToolExecutor toolExecutor, TaskService taskService, ConfirmationService confirmationService) {
+    public TaskTools(ToolExecutor toolExecutor, TaskService taskService, TaskConfirmationService confirmationService) {
         this.toolExecutor = toolExecutor;
         this.taskService = taskService;
         this.confirmationService = confirmationService;
@@ -196,7 +196,7 @@ public class TaskTools {
             if (found.isEmpty()) {
                 return ToolExecutionResult.rejected("指定的任务都不存在，未生成确认事项");
             }
-            TaskConfirmationDto confirmation = confirmationService.requestDeleteTasks(
+            ConfirmationDto confirmation = confirmationService.requestDeleteTasks(
                     found.stream().map(TaskDto::id).toList(),
                     found.stream().map(TaskDto::title).toList(),
                     conversationId(toolContext));
@@ -224,7 +224,7 @@ public class TaskTools {
         return toolExecutor.write("scheduleTask", arguments, toolContext, () -> {
             TaskDto task = taskService.get(ToolExecutor.parseUuid(taskId, "taskId"));
             Instant newDueAt = parseInstant(dueAt, "dueAt");
-            TaskConfirmationDto confirmation = confirmationService.requestScheduleTask(
+            ConfirmationDto confirmation = confirmationService.requestScheduleTask(
                     task.id(), task.title(), newDueAt, conversationId(toolContext));
             return ToolExecutionResult.requiresConfirmation(
                     "修改截止时间需要你确认。已生成待确认事项：" + confirmation.summary()
@@ -249,7 +249,7 @@ public class TaskTools {
         return toolExecutor.write("setTaskPriority", arguments, toolContext, () -> {
             TaskPriority newPriority = parsePriority(priority, true);
             TaskDto task = taskService.get(ToolExecutor.parseUuid(taskId, "taskId"));
-            TaskConfirmationDto confirmation = confirmationService.requestSetPriority(
+            ConfirmationDto confirmation = confirmationService.requestSetPriority(
                     task.id(), task.title(), newPriority, conversationId(toolContext));
             return ToolExecutionResult.requiresConfirmation(
                     "修改优先级需要你确认。已生成待确认事项：" + confirmation.summary()

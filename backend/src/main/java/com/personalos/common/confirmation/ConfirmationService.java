@@ -1,13 +1,9 @@
-package com.personalos.agent.confirmation;
+package com.personalos.common.confirmation;
 
-import com.personalos.agent.confirmation.ConfirmationPayloads.DeleteTasks;
-import com.personalos.agent.confirmation.ConfirmationPayloads.ScheduleTask;
-import com.personalos.agent.confirmation.ConfirmationPayloads.SetPriority;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.common.json.JsonCodec;
-import com.personalos.task.service.TaskService;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
@@ -20,12 +16,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 待确认操作的生命周期管理。
+ * 待确认操作的**通用**生命周期管理。
+ *
+ * <h2>本类与业务无关</h2>
+ * 它只负责四件与具体动作无关的事：令牌、有效期、单次性、原子占位。
+ * 「确认之后干什么」由 {@link ConfirmationRegistry} 路由到各业务模块的
+ * {@link ConfirmationActionHandler}，因此本类**不需要**知道任务、日程这些概念。
  *
  * <h2>安全模型</h2>
  * 本服务**不向模型暴露任何入口**。模型只能通过 Agent 工具创建待确认记录；
- * 而「确认」这个动作只存在于本服务与其控制器中，工具集合里没有对应能力（FR-013 / SC-003）。
- * 因此防线是**结构性的** —— 即使模型被提示注入说服，它也没有可调用的东西去完成删除。
+ * 而「确认」这个动作只存在于本服务与其控制器中，工具集合里没有对应能力。
+ * 因此防线是**结构性的** —— 即使模型被提示注入说服，它也没有可调用的东西去完成危险操作。
  *
  * <h2>为什么确认方法允许业务异常回滚</h2>
  * 过期分支需要把记录标记为 {@code EXPIRED} 后再抛错告知用户。若异常触发事务回滚，
@@ -38,72 +39,45 @@ public class ConfirmationService {
 
     private static final Logger log = LoggerFactory.getLogger(ConfirmationService.class);
 
-    /** 待确认操作的有效期（FR-011） */
+    /** 待确认操作的有效期 */
     private static final Duration VALIDITY = Duration.ofMinutes(10);
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private final TaskConfirmationRepository repository;
-    private final TaskService taskService;
+    private final ConfirmationRepository repository;
+    private final ConfirmationRegistry registry;
     private final JsonCodec jsonCodec;
 
-    public ConfirmationService(TaskConfirmationRepository repository,
-                               TaskService taskService,
+    public ConfirmationService(ConfirmationRepository repository,
+                               ConfirmationRegistry registry,
                                JsonCodec jsonCodec) {
         this.repository = repository;
-        this.taskService = taskService;
+        this.registry = registry;
         this.jsonCodec = jsonCodec;
     }
 
     // ------------------------------------------------------------------ 创建
 
     /**
-     * 创建「删除任务」的待确认操作。
+     * 创建一个待确认事项。
      *
-     * @param taskIds        目标任务
-     * @param titles         标题快照（任务删除后仍可审计删了什么）
+     * <p><b>summary 必须由服务端依据 payload 生成</b>，不采信模型输出的文本 ——
+     * 否则模型可以写一个「删除 1 个任务：不重要的临时文件」的描述，而 payload 里却是别的任务。
+     *
+     * @param action         动作类型
+     * @param summary        面向人类的可读描述（由调用方依据 payload 生成）
+     * @param payload        执行所需参数，会被序列化后原样回放
+     * @param affectedCount  预计影响行数，供用户判断风险
      * @param conversationId 发起会话，可空
      */
     @Transactional
-    public TaskConfirmationDto requestDeleteTasks(List<UUID> taskIds, List<String> titles, String conversationId) {
-        String summary = titles.size() == 1
-                ? "删除任务：" + titles.get(0)
-                : "删除 " + titles.size() + " 个任务：" + String.join("、", titles);
-        return create(ConfirmationAction.DELETE_TASK, summary, new DeleteTasks(taskIds, titles),
-                taskIds.size(), conversationId);
-    }
-
-    /**
-     * 创建「修改截止时间」的待确认操作。
-     */
-    @Transactional
-    public TaskConfirmationDto requestScheduleTask(UUID taskId, String title, Instant dueAt, String conversationId) {
-        String summary = dueAt == null
-                ? "清除任务「" + title + "」的截止时间"
-                : "把任务「" + title + "」的截止时间改为 " + dueAt;
-        return create(ConfirmationAction.SCHEDULE_TASK, summary, new ScheduleTask(taskId, title, dueAt),
-                1, conversationId);
-    }
-
-    /**
-     * 创建「修改优先级」的待确认操作。
-     */
-    @Transactional
-    public TaskConfirmationDto requestSetPriority(UUID taskId, String title,
-                                                  com.personalos.task.entity.TaskPriority priority,
-                                                  String conversationId) {
-        String summary = "把任务「" + title + "」的优先级改为 " + priority;
-        return create(ConfirmationAction.SET_PRIORITY, summary, new SetPriority(taskId, title, priority),
-                1, conversationId);
-    }
-
-    private TaskConfirmationDto create(ConfirmationAction action, String summary, Object payload,
-                                       int affectedCount, String conversationId) {
+    public ConfirmationDto create(ConfirmationAction action, String summary, Object payload,
+                                 int affectedCount, String conversationId) {
         Instant now = Instant.now();
-        TaskConfirmationEntity entity = new TaskConfirmationEntity(
+        ConfirmationEntity entity = new ConfirmationEntity(
                 randomToken(), conversationId, action, summary, jsonCodec.toJson(payload),
                 affectedCount, now, now.plus(VALIDITY));
-        TaskConfirmationEntity saved = repository.save(entity);
+        ConfirmationEntity saved = repository.save(entity);
         log.info("生成待确认操作 id={} action={} summary={}", saved.getId(), action, summary);
         return toDto(saved);
     }
@@ -111,9 +85,9 @@ public class ConfirmationService {
     // ------------------------------------------------------------------ 查询
 
     @Transactional(readOnly = true)
-    public List<TaskConfirmationDto> list(String conversationId, ConfirmationStatus status) {
+    public List<ConfirmationDto> list(String conversationId, ConfirmationStatus status) {
         ConfirmationStatus effectiveStatus = status == null ? ConfirmationStatus.PENDING : status;
-        List<TaskConfirmationEntity> found = (conversationId == null || conversationId.isBlank())
+        List<ConfirmationEntity> found = (conversationId == null || conversationId.isBlank())
                 ? repository.findByStatusOrderByCreatedAtDesc(effectiveStatus)
                 : repository.findByStatusAndConversationIdOrderByCreatedAtDesc(effectiveStatus, conversationId);
         return found.stream().map(this::toDto).toList();
@@ -124,14 +98,11 @@ public class ConfirmationService {
     /**
      * 确认并执行。
      *
-     * @param id    记录标识
-     * @param token 一次性令牌
-     * @return 执行结果
      * @throws BusinessException 令牌不匹配、状态非待确认、或已过期（code 40002）
      */
     @Transactional(noRollbackFor = BusinessException.class)
     public ConfirmationExecution confirm(UUID id, String token) {
-        TaskConfirmationEntity entity = requireEntity(id);
+        ConfirmationEntity entity = requireEntity(id);
         requireToken(entity, token);
 
         if (entity.getStatus() != ConfirmationStatus.PENDING) {
@@ -146,7 +117,9 @@ public class ConfirmationService {
             throw new BusinessException(ErrorCode.CONFIRMATION_NOT_ACTIVE, "该确认已过期，请重新发起");
         }
 
-        // 原子占位：并发确认时只有一个事务能更新到行
+        // 原子占位：并发确认时只有一个事务能更新到行。
+        // 必须与下面的实际执行处于同一事务，否则执行失败时无法整体回滚，
+        // 会留下「已确认但没执行」的矛盾状态。
         int claimed = repository.compareAndSetStatus(id, ConfirmationStatus.PENDING,
                 ConfirmationStatus.CONFIRMED, now);
         if (claimed == 0) {
@@ -154,7 +127,8 @@ public class ConfirmationService {
         }
 
         try {
-            int affected = applyPayload(entity);
+            int affected = registry.require(entity.getAction())
+                    .execute(entity.getAction(), entity.getPayload());
             log.info("已执行待确认操作 id={} action={} affected={}", id, entity.getAction(), affected);
             return new ConfirmationExecution(true, affected, "已执行：" + entity.getSummary());
         } catch (ResourceNotFoundException ex) {
@@ -171,7 +145,7 @@ public class ConfirmationService {
      */
     @Transactional
     public void cancel(UUID id, String token) {
-        TaskConfirmationEntity entity = requireEntity(id);
+        ConfirmationEntity entity = requireEntity(id);
         requireToken(entity, token);
 
         int updated = repository.compareAndSetStatus(id, ConfirmationStatus.PENDING,
@@ -184,37 +158,12 @@ public class ConfirmationService {
 
     // ------------------------------------------------------------------ 内部
 
-    private int applyPayload(TaskConfirmationEntity entity) {
-        return switch (entity.getAction()) {
-            case DELETE_TASK -> {
-                DeleteTasks payload = jsonCodec.fromJson(entity.getPayload(), DeleteTasks.class);
-                int affected = taskService.deleteAll(payload.taskIds());
-                if (affected == 0) {
-                    // 目标任务在确认之前已被删除：这不是「执行成功但没影响任何行」，
-                    // 而是「已经没有可执行的目标」。区分二者，用户才知道到底发生了什么
-                    throw new ResourceNotFoundException("目标任务已不存在");
-                }
-                yield affected;
-            }
-            case SCHEDULE_TASK -> {
-                ScheduleTask payload = jsonCodec.fromJson(entity.getPayload(), ScheduleTask.class);
-                taskService.reschedule(payload.taskId(), payload.dueAt());
-                yield 1;
-            }
-            case SET_PRIORITY -> {
-                SetPriority payload = jsonCodec.fromJson(entity.getPayload(), SetPriority.class);
-                taskService.changePriority(payload.taskId(), payload.priority());
-                yield 1;
-            }
-        };
-    }
-
-    private TaskConfirmationEntity requireEntity(UUID id) {
+    private ConfirmationEntity requireEntity(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("待确认操作不存在：" + id));
     }
 
-    private void requireToken(TaskConfirmationEntity entity, String token) {
+    private void requireToken(ConfirmationEntity entity, String token) {
         if (token == null || !entity.getToken().equals(token.strip())) {
             throw new BusinessException(ErrorCode.CONFIRMATION_NOT_ACTIVE, "确认令牌不匹配");
         }
@@ -235,8 +184,8 @@ public class ConfirmationService {
         return HexFormat.of().formatHex(bytes);
     }
 
-    private TaskConfirmationDto toDto(TaskConfirmationEntity entity) {
-        return new TaskConfirmationDto(entity.getId(), entity.getToken(), entity.getAction().name(),
+    private ConfirmationDto toDto(ConfirmationEntity entity) {
+        return new ConfirmationDto(entity.getId(), entity.getToken(), entity.getAction().name(),
                 entity.getSummary(), entity.getAffectedCount(), entity.getStatus().name(),
                 entity.getExpiresAt(), entity.getCreatedAt());
     }
