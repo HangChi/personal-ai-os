@@ -8,7 +8,8 @@ import type { UpdateEventPayload } from '@/api/calendar'
 import type { CalendarEvent, CalendarOccurrence, RecurrenceType, Reminder } from '@/types/api'
 
 const calendarStore = useCalendarStore()
-const { dueReminders, loadingOccurrences, creating, error, groupedByDay } = storeToRefs(calendarStore)
+const { dueReminders, loadingOccurrences, creating, error, groupedByDay, total, page, size } =
+  storeToRefs(calendarStore)
 
 const title = ref('')
 const location = ref('')
@@ -331,6 +332,18 @@ function sourceLabel(sourceType: string): string {
             </el-button>
           </div>
         </div>
+
+        <div v-if="total > 0" class="calendar__pagination">
+          <span class="calendar__total">区间内共 {{ total }} 次发生</span>
+          <el-pagination
+            layout="prev, pager, next"
+            :total="total"
+            :current-page="page + 1"
+            :page-size="size"
+            background
+            @current-change="(next: number) => calendarStore.goToPage(next - 1)"
+          />
+        </div>
       </div>
     </el-card>
 
@@ -503,6 +516,19 @@ function sourceLabel(sourceType: string): string {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.calendar__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.calendar__total {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
 }
 
 .calendar__day-label {

@@ -8,6 +8,7 @@ import com.personalos.common.idempotency.IdempotencyRequest;
 import com.personalos.common.idempotency.IdempotencyService;
 import com.personalos.common.idempotency.IdempotentResult;
 import com.personalos.common.idempotency.OperationSource;
+import com.personalos.common.api.PageDto;
 import com.personalos.common.json.JsonCodec;
 import com.personalos.task.dto.CreateTaskRequest;
 import com.personalos.task.dto.DeletionAck;
@@ -17,7 +18,6 @@ import com.personalos.task.dto.UpdateTaskRequest;
 import com.personalos.task.entity.TaskStatus;
 import com.personalos.task.service.TaskService;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -77,14 +77,18 @@ public class TaskController {
     }
 
     /**
-     * 查询任务列表。
+     * 查询任务列表（分页）。
+     *
+     * <p>2026-10-14 起 {@code limit} 参数改为 {@code page + size}，响应改为
+     * {@link PageDto}（含 total）——原先超过 limit 的记录会静默消失。
      */
     @GetMapping
-    public ApiResponse<List<TaskDto>> list(
+    public ApiResponse<PageDto<TaskDto>> list(
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false, defaultValue = "0") int limit) {
-        return ApiResponse.ok(taskService.search(new TaskQuery(status, keyword, limit)));
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ApiResponse.ok(taskService.search(new TaskQuery(status, keyword, page, size)));
     }
 
     /**

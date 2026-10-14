@@ -8,7 +8,7 @@ import type { UpdateTaskPayload } from '@/api/tasks'
 import type { TaskItem, TaskPriority, TaskStatus } from '@/types/api'
 
 const taskStore = useTaskStore()
-const { tasks, loading, error, statusFilter, keyword, pendingCount, overdueCount } =
+const { tasks, loading, error, statusFilter, keyword, pendingCount, overdueCount, total, page, size } =
   storeToRefs(taskStore)
 
 const newTitle = ref('')
@@ -216,7 +216,7 @@ async function handleDelete(task: TaskItem): Promise<void> {
         <div class="tasks__header">
           <span>任务列表</span>
           <div class="tasks__filters">
-            <el-select v-model="statusFilter" class="tasks__filter" @change="taskStore.load()">
+            <el-select v-model="statusFilter" class="tasks__filter" @change="taskStore.reload()">
               <el-option
                 v-for="option in statusOptions"
                 :key="option.value"
@@ -229,8 +229,8 @@ async function handleDelete(task: TaskItem): Promise<void> {
               class="tasks__filter"
               clearable
               placeholder="按标题/描述搜索"
-              @keydown.enter="taskStore.load()"
-              @clear="taskStore.load()"
+              @keydown.enter="taskStore.reload()"
+              @clear="taskStore.reload()"
             />
             <el-button :loading="loading" @click="taskStore.load()">刷新</el-button>
           </div>
@@ -287,6 +287,18 @@ async function handleDelete(task: TaskItem): Promise<void> {
           </template>
         </el-table-column>
       </el-table>
+
+      <div v-if="total > 0" class="tasks__pagination">
+        <span class="tasks__total">共 {{ total }} 条</span>
+        <el-pagination
+          layout="prev, pager, next"
+          :total="total"
+          :current-page="page + 1"
+          :page-size="size"
+          background
+          @current-change="(next: number) => taskStore.goToPage(next - 1)"
+        />
+      </div>
     </el-card>
 
     <el-dialog v-model="editing" title="编辑任务" width="520px">
@@ -378,6 +390,19 @@ async function handleDelete(task: TaskItem): Promise<void> {
 .tasks__filters {
   display: flex;
   gap: 8px;
+}
+
+.tasks__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.tasks__total {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
 }
 
 .tasks__filter {

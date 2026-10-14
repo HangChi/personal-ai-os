@@ -125,7 +125,8 @@ public class CalendarTools {
             List<CalendarOccurrenceDto> occurrences = eventService.search(
                     ToolArguments.parseInstant(from, "from"),
                     ToolArguments.parseInstant(to, "to"),
-                    limit);
+                    0,
+                    limit).items();
             String message = occurrences.isEmpty()
                     ? "这个时间段没有日程安排"
                     : "找到 " + occurrences.size() + " 项安排";

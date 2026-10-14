@@ -93,7 +93,7 @@ class TaskApiIntegrationTest {
 
         assertThat(http.get("/api/v1/tasks?keyword=周报").body()).contains("写周报").doesNotContain("买牛奶");
         assertThat(http.get("/api/v1/tasks?status=TODO").body()).contains("写周报").contains("买牛奶");
-        assertThat(http.get("/api/v1/tasks?status=DONE").body()).contains("\"data\":[]");
+        assertThat(http.get("/api/v1/tasks?status=DONE").body()).contains("\"items\":[]");
     }
 
     @Test
@@ -257,10 +257,28 @@ class TaskApiIntegrationTest {
     }
 
     @Test
-    @DisplayName("查询条数上限被强制收敛到配置上限")
-    void queryLimitIsCapped() {
-        assertThat(new TaskQuery(null, null, 100_000).limit()).isEqualTo(TaskQuery.MAX_LIMIT);
-        assertThat(new TaskQuery(null, null, 0).limit()).isEqualTo(TaskQuery.DEFAULT_LIMIT);
+    @DisplayName("分页参数被强制收敛：size 超上限收敛到 MAX_SIZE，非正收敛到默认值；page 负值归零")
+    void queryPagingParamsAreNormalized() {
+        assertThat(new TaskQuery(null, null, 0, 100_000).size()).isEqualTo(TaskQuery.MAX_SIZE);
+        assertThat(new TaskQuery(null, null, 0, 0).size()).isEqualTo(TaskQuery.DEFAULT_SIZE);
+        assertThat(new TaskQuery(null, null, -5, 10).page()).isZero();
+    }
+
+    @Test
+    @DisplayName("分页：page/size 切片且 total 报告全量——不再有静默截断")
+    void listIsPaginatedWithTotal() throws Exception {
+        for (int i = 1; i <= 5; i++) {
+            taskService.create(new CreateTaskRequest("任务" + i, null, null, null));
+        }
+
+        String firstPage = http.get("/api/v1/tasks?page=0&size=2").body();
+        assertThat(firstPage).contains("\"total\":5").contains("\"page\":0").contains("\"size\":2");
+
+        String secondPage = http.get("/api/v1/tasks?page=2&size=2").body();
+        assertThat(secondPage).contains("\"total\":5");
+
+        String beyond = http.get("/api/v1/tasks?page=9&size=2").body();
+        assertThat(beyond).contains("\"items\":[]").contains("\"total\":5");
     }
 
     @Test
@@ -276,7 +294,8 @@ class TaskApiIntegrationTest {
         taskService.create(new CreateTaskRequest("明天到期", null, null, Instant.now().plusSeconds(86400)));
         taskService.create(new CreateTaskRequest("今天到期", null, null, Instant.now().plusSeconds(3600)));
 
-        List<String> titles = taskService.search(TaskQuery.all()).stream().map(dto -> dto.title()).toList();
+        List<String> titles = taskService.search(TaskQuery.all()).items().stream()
+                .map(dto -> dto.title()).toList();
 
         assertThat(titles).containsExactly("今天到期", "明天到期", "无截止时间", "已完成");
     }

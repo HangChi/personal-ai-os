@@ -8,11 +8,11 @@ import com.personalos.calendar.dto.UpdateEventRequest;
 import com.personalos.calendar.service.CalendarEventService;
 import com.personalos.common.api.ApiResponse;
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -54,18 +54,23 @@ public class CalendarController {
     }
 
     /**
-     * 按区间查询，返回展开后的发生实例。
+     * 按区间查询，返回展开后的发生实例（分页）。
      *
      * <p>时间参数用字符串接收后自行解析，而不是直接声明 {@code Instant}：
      * 这样格式错误能给出一句「时间格式不正确」的中文提示，
      * 而不是被框架的类型转换异常带偏（那会让用户看到一句与业务无关的技术报错）。
+     *
+     * <p>2026-10-14 起 {@code limit} 改为 {@code page + size}，响应为
+     * {@link PageDto}（含 total）——重复日程在大区间下的实例数常超上限，静默截断会翻不到后面的日期。
      */
     @GetMapping
-    public ApiResponse<List<CalendarOccurrenceDto>> search(
+    public ApiResponse<PageDto<CalendarOccurrenceDto>> search(
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to,
-            @RequestParam(required = false, defaultValue = "0") int limit) {
-        return ApiResponse.ok(eventService.search(parseInstant(from, "from"), parseInstant(to, "to"), limit));
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size) {
+        return ApiResponse.ok(eventService.search(
+                parseInstant(from, "from"), parseInstant(to, "to"), page, size));
     }
 
     /**

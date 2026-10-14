@@ -95,9 +95,9 @@ public class TaskTools {
         });
 
         return toolExecutor.read("findTasks", arguments, toolContext, () -> {
-            TaskQuery query = new TaskQuery(parseStatus(status, false), keyword,
-                    limit == null ? FIND_DEFAULT_LIMIT : Math.min(limit, TaskQuery.MAX_LIMIT));
-            List<TaskDto> tasks = taskService.search(query);
+            TaskQuery query = new TaskQuery(parseStatus(status, false), keyword, 0,
+                    limit == null ? FIND_DEFAULT_LIMIT : Math.min(limit, TaskQuery.MAX_SIZE));
+            List<TaskDto> tasks = taskService.search(query).items();
             String message = tasks.isEmpty() ? "没有符合条件的任务" : "找到 " + tasks.size() + " 个任务";
             return ToolExecutionResult.ok(message, tasks);
         });

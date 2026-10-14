@@ -15,6 +15,12 @@ import type { TaskItem, TaskPriority, TaskStatus } from '@/types/api'
 /** 任务列表状态 */
 export const useTaskStore = defineStore('task', () => {
   const tasks = ref<TaskItem[]>([])
+  /** 符合条件的总条数（分页响应带来，不再有静默截断） */
+  const total = ref(0)
+  /** 当前页码，从 0 开始 */
+  const page = ref(0)
+  /** 每页条数 */
+  const size = ref(20)
   const loading = ref(false)
   const error = ref<string | null>(null)
   const statusFilter = ref<TaskStatus | ''>('')
@@ -27,16 +33,33 @@ export const useTaskStore = defineStore('task', () => {
     loading.value = true
     error.value = null
     try {
-      tasks.value = await listTasks({
+      const result = await listTasks({
         status: statusFilter.value || undefined,
         keyword: keyword.value.trim() || undefined,
+        page: page.value,
+        size: size.value,
       })
+      tasks.value = result.items
+      total.value = result.total
     } catch (cause) {
       tasks.value = []
+      total.value = 0
       error.value = cause instanceof Error ? cause.message : '加载任务失败'
     } finally {
       loading.value = false
     }
+  }
+
+  /** 翻页：任何筛选条件变化时由调用方先把 page 归零，否则会停在越界页 */
+  async function goToPage(next: number): Promise<void> {
+    page.value = next
+    await load()
+  }
+
+  /** 筛选条件变化：先归零页码再加载，否则可能停在越界页 */
+  async function reload(): Promise<void> {
+    page.value = 0
+    await load()
   }
 
   async function create(title: string, priority: TaskPriority, dueAt?: string): Promise<void> {
@@ -94,6 +117,9 @@ export const useTaskStore = defineStore('task', () => {
 
   return {
     tasks,
+    total,
+    page,
+    size,
     loading,
     error,
     statusFilter,
@@ -101,6 +127,8 @@ export const useTaskStore = defineStore('task', () => {
     pendingCount,
     overdueCount,
     load,
+    reload,
+    goToPage,
     create,
     edit,
     toggleCompleted,

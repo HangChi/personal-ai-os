@@ -1,6 +1,7 @@
 package com.personalos.task.service;
 
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.task.dto.CreateTaskRequest;
@@ -43,7 +44,13 @@ public class TaskService {
      *
      * <p>排序放在内存里做，而不是 SQL：因为「未完成优先」需要一个 CASE 表达式，
      * 而条件筛选已经用 Specification 表达。个人任务规模（千级以内）下内存排序成本可忽略，
-     * 且行为完全确定、可单元测试；若将来需要分页，再改为带 CASE 的 SQL 排序。
+     * 且行为完全确定、可单元测试。
+     *
+     * <p><b>为什么分页后仍然不做 SQL 排序</b>（2026-10-14 分页落地时的复核）：一旦引入
+     * SQL 排序，就会出现「SQL 一套顺序、内存 comparator 一套顺序」两个真相，
+     * 二者任何细微差别（如 NULLS LAST 的方言差异）都会让翻页出现重复或漏项。
+     * 分页只负责切片，顺序仍然只有这一个 comparator。真有规模问题时的正确做法是
+     * **把排序整体搬进 SQL 并删掉这个 comparator**，而不是两套并存。
      */
     private static final Comparator<TaskEntity> DISPLAY_ORDER = Comparator
             .comparingInt((TaskEntity task) -> task.getStatus() == TaskStatus.DONE ? 1 : 0)
@@ -68,15 +75,21 @@ public class TaskService {
         return toDto(saved, Instant.now());
     }
 
+    /**
+     * 查询任务列表（分页）。
+     *
+     * <p>顺序由 {@link #DISPLAY_ORDER} 决定，分页只切片——「有多少」与「这一页是什么」
+     * 由 {@link PageDto} 一并返回，不再有静默截断。
+     */
     @Transactional(readOnly = true)
-    public List<TaskDto> search(TaskQuery query) {
+    public PageDto<TaskDto> search(TaskQuery query) {
         List<TaskEntity> matched = taskRepository.findAll(buildSpecification(query));
         Instant now = Instant.now();
-        return matched.stream()
+        List<TaskDto> ordered = matched.stream()
                 .sorted(DISPLAY_ORDER)
-                .limit(query.limit())
                 .map(task -> toDto(task, now))
                 .toList();
+        return PageDto.of(ordered, query.page(), query.size());
     }
 
     @Transactional(readOnly = true)

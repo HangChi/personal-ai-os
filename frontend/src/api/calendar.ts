@@ -1,5 +1,5 @@
 import { requestData } from '@/api/http'
-import type { CalendarEvent, CalendarOccurrence, RecurrenceType } from '@/types/api'
+import type { CalendarEvent, CalendarOccurrence, PageDto, RecurrenceType } from '@/types/api'
 
 /**
  * 日程接口客户端。
@@ -33,11 +33,16 @@ export interface UpdateEventPayload {
   reminderLeadMinutes?: number
 }
 
-export function listOccurrences(from?: string, to?: string, limit?: number): Promise<CalendarOccurrence[]> {
-  return requestData<CalendarOccurrence[]>({
+export function listOccurrences(
+  from?: string,
+  to?: string,
+  page?: number,
+  size?: number,
+): Promise<PageDto<CalendarOccurrence>> {
+  return requestData<PageDto<CalendarOccurrence>>({
     url: '/calendar/events',
     method: 'get',
-    params: { from, to, limit },
+    params: { from, to, page, size },
   })
 }
 

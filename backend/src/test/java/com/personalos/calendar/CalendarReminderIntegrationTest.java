@@ -17,6 +17,7 @@ import com.personalos.calendar.repository.ReminderRepository;
 import com.personalos.calendar.service.CalendarEventService;
 import com.personalos.calendar.service.ReminderScanner;
 import com.personalos.calendar.service.ReminderService;
+import com.personalos.common.api.PageDto;
 import com.personalos.common.confirmation.ConfirmationRepository;
 import com.personalos.common.confirmation.ConfirmationService;
 import com.personalos.common.confirmation.ConfirmationStatus;
@@ -145,6 +146,29 @@ class CalendarReminderIntegrationTest {
     // ------------------------------------------------------------------ 日程 CRUD 与重复展开
 
     @Test
+    @DisplayName("分页：重复日程的实例切片返回，total 是展开后的全量实例数")
+    void occurrencesArePaginatedWithTotal() {
+        Instant startsAt = Instant.now().plus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.HOURS);
+        eventService.create(new CreateEventRequest(
+                "每周站会", null, null, false, startsAt, startsAt.plus(30, ChronoUnit.MINUTES),
+                RecurrenceType.WEEKLY, null, 15));
+
+        PageDto<CalendarOccurrenceDto> firstPage = eventService.search(
+                startsAt.minus(1, ChronoUnit.HOURS), startsAt.plus(22, ChronoUnit.DAYS), 0, 2);
+
+        assertThat(firstPage.items()).hasSize(2);
+        assertThat(firstPage.total()).isEqualTo(4);
+        assertThat(firstPage.page()).isZero();
+        assertThat(firstPage.size()).isEqualTo(2);
+
+        PageDto<CalendarOccurrenceDto> beyond = eventService.search(
+                startsAt.minus(1, ChronoUnit.HOURS), startsAt.plus(22, ChronoUnit.DAYS), 9, 2);
+
+        assertThat(beyond.items()).isEmpty();
+        assertThat(beyond.total()).isEqualTo(4);
+    }
+
+    @Test
     @DisplayName("创建每周重复日程：区间查询返回展开后的多次发生，且按时间升序")
     void weeklyEventExpandsIntoOccurrences() {
         Instant startsAt = Instant.now().plus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.HOURS);
@@ -153,7 +177,7 @@ class CalendarReminderIntegrationTest {
                 RecurrenceType.WEEKLY, null, 15));
 
         List<CalendarOccurrenceDto> occurrences = eventService.search(
-                startsAt.minus(1, ChronoUnit.HOURS), startsAt.plus(22, ChronoUnit.DAYS), null);
+                startsAt.minus(1, ChronoUnit.HOURS), startsAt.plus(22, ChronoUnit.DAYS), 0, null).items();
 
         assertThat(occurrences).hasSize(4);
         assertThat(occurrences).extracting(CalendarOccurrenceDto::eventId)

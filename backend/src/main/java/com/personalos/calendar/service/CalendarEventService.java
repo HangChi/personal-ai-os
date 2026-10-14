@@ -12,6 +12,7 @@ import com.personalos.calendar.recurrence.RecurrenceCalculator;
 import com.personalos.calendar.repository.CalendarEventRepository;
 import com.personalos.calendar.repository.ReminderRepository;
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
 import java.time.Instant;
@@ -191,14 +192,19 @@ public class CalendarEventService {
     }
 
     /**
-     * 按区间查询，返回**展开后的发生实例**。
+     * 按区间查询，返回**展开后的发生实例**（分页）。
      *
-     * @param from  区间起点；为空则取「今天 00:00」（系统时区）
-     * @param to    区间终点；为空则取起点 + 7 天
-     * @param limit 返回条数上限
+     * <p>2026-10-14 技术债清偿：{@code limit} 静默截断改为 {@code page + size} 分页，
+     * 响应含 total——重复日程在大区间下的发生数很容易超过上限，
+     * 原先多出来的实例会无声消失，用户翻不到「下周」。
+     *
+     * @param from 区间起点；为空则取「今天 00:00」（系统时区）
+     * @param to   区间终点；为空则取起点 + 7 天
+     * @param page 页码，从 0 开始；为空或负值按 0
+     * @param size 每页条数；为空或非正用默认值，超过硬上限收敛为上限
      */
     @Transactional(readOnly = true)
-    public List<CalendarOccurrenceDto> search(Instant from, Instant to, Integer limit) {
+    public PageDto<CalendarOccurrenceDto> search(Instant from, Instant to, Integer page, Integer size) {
         Instant effectiveFrom = from != null ? from : startOfDay(Instant.now());
         Instant effectiveTo = to != null ? to : effectiveFrom.plus(DEFAULT_RANGE_DAYS, ChronoUnit.DAYS);
         if (effectiveTo.isBefore(effectiveFrom)) {
@@ -228,10 +234,8 @@ public class CalendarEventService {
         }
 
         occurrences.sort(Comparator.comparing(CalendarOccurrenceDto::startsAt));
-        int effectiveLimit = properties.normalizeLimit(limit);
-        return occurrences.size() <= effectiveLimit
-                ? List.copyOf(occurrences)
-                : List.copyOf(occurrences.subList(0, effectiveLimit));
+        int effectivePage = page == null || page < 0 ? 0 : page;
+        return PageDto.of(occurrences, effectivePage, properties.normalizeLimit(size));
     }
 
     @Transactional(readOnly = true)

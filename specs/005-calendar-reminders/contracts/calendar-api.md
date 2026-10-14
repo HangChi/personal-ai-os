@@ -47,23 +47,35 @@
 |---|---|---|
 | `from` | 否 | 区间起点（ISO-8601）；省略为「今天 00:00」 |
 | `to` | 否 | 区间终点；省略为起点 + 7 天 |
-| `limit` | 否 | 默认 100，上限 500 |
+| `page` | 否 | 页码，从 0 开始（2026-10-14 起替代 `limit`） |
+| `size` | 否 | 默认 100，上限 500 |
 
-**响应 200**：`data` 为**发生实例**数组：
+**响应 200**：`data` 为分页对象 `PageDto`（2026-10-14 技术债清偿起，原 `limit` 参数与裸数组响应已废弃）。
+`items` 为**发生实例**数组（按 `startsAt` 升序），`total` 为区间内展开后的全量实例数：
 
 ```json
 {
-  "eventId": "3f2a…",
-  "title": "周会",
-  "location": "会议室 A",
-  "allDay": false,
-  "startsAt": "2026-10-22T09:00:00+08:00",
-  "endsAt": "2026-10-22T10:00:00+08:00",
-  "recurrenceType": "WEEKLY",
-  "recurring": true,
-  "reminderLeadMinutes": 15
+  "items": [
+    {
+      "eventId": "3f2a…",
+      "title": "周会",
+      "location": "会议室 A",
+      "allDay": false,
+      "startsAt": "2026-10-22T09:00:00+08:00",
+      "endsAt": "2026-10-22T10:00:00+08:00",
+      "recurrenceType": "WEEKLY",
+      "recurring": true,
+      "reminderLeadMinutes": 15
+    }
+  ],
+  "page": 0,
+  "size": 100,
+  "total": 4
 }
 ```
+
+> **为什么废弃 `limit`**：重复日程在大区间下的实例数很容易超过上限，静默截断会让用户
+> 翻不到「下周」——`total` 报告全量实例数后，「还有多少」不再是秘密。
 
 > **为什么返回「发生实例」而不是「日程」**：重复日程在区间内有多个时刻，
 > 前端要按时间顺序渲染。服务端展开后返回，前端无需理解重复规则 ——

@@ -31,6 +31,14 @@ export interface HealthStatus {
   components?: Record<string, string>
 }
 
+/** 分页响应（阶段 6 技术债清偿新增）：items 是当前页，total 是全量条数 */
+export interface PageDto<T> {
+  items: T[]
+  page: number
+  size: number
+  total: number
+}
+
 /** 会话视图，对应后端 ChatSessionDto */
 export interface ChatSession {
   conversationId: string

@@ -19,6 +19,12 @@ const REMINDER_POLL_INTERVAL_MS = 30_000
  */
 export const useCalendarStore = defineStore('calendar', () => {
   const occurrences = ref<CalendarOccurrence[]>([])
+  /** 区间内展开后的总实例数（分页响应带来，不再有静默截断） */
+  const total = ref(0)
+  /** 当前页码，从 0 开始 */
+  const page = ref(0)
+  /** 每页条数（日程区间默认 100，与后端默认值一致） */
+  const size = ref(100)
   const dueReminders = ref<Reminder[]>([])
 
   const loadingOccurrences = ref(false)
@@ -42,17 +48,32 @@ export const useCalendarStore = defineStore('calendar', () => {
     return Array.from(groups.entries()).map(([day, items]) => ({ day, items }))
   })
 
-  async function loadOccurrences(from?: string, to?: string): Promise<void> {
+  /**
+   * 加载区间内的发生实例（分页）。
+   *
+   * 显式传入 from/to 视为「换了查询窗口」，页码归零；
+   * 不传则沿用当前窗口与页码（增删改后的刷新用）。
+   */
+  async function loadOccurrences(from?: string, to?: string, nextPage?: number): Promise<void> {
     loadingOccurrences.value = true
     error.value = null
     try {
-      occurrences.value = await listOccurrences(from, to)
+      const result = await listOccurrences(from, to, nextPage ?? page.value, size.value)
+      occurrences.value = result.items
+      total.value = result.total
+      page.value = result.page
     } catch (cause) {
       occurrences.value = []
+      total.value = 0
       error.value = cause instanceof Error ? cause.message : '加载日程失败'
     } finally {
       loadingOccurrences.value = false
     }
+  }
+
+  /** 翻页 */
+  async function goToPage(next: number): Promise<void> {
+    await loadOccurrences(undefined, undefined, next)
   }
 
   async function add(payload: CreateEventPayload): Promise<boolean> {
@@ -172,12 +193,16 @@ export const useCalendarStore = defineStore('calendar', () => {
 
   return {
     occurrences,
+    total,
+    page,
+    size,
     dueReminders,
     loadingOccurrences,
     creating,
     error,
     groupedByDay,
     loadOccurrences,
+    goToPage,
     loadEvent,
     add,
     edit,

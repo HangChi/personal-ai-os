@@ -1,5 +1,5 @@
 import { requestData } from '@/api/http'
-import type { TaskItem, TaskPriority, TaskStatus } from '@/types/api'
+import type { PageDto, TaskItem, TaskPriority, TaskStatus } from '@/types/api'
 
 /**
  * 任务接口客户端。
@@ -10,7 +10,9 @@ import type { TaskItem, TaskPriority, TaskStatus } from '@/types/api'
 export interface TaskListFilter {
   status?: TaskStatus
   keyword?: string
-  limit?: number
+  /** 页码，从 0 开始（2026-10-14 起 limit 参数改为 page + size） */
+  page?: number
+  size?: number
 }
 
 export interface CreateTaskPayload {
@@ -40,8 +42,8 @@ function idempotencyKey(prefix: string): Record<string, string> {
   return { 'Idempotency-Key': `${prefix}-${crypto.randomUUID()}` }
 }
 
-export function listTasks(filter: TaskListFilter = {}): Promise<TaskItem[]> {
-  return requestData<TaskItem[]>({ url: '/tasks', method: 'get', params: filter })
+export function listTasks(filter: TaskListFilter = {}): Promise<PageDto<TaskItem>> {
+  return requestData<PageDto<TaskItem>>({ url: '/tasks', method: 'get', params: filter })
 }
 
 export function getTask(id: string): Promise<TaskItem> {
