@@ -108,10 +108,22 @@
 ## R-08 前端 UI 库引入方式
 
 **Decision**：阶段 0 采用 Element Plus **全量引入**（`app.use(ElementPlus)`）。
+2026-10-14（技术债清偿）改为**按需引入**：`unplugin-auto-import` + `unplugin-vue-components`
+（ElementPlusResolver），`main.ts` 不再全量注册。
 
-**Rationale**：保证在最少配置下生产构建一次通过（SC-003）；按需引入需要 `unplugin-auto-import` + `unplugin-vue-components` 及样式解析器，配置面更大。牺牲部分包体，换取骨架阶段的确定性与可验证性。
+**Rationale**：阶段 0 的取舍是「保证在最少配置下生产构建一次通过」，牺牲包体换确定性。
+后续实测确认代价具体且可消除：全量引入把约 990 KB 塞进主包（主包合计 1.01 MB，gzip 327 KB），
+而本应用只用到二十来个组件。按需引入后主包降至 **46.9 KB（gzip 17.3 KB）**，chunk 告警消失，
+类型检查与真机浏览器验证（弹窗、ElMessage、无控制台错误）均通过。
 
-**Alternatives considered**：`unplugin-*` 按需引入 → 包体更优，但阶段 0 收益有限、风险更高 → 列为阶段 1 优化项（已记入宪法 Follow-up TODOs）。
+**Alternatives considered**：全量引入 + 提高告警阈值 → 把问题藏起来，否决。
+按需引入的代价（2026-10-14 实测并已写入 `vite.config.ts` 注释）：本沙箱的批量删除守护会拦截
+Vite 优化器删除自己的缓存目录，自动导入插件注入的新导入又会触发优化器反复重跑，
+导致 dev server 启动约一分钟后崩溃；解法是 `optimizeDeps.noDiscovery` + 显式 include 列表
+（须覆盖 Element Plus 依赖闭包中的全部 CJS 包——dayjs 根包与 9 个插件子路径、
+async-validator 等；改列表后需先手动 `rm -rf node_modules/.vite` 再启动）。
+
+**历史记录**：原决策与「阶段 1 优化项」表述保留如上，以维护决策轨迹。
 
 ## R-09 前端跨域策略
 

@@ -74,8 +74,7 @@ ls backend/src/main/java/com/personalos/{common,ai,agent,chat,task,knowledge,cal
 | B-框架健康 | `curl /actuator/health` | ✅ | 整体 `UP`，含 `db` 组件 `UP`（PostgreSQL） |
 | B-可执行 jar | `java -jar target/*.jar` | ✅ | 55.9 MB 可执行 jar，1.9s 内启动，优雅停机无残留进程 |
 | C-前端类型检查 | `npm run type-check` | ✅ | 退出码 0（须 TS 5.9.3；TS 7 会崩，见 research R-12） |
-| C-前端构建 | `npm run build` | ✅ | 1658 模块，产出 `dist/`；主包 1.01 MB 触发 chunk 告警（R-08 已知代价） |
-| C-前后端联通 | 浏览器首页 | ⏳ | **未在真实浏览器打开**（当前无 GUI 环境）。同一 API 已用 curl 验证，Vite 代理配置已就位；建议用户首次 `npm run dev` 时人工确认 |
+| C-前端构建 | `npm run build` | ✅ | 1658 模块，产出 `dist/`；主包 1.01 MB 触发 chunk 告警（R-08 已知代价） || C-前后端联通 | 浏览器首页 | ⏳ | **未在真实浏览器打开**（当前无 GUI 环境）。同一 API 已用 curl 验证，Vite 代理配置已就位；建议用户首次 `npm run dev` 时人工确认 |
 | D-仓库卫生 | `git check-ignore -q` / 密钥扫描 | ✅ | `.env` 被忽略、`.env.example` 正常入库；密钥扫描零命中；无构建产物混入（92 文件 / 696K） |
 
 **未验证项**：`C-前后端联通` 的浏览器实测。除该项外，spec 的 SC-001 ~ SC-007 均有实测证据。
@@ -84,3 +83,8 @@ ls backend/src/main/java/com/personalos/{common,ai,agent,chat,task,knowledge,cal
 > 本日起 `/api/v1/health` 增加 `components`（database / ai），关键依赖（数据库）不可用时整体
 > `status` 降为 DOWN。修订原因与新契约见 `contracts/http-api.md` 的同节说明——原记录保留以维护历史，
 > 不代表当前契约。
+
+> **2026-10-14 修订（技术债清偿）**：上表 `C-前端构建` 的「主包 1.01 MB 触发 chunk 告警」
+> 是阶段 0 全量引入 Element Plus 的已知代价，**现已消除**：改为按需引入后主包 46.9 KB
+> （gzip 17.3 KB），告警消失，真机浏览器验证通过。改动代价与解法见 `research.md` R-08 的
+> 2026-10-14 附注。

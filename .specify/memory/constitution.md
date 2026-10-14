@@ -6,8 +6,17 @@ Sync Impact Report
 - Follow-up TODOs（未决项，故意不锁）：
   1. 默认大模型提供商未定 —— 阶段 1 拍板（OpenAI 兼容协议 / DeepSeek / 本地 Ollama）。
   2. 前端 Element Plus 引入方式未锁 —— 阶段 0 先用「全量引入」保证可构建，阶段 1 评估按需引入。
+     【2026-10-14 已解决】技术债清偿时落地按需引入（unplugin-auto-import + vue-components），
+     主包 1.01 MB → 46.9 KB；代价与解法见 specs/001 research.md R-08 附注。
   3. 身份认证方案未定 —— 第一版仅本地单用户；对公网开放前必须先设计认证。
   4. 后端是否需要拆分为 Maven 多模块 —— 阶段 0 采用单模块 + 按包划分，待模块数量与耦合度上升后再评估。
+
+- Version change: 1.0.0 → 1.0.1（2026-10-14）
+- Modified principles: 无（原则条款零改动）
+- Modified sections: 无（仅关闭 Follow-up TODO #2）
+- Rationale: TODO #2 是宪法自己排期的评估项，评估已完成并落地（Element Plus 按需引入），
+  按 Governance 关闭该未决项并递增补丁版本。属记账性修订，不改变任何约束。
+- 影响评估: 对既有 spec/plan 无影响；001 的 R-08 与 quickstart 已同批回改记录。
 -->
 
 # Personal AI OS Constitution
@@ -76,4 +85,4 @@ Personal AI OS 是一个开源、自托管、可扩展的个人智能操作系�
 - 修订 MUST 记录 Sync Impact Report 并递增版本号（语义化版本）。
 - 所有评审 MUST 逐条核对本宪法；违例 MUST 在 `plan.md` 的 Complexity Tracking 中论证，否则不得合并。
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-14 | **Last Amended**: 2026-10-14
+**Version**: 1.0.1 | **Ratified**: 2026-10-14 | **Last Amended**: 2026-10-14

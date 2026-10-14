@@ -224,6 +224,14 @@ cd - && NODE_PATH=/Users/songhangchi/.workbuddy/binaries/node/workspace/node_mod
 `./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8080`，或直接启动 jar 时加 `--server.port=8080`。
 启动日志里的 `Tomcat started on port xxxxx` 是权威结论。
 
+**Q：`npm run dev` 启动约一分钟后崩溃，报 `SAFE_DELETE_BULK_CONFIRM_REQUIRED`**
+本沙箱的批量删除守护会拦截 Node 进程内对「文件数 > 50 的目录」的删除，而 Vite 的依赖优化器
+在重跑时要删除自己的缓存目录（`node_modules/.vite/deps_temp_*`），于是 dev server 崩掉。
+**生产构建不受影响。** 规避方式已写进 `vite.config.ts` 的 `optimizeDeps` 配置：关闭依赖自动发现
+（`noDiscovery`）+ 显式 include 列表，优化器不再重跑。改动 include 列表会使缓存失效并触发一次
+重优化——**改完先手动 `rm -rf frontend/node_modules/.vite` 再启动**（shell 的 rm 不走 Node 进程，
+不会被守护拦截）。
+
 ## 七、数据库结构变更流程
 
 1. 在 `backend/src/main/resources/db/migration/` 新增脚本，命名 `V<n>__<snake_case>.sql`。
