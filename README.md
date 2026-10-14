@@ -4,8 +4,9 @@
 
 用自然语言和个人 AI 助手交互，让它帮你管理任务、检索自己的知识库、安排日程与提醒——全部跑在你自己的机器上。
 
-> **当前状态**：阶段 2（任务管理与 Agent 工具调用）已完成。
-> 可用自然语言让助手创建/查询/完成任务；删除、批量操作与关键字段修改需人工确认后才会真正生效。
+> **当前状态**：阶段 3（个人知识库与 RAG）已完成。
+> 可上传 Markdown / TXT 建立索引，基于自己的资料提问并**附带引用来源**；
+> 知识库检索同时作为工具接入了对话。
 
 ## 这个项目要做什么
 
@@ -123,9 +124,26 @@ cd frontend && npm run type-check && npm run build
 | 0 | 项目骨架：Monorepo、后端基座、数据库迁移、前端基座、文档 | ✅ |
 | 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | ✅ |
 | 2 | 任务 CRUD 与 Tool Calling（含两阶段人工确认与两层幂等） | ✅ |
-| 3 | 个人知识库与 RAG（pgvector） | ⏳ |
+| 3 | 个人知识库与 RAG（pgvector 向量检索 + 引用溯源） | ✅ |
 | 4 | 日程和定时提醒 | ⏳ |
 | 5 | Docker 部署、测试、文档、开源发布 | ⏳ |
+
+## 知识库配置
+
+上传 `.md` / `.markdown` / `.txt`（UTF-8，≤5 MiB）即自动解析、分块、向量化。
+检索与问答走 pgvector 的余弦相似度，默认返回 4 条、相似度阈值 0.3。
+
+```bash
+AI_EMBEDDING_PROVIDER=ollama          # 默认，本地无需密钥
+OLLAMA_EMBEDDING_MODEL=bge-m3         # 1024 维
+AI_KNOWLEDGE_EMBEDDING_DIMENSIONS=1024  # 必须与迁移里的 vector(1024) 一致
+```
+
+> ⚠️ **换嵌入模型前先确认输出维度**：维度已写进 Flyway 迁移（`vector_store.embedding`）。
+> 维度不一致时应用会**在启动阶段就失败**并给出修复指引，而不是等到写入时才报 SQL 错。
+
+本地跑真实语义检索需要 `ollama pull bge-m3`（约 1.2GB）；
+**自动化测试不需要任何模型** —— 它用确定性词袋嵌入替代，详见 `docs/development.md`。
 
 ## 配置模型提供商
 

@@ -22,6 +22,9 @@ public enum ErrorCode {
     /** 待确认操作已失效（已确认、已取消或已过期）。 */
     CONFIRMATION_NOT_ACTIVE(40002, "该确认已失效或已被使用", HttpStatus.CONFLICT),
 
+    /** 不支持的文档：类型不允许、内容为空或超出大小上限。 */
+    UNSUPPORTED_DOCUMENT(40003, "不支持的文档", HttpStatus.BAD_REQUEST),
+
     /** 资源不存在。 */
     RESOURCE_NOT_FOUND(40004, "资源不存在", HttpStatus.NOT_FOUND),
 
@@ -33,6 +36,11 @@ public enum ErrorCode {
 
     /** AI 服务调用失败（上游模型不可用或返回错误）。 */
     AI_UPSTREAM_ERROR(50200, "AI 服务调用失败，请稍后重试或检查模型配置", HttpStatus.BAD_GATEWAY),
+
+    /** 嵌入维度与向量表结构不一致。 */
+    EMBEDDING_DIMENSION_MISMATCH(50201,
+            "嵌入模型输出维度与向量表结构不一致，请检查嵌入模型配置或新增迁移重建向量列",
+            HttpStatus.INTERNAL_SERVER_ERROR),
 
     /** AI 模型未配置（未提供任何可用的 ChatModel）。 */
     AI_NOT_CONFIGURED(50300, "AI 模型未配置，请设置 AI_CHAT_PROVIDER 为 ollama 或 openai", HttpStatus.SERVICE_UNAVAILABLE),

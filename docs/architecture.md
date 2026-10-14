@@ -51,7 +51,7 @@ personal-ai-os/
 | `memory` | 会话记忆的持久化与检索策略 | 阶段 1 |
 | `agent` | Agent 编排与工具（Tool Calling）注册 | 阶段 2 |
 | `task` | 个人任务 CRUD 与状态流转 | 阶段 2 |
-| `knowledge` | 文档摄入与 pgvector RAG 检索 | 阶段 3 |
+| `knowledge` | 文档摄入（解析、切分、嵌入）与基于 pgvector 的 RAG 检索问答 | 阶段 3 ✅ |
 | `calendar` | 日程事件与定时提醒 | 阶段 4 |
 
 每个业务模块内部按 `controller / service / repository / entity / dto` 分层。
@@ -128,7 +128,7 @@ controller  →  service  →  repository  →  database
 | 0 | 项目骨架：Monorepo、后端基座、数据库迁移、前端基座、文档 | ✅ 完成 |
 | 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | ✅ 完成 |
 | 2 | 任务 CRUD 与 Tool Calling（含两阶段人工确认与两层幂等） | ✅ 完成 |
-| 3 | 个人知识库与 RAG（pgvector + vector_store 表） | 待开始 |
+| 3 | 个人知识库与 RAG（pgvector + 引用溯源） | ✅ 完成 |
 | 4 | 日程和定时提醒（Spring Scheduling） | 待开始 |
 | 5 | Docker 部署、测试补全、文档、GitHub 开源 | 待开始 |
 
@@ -163,6 +163,38 @@ TaskService（唯一的写路径）→ task 表
      刻意**不**跨轮次去重，因为用户在同一分钟内真诚地建两个同名任务是合法的。
    - HTTP 层按客户端提供的 `Idempotency-Key` 去重 → 防网络重试。
    两者共用 `operation_record` 一张表，它同时就是工具执行审计日志。
+
+## 12. 知识库 RAG 链路（阶段 3）
+
+```
+上传 .md/.txt
+   ▼ 校验（类型/大小/UTF-8）
+KnowledgeDocumentReader（实现 DocumentReader，内部用 TextReader）
+   ▼ 附加来源元数据：document_id / document_title / filename
+TokenTextSplitter 分块（并重新编号 chunk_index 为 0..n-1）
+   ▼
+EmbeddingModel → PgVectorStore.add()  →  vector_store 表（vector(1024)）
+   ▲
+   └── 与 knowledge_document 在同一事务 → 文档记录与向量要么一起成功、要么一起回滚
+
+检索：SearchRequest(query, topK, similarityThreshold) → similaritySearch
+问答：命中片段编号注入提示词 → 生成 → **服务端依据片段元数据**组装引用
+```
+
+### 三条必须记住的约束
+
+1. **维度在三个地方各写了一份**（迁移的 `vector(1024)`、配置的 `embedding-dimensions`、
+   模型的真实输出维度）。因此启动期校验「表 ↔ 配置」、写入期翻译「模型 ↔ 表」的错误。
+   `EmbeddingModel.dimensions()` 不能用做启动校验 —— 它会真的发起一次嵌入调用，
+   破坏「无模型也能启动」。
+
+2. **向量表由 Flyway 拥有，不用框架自动建表**。列名/类型必须与 `PgVectorStore` 内部 SQL 完全一致
+   （框架的 `schema-validation` 默认关闭，不会替我们发现写错）。
+   索引 opclass 必须与距离类型成对：`COSINE_DISTANCE ↔ vector_cosine_ops`；
+   二者不匹配**不报错**，只会让索引失效、查询退化为全表扫描。
+
+3. **删除必须「先删向量、再删文档记录」**。反过来则一旦失败，
+   残留向量将永远无法按 `document_id` 定位清理；当前顺序下最坏情况是可重试的空文档。
 
 ## 10. 对话链路（阶段 1）
 

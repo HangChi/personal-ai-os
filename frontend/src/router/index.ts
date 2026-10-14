@@ -28,6 +28,12 @@ const router = createRouter({
       meta: { title: '任务' },
     },
     {
+      path: '/knowledge',
+      name: 'knowledge',
+      component: () => import('@/views/KnowledgeView.vue'),
+      meta: { title: '知识库' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),

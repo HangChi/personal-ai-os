@@ -3,6 +3,8 @@ package com.personalos.agent.tool;
 import com.personalos.agent.confirmation.ConfirmationService;
 import com.personalos.agent.confirmation.TaskConfirmationDto;
 import com.personalos.common.ai.ToolContextKeys;
+import com.personalos.common.ai.tool.ToolExecutionResult;
+import com.personalos.common.ai.tool.ToolExecutor;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.task.dto.CreateTaskRequest;

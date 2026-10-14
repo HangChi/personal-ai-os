@@ -308,10 +308,14 @@ class AgentToolCallingIntegrationTest {
             }
         }
 
-        assertThat(toolNames).containsExactlyInAnyOrder(
+        // 任务工具必须都在
+        assertThat(toolNames).contains(
                 "createTask", "findTasks", "getTask", "updateTaskDetails",
                 "setTaskCompleted", "deleteTask", "scheduleTask", "setTaskPriority");
-        // 关键不变量：模型没有任何途径完成「确认」这一步
+
+        // 真正要守的不变量：模型没有任何途径完成「确认」这一步。
+        // 刻意不写成"恰好这 8 个"—— 阶段 3 的知识库检索工具会合法地加入这个集合，
+        // 那种写法会把「新增工具」误报成回归。
         assertThat(toolNames).noneMatch(name -> name.toLowerCase().contains("confirm"));
         assertThat(toolNames).noneMatch(name -> name.toLowerCase().contains("approve"));
     }

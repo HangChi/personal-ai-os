@@ -31,6 +31,18 @@ public class AiChatClientProvider {
     /** 为空表示当前没有任何可用的模型（chat 能力未启用） */
     private final ChatClient chatClient;
 
+    /**
+     * 无状态单轮客户端：**不**挂记忆 Advisor、**不**挂工具。
+     *
+     * <p>知识库问答用它。不能复用上面那个客户端，原因有两个：
+     * <ol>
+     *   <li>{@code MessageChatMemoryAdvisor} 强制要求每次请求都带 {@code conversationId} 参数，
+     *       单轮问答没有会话，直接调用会抛参数校验异常；</li>
+     *   <li>问答需要的是「只依据给定资料作答」，把任务工具一并暴露给它只会增加模型跑偏的机会。</li>
+     * </ol>
+     */
+    private final ChatClient plainChatClient;
+
     public AiChatClientProvider(ObjectProvider<ChatModel> chatModels,
                                 ObjectProvider<ToolCallingManager> toolCallingManagers,
                                 ObjectProvider<ToolContributor> toolContributors,
@@ -41,8 +53,13 @@ public class AiChatClientProvider {
             log.warn("未检测到任何 ChatModel，AI 聊天能力不可用。"
                     + "请将 AI_CHAT_PROVIDER 设为 ollama 或 openai 后重启。");
             this.chatClient = null;
+            this.plainChatClient = null;
             return;
         }
+
+        this.plainChatClient = ChatClient.builder(chatModel)
+                .defaultSystem(aiProperties.systemPrompt())
+                .build();
 
         // 一律用静态工厂构建并**显式**装配 Advisor，而不复用自动配置的 ChatClient.Builder。
         //
@@ -92,5 +109,17 @@ public class AiChatClientProvider {
             throw new BusinessException(ErrorCode.AI_NOT_CONFIGURED);
         }
         return chatClient;
+    }
+
+    /**
+     * 获取无状态单轮客户端（不挂记忆 Advisor、不挂工具）；未配置时抛出业务异常。
+     *
+     * @return 用于知识库问答等单轮场景的客户端
+     */
+    public ChatClient requirePlainChatClient() {
+        if (plainChatClient == null) {
+            throw new BusinessException(ErrorCode.AI_NOT_CONFIGURED);
+        }
+        return plainChatClient;
     }
 }

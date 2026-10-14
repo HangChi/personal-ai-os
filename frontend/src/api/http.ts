@@ -9,7 +9,10 @@ const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
 export const http = axios.create({
   baseURL,
   timeout: 10_000,
-  headers: { 'Content-Type': 'application/json' },
+  // 刻意**不**在这里写死 Content-Type：
+  // axios 会为普通对象自动设置 application/json，而写死它会让 FormData 上传带上错误的
+  // Content-Type（缺少 multipart 的 boundary），服务端直接解析失败。
+  // 上传场景需要由浏览器/axios 自行计算带 boundary 的头。
 })
 
 /**

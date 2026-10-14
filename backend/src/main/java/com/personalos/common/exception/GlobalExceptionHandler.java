@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -102,6 +103,19 @@ public class GlobalExceptionHandler {
         log.warn("未找到处理器: {} {}", ex.getHttpMethod(), ex.getRequestURL());
         return ResponseEntity.status(ErrorCode.RESOURCE_NOT_FOUND.getHttpStatus())
                 .body(ApiResponse.error(ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    /**
+     * 上传文件超过容器限制。
+     *
+     * <p>应用层已有更严格且更可读的大小校验；这一条是兜底 —— 若没有它，
+     * 超限文件会走兜底分支变成 500，用户完全看不出是"文件太大"。
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        log.warn("上传文件超过容器限制: {}", ex.getMessage());
+        return ResponseEntity.status(ErrorCode.UNSUPPORTED_DOCUMENT.getHttpStatus())
+                .body(ApiResponse.error(ErrorCode.UNSUPPORTED_DOCUMENT, "文件过大，请压缩或拆分后重新上传"));
     }
 
     /**

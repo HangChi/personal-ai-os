@@ -11,6 +11,14 @@ spring:
   application:
     name: personal-ai-os
 
+  servlet:
+    multipart:
+      # 必须大于应用层的 5 MiB 上限，否则超限文件会在进入控制器之前
+      # 被容器以 500 拒绝，用户看到的是"服务器错误"而不是"文件过大"。
+      # 应用层校验负责给出可读提示，容器层只做最后一道兜底。
+      max-file-size: 6MB
+      max-request-size: 8MB
+
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:55432}/${POSTGRES_DB:personal_ai_os}
     username: ${POSTGRES_USER:personalos}
@@ -50,10 +58,10 @@ spring:
       # 默认 ollama（本地、无需密钥），可用 AI_CHAT_PROVIDER 切换。
       # 该属性同时决定「哪一套 Starter 的自动配置生效」（research.md R-01）。
       chat: ${AI_CHAT_PROVIDER:ollama}
-      # 阶段 1 不需要 embedding / 图像 / 音频 / 审核。
-      # 必须显式关闭：否则这些自动配置会尝试创建需要 API Key 的 Bean，
+      # 嵌入模型提供商（阶段 3 起使用）：ollama | openai | none
+      embedding: ${AI_EMBEDDING_PROVIDER:ollama}
+      # 以下能力本阶段不需要；显式关闭，否则这些自动配置会尝试创建需要 API Key 的 Bean，
       # 使应用在无密钥时启动失败，破坏「开箱可跑」（research.md R-06）。
-      embedding: none
       image: none
       moderation: none
       audio:
@@ -66,13 +74,30 @@ spring:
       chat:
         model: ${OLLAMA_CHAT_MODEL:qwen2.5:7b}
         temperature: 0.7
+      embedding:
+        # bge-m3 输出 1024 维，与 Flyway V4 的 vector(1024) 一致
+        model: ${OLLAMA_EMBEDDING_MODEL:bge-m3}
     openai:
-      # 留空即可：仅在 AI_CHAT_PROVIDER=openai 时才会被读取
+      # 留空即可：仅在对应 provider 被启用时才会被读取
       api-key: ${OPENAI_API_KEY:}
       base-url: ${OPENAI_BASE_URL:https://api.openai.com}
       chat:
         model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
         temperature: 0.7
+    vectorstore:
+      # 与 PgVectorStoreAutoConfiguration 的条件属性对齐
+      type: pgvector
+      pgvector:
+        # 结构由 Flyway 拥有，**不要**让框架自动建表（宪法原则 IV）
+        initialize-schema: false
+        # 仅用于自描述；真实维度由迁移里的 vector(1024) 决定，启动期会校验两者一致
+        dimensions: ${AI_KNOWLEDGE_EMBEDDING_DIMENSIONS:1024}
+        index-type: HNSW
+        # 必须与迁移里的索引 opclass 成对：COSINE_DISTANCE ↔ vector_cosine_ops
+        distance-type: COSINE_DISTANCE
+        table-name: vector_store
+        schema-name: public
+        max-document-batch-size: 10000
 
 # 应用自身元信息，供健康检查接口读取
 app:
@@ -85,6 +110,18 @@ app:
     memory:
       max-messages: ${AI_MEMORY_MAX_MESSAGES:20}
     system-prompt: ${AI_SYSTEM_PROMPT:你是 Personal AI OS 的个人助手。回答简洁、准确，默认使用中文，必要时使用列表。}
+  knowledge:
+    # 嵌入维度。必须与 Flyway V4 中 vector_store.embedding 的维度一致，
+    # 否则应用**启动失败**并给出修复指引（与其在写入时才报原始 SQL 错误，不如启动就拦住）。
+    embedding-dimensions: ${AI_KNOWLEDGE_EMBEDDING_DIMENSIONS:1024}
+    top-k: ${AI_KNOWLEDGE_TOP_K:4}
+    similarity-threshold: ${AI_KNOWLEDGE_SIMILARITY_THRESHOLD:0.3}
+    max-file-size-bytes: ${AI_KNOWLEDGE_MAX_FILE_SIZE:5242880}
+    # 允许的扩展名
+    allowed-extensions: md,markdown,txt
+    # 分块参数（TokenTextSplitter）
+    chunk-size: ${AI_KNOWLEDGE_CHUNK_SIZE:800}
+    min-chunk-size-chars: ${AI_KNOWLEDGE_MIN_CHUNK_SIZE_CHARS:350}
 
 management:
   endpoints:

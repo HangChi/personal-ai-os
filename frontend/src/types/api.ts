@@ -91,3 +91,46 @@ export interface ConfirmationExecutionResult {
   affectedCount: number
   summary: string
 }
+
+/** 知识文档，对应后端 KnowledgeDocumentDto */
+export interface KnowledgeDocument {
+  id: string
+  title: string
+  filename: string
+  contentType: string
+  sizeBytes: number
+  charCount: number
+  /** 分块数，等于该文档在向量库中的条数 */
+  chunkCount: number
+  createdAt: string
+}
+
+/** 检索命中，对应后端 KnowledgeHitDto */
+export interface KnowledgeHit {
+  documentId: string
+  documentTitle: string
+  filename: string
+  chunkIndex: number
+  content: string
+  score: number | null
+}
+
+/** 引用：命中 + 编号 */
+export interface Citation extends KnowledgeHit {
+  index: number
+}
+
+/** 知识库问答响应 */
+export interface KnowledgeAskResponse {
+  question: string
+  answer: string
+  /** false 表示知识库中没有相关内容（此时 citations 为空，且未调用模型） */
+  answered: boolean
+  citations: Citation[]
+}
+
+/** 检索响应 */
+export interface KnowledgeSearchResponse {
+  query: string
+  hits: KnowledgeHit[]
+}

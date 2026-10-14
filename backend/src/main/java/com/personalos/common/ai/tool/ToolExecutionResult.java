@@ -1,4 +1,4 @@
-package com.personalos.agent.tool;
+package com.personalos.common.ai.tool;
 
 /**
  * 工具的统一返回信封。

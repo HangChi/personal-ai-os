@@ -1,4 +1,4 @@
-package com.personalos.agent.tool;
+package com.personalos.common.ai.tool;
 
 import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.api.ErrorCode;
@@ -117,7 +117,12 @@ public class ToolExecutor {
         return arguments;
     }
 
-    static String contextValue(ToolContext toolContext, String key) {
+    /**
+     * 从 {@link ToolContext} 中取一个上下文值。
+     *
+     * <p>对外公开：工具实现可能只需要上下文而不需要幂等外壳（例如读取会话标识用于日志）。
+     */
+    public static String contextValue(ToolContext toolContext, String key) {
         if (toolContext == null || toolContext.getContext() == null) {
             return null;
         }

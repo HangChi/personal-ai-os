@@ -1,13 +1,16 @@
 package com.personalos.support;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 /**
@@ -114,8 +117,7 @@ public class HttpTestClient {
     }
 
     /** SSE 请求并返回状态码（用于断言失败路径不是 200） */
-    public int sseStatus(String path, String jsonBody) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + path))
+    public int sseStatus(String path, String jsonBody) throws Exception {        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + path))
                 .timeout(Duration.ofSeconds(30))
                 .header("Content-Type", "application/json")
                 .header("Accept", "text/event-stream")
@@ -131,5 +133,46 @@ public class HttpTestClient {
     private Response send(HttpRequest request) throws Exception {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return new Response(response.statusCode(), response.body());
+    }
+
+    /**
+     * multipart/form-data 上传。
+     *
+     * <p>手写 multipart 编码而不是引入测试专用的 HTTP 客户端库：格式本身很简单，
+     * 而且这样上传走的是**真实**的网络路径（含 Spring 的 multipart 解析与大小限制），
+     * 不是某个库替我们拼好的请求。
+     *
+     * @param path       接口路径
+     * @param filename   上传的文件名（决定服务端看到的扩展名）
+     * @param content    文件字节
+     * @param formFields 额外的普通表单字段
+     */
+    public Response upload(String path, String filename, byte[] content, Map<String, String> formFields)
+            throws Exception {
+        String boundary = "----personalos" + UUID.randomUUID().toString().replace("-", "");
+        ByteArrayOutputStream body = new ByteArrayOutputStream();
+
+        for (Map.Entry<String, String> field : formFields.entrySet()) {
+            writeUtf8(body, "--" + boundary + "\r\n");
+            writeUtf8(body, "Content-Disposition: form-data; name=\"" + field.getKey() + "\"\r\n\r\n");
+            writeUtf8(body, field.getValue() + "\r\n");
+        }
+
+        writeUtf8(body, "--" + boundary + "\r\n");
+        writeUtf8(body, "Content-Disposition: form-data; name=\"file\"; filename=\"" + filename + "\"\r\n");
+        writeUtf8(body, "Content-Type: application/octet-stream\r\n\r\n");
+        body.write(content);
+        writeUtf8(body, "\r\n--" + boundary + "--\r\n");
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + path))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()))
+                .build();
+        return send(request);
+    }
+
+    private static void writeUtf8(ByteArrayOutputStream target, String value) {
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+        target.write(bytes, 0, bytes.length);
     }
 }
