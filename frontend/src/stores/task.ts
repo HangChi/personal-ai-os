@@ -7,7 +7,9 @@ import {
   completeTask as completeTaskApi,
   listTasks,
   reopenTask as reopenTaskApi,
+  updateTask as updateTaskApi,
 } from '@/api/tasks'
+import type { UpdateTaskPayload } from '@/api/tasks'
 import type { TaskItem, TaskPriority, TaskStatus } from '@/types/api'
 
 /** 任务列表状态 */
@@ -47,6 +49,25 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
+  /**
+   * 修改任务（标题 / 描述 / 优先级 / 截止时间 / 状态）。
+   *
+   * <p>注意：截止时间的「设置」与「清除」是两件事 ——
+   * 后端用 `clearDueAt` 显式表达清除意图，因为字段缺失（null）无法与之区分。
+   * 若把「未提供」当成「清除」，一个只改标题的请求会顺手清掉截止时间。
+   */
+  async function edit(id: string, payload: UpdateTaskPayload): Promise<boolean> {
+    error.value = null
+    try {
+      await updateTaskApi(id, payload)
+      await load()
+      return true
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '修改任务失败'
+      return false
+    }
+  }
+
   async function toggleCompleted(task: TaskItem): Promise<void> {
     error.value = null
     try {
@@ -81,6 +102,7 @@ export const useTaskStore = defineStore('task', () => {
     overdueCount,
     load,
     create,
+    edit,
     toggleCompleted,
     remove,
   }

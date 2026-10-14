@@ -158,6 +158,35 @@ curl -s "http://localhost:8080/api/v1/agent/confirmations?status=PENDING" | pyth
 > 该 mock **不是产品代码**，不参与构建与测试；集成测试用的是 Java 侧的桩 `ChatModel`。
 > 它存在的意义是让「前端流式渲染 + SSE 契约 + Agent 工具调用」在没有真实模型时也可复现验证。
 
+## 七、前端真机验证
+
+后端的集成测试覆盖服务端；`type-check` 与 `build` 只能证明「能编译」，
+对「点击之后会发生什么」一无所知。`scripts/dev/verify-frontend.js` 补上这一段 ——
+它用真实浏览器跑关键交互，并**断言数据库里的值**，而不只是「页面上看起来对」。
+
+```bash
+# ① 后端：必须显式指定端口。sandbox 的 shell 里存在 SERVER_PORT，它会覆盖 application.yml，
+#    否则应用会绑到一个你没预期的端口上。
+java -jar backend/target/personal-ai-os-backend-0.1.0-SNAPSHOT.jar --server.port=8080
+
+# ② 前端：必须显式绑 IPv4。Vite 默认绑 localhost，而 Node 会把它解析成 ::1，
+#    于是 127.0.0.1:5173 与 Vite 的 /api 代理都打不通（表现为 502）。
+cd frontend && npm run dev -- --host 127.0.0.1
+
+# ③ 跑验证（依赖只需装一次）
+cd /Users/songhangchi/.workbuddy/binaries/node/workspace && npm install playwright
+cd - && NODE_PATH=/Users/songhangchi/.workbuddy/binaries/node/workspace/node_modules \
+  PLAYWRIGHT_BROWSERS_PATH=$HOME/Library/Caches/ms-playwright \
+  node scripts/dev/verify-frontend.js
+```
+
+**它会向数据库写入验证数据**（标题带时间戳后缀）且不清理，便于事后排查。
+
+> **两个容易卡住的点**（都踩过）：
+> ① Vite 默认绑 `::1`，只测 `127.0.0.1` 会误判成「服务没起来」；
+> ② Playwright 升级后期望的 Chromium 编号会变（例如 1.64 要 1248，而缓存里是 1243），
+> 脚本会先用 `executablePath` 指向缓存里的浏览器，失败再退回本机 Chrome。
+
 ## 六、常见问题
 
 **Q：`docker compose up -d` 报端口被占用**

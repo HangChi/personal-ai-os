@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { onMounted, ref } from 'vue'
 
 import { useTaskStore } from '@/stores/task'
+import type { UpdateTaskPayload } from '@/api/tasks'
 import type { TaskItem, TaskPriority, TaskStatus } from '@/types/api'
 
 const taskStore = useTaskStore()
@@ -82,6 +83,72 @@ async function handleCreate(): Promise<void> {
     }
   } finally {
     creating.value = false
+  }
+}
+
+const editing = ref(false)
+const editSaving = ref(false)
+/** 正在编辑的任务的**原始快照**：用于判断截止时间是否被用户主动清空 */
+const editOriginal = ref<TaskItem | null>(null)
+const editForm = ref<{
+  title: string
+  description: string
+  priority: TaskPriority
+  dueAt: Date | null
+  status: TaskStatus
+}>({ title: '', description: '', priority: 'MEDIUM', dueAt: null, status: 'TODO' })
+
+function openEdit(task: TaskItem): void {
+  editOriginal.value = task
+  editForm.value = {
+    title: task.title,
+    description: task.description ?? '',
+    priority: task.priority,
+    dueAt: task.dueAt ? new Date(task.dueAt) : null,
+    status: task.status,
+  }
+  editing.value = true
+}
+
+async function submitEdit(): Promise<void> {
+  const original = editOriginal.value
+  if (!original) {
+    return
+  }
+  const title = editForm.value.title.trim()
+  if (!title) {
+    ElMessage.warning('标题不能为空')
+    return
+  }
+
+  // 描述始终提交（空串表示清空）——若用 `|| undefined`，用户就永远清不掉已有描述
+  const payload: UpdateTaskPayload = {
+    title,
+    description: editForm.value.description.trim(),
+    priority: editForm.value.priority,
+    status: editForm.value.status,
+  }
+  // 截止时间：有值则设置；**原本有值而现在被清空**则显式请求清除。
+  // 后端用 clearDueAt 区分「未提供」与「显式置空」，这正是需要那个字段的原因。
+  if (editForm.value.dueAt) {
+    payload.dueAt = editForm.value.dueAt.toISOString()
+  } else if (original.dueAt) {
+    payload.clearDueAt = true
+  }
+
+  editSaving.value = true
+  try {
+    const ok = await taskStore.edit(original.id, payload)
+    if (ok) {
+      ElMessage.success('已保存')
+      editing.value = false
+    } else {
+      // 失败必须**就地**提示：store.error 渲染在页面顶部的 alert 里，
+      // 而弹窗盖在它上面 —— 用户只会觉得「点了没反应」
+      ElMessage.error(error.value ?? '保存失败')
+    }
+  } finally {
+    editSaving.value = false
   }
 }
 
@@ -210,8 +277,9 @@ async function handleDelete(task: TaskItem): Promise<void> {
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="190" fixed="right">
           <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="openEdit(row)">编辑</el-button>
             <el-button link type="primary" size="small" @click="handleToggle(row)">
               {{ row.status === 'DONE' ? '取消完成' : '完成' }}
             </el-button>
@@ -220,6 +288,48 @@ async function handleDelete(task: TaskItem): Promise<void> {
         </el-table-column>
       </el-table>
     </el-card>
+
+    <el-dialog v-model="editing" title="编辑任务" width="520px">
+      <el-form label-width="80px">
+        <el-form-item label="标题" required>
+          <el-input v-model="editForm.title" maxlength="200" placeholder="任务标题" />
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input
+            v-model="editForm.description"
+            type="textarea"
+            :rows="3"
+            maxlength="2000"
+            placeholder="留空即清空描述"
+          />
+        </el-form-item>
+        <el-form-item label="优先级">
+          <el-select v-model="editForm.priority">
+            <el-option
+              v-for="option in priorityOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="editForm.status">
+            <el-option label="待办" value="TODO" />
+            <el-option label="进行中" value="DOING" />
+            <el-option label="已完成" value="DONE" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="截止时间">
+          <el-date-picker v-model="editForm.dueAt" type="datetime" placeholder="留空即清除截止时间" />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="editing = false">取消</el-button>
+        <el-button type="primary" :loading="editSaving" @click="submitEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

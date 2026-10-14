@@ -4,7 +4,8 @@ import { storeToRefs } from 'pinia'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 import { useCalendarStore } from '@/stores/calendar'
-import type { RecurrenceType, Reminder } from '@/types/api'
+import type { UpdateEventPayload } from '@/api/calendar'
+import type { CalendarEvent, CalendarOccurrence, RecurrenceType, Reminder } from '@/types/api'
 
 const calendarStore = useCalendarStore()
 const { dueReminders, loadingOccurrences, creating, error, groupedByDay } = storeToRefs(calendarStore)
@@ -69,10 +70,109 @@ async function handleCreate(): Promise<void> {
   }
 }
 
+const editing = ref(false)
+const editSaving = ref(false)
+const editLoadingId = ref<string | null>(null)
+/** 编辑基线：**原始定义**而非发生实例（实例只带单次时间，用它提交会抹掉重复规则与描述） */
+const editOriginal = ref<CalendarEvent | null>(null)
+const editForm = ref<{
+  title: string
+  location: string
+  description: string
+  allDay: boolean
+  range: [Date, Date] | null
+  recurrenceType: RecurrenceType
+  recurrenceUntil: Date | null
+  reminderLeadMinutes: number
+}>({
+  title: '',
+  location: '',
+  description: '',
+  allDay: false,
+  range: null,
+  recurrenceType: 'NONE',
+  recurrenceUntil: null,
+  reminderLeadMinutes: 15,
+})
+
+async function openEdit(occurrence: CalendarOccurrence): Promise<void> {
+  editLoadingId.value = occurrence.eventId
+  try {
+    // 列表返回的是「发生实例」，缺少重复截止与描述 → 编辑前必须取回原始定义
+    const event = await calendarStore.loadEvent(occurrence.eventId)
+    if (!event) {
+      return
+    }
+    editOriginal.value = event
+    editForm.value = {
+      title: event.title,
+      location: event.location ?? '',
+      description: event.description ?? '',
+      allDay: event.allDay,
+      range: [new Date(event.startsAt), new Date(event.endsAt)],
+      recurrenceType: event.recurrenceType,
+      recurrenceUntil: event.recurrenceUntil ? new Date(event.recurrenceUntil) : null,
+      reminderLeadMinutes: event.reminderLeadMinutes,
+    }
+    editing.value = true
+  } finally {
+    editLoadingId.value = null
+  }
+}
+
+async function submitEdit(): Promise<void> {
+  const original = editOriginal.value
+  if (!original) {
+    return
+  }
+  const value = editForm.value.title.trim()
+  if (!value) {
+    ElMessage.warning('请填写日程标题')
+    return
+  }
+  if (!editForm.value.range || editForm.value.range.length !== 2) {
+    ElMessage.warning('请选择开始与结束时间')
+    return
+  }
+
+  const payload: UpdateEventPayload = {
+    title: value,
+    // 地点与描述始终提交（空串表示清空），否则用户永远清不掉已有内容
+    location: editForm.value.location.trim(),
+    description: editForm.value.description.trim(),
+    allDay: editForm.value.allDay,
+    // 起止**成对**提供：后端要求如此，单独改一个会让「结束早于开始」有可乘之机
+    startsAt: editForm.value.range[0].toISOString(),
+    endsAt: editForm.value.range[1].toISOString(),
+    recurrenceType: editForm.value.recurrenceType,
+    reminderLeadMinutes: editForm.value.reminderLeadMinutes,
+  }
+  // 重复截止：有值则设置；原本有值现在被清空则显式请求清除
+  if (editForm.value.recurrenceUntil) {
+    payload.recurrenceUntil = editForm.value.recurrenceUntil.toISOString()
+  } else if (original.recurrenceUntil) {
+    payload.clearRecurrenceUntil = true
+  }
+
+  editSaving.value = true
+  try {
+    const ok = await calendarStore.edit(original.id, payload)
+    if (ok) {
+      ElMessage.success('已保存')
+      editing.value = false
+    } else {
+      // 失败就地提示：页面顶部的 alert 被弹窗盖住，用户看不到
+      ElMessage.error(error.value ?? '保存失败')
+    }
+  } finally {
+    editSaving.value = false
+  }
+}
+
 async function handleDelete(eventId: string, eventTitle: string): Promise<void> {
   try {
     await ElMessageBox.confirm(
-      `删除「${eventTitle}」会同时删除它的提醒。若只想删掉重复日程中的某一次，请改用助手确认流程。`,
+      `删除「${eventTitle}」会删除整条日程（含全部重复发生）并同时删除它的提醒。`,
       '删除日程',
       { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
     )
@@ -213,6 +313,16 @@ function sourceLabel(sourceType: string): string {
             <el-button
               class="calendar__item-action"
               link
+              type="primary"
+              size="small"
+              :loading="editLoadingId === item.eventId"
+              @click="openEdit(item)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              class="calendar__item-delete"
+              link
               type="danger"
               size="small"
               @click="handleDelete(item.eventId, item.title)"
@@ -223,6 +333,72 @@ function sourceLabel(sourceType: string): string {
         </div>
       </div>
     </el-card>
+
+    <el-dialog v-model="editing" title="编辑日程" width="560px">
+      <p class="calendar__edit-note">
+        编辑作用于**整条日程**（含全部重复发生）：改时间后每一次发生都会用新时间。
+        目前不支持「只改/只删某一次发生」。
+      </p>
+      <el-form label-width="90px">
+        <el-form-item label="标题" required>
+          <el-input v-model="editForm.title" maxlength="200" placeholder="日程标题" />
+        </el-form-item>
+        <el-form-item label="时间" required>
+          <el-date-picker
+            v-model="editForm.range"
+            type="datetimerange"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+          />
+        </el-form-item>
+        <el-form-item label="全天">
+          <el-checkbox v-model="editForm.allDay">
+            全天日程（起止会归一到当天 00:00 至次日 00:00）
+          </el-checkbox>
+        </el-form-item>
+        <el-form-item label="重复">
+          <div class="calendar__edit-form-row">
+            <el-select v-model="editForm.recurrenceType" style="width: 130px">
+              <el-option
+                v-for="option in recurrenceOptions"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+            <el-date-picker
+              v-if="editForm.recurrenceType !== 'NONE'"
+              v-model="editForm.recurrenceUntil"
+              type="date"
+              placeholder="重复截止（留空即无限）"
+            />
+          </div>
+        </el-form-item>
+        <el-form-item label="地点">
+          <el-input v-model="editForm.location" maxlength="200" placeholder="留空即清空" />
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input
+            v-model="editForm.description"
+            type="textarea"
+            :rows="3"
+            maxlength="2000"
+            placeholder="留空即清空"
+          />
+        </el-form-item>
+        <el-form-item label="提前提醒">
+          <div class="calendar__edit-form-row">
+            <el-input-number v-model="editForm.reminderLeadMinutes" :min="0" :max="10080" :step="5" />
+            <span class="calendar__lead-label">分钟</span>
+          </div>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="editing = false">取消</el-button>
+        <el-button type="primary" :loading="editSaving" @click="submitEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -362,5 +538,22 @@ function sourceLabel(sourceType: string): string {
 
 .calendar__item-action {
   margin-left: auto;
+}
+
+.calendar__item-delete {
+  margin-left: 0;
+}
+
+.calendar__edit-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.calendar__edit-note {
+  margin: 0 0 12px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
 }
 </style>

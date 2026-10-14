@@ -16,7 +16,7 @@ export const http = axios.create({
 })
 
 /**
- * 业务错误：HTTP 层成功，但统一响应体里的 code 非 0。
+ * 业务错误：统一响应体里的 code 非 0（可能是 HTTP 200，也可能是 4xx / 5xx）。
  *
  * 调用方可用 `instanceof ApiBusinessError` 区分「业务失败」与「网络/服务不可用」。
  */
@@ -40,10 +40,18 @@ http.interceptors.response.use(
     return response
   },
   (error: unknown) => {
-    const message = axios.isAxiosError(error)
-      ? `无法连接后端服务：${error.message}`
-      : '无法连接后端服务：未知错误'
-    return Promise.reject(new Error(message))
+    if (axios.isAxiosError(error)) {
+      // 失败响应（4xx / 5xx）**同样带着统一信封**，里面是服务端给出的精确原因。
+      // 若不加区分地一律报「无法连接后端服务」，用户看到的会是一句与事实不符的话 ——
+      // 例如「任务不存在」被说成「连不上后端」，排错方向被彻底带偏。
+      const body = error.response?.data as ApiResponse<unknown> | undefined
+      if (body && typeof body.code === 'number' && typeof body.message === 'string') {
+        return Promise.reject(new ApiBusinessError(body.code, body.message))
+      }
+      // 真正没有响应体的才是连接层问题（后端未启动、端口不通、超时）
+      return Promise.reject(new Error(`无法连接后端服务：${error.message}`))
+    }
+    return Promise.reject(new Error('无法连接后端服务：未知错误'))
   },
 )
 

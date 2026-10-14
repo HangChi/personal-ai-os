@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { createEvent, deleteEvent, listOccurrences } from '@/api/calendar'
+import { createEvent, deleteEvent, getEvent, listOccurrences, updateEvent } from '@/api/calendar'
 import { listReminders, markReminderRead, scanReminders } from '@/api/reminders'
-import type { CreateEventPayload } from '@/api/calendar'
-import type { CalendarOccurrence, Reminder } from '@/types/api'
+import type { CreateEventPayload, UpdateEventPayload } from '@/api/calendar'
+import type { CalendarEvent, CalendarOccurrence, Reminder } from '@/types/api'
 
 /**
  * 提醒轮询间隔（毫秒）。
@@ -70,6 +70,41 @@ export const useCalendarStore = defineStore('calendar', () => {
       return false
     } finally {
       creating.value = false
+    }
+  }
+
+  /**
+   * 读取日程的**原始定义**。
+   *
+   * <p>编辑必须基于原始定义而不是列表里的「发生实例」：实例只带单次的时间，
+   * 缺少重复截止、描述等字段；用实例去提交修改会把重复规则和描述意外抹掉。
+   */
+  async function loadEvent(id: string): Promise<CalendarEvent | null> {
+    error.value = null
+    try {
+      return await getEvent(id)
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '加载日程失败'
+      return null
+    }
+  }
+
+  /**
+   * 修改日程。
+   *
+   * <p>提交时**总是成对给出起止时间** —— 后端要求两者同时提供，
+   * 因为只改其中一个会让「结束早于开始」这类非法状态有可乘之机。
+   */
+  async function edit(id: string, payload: UpdateEventPayload): Promise<boolean> {
+    error.value = null
+    try {
+      await updateEvent(id, payload)
+      await loadOccurrences()
+      await refreshReminders()
+      return true
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '修改日程失败'
+      return false
     }
   }
 
@@ -143,7 +178,9 @@ export const useCalendarStore = defineStore('calendar', () => {
     error,
     groupedByDay,
     loadOccurrences,
+    loadEvent,
     add,
+    edit,
     remove,
     triggerScan,
     refreshReminders,
