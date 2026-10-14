@@ -49,15 +49,16 @@ onMounted(() => {
     </el-card>
 
     <el-card class="home__card" shadow="never">
-      <template #header>阶段 0 已完成</template>
+      <template #header>已有能力</template>
       <ul class="home__list">
-        <li>Monorepo 骨架：backend / frontend / docs / compose.yml</li>
-        <li>后端：Spring Boot 4.1.1 + Spring AI BOM 2.0.1 + Java 21，按业务模块分包</li>
-        <li>数据库：PostgreSQL 17 + pgvector，结构变更由 Flyway 管理</li>
-        <li>前端：Vue 3 + TypeScript + Vite + Router + Pinia + Element Plus</li>
+        <li><strong>对话</strong>：多轮上下文、聊天历史持久化、SSE 流式输出</li>
+        <li><strong>任务</strong>：自然语言增删改查；删除与关键字段修改需人工确认</li>
+        <li><strong>知识库</strong>：上传 Markdown / TXT 建立向量索引，问答附带引用来源</li>
+        <li><strong>日程与提醒</strong>：重复规则、到点提醒（页面轮询）</li>
       </ul>
       <p class="home__hint">
-        下一步（阶段 1）将接入 Spring AI ChatClient、工具调用与聊天历史。
+        助手可调用的工具共 13 个（任务 8 + 知识库 1 + 日程提醒 5）；
+        其中删除类操作只会生成「待确认事项」，必须由你在界面上确认后才会真正生效。
       </p>
     </el-card>
   </div>

@@ -188,6 +188,27 @@ public class TaskService {
         return found.size();
     }
 
+    /**
+     * 取出截止时间落在 {@code [from, to]} 且**尚未完成**的任务。
+     *
+     * <p>供提醒扫描使用（{@code calendar} → {@code task} 的只读依赖）。
+     * 已完成的任务刻意排除：已完成的事不该再提醒用户。
+     */
+    @Transactional(readOnly = true)
+    public List<TaskDto> findDueBetween(Instant from, Instant to) {
+        Specification<TaskEntity> specification = (root, query, builder) -> builder.and(
+                builder.isNotNull(root.get("dueAt")),
+                builder.greaterThanOrEqualTo(root.get("dueAt"), from),
+                builder.lessThanOrEqualTo(root.get("dueAt"), to),
+                builder.notEqual(root.get("status"), TaskStatus.DONE));
+
+        Instant now = Instant.now();
+        return taskRepository.findAll(specification).stream()
+                .sorted(Comparator.comparing(TaskEntity::getDueAt))
+                .map(task -> toDto(task, now))
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public long countAll() {
         return taskRepository.count();

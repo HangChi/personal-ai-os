@@ -1,6 +1,7 @@
 package com.personalos.agent.tool;
 
 import com.personalos.common.ai.ToolContextKeys;
+import com.personalos.common.ai.tool.ToolArguments;
 import com.personalos.common.ai.tool.ToolExecutionResult;
 import com.personalos.common.ai.tool.ToolExecutor;
 import com.personalos.common.api.ErrorCode;
@@ -15,9 +16,6 @@ import com.personalos.task.entity.TaskPriority;
 import com.personalos.task.entity.TaskStatus;
 import com.personalos.task.service.TaskService;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -302,25 +300,10 @@ public class TaskTools {
     /**
      * 解析时间。
      *
-     * <p>除标准 ISO 瞬时时间外，也接受「只有日期」的写法（如 {@code 2026-10-17}），
-     * 按当日 00:00 UTC 处理 —— 模型把「下周一」换算成日期而不带时间的概率很高，
-     * 为此直接拒绝会给用户一个莫名其妙的失败。
+     * <p>委托给 {@link ToolArguments}：解析规则必须在所有工具里一致，
+     * 否则会出现「任务工具接受 2026-10-17、日程工具却报错」这种让模型和用户都困惑的差异。
      */
     private static Instant parseInstant(String raw, String fieldName) {
-        if (raw == null || raw.isBlank()) {
-            return null;
-        }
-        String value = raw.strip();
-        try {
-            return Instant.parse(value);
-        } catch (DateTimeParseException ignored) {
-            // 继续尝试「仅日期」的写法
-        }
-        try {
-            return LocalDate.parse(value).atStartOfDay(ZoneOffset.UTC).toInstant();
-        } catch (DateTimeParseException ex) {
-            throw new BusinessException(ErrorCode.VALIDATION_FAILED,
-                    fieldName + " 不是合法的时间，请使用 ISO-8601（如 2026-10-17T10:00:00Z 或 2026-10-17）：" + raw);
-        }
+        return ToolArguments.parseInstant(raw, fieldName);
     }
 }

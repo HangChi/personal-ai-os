@@ -16,5 +16,7 @@ public enum ConfirmationAction {
     /** 修改任务截止时间 */
     SCHEDULE_TASK,
     /** 修改任务优先级 */
-    SET_PRIORITY
+    SET_PRIORITY,
+    /** 删除日程（可含批量） */
+    DELETE_CALENDAR_EVENT
 }

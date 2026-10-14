@@ -122,6 +122,23 @@ app:
     # 分块参数（TokenTextSplitter）
     chunk-size: ${AI_KNOWLEDGE_CHUNK_SIZE:800}
     min-chunk-size-chars: ${AI_KNOWLEDGE_MIN_CHUNK_SIZE_CHARS:350}
+  calendar:
+    # 定时扫描开关。测试里关闭（见 src/test/resources/application.properties），
+    # 否则调度会在集成测试中途写入 reminder，与各用例的清理逻辑相互干扰，产生难以复现的偶发失败。
+    scan-enabled: ${AI_CALENDAR_SCAN_ENABLED:true}
+    scan-interval-ms: ${AI_CALENDAR_SCAN_INTERVAL_MS:60000}
+    # 首次扫描延迟：避免与应用启动阶段争抢数据库连接
+    scan-initial-delay-ms: ${AI_CALENDAR_SCAN_INITIAL_DELAY_MS:10000}
+    # 扫描窗口向前看多远。必须覆盖「提醒提前量」，否则到点的提醒会被漏掉。
+    scan-lookahead: ${AI_CALENDAR_SCAN_LOOKAHEAD:24h}
+    # 扫描窗口向后看多远：覆盖日常重启造成的停机。
+    # 刻意只回看 24 小时 —— 补发一周前的提醒只会制造噪音，而不是「不丢数据」。
+    scan-lookback: ${AI_CALENDAR_SCAN_LOOKBACK:24h}
+    # 任务提醒的默认提前量（日程可逐个覆盖）
+    default-reminder-lead: ${AI_CALENDAR_DEFAULT_LEAD:15m}
+    max-range-days: ${AI_CALENDAR_MAX_RANGE_DAYS:90}
+    default-query-limit: ${AI_CALENDAR_DEFAULT_QUERY_LIMIT:100}
+    max-query-limit: ${AI_CALENDAR_MAX_QUERY_LIMIT:500}
 
 management:
   endpoints:

@@ -37,10 +37,14 @@ public class TaskConfirmationHandler implements ConfirmationActionHandler {
 
     @Override
     public int execute(ConfirmationAction action, String payloadJson) {
+        // 刻意不写 default 分支：这样一旦 ConfirmationAction 新增取值，
+        // 编译器会立刻指出「这里有没覆盖到的动作」，而不是等到运行期才发现某个动作无人处理。
         return switch (action) {
             case DELETE_TASK -> deleteTasks(payloadJson);
             case SCHEDULE_TASK -> scheduleTask(payloadJson);
             case SET_PRIORITY -> setPriority(payloadJson);
+            case DELETE_CALENDAR_EVENT -> throw new IllegalStateException(
+                    "任务确认处理器收到了不属于自己的动作：" + action);
         };
     }
 

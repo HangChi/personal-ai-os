@@ -134,3 +134,68 @@ export interface KnowledgeSearchResponse {
   query: string
   hits: KnowledgeHit[]
 }
+
+// ---------------------------------------------------------------------------
+// 日程与提醒（阶段 4）
+// ---------------------------------------------------------------------------
+
+/** 重复类型 */
+export type RecurrenceType = 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'WEEKDAYS'
+
+/** 提醒来源类型 */
+export type ReminderSourceType = 'CALENDAR_EVENT' | 'TASK'
+
+/** 提醒状态 */
+export type ReminderStatus = 'PENDING' | 'READ' | 'CANCELLED'
+
+/** 日程的一次发生实例（重复规则已由服务端展开） */
+export interface CalendarOccurrence {
+  eventId: string
+  title: string
+  location: string | null
+  allDay: boolean
+  startsAt: string
+  endsAt: string
+  recurrenceType: RecurrenceType
+  /** 是否为重复日程中的一次 */
+  recurring: boolean
+  reminderLeadMinutes: number
+}
+
+/** 日程的原始定义 */
+export interface CalendarEvent {
+  id: string
+  title: string
+  description: string | null
+  location: string | null
+  allDay: boolean
+  startsAt: string
+  endsAt: string
+  recurrenceType: RecurrenceType
+  recurrenceUntil: string | null
+  reminderLeadMinutes: number
+  createdAt: string
+}
+
+/** 提醒 */
+export interface Reminder {
+  id: string
+  sourceType: ReminderSourceType
+  sourceId: string
+  title: string
+  occurrenceAt: string
+  remindAt: string
+  status: ReminderStatus
+  readAt: string | null
+}
+
+/** 一次扫描的结果 */
+export interface ReminderScanResult {
+  windowStart: string
+  windowEnd: string
+  scannedAt: string
+  created: number
+  skipped: number
+  /** 清理掉的孤儿提醒条数（来源已被删除） */
+  pruned: number
+}
