@@ -2,6 +2,7 @@ package com.personalos;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.personalos.mcp.client.McpClientRegistry;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -37,14 +39,18 @@ class PersonalOsApplicationTests {
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
 
     private final JdbcTemplate jdbcTemplate;
+    private final ApplicationContext context;
     private final int port;
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
     @Autowired
-    PersonalOsApplicationTests(JdbcTemplate jdbcTemplate, @Value("${local.server.port}") int port) {
+    PersonalOsApplicationTests(JdbcTemplate jdbcTemplate,
+                               ApplicationContext context,
+                               @Value("${local.server.port}") int port) {
         this.jdbcTemplate = jdbcTemplate;
+        this.context = context;
         this.port = port;
     }
 
@@ -88,6 +94,12 @@ class PersonalOsApplicationTests {
                 // 不加此断言的话，Jackson 会把 record 的 isSuccess() 当成 getter，
                 // 凭空多序列化一个 success 字段，而所有「包含式」断言依然全绿。
                 .doesNotContain("\"success\"");
+    }
+
+    @Test
+    @DisplayName("未配置 MCP：不创建 McpClientRegistry（零启用默认，与阶段 5 之前行为一致）")
+    void mcpRegistryAbsentWhenNotConfigured() {
+        assertThat(context.getBeanNamesForType(McpClientRegistry.class)).isEmpty();
     }
 
     @Test

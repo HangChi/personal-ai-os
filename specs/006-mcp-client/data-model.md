@@ -49,12 +49,21 @@ ALTER TABLE confirmation ADD CONSTRAINT confirmation_action_check
 
 ```
 MCP_ENABLED=true
-MCP_SERVERS=filesystem
-MCP_SERVER_FILESYSTEM_COMMAND=npx
-MCP_SERVER_FILESYSTEM_ARGS=-y,@modelcontextprotocol/server-filesystem,./mcp-sandbox
-MCP_SERVER_FILESYSTEM_AUTO_TOOLS=read_file,read_text_file,list_directory,directory_tree,search_files,get_file_info
-MCP_SERVER_GITHUB_ENV_GITHUB_TOKEN=${GITHUB_TOKEN}
+MCP_SERVERS_FILESYSTEM_COMMAND=npx
+MCP_SERVERS_FILESYSTEM_ARGS=-y,@modelcontextprotocol/server-filesystem,./mcp-sandbox
+MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,read_text_file,list_directory,directory_tree,search_files,get_file_info
+MCP_SERVERS_GITHUB_ENV_GITHUB_TOKEN=${GITHUB_TOKEN}
 ```
+
+> **2026-10-15 修订（实现期实测偏差）**：原设计写的是 `MCP_SERVER_<NAME>_*`（单数），
+> 且有一个 `MCP_SERVERS=filesystem` 列表属性。实测两点修正：
+> ① relaxed binding **不做单复数转换**——`MCP_SERVER_FILESYSTEM_COMMAND` 归一到
+> `mcp.server.filesystem.command`，与字段名 `servers` 对不上，**静默绑不上**
+> （servers 永远是空 map，不报错）。已改为复数 `MCP_SERVERS_<NAME>_*` 与字段名对齐，
+> 并由 `McpDegradedStartupIntegrationTest` 的断言守住；
+> ② `MCP_SERVERS` 列表属性已删除——`servers` 映射的键就是 server 清单，
+> 少一个属性就少一种「声明了却没配置」的半成品状态。
+> 教训：环境变量名必须与配置字段名逐字对应（大小写/分隔符宽松，单复数不宽松）。
 
 ### 2.2 工具策略的运行时表示
 

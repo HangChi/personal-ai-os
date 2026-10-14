@@ -113,6 +113,18 @@
         </dependency>
 
         <!--
+          阶段 6：MCP 客户端（本地 stdio 接入外部工具 server）。
+          标准 starter（JDK HttpClient/进程管道传输），与现有 Web MVC 同步栈匹配；
+          webflux 变体是为远程 SSE 生产场景准备的，本轮用不到（research.md R-01）。
+          spring-ai-starter-mcp-client:2.0.1 已核实存在于 Maven Central。
+          版本由上方 spring-ai-bom 统一管理。
+        -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-client</artifactId>
+        </dependency>
+
+        <!--
           阶段 3：向量库。注意 artifact 名是 vector-store（带连字符），
           vectorstore 的拼写不存在（实测 404）。版本由上方 BOM 管理。
         -->

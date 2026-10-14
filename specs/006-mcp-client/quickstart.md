@@ -25,10 +25,9 @@
 
 ```bash
 MCP_ENABLED=true
-MCP_SERVERS=filesystem
-MCP_SERVER_FILESYSTEM_COMMAND=npx
-MCP_SERVER_FILESYSTEM_ARGS=-y,@modelcontextprotocol/server-filesystem,./mcp-sandbox
-MCP_SERVER_FILESYSTEM_AUTO_TOOLS=read_file,read_text_file,read_multiple_files,list_directory,list_directory_with_sizes,directory_tree,search_files,get_file_info,list_allowed_directories
+MCP_SERVERS_FILESYSTEM_COMMAND=npx
+MCP_SERVERS_FILESYSTEM_ARGS=-y,@modelcontextprotocol/server-filesystem,./mcp-sandbox
+MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,read_text_file,read_multiple_files,list_directory,list_directory_with_sizes,directory_tree,search_files,get_file_info,list_allowed_directories
 ```
 
 建沙箱目录与样例文件：`mkdir -p mcp-sandbox && echo "hello mcp" > mcp-sandbox/hello.txt`，重启后端。
@@ -60,7 +59,7 @@ MCP_SERVER_FILESYSTEM_AUTO_TOOLS=read_file,read_text_file,read_multiple_files,li
 
 | 注入 | 操作 | 期望 |
 |---|---|---|
-| 命令不存在 | `MCP_SERVER_FILESYSTEM_COMMAND=/nonexistent/npx` 重启 | 应用正常启动；该 server 标记不可用 + 错误日志；对话仍可用（无该 server 工具） |
+| 命令不存在 | `MCP_SERVERS_FILESYSTEM_COMMAND=/nonexistent/npx` 重启 | 应用正常启动；该 server 标记不可用 + 错误日志；对话仍可用（无该 server 工具） |
 | 连接挂起 | 临时把 `command` 换成一个不退出也不说话的进程（如 `sleep 300`） | 启动在超时（默认 10s）后继续，该 server 不可用；应用总体就绪不被无限阻塞 |
 | 名字冲突 | 给另一个 server 配一个暴露同名工具的实现（或用测试替身） | **启动失败**，错误信息列出冲突的工具名、来源 server 与内置工具 |
 

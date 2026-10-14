@@ -11,10 +11,15 @@
 |---|---|
 | C1 | 配置只经环境变量（`MCP_*`）注入；仓库只提交 `.env.example` 模板 |
 | C2 | `MCP_ENABLED=false`（默认）时，**不初始化任何 MCP 组件**：零连接、零工具、零日志噪音 |
-| C3 | `MCP_SERVERS` 列出的每个名字 MUST 在 `servers` 映射中有对应配置；缺配置 → 启动失败（配置错误是用户错误，不降级） |
+| C3 | 每个 `MCP_SERVERS_<NAME>_*` 配置块 MUST 有 `COMMAND`；缺 → 启动失败（配置错误是用户错误，不降级）。`servers` 映射的键即 server 清单，无独立列表属性 |
 | C4 | `command` 为空 → 启动失败（同 C3） |
 | C5 | `env` 的值允许引用其它环境变量（`${VAR}` 形式由 Spring 解析）；解析不到 → 按空串处理并告警，**不因此崩溃**（server 可能不需要它） |
 | C6 | 敏感值（`env` 中的 key）MUST NOT 出现在启动日志、错误响应或审计记录中 |
+
+> **2026-10-15 修订**：C3 原表述引用了一个 `MCP_SERVERS` 列表属性，实现期已删除
+> （映射键即清单）；且环境变量名从单数 `MCP_SERVER_<NAME>_*` 修正为复数
+> `MCP_SERVERS_<NAME>_*`（relaxed binding 不做单复数转换，单数写法静默绑不上）。
+> 详见 data-model.md §2.1 的偏差记录。
 
 ### 1.2 必须有的行为用例
 
