@@ -42,13 +42,24 @@
     "status": "UP",
     "application": "personal-ai-os",
     "version": "0.1.0-SNAPSHOT",
-    "timestamp": "2026-10-14T00:20:00Z"
+    "timestamp": "2026-10-14T00:20:00Z",
+    "components": {
+      "database": "UP",
+      "ai": "CONFIGURED"
+    }
   },
   "timestamp": "2026-10-14T00:20:00Z"
 }
 ```
 
-**说明**：数据库连通性由框架自带的 `/actuator/health` 反映（含 `db` 组件）。本接口只表达「应用进程存活 + 版本可读」。
+**说明**（2026-10-14 修订，技术债清偿）：数据库连通性最初只由框架自带的 `/actuator/health` 反映，
+本接口只表达「应用进程存活 + 版本可读」。实际使用中首页只展示本接口，数据库挂了用户看到的是一片绿，
+依赖状态必须出现在用户真正会看的地方，故补入 `components`：
+
+- `database`：`SELECT 1` 探测，UP/DOWN。**关键依赖**——DOWN 时整体 `status` 降为 DOWN
+  （HTTP 仍为 200：本接口是状态报告而非熔断器，前端要能读到它才能展示）。
+- `ai`：模型配置状态，CONFIGURED/NOT_CONFIGURED。**可选依赖**——未配置模型时聊天返回
+  50300，但应用整体健康，不拖垮 `status`。
 
 ---
 

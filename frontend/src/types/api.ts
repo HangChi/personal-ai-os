@@ -27,6 +27,8 @@ export interface HealthStatus {
   application: string
   version: string
   timestamp: string
+  /** 依赖分量状态（阶段 6 技术债清偿新增）：如 database=UP、ai=CONFIGURED */
+  components?: Record<string, string>
 }
 
 /** 会话视图，对应后端 ChatSessionDto */

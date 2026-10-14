@@ -12,6 +12,13 @@ const tagType = computed<'success' | 'danger'>(() =>
   health.value?.status === 'UP' ? 'success' : 'danger',
 )
 
+/** 依赖分量颜色：UP/CONFIGURED 成功，NOT_CONFIGURED 信息（可选依赖未装配），DOWN 危险 */
+function componentTagType(value: string): 'success' | 'info' | 'danger' {
+  if (value === 'UP' || value === 'CONFIGURED') return 'success'
+  if (value === 'NOT_CONFIGURED') return 'info'
+  return 'danger'
+}
+
 onMounted(() => {
   void appStore.loadHealth()
 })
@@ -43,6 +50,17 @@ onMounted(() => {
         <el-descriptions-item label="应用">{{ health.application }}</el-descriptions-item>
         <el-descriptions-item label="版本">{{ health.version }}</el-descriptions-item>
         <el-descriptions-item label="服务端时间">{{ health.timestamp }}</el-descriptions-item>
+        <el-descriptions-item v-if="health.components" label="依赖">
+          <el-tag
+            v-for="(value, key) in health.components"
+            :key="key"
+            :type="componentTagType(value)"
+            size="small"
+            style="margin-right: 6px"
+          >
+            {{ key }}: {{ value }}
+          </el-tag>
+        </el-descriptions-item>
       </el-descriptions>
 
       <el-skeleton v-else :rows="4" animated />

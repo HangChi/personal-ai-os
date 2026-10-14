@@ -79,3 +79,8 @@ ls backend/src/main/java/com/personalos/{common,ai,agent,chat,task,knowledge,cal
 | D-仓库卫生 | `git check-ignore -q` / 密钥扫描 | ✅ | `.env` 被忽略、`.env.example` 正常入库；密钥扫描零命中；无构建产物混入（92 文件 / 696K） |
 
 **未验证项**：`C-前后端联通` 的浏览器实测。除该项外，spec 的 SC-001 ~ SC-007 均有实测证据。
+
+> **2026-10-14 修订（技术债清偿）**：上表 `B-健康检查` 记录的「恰好 4 个字段」是阶段 0 的契约。
+> 本日起 `/api/v1/health` 增加 `components`（database / ai），关键依赖（数据库）不可用时整体
+> `status` 降为 DOWN。修订原因与新契约见 `contracts/http-api.md` 的同节说明——原记录保留以维护历史，
+> 不代表当前契约。
