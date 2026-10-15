@@ -157,11 +157,19 @@ class McpConfirmationIntegrationTest {
                 .extracting(ex -> ((BusinessException) ex).getErrorCode())
                 .isEqualTo(ErrorCode.CONFIRMATION_NOT_ACTIVE);
 
-        // 5) 审计：工具名带 mcp_ 前缀可区分来源；拦截与执行都留痕
+        // 5) 审计归属（与内置可确认工具完全一致，无 MCP 特例）：
+        //    拦截记进 operation_record（工具调用审计），执行记在 confirmation 表的状态流转。
+        //    内置的 deleteTask 也是这个口径——执行侧不写工具审计，避免两处状态各自演化。
         List<OperationRecordEntity> records = operationRecordRepository.findAll().stream()
                 .filter(r -> r.getOperation().startsWith("mcp_test_record"))
                 .toList();
-        assertThat(records).isNotEmpty();
+        assertThat(records).hasSize(1);
+        assertThat(records.get(0).getOperation()).as("工具名带前缀，来源可辨").isEqualTo("mcp_test_record");
+        assertThat(records.get(0).getOutcome().name()).isEqualTo("REQUIRES_CONFIRMATION");
+
+        assertThat(confirmationRepository.findById(pending.id()).orElseThrow().getStatus().name())
+                .as("执行痕迹在 confirmation 表：状态已流转为 CONFIRMED")
+                .isEqualTo("CONFIRMED");
     }
 
     @Test
@@ -187,12 +195,17 @@ class McpConfirmationIntegrationTest {
     }
 
     @Test
-    @DisplayName("装配：三个工具全部就位，record 未列入 autoTools 故走 CONFIRM")
+    @DisplayName("装配：工具全部就位（含 SDK 已归一化 schema 的那个）；record 未列入 autoTools 故走 CONFIRM")
     void toolNamesAndPoliciesAssembled() {
         McpToolCallbackProvider provider = provider();
 
+        // 实测结论：helper 里那个「故意缺 type」的工具，经 Spring AI 转换层时已被补成
+        // {"type":"object",...}（SDK 会归一化 schema），因此它照样装配成功。
+        // 也就是说「坏 schema 被剔除」这条路在集成测试里构造不出来——那部分自检由
+        // McpToolCallbackProviderTest 直接单测（防御性代码必须能被直接测到）。
         assertThat(provider.toolNames())
-                .containsExactlyInAnyOrder("mcp_test_echo", "mcp_test_ping", "mcp_test_record");
+                .containsExactlyInAnyOrder("mcp_test_echo", "mcp_test_ping",
+                        "mcp_test_record", "mcp_test_broken_schema");
         assertThat(((McpToolCallback) find(provider, "mcp_test_record")).assembledName())
                 .isEqualTo("mcp_test_record");
     }

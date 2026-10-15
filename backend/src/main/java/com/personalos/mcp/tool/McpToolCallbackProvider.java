@@ -85,10 +85,18 @@ public class McpToolCallbackProvider implements ToolCallbackProvider {
     /**
      * 最小 schema 检查：是 JSON 对象、{@code type} 为 {@code object}、{@code properties} 是对象。
      *
-     * <p>刻意薄：深度校验 schema 是 server 的职责，我们只保证「不把明显坏的声明交给模型」。
+     * <p><b>实测结论（2026-10-15）</b>：Spring AI 的 {@code SyncMcpToolCallbackProvider}
+     * 转换时会**归一化 schema**——server 若声明缺 {@code type} 的 schema，
+     * 到达本层时已被补成 {@code {"type":"object",...}}（实测打印确认）。
+     * 也就是说「server 声明坏 schema」这条路径在当前依赖版本下**不可达**；
+     * 本检查因此退化为**防御性**的：防的是 JSON 损坏/空白 schema，以及未来框架行为变化。
+     * 它刻意保留——成本是一次字符串解析，收益是把「坏工具暴露给模型」这类
+     * 最难排查的问题挡在装配期。
+     *
+     * <p>刻意薄：深度校验 schema 是 server 的职责，我们只保证「不把明显坏的东西交给模型」。
      */
     @SuppressWarnings("unchecked")
-    private static boolean hasUsableSchema(ToolDefinition definition, JsonCodec jsonCodec) {
+    static boolean hasUsableSchema(ToolDefinition definition, JsonCodec jsonCodec) {
         String schema = definition.inputSchema();
         if (schema == null || schema.isBlank()) {
             return false;

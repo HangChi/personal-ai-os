@@ -101,13 +101,17 @@
 
 ### 4.1 字段
 
-复用阶段 2 的 `ToolInvocation` 记录结构，新增区分维度：
+复用阶段 2 的工具审计记录（`operation_record`），来源经**工具名前缀**区分，不加新列：
 
 | 维度 | 取值 |
 |---|---|
-| 来源 | `BUILTIN`（既有）／`MCP`（新） |
-| MCP 附加信息 | `server` 名（进入工具名或独立字段，plan 定） |
-| 状态 | 既有状态机 + `PENDING_CONFIRMATION`（拦截未执行） |
+| 来源 | 工具名带 `mcp_` 前缀即 MCP（内置工具名为 camelCase，天然不混淆） |
+| MCP 附加信息 | `server` 名与原始工具名都在工具名里：`mcp_<server>_<tool>` |
+| 状态 | 复用既有状态机：`REQUIRES_CONFIRMATION` 即「拦截未执行」 |
+
+> **2026-10-15 修订**：原设计写「来源 BUILTIN／MCP 独立字段 + server 独立字段」，
+> 实现改为**编码进工具名**——`operation_record.operation` 已是 120 字符的文本，
+> 前缀既不占新列也不破坏既有查询；单开两列只为一处展示服务，**审计已能区分来源**。
 
 ### 4.2 必须有的行为用例
 
@@ -116,8 +120,15 @@
 | MCP AUTO 成功 | 审计一条，含 server、工具、耗时、SUCCESS |
 | MCP AUTO 失败（server 报错） | 审计一条，含脱敏后的 server 原始错误（FR-014） |
 | MCP CONFIRM 拦截 | 审计一条，状态 PENDING_CONFIRMATION |
-| MCP 确认执行 | 审计一条，状态 EXECUTED，可与拦截记录关联 |
+| MCP 确认执行 | **不写 operation_record**；执行痕迹在 `confirmation` 表（状态流转为 CONFIRMED），与拦截记录可关联 |
 | 内置工具调用 | 行为与字段与本阶段之前一致（来源 BUILTIN） |
+
+> **2026-10-15 修订（实现期实测偏差）**：上表「MCP 确认执行」原写「审计一条，状态 EXECUTED」。
+> 实测与内置可确认工具（`deleteTask` / `deleteSchedule`）的口径**完全一致**——拦截记一条
+> operation_record（REQUIRES_CONFIRMATION），确认执行只流转 `confirmation` 表状态，不写工具审计。
+> 保留原口径会让 MCP 成为唯一的特例，反而破坏「确认机制零特例」的设计目标；
+> 故改为与内置一致，并在此显式记录。审计的两处痕迹分工：
+> `operation_record` 回答「模型想做什么」，`confirmation` 表回答「人类批准了什么、执行结果如何」。
 
 ## 5. 生命周期契约（Lifecycle Contract）
 

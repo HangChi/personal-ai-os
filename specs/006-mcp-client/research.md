@@ -174,3 +174,28 @@ server 级配置经 `MCP_SERVER_<NAME>_COMMAND / _ARGS / _ENV_* / _AUTO_TOOLS / 
 - ~~detached 常驻 server~~：生命周期脱离应用，重启应用后连接状态与进程状态脱钩，难排查。
 - ~~不主动清理，依赖 server 检测 stdin 断开自退~~：把正确性寄托在外部进程的礼貌上；
   实测中 server 的行为不可假设，必须主动 kill。
+
+## R-11 schema 自检的定位：SDK 会归一化 schema，自检退化为防御性代码
+
+**决策**：保留工具的 schema 自检（`type: object` 且 `properties` 为对象），
+但明确定位为**防御性**代码，并直接单测（`McpToolCallbackProviderTest`），不再寄望集成测试覆盖。
+
+**依据（2026-10-15 实测）**：
+- Spring AI 的 `SyncMcpToolCallbackProvider` 在转换 MCP 工具时会**归一化 schema**：
+  helper 里刻意声明缺 `type` 的 schema，经转换后到达装配层已是
+  `{"properties":{...},"type":"object"}`（打印实测确认）。
+- 也就是说「server 声明坏 schema」这条路径在当前依赖版本下**不可达**，
+  `type != object` 与 `properties 非对象` 两个分支从集成测试走不到。
+- 反过来，`ToolDefinition.Builder` 又拒绝 null/空 schema（实测报
+  `inputSchema cannot be null or empty`）——所以连「空白 schema」都必须用接口桩构造才测得到。
+
+**为什么仍然保留**：成本是一次字符串解析，收益是把「坏工具暴露给模型」这类最难排查的问题
+挡在装配期；框架行为变化时（例如某天不再归一化）它仍是第一道闸。
+**代价与对策**：防御性代码的最坏结局是「没人知道它还在不在工作」——故改为直接单测四个分支
+（合法 / 非 object / 缺 properties / 空白与损坏 JSON）。
+
+**教训（可复用）**：
+- 「构造一个坏输入」在框架层可能已被拦下或修正，写测试前先确认**输入真的能到达被测代码**。
+- 集成测试走不到的防御分支，必须有直接单测，否则等于没测。
+- 断言要写**实测行为**，不是设计意图——本阶段三处断言都是按实测改写的（schema 归一化、
+  审计归属、工具计数口径）。

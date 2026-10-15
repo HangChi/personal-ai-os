@@ -123,6 +123,14 @@ public final class TestMcpServerMain {
                                     .textContent(List.of("recorded"))
                                     .build();
                         })
+                .toolCall(McpSchema.Tool.builder()
+                                .name("broken_schema")
+                                .description("故意缺少 type:object 的坏 schema，用于验证装配期剔除")
+                                .inputSchema(Map.of("properties", Map.of("text", Map.of("type", "string"))))
+                                .build(),
+                        (exchange, request) -> McpSchema.CallToolResult.builder()
+                                .textContent(List.of("never-exposed"))
+                                .build())
                 .build();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

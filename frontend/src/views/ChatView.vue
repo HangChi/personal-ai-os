@@ -38,6 +38,11 @@ function actionLabel(action: string): string {
       return '修改截止时间'
     case 'SET_PRIORITY':
       return '修改优先级'
+    case 'DELETE_CALENDAR_EVENT':
+      return '删除日程'
+    case 'MCP_TOOL_CALL':
+      // server 名与工具名在 summary 里（服务端生成），标签只负责说明"这是外部工具调用"
+      return '调用外部工具'
     default:
       return action
   }

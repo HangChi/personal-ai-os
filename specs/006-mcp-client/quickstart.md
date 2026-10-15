@@ -81,9 +81,11 @@ MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,read_text_file,read_multiple_files,l
 
 | 步骤 | 结果 | 日期 | 备注 |
 |---|---|---|---|
-| 1. 零启用 | ⏳ 待验证 | | |
-| 2. 接入 server | ⏳ 待验证 | | |
-| 3. 只读直行 | ⏳ 待验证 | | |
-| 4. 变更确认 | ⏳ 待验证 | | |
-| 5. 故障注入 | ⏳ 待验证 | | |
-| 6. 退出清理 | ⏳ 待验证 | | |
+| 1. 零启用 | ✅ 通过 | 2026-10-15 | 自动化覆盖：`PersonalOsApplicationTests` 断言未配置时不建 registry bean；`McpDegradedStartupIntegrationTest` 守无模型场景 |
+| 2. 接入 server | ✅ 通过 | 2026-10-15 | 真实 `npx @modelcontextprotocol/server-filesystem`（14 个工具）：10 AUTO / 4 CONFIRM，逐条装配日志 |
+| 3. 只读直行 | ✅ 通过 | 2026-10-15 | `operation_record` 记 `mcp_sandbox_list_directory` SUCCESS / 17ms / 返回真实 `[FILE] hello.txt` |
+| 4. 变更确认 | ✅ 通过 | 2026-10-15 | 拦截时 `note.txt` 不存在；确认后落盘「来自真机验证」；重复确认返回 40002；浏览器端卡片展示与点击确认同样实测通过 |
+| 5. 故障注入 | ✅ 通过 | 2026-10-15 | 命令不存在 / 挂起超时 / 多 server 故障隔离均自动化覆盖；**schema 损坏一项实测不可达**（SDK 会归一化 schema），改由单测直测自检函数（见 research R-11） |
+| 6. 退出清理 | ✅ 通过 | 2026-10-15 | 关闭前 `pgrep -f server-filesystem` = 3 → 关闭后 = 0；自动化侧以「shutdown hook 写关闭标记文件」硬断言 |
+
+> 真机环境与逐项证据见 `tasks.md` 的 T035 记录。本表只记**真实结果**，不写承诺。

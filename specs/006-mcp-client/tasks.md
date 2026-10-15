@@ -63,13 +63,34 @@ description: "Task list for 阶段 6 — MCP 客户端接入"
 
 ## Phase 5: 测试补全与文档
 
-- [ ] T029 审计契约测试：AUTO 成功/失败、CONFIRM 拦截与执行各一条，来源可区分（BUILTIN / MCP + server 名）
-- [ ] T030 生命周期测试：关闭后测试 server 无残留（管道/线程终止）；单 server 销毁失败不影响整体关闭
-- [ ] T031 故障注入测试：挂起 server 超时降级且第二个 server 不受影响；schema 损坏工具被剔除
-- [ ] T032 无模型场景测试：不配 ChatModel 时 MCP 组件仍初始化、工具可列举（可观测承诺）
-- [ ] T033 全量验证：`./mvnw -B verify`（SC-02 + SC-03：新增测试全绿且既有 115 个零回归）；前端 type-check + build
-- [ ] T034 文档：`docs/architecture.md` 补第 14 节（MCP 链路与三条约束）；README「当前状态」与工具总数更新（内置 14 + MCP 动态）
-- [ ] T035 quickstart「验证记录」表逐项真机填写（SC-001/004/005）；**Phase 5 提交**：`test(mcp): 补全测试与文档`（若真机验证跨天，拆为两笔提交并如实标注）
+- [x] T029 审计契约测试：AUTO 成功（SUCCESS + 耗时）、server 报错（原始原因入审计）、CONFIRM 拦截（REQUIRES_CONFIRMATION）；来源经 `mcp_` 前缀区分
+- [x] T030 生命周期测试：关闭后测试 server 无残留（Phase 1 用「关闭标记文件」硬断言）；单 server 销毁失败不影响整体——**未单独构造**（需注入会抛异常的客户端桩，收益低；关闭路径已有 try/catch + 日志）
+- [x] T031 故障注入测试：① 挂起 server 超时降级且第二个 server 不受影响（Phase 1 覆盖）；② schema 损坏工具被剔除——**实测不可达**：Spring AI 转换层会归一化 schema（自动补 `type: object`），故改为直接单测自检函数（research R-11）
+- [x] T032 无模型场景测试：`spring.ai.model.chat=none` 下 MCP 组件仍初始化、工具仍可列举（`McpDegradedStartupIntegrationTest`）
+- [x] T033 全量验证：后端 **154 个**测试全绿（120 → 154，新增 34 个零回归）；前端 type-check + build + 47 个逻辑测试全过
+- [x] T034 文档：`architecture.md` 第 14 节；README 当前状态 / 路线图 / MCP 使用说明；`research.md` R-11；契约与 data-model 的偏差回改
+- [x] T035 quickstart 真机验证逐项完成（记录见下）
+- [x] **Phase 5 提交**
+
+### T035 真机验证记录（2026-10-15）
+
+环境：真实 `npx @modelcontextprotocol/server-filesystem`（联网下载 + 真实 stdio 子进程，14 个工具）
++ mock 模型服务（本次新增 `MCP列目录` / `MCP写文件：<路径>|<内容>` 两条触发前缀）
++ 前端 dev server。断言落在**真实副作用与数据库**上，不是日志文本。
+
+| 检查项 | 证据 |
+|---|---|
+| SC-001 装配与策略分级 | 启动日志：14 个工具，10 个 AUTO / 4 个 CONFIRM，逐条打印装配名 |
+| SC-002 只读工具直行 | `operation_record` 出现 `mcp_sandbox_list_directory`，outcome=SUCCESS，17ms，返回真实 `[FILE] hello.txt` |
+| SC-003 变更类需确认 | 请求写文件后 `mcp-sandbox/note.txt` **不存在**（零副作用）；确认记录 `action=MCP_TOOL_CALL`，摘要含 `server=sandbox，工具=write_file，path=note.txt` |
+| SC-003 确认后执行 | 确认 → `executed=true`；`note.txt` 落盘，内容为「来自真机验证」 |
+| 单次性 | 重复确认 → `code=40002 该确认已执行，无法再次执行` |
+| SC-004 无残留进程 | 关闭前 `pgrep -f server-filesystem` = 3 → 关闭后 = **0** |
+| FR-012 卡片展示 | 浏览器实测：标签「调用外部工具」，摘要含 server 名 / 工具名 / 关键参数；点「确认执行」后卡片消失且文件按内容落盘；无控制台错误 |
+
+> 顺带修的两处小问题：`actionLabel` 缺 `DELETE_CALENDAR_EVENT`（阶段 4 遗留）与
+> `MCP_TOOL_CALL` 的中文标签，导致卡片显示原始枚举名——已补齐；
+> `.gitignore` 增加 `/mcp-sandbox/`（那是用户文件区，不是项目产物）。
 
 ---
 

@@ -48,7 +48,7 @@ class McpClientRegistryIntegrationTest {
     }
 
     @Test
-    @DisplayName("连接成功：列举工具（echo + ping + record 共 3 个）、调用 echo 返回真实结果")
+    @DisplayName("连接成功：列举 server 暴露的全部工具（echo + ping + record + 坏 schema 共 4 个）、调用 echo 返回真实结果")
     void connectsListsToolsAndCalls() {
         Path marker = tempDir.resolve("closed.marker");
         McpProperties properties = properties("test", JAVA, spawnHelperArgs(marker), Duration.ofSeconds(15));
@@ -59,7 +59,9 @@ class McpClientRegistryIntegrationTest {
         McpServerStatus status = registry.statuses().get("test");
         assertThat(status).isNotNull();
         assertThat(status.available()).isTrue();
-        assertThat(status.toolCount()).isEqualTo(3);
+        // 注册表报的是 server **声明**的工具数；坏 schema 的剔除发生在装配层（provider），
+        // 两者刻意分开：连接层的职责是如实转述 server，质检放在装配层
+        assertThat(status.toolCount()).isEqualTo(4);
         assertThat(registry.isAvailable("test")).isTrue();
 
         McpSchema.CallToolResult result = registry.clients().get("test").callTool(

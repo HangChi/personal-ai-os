@@ -24,7 +24,11 @@
     「创建任务：写周报|HIGH」   -> 调用 createTask 并指定优先级
     「查看待办」                -> 调用 findTasks
     「删除任务：<uuid>」        -> 调用 deleteTask（注意：需人工确认才会生效）
-    其他任意内容                -> 直接文本回复
+    「MCP列目录」               -> 调用 mcp_sandbox_list_directory（只读，直接执行）
+    「MCP写文件：<路径>|<内容>」 -> 调用 mcp_sandbox_write_file（变更类，需人工确认）
+
+注意 MCP 两条前缀里的 `sandbox` 是 `.env` 里配置的 server 名——
+工具名必须与 MCP_SERVERS_<名>_* 的 `<名>` 一致，否则模型会调用一个不存在的工具。
 
 只依赖 Python 标准库。
 """
@@ -58,6 +62,20 @@ def pick_tool_call(user_content):
     match = re.match(r"^删除任务[:：]\s*([0-9a-fA-F-]{36})$", text)
     if match:
         return "deleteTask", {"taskIds": [match.group(1)]}
+
+    # ---- MCP 外部工具（阶段 6）----
+    # 前缀里的 server 名与真实配置一致（见 .env 的 MCP_SERVERS_<名>_*），
+    # 因此这里的工具名就是模型真正会看到的装配名（mcp_<server>_<tool>）。
+    if "MCP列目录" in text:
+        return "mcp_sandbox_list_directory", {"path": "."}
+
+    match = re.match(r"^MCP写文件[:：]\s*([^|]+)\|(.+)$", text, re.DOTALL)
+    if match:
+        # write_file 是变更类工具（不在 AUTO_TOOLS 清单里）→ 应触发人工确认
+        return "mcp_sandbox_write_file", {
+            "path": match.group(1).strip(),
+            "content": match.group(2).strip(),
+        }
 
     return None
 
