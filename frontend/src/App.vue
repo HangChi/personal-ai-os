@@ -21,7 +21,7 @@
         <el-menu-item index="/calendar">日程</el-menu-item>
       </el-menu>
 
-      <span class="app-shell__phase">阶段 4 · 日程与提醒</span>
+      <span class="app-shell__phase">阶段 6 · MCP 工具接入</span>
     </el-header>
 
     <el-main class="app-shell__main">
