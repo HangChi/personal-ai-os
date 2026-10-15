@@ -88,9 +88,9 @@ cd frontend && npm run dev   # http://localhost:5173/chat
 | E-上游失败 | 停掉模型服务后再请求 | ✅ | **0 秒内**推送 `event:error`，`code=50200`；无堆栈/类名；库中只多出一条用户消息，**没有半截助手消息** |
 | F-V2 迁移 | `psql` 查 `flyway_schema_history` | ✅ | version 1 与 2 均 `success = t`；`chat_session` / `chat_message` 建表成功 |
 | G-前端 | `npm run type-check` + `npm run build` | ✅ | 类型检查退出码 0；构建成功（1663 模块，产出 `ChatView` chunk） |
-| H-浏览器联调 | `npm run dev` 打开 `/chat` | ⏳ | **未在真实浏览器打开**（当前无 GUI 环境）。SSE 契约已由 D 项用 curl 实测、前端解析逻辑已通过类型检查与构建；建议首次 `npm run dev` 时人工确认逐字渲染 |
+| H-浏览器联调 | `npm run dev` 打开 `/chat` | ✅ | 2026-10-15 真实浏览器完成：新建会话 → 发消息 → SSE 逐字渲染 → 确认卡片交互 → 点击确认 → 无控制台错误（阶段 6 真机验证时顺带覆盖；SSE 契约此前已由 D 项用 curl 实测） |
 
-**未验证项**：`H-浏览器联调` 的浏览器实测。除该项外，SC-001 ~ SC-008 均有实测证据。
+**未验证项**：无。`H-浏览器联调` 已于 2026-10-15 用真实浏览器完成，SC-001 ~ SC-008 均有实测证据。
 
 **可复现说明**：D/E 两项的验证需要一个 OpenAI 兼容的模型端点。仓库自带
 `scripts/dev/mock-openai-server.py`（仅标准库）用于此目的，命令见 `docs/development.md` 第五节；

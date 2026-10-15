@@ -106,9 +106,9 @@ cd frontend && npm run dev    # http://localhost:5173/tasks
 | C-Agent 真机端到端 | 真机（OpenAI 兼容 mock + tool_calls） | ✅ | 「创建任务：写周报\|HIGH」→ SSE 正常 → **数据库中出现 `写周报 HIGH TODO`**；工具日志 `createTask SUCCESS 3ms`；`findTasks` 亦可触发 |
 | D-确认流程真机验证 | 同上 | ✅ | 「删除任务：\<id\>」→ 任务仍 `HTTP 200` 且生成 `DELETE_TASK \| 删除任务：写周报 \| 影响 1 项`；错误令牌 → **409**；正确令牌 → `executed=true, affectedCount=1` → 任务变 `HTTP 404` |
 | E-前端 | `npm run type-check` + `npm run build` | ✅ | 类型检查退出码 0；构建成功，产出 `TasksView` / `ChatView` chunk |
-| F-浏览器联调 | `npm run dev` 打开 `/tasks` 与 `/chat` | ⏳ | **未在真实浏览器打开**（当前无 GUI 环境）。接口契约与构建均已验证，建议人工确认确认卡片交互 |
+| F-浏览器联调 | `npm run dev` 打开 `/tasks` 与 `/chat` | ✅ | 2026-10-14 真实浏览器（`scripts/dev/verify-frontend.js`）：任务编辑弹窗预填 → 保存 → 列表与**数据库**双更新、未触碰字段不变、控制台无错误；`/chat` 的确认卡片交互于 2026-10-15 补验 |
 
-**未验证项**：`F-浏览器联调`。除该项外，SC-001 ~ SC-009 均有实测证据。
+**未验证项**：无。`F-浏览器联调` 已于 2026-10-14 / 10-15 用真实浏览器完成（含数据库断言），SC-001 ~ SC-009 均有实测证据。
 
 **可复现说明**：C/D 两项需要模型能发起工具调用。仓库自带的
 `scripts/dev/mock-openai-server.py` 已支持按前缀协议返回 `tool_calls`，命令见
