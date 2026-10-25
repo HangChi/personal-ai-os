@@ -1,15 +1,26 @@
 <script setup lang="ts">
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { useCalendarStore } from '@/stores/calendar'
 import type { UpdateEventPayload } from '@/api/calendar'
 import type { CalendarEvent, CalendarOccurrence, RecurrenceType, Reminder } from '@/types/api'
 
 const calendarStore = useCalendarStore()
-const { dueReminders, loadingOccurrences, creating, error, groupedByDay, total, page, size } =
-  storeToRefs(calendarStore)
+const {
+  dueReminders,
+  notificationPermission,
+  requestingPermission,
+  inlineNotices,
+  loadingOccurrences,
+  creating,
+  error,
+  groupedByDay,
+  total,
+  page,
+  size,
+} = storeToRefs(calendarStore)
 
 const title = ref('')
 const location = ref('')
@@ -33,6 +44,39 @@ onMounted(() => {
   // 轮询失败在 store 里被静默处理，不打扰用户。
   calendarStore.startReminderPolling()
 })
+
+/**
+ * 站内提示：store 只负责决定「该提示什么」，渲染留给视图。
+ *
+ * 提示内容与系统通知完全一致（同样来自 `NoticePayload`），
+ * 这样"在页面里看到"与"在通知中心看到"不会是两套说法。
+ */
+watch(
+  inlineNotices,
+  () => {
+    const notices = calendarStore.consumeInlineNotices()
+    for (const notice of notices) {
+      ElNotification({
+        title: notice.title,
+        message: notice.body,
+        type: 'warning',
+        duration: 6000,
+        position: 'bottom-right',
+      })
+    }
+  },
+  // 不加 deep：store 每次都是整体替换数组，引用变化即可触发；
+  // deep 会在「回调里写回同一状态」时把自反馈放大成递归更新
+)
+
+async function enableNotifications(): Promise<void> {
+  await calendarStore.enableNotifications()
+  if (notificationPermission.value === 'granted') {
+    ElMessage.success('通知已开启')
+  } else if (notificationPermission.value === 'denied') {
+    ElMessage.warning('浏览器拒绝了通知权限，可在站点设置里手动允许')
+  }
+}
 
 onUnmounted(() => {
   calendarStore.stopReminderPolling()
@@ -220,6 +264,37 @@ function sourceLabel(sourceType: string): string {
 
 <template>
   <div class="calendar">
+    <el-card class="calendar__notify" shadow="never">
+      <div class="calendar__notify-row">
+        <template v-if="notificationPermission === 'granted'">
+          <el-tag size="small" type="success" effect="plain">通知已开启</el-tag>
+          <span>页面在后台时也会收到到点提醒（应用完全关闭时收不到）。</span>
+        </template>
+        <template v-else-if="notificationPermission === 'default'">
+          <el-tag size="small" type="info" effect="plain">通知未开启</el-tag>
+          <span>开启后即使切到别的页面也能收到提醒。</span>
+          <el-button
+            size="small"
+            type="primary"
+            :loading="requestingPermission"
+            @click="enableNotifications"
+          >
+            开启浏览器通知
+          </el-button>
+        </template>
+        <template v-else-if="notificationPermission === 'denied'">
+          <el-tag size="small" type="warning" effect="plain">通知被阻止</el-tag>
+          <span>
+            提醒只会在本页显示。恢复方法：点地址栏左侧的站点图标 → 通知 → 允许，然后刷新页面。
+          </span>
+        </template>
+        <template v-else>
+          <el-tag size="small" type="info" effect="plain">不支持通知</el-tag>
+          <span>当前浏览器不支持系统通知，提醒只会在本页显示。</span>
+        </template>
+      </div>
+    </el-card>
+
     <el-card v-if="dueReminders.length > 0" class="calendar__reminders" shadow="never">
       <template #header>
         <div class="calendar__header">
@@ -432,6 +507,20 @@ function sourceLabel(sourceType: string): string {
 .calendar__stat {
   color: var(--el-text-color-secondary);
   font-size: 13px;
+}
+
+.calendar__notify {
+  margin-bottom: 12px;
+}
+
+.calendar__notify-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--el-text-color-secondary);
 }
 
 .calendar__reminders {

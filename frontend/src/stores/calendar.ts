@@ -3,7 +3,11 @@ import { computed, ref } from 'vue'
 
 import { createEvent, deleteEvent, getEvent, listOccurrences, updateEvent } from '@/api/calendar'
 import { listReminders, markReminderRead, scanReminders } from '@/api/reminders'
+import { readPermission, requestPermission } from '@/notifications/permission'
+import { createBrowserNotify, ReminderNotifier } from '@/notifications/reminder-notifier'
 import type { CreateEventPayload, UpdateEventPayload } from '@/api/calendar'
+import type { NotificationPermissionState } from '@/notifications/permission'
+import type { NoticePayload } from '@/notifications/reminder-notifier'
 import type { CalendarEvent, CalendarOccurrence, Reminder } from '@/types/api'
 
 /**
@@ -26,6 +30,31 @@ export const useCalendarStore = defineStore('calendar', () => {
   /** 每页条数（日程区间默认 100，与后端默认值一致） */
   const size = ref(100)
   const dueReminders = ref<Reminder[]>([])
+
+  /**
+   * 浏览器通知权限。
+   *
+   * <p>初值直接读浏览器，**不缓存到本地存储**：浏览器是唯一权威来源，
+   * 本地存一份会出现「页面说已开启、实际已被阻止」的分歧。
+   * Node 环境（单测）里 `readPermission()` 返回 `unsupported`，因此不会误发通知。
+   */
+  const notificationPermission = ref<NotificationPermissionState>(readPermission())
+  const requestingPermission = ref(false)
+
+  /** 待展示的站内提示（由视图取走渲染，store 不依赖任何 UI 库） */
+  const inlineNotices = ref<NoticePayload[]>([])
+
+  /**
+   * 提醒送达器。
+   *
+   * <p>点击系统通知时整页跳到日程页，而不是用 router：在 store 里 import router 会造成
+   * router → views → store → router 的循环依赖，而这一处跳转不需要保留应用状态。
+   */
+  const notifier = new ReminderNotifier(
+    createBrowserNotify(() => {
+      window.location.assign('/calendar')
+    }),
+  )
 
   const loadingOccurrences = ref(false)
   const creating = ref(false)
@@ -164,9 +193,68 @@ export const useCalendarStore = defineStore('calendar', () => {
   async function refreshReminders(): Promise<void> {
     try {
       dueReminders.value = await listReminders(undefined, true)
+      deliverReminders()
     } catch {
       // 保持上一轮结果，不打断用户
     }
+  }
+
+  /**
+   * 把本轮拿到的新提醒交给送达器。
+   *
+   * <p>通道由 `chooseChannel` 决定：页面可见 → 站内提示；页面在后台且已授权 → 系统通知；
+   * 其余情况什么都不发（用站内提示冒充送达会制造"系统说提醒了、用户没感知"的假象）。
+   */
+  function deliverReminders(): void {
+    const result = notifier.dispatch(
+      dueReminders.value,
+      notificationPermission.value,
+      pageIsVisible(),
+    )
+    if (result.channel === 'inline' && result.notices.length > 0) {
+      inlineNotices.value = [...inlineNotices.value, ...result.notices]
+    }
+  }
+
+  /** Node 环境（单测）没有 document，按"可见"处理，走站内分支 */
+  function pageIsVisible(): boolean {
+    if (typeof document === 'undefined') {
+      return true
+    }
+    return document.visibilityState === 'visible'
+  }
+
+  /**
+   * 申请通知权限。**只能由用户点击触发** —— 页面加载时自动请求会把权限一次性用掉，
+   * 多数浏览器还会直接记成 denied。
+   */
+  async function enableNotifications(): Promise<void> {
+    if (requestingPermission.value) {
+      return
+    }
+    requestingPermission.value = true
+    try {
+      notificationPermission.value = await requestPermission()
+    } finally {
+      requestingPermission.value = false
+    }
+  }
+
+  /**
+   * 取走待展示的站内提示（视图调用后自行渲染）。
+   *
+   * <p>**空数组时直接返回，不重写 `inlineNotices`**：调用方通常 watch 这个状态，
+   * 若无条件 `inlineNotices.value = []`，每次回调都会把数组替换成新引用，
+   * 从而再次触发 watch —— 实测会直接撞上 Vue 的
+   * `Maximum recursive updates exceeded`，整个视图渲染中断。
+   */
+  function consumeInlineNotices(): NoticePayload[] {
+    if (inlineNotices.value.length === 0) {
+      return []
+    }
+    const notices = inlineNotices.value
+    inlineNotices.value = []
+    return notices
   }
 
   async function acknowledge(reminder: Reminder): Promise<void> {
@@ -202,6 +290,11 @@ export const useCalendarStore = defineStore('calendar', () => {
     page,
     size,
     dueReminders,
+    notificationPermission,
+    requestingPermission,
+    inlineNotices,
+    enableNotifications,
+    consumeInlineNotices,
     loadingOccurrences,
     creating,
     error,
