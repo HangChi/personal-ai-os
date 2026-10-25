@@ -1,12 +1,9 @@
 package com.personalos.agent.tool;
 
-import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.ai.tool.ToolArguments;
 import com.personalos.common.ai.tool.ToolExecutionResult;
 import com.personalos.common.ai.tool.ToolExecutor;
-import com.personalos.common.api.ErrorCode;
 import com.personalos.common.confirmation.ConfirmationDto;
-import com.personalos.common.exception.BusinessException;
 import com.personalos.task.confirmation.TaskConfirmationService;
 import com.personalos.task.dto.CreateTaskRequest;
 import com.personalos.task.dto.TaskDto;
@@ -72,7 +69,9 @@ public class TaskTools {
 
         return toolExecutor.write("createTask", arguments, toolContext, () -> {
             TaskDto created = taskService.create(new CreateTaskRequest(
-                    title, description, parsePriority(priority, false), parseInstant(dueAt, "dueAt")));
+                    title, description,
+                    ToolArguments.parseEnum(TaskPriority.class, priority, "优先级", "LOW / MEDIUM / HIGH", false),
+                    ToolArguments.parseInstant(dueAt, "dueAt")));
             return ToolExecutionResult.ok("已创建任务「" + created.title() + "」", created);
         });
     }
@@ -95,7 +94,9 @@ public class TaskTools {
         });
 
         return toolExecutor.read("findTasks", arguments, toolContext, () -> {
-            TaskQuery query = new TaskQuery(parseStatus(status, false), keyword, 0,
+            TaskQuery query = new TaskQuery(
+                    ToolArguments.parseEnum(TaskStatus.class, status, "状态", "TODO / DOING / DONE", false),
+                    keyword, 0,
                     limit == null ? FIND_DEFAULT_LIMIT : Math.min(limit, TaskQuery.MAX_SIZE));
             List<TaskDto> tasks = taskService.search(query).items();
             String message = tasks.isEmpty() ? "没有符合条件的任务" : "找到 " + tasks.size() + " 个任务";
@@ -197,7 +198,7 @@ public class TaskTools {
             ConfirmationDto confirmation = confirmationService.requestDeleteTasks(
                     found.stream().map(TaskDto::id).toList(),
                     found.stream().map(TaskDto::title).toList(),
-                    conversationId(toolContext));
+                    ToolExecutor.conversationId(toolContext));
             return ToolExecutionResult.requiresConfirmation(
                     "删除操作需要你确认。已生成待确认事项：" + confirmation.summary()
                             + "。请用户在界面上确认后再执行。",
@@ -221,9 +222,9 @@ public class TaskTools {
 
         return toolExecutor.write("scheduleTask", arguments, toolContext, () -> {
             TaskDto task = taskService.get(ToolExecutor.parseUuid(taskId, "taskId"));
-            Instant newDueAt = parseInstant(dueAt, "dueAt");
+            Instant newDueAt = ToolArguments.parseInstant(dueAt, "dueAt");
             ConfirmationDto confirmation = confirmationService.requestScheduleTask(
-                    task.id(), task.title(), newDueAt, conversationId(toolContext));
+                    task.id(), task.title(), newDueAt, ToolExecutor.conversationId(toolContext));
             return ToolExecutionResult.requiresConfirmation(
                     "修改截止时间需要你确认。已生成待确认事项：" + confirmation.summary()
                             + "。请用户在界面上确认后再执行。",
@@ -245,10 +246,11 @@ public class TaskTools {
         });
 
         return toolExecutor.write("setTaskPriority", arguments, toolContext, () -> {
-            TaskPriority newPriority = parsePriority(priority, true);
+            TaskPriority newPriority = ToolArguments.parseEnum(
+                    TaskPriority.class, priority, "优先级", "LOW / MEDIUM / HIGH", true);
             TaskDto task = taskService.get(ToolExecutor.parseUuid(taskId, "taskId"));
             ConfirmationDto confirmation = confirmationService.requestSetPriority(
-                    task.id(), task.title(), newPriority, conversationId(toolContext));
+                    task.id(), task.title(), newPriority, ToolExecutor.conversationId(toolContext));
             return ToolExecutionResult.requiresConfirmation(
                     "修改优先级需要你确认。已生成待确认事项：" + confirmation.summary()
                             + "。请用户在界面上确认后再执行。",
@@ -256,54 +258,4 @@ public class TaskTools {
         });
     }
 
-    // ------------------------------------------------------------------ 参数解析
-
-    private static String conversationId(ToolContext toolContext) {
-        return ToolExecutor.contextValue(toolContext, ToolContextKeys.CONVERSATION_ID);
-    }
-
-    /**
-     * 解析优先级。
-     *
-     * @param required 为 true 时不允许省略
-     */
-    private static TaskPriority parsePriority(String raw, boolean required) {
-        if (raw == null || raw.isBlank()) {
-            if (required) {
-                throw new BusinessException(ErrorCode.VALIDATION_FAILED, "优先级不能为空");
-            }
-            return null;
-        }
-        try {
-            return TaskPriority.valueOf(raw.strip().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            throw new BusinessException(ErrorCode.VALIDATION_FAILED,
-                    "优先级只能是 LOW / MEDIUM / HIGH，收到：" + raw);
-        }
-    }
-
-    private static TaskStatus parseStatus(String raw, boolean required) {
-        if (raw == null || raw.isBlank()) {
-            if (required) {
-                throw new BusinessException(ErrorCode.VALIDATION_FAILED, "状态不能为空");
-            }
-            return null;
-        }
-        try {
-            return TaskStatus.valueOf(raw.strip().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            throw new BusinessException(ErrorCode.VALIDATION_FAILED,
-                    "状态只能是 TODO / DOING / DONE，收到：" + raw);
-        }
-    }
-
-    /**
-     * 解析时间。
-     *
-     * <p>委托给 {@link ToolArguments}：解析规则必须在所有工具里一致，
-     * 否则会出现「任务工具接受 2026-10-17、日程工具却报错」这种让模型和用户都困惑的差异。
-     */
-    private static Instant parseInstant(String raw, String fieldName) {
-        return ToolArguments.parseInstant(raw, fieldName);
-    }
 }

@@ -130,6 +130,17 @@ public class ToolExecutor {
         return value == null ? null : value.toString();
     }
 
+    /**
+     * 取当前工具调用所属的会话标识。
+     *
+     * <p>「哪个会话发起了这次调用」是待确认事项归集与审计的必要条件，
+     * 内置工具与 MCP 工具都要用，因此在这里给出唯一取法 ——
+     * 曾经三处各写一份（两处私有方法 + 一处内联），连常量引用方式都不一致。
+     */
+    public static String conversationId(ToolContext toolContext) {
+        return contextValue(toolContext, ToolContextKeys.CONVERSATION_ID);
+    }
+
     private IdempotencyOutcome toOutcome(ToolExecutionResult execution) {
         return switch (execution.status()) {
             case "OK" -> IdempotencyOutcome.SUCCESS;

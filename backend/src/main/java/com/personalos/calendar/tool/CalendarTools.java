@@ -11,12 +11,9 @@ import com.personalos.calendar.service.ReminderService;
 import com.personalos.common.ai.tool.ToolArguments;
 import com.personalos.common.ai.tool.ToolExecutionResult;
 import com.personalos.common.ai.tool.ToolExecutor;
-import com.personalos.common.api.ErrorCode;
 import com.personalos.common.confirmation.ConfirmationDto;
-import com.personalos.common.exception.BusinessException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.ai.chat.model.ToolContext;
@@ -95,7 +92,8 @@ public class CalendarTools {
             }
             CalendarEventDto created = eventService.create(new CreateEventRequest(
                     title, description, location, allDay, start, end,
-                    parseRecurrenceType(recurrenceType),
+                    ToolArguments.parseEnum(RecurrenceType.class, recurrenceType, "重复类型",
+                            "NONE / DAILY / WEEKLY / MONTHLY / WEEKDAYS", false),
                     ToolArguments.parseInstant(recurrenceUntil, "recurrenceUntil"),
                     reminderLeadMinutes));
             return ToolExecutionResult.ok("已创建日程「" + created.title() + "」", created);
@@ -197,8 +195,7 @@ public class CalendarTools {
             ConfirmationDto confirmation = confirmationService.requestDeleteEvents(
                     found.stream().map(CalendarEventDto::id).toList(),
                     found.stream().map(CalendarEventDto::title).toList(),
-                    ToolExecutor.contextValue(toolContext,
-                            com.personalos.common.ai.ToolContextKeys.CONVERSATION_ID));
+                    ToolExecutor.conversationId(toolContext));
             return ToolExecutionResult.requiresConfirmation(
                     "删除日程需要你确认。已生成待确认事项：" + confirmation.summary()
                             + "。请用户在界面上确认后再执行。",
@@ -206,17 +203,4 @@ public class CalendarTools {
         });
     }
 
-    // ------------------------------------------------------------------ 参数解析
-
-    private static RecurrenceType parseRecurrenceType(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return null;
-        }
-        try {
-            return RecurrenceType.valueOf(raw.strip().toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException ex) {
-            throw new BusinessException(ErrorCode.VALIDATION_FAILED,
-                    "重复类型只能是 NONE / DAILY / WEEKLY / MONTHLY / WEEKDAYS，收到：" + raw);
-        }
-    }
 }

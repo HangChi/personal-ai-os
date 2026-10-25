@@ -15,6 +15,7 @@ import com.personalos.common.api.ErrorCode;
 import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
+import com.personalos.common.text.Texts;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -62,7 +63,7 @@ public class CalendarEventService {
 
     @Transactional
     public CalendarEventDto create(CreateEventRequest request) {
-        String title = requireTitle(request.title());
+        String title = Texts.requireNotBlank(request.title(), "标题", Texts.TITLE_MAX_LENGTH);
         boolean allDay = Boolean.TRUE.equals(request.allDay());
 
         Instant startsAt = request.startsAt();
@@ -79,7 +80,7 @@ public class CalendarEventService {
         requireRecurrenceUntil(startsAt, recurrenceUntil);
 
         CalendarEventEntity saved = eventRepository.save(new CalendarEventEntity(
-                title, trimToNull(request.description()), trimToNull(request.location()), allDay,
+                title, Texts.trimToNull(request.description()), Texts.trimToNull(request.location()), allDay,
                 startsAt, endsAt, recurrenceType, recurrenceUntil,
                 resolveLeadMinutes(request.reminderLeadMinutes()), Instant.now()));
         log.info("创建日程 id={} title={} recurrence={} startsAt={}",
@@ -93,13 +94,13 @@ public class CalendarEventService {
         Instant now = Instant.now();
 
         if (request.title() != null) {
-            event.setTitle(requireTitle(request.title()));
+            event.setTitle(Texts.requireNotBlank(request.title(), "标题", Texts.TITLE_MAX_LENGTH));
         }
         if (request.description() != null) {
-            event.setDescription(trimToNull(request.description()));
+            event.setDescription(Texts.trimToNull(request.description()));
         }
         if (request.location() != null) {
-            event.setLocation(trimToNull(request.location()));
+            event.setLocation(Texts.trimToNull(request.location()));
         }
 
         boolean allDay = request.allDay() != null ? request.allDay() : Boolean.TRUE.equals(event.getAllDay());
@@ -246,17 +247,6 @@ public class CalendarEventService {
 
     // ------------------------------------------------------------------ 内部
 
-    private String requireTitle(String title) {
-        if (title == null || title.isBlank()) {
-            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "标题不能为空");
-        }
-        String stripped = title.strip();
-        if (stripped.length() > 200) {
-            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "标题长度不能超过 200");
-        }
-        return stripped;
-    }
-
     private void requireOrdering(Instant startsAt, Instant endsAt) {
         if (startsAt == null || endsAt == null) {
             throw new BusinessException(ErrorCode.VALIDATION_FAILED, "开始时间与结束时间不能为空");
@@ -291,14 +281,6 @@ public class CalendarEventService {
     private Instant normalizeAllDayEnd(Instant startOfDay, Instant rawEnd) {
         Instant endDayStart = startOfDay(rawEnd);
         return endDayStart.isAfter(startOfDay) ? endDayStart : startOfDay.plus(1, ChronoUnit.DAYS);
-    }
-
-    private String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-        String stripped = value.strip();
-        return stripped.isEmpty() ? null : stripped;
     }
 
     private CalendarEventDto toDto(CalendarEventEntity entity) {

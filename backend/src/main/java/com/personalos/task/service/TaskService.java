@@ -4,6 +4,7 @@ import com.personalos.common.api.ErrorCode;
 import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
+import com.personalos.common.text.Texts;
 import com.personalos.task.dto.CreateTaskRequest;
 import com.personalos.task.dto.TaskDto;
 import com.personalos.task.dto.TaskQuery;
@@ -65,8 +66,8 @@ public class TaskService {
 
     @Transactional
     public TaskDto create(CreateTaskRequest request) {
-        String title = requireTitle(request.title());
-        String description = trimToNull(request.description());
+        String title = Texts.requireNotBlank(request.title(), "标题", Texts.TITLE_MAX_LENGTH);
+        String description = Texts.trimToNull(request.description());
         TaskPriority priority = request.priority() == null ? TaskPriority.MEDIUM : request.priority();
 
         TaskEntity task = new TaskEntity(title, description, priority, request.dueAt(), Instant.now());
@@ -112,10 +113,10 @@ public class TaskService {
         Instant now = Instant.now();
 
         if (request.title() != null) {
-            task.setTitle(requireTitle(request.title()));
+            task.setTitle(Texts.requireNotBlank(request.title(), "标题", Texts.TITLE_MAX_LENGTH));
         }
         if (request.description() != null) {
-            task.setDescription(trimToNull(request.description()));
+            task.setDescription(Texts.trimToNull(request.description()));
         }
         if (request.priority() != null) {
             task.setPriority(request.priority());
@@ -253,25 +254,6 @@ public class TaskService {
             }
             return builder.and(predicates.toArray(new Predicate[0]));
         };
-    }
-
-    private String requireTitle(String title) {
-        if (title == null || title.isBlank()) {
-            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "标题不能为空");
-        }
-        String stripped = title.strip();
-        if (stripped.length() > 200) {
-            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "标题长度不能超过 200");
-        }
-        return stripped;
-    }
-
-    private String trimToNull(String value) {
-        if (value == null) {
-            return null;
-        }
-        String stripped = value.strip();
-        return stripped.isEmpty() ? null : stripped;
     }
 
     private TaskDto toDto(TaskEntity task, Instant now) {

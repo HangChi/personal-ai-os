@@ -1,6 +1,5 @@
 package com.personalos.mcp.tool;
 
-import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.ai.tool.ToolExecutionResult;
 import com.personalos.common.ai.tool.ToolExecutor;
 import com.personalos.common.confirmation.ConfirmationDto;
@@ -86,7 +85,7 @@ public class McpToolCallback implements ToolCallback {
             // 工具层幂等用派生键——同轮内同工具同参数的重复调用只对应一个待确认事项。
             return toolExecutor.write(assembledName, arguments, toolContext, () -> {
                 ConfirmationDto confirmation = confirmationService.requestToolCall(
-                        serverName, originalToolName, arguments, conversationId(toolContext));
+                        serverName, originalToolName, arguments, ToolExecutor.conversationId(toolContext));
                 return ToolExecutionResult.requiresConfirmation(
                         "该操作会修改外部系统，需要你确认。已生成待确认事项：" + confirmation.summary()
                                 + "。请用户在界面上确认后再执行。",
@@ -125,9 +124,5 @@ public class McpToolCallback implements ToolCallback {
         } catch (RuntimeException ex) {
             return Map.of();
         }
-    }
-
-    private String conversationId(ToolContext toolContext) {
-        return ToolExecutor.contextValue(toolContext, ToolContextKeys.CONVERSATION_ID);
     }
 }
