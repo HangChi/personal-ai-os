@@ -6,6 +6,7 @@ import {
   deleteSession as deleteSessionApi,
   listMessages,
   listSessions,
+  renameSession as renameSessionApi,
   streamChat,
 } from '@/api/chat'
 import {
@@ -138,6 +139,29 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   /**
+   * 重命名会话。
+   *
+   * 成功后就地替换列表中的那一项，**不重拉列表**：改名既不改变集合也不改变顺序
+   * （服务端刻意不刷新 `updatedAt`），重拉只会带来一次可见的闪烁，没有任何信息收益。
+   * 失败时保持本地状态不动 —— 因为没做乐观更新，也就没有需要回滚的东西。
+   *
+   * @returns 是否成功，供调用方决定是否提示
+   */
+  async function renameSession(conversationId: string, title: string): Promise<boolean> {
+    error.value = null
+    try {
+      const updated = await renameSessionApi(conversationId, title)
+      sessions.value = sessions.value.map((item) =>
+        item.conversationId === conversationId ? updated : item,
+      )
+      return true
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '重命名会话失败'
+      return false
+    }
+  }
+
+  /**
    * 发送一条消息并流式接收回复。
    *
    * 用户消息先乐观追加到本地列表（否则会出现「点发送后界面毫无反应」的观感），
@@ -229,6 +253,7 @@ export const useChatStore = defineStore('chat', () => {
     createSession,
     selectSession,
     removeSession,
+    renameSession,
     send,
     stopStreaming,
     loadConfirmations,

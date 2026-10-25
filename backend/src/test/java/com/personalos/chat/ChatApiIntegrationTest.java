@@ -3,12 +3,15 @@ package com.personalos.chat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.chat.entity.ChatMessageEntity;
+import com.personalos.chat.entity.ChatSessionEntity;
 import com.personalos.chat.repository.ChatMessageRepository;
+import com.personalos.chat.repository.ChatSessionRepository;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -131,14 +134,17 @@ class ChatApiIntegrationTest {
     private final int port;
     private final StubChatModel stub;
     private final ChatMessageRepository messageRepository;
+    private final ChatSessionRepository sessionRepository;
 
     @Autowired
     ChatApiIntegrationTest(@Value("${local.server.port}") int port,
                            StubChatModel stub,
-                           ChatMessageRepository messageRepository) {
+                           ChatMessageRepository messageRepository,
+                           ChatSessionRepository sessionRepository) {
         this.port = port;
         this.stub = stub;
         this.messageRepository = messageRepository;
+        this.sessionRepository = sessionRepository;
     }
 
     @AfterEach
@@ -411,10 +417,176 @@ class ChatApiIntegrationTest {
                 HttpResponse.BodyHandlers.ofString());
     }
 
+    // ------------------------------------------------------- 会话重命名（阶段 7）
+
+    @Test
+    @DisplayName("重命名 → 200，返回完整会话视图；列表随后显示新标题")
+    void renameSessionUpdatesTitle() throws Exception {
+        String conversationId = createSession();
+
+        HttpResponse<String> response = patch("/api/v1/chat/sessions/" + conversationId,
+                "{\"title\":\"报销流程问答\"}");
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(extractInt(response.body(), "code")).isZero();
+        assertThat(extractString(response.body(), "title")).isEqualTo("报销流程问答");
+        // 返回完整视图：前端据此就地替换列表项，无需二次请求（FR-008）
+        assertThat(response.body()).contains("messageCount").contains("updatedAt");
+
+        assertThat(get("/api/v1/chat/sessions").body()).contains("报销流程问答");
+    }
+
+    @Test
+    @DisplayName("重命名幂等：连续两次相同标题都成功且结果一致")
+    void renameSessionIsIdempotent() throws Exception {
+        String conversationId = createSession();
+
+        HttpResponse<String> first = patch("/api/v1/chat/sessions/" + conversationId, "{\"title\":\"同一个名字\"}");
+        HttpResponse<String> second = patch("/api/v1/chat/sessions/" + conversationId, "{\"title\":\"同一个名字\"}");
+
+        assertThat(first.statusCode()).isEqualTo(200);
+        assertThat(second.statusCode()).isEqualTo(200);
+        assertThat(extractString(second.body(), "title")).isEqualTo("同一个名字");
+    }
+
+    @Test
+    @DisplayName("重命名会去除首尾空白")
+    void renameSessionTrimsTitle() throws Exception {
+        String conversationId = createSession();
+
+        HttpResponse<String> response = patch("/api/v1/chat/sessions/" + conversationId,
+                "{\"title\":\"   报销流程   \"}");
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(extractString(response.body(), "title")).isEqualTo("报销流程");
+        assertThat(sessionRepository.findById(conversationId).orElseThrow().getTitle())
+                .isEqualTo("报销流程");
+    }
+
+    @Test
+    @DisplayName("空标题四态（空串/空白/无字段/null）→ 400，且库中标题不变")
+    void renameSessionRejectsBlankTitle() throws Exception {
+        String conversationId = createSession();
+
+        for (String body : List.of("{\"title\":\"\"}", "{\"title\":\"   \"}", "{}", "{\"title\":null}")) {
+            HttpResponse<String> response = patch("/api/v1/chat/sessions/" + conversationId, body);
+            assertThat(response.statusCode()).as(body).isEqualTo(400);
+            assertThat(response.body()).as(body).contains("\"code\":40000");
+        }
+
+        assertThat(sessionRepository.findById(conversationId).orElseThrow().getTitle())
+                .isEqualTo("新会话");
+    }
+
+    @Test
+    @DisplayName("201 字 → 400；恰好 200 字 → 200")
+    void renameSessionEnforcesLengthLimit() throws Exception {
+        String conversationId = createSession();
+
+        HttpResponse<String> tooLong = patch("/api/v1/chat/sessions/" + conversationId,
+                "{\"title\":\"" + "x".repeat(201) + "\"}");
+        assertThat(tooLong.statusCode()).isEqualTo(400);
+        assertThat(tooLong.body()).contains("\"code\":40000");
+
+        HttpResponse<String> exact = patch("/api/v1/chat/sessions/" + conversationId,
+                "{\"title\":\"" + "x".repeat(200) + "\"}");
+        assertThat(exact.statusCode()).isEqualTo(200);
+        assertThat(extractString(exact.body(), "title")).hasSize(200);
+    }
+
+    @Test
+    @DisplayName("长度按去空白后计算：原始 230 字、归一后 190 字 → 200")
+    void renameSessionMeasuresLengthAfterTrim() throws Exception {
+        String conversationId = createSession();
+        String padded = "  " + "x".repeat(190) + "  ".repeat(19);
+
+        HttpResponse<String> response = patch("/api/v1/chat/sessions/" + conversationId,
+                "{\"title\":\"" + padded + "\"}");
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(sessionRepository.findById(conversationId).orElseThrow().getTitle()).hasSize(190);
+    }
+
+    @Test
+    @DisplayName("重命名不存在的会话 → 404（不静默创建）")
+    void renameUnknownSessionReturns404() throws Exception {
+        HttpResponse<String> response = patch("/api/v1/chat/sessions/does-not-exist-0001",
+                "{\"title\":\"随便\"}");
+
+        assertThat(response.statusCode()).isEqualTo(404);
+        assertThat(response.body()).contains("\"code\":40004");
+    }
+
+    @Test
+    @DisplayName("非法会话标识 → 400")
+    void renameInvalidIdReturns400() throws Exception {
+        HttpResponse<String> response = patch("/api/v1/chat/sessions/bad_id_has_underscore",
+                "{\"title\":\"随便\"}");
+
+        assertThat(response.statusCode()).isEqualTo(400);
+        assertThat(response.body()).contains("\"code\":40000");
+    }
+
+    @Test
+    @DisplayName("重命名不改排序：改最旧会话后列表仍按活动时间倒序，updatedAt 原样保留")
+    void renameSessionKeepsListOrder() throws Exception {
+        // 直接建三个 updatedAt 明确递减的会话。走 API 创建的话时间戳可能落在同一毫秒，
+        // 并列时 ORDER BY 的返回顺序不确定 —— 那样的断言在测数据库的稳定性，不是测我们的行为。
+        Instant base = Instant.parse("2026-03-01T00:00:00Z");
+        ChatSessionEntity oldest = sessionRepository.save(
+                new ChatSessionEntity("order-a-0001", "最旧", base, base));
+        ChatSessionEntity middle = sessionRepository.save(
+                new ChatSessionEntity("order-b-0002", "中间", base, base.plusSeconds(60)));
+        ChatSessionEntity newest = sessionRepository.save(
+                new ChatSessionEntity("order-c-0003", "最新", base, base.plusSeconds(120)));
+
+        HttpResponse<String> response = patch("/api/v1/chat/sessions/" + oldest.getConversationId(),
+                "{\"title\":\"改了名的最旧\"}");
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        // 关键：updated_at 必须原样保留（FR-004）
+        assertThat(sessionRepository.findById(oldest.getConversationId()).orElseThrow().getUpdatedAt())
+                .isEqualTo(base);
+
+        String list = get("/api/v1/chat/sessions").body();
+        int newestIndex = list.indexOf(newest.getConversationId());
+        int middleIndex = list.indexOf(middle.getConversationId());
+        int oldestIndex = list.indexOf(oldest.getConversationId());
+
+        assertThat(newestIndex).isGreaterThanOrEqualTo(0);
+        assertThat(newestIndex).isLessThan(middleIndex);
+        assertThat(middleIndex).isLessThan(oldestIndex);
+    }
+
+    @Test
+    @DisplayName("重命名不动消息：消息条数与内容均不变")
+    void renameSessionDoesNotTouchMessages() throws Exception {
+        String conversationId = createSession();
+        streamOnce(conversationId, "这条消息不该被改名影响");
+        long before = messageRepository.countByConversationId(conversationId);
+
+        HttpResponse<String> response = patch("/api/v1/chat/sessions/" + conversationId,
+                "{\"title\":\"改名后的会话\"}");
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(messageRepository.countByConversationId(conversationId)).isEqualTo(before);
+        assertThat(get("/api/v1/chat/sessions/" + conversationId + "/messages").body())
+                .contains("这条消息不该被改名影响");
+    }
+
     private HttpResponse<String> post(String path, String jsonBody) throws Exception {
         return httpClient.send(HttpRequest.newBuilder(URI.create(baseUrl() + path))
                         .header("Content-Type", "application/json")
                         .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                        .build(),
+                HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<String> patch(String path, String jsonBody) throws Exception {
+        // Java 的 HttpRequest.Builder 没有 patch() 快捷方法，只能走 method("PATCH", ...)
+        return httpClient.send(HttpRequest.newBuilder(URI.create(baseUrl() + path))
+                        .header("Content-Type", "application/json")
+                        .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody))
                         .build(),
                 HttpResponse.BodyHandlers.ofString());
     }

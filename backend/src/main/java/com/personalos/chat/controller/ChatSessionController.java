@@ -3,6 +3,7 @@ package com.personalos.chat.controller;
 import com.personalos.chat.dto.ChatMessageDto;
 import com.personalos.chat.dto.ChatSessionDto;
 import com.personalos.chat.dto.CreateSessionRequest;
+import com.personalos.chat.dto.RenameSessionRequest;
 import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.chat.service.ChatCompletionService;
 import com.personalos.chat.service.ChatMessageService;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -88,6 +90,26 @@ public class ChatSessionController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody StreamChatRequest request) {
         return completionService.stream(conversationId, request.content(), toTurnId(idempotencyKey));
+    }
+
+    /**
+     * 重命名会话。
+     *
+     * <p>用 {@code PATCH} 而非 {@code PUT}：这是**部分更新**，只改标题一个字段。
+     * {@code PUT} 的契约是「用请求体整体替换资源」，将来给会话加字段时，
+     * 它会隐含「没传的字段要清空」这种危险的解读。
+     *
+     * <p>请求体省略或 {@code title} 为 null 时按「未提供标题」处理并被拒绝，
+     * 而不是「保持不变」—— 静默成功会让前端以为改名生效了。
+     *
+     * <p>契约见 {@code specs/007-chat-session-rename/contracts/session-rename-api.md}。
+     */
+    @PatchMapping("/sessions/{conversationId}")
+    public ApiResponse<ChatSessionDto> renameSession(
+            @PathVariable String conversationId,
+            @RequestBody(required = false) RenameSessionRequest request) {
+        return ApiResponse.ok(
+                sessionService.rename(conversationId, request == null ? null : request.title()));
     }
 
     /**

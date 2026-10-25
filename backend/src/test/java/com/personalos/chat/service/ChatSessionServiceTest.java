@@ -127,4 +127,95 @@ class ChatSessionServiceTest {
         assertThat(session.getTitle()).isEqualTo("我起的名字");
         verify(sessionRepository, never()).save(any());
     }
+
+    // ------------------------------------------------------------ 重命名（阶段 7）
+
+    @Test
+    @DisplayName("rename(): 只改标题，不刷新最近活动时间，并返回消息条数")
+    void renameShouldUpdateTitleOnly() {
+        String id = "33333333-3333-3333-3333-333333333333";
+        Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
+        Instant updatedAt = Instant.parse("2026-01-02T00:00:00Z");
+        ChatSessionEntity session = new ChatSessionEntity(id, "旧标题", createdAt, updatedAt);
+        given(sessionRepository.findById(id)).willReturn(Optional.of(session));
+        given(sessionRepository.save(any(ChatSessionEntity.class))).willAnswer(i -> i.getArgument(0));
+        given(messageRepository.countByConversationId(id)).willReturn(4L);
+
+        var dto = service.rename(id, "  新标题  ");
+
+        assertThat(dto.title()).isEqualTo("新标题");
+        // 关键断言：改名不是「对话活动」，updated_at 必须原样保留（FR-004）
+        assertThat(dto.updatedAt()).isEqualTo(updatedAt);
+        assertThat(dto.messageCount()).isEqualTo(4L);
+        assertThat(session.getTitle()).isEqualTo("新标题");
+    }
+
+    @Test
+    @DisplayName("rename(): 标题为空/全空白被拒绝，且不查库（判定顺序：空 -> 存在性）")
+    void renameShouldRejectBlankTitleBeforeQuery() {
+        assertThatThrownBy(() -> service.rename("44444444-4444-4444-4444-444444444444", "   "))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("标题不能为空");
+        assertThatThrownBy(() -> service.rename("44444444-4444-4444-4444-444444444444", null))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("标题不能为空");
+
+        verify(sessionRepository, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("rename(): 标题超长被拒绝，且不查库")
+    void renameShouldRejectTooLongTitle() {
+        assertThatThrownBy(() -> service.rename("55555555-5555-5555-5555-555555555555", "x".repeat(201)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("200");
+
+        verify(sessionRepository, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("rename(): 长度按去空白后计算 —— 原始 230 字但归一后 190 字应接受")
+    void renameShouldMeasureLengthAfterTrim() {
+        String id = "66666666-6666-6666-6666-666666666666";
+        ChatSessionEntity session = new ChatSessionEntity(id, "旧标题", Instant.now(), Instant.now());
+        given(sessionRepository.findById(id)).willReturn(Optional.of(session));
+        given(sessionRepository.save(any(ChatSessionEntity.class))).willAnswer(i -> i.getArgument(0));
+        given(messageRepository.countByConversationId(id)).willReturn(0L);
+
+        String padded = "  " + "x".repeat(190) + "  ".repeat(19);
+
+        assertThat(service.rename(id, padded).title()).hasSize(190);
+    }
+
+    @Test
+    @DisplayName("rename(): 会话不存在 → 资源不存在（不是静默创建）")
+    void renameShouldFailWhenSessionMissing() {
+        String id = "77777777-7777-7777-7777-777777777777";
+        given(sessionRepository.findById(id)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.rename(id, "新标题"))
+                .isInstanceOf(ResourceNotFoundException.class);
+        verify(sessionRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("rename(): 非法会话标识被拒绝，且不查库")
+    void renameShouldRejectInvalidIdBeforeQuery() {
+        assertThatThrownBy(() -> service.rename("bad id!", "新标题"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("会话标识");
+
+        verify(sessionRepository, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("create(): 长度按去空白后计算 —— 原始超 200 但归一后合法应接受（与重命名同口径）")
+    void createShouldMeasureLengthAfterTrim() {
+        given(sessionRepository.save(any(ChatSessionEntity.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        String padded = "  " + "x".repeat(190) + "  ".repeat(19);
+
+        assertThat(service.create(padded).title()).hasSize(190);
+    }
 }

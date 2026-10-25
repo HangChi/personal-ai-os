@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { useChatStore } from '@/stores/chat'
-import type { ChatRole, TaskConfirmation } from '@/types/api'
+import type { ChatRole, ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
 const {
@@ -121,6 +121,44 @@ async function handleSend(): Promise<void> {
 async function handleNewSession(): Promise<void> {
   await chatStore.createSession()
 }
+
+/**
+ * 重命名会话。
+ *
+ * 用对话框而不是列表内联编辑：列表项本身点击即切换会话，
+ * 内联输入框要额外处理点击穿透、失焦保存、Esc 退出三类边界，容易点出「改名字却切走了会话」。
+ *
+ * 校验口径与后端一致：按 `trim()` 后的长度判定（后端也是先去空白再算长度）。
+ */
+async function handleRename(session: ChatSession): Promise<void> {
+  let newTitle: string
+  try {
+    const { value } = await ElMessageBox.prompt('输入新的会话标题', '重命名会话', {
+      inputValue: session.title,
+      confirmButtonText: '保存',
+      cancelButtonText: '取消',
+      inputValidator: (input: string) => {
+        const trimmed = input.trim()
+        if (trimmed.length === 0) {
+          return '标题不能为空'
+        }
+        if (trimmed.length > 200) {
+          return '标题长度不能超过 200'
+        }
+        return true
+      },
+    })
+    newTitle = value.trim()
+  } catch {
+    // 取消：不发起请求，无副作用
+    return
+  }
+
+  const success = await chatStore.renameSession(session.conversationId, newTitle)
+  if (success) {
+    ElMessage.success('已重命名')
+  }
+}
 </script>
 
 <template>
@@ -148,14 +186,19 @@ async function handleNewSession(): Promise<void> {
             <div class="chat__session-title">{{ session.title }}</div>
             <div class="chat__session-meta">{{ session.messageCount }} 条消息</div>
           </div>
-          <el-button
-            link
-            type="danger"
-            size="small"
-            @click.stop="chatStore.removeSession(session.conversationId)"
-          >
-            删除
-          </el-button>
+          <div class="chat__session-actions">
+            <el-button link type="primary" size="small" @click.stop="handleRename(session)">
+              重命名
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              size="small"
+              @click.stop="chatStore.removeSession(session.conversationId)"
+            >
+              删除
+            </el-button>
+          </div>
         </li>
       </ul>
     </el-card>
@@ -300,6 +343,8 @@ async function handleNewSession(): Promise<void> {
   border-radius: 8px;
   cursor: pointer;
   background: var(--el-fill-color-light);
+  /* 操作区绝对定位，让标题能占满宽度（否则两个文字按钮会把标题压成几个字） */
+  position: relative;
 }
 
 .chat__session:hover {
@@ -311,8 +356,43 @@ async function handleNewSession(): Promise<void> {
   outline: 1px solid var(--el-color-primary-light-5);
 }
 
+.chat__session-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 12px;
+  /* 用父项的背景遮住标题尾部，避免按钮与文字叠在一起 */
+  background: inherit;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.chat__session:hover .chat__session-actions,
+.chat__session:focus-within .chat__session-actions {
+  opacity: 1;
+}
+
+/*
+ * 触摸设备没有 hover：常显并回到流内布局。
+ * 代价是标题可用宽度变窄，但「看不到、也点不到入口」比标题窄严重得多。
+ */
+@media (hover: none) {
+  .chat__session-actions {
+    position: static;
+    transform: none;
+    opacity: 1;
+    background: transparent;
+    padding-left: 0;
+  }
+}
+
 .chat__session-body {
   min-width: 0;
+  flex: 1;
 }
 
 .chat__session-title {

@@ -28,6 +28,20 @@ export function deleteSession(conversationId: string): Promise<void> {
   return requestData<void>({ url: `/chat/sessions/${conversationId}`, method: 'delete' })
 }
 
+/**
+ * 重命名会话。
+ *
+ * 用 PATCH 而非 PUT：只改标题一个字段，是部分更新。
+ * 返回完整的会话视图（含 messageCount），调用方据此就地替换列表项，无需二次请求。
+ */
+export function renameSession(conversationId: string, title: string): Promise<ChatSession> {
+  return requestData<ChatSession>({
+    url: `/chat/sessions/${conversationId}`,
+    method: 'patch',
+    data: { title },
+  })
+}
+
 /** 查询会话全部消息（按顺序正序） */
 export function listMessages(conversationId: string): Promise<ChatMessage[]> {
   return requestData<ChatMessage[]>({
