@@ -63,7 +63,7 @@ class ConfirmationIntegrationTest {
     @Test
     @DisplayName("令牌不匹配 → 拒绝，且目标数据不受影响")
     void wrongTokenIsRejected() {
-        TaskDto task = taskService.create(new CreateTaskRequest("受保护的任务", null, null, null));
+        TaskDto task = taskService.create(new CreateTaskRequest("受保护的任务", null, null, null, null));
         var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 
@@ -79,7 +79,7 @@ class ConfirmationIntegrationTest {
     @Test
     @DisplayName("单次性：确认后再确认 → 拒绝，且不会二次执行")
     void confirmationIsSingleUse() {
-        TaskDto task = taskService.create(new CreateTaskRequest("只删一次", null, null, null));
+        TaskDto task = taskService.create(new CreateTaskRequest("只删一次", null, null, null, null));
         var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 
@@ -112,7 +112,7 @@ class ConfirmationIntegrationTest {
     @Test
     @DisplayName("取消之后不可再确认")
     void cancelledConfirmationCannotBeConfirmed() {
-        TaskDto task = taskService.create(new CreateTaskRequest("先取消", null, null, null));
+        TaskDto task = taskService.create(new CreateTaskRequest("先取消", null, null, null, null));
         var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 
@@ -128,7 +128,7 @@ class ConfirmationIntegrationTest {
     @Test
     @DisplayName("确认时目标已被删除 → 优雅返回，不报 500，记录置为已取消")
     void missingTargetIsHandledGracefully() {
-        TaskDto task = taskService.create(new CreateTaskRequest("稍后会被删掉", null, null, null));
+        TaskDto task = taskService.create(new CreateTaskRequest("稍后会被删掉", null, null, null, null));
         var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 
@@ -149,7 +149,7 @@ class ConfirmationIntegrationTest {
     @DisplayName("关键字段确认：截止时间与优先级在确认后才生效")
     void scheduleAndPriorityApplyOnlyAfterConfirmation() {
         TaskDto task = taskService.create(new CreateTaskRequest(
-                "关键字段任务", null, TaskPriority.LOW, null));
+                "关键字段任务", null, TaskPriority.LOW, null, null));
         Instant newDueAt = Instant.parse("2026-12-01T09:00:00Z");
 
         var scheduleConfirmation = taskConfirmationService.requestScheduleTask(
@@ -173,7 +173,7 @@ class ConfirmationIntegrationTest {
     @Test
     @DisplayName("待确认列表：可按会话过滤，且 summary 由服务端生成（含目标标题）")
     void listFiltersByConversationAndStatus() {
-        TaskDto task = taskService.create(new CreateTaskRequest("列表演示", null, null, null));
+        TaskDto task = taskService.create(new CreateTaskRequest("列表演示", null, null, null, null));
         taskConfirmationService.requestDeleteTasks(List.of(task.id()), List.of(task.title()), "conv-A");
         taskConfirmationService.requestDeleteTasks(List.of(task.id()), List.of(task.title()), "conv-B");
 
@@ -193,7 +193,7 @@ class ConfirmationIntegrationTest {
     @Test
     @DisplayName("并发确认同一记录：只有一个能进入执行（compare-and-set）")
     void onlyOneConcurrentConfirmWins() {
-        TaskDto task = taskService.create(new CreateTaskRequest("并发确认", null, null, null));
+        TaskDto task = taskService.create(new CreateTaskRequest("并发确认", null, null, null, null));
         var confirmation = taskConfirmationService.requestDeleteTasks(
                 List.of(task.id()), List.of(task.title()), "conv-1");
 

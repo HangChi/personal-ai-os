@@ -8,12 +8,25 @@ import type { UpdateTaskPayload } from '@/api/tasks'
 import type { TaskItem, TaskPriority, TaskStatus } from '@/types/api'
 
 const taskStore = useTaskStore()
-const { tasks, loading, error, statusFilter, keyword, pendingCount, overdueCount, total, page, size } =
-  storeToRefs(taskStore)
+const {
+  tasks,
+  loading,
+  error,
+  statusFilter,
+  keyword,
+  tagFilter,
+  tags,
+  pendingCount,
+  overdueCount,
+  total,
+  page,
+  size,
+} = storeToRefs(taskStore)
 
 const newTitle = ref('')
 const newPriority = ref<TaskPriority>('MEDIUM')
 const newDueDate = ref<Date | null>(null)
+const newTags = ref<string[]>([])
 const creating = ref(false)
 
 const statusOptions: Array<{ label: string; value: TaskStatus | '' }> = [
@@ -65,6 +78,7 @@ function formatDateTime(value: string | null): string {
 
 onMounted(() => {
   void taskStore.load()
+  void taskStore.refreshTags()
 })
 
 async function handleCreate(): Promise<void> {
@@ -75,11 +89,12 @@ async function handleCreate(): Promise<void> {
   }
   creating.value = true
   try {
-    await taskStore.create(title, newPriority.value, newDueDate.value?.toISOString())
+    await taskStore.create(title, newPriority.value, newDueDate.value?.toISOString(), newTags.value)
     if (!error.value) {
       newTitle.value = ''
       newDueDate.value = null
       newPriority.value = 'MEDIUM'
+      newTags.value = []
     }
   } finally {
     creating.value = false
@@ -96,7 +111,8 @@ const editForm = ref<{
   priority: TaskPriority
   dueAt: Date | null
   status: TaskStatus
-}>({ title: '', description: '', priority: 'MEDIUM', dueAt: null, status: 'TODO' })
+  tags: string[]
+}>({ title: '', description: '', priority: 'MEDIUM', dueAt: null, status: 'TODO', tags: [] })
 
 function openEdit(task: TaskItem): void {
   editOriginal.value = task
@@ -106,6 +122,7 @@ function openEdit(task: TaskItem): void {
     priority: task.priority,
     dueAt: task.dueAt ? new Date(task.dueAt) : null,
     status: task.status,
+    tags: [...task.tags],
   }
   editing.value = true
 }
@@ -122,11 +139,13 @@ async function submitEdit(): Promise<void> {
   }
 
   // 描述始终提交（空串表示清空）——若用 `|| undefined`，用户就永远清不掉已有描述
+  // 标签同理：数组本身能表达「清空」（`[]`），所以也始终提交
   const payload: UpdateTaskPayload = {
     title,
     description: editForm.value.description.trim(),
     priority: editForm.value.priority,
     status: editForm.value.status,
+    tags: editForm.value.tags,
   }
   // 截止时间：有值则设置；**原本有值而现在被清空**则显式请求清除。
   // 后端用 clearDueAt 区分「未提供」与「显式置空」，这正是需要那个字段的原因。
@@ -207,6 +226,18 @@ async function handleDelete(task: TaskItem): Promise<void> {
           placeholder="截止时间（可选）"
           class="tasks__create-due"
         />
+        <el-select
+          v-model="newTags"
+          class="tasks__create-tags"
+          multiple
+          filterable
+          allow-create
+          default-first-option
+          :multiple-limit="5"
+          placeholder="标签（可选，最多 5 个）"
+        >
+          <el-option v-for="tag in tags" :key="tag" :label="tag" :value="tag" />
+        </el-select>
         <el-button type="primary" :loading="creating" @click="handleCreate">新建</el-button>
       </div>
     </el-card>
@@ -216,13 +247,29 @@ async function handleDelete(task: TaskItem): Promise<void> {
         <div class="tasks__header">
           <span>任务列表</span>
           <div class="tasks__filters">
-            <el-select v-model="statusFilter" class="tasks__filter" @change="taskStore.reload()">
+            <!-- 空串表示「全部」，Element Plus 会把它当作未选择而显示英文 placeholder，
+                 所以必须显式给中文 placeholder，否则界面里冒出一个 "Select" -->
+            <el-select
+              v-model="statusFilter"
+              class="tasks__filter"
+              placeholder="全部"
+              @change="taskStore.reload()"
+            >
               <el-option
                 v-for="option in statusOptions"
                 :key="option.value"
                 :label="option.label"
                 :value="option.value"
               />
+            </el-select>
+            <el-select
+              v-model="tagFilter"
+              class="tasks__filter tasks__filter-tag"
+              clearable
+              placeholder="按标签筛选"
+              @change="taskStore.reload()"
+            >
+              <el-option v-for="tag in tags" :key="tag" :label="tag" :value="tag" />
             </el-select>
             <el-input
               v-model="keyword"
@@ -254,6 +301,11 @@ async function handleDelete(task: TaskItem): Promise<void> {
               <el-tag v-if="row.overdue" type="danger" size="small" effect="plain">逾期</el-tag>
             </div>
             <div v-if="row.description" class="tasks__description">{{ row.description }}</div>
+            <div v-if="row.tags.length > 0" class="tasks__tags">
+              <el-tag v-for="tag in row.tags" :key="tag" size="small" effect="plain">
+                {{ tag }}
+              </el-tag>
+            </div>
           </template>
         </el-table-column>
 
@@ -335,6 +387,20 @@ async function handleDelete(task: TaskItem): Promise<void> {
         <el-form-item label="截止时间">
           <el-date-picker v-model="editForm.dueAt" type="datetime" placeholder="留空即清除截止时间" />
         </el-form-item>
+        <el-form-item label="标签">
+          <el-select
+            v-model="editForm.tags"
+            style="width: 100%"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            :multiple-limit="5"
+            placeholder="最多 5 个；全部删除即清空标签"
+          >
+            <el-option v-for="tag in tags" :key="tag" :label="tag" :value="tag" />
+          </el-select>
+        </el-form-item>
       </el-form>
 
       <template #footer>
@@ -357,6 +423,13 @@ async function handleDelete(task: TaskItem): Promise<void> {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.tasks__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
 }
 
 .tasks__stats {
@@ -385,6 +458,10 @@ async function handleDelete(task: TaskItem): Promise<void> {
 
 .tasks__create-due {
   width: 220px;
+}
+
+.tasks__create-tags {
+  width: 240px;
 }
 
 .tasks__filters {

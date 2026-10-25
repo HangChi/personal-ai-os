@@ -5,6 +5,7 @@ import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.common.text.Texts;
+import com.personalos.task.TaskTags;
 import com.personalos.task.dto.CreateTaskRequest;
 import com.personalos.task.dto.TaskDto;
 import com.personalos.task.dto.TaskQuery;
@@ -71,6 +72,7 @@ public class TaskService {
         TaskPriority priority = request.priority() == null ? TaskPriority.MEDIUM : request.priority();
 
         TaskEntity task = new TaskEntity(title, description, priority, request.dueAt(), Instant.now());
+        task.setTags(TaskTags.normalize(request.tags()));
         TaskEntity saved = taskRepository.save(task);
         log.info("创建任务 id={} title={}", saved.getId(), saved.getTitle());
         return toDto(saved, Instant.now());
@@ -145,6 +147,11 @@ public class TaskService {
             task.setDueAt(request.dueAt());
         } else if (Boolean.TRUE.equals(request.clearDueAt())) {
             task.setDueAt(null);
+        }
+        // 标签：null = 未提供（保持不变），空数组 = 显式清空。
+        // 与 dueAt 同一套约定 —— 数组本身就能表达「清空」，不需要再造一个 clearTags 标志。
+        if (request.tags() != null) {
+            task.setTags(TaskTags.normalize(request.tags()));
         }
 
         task.touch(now);
@@ -267,6 +274,11 @@ public class TaskService {
                         builder.like(builder.lower(root.get("title")), pattern),
                         builder.like(builder.lower(builder.coalesce(root.get("description"), "")), pattern)));
             }
+            if (query.tag() != null) {
+                // join 到 element collection：同一任务里同一个标签只会存一条，
+                // 因此 equal 条件最多命中一行，不会让结果集出现重复任务
+                predicates.add(builder.equal(root.join("tags"), query.tag()));
+            }
             return builder.and(predicates.toArray(new Predicate[0]));
         };
     }
@@ -281,10 +293,21 @@ public class TaskService {
                 task.getDescription(),
                 task.getStatus().name(),
                 task.getPriority().name(),
+                task.getTags(),
                 task.getDueAt(),
                 task.getCompletedAt(),
                 task.getCreatedAt(),
                 task.getUpdatedAt(),
                 overdue);
+    }
+
+    /**
+     * 全部标签（去重、字典序）。
+     *
+     * <p>供前端筛选下拉使用。删除任务会级联删标签，因此不会出现「点进去没有结果」的孤儿标签。
+     */
+    @Transactional(readOnly = true)
+    public List<String> listTags() {
+        return taskRepository.findDistinctTags();
     }
 }

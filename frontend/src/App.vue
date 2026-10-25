@@ -23,7 +23,7 @@
         <el-menu-item index="/activity">活动</el-menu-item>
       </el-menu>
 
-      <span class="app-shell__phase">阶段 13 · 日历月视图</span>
+      <span class="app-shell__phase">阶段 14 · 任务标签</span>
     </el-header>
 
     <el-main class="app-shell__main">

@@ -11,10 +11,11 @@ import com.personalos.task.entity.TaskStatus;
  *
  * @param status  状态筛选，可空表示不限
  * @param keyword 关键词，匹配标题或描述，可空
+ * @param tag     标签精确筛选，可空表示不限
  * @param page    页码，从 0 开始；负值收敛为 0
  * @param size    每页条数；非正收敛为默认值，超过硬上限收敛为上限
  */
-public record TaskQuery(TaskStatus status, String keyword, int page, int size) {
+public record TaskQuery(TaskStatus status, String keyword, String tag, int page, int size) {
 
     public static final int DEFAULT_SIZE = 20;
     public static final int MAX_SIZE = 100;
@@ -29,9 +30,13 @@ public record TaskQuery(TaskStatus status, String keyword, int page, int size) {
         if (size > MAX_SIZE) {
             size = MAX_SIZE;
         }
+        // 空串与纯空白等同于「不限」：筛选下拉清空时前端可能传空串上来
+        if (tag != null && tag.isBlank()) {
+            tag = null;
+        }
     }
 
     public static TaskQuery all() {
-        return new TaskQuery(null, null, 0, DEFAULT_SIZE);
+        return new TaskQuery(null, null, null, 0, DEFAULT_SIZE);
     }
 }

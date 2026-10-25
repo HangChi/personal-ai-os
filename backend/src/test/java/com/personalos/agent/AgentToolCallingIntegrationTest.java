@@ -136,7 +136,7 @@ class AgentToolCallingIntegrationTest {
     @Test
     @DisplayName("deleteTask 工具只生成待确认，任务行数不变；确认之后才真的删除（SC-002）")
     void deleteTaskToolRequiresConfirmationBeforeTouchingData() throws Exception {
-        TaskDto task = taskService.create(new CreateTaskRequest("要删的任务", null, null, null));
+        TaskDto task = taskService.create(new CreateTaskRequest("要删的任务", null, null, null, null));
         String conversationId = createSession();
 
         model.enqueueToolCall("deleteTask", "{\"taskIds\":[\"" + task.id() + "\"]}");
@@ -173,7 +173,7 @@ class AgentToolCallingIntegrationTest {
     @Test
     @DisplayName("关键字段修改（优先级）同样需确认，且确认前数据不变")
     void setTaskPriorityRequiresConfirmation() throws Exception {
-        TaskDto task = taskService.create(new CreateTaskRequest("待调优先级的任务", null, TaskPriority.LOW, null));
+        TaskDto task = taskService.create(new CreateTaskRequest("待调优先级的任务", null, TaskPriority.LOW, null, null));
         String conversationId = createSession();
 
         model.enqueueToolCall("setTaskPriority",
@@ -198,7 +198,7 @@ class AgentToolCallingIntegrationTest {
     @Test
     @DisplayName("setTaskCompleted 直接生效、无需确认，并写入完成时间")
     void setTaskCompletedAppliesImmediately() throws Exception {
-        TaskDto task = taskService.create(new CreateTaskRequest("要完成的任务", null, null, null));
+        TaskDto task = taskService.create(new CreateTaskRequest("要完成的任务", null, null, null, null));
         String conversationId = createSession();
 
         model.enqueueToolCall("setTaskCompleted",

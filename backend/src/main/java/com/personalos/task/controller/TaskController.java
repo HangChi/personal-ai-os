@@ -18,6 +18,7 @@ import com.personalos.task.dto.UpdateTaskRequest;
 import com.personalos.task.entity.TaskStatus;
 import com.personalos.task.service.TaskService;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -86,9 +87,21 @@ public class TaskController {
     public ApiResponse<PageDto<TaskDto>> list(
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ApiResponse.ok(taskService.search(new TaskQuery(status, keyword, page, size)));
+        return ApiResponse.ok(taskService.search(new TaskQuery(status, keyword, tag, page, size)));
+    }
+
+    /**
+     * 全部标签（去重、字典序），供筛选下拉使用。
+     *
+     * <p>声明在 {@code /{id}} 之前：路径字面量本就优先于变量段，放前面是为了读代码时
+     * 不会先看到「按 id 查」再疑惑 `/tags` 会不会被当成 id。
+     */
+    @GetMapping("/tags")
+    public ApiResponse<List<String>> listTags() {
+        return ApiResponse.ok(taskService.listTags());
     }
 
     /**

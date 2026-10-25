@@ -1,6 +1,7 @@
 package com.personalos.task.dto;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -11,6 +12,7 @@ import java.util.UUID;
  * @param description 描述
  * @param status      状态：TODO / DOING / DONE
  * @param priority    优先级：LOW / MEDIUM / HIGH
+ * @param tags        标签（0–5 个，顺序稳定）
  * @param dueAt       截止时间，可空
  * @param completedAt 完成时间，仅已完成时非空
  * @param createdAt   创建时间
@@ -22,6 +24,7 @@ public record TaskDto(UUID id,
                       String description,
                       String status,
                       String priority,
+                      List<String> tags,
                       Instant dueAt,
                       Instant completedAt,
                       Instant createdAt,

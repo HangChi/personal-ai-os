@@ -58,6 +58,8 @@ public class TaskTools {
                     description = "优先级，取值 LOW / MEDIUM / HIGH，省略则默认 MEDIUM") String priority,
             @ToolParam(required = false,
                     description = "截止时间，ISO-8601，例如 2026-10-17T10:00:00Z 或 2026-10-17，可省略") String dueAt,
+            @ToolParam(required = false,
+                    description = "标签，最多 5 个，例如 [\"工作\",\"本周\"]，可省略") List<String> tags,
             ToolContext toolContext) {
 
         Map<String, Object> arguments = ToolExecutor.arguments(args -> {
@@ -65,13 +67,15 @@ public class TaskTools {
             args.put("description", description);
             args.put("priority", priority);
             args.put("dueAt", dueAt);
+            args.put("tags", tags);
         });
 
         return toolExecutor.write("createTask", arguments, toolContext, () -> {
             TaskDto created = taskService.create(new CreateTaskRequest(
                     title, description,
                     ToolArguments.parseEnum(TaskPriority.class, priority, "优先级", "LOW / MEDIUM / HIGH", false),
-                    ToolArguments.parseInstant(dueAt, "dueAt")));
+                    ToolArguments.parseInstant(dueAt, "dueAt"),
+                    tags));
             return ToolExecutionResult.ok("已创建任务「" + created.title() + "」", created);
         });
     }
@@ -84,19 +88,21 @@ public class TaskTools {
     public String findTasks(
             @ToolParam(required = false, description = "关键词，匹配标题或描述，可省略") String keyword,
             @ToolParam(required = false, description = "状态筛选：TODO / DOING / DONE，可省略") String status,
+            @ToolParam(required = false, description = "标签精确筛选，例如「工作」，可省略") String tag,
             @ToolParam(required = false, description = "返回条数上限，默认 20，最大 50") Integer limit,
             ToolContext toolContext) {
 
         Map<String, Object> arguments = ToolExecutor.arguments(args -> {
             args.put("keyword", keyword);
             args.put("status", status);
+            args.put("tag", tag);
             args.put("limit", limit);
         });
 
         return toolExecutor.read("findTasks", arguments, toolContext, () -> {
             TaskQuery query = new TaskQuery(
                     ToolArguments.parseEnum(TaskStatus.class, status, "状态", "TODO / DOING / DONE", false),
-                    keyword, 0,
+                    keyword, tag, 0,
                     limit == null ? FIND_DEFAULT_LIMIT : Math.min(limit, TaskQuery.MAX_SIZE));
             List<TaskDto> tasks = taskService.search(query).items();
             String message = tasks.isEmpty() ? "没有符合条件的任务" : "找到 " + tasks.size() + " 个任务";
@@ -127,21 +133,24 @@ public class TaskTools {
             @ToolParam(description = "任务 id") String taskId,
             @ToolParam(required = false, description = "新的标题，可省略") String title,
             @ToolParam(required = false, description = "新的描述，可省略") String description,
+            @ToolParam(required = false,
+                    description = "新的标签列表（整体替换，最多 5 个），可省略；传空数组表示清空") List<String> tags,
             ToolContext toolContext) {
 
         Map<String, Object> arguments = ToolExecutor.arguments(args -> {
             args.put("taskId", taskId);
             args.put("title", title);
             args.put("description", description);
+            args.put("tags", tags);
         });
 
         return toolExecutor.write("updateTaskDetails", arguments, toolContext, () -> {
-            if (title == null && description == null) {
-                return ToolExecutionResult.rejected("至少需要提供新的标题或新的描述");
+            if (title == null && description == null && tags == null) {
+                return ToolExecutionResult.rejected("至少需要提供新的标题、描述或标签");
             }
             TaskDto updated = taskService.update(
                     ToolExecutor.parseUuid(taskId, "taskId"),
-                    new UpdateTaskRequest(title, description, null, null, null, null));
+                    new UpdateTaskRequest(title, description, null, null, null, null, tags));
             return ToolExecutionResult.ok("已更新任务「" + updated.title() + "」", updated);
         });
     }

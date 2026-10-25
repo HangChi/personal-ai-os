@@ -86,6 +86,8 @@ export interface TaskItem {
   description: string | null
   status: TaskStatus
   priority: TaskPriority
+  /** 标签（0–5 个，顺序由服务端保证稳定） */
+  tags: string[]
   dueAt: string | null
   completedAt: string | null
   createdAt: string

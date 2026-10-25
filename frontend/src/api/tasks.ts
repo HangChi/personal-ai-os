@@ -10,6 +10,8 @@ import type { PageDto, TaskItem, TaskPriority, TaskStatus } from '@/types/api'
 export interface TaskListFilter {
   status?: TaskStatus
   keyword?: string
+  /** 标签精确筛选（阶段 14） */
+  tag?: string
   /** 页码，从 0 开始（2026-10-14 起 limit 参数改为 page + size） */
   page?: number
   size?: number
@@ -20,6 +22,7 @@ export interface CreateTaskPayload {
   description?: string
   priority?: TaskPriority
   dueAt?: string
+  tags?: string[]
 }
 
 export interface UpdateTaskPayload {
@@ -30,6 +33,8 @@ export interface UpdateTaskPayload {
   /** 显式请求清除截止时间 */
   clearDueAt?: boolean
   status?: TaskStatus
+  /** 标签整体替换；传 `[]` 表示清空，不传表示不改（与 dueAt 同一套约定） */
+  tags?: string[]
 }
 
 /**
@@ -44,6 +49,11 @@ function idempotencyKey(prefix: string): Record<string, string> {
 
 export function listTasks(filter: TaskListFilter = {}): Promise<PageDto<TaskItem>> {
   return requestData<PageDto<TaskItem>>({ url: '/tasks', method: 'get', params: filter })
+}
+
+/** 全部标签（去重有序），用于筛选下拉 */
+export function listTags(): Promise<string[]> {
+  return requestData<string[]>({ url: '/tasks/tags', method: 'get' })
 }
 
 export function getTask(id: string): Promise<TaskItem> {

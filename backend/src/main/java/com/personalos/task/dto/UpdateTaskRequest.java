@@ -4,6 +4,7 @@ import com.personalos.task.entity.TaskPriority;
 import com.personalos.task.entity.TaskStatus;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * 修改任务请求。
@@ -24,6 +25,7 @@ import java.time.Instant;
  * @param dueAt       新截止时间
  * @param clearDueAt  显式要求清除截止时间
  * @param status      新状态
+ * @param tags        标签：{@code null} = 不修改；空数组 = 清空；非空 = 整体替换
  */
 public record UpdateTaskRequest(
         @Size(max = 200, message = "标题长度不能超过 200")
@@ -38,5 +40,7 @@ public record UpdateTaskRequest(
 
         Boolean clearDueAt,
 
-        TaskStatus status) {
+        TaskStatus status,
+
+        List<String> tags) {
 }

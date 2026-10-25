@@ -5,6 +5,7 @@ import {
   createTask as createTaskApi,
   deleteTask as deleteTaskApi,
   completeTask as completeTaskApi,
+  listTags as listTagsApi,
   listTasks,
   reopenTask as reopenTaskApi,
   updateTask as updateTaskApi,
@@ -25,6 +26,10 @@ export const useTaskStore = defineStore('task', () => {
   const error = ref<string | null>(null)
   const statusFilter = ref<TaskStatus | ''>('')
   const keyword = ref('')
+  /** 标签筛选（空串 = 不限） */
+  const tagFilter = ref('')
+  /** 已用过的标签（去重有序），供筛选下拉使用 */
+  const tags = ref<string[]>([])
 
   const pendingCount = computed(() => tasks.value.filter((task) => task.status !== 'DONE').length)
   const overdueCount = computed(() => tasks.value.filter((task) => task.overdue).length)
@@ -36,6 +41,7 @@ export const useTaskStore = defineStore('task', () => {
       const result = await listTasks({
         status: statusFilter.value || undefined,
         keyword: keyword.value.trim() || undefined,
+        tag: tagFilter.value || undefined,
         page: page.value,
         size: size.value,
       })
@@ -47,6 +53,20 @@ export const useTaskStore = defineStore('task', () => {
       error.value = cause instanceof Error ? cause.message : '加载任务失败'
     } finally {
       loading.value = false
+    }
+  }
+
+  /**
+   * 刷新标签清单。
+   *
+   * 失败时**不置 error**：标签下拉是辅助功能，它挂了不该让整个任务列表显示为「加载失败」。
+   * 代价是下拉可能为空，但主功能照常可用。
+   */
+  async function refreshTags(): Promise<void> {
+    try {
+      tags.value = await listTagsApi()
+    } catch {
+      tags.value = []
     }
   }
 
@@ -62,11 +82,17 @@ export const useTaskStore = defineStore('task', () => {
     await load()
   }
 
-  async function create(title: string, priority: TaskPriority, dueAt?: string): Promise<void> {
+  async function create(
+    title: string,
+    priority: TaskPriority,
+    dueAt?: string,
+    tagsValue?: string[],
+  ): Promise<void> {
     error.value = null
     try {
-      await createTaskApi({ title, priority, dueAt })
+      await createTaskApi({ title, priority, dueAt, tags: tagsValue })
       await load()
+      await refreshTags()
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '创建任务失败'
     }
@@ -84,6 +110,8 @@ export const useTaskStore = defineStore('task', () => {
     try {
       await updateTaskApi(id, payload)
       await load()
+      // 标签可能被整体替换或清空，下拉清单要跟着变
+      await refreshTags()
       return true
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '修改任务失败'
@@ -110,6 +138,8 @@ export const useTaskStore = defineStore('task', () => {
     try {
       await deleteTaskApi(id)
       await load()
+      // 删掉的是某标签的最后一个使用者时，它应从筛选下拉里消失
+      await refreshTags()
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '删除任务失败'
     }
@@ -124,11 +154,14 @@ export const useTaskStore = defineStore('task', () => {
     error,
     statusFilter,
     keyword,
+    tagFilter,
+    tags,
     pendingCount,
     overdueCount,
     load,
     reload,
     goToPage,
+    refreshTags,
     create,
     edit,
     toggleCompleted,

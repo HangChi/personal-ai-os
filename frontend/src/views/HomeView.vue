@@ -89,7 +89,7 @@ async function handleExport(): Promise<void> {
       <template #header>已有能力</template>
       <ul class="home__list">
         <li><strong>对话</strong>：多轮上下文、聊天历史持久化、SSE 流式输出</li>
-        <li><strong>任务</strong>：自然语言增删改查；删除与关键字段修改需人工确认</li>
+        <li><strong>任务</strong>：自然语言增删改查、标签归类与筛选；删除与关键字段修改需人工确认</li>
         <li><strong>知识库</strong>：上传 Markdown / TXT / PDF / Word / 图片建立向量索引，问答附带引用来源</li>
         <li><strong>日程与提醒</strong>：重复规则、到点提醒（浏览器通知；页面可见时用站内提示）</li>
         <li><strong>长期记忆</strong>：在对话里说「记住…」即跨会话生效，可在记忆页增删改</li>

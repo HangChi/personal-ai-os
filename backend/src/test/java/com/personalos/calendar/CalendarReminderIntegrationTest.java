@@ -357,8 +357,8 @@ class CalendarReminderIntegrationTest {
         Instant now = Instant.now();
         Instant dueAt = now.plus(30, ChronoUnit.MINUTES);
 
-        TaskDto openTask = taskService.create(new CreateTaskRequest("未完成的交周报", null, null, dueAt));
-        TaskDto doneTask = taskService.create(new CreateTaskRequest("已完成的交月报", null, null, dueAt));
+        TaskDto openTask = taskService.create(new CreateTaskRequest("未完成的交周报", null, null, dueAt, null));
+        TaskDto doneTask = taskService.create(new CreateTaskRequest("已完成的交月报", null, null, dueAt, null));
         taskService.setCompleted(doneTask.id(), true);
 
         scanner.scan(now);
@@ -399,7 +399,7 @@ class CalendarReminderIntegrationTest {
     void deletingTaskLeavesNoPhantomReminder() {
         Instant now = Instant.now();
         TaskDto task = taskService.create(new CreateTaskRequest(
-                "将被直接删除的任务", null, null, now.plus(30, ChronoUnit.MINUTES)));
+                "将被直接删除的任务", null, null, now.plus(30, ChronoUnit.MINUTES), null));
 
         scanner.scan(now);
         assertThat(reminderRepository.countBySourceTypeAndSourceId(ReminderSource.TASK, task.id()))

@@ -88,8 +88,8 @@ class TaskApiIntegrationTest {
     @Test
     @DisplayName("查询列表：支持状态筛选与关键词匹配")
     void listSupportsFiltering() throws Exception {
-        taskService.create(new CreateTaskRequest("写周报", "周报正文", null, null));
-        taskService.create(new CreateTaskRequest("买牛奶", null, null, null));
+        taskService.create(new CreateTaskRequest("写周报", "周报正文", null, null, null));
+        taskService.create(new CreateTaskRequest("买牛奶", null, null, null, null));
 
         assertThat(http.get("/api/v1/tasks?keyword=周报").body()).contains("写周报").doesNotContain("买牛奶");
         assertThat(http.get("/api/v1/tasks?status=TODO").body()).contains("写周报").contains("买牛奶");
@@ -118,7 +118,7 @@ class TaskApiIntegrationTest {
     @DisplayName("修改任务：只改出现的字段；clearDueAt 才清除截止时间")
     void patchOnlyUpdatesPresentFields() throws Exception {
         UUID id = taskService.create(new CreateTaskRequest(
-                "原名", "原描述", TaskPriority.LOW, Instant.parse("2026-10-20T10:00:00Z"))).id();
+                "原名", "原描述", TaskPriority.LOW, Instant.parse("2026-10-20T10:00:00Z"), null)).id();
 
         // 只改标题：截止时间与优先级必须原样保留
         HttpTestClient.Response renamed = http.patch("/api/v1/tasks/" + id,
@@ -138,7 +138,7 @@ class TaskApiIntegrationTest {
     @Test
     @DisplayName("完成与取消完成：维护 completedAt 不变量")
     void completeAndReopenMaintainInvariant() throws Exception {
-        UUID id = taskService.create(new CreateTaskRequest("要做的事", null, null, null)).id();
+        UUID id = taskService.create(new CreateTaskRequest("要做的事", null, null, null, null)).id();
 
         assertThat(http.post("/api/v1/tasks/" + id + "/complete", "").status()).isEqualTo(200);
         var done = taskRepository.findById(id).orElseThrow();
@@ -154,7 +154,7 @@ class TaskApiIntegrationTest {
     @Test
     @DisplayName("删除任务：人工直连立即生效，无需确认；重复删除 → 404")
     void deleteIsImmediateForHumans() throws Exception {
-        UUID id = taskService.create(new CreateTaskRequest("要删的任务", null, null, null)).id();
+        UUID id = taskService.create(new CreateTaskRequest("要删的任务", null, null, null, null)).id();
 
         HttpTestClient.Response deleted = http.delete("/api/v1/tasks/" + id, Map.of());
 
@@ -217,7 +217,7 @@ class TaskApiIntegrationTest {
     @Test
     @DisplayName("删除也能幂等重放：同键二次删除不报 404")
     void deleteIsIdempotentWithKey() throws Exception {
-        UUID id = taskService.create(new CreateTaskRequest("要删的", null, null, null)).id();
+        UUID id = taskService.create(new CreateTaskRequest("要删的", null, null, null, null)).id();
         Map<String, String> headers = Map.of("Idempotency-Key", "it-test-delete-0001");
 
         HttpTestClient.Response first = http.delete("/api/v1/tasks/" + id, headers);
@@ -247,7 +247,7 @@ class TaskApiIntegrationTest {
     @Test
     @DisplayName("批量删除只删已存在的行，返回实际影响行数")
     void bulkDeleteReturnsAffectedCount() {
-        UUID existing = taskService.create(new CreateTaskRequest("存在", null, null, null)).id();
+        UUID existing = taskService.create(new CreateTaskRequest("存在", null, null, null, null)).id();
         List<UUID> ids = List.of(existing, UUID.randomUUID());
 
         int affected = taskService.deleteAll(ids);
@@ -259,16 +259,16 @@ class TaskApiIntegrationTest {
     @Test
     @DisplayName("分页参数被强制收敛：size 超上限收敛到 MAX_SIZE，非正收敛到默认值；page 负值归零")
     void queryPagingParamsAreNormalized() {
-        assertThat(new TaskQuery(null, null, 0, 100_000).size()).isEqualTo(TaskQuery.MAX_SIZE);
-        assertThat(new TaskQuery(null, null, 0, 0).size()).isEqualTo(TaskQuery.DEFAULT_SIZE);
-        assertThat(new TaskQuery(null, null, -5, 10).page()).isZero();
+        assertThat(new TaskQuery(null, null, null, 0, 100_000).size()).isEqualTo(TaskQuery.MAX_SIZE);
+        assertThat(new TaskQuery(null, null, null, 0, 0).size()).isEqualTo(TaskQuery.DEFAULT_SIZE);
+        assertThat(new TaskQuery(null, null, null, -5, 10).page()).isZero();
     }
 
     @Test
     @DisplayName("分页：page/size 切片且 total 报告全量——不再有静默截断")
     void listIsPaginatedWithTotal() throws Exception {
         for (int i = 1; i <= 5; i++) {
-            taskService.create(new CreateTaskRequest("任务" + i, null, null, null));
+            taskService.create(new CreateTaskRequest("任务" + i, null, null, null, null));
         }
 
         String firstPage = http.get("/api/v1/tasks?page=0&size=2").body();
@@ -284,15 +284,15 @@ class TaskApiIntegrationTest {
     @Test
     @DisplayName("显示顺序：未完成在前，其次按截止时间升序（无截止时间排最后）")
     void searchOrdersUnfinishedFirstThenByDueDate() {
-        taskService.create(new CreateTaskRequest("已完成", null, null, null));
+        taskService.create(new CreateTaskRequest("已完成", null, null, null, null));
         taskRepository.findAll().forEach(task -> {
             if ("已完成".equals(task.getTitle())) {
                 taskService.setCompleted(task.getId(), true);
             }
         });
-        taskService.create(new CreateTaskRequest("无截止时间", null, null, null));
-        taskService.create(new CreateTaskRequest("明天到期", null, null, Instant.now().plusSeconds(86400)));
-        taskService.create(new CreateTaskRequest("今天到期", null, null, Instant.now().plusSeconds(3600)));
+        taskService.create(new CreateTaskRequest("无截止时间", null, null, null, null));
+        taskService.create(new CreateTaskRequest("明天到期", null, null, Instant.now().plusSeconds(86400), null));
+        taskService.create(new CreateTaskRequest("今天到期", null, null, Instant.now().plusSeconds(3600), null));
 
         List<String> titles = taskService.search(TaskQuery.all()).items().stream()
                 .map(dto -> dto.title()).toList();
@@ -307,7 +307,7 @@ class TaskApiIntegrationTest {
 
         assertThatThrownBy(() -> taskService.get(missing)).isInstanceOf(ResourceNotFoundException.class);
         assertThatThrownBy(() -> taskService.update(missing,
-                new UpdateTaskRequest("x", null, null, null, null, null)))
+                new UpdateTaskRequest("x", null, null, null, null, null, null)))
                 .isInstanceOf(ResourceNotFoundException.class);
         assertThatThrownBy(() -> taskService.delete(missing)).isInstanceOf(ResourceNotFoundException.class);
     }
