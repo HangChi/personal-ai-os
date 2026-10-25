@@ -71,15 +71,36 @@ def effective_rank(hits, acceptable, tolerance=NOISE_TOLERANCE):
     才不会让噪声污染指标。
 
     未命中仍返回 None —— 判平只影响**名次**，不影响**是否命中**。
+
+    **混合检索下 score 可能为 null**（2026-10-26）：仅由关键词通道命中的片段
+    没有做过嵌入，score 为 null。null 与向量分数不可比，因此：
+    - 正确答案是 keyword-only（score 为 null）→ 退回严格名次，不判平；
+    - 某个候选 score 为 null → 它不参与「显著更高」的计数。
+    这样判平只在「两边都有向量分数」时生效，语义才站得住。
     """
     best_rank, best_score = None, None
     for index, hit in enumerate(hits):
         if hit["documentTitle"] in acceptable:
-            best_rank, best_score = index + 1, hit["score"]
+            best_rank, best_score = index + 1, hit.get("score")
             break
     if best_rank is None:
+        # 未命中：判平无从谈起
         return None
-    significantly_higher = sum(1 for hit in hits if hit["score"] > best_score + tolerance)
+    if best_score is None:
+        # 正确答案没有向量分数，与向量候选不可比
+        return best_rank
+
+    # 判平的前提是「排序由 score 决定」。混合检索下排序来自 RRF 融合，
+    # score（cosine）与最终名次不再单调对应 —— 此时用 score 判平会把
+    # 「排第一但 score 不是最高」的条目误判成「应排第二」，得出判平后比严格更差的荒谬结果。
+    # 检测方式：score 序列不单调递减（或含 null）⇒ 排序不是由 score 来的 ⇒ 跳过判平。
+    scores = [hit.get("score") for hit in hits]
+    ordered_by_score = all(score is not None for score in scores) and all(
+        scores[index] >= scores[index + 1] for index in range(len(scores) - 1))
+    if not ordered_by_score:
+        return best_rank
+
+    significantly_higher = sum(1 for score in scores if score > best_score + tolerance)
     return significantly_higher + 1
 
 

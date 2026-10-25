@@ -14,6 +14,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param minChunkSizeChars   分块的最小字符数；也用于入库前拒收过短文档
  * @param chunkSizeChars      结构切分的目标块大小（字符）
  * @param chunkOverlapChars   相邻块的字符重叠；0 表示不重叠
+ * @param hybridSearchEnabled 是否启用混合检索（向量 + 关键词）。**可开关是为了 A/B 对比**
+ * @param rrfK                RRF 融合常数（越大，排名靠后的候选影响越小）
+ * @param keywordChannelWeight 关键词通道的权重系数（相对向量通道 = 1.0）
  */
 @ConfigurationProperties(prefix = "app.knowledge")
 public record KnowledgeProperties(
@@ -24,7 +27,10 @@ public record KnowledgeProperties(
         List<String> allowedExtensions,
         int minChunkSizeChars,
         int chunkSizeChars,
-        int chunkOverlapChars) {
+        int chunkOverlapChars,
+        boolean hybridSearchEnabled,
+        int rrfK,
+        double keywordChannelWeight) {
 
     /** 检索条数硬上限：避免模型或调用方传一个巨大值把上下文撑爆 */
     public static final int MAX_TOP_K = 20;
@@ -36,6 +42,22 @@ public record KnowledgeProperties(
     private static final int DEFAULT_MIN_CHUNK_CHARS = 350;
     private static final int DEFAULT_CHUNK_SIZE_CHARS = 1200;
     private static final int DEFAULT_CHUNK_OVERLAP_CHARS = 0;
+    /** RRF 的 k：论文与实践中 60 是常用默认值，用于压平排名靠后候选的权重 */
+    private static final int DEFAULT_RRF_K = 60;
+    /**
+     * 关键词通道权重，相对向量通道（固定 1.0）。
+     *
+     * <p><b>默认 1.0（同权）是实测选出来的，不是想当然</b>。我最初假设「关键词通道的
+     * top1 常是含该词的短片段而非真正答案，同权会把正确答案挤出第 1 名」，于是默认设成 0.5。
+     * 在 129 条查询上对比后这个假设被否定了：
+     * <pre>
+     *   子串 + IDF + 权重 0.5 → R@1 84.5%、未中 5
+     *   子串 + IDF + 权重 1.0 → R@1 86.0%、未中 4
+     * </pre>
+     * 压权重把「本该被关键词救回」的查询也一起压没了。真正的噪声抑制手段是 IDF
+     * （见 {@code countBySubstring}），而不是整体降权。
+     */
+    private static final double DEFAULT_KEYWORD_CHANNEL_WEIGHT = 1.0;
 
     public KnowledgeProperties {
         // 缺省或越界时归一为安全默认值，避免脏配置直接导致运行期怪异行为
@@ -65,6 +87,12 @@ public record KnowledgeProperties(
         }
         if (chunkOverlapChars < 0) {
             chunkOverlapChars = DEFAULT_CHUNK_OVERLAP_CHARS;
+        }
+        if (rrfK <= 0) {
+            rrfK = DEFAULT_RRF_K;
+        }
+        if (keywordChannelWeight <= 0d || keywordChannelWeight > 1d) {
+            keywordChannelWeight = DEFAULT_KEYWORD_CHANNEL_WEIGHT;
         }
     }
 

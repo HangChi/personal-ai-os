@@ -137,7 +137,10 @@ export interface KnowledgeHit {
   filename: string
   chunkIndex: number
   content: string
+  /** 向量余弦相似度；仅由关键词通道命中时为 null（没做过嵌入） */
   score: number | null
+  /** 命中来源（混合检索）：VECTOR / KEYWORD / BOTH */
+  matchedBy?: 'VECTOR' | 'KEYWORD' | 'BOTH'
 }
 
 /** 引用：命中 + 编号 */

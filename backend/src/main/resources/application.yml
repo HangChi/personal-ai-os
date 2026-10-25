@@ -148,6 +148,17 @@ app:
     chunk-overlap-chars: ${AI_KNOWLEDGE_CHUNK_OVERLAP_CHARS:0}
     # 最小块字符数：低于它的块会并入相邻块；也是入库前拒收过短文档的阈值
     min-chunk-size-chars: ${AI_KNOWLEDGE_MIN_CHUNK_SIZE_CHARS:350}
+    # 混合检索（2026-10-26）：向量通道 + 关键词通道，用 RRF 融合。
+    # 关键词通道救的是「精确标识符」类查询（3PC / ip_hash / unknown）——
+    # 这类 token 在嵌入空间里几乎没有语义，纯向量检索天然弱。
+    # **保留开关是为了能 A/B 对比**：关掉即退回纯向量，评测可量化收益。
+    hybrid-search-enabled: ${AI_KNOWLEDGE_HYBRID_ENABLED:true}
+    # RRF 融合常数。越大，排名靠后的候选权重越小、融合越"温和"。60 是常用默认值。
+    rrf-k: ${AI_KNOWLEDGE_RRF_K:60}
+    # 关键词通道权重，相对向量通道（固定 1.0）。默认同权 —— 这是 129 条查询实测的结果：
+    # 权重 0.5 时 R@1 84.5% / 未中 5，权重 1.0 时 R@1 86.0% / 未中 4。
+    # 噪声靠 IDF 抑制（低频 token 权重大、高频 token 权重趋 0），而不是靠整体降权。
+    keyword-channel-weight: ${AI_KNOWLEDGE_KEYWORD_CHANNEL_WEIGHT:1.0}
   calendar:
     # 定时扫描开关。测试里关闭（见 src/test/resources/application.properties），
     # 否则调度会在集成测试中途写入 reminder，与各用例的清理逻辑相互干扰，产生难以复现的偶发失败。

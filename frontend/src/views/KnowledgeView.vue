@@ -126,7 +126,9 @@ function formatDateTime(value: string): string {
 }
 
 function formatScore(score: number | null): string {
-  return score === null || score === undefined ? '—' : score.toFixed(3)
+  // score 为 null 只出现在混合检索的「仅关键词命中」——它不是缺失，
+  // 而是这条没走过向量通道。显示「关键词」比显示「—」诚实得多。
+  return score === null || score === undefined ? '关键词命中' : score.toFixed(3)
 }
 </script>
 
@@ -257,7 +259,13 @@ function formatScore(score: number | null): string {
               {{ hit.documentTitle }}
               <span class="knowledge__hit-meta">#{{ hit.chunkIndex + 1 }}</span>
             </span>
-            <el-tag size="small" type="info" effect="plain">相似度 {{ formatScore(hit.score) }}</el-tag>
+            <el-tag
+              size="small"
+              :type="hit.matchedBy === 'BOTH' ? 'success' : 'info'"
+              effect="plain"
+            >
+              {{ hit.matchedBy === 'BOTH' ? '向量+关键词' : `相似度 ${formatScore(hit.score)}` }}
+            </el-tag>
           </div>
           <div class="knowledge__hit-content">{{ hit.content }}</div>
         </li>
@@ -301,7 +309,13 @@ function formatScore(score: number | null): string {
                   [{{ citation.index }}] {{ citation.documentTitle }}
                   <span class="knowledge__hit-meta">{{ citation.filename }} · #{{ citation.chunkIndex + 1 }}</span>
                 </span>
-                <el-tag size="small" type="info" effect="plain">相似度 {{ formatScore(citation.score) }}</el-tag>
+                <el-tag
+                  size="small"
+                  :type="citation.matchedBy === 'BOTH' ? 'success' : 'info'"
+                  effect="plain"
+                >
+                  {{ citation.matchedBy === 'BOTH' ? '向量+关键词' : `相似度 ${formatScore(citation.score)}` }}
+                </el-tag>
               </div>
               <div class="knowledge__hit-content">{{ citation.content }}</div>
             </div>
