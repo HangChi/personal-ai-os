@@ -14,6 +14,7 @@ import {
   Calendar,
   ChatDotRound,
   DataLine,
+  Fold,
   HomeFilled,
   Memo,
   Reading,
@@ -50,6 +51,9 @@ const navItems = [
 const searchKeyword = ref('')
 const searchInput = ref<InstanceType<typeof HTMLInputElement> | null>(null)
 
+/** 窄屏抽屉导航（阶段 18，FR-014）：<768px 时横向菜单放不下，改汉堡 + 抽屉 */
+const drawerOpen = ref(false)
+
 function runGlobalSearch(): void {
   const term = searchKeyword.value.trim()
   if (!term) {
@@ -84,6 +88,16 @@ async function handleLogout(): Promise<void> {
 <template>
   <el-container class="app-shell">
     <el-header class="app-shell__header">
+      <el-button
+        v-if="!isLoginPage"
+        class="app-shell__burger"
+        link
+        aria-label="打开导航菜单"
+        @click="drawerOpen = true"
+      >
+        <el-icon :size="20"><Fold /></el-icon>
+      </el-button>
+
       <div class="app-shell__brand">
         <span class="app-shell__logo">AI</span>
         <span class="app-shell__title">Personal AI OS</span>
@@ -124,6 +138,16 @@ async function handleLogout(): Promise<void> {
         </template>
       </div>
     </el-header>
+
+    <!-- 窄屏导航抽屉（<768px 才看得到） -->
+    <el-drawer v-model="drawerOpen" title="导航" direction="ltr" size="220px">
+      <el-menu :default-active="route.path" :router="true" @select="drawerOpen = false">
+        <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index">
+          <el-icon class="app-shell__nav-icon"><component :is="item.icon" /></el-icon>
+          <span>{{ item.label }}</span>
+        </el-menu-item>
+      </el-menu>
+    </el-drawer>
 
     <el-main class="app-shell__main">
       <router-view v-slot="{ Component }">
@@ -211,6 +235,13 @@ async function handleLogout(): Promise<void> {
   width: 220px;
 }
 
+/* 汉堡按钮：宽屏隐藏 */
+.app-shell__burger {
+  display: none;
+  flex: none;
+  color: var(--el-text-color-regular);
+}
+
 .app-shell__main {
   max-width: var(--os-content-max-width);
   width: 100%;
@@ -224,6 +255,41 @@ async function handleLogout(): Promise<void> {
   justify-content: center;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
+}
+
+/*
+ * 窄屏（<768px，FR-014）：横向菜单 7 项放不下 → 隐藏，改汉堡 + 抽屉。
+ * 品牌标题同时隐藏（只留 Logo），搜索框收缩。
+ */
+@media (max-width: 768px) {
+  .app-shell__header {
+    gap: var(--os-space-2);
+    padding: 0 var(--os-space-3);
+  }
+
+  .app-shell__nav {
+    display: none;
+  }
+
+  .app-shell__burger {
+    display: inline-flex;
+  }
+
+  .app-shell__title {
+    display: none;
+  }
+
+  .app-shell__search {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+    margin-left: auto;
+  }
+
+  .app-shell__main {
+    padding-left: var(--os-space-3);
+    padding-right: var(--os-space-3);
+  }
 }
 
 /* 路由切换过渡：短促的淡入上移，给页面切换一点空间感 */

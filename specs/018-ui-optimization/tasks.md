@@ -65,9 +65,9 @@
 
 ## Phase H — 收尾
 
-- [ ] **T040** 全站 8 页 + 375px 窄屏 + 深色浮层终检；截图对比基线存档
-- [ ] **T041** `npm run type_check` / `test:logic` / `build` 终跑 + `du -sk dist/assets/*` 体积记录（对 SC-001 130% 预算）
-- [ ] **T042** README 状态行更新（前端小节）；`.workbuddy/memory` 当日 log + MEMORY.md 回填（含 R-07 optimizeDeps 新依赖教训）
+- [x] **T040** 全站 8 页 + 375px 窄屏 + 深色浮层终检；截图对比基线存档
+- [x] **T041** `npm run type_check` / `test:logic` / `build` 终跑 + `du -sk dist/assets/*` 体积记录（对 SC-001 130% 预算）
+- [x] **T042** README 状态行更新（前端小节）；`.workbuddy/memory` 当日 log + MEMORY.md 回填（含 R-07 optimizeDeps 新依赖教训）
 
 ## Notes（贯穿全清单的硬约束）
 
@@ -80,6 +80,14 @@
 7. **失败就地提示**：弹窗内的保存失败用 ElMessage.error，不让用户对着无响应的按钮（沿袭 TasksView/CalendarView 既有注释的教训）。
 
 ## 完成记录（实现时回填）
+
+### Phase H（收尾终检）
+
+- 终检（T040）：亮 / 暗 8 页 + 暗色浮层 + 375px 窄屏 8 页全部零控制台报错、零页面级横向溢出。
+  窄屏首检发现 8 页齐涨 +793px——顶栏 7 导航项 + 品牌 + 搜索在 375px 放不下 → 加汉堡按钮 + el-drawer 抽屉导航（<768px 隐藏横向菜单、品牌标题隐藏、搜索框 flex 收缩），复检全 ok。
+- 门禁（T041）：`type-check` 0 错误；`test:logic` **314/314**；`build` 通过；assets **1308 KB**（基线 1048 / 预算 1362，SC-001 达成）。
+- 文档（T042）：README 路线图加阶段 18、目录结构补 components/lib/styles 说明；当日 log + MEMORY.md 回填（含 5 条新坑）。
+- 汉堡抽屉真机验证：7 项、点击「日程」跳转 /calendar 并自动关抽屉。
 
 ### Phase G（记忆 / 活动 / 搜索 / 登录收尾）
 

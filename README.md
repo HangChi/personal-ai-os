@@ -64,7 +64,10 @@ personal-ai-os/
 │           ├── PersonalOsApplicationTests.java      （Testcontainers 集成测试）
 │           └── common/                              （单元测试）
 ├── frontend/                   Vue 3 + TypeScript + Vite
-│   └── src/{api,lib,router,stores,types,views,styles}
+│   └── src/{api,components,lib,router,stores,types,views,styles}
+│       ├── components/         公共组件（PageHeader/FilterBar/EmptyState/AppPagination/StatusTag/MarkdownRenderer/ThemeToggle）
+│       ├── lib/                纯函数（calendar-dates / theme / relative-time / session-group / board / highlight-text）
+│       └── styles/             设计令牌 tokens.css + 暗色覆盖 + hljs 暗色主题
 ├── docs/                       架构与开发文档
 ├── specs/                      Spec Kit 特性规格
 ├── .specify/                   Spec Kit 配置与项目宪法
@@ -141,6 +144,7 @@ cd frontend && npm run type-check && npm run build
 | 15 | 单用户认证（Spring Security + 会话 Cookie，默认关闭） | ✅ |
 | 16 | 列表分页与站内搜索（会话 / 知识库，新增 /search 端点） | ✅ |
 | 17 | 跨模块全局搜索（顶栏一处搜五个模块，按模块分组） | ✅ |
+| 18 | 全站 UI 优化（设计令牌 + 深色模式 + 公共组件 + 逐页重构） | ✅ |
 
 > 编号 5 空置：原定的「Docker 部署与开源发布」不在当前规划内，暂不实施。
 > 阶段 6 保留既有编号，避免重编号导致 `specs/` 目录、迁移与提交历史错位。
