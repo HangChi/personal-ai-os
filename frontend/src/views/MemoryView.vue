@@ -2,7 +2,6 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
-
 import { useMemoryStore } from '@/stores/memory'
 import type { Memory } from '@/types/api'
 
@@ -15,6 +14,16 @@ import type { Memory } from '@/types/api'
  */
 const store = useMemoryStore()
 const { memories, loading, saving, error } = storeToRefs(store)
+
+/** 内容搜索（阶段 18，T035）：纯前端过滤——记忆最多 30 条，没有必要为它请求后端 */
+const memoryKeyword = ref('')
+const filteredMemories = computed(() => {
+  const term = memoryKeyword.value.trim().toLowerCase()
+  if (!term) {
+    return memories.value
+  }
+  return memories.value.filter((item) => item.content.toLowerCase().includes(term))
+})
 
 /** 与后端 Texts 上限一致（去空白后计算） */
 const CONTENT_MAX_LENGTH = 2000
@@ -96,7 +105,16 @@ function formatTime(value: string): string {
             这里的内容会注入每一次对话（最多 30 条，越靠前越先生效）
           </span>
         </div>
-        <el-button type="primary" size="small" @click="openCreate">新增</el-button>
+        <div class="memory__header-actions">
+          <el-input
+            v-model="memoryKeyword"
+            class="memory__search"
+            size="small"
+            clearable
+            placeholder="搜索记忆内容"
+          />
+          <el-button type="primary" size="small" @click="openCreate">新增</el-button>
+        </div>
       </div>
     </template>
 
@@ -110,14 +128,23 @@ function formatTime(value: string): string {
     />
 
     <div v-loading="loading" class="memory__content">
-      <el-empty v-if="memories.length === 0" description="还没有长期记忆">
-        <p class="memory__empty-tip">
+      <!-- 空态区分「一条都没有」与「筛掉了」 -->
+      <el-empty
+        v-if="filteredMemories.length === 0"
+        :description="memoryKeyword ? '没有匹配的记忆' : '还没有长期记忆'"
+        :image-size="70"
+      >
+        <p v-if="!memoryKeyword" class="memory__empty-tip">
           在对话里说「记住：我的周报每周五交」，也会出现在这里。
         </p>
       </el-empty>
 
       <ul v-else class="memory__list">
-        <li v-for="(memory, index) in memories" :key="memory.id" class="memory__item">
+        <li
+          v-for="(memory, index) in filteredMemories"
+          :key="memory.id"
+          class="memory__item"
+        >
           <span class="memory__index">{{ index + 1 }}</span>
           <div class="memory__body">
             <div class="memory__text">{{ memory.content }}</div>
@@ -163,7 +190,18 @@ function formatTime(value: string): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--os-space-4);
+  flex-wrap: wrap;
+}
+
+.memory__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+}
+
+.memory__search {
+  width: 180px;
 }
 
 .memory__heading {

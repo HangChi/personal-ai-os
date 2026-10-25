@@ -42,10 +42,14 @@ async function submit(): Promise<void> {
 
 <template>
   <div class="login">
-    <el-card class="login__card" shadow="never">
+    <el-card class="login__card" shadow="always">
+      <!-- 品牌区（阶段 18，T038）：与全站令牌一致的Logo + 名称 + 一句定位 -->
       <div class="login__brand">
         <span class="login__logo">AI</span>
-        <span class="login__title">Personal AI OS</span>
+        <div class="login__brand-text">
+          <span class="login__title">Personal AI OS</span>
+          <span class="login__tagline">对话 · 任务 · 知识库 · 日程 · 记忆</span>
+        </div>
       </div>
       <p class="login__hint">这个实例已开启访问控制，请先登录。</p>
 
@@ -96,42 +100,57 @@ async function submit(): Promise<void> {
 }
 
 .login__card {
-  width: 360px;
+  width: 380px;
+  border-radius: var(--os-radius-xl);
+  box-shadow: var(--os-shadow-popup);
 }
 
 .login__brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: var(--os-space-3);
+  margin-bottom: var(--os-space-2);
 }
 
 .login__logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--os-radius-lg);
   background: var(--el-color-primary);
-  color: #ffffff;
-  font-size: 13px;
+  color: var(--el-color-white);
+  font-size: var(--os-font-md);
   font-weight: 700;
+  flex: none;
+}
+
+.login__brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .login__title {
-  font-size: 16px;
+  font-size: var(--os-font-md);
   font-weight: 600;
 }
 
-.login__hint {
-  margin: 0 0 16px;
+.login__tagline {
   color: var(--el-text-color-secondary);
-  font-size: 13px;
+  font-size: var(--os-font-xs);
+}
+
+.login__hint {
+  margin: 0 0 var(--os-space-4);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
 }
 
 .login__error {
-  margin-bottom: 12px;
+  margin-bottom: var(--os-space-3);
 }
 
 .login__submit {

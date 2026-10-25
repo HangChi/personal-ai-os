@@ -56,12 +56,12 @@
 
 ## Phase G — 四小页收尾
 
-- [ ] **T034** `src/lib/highlight-text.ts` + `frontend/test/highlight-text.test.mjs`：`highlightSegments`（空串/特殊字符/多词/重叠，C-07）
-- [ ] **T035** `MemoryView.vue`：内容搜索（纯前端过滤）+ EmptyState 套用
-- [ ] **T036** `ActivityView.vue`：时间线视图选项（按天分组）+ 会话 ID 截断 8 位 + tooltip
-- [ ] **T037** `SearchView.vue`：关键词 `<mark>` 高亮（C-07）+ skeleton 加载态
-- [ ] **T038** `LoginView.vue`：品牌区（Logo + 名称 + 一句说明），与全站令牌一致
-- [ ] **T039** 走查：四页各自能力 + 构建全绿；截图存档
+- [x] **T034** `src/lib/highlight-text.ts` + `frontend/test/highlight-text.test.mjs`：`highlightSegments`（空串/特殊字符/多词/重叠，C-07）
+- [x] **T035** `MemoryView.vue`：内容搜索（纯前端过滤）+ EmptyState 套用
+- [x] **T036** `ActivityView.vue`：时间线视图选项（按天分组）+ 会话 ID 截断 8 位 + tooltip
+- [x] **T037** `SearchView.vue`：关键词 `<mark>` 高亮（C-07）+ skeleton 加载态
+- [x] **T038** `LoginView.vue`：品牌区（Logo + 名称 + 一句说明），与全站令牌一致
+- [x] **T039** 走查：四页各自能力 + 构建全绿；截图存档
 
 ## Phase H — 收尾
 
@@ -80,6 +80,13 @@
 7. **失败就地提示**：弹窗内的保存失败用 ElMessage.error，不让用户对着无响应的按钮（沿袭 TasksView/CalendarView 既有注释的教训）。
 
 ## 完成记录（实现时回填）
+
+### Phase G（记忆 / 活动 / 搜索 / 登录收尾）
+
+- 门禁：`type-check` 0 错误；`test:logic` **314/314**（+15 highlight-text）；`build` 通过，assets 1292 KB（预算 1362 内）。
+- 真机：记忆页搜索「苏教版」命中 1 条、无匹配时走空态；活动页会话 ID 截断为 `cae6eee3…`（tooltip 全量）、时间线 4 天 12 条；搜索页 5 处 `<mark>` 高亮「周报」；控制台零报错。
+- 未验证项（环境所限，如实标注）：登录页品牌化**无法真机截图**——本环境 authEnabled=false，路由守卫会把 /login 重定向回首页。该改动仅为模板与样式（无逻辑），经 type-check 与 build 验证，样式全部走既有令牌。
+- 实现修正：highlight-text 的区间合并从「相接也合并」改为「仅真重叠合并」——「周报周报」的两次相邻命中应各自独立高亮，合并后边界不可预期（测试驱动发现的边界）。
 
 ### Phase F（日程页：批量确认 + 表单分组 + 月视图色点）
 

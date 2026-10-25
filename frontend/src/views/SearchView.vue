@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
+import { highlightSegments } from '@/lib/highlight-text'
 import { useSearchStore } from '@/stores/search'
 import { routeForHit } from '@/lib/search-routes'
 
@@ -53,6 +54,8 @@ onMounted(() => {
         :description="`没有找到与「${searchStore.keyword}」相关的内容`"
         :image-size="70"
       />
+      <!-- 加载中先给骨架，避免「点了没反应」的观感 -->
+      <el-skeleton v-else-if="searchStore.loading && searchStore.groups.length === 0" :rows="6" animated />
       <div v-else v-loading="searchStore.loading" class="search-page__groups">
         <section v-for="group in searchStore.groups" :key="group.kind" class="search-page__group">
           <header class="search-page__group-header">
@@ -63,8 +66,19 @@ onMounted(() => {
           <ul class="search-page__hits">
             <li v-for="hit in group.hits" :key="`${hit.kind}-${hit.id}`" class="search-page__hit">
               <router-link class="search-page__hit-link" :to="routeForHit(hit.kind)">
-                <span class="search-page__hit-title">{{ hit.title }}</span>
-                <span v-if="hit.subtitle" class="search-page__hit-subtitle">{{ hit.subtitle }}</span>
+                <!-- 关键词高亮（C-07）：片段数组 + <mark>，不碰 v-html -->
+                <span class="search-page__hit-title">
+                  <template v-for="(segment, index) in highlightSegments(hit.title, searchStore.keyword)" :key="index">
+                    <mark v-if="segment.hit">{{ segment.text }}</mark>
+                    <template v-else>{{ segment.text }}</template>
+                  </template>
+                </span>
+                <span v-if="hit.subtitle" class="search-page__hit-subtitle">
+                  <template v-for="(segment, index) in highlightSegments(hit.subtitle, searchStore.keyword)" :key="index">
+                    <mark v-if="segment.hit">{{ segment.text }}</mark>
+                    <template v-else>{{ segment.text }}</template>
+                  </template>
+                </span>
                 <el-tag size="small" type="info" effect="plain">{{ hit.matchedField }}</el-tag>
               </router-link>
             </li>
@@ -147,12 +161,21 @@ onMounted(() => {
 
 .search-page__hit-title {
   flex: 0 1 auto;
-  font-size: 14px;
+  font-size: var(--os-font-md);
 }
 
 .search-page__hit-subtitle {
   flex: 1 1 auto;
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
+}
+
+/* 关键词高亮（C-07）：warning 浅底 + 继承字色，不用第三方组件 */
+.search-page__hit-title mark,
+.search-page__hit-subtitle mark {
+  padding: 0 1px;
+  border-radius: 2px;
+  background: var(--el-color-warning-light-9);
+  color: inherit;
 }
 </style>

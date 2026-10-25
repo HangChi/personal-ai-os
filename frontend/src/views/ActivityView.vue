@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import { useActivityStore } from '@/stores/activity'
 import type { ToolInvocationOutcome } from '@/types/api'
@@ -66,6 +66,32 @@ function formatTime(iso: string): string {
 function formatDuration(durationMs: number | null): string {
   return durationMs === null ? '—' : `${durationMs} ms`
 }
+
+/** 会话 ID 截断展示（阶段 18，T036）：UUID 原样显示会挤爆列宽 */
+function shortConversationId(id: string | null): string {
+  return id ? `${id.slice(0, 8)}…` : '—'
+}
+
+/** 视图模式：表格 / 时间线（阶段 18，T036） */
+const viewMode = ref<'table' | 'timeline'>('table')
+
+/** 时间线按天分组（当天日期作键，组内保持接口顺序） */
+const timelineGroups = computed(() => {
+  const groups = new Map<string, typeof invocations.value>()
+  for (const item of invocations.value) {
+    const date = new Date(item.createdAt)
+    const key = Number.isNaN(date.getTime())
+      ? '未知时间'
+      : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    const bucket = groups.get(key)
+    if (bucket) {
+      bucket.push(item)
+    } else {
+      groups.set(key, [item])
+    }
+  }
+  return [...groups.entries()].map(([day, items]) => ({ day, items }))
+})
 
 function handleOutcome(value: string): void {
   // 'ALL' 而不是空串：Element Plus 把空串当作「未选择」而显示 placeholder，
@@ -174,6 +200,11 @@ function handlePage(target: number): void {
                 :value="option.value"
               />
             </el-select>
+            <!-- 时间线视图（T036）：审计记录按天分组，比平铺表格更适合「回顾哪天发生了什么」 -->
+            <el-radio-group v-model="viewMode" size="small">
+              <el-radio-button value="table">表格</el-radio-button>
+              <el-radio-button value="timeline">时间线</el-radio-button>
+            </el-radio-group>
             <el-button size="small" :loading="loading" @click="store.loadInvocations()">
               刷新
             </el-button>
@@ -192,6 +223,7 @@ function handlePage(target: number): void {
 
       <template v-else>
         <el-table
+          v-if="viewMode === 'table'"
           v-loading="loading"
           :data="invocations"
           :empty-text="emptyText"
@@ -213,11 +245,35 @@ function handlePage(target: number): void {
           </el-table-column>
           <el-table-column label="会话" min-width="150" show-overflow-tooltip>
             <template #default="{ row }">
-              <span v-if="row.conversationId" class="activity__muted">{{ row.conversationId }}</span>
+              <el-tooltip v-if="row.conversationId" :content="row.conversationId" placement="top">
+                <span class="activity__muted">{{ shortConversationId(row.conversationId) }}</span>
+              </el-tooltip>
               <span v-else class="activity__muted">—</span>
             </template>
           </el-table-column>
         </el-table>
+
+        <!-- 时间线视图：按天分组，一天一串 -->
+        <div v-else v-loading="loading" class="activity__timeline">
+          <el-empty v-if="invocations.length === 0" :description="emptyText" :image-size="70" />
+          <section v-for="group in timelineGroups" :key="group.day" class="activity__timeline-day">
+            <header class="activity__timeline-day-label">{{ group.day }}</header>
+            <ul class="activity__timeline-list">
+              <li v-for="item in group.items" :key="item.id" class="activity__timeline-item">
+                <span class="activity__timeline-time">{{ formatTime(item.createdAt).slice(11) }}</span>
+                <span class="activity__timeline-dot" :class="`activity__timeline-dot--${outcomeMeta(item.outcome).type}`" />
+                <span class="activity__timeline-operation">{{ item.operation }}</span>
+                <el-tag :type="outcomeMeta(item.outcome).type" size="small" effect="plain">
+                  {{ outcomeMeta(item.outcome).label }}
+                </el-tag>
+                <span class="activity__timeline-duration">{{ formatDuration(item.durationMs) }}</span>
+                <el-tooltip v-if="item.conversationId" :content="item.conversationId" placement="top">
+                  <span class="activity__muted">{{ shortConversationId(item.conversationId) }}</span>
+                </el-tooltip>
+              </li>
+            </ul>
+          </section>
+        </div>
 
         <div v-if="total > 0" class="activity__pagination">
           <el-pagination
@@ -252,11 +308,82 @@ function handlePage(target: number): void {
 .activity__filters {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: var(--os-space-2);
 }
 
 .activity__filter {
   width: 130px;
+}
+
+/* ---- 时间线视图（T036）---- */
+
+.activity__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--os-space-4);
+}
+
+.activity__timeline-day-label {
+  margin-bottom: var(--os-space-2);
+  padding-bottom: var(--os-space-1);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  color: var(--el-text-color-regular);
+  font-size: var(--os-font-xs);
+  font-weight: 600;
+}
+
+.activity__timeline-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--os-space-1);
+}
+
+.activity__timeline-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--os-space-2);
+  font-size: var(--os-font-xs);
+}
+
+.activity__timeline-time {
+  flex: none;
+  width: 56px;
+  color: var(--el-text-color-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.activity__timeline-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--el-color-info);
+}
+
+.activity__timeline-dot--success {
+  background: var(--el-color-success);
+}
+
+.activity__timeline-dot--danger {
+  background: var(--el-color-danger);
+}
+
+.activity__timeline-dot--warning {
+  background: var(--el-color-warning);
+}
+
+.activity__timeline-operation {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  color: var(--el-text-color-regular);
+}
+
+.activity__timeline-duration {
+  color: var(--el-text-color-secondary);
 }
 
 .activity__tool-tag {
