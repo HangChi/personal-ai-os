@@ -19,9 +19,10 @@
         <el-menu-item index="/tasks">任务</el-menu-item>
         <el-menu-item index="/knowledge">知识库</el-menu-item>
         <el-menu-item index="/calendar">日程</el-menu-item>
+        <el-menu-item index="/memory">记忆</el-menu-item>
       </el-menu>
 
-      <span class="app-shell__phase">阶段 6 · MCP 工具接入</span>
+      <span class="app-shell__phase">阶段 8 · 长期记忆</span>
     </el-header>
 
     <el-main class="app-shell__main">

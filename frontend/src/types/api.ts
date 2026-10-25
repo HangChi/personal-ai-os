@@ -48,6 +48,19 @@ export interface ChatSession {
   messageCount: number
 }
 
+/**
+ * 长期记忆。
+ *
+ * 跨会话生效：每次会话对话都会把它注入系统提示。
+ * 注意这里没有分类/标签字段 —— 后端刻意不存没有消费方的东西。
+ */
+export interface Memory {
+  id: string
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
 /** 消息角色 */
 export type ChatRole = 'USER' | 'ASSISTANT' | 'SYSTEM'
 

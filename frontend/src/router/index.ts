@@ -40,6 +40,12 @@ const router = createRouter({
       meta: { title: '日程' },
     },
     {
+      path: '/memory',
+      name: 'memory',
+      component: () => import('@/views/MemoryView.vue'),
+      meta: { title: '记忆' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
