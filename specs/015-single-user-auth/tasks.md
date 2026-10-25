@@ -63,4 +63,33 @@ description: "Task list for 阶段 15 — 单用户认证"
 
 ## 完成记录
 
-（实现后回填）
+**提交**：`87028fd` feat(auth): 阶段 15 单用户认证（T001-T028）
+
+**测试**
+- 后端 `./mvnw -B verify`：**264** 通过（原 249 + 新增 15），**原有 249 个零改动通过**
+  - `AuthServiceTest`（6 单元）：缺密码启动失败、正确/错误凭据、大小写敏感、去空白、
+    关闭时不放行、不泄露明文
+  - `AuthIntegrationTest`（6，`AUTH_ENABLED=true`）：未登录 401 信封、健康检查放行、
+    `me` 返回 user=null、错密码与错用户名同一文案、登录后可读可写、登出后 401
+  - `AuthDisabledIntegrationTest`（3，默认配置）：全接口放行、`me` 报 `authEnabled=false`、
+    登录不伪造会话
+- 前端 `npm run test:logic`：**224** 断言通过（+27）；`type-check`、`build` 通过
+
+**真机验证（Playwright + curl，两个场景）**
+| 场景 | 结果 |
+|---|---|
+| 默认关闭 | 不跳登录、顶栏无用户名、导航正常、0 错误 |
+| 开启后未登录 | `curl /api/v1/tasks` → **401 + `{code:40100}`**；打开页面 → `/login?redirect=/`；导航隐藏 |
+| 错误密码 | 提示「用户名或密码错误」，停在登录页 |
+| 正确密码 | 回首页，顶栏显示 `admin`，导航恢复 |
+| 登录后直接访问 `/tasks` | 正常渲染 |
+| 登出 | 回到 `/login`，之后请求重新 401 |
+| 登录成功路径页面错误 | **(无)** |
+
+**说明**：测试脚本在「错误密码」步骤后清空了错误缓冲，因此最后一行只反映登录成功后的状态。
+单独跑错误密码时浏览器会输出一条 `Failed to load resource: 401` —— 那是浏览器对
+预期 401 的标准网络日志，不是应用错误。
+
+**新增依赖**：`spring-boot-starter-security`（版本由 Boot BOM 管理）。
+这是本项目第一个因安全能力引入的运行时依赖，理由见 plan 的 Complexity Tracking：
+会话固定攻击、cookie 属性、过滤器顺序这些细节 Spring Security 已做对，重写只会更差。
