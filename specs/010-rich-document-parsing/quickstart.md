@@ -42,17 +42,24 @@ cd ../frontend && npm run type-check && npm run build && npm run test:logic
 | M-正常 PDF | 上传浏览器打印的 19KB PDF → 解析**通过**（未报 40003），停在 `502/50200`「无法连接嵌入模型服务」 | ✅ 解析层正确 |
 | M-正常 docx | 上传 `textutil` 生成的 docx → 同上 | ✅ 解析层正确 |
 | M-失败零残留 | 上面五次上传后 `GET /documents` 返回 **0 条** | ✅ 事务回滚正确 |
-| M-成功入库并可检索 | — | ⏳ 见下 |
+| M-成功入库并可检索 | 接入 DashScope 后重跑：PDF `charCount=98/chunks=1`、图片 `charCount=29/chunks=1`、docx `charCount=87/chunks=1`；检索 score 0.803；RAG 问答带引用 | ✅ 2026-10-25 补验 |
 
 ## 未验证项与补验动作
 
-**M-成功入库并可检索**（真机）：本机既无 Ollama 也无 API Key，向量化阶段必然失败（50200）。
-**这不是本阶段的问题** —— 解析已经通过（否则会先报 40003），卡点在嵌入模型。
+**无**（2026-10-25 补齐）。
 
-补验动作（二选一）：
-1. 启动 Ollama 并 `ollama pull bge-m3`，然后用 `.env` 指向本地模型，重跑上面第 4/5 条命令；
-2. 给 `scripts/dev/mock-openai-server.py` 增加 `/v1/embeddings`（返回 1024 维确定性向量），
-   把后端指向 mock 后重跑。
+原「M-成功入库并可检索」曾因**本机没有可用嵌入模型**而挂起（上传停在 `50200 无法连接嵌入模型服务`）。
+解析层当时就已经通过（否则会先报 40003）。配置 DashScope 后（`qwen3.7-text-embedding-flash`，1024 维）
+重跑，全链路通过：
+
+- PDF（浏览器打印生成，19 KB）→ `charCount=98`、`chunkCount=1`
+- 图片（含中英文文本的 PNG）→ 视觉模型转录 → `charCount=29`、`chunkCount=1`
+- docx（`textutil` 生成）→ `charCount=87`、`chunkCount=1`
+- 「事务隔离级别 可重复读」检索 → 三条命中（0.803 / 0.698 / 0.661）
+- RAG 问答 → 「图片里提到了『可重复读』和『读已提交』[1]」，引用 3 条带来源标题
+
+> 另外发现：前端文档表格**原本没有展示 `charCount` 列** —— 这正是 `char_count` 恒为 0 多年没被
+> 发现的原因。本阶段顺手把该列加到表格里，让这类回归能被肉眼看见。
 
 > 链路正确性已由 `RichDocumentIngestIntegrationTest` 覆盖（真实 pgvector + 词袋嵌入桩，
 > 与阶段 3 同一套做法）；真机缺的只是「真实嵌入模型」这一环，与阶段 3 的 `G-浏览器联调` 同因。

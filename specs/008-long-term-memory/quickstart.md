@@ -47,7 +47,7 @@ cd ../frontend && npm run type-check && npm run build && npm run test:logic
 | M-迁移 | `flyway_schema_history` 最新一行 `9 / create memory / success=t` | ✅ |
 | M-浏览器页面 | `/memory` 五条路径：空状态 → 新增 1 条 → 编辑（**对话框预填原文**）→ 删除（二次确认）→ 回到空状态；控制台 0 错误 | ✅ |
 | M-导航与标识 | 顶栏出现「记忆」，阶段标识为「阶段 8 · 长期记忆」 | ✅ |
-| M-真实对话保存记忆 | 说「记住：…」让模型调 `saveMemory`，再新建会话验证回答体现该记忆 | ⏳ **真实模型不可用**：本机无 Ollama、未配 API Key，对话返回 `50200`。注入链路已由桩模型断言到 SystemMessage 级别（SC-001/004/006），不依赖真实模型 |
+| M-真实对话保存记忆 | 接入 DashScope 后：说「记住：我教初一年级27班的数学，用苏教版教材」→ 模型调用 `saveMemory`，`GET /memories` 出现该条；另在**另一个会话**里创建任务时，模型主动引用了更早存的「周报每周五下午交」 | ✅ 2026-10-25 补验 |
 
 ## 未验证项与补验动作
 
@@ -56,8 +56,10 @@ cd ../frontend && npm run type-check && npm run build && npm run test:logic
   `AiChatClientProvider.requirePlainChatClient()`（构造期只设 `defaultSystem`，不收集贡献者）。
   **补验动作**：在 `KnowledgeRagIntegrationTest` 里上传一段文档 → 问答 → 断言送给模型的
   system 消息不含「## 长期记忆」。需要复用该类的 `DeterministicEmbeddingModel` 桩。
-- **M-真实对话**：需要可用模型（Ollama 或 API Key）。补验时注意：这条验证的是"模型是否**遵守**记忆"，
-  属于模型能力，不是本系统的正确性；系统的正确性由"记忆是否进入上下文"决定，已有自动化证据。
+- ~~**M-真实对话**~~：**已于 2026-10-25 补验**（接入 DashScope）。结论见上表最后一行 ——
+  跨会话记忆在真实模型下确实生效（模型在新建会话里主动提到了上一会话存下的偏好）。
+  注意这条验证的是"模型是否**遵守**记忆"（模型能力）；系统的正确性仍以
+  SystemMessage 级别的自动化断言为准。
 
 ## 实现偏差（同轮已回改上游文档）
 

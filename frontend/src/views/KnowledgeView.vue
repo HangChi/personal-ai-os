@@ -132,7 +132,7 @@ function formatScore(score: number | null): string {
     <el-card shadow="never">
       <template #header>
         <div class="knowledge__header">
-          <span>上传文档（Markdown / TXT）</span>
+          <span>上传文档（Markdown / TXT / PDF / Word / 图片）</span>
           <span class="knowledge__stats">
             共 {{ documents.length }} 篇 · {{ totalChunks }} 个片段
           </span>
@@ -179,6 +179,12 @@ function formatScore(score: number | null): string {
           <template #default="{ row }">{{ formatSize(row.sizeBytes) }}</template>
         </el-table-column>
         <el-table-column prop="chunkCount" label="片段数" width="90" />
+        <!--
+          字符数列：解析出的文本长度（分块前）。它与「大小」不是一回事 ——
+          扫描版 PDF 体积很大但字符数接近 0，一眼能看出「这篇没解析出什么内容」。
+          该字段阶段 3 起后端一直没写入（恒为 0），阶段 10 才修复；展示出来也让回归能被肉眼发现。
+        -->
+        <el-table-column prop="charCount" label="字符数" width="100" />
         <el-table-column label="上传时间" width="180">
           <template #default="{ row }">{{ formatDateTime(row.createdAt) }}</template>
         </el-table-column>
