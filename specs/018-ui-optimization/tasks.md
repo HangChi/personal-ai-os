@@ -42,10 +42,10 @@
 
 ## Phase E — 知识库页（Tab 化 + 拖拽上传）
 
-- [ ] **T026** `KnowledgeView.vue`：`el-tabs` 三 Tab（文档/检索/问答），偏好持久化 `os.knowledge.tab`
-- [ ] **T027** `KnowledgeView.vue` 拖拽上传：dragover 高亮 / drop 复用现有校验 / 拒绝提示（C-06）
-- [ ] **T028** `KnowledgeView.vue` 表格：PageHeader/AppPagination 套用 + 片段数/字符数列头 tooltip
-- [ ] **T029** 走查：Tab 切换、拖入支持/不支持文件、构建全绿；截图存档
+- [x] **T026** `KnowledgeView.vue`：`el-tabs` 三 Tab（文档/检索/问答），偏好持久化 `os.knowledge.tab`
+- [x] **T027** `KnowledgeView.vue` 拖拽上传：dragover 高亮 / drop 复用现有校验 / 拒绝提示（C-06）
+- [x] **T028** `KnowledgeView.vue` 表格：PageHeader/AppPagination 套用 + 片段数/字符数列头 tooltip
+- [x] **T029** 走查：Tab 切换、拖入支持/不支持文件、构建全绿；截图存档
 
 ## Phase F — 日程页四项
 
@@ -80,6 +80,13 @@
 7. **失败就地提示**：弹窗内的保存失败用 ElMessage.error，不让用户对着无响应的按钮（沿袭 TasksView/CalendarView 既有注释的教训）。
 
 ## 完成记录（实现时回填）
+
+### Phase E（知识库页：Tab 化 + 拖拽上传）
+
+- 门禁：`type-check` 0 错误；`test:logic` 299/299；`build` 通过。
+- 真机：三 Tab 切换正常、刷新后记住所在 Tab（问答）；拖入 .md 填入文件名并上传成功（文档 26→27）；拖入 .exe 被拒并提示「不支持的文件类型」；检索「索引」3 hits；控制台零报错。
+- 测试脚本两次误报（应用无问题）：① 计数断言没排除隐藏 pane（el-tab-pane 隐藏时仍在 DOM）；② 400 Bad Request 实为后端「过短文档拒收」（<350 字符），测试文件太短。均已修正为对的口径。
+- 实现要点：el-tabs/el-radio-group 的 v-model 直接写 ref，会绕过 setter——uiStore 的视图偏好持久化从 setter 改为 watch，两条写入路径（v-model 与命令式）都覆盖。
 
 ### Phase D（任务页：看板 + 批量 + 表格重构）
 

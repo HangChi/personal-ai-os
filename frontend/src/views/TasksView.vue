@@ -258,7 +258,8 @@ function reportBatch(action: string, succeeded: number, failed: number): void {
 }
 
 function switchView(next: 'table' | 'board'): void {
-  uiStore.setTasksView(next)
+  // 直接写 ref：持久化由 uiStore 内的 watch 负责（v-model 与命令式两条路径都覆盖）
+  uiStore.tasksView = next
   clearSelection()
 }
 </script>

@@ -76,15 +76,13 @@ export const useUiStore = defineStore('ui', () => {
     document.documentElement.classList.toggle('dark', next === 'dark')
   })
 
-  function setTasksView(next: 'table' | 'board'): void {
-    tasksView.value = next
-    localStorage.setItem('os.tasks.view', next)
-  }
-
-  function setKnowledgeTab(next: 'documents' | 'search' | 'ask'): void {
-    knowledgeTab.value = next
-    localStorage.setItem('os.knowledge.tab', next)
-  }
+  /*
+   * 视图偏好的持久化走 watch 而不是 setter：el-tabs / el-radio-group 的 v-model
+   * 会直接写 ref，绕过任何 setter 函数——只提供 setter 的话，通过 v-model 的
+   * 修改永远不会落盘（刷新即丢）。watch 对两条写入路径（v-model 与命令式）都生效。
+   */
+  watch(tasksView, (next) => localStorage.setItem('os.tasks.view', next))
+  watch(knowledgeTab, (next) => localStorage.setItem('os.knowledge.tab', next))
 
   return {
     theme,
@@ -92,7 +90,5 @@ export const useUiStore = defineStore('ui', () => {
     tasksView,
     knowledgeTab,
     toggleTheme,
-    setTasksView,
-    setKnowledgeTab,
   }
 })
