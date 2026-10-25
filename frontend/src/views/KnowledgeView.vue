@@ -8,6 +8,10 @@ import { useKnowledgeStore } from '@/stores/knowledge'
 const knowledgeStore = useKnowledgeStore()
 const {
   documents,
+  total,
+  page,
+  size,
+  keyword,
   hits,
   answer,
   loadingDocuments,
@@ -15,7 +19,6 @@ const {
   searching,
   asking,
   error,
-  totalChunks,
   isEmpty,
 } = storeToRefs(knowledgeStore)
 
@@ -134,7 +137,7 @@ function formatScore(score: number | null): string {
         <div class="knowledge__header">
           <span>上传文档（Markdown / TXT / PDF / Word / 图片）</span>
           <span class="knowledge__stats">
-            共 {{ documents.length }} 篇 · {{ totalChunks }} 个片段
+            共 {{ total }} 篇
           </span>
         </div>
       </template>
@@ -169,9 +172,31 @@ function formatScore(score: number | null): string {
     />
 
     <el-card shadow="never">
-      <template #header>文档列表</template>
+      <template #header>
+        <div class="knowledge__header">
+          <span>文档列表</span>
+          <div class="knowledge__filters">
+            <el-input
+              v-model="keyword"
+              class="knowledge__filter"
+              clearable
+              placeholder="按标题 / 文件名搜索"
+              @keydown.enter="knowledgeStore.searchDocuments()"
+              @clear="knowledgeStore.searchDocuments()"
+            />
+            <el-button :loading="loadingDocuments" @click="knowledgeStore.loadDocuments()">
+              刷新
+            </el-button>
+          </div>
+        </div>
+      </template>
 
-      <el-empty v-if="isEmpty && !loadingDocuments" description="还没有上传任何文档" :image-size="70" />
+      <!-- 空态要区分「一篇都没有」与「筛掉了」：分页后仍说「还没有上传」会让人以为知识库坏了 -->
+      <el-empty
+        v-if="isEmpty && !loadingDocuments"
+        :description="keyword ? '没有匹配的文档' : '还没有上传任何文档'"
+        :image-size="70"
+      />
       <el-table v-else v-loading="loadingDocuments" :data="documents">
         <el-table-column prop="title" label="标题" min-width="180" />
         <el-table-column prop="filename" label="文件名" min-width="160" />
@@ -196,6 +221,18 @@ function formatScore(score: number | null): string {
           </template>
         </el-table-column>
       </el-table>
+
+      <div v-if="total > 0" class="knowledge__pagination">
+        <span class="knowledge__total">共 {{ total }} 篇</span>
+        <el-pagination
+          layout="prev, pager, next"
+          :total="total"
+          :current-page="page + 1"
+          :page-size="size"
+          background
+          @current-change="(next: number) => knowledgeStore.goToPage(next - 1)"
+        />
+      </div>
     </el-card>
 
     <el-card shadow="never">
@@ -286,6 +323,29 @@ function formatScore(score: number | null): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.knowledge__filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.knowledge__filter {
+  width: 200px;
+}
+
+.knowledge__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.knowledge__total {
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
 }
 
 .knowledge__stats {

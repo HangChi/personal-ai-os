@@ -1,10 +1,12 @@
 package com.personalos.chat.service;
 
 import com.personalos.chat.dto.ChatSessionDto;
+import com.personalos.chat.dto.ChatSessionQuery;
 import com.personalos.chat.entity.ChatSessionEntity;
 import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.chat.repository.ChatSessionRepository;
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.common.text.Texts;
@@ -16,6 +18,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,6 +126,45 @@ public class ChatSessionService {
         return sessions.stream()
                 .map(session -> toDto(session, counts.getOrDefault(session.getConversationId(), 0L)))
                 .toList();
+    }
+
+    /**
+     * 分页 + 关键词筛选的会话列表（阶段 16）。
+     *
+     * <p>与 {@link #list()} 的分工：{@code list()} 给导出等需要全量的内部用途，
+     * 本方法给界面。删掉 {@code list()} 留给将来「明确不再有全量消费者」时再做。
+     *
+     * <p>消息条数只对**当前页**做一次分组查询 —— 既避免 N+1，也不会因为给全量会话
+     * 统计消息数而退化。
+     */
+    @Transactional(readOnly = true)
+    public PageDto<ChatSessionDto> search(ChatSessionQuery query) {
+        Specification<ChatSessionEntity> spec = (root, criteriaQuery, builder) -> {
+            if (query.keyword() == null) {
+                return builder.conjunction();
+            }
+            String pattern = "%" + query.keyword().strip().toLowerCase() + "%";
+            return builder.like(builder.lower(root.get("title")), pattern);
+        };
+
+        PageRequest pageRequest = PageRequest.of(query.page(), query.size(),
+                Sort.by(Sort.Direction.DESC, "updatedAt"));
+        Page<ChatSessionEntity> page = sessionRepository.findAll(spec, pageRequest);
+        List<ChatSessionEntity> items = page.getContent();
+        if (items.isEmpty()) {
+            return new PageDto<>(List.of(), query.page(), query.size(), page.getTotalElements());
+        }
+
+        List<String> conversationIds = items.stream()
+                .map(ChatSessionEntity::getConversationId)
+                .toList();
+        Map<String, Long> counts = messageRepository.countGroupedByConversationId(conversationIds).stream()
+                .collect(Collectors.toMap(row -> (String) row[0], row -> ((Number) row[1]).longValue()));
+
+        List<ChatSessionDto> dtos = items.stream()
+                .map(session -> toDto(session, counts.getOrDefault(session.getConversationId(), 0L)))
+                .toList();
+        return new PageDto<>(dtos, query.page(), query.size(), page.getTotalElements());
     }
 
     /**

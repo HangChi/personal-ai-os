@@ -1,5 +1,5 @@
 import { requestData } from '@/api/http'
-import type { ChatMessage, ChatSession } from '@/types/api'
+import type { ChatMessage, ChatSession, PageDto } from '@/types/api'
 
 /**
  * 聊天接口客户端。
@@ -9,9 +9,28 @@ import type { ChatMessage, ChatSession } from '@/types/api'
  * 而对话需要 POST 提交消息体（见 specs/002-ai-chat/research.md R-05）。
  */
 
-/** 会话列表，按最近活动时间倒序 */
-export function listSessions(): Promise<ChatSession[]> {
-  return requestData<ChatSession[]>({ url: '/chat/sessions', method: 'get' })
+/** 会话列表查询（阶段 16） */
+export interface SessionListQuery {
+  /** 标题关键词 */
+  keyword?: string
+  /** 页码，从 0 开始 */
+  page?: number
+  /** 每页条数 */
+  size?: number
+}
+
+/**
+ * 分页 + 关键词筛选的会话列表，按最近活动时间倒序。
+ *
+ * 走 `/sessions/search` 而不是改造 `/sessions`：后者返回全量数组，
+ * 被导出链路与既有集成测试依赖（见 specs/016 plan R-01）。
+ */
+export function listSessions(query: SessionListQuery = {}): Promise<PageDto<ChatSession>> {
+  return requestData<PageDto<ChatSession>>({
+    url: '/chat/sessions/search',
+    method: 'get',
+    params: query,
+  })
 }
 
 /** 创建会话 */

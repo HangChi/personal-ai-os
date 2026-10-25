@@ -24,6 +24,14 @@ import type { ChatMessage, ChatSession, TaskConfirmation } from '@/types/api'
  */
 export const useChatStore = defineStore('chat', () => {
   const sessions = ref<ChatSession[]>([])
+  /** 符合条件的会话总数（分页响应带来） */
+  const sessionsTotal = ref(0)
+  /** 当前页码，从 0 开始 */
+  const sessionsPage = ref(0)
+  /** 每页条数 */
+  const sessionsSize = ref(20)
+  /** 会话标题关键词 */
+  const sessionKeyword = ref('')
   const currentConversationId = ref<string | null>(null)
   const messages = ref<ChatMessage[]>([])
   const streamingContent = ref('')
@@ -42,15 +50,33 @@ export const useChatStore = defineStore('chat', () => {
 
   let abortController: AbortController | null = null
 
-  async function loadSessions(): Promise<void> {
+  async function loadSessions(targetPage: number = sessionsPage.value): Promise<void> {
     loadingSessions.value = true
     try {
-      sessions.value = await listSessions()
+      const result = await listSessions({
+        keyword: sessionKeyword.value.trim() || undefined,
+        page: targetPage,
+        size: sessionsSize.value,
+      })
+      sessions.value = result.items
+      sessionsPage.value = result.page
+      sessionsSize.value = result.size
+      sessionsTotal.value = result.total
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '加载会话列表失败'
     } finally {
       loadingSessions.value = false
     }
+  }
+
+  /** 关键词变化：先归零页码，否则会停在越界页看到空列表 */
+  async function searchSessions(): Promise<void> {
+    sessionsPage.value = 0
+    await loadSessions(0)
+  }
+
+  async function goToSessionPage(next: number): Promise<void> {
+    await loadSessions(next)
   }
 
   async function createSession(title?: string): Promise<void> {
@@ -241,6 +267,10 @@ export const useChatStore = defineStore('chat', () => {
 
   return {
     sessions,
+    sessionsTotal,
+    sessionsPage,
+    sessionsSize,
+    sessionKeyword,
     currentConversationId,
     messages,
     streamingContent,
@@ -250,6 +280,8 @@ export const useChatStore = defineStore('chat', () => {
     error,
     pendingConfirmations,
     loadSessions,
+    searchSessions,
+    goToSessionPage,
     createSession,
     selectSession,
     removeSession,

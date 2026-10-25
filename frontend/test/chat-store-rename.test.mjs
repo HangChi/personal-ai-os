@@ -22,6 +22,11 @@ function session(id, title, updatedAt, messageCount = 0) {
   return { conversationId: id, title, createdAt: '2026-03-01T00:00:00Z', updatedAt, messageCount }
 }
 
+/** 阶段 16 起会话列表走 /sessions/search，响应是 PageDto 而不是裸数组 */
+function pageOf(items) {
+  return { items, page: 0, size: 20, total: items.length }
+}
+
 // ---- 成功：就地替换，不重拉 ----
 
 {
@@ -32,9 +37,9 @@ function session(id, title, updatedAt, messageCount = 0) {
   ]
   let listCalls = 0
   let patchConfig = null
-  handlers.set('/chat/sessions', () => {
+  handlers.set('/chat/sessions/search', () => {
     listCalls += 1
-    return Promise.resolve(original)
+    return Promise.resolve(pageOf(original))
   })
   handlers.set('/chat/sessions/c-3', (config) => {
     patchConfig = config
@@ -62,7 +67,7 @@ function session(id, title, updatedAt, messageCount = 0) {
 
 {
   const original = [session('c-1', '最新', '2026-03-03T00:00:00Z', 5)]
-  handlers.set('/chat/sessions', () => Promise.resolve(original))
+  handlers.set('/chat/sessions/search', () => Promise.resolve(pageOf(original)))
   handlers.set('/chat/sessions/c-1', () => Promise.reject(businessError(40004, '会话不存在：c-1')))
 
   freshStore()
@@ -80,7 +85,7 @@ function session(id, title, updatedAt, messageCount = 0) {
 
 {
   const original = [session('c-9', '旧名', '2026-03-05T00:00:00Z', 1)]
-  handlers.set('/chat/sessions', () => Promise.resolve(original))
+  handlers.set('/chat/sessions/search', () => Promise.resolve(pageOf(original)))
   handlers.set('/chat/sessions/c-9', () => Promise.resolve({ ...original[0], title: '新名' }))
 
   freshStore()

@@ -1,11 +1,13 @@
 package com.personalos.knowledge.service;
 
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.knowledge.KnowledgeMetadata;
 import com.personalos.knowledge.config.KnowledgeProperties;
 import com.personalos.knowledge.dto.KnowledgeDocumentDto;
+import com.personalos.knowledge.dto.KnowledgeDocumentQuery;
 import com.personalos.knowledge.entity.KnowledgeDocumentEntity;
 import com.personalos.knowledge.reader.DocumentReaderFactory;
 import com.personalos.knowledge.repository.KnowledgeDocumentRepository;
@@ -22,6 +24,10 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -126,6 +132,33 @@ public class KnowledgeDocumentService {
     @Transactional(readOnly = true)
     public List<KnowledgeDocumentDto> list() {
         return repository.findAllByOrderByCreatedAtDesc().stream().map(this::toDto).toList();
+    }
+
+    /**
+     * 分页 + 关键词筛选的文档列表（阶段 16）。
+     *
+     * <p>关键词同时匹配**标题与文件名**：上传时若没有单独填标题，列表显示的就是文件名，
+     * 只匹配标题会让「按文件名找」失效。
+     *
+     * <p>与 {@link #list()} 的分工：{@code list()} 给导出等需要全量的内部用途，本方法给界面。
+     */
+    @Transactional(readOnly = true)
+    public PageDto<KnowledgeDocumentDto> search(KnowledgeDocumentQuery query) {
+        Specification<KnowledgeDocumentEntity> spec = (root, criteriaQuery, builder) -> {
+            if (query.keyword() == null) {
+                return builder.conjunction();
+            }
+            String pattern = "%" + query.keyword().strip().toLowerCase(Locale.ROOT) + "%";
+            return builder.or(
+                    builder.like(builder.lower(root.get("title")), pattern),
+                    builder.like(builder.lower(root.get("filename")), pattern));
+        };
+
+        PageRequest pageRequest = PageRequest.of(query.page(), query.size(),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<KnowledgeDocumentEntity> page = repository.findAll(spec, pageRequest);
+        List<KnowledgeDocumentDto> items = page.getContent().stream().map(this::toDto).toList();
+        return new PageDto<>(items, query.page(), query.size(), page.getTotalElements());
     }
 
     /**

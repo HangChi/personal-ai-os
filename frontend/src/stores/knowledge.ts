@@ -17,6 +17,14 @@ import type {
 /** 知识库状态 */
 export const useKnowledgeStore = defineStore('knowledge', () => {
   const documents = ref<KnowledgeDocument[]>([])
+  /** 符合条件的文档总数（分页响应带来） */
+  const total = ref(0)
+  /** 当前页码，从 0 开始 */
+  const page = ref(0)
+  /** 每页条数 */
+  const size = ref(20)
+  /** 标题/文件名关键词 */
+  const keyword = ref('')
   const hits = ref<KnowledgeHit[]>([])
   const answer = ref<KnowledgeAskResponse | null>(null)
 
@@ -26,24 +34,43 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   const asking = ref(false)
   const error = ref<string | null>(null)
 
-  /** 总片段数：让用户对"知识库有多大"有个直观概念 */
+  /** 当前页的片段总数。注意：分页后这只是**这一页**的规模，不是整个知识库 */
   const totalChunks = computed(() =>
     documents.value.reduce((sum, document) => sum + document.chunkCount, 0),
   )
 
   const isEmpty = computed(() => documents.value.length === 0)
 
-  async function loadDocuments(): Promise<void> {
+  async function loadDocuments(targetPage: number = page.value): Promise<void> {
     loadingDocuments.value = true
     error.value = null
     try {
-      documents.value = await listDocuments()
+      const result = await listDocuments({
+        keyword: keyword.value.trim() || undefined,
+        page: targetPage,
+        size: size.value,
+      })
+      documents.value = result.items
+      page.value = result.page
+      size.value = result.size
+      total.value = result.total
     } catch (cause) {
       documents.value = []
+      total.value = 0
       error.value = cause instanceof Error ? cause.message : '加载文档列表失败'
     } finally {
       loadingDocuments.value = false
     }
+  }
+
+  /** 关键词变化：先归零页码再加载，否则会停在越界页看到空表 */
+  async function searchDocuments(): Promise<void> {
+    page.value = 0
+    await loadDocuments(0)
+  }
+
+  async function goToPage(next: number): Promise<void> {
+    await loadDocuments(next)
   }
 
   async function upload(file: File, title?: string): Promise<boolean> {
@@ -104,6 +131,10 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
   return {
     documents,
+    total,
+    page,
+    size,
+    keyword,
     hits,
     answer,
     loadingDocuments,
@@ -114,6 +145,8 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     totalChunks,
     isEmpty,
     loadDocuments,
+    searchDocuments,
+    goToPage,
     upload,
     remove,
     search,

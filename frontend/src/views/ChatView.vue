@@ -9,10 +9,15 @@ import type { ChatRole, ChatSession, TaskConfirmation } from '@/types/api'
 const chatStore = useChatStore()
 const {
   sessions,
+  sessionsTotal,
+  sessionsPage,
+  sessionsSize,
+  sessionKeyword,
   currentConversationId,
   messages,
   streamingContent,
   streaming,
+  loadingSessions,
   loadingMessages,
   error,
   pendingConfirmations,
@@ -167,11 +172,30 @@ async function handleRename(session: ChatSession): Promise<void> {
       <template #header>
         <div class="chat__sessions-header">
           <span>会话</span>
-          <el-button type="primary" size="small" @click="handleNewSession">新建</el-button>
+          <div class="chat__sessions-actions">
+            <el-button size="small" :loading="loadingSessions" @click="chatStore.loadSessions()">
+              刷新
+            </el-button>
+            <el-button type="primary" size="small" @click="handleNewSession">新建</el-button>
+          </div>
         </div>
+        <el-input
+          v-model="sessionKeyword"
+          class="chat__sessions-filter"
+          clearable
+          size="small"
+          placeholder="按标题搜索会话"
+          @keydown.enter="chatStore.searchSessions()"
+          @clear="chatStore.searchSessions()"
+        />
       </template>
 
-      <el-empty v-if="sessions.length === 0" description="还没有会话" :image-size="60" />
+      <!-- 空态区分「一个都没有」与「筛掉了」，否则筛完看起来像历史被清空了 -->
+      <el-empty
+        v-if="sessions.length === 0"
+        :description="sessionKeyword ? '没有匹配的会话' : '还没有会话'"
+        :image-size="60"
+      />
       <ul v-else class="chat__session-list">
         <li
           v-for="session in sessions"
@@ -201,6 +225,19 @@ async function handleRename(session: ChatSession): Promise<void> {
           </div>
         </li>
       </ul>
+
+      <div v-if="sessionsTotal > 0" class="chat__sessions-pagination">
+        <span class="chat__sessions-total">共 {{ sessionsTotal }} 个</span>
+        <el-pagination
+          layout="prev, pager, next"
+          small
+          background
+          :total="sessionsTotal"
+          :current-page="sessionsPage + 1"
+          :page-size="sessionsSize"
+          @current-change="(next: number) => chatStore.goToSessionPage(next - 1)"
+        />
+      </div>
     </el-card>
 
     <el-card class="chat__main" shadow="never">
@@ -319,6 +356,29 @@ async function handleRename(session: ChatSession): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.chat__sessions-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat__sessions-filter {
+  margin-top: 8px;
+}
+
+.chat__sessions-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chat__sessions-total {
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
 }
 
 .chat__main-title {

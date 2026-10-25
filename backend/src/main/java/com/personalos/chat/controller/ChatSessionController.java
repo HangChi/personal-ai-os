@@ -2,6 +2,7 @@ package com.personalos.chat.controller;
 
 import com.personalos.chat.dto.ChatMessageDto;
 import com.personalos.chat.dto.ChatSessionDto;
+import com.personalos.chat.dto.ChatSessionQuery;
 import com.personalos.chat.dto.CreateSessionRequest;
 import com.personalos.chat.dto.RenameSessionRequest;
 import com.personalos.chat.dto.StreamChatRequest;
@@ -9,6 +10,7 @@ import com.personalos.chat.service.ChatCompletionService;
 import com.personalos.chat.service.ChatMessageService;
 import com.personalos.chat.service.ChatSessionService;
 import com.personalos.common.api.ApiResponse;
+import com.personalos.common.api.PageDto;
 import com.personalos.common.json.JsonCodec;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -64,6 +67,23 @@ public class ChatSessionController {
     @GetMapping("/sessions")
     public ApiResponse<List<ChatSessionDto>> listSessions() {
         return ApiResponse.ok(sessionService.list());
+    }
+
+    /**
+     * 分页 + 关键词筛选的会话列表（阶段 16）。
+     *
+     * <p>声明在 {@code /{conversationId}} 之前：路径字面量本就优先于变量段，
+     * 放前面是为了读代码时不会先疑惑「`search` 会不会被当成 conversationId」。
+     *
+     * <p>与全量的 {@code GET /sessions} 并存：后者被导出链路与既有测试依赖，
+     * 改造成分页会是一次波及 6 个测试的契约变更（见 specs/016 的 plan R-01）。
+     */
+    @GetMapping("/sessions/search")
+    public ApiResponse<PageDto<ChatSessionDto>> searchSessions(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ApiResponse.ok(sessionService.search(new ChatSessionQuery(keyword, page, size)));
     }
 
     /**

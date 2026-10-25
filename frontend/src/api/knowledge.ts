@@ -3,15 +3,35 @@ import type {
   KnowledgeAskResponse,
   KnowledgeDocument,
   KnowledgeSearchResponse,
+  PageDto,
 } from '@/types/api'
 
 /**
  * 知识库接口客户端。
  */
 
-/** 文档列表，按上传时间倒序 */
-export function listDocuments(): Promise<KnowledgeDocument[]> {
-  return requestData<KnowledgeDocument[]>({ url: '/knowledge/documents', method: 'get' })
+/** 文档列表查询（阶段 16） */
+export interface DocumentListQuery {
+  /** 标题或文件名关键词 */
+  keyword?: string
+  /** 页码，从 0 开始 */
+  page?: number
+  /** 每页条数 */
+  size?: number
+}
+
+/**
+ * 分页 + 关键词筛选的文档列表，按上传时间倒序。
+ *
+ * 走 `/documents/search` 而不是改造 `/documents`：后者返回全量数组，
+ * 被导出链路与既有集成测试依赖（见 specs/016 plan R-01）。
+ */
+export function listDocuments(query: DocumentListQuery = {}): Promise<PageDto<KnowledgeDocument>> {
+  return requestData<PageDto<KnowledgeDocument>>({
+    url: '/knowledge/documents/search',
+    method: 'get',
+    params: query,
+  })
 }
 
 /**

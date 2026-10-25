@@ -2,11 +2,13 @@ package com.personalos.knowledge.controller;
 
 import com.personalos.common.api.ApiResponse;
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.knowledge.dto.KnowledgeAskRequest;
 import com.personalos.knowledge.dto.KnowledgeAskResponse;
 import com.personalos.knowledge.dto.KnowledgeDocumentDeletedDto;
 import com.personalos.knowledge.dto.KnowledgeDocumentDto;
+import com.personalos.knowledge.dto.KnowledgeDocumentQuery;
 import com.personalos.knowledge.dto.KnowledgeSearchRequest;
 import com.personalos.knowledge.dto.KnowledgeSearchResponse;
 import com.personalos.knowledge.service.KnowledgeDocumentService;
@@ -75,6 +77,20 @@ public class KnowledgeController {
     @GetMapping("/documents")
     public ApiResponse<List<KnowledgeDocumentDto>> listDocuments() {
         return ApiResponse.ok(documentService.list());
+    }
+
+    /**
+     * 分页 + 关键词筛选的文档列表（阶段 16），关键词匹配标题与文件名。
+     *
+     * <p>与全量的 {@code GET /documents} 并存：后者被导出链路与既有测试依赖
+     * （见 specs/016 的 plan R-01）。
+     */
+    @GetMapping("/documents/search")
+    public ApiResponse<PageDto<KnowledgeDocumentDto>> searchDocuments(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ApiResponse.ok(documentService.search(new KnowledgeDocumentQuery(keyword, page, size)));
     }
 
     /**
