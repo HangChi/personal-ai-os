@@ -84,6 +84,13 @@ spring:
       chat:
         model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
         temperature: 0.7
+      embedding:
+        # 仅当 AI_EMBEDDING_PROVIDER=openai 时读取。
+        # OpenAI 兼容服务（如 DashScope 百炼）复用同一个 base-url，
+        # 即 {base-url}/embeddings —— 该端点需支持 POST，实测 DashScope 支持。
+        model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+        # 不指定 dimensions：让模型用自身默认值，再由启动期维度守卫校验
+        # （本项目向量列是 vector(1024)，实测 qwen3.7-text-embedding-flash 默认输出 1024）
     vectorstore:
       # 与 PgVectorStoreAutoConfiguration 的条件属性对齐
       type: pgvector
