@@ -34,11 +34,11 @@
 
 ## Phase D — 任务页（表格重构 + 看板 + 批量）
 
-- [ ] **T021** `src/lib/board.ts` + `frontend/test/board.test.mjs`：`groupTasksByStatus`（三列、列内保序）
-- [ ] **T022** `TasksView.vue`：PageHeader/FilterBar/AppPagination/StatusTag 套用；mini 统计卡；表格默认按截止升序（无截止排最后）
-- [ ] **T023** `TasksView.vue` 看板视图：三列 + 列头计数 + 空列空态 + 卡片操作按钮（完成/编辑/删除，**无拖拽**）；视图模式持久化 `os.tasks.view`
-- [ ] **T024** `TasksView.vue` 批量操作：表格多选 + 批量完成/删除（`Promise.allSettled` 汇总报告，C-05 失败语义）
-- [ ] **T025** 走查：双视图切换/记忆、批量成功与部分失败、构建全绿；截图存档
+- [x] **T021** `src/lib/board.ts` + `frontend/test/board.test.mjs`：`groupTasksByStatus`（三列、列内保序）
+- [x] **T022** `TasksView.vue`：PageHeader/FilterBar/AppPagination/StatusTag 套用；mini 统计卡；表格默认按截止升序（无截止排最后）
+- [x] **T023** `TasksView.vue` 看板视图：三列 + 列头计数 + 空列空态 + 卡片操作按钮（完成/编辑/删除，**无拖拽**）；视图模式持久化 `os.tasks.view`
+- [x] **T024** `TasksView.vue` 批量操作：表格多选 + 批量完成/删除（`Promise.allSettled` 汇总报告，C-05 失败语义）
+- [x] **T025** 走查：双视图切换/记忆、批量成功与部分失败、构建全绿；截图存档
 
 ## Phase E — 知识库页（Tab 化 + 拖拽上传）
 
@@ -80,6 +80,13 @@
 7. **失败就地提示**：弹窗内的保存失败用 ElMessage.error，不让用户对着无响应的按钮（沿袭 TasksView/CalendarView 既有注释的教训）。
 
 ## 完成记录（实现时回填）
+
+### Phase D（任务页：看板 + 批量 + 表格重构）
+
+- 门禁：`type-check` 0 错误；`test:logic` 299/299（+14 board）；`build` 通过。
+- 真机：表格默认按截止升序（无截止保持稳定原序）；勾选 2 条 → 批量栏出现 →「已完成 2 条」汇总提示；看板三列 待办3/进行中0/已完成2（空列有空态）；刷新后视图记忆为看板；控制台零报错。
+- 实现要点：批量成败计数放在 store（batchComplete/batchDelete 返回 {succeeded, failed}）——store 原有 remove/toggleCompleted 自己吞错误，allSettled 看它们永远 fulfilled，在视图层数不出失败（tasks.md Notes #1 的落地）。
+- 测试插曲：board.test.mjs 首跑挂在自己的期望值笔误（升序断言少写了排最后的 '4'），修正后全绿。
 
 ### Phase C（总览页 Dashboard 化）
 

@@ -145,6 +145,50 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
+  /**
+   * 批量完成（阶段 18，contracts C-05）。
+   *
+   * 逐条调用、互不影响：单条失败不影响其他条，也不回滚已成功的行
+   * （接口无跨行事务，回滚需要逆向请求，超出纯前端边界）。
+   * 返回值让调用方能报告「成功 X 条，失败 Y 条」——store 的 remove /
+   * toggleCompleted 自己吞错误，allSettled 看它们永远 fulfilled，数不出失败。
+   */
+  async function batchComplete(ids: string[]): Promise<{ succeeded: number; failed: number }> {
+    let succeeded = 0
+    let failed = 0
+    await Promise.allSettled(
+      ids.map(async (id) => {
+        try {
+          await completeTaskApi(id)
+          succeeded += 1
+        } catch {
+          failed += 1
+        }
+      }),
+    )
+    await load()
+    return { succeeded, failed }
+  }
+
+  /** 批量删除（阶段 18）。语义同 batchComplete；完成后刷新标签下拉。 */
+  async function batchDelete(ids: string[]): Promise<{ succeeded: number; failed: number }> {
+    let succeeded = 0
+    let failed = 0
+    await Promise.allSettled(
+      ids.map(async (id) => {
+        try {
+          await deleteTaskApi(id)
+          succeeded += 1
+        } catch {
+          failed += 1
+        }
+      }),
+    )
+    await load()
+    await refreshTags()
+    return { succeeded, failed }
+  }
+
   return {
     tasks,
     total,
@@ -166,5 +210,7 @@ export const useTaskStore = defineStore('task', () => {
     edit,
     toggleCompleted,
     remove,
+    batchComplete,
+    batchDelete,
   }
 })
