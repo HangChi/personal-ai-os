@@ -64,6 +64,10 @@ tmp/
 /data/
 /uploads/
 
+# ---- Python 缓存（scripts/dev 下的开发脚本）----
+__pycache__/
+*.pyc
+
 # ---- MCP 沙箱目录 ----
 # 接入 filesystem server 时的示例目录（见 README 与 .env.example）。
 # 它是**用户自己的文件区**，不是项目产物：里面放什么由用户决定，一律不入库。

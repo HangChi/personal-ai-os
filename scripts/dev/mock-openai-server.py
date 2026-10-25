@@ -7,17 +7,40 @@
 它**支持工具调用**，因此也能用来端到端验证 Agent 链路（模型发起工具调用 →
 框架执行工具 → 数据库真实变化 → 二次调用给出自然语言结论）。
 
+它**也实现了 `/v1/embeddings`**，用确定性词袋哈希生成 1024 维单位向量
+（与 Flyway V4 的 `vector(1024)` 一致）。这样在没有 Ollama、没有 API Key 的机器上
+也能把知识库链路真正跑起来：上传 → 分块 → 向量化 → 入库 → 检索 → 引用。
+
+⚠️ **它不是语义模型，相似度尺度与真实模型差一个量级**：800 字的分块与一句问句之间，
+真实模型能给出 0.5–0.8，这里只有 0.1–0.3（词袋的固有性质：长文本方向分散）。
+所以用 mock 联调知识库时，**必须同时把阈值调低**：
+
+    AI_KNOWLEDGE_SIMILARITY_THRESHOLD=0.05
+
+排序仍然是正确的（相关 > 无关），足以验证链路通不通、命中顺序对不对；
+但它**不能用来评估真实嵌入质量**，也不能用来看默认阈值 0.3 下会不会命中。
+
 它不是产品代码，也不参与构建与测试；集成测试用的是 Java 侧的脚本化桩 ChatModel。
+
+端点：
+    POST /v1/chat/completions   按 `stream` 字段决定返回 SSE（对话）还是 JSON（问答等 `.call()`）
+    POST /v1/embeddings         确定性词袋向量，1024 维
 
 用法：
     python3 scripts/dev/mock-openai-server.py --port 9099
 
-配合启动后端：
+配合启动后端（对话 + 嵌入都指向本服务）：
     AI_CHAT_PROVIDER=openai \\
+    AI_EMBEDDING_PROVIDER=openai \\
+    AI_KNOWLEDGE_SIMILARITY_THRESHOLD=0.05 \\
     OPENAI_BASE_URL=http://127.0.0.1:9099 \\
     OPENAI_API_KEY=mock-key \\
     OPENAI_CHAT_MODEL=mock-model \\
+    OPENAI_EMBEDDING_MODEL=mock-embedding \\
     ./mvnw spring-boot:run
+
+只验证知识库（对话仍走别处）时，把 `AI_EMBEDDING_PROVIDER` 单独设为 `openai` 并保留
+上面的 `OPENAI_BASE_URL` 即可；`OPENAI_EMBEDDING_MODEL` 随便填，mock 不校验模型名。
 
 触发协议（用自然语言前缀模拟"模型决定调用工具"）：
     「创建任务：写周报」        -> 调用 createTask
@@ -34,13 +57,52 @@
 """
 
 import argparse
+import hashlib
 import json
+import math
 import re
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PLAIN_CHUNKS = ["这是", "来自", "本地模拟模型", "的流式回复。"]
 FINAL_TEXT = "已完成你的请求。"
+
+# 必须与迁移里的 vector(1024) 一致，否则应用启动期的维度守卫会直接失败
+EMBEDDING_DIMENSIONS = 1024
+
+
+def tokenize(text):
+    """切出用于哈希的语义单元：拉丁按词，中文按**单字**。
+
+    为什么是单字而不是 bigram：实测在 800 字的真实分块上，bigram 的相关问句余弦只有
+    0.24，单字能到 0.36（重叠的 token 更多）；两者对无关文本都接近 0。
+    单字放弃了一部分词序信息，但 mock 的目标是「链路可验证 + 排序正确」，不是语义质量。
+    """
+    lowered = (text or "").lower()
+    tokens = ["w:" + word for word in re.findall(r"[a-z0-9]+", lowered)]
+    tokens.extend("z:" + char for char in re.findall(r"[\u4e00-\u9fff]", lowered))
+    return tokens
+
+
+def embed_text(text, dimensions):
+    """确定性词袋嵌入：token 哈希到维度上带符号累加，最后 L2 归一化。
+
+    归一化是为了让余弦相似度等价于点积，与 `vector_cosine_ops` 索引的语义对齐。
+    """
+    vector = [0.0] * dimensions
+    tokens = tokenize(text) or ["empty"]
+
+    for token in tokens:
+        digest = hashlib.sha256(token.encode("utf-8")).digest()
+        index = int.from_bytes(digest[:4], "big") % dimensions
+        vector[index] += 1.0 if digest[4] % 2 == 0 else -1.0
+
+    norm = math.sqrt(sum(value * value for value in vector))
+    if norm == 0.0:
+        # 所有 token 互相抵消（极罕见）：退化成一个固定方向，保证不是零向量
+        vector[0] = 1.0
+        return vector
+    return [value / norm for value in vector]
 
 
 def pick_tool_call(user_content):
@@ -102,6 +164,104 @@ class Handler(BaseHTTPRequestHandler):
             "choices": [{"index": 0, "delta": delta, "finish_reason": finish_reason}],
         }
 
+    def _handle_embeddings(self, request) -> None:
+        """实现 OpenAI `/v1/embeddings` 的最小响应格式。
+
+        `input` 允许是字符串或字符串数组（OpenAI 两种都收）。
+        `dimensions` 若被显式传入则按其返回，但收敛到 [1, 4096]，
+        避免客户端传入荒谬值时分配巨大数组。
+        """
+        raw_input = request.get("input")
+        if isinstance(raw_input, str):
+            inputs = [raw_input]
+        elif isinstance(raw_input, list):
+            # 也接受 token id 数组：直接转成字符串参与哈希，保证不 500
+            inputs = [item if isinstance(item, str) else str(item) for item in raw_input]
+        else:
+            inputs = [""]
+
+        try:
+            dimensions = int(request.get("dimensions") or EMBEDDING_DIMENSIONS)
+        except (TypeError, ValueError):
+            dimensions = EMBEDDING_DIMENSIONS
+        dimensions = max(1, min(dimensions, 4096))
+
+        data = []
+        total_tokens = 0
+        for index, text in enumerate(inputs):
+            total_tokens += len(text)
+            data.append({
+                "object": "embedding",
+                "index": index,
+                "embedding": embed_text(text, dimensions),
+            })
+            print("[mock] 嵌入 %d 字符 -> %d 维" % (len(text), dimensions))
+
+        body = json.dumps({
+            "object": "list",
+            "data": data,
+            "model": request.get("model") or "mock-embedding",
+            "usage": {"prompt_tokens": total_tokens, "total_tokens": total_tokens},
+        }).encode("utf-8")
+
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _handle_chat_json(self, request, tool_call, tool_already_ran) -> None:
+        """非流式（`stream` 为假）的 `/v1/chat/completions`。
+
+        知识库问答 `KnowledgeQaService.ask` 用的是 `chatClient.call()`，是**非流式**调用。
+        只实现 SSE 会让它拿到 `data: {...}` 后直接 JSON 解析失败
+        （`Unrecognized token 'data'`），表现为问答接口 500 —— 与嵌入无关的另一个盲区。
+        """
+        created = int(time.time())
+
+        if tool_call is not None:
+            tool_name, arguments = tool_call
+            print("[mock] 触发工具调用（非流式）: %s %s" % (tool_name, json.dumps(arguments, ensure_ascii=False)))
+            message = {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [{
+                    "id": "call_mock_1",
+                    "type": "function",
+                    "function": {
+                        "name": tool_name,
+                        "arguments": json.dumps(arguments, ensure_ascii=False),
+                    },
+                }],
+            }
+            finish_reason = "tool_calls"
+        else:
+            message = {
+                "role": "assistant",
+                "content": FINAL_TEXT if tool_already_ran else "这是来自本地模拟模型的回复。",
+            }
+            finish_reason = "stop"
+
+        prompt_chars = sum(len(str(item.get("content") or "")) for item in (request.get("messages") or []))
+        body = json.dumps({
+            "id": "chatcmpl-mock",
+            "object": "chat.completion",
+            "created": created,
+            "model": request.get("model") or "mock-model",
+            "choices": [{"index": 0, "message": message, "finish_reason": finish_reason}],
+            "usage": {
+                "prompt_tokens": prompt_chars,
+                "completion_tokens": len(message.get("content") or ""),
+                "total_tokens": prompt_chars + len(message.get("content") or ""),
+            },
+        }).encode("utf-8")
+
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_POST(self):  # noqa: N802  (BaseHTTPRequestHandler 约定)
         length = int(self.headers.get("Content-Length") or 0)
         raw_body = self.rfile.read(length)
@@ -110,8 +270,12 @@ class Handler(BaseHTTPRequestHandler):
         except json.JSONDecodeError:
             request = {}
 
+        if self.path.endswith("/embeddings"):
+            self._handle_embeddings(request)
+            return
+
         if not self.path.endswith("/chat/completions"):
-            self.send_error(404, "only /v1/chat/completions is mocked")
+            self.send_error(404, "only /v1/chat/completions and /v1/embeddings are mocked")
             return
 
         messages = request.get("messages") or []
@@ -123,6 +287,13 @@ class Handler(BaseHTTPRequestHandler):
                 user_content = message.get("content") or ""
                 break
 
+        tool_call = None if tool_already_ran else pick_tool_call(user_content)
+
+        # 非流式调用（知识库问答、以及任何 `.call()`）走 JSON；流式（对话）走 SSE
+        if not request.get("stream"):
+            self._handle_chat_json(request, tool_call, tool_already_ran)
+            return
+
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
@@ -130,7 +301,6 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
         created = int(time.time())
-        tool_call = None if tool_already_ran else pick_tool_call(user_content)
 
         if tool_call is not None:
             tool_name, arguments = tool_call
@@ -174,7 +344,8 @@ def main() -> None:
 
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print("mock OpenAI-compatible server listening on http://%s:%d" % (args.host, args.port))
-    print("POST /v1/chat/completions  -> SSE（支持 tool_calls）")
+    print("POST /v1/chat/completions  -> SSE（stream=true）或 JSON（stream=false，支持 tool_calls）")
+    print("POST /v1/embeddings        -> JSON（%d 维确定性词袋向量）" % EMBEDDING_DIMENSIONS)
     server.serve_forever()
 
 

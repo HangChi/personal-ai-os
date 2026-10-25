@@ -216,6 +216,9 @@ AI_KNOWLEDGE_EMBEDDING_DIMENSIONS=1024  # 必须与迁移里的 vector(1024) 一
 > 维度不一致时应用会**在启动阶段就失败**并给出修复指引，而不是等到写入时才报 SQL 错。
 
 本地跑真实语义检索需要 `ollama pull bge-m3`（约 1.2GB）；
+没有真实模型时也可以用仓库自带的 mock（已实现 `/v1/embeddings`），
+但要同时把相似度阈值调到 `0.05` —— 词袋嵌入的相似度尺度比真实模型低一个量级，
+详见 [`docs/development.md`](docs/development.md) 第五节。
 **自动化测试不需要任何模型** —— 它用确定性词袋嵌入替代，详见 `docs/development.md`。
 
 ## 配置模型提供商

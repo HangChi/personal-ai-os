@@ -138,19 +138,40 @@ AI 能力默认走本地 Ollama（`AI_CHAT_PROVIDER=ollama`）。若你**既没�
 可以用仓库自带的 mock 服务把整条链路跑通 —— 它只依赖 Python 标准库：
 
 ```bash
-# 终端 1：启动 mock（OpenAI 兼容的流式服务）
+# 终端 1：启动 mock（OpenAI 兼容；对话流式 + 嵌入向量）
 python3 scripts/dev/mock-openai-server.py --port 9099
 
 # 终端 2：把后端指向 mock
 cd backend
 AI_CHAT_PROVIDER=openai \
+AI_EMBEDDING_PROVIDER=openai \
 OPENAI_BASE_URL=http://127.0.0.1:9099 \
 OPENAI_API_KEY=mock-key \
 OPENAI_CHAT_MODEL=mock-model \
+OPENAI_EMBEDDING_MODEL=mock-embedding \
 ./mvnw spring-boot:run
 ```
 
 之后在 `http://localhost:5173/chat` 就能看到逐字返回的回复。
+
+mock 现在实现了三个此前缺失的能力，它们各自堵住过一条验证盲区：
+
+| 能力 | 没有它时会发生什么 |
+|---|---|
+| `/v1/embeddings` | 知识库上传直接失败（无嵌入模型），整条 RAG 链路无法验证 |
+| 非流式 `/v1/chat/completions`（`stream=false`） | 知识库问答 `KnowledgeQaService.ask` 拿到 `data: {...}` → `Unrecognized token 'data'` → **接口 500** |
+| 工具调用（流式路径） | Agent 链路只能靠集成测试，无法真机复现 |
+
+**联调知识库**时必须额外调低相似度阈值：
+
+```bash
+AI_KNOWLEDGE_SIMILARITY_THRESHOLD=0.05 \
+```
+
+原因是 mock 的嵌入是**词袋哈希**，不是语义模型：800 字的分块与一句问句之间，
+真实模型给 0.5–0.8，mock 只有 0.1–0.4（词袋的固有性质——长文本的方向被几百个 token 摊薄）。
+排序仍然正确（相关 > 无关，无关恒接近 0.0），足以验证链路与命中顺序，
+但它**不能用来评估真实嵌入质量，也不能用默认阈值 0.3 判断「检索是否正常」**。
 
 **验证 Agent 工具调用**：该 mock 已支持工具调用，用以下前缀模拟「模型决定调工具」：
 
@@ -171,7 +192,8 @@ curl -s "http://localhost:8080/api/v1/agent/confirmations?status=PENDING" | pyth
 ```
 
 > 该 mock **不是产品代码**，不参与构建与测试；集成测试用的是 Java 侧的桩 `ChatModel`。
-> 它存在的意义是让「前端流式渲染 + SSE 契约 + Agent 工具调用」在没有真实模型时也可复现验证。
+> 它存在的意义是让「前端流式渲染 + SSE 契约 + Agent 工具调用 + 知识库 RAG」
+> 在没有真实模型时也可复现验证。
 
 ## 七、前端真机验证
 
