@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 import { createEvent, deleteEvent, getEvent, listOccurrences, updateEvent } from '@/api/calendar'
+import { groupByLocalDay } from '@/lib/calendar-dates'
 import { listReminders, markReminderRead, scanReminders } from '@/api/reminders'
 import { readPermission, requestPermission } from '@/notifications/permission'
 import { createBrowserNotify, ReminderNotifier } from '@/notifications/reminder-notifier'
@@ -62,20 +63,26 @@ export const useCalendarStore = defineStore('calendar', () => {
 
   let pollTimer: ReturnType<typeof setInterval> | null = null
 
-  /** 按天分组的日程，便于渲染 */
-  const groupedByDay = computed(() => {
-    const groups = new Map<string, CalendarOccurrence[]>()
-    for (const occurrence of occurrences.value) {
-      const day = occurrence.startsAt.slice(0, 10)
-      const bucket = groups.get(day)
-      if (bucket) {
-        bucket.push(occurrence)
-      } else {
-        groups.set(day, [occurrence])
-      }
-    }
-    return Array.from(groups.entries()).map(([day, items]) => ({ day, items }))
-  })
+  /**
+   * 当前查询窗口（上次显式传入的 from/to）。
+   *
+   * <p>存下来是为了让「增删改之后的刷新」复用同一个窗口。原先无参调用会让后端
+   * 回落到默认窗口（今天 + 7 天），在月视图里翻到别的月份后新建一条，
+   * 列表会突然跳回本月 —— 数据与网格对不上。
+   */
+  const windowFrom = ref<string | undefined>(undefined)
+  const windowTo = ref<string | undefined>(undefined)
+
+  /**
+   * 按**本地日期**分组的日程，便于渲染。
+   *
+   * <p>阶段 13 修掉了原先 `startsAt.slice(0, 10)` 的写法：那取的是 UTC 日期，
+   * 东八区下本地 00:00–07:59 的日程会被分到前一天（月视图里表现为整格错位）。
+   * 服务端已按 startsAt 升序返回，Map 的插入序因此也是时间序。
+   */
+  const groupedByDay = computed(() =>
+    Array.from(groupByLocalDay(occurrences.value).entries()).map(([day, items]) => ({ day, items })),
+  )
 
   /**
    * 加载区间内的发生实例（分页）。
@@ -86,16 +93,28 @@ export const useCalendarStore = defineStore('calendar', () => {
    * 这条归零规则最初只在注释里成立、代码没实现——是
    * test/calendar-store.test.mjs 抓出来的（文档与实现漂移的典型）。
    */
-  async function loadOccurrences(from?: string, to?: string, nextPage?: number): Promise<void> {
+  async function loadOccurrences(
+    from?: string,
+    to?: string,
+    nextPage?: number,
+    sizeOverride?: number,
+  ): Promise<void> {
     loadingOccurrences.value = true
     error.value = null
     const windowChanged = from !== undefined || to !== undefined
+    if (windowChanged) {
+      windowFrom.value = from
+      windowTo.value = to
+    }
     const targetPage = nextPage ?? (windowChanged ? 0 : page.value)
+    // 月视图一次要看整月，按列表的每页 100 条会静默少显示
+    const targetSize = sizeOverride ?? size.value
     try {
-      const result = await listOccurrences(from, to, targetPage, size.value)
+      const result = await listOccurrences(windowFrom.value, windowTo.value, targetPage, targetSize)
       occurrences.value = result.items
       total.value = result.total
       page.value = result.page
+      size.value = result.size
     } catch (cause) {
       occurrences.value = []
       total.value = 0

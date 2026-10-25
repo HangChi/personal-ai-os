@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { useCalendarStore } from '@/stores/calendar'
+import { buildMonthCells, groupByLocalDay, monthRange, shiftMonth } from '@/lib/calendar-dates'
 import type { UpdateEventPayload } from '@/api/calendar'
 import type { CalendarEvent, CalendarOccurrence, RecurrenceType, Reminder } from '@/types/api'
 
@@ -17,6 +18,7 @@ const {
   creating,
   error,
   groupedByDay,
+  occurrences,
   total,
   page,
   size,
@@ -81,6 +83,107 @@ async function enableNotifications(): Promise<void> {
 onUnmounted(() => {
   calendarStore.stopReminderPolling()
 })
+
+// ------------------------------------------------------------------ 视图切换与月网格
+
+type CalendarViewMode = 'list' | 'month'
+
+/**
+ * 月视图一次拉整月。
+ *
+ * 后端 `max-query-limit` 是 500，传更多也会被收敛 —— 超过这个量说明一个月有 500+ 次发生，
+ * 此时页面必须明说「另有 N 条未显示」，而不是让人以为看到的就是全部。
+ */
+const MONTH_PAGE_SIZE = 500
+/** 列表视图每页条数（与 store 默认值一致） */
+const LIST_PAGE_SIZE = 100
+const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日']
+/** 每格最多显示几条，超出折叠成「还有 N 条」 */
+const CELL_VISIBLE_LIMIT = 3
+
+function startOfMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+const viewMode = ref<CalendarViewMode>('list')
+const monthCursor = ref(startOfMonth(new Date()))
+
+const monthCells = computed(() => buildMonthCells(monthCursor.value))
+/** 与列表共用同一批 occurrences，只是换一种分组方式 */
+const monthGroups = computed(() => groupByLocalDay(occurrences.value))
+const monthTitle = computed(
+  () => `${monthCursor.value.getFullYear()} 年 ${monthCursor.value.getMonth() + 1} 月`,
+)
+/** 后端说总共有 N 条、这次只取回 M 条 —— 差额必须说出来 */
+const monthOverflow = computed(() => Math.max(0, total.value - occurrences.value.length))
+
+function monthItems(dayKey: string): CalendarOccurrence[] {
+  return monthGroups.value.get(dayKey) ?? []
+}
+
+async function loadMonth(): Promise<void> {
+  const { from, to } = monthRange(monthCursor.value)
+  await calendarStore.loadOccurrences(from, to, 0, MONTH_PAGE_SIZE)
+}
+
+async function switchViewMode(next: CalendarViewMode): Promise<void> {
+  viewMode.value = next
+  if (next === 'month') {
+    await loadMonth()
+    return
+  }
+  // 切回列表时沿用当前月窗口，但把每页条数恢复成 100（月视图会把它改成 500）
+  const { from, to } = monthRange(monthCursor.value)
+  await calendarStore.loadOccurrences(from, to, 0, LIST_PAGE_SIZE)
+}
+
+async function shiftMonthBy(delta: number): Promise<void> {
+  monthCursor.value = shiftMonth(monthCursor.value, delta)
+  await loadMonth()
+}
+
+/** el-radio-group 的 change 载荷是宽类型，这里收窄 */
+function handleViewChange(value: string | number | boolean): void {
+  void switchViewMode(value as CalendarViewMode)
+}
+
+async function goToday(): Promise<void> {
+  monthCursor.value = startOfMonth(new Date())
+  await loadMonth()
+}
+
+/** 点格子空白处：预填新建表单并滚过去，省掉「再选一次日期」 */
+function startCreateOn(date: Date): void {
+  const now = new Date()
+  const isToday = date.toDateString() === now.toDateString()
+  const start = new Date(date)
+  start.setHours(isToday ? now.getHours() : 9, isToday ? now.getMinutes() : 0, 0, 0)
+  const end = new Date(start.getTime() + 60 * 60 * 1000)
+
+  title.value = ''
+  location.value = ''
+  allDay.value = false
+  range.value = [start, end]
+
+  void nextTick(() => {
+    document.querySelector('.calendar__create')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  })
+  ElMessage.info(`已填入新建表单：${start.toLocaleString('zh-CN', { hour12: false })}`)
+}
+
+/** 格子里只显示时分 */
+function shortTime(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) {
+    return iso.slice(11, 16)
+  }
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+/** 跨天日程显示在起始日，并标出来（否则容易以为它只到当天结束） */
+function isCrossDay(item: CalendarOccurrence): boolean {
+  return new Date(item.startsAt).toDateString() !== new Date(item.endsAt).toDateString()
+}
 
 async function handleCreate(): Promise<void> {
   const value = title.value.trim()
@@ -362,13 +465,106 @@ function sourceLabel(sourceType: string): string {
     <el-card shadow="never">
       <template #header>
         <div class="calendar__header">
-          <span>日程列表</span>
-          <el-button size="small" :loading="loadingOccurrences" @click="calendarStore.loadOccurrences()">
+          <div class="calendar__view">
+            <span>日程</span>
+            <el-radio-group :model-value="viewMode" size="small" @change="handleViewChange">
+              <el-radio-button value="list">列表</el-radio-button>
+              <el-radio-button value="month">月</el-radio-button>
+            </el-radio-group>
+          </div>
+          <el-button
+            v-if="viewMode === 'list'"
+            size="small"
+            :loading="loadingOccurrences"
+            @click="calendarStore.loadOccurrences()"
+          >
             刷新
           </el-button>
         </div>
       </template>
 
+      <!-- 月视图：复用同一批 occurrences，只换分组方式 -->
+      <template v-if="viewMode === 'month'">
+        <div class="calendar__month-bar">
+          <el-button size="small" @click="shiftMonthBy(-1)">上一月</el-button>
+          <span class="calendar__month-title">{{ monthTitle }}</span>
+          <el-button size="small" @click="goToday">今天</el-button>
+          <el-button size="small" @click="shiftMonthBy(1)">下一月</el-button>
+          <span v-if="monthOverflow > 0" class="calendar__month-warn">
+            另有 {{ monthOverflow }} 条未显示
+          </span>
+        </div>
+
+        <div v-loading="loadingOccurrences" class="calendar__grid">
+          <div v-for="weekday in WEEKDAYS" :key="weekday" class="calendar__weekday">
+            {{ weekday }}
+          </div>
+
+          <div
+            v-for="cell in monthCells"
+            :key="cell.key"
+            class="calendar__cell"
+            :class="{
+              'calendar__cell--muted': !cell.inMonth,
+              'calendar__cell--today': cell.isToday,
+            }"
+          >
+            <div class="calendar__cell-head">
+              <span class="calendar__cell-day">{{ cell.day }}</span>
+              <el-button
+                class="calendar__cell-add"
+                link
+                type="primary"
+                size="small"
+                @click="startCreateOn(cell.date)"
+              >
+                +
+              </el-button>
+            </div>
+
+            <div
+              v-for="(item, index) in monthItems(cell.key).slice(0, CELL_VISIBLE_LIMIT)"
+              :key="`${item.eventId}-${index}`"
+              class="calendar__cell-item"
+              :title="item.title"
+              @click="openEdit(item)"
+            >
+              <span class="calendar__cell-time">
+                {{ item.allDay ? '全天' : shortTime(item.startsAt) }}
+              </span>
+              <span class="calendar__cell-title">{{ item.title }}</span>
+              <span v-if="isCrossDay(item)" class="calendar__cell-cross">跨天</span>
+            </div>
+
+            <el-popover
+              v-if="monthItems(cell.key).length > CELL_VISIBLE_LIMIT"
+              placement="bottom-start"
+              :width="260"
+              trigger="click"
+            >
+              <template #reference>
+                <button type="button" class="calendar__cell-more">
+                  还有 {{ monthItems(cell.key).length - CELL_VISIBLE_LIMIT }} 条
+                </button>
+              </template>
+              <div
+                v-for="(item, index) in monthItems(cell.key).slice(CELL_VISIBLE_LIMIT)"
+                :key="`more-${item.eventId}-${index}`"
+                class="calendar__cell-more-item"
+                @click="openEdit(item)"
+              >
+                <span class="calendar__cell-time">
+                  {{ item.allDay ? '全天' : shortTime(item.startsAt) }}
+                </span>
+                <span>{{ item.title }}</span>
+              </div>
+            </el-popover>
+          </div>
+        </div>
+      </template>
+
+      <!-- 列表视图 -->
+      <template v-else>
       <el-empty
         v-if="groupedByDay.length === 0 && !loadingOccurrences"
         description="这段时间还没有日程"
@@ -420,6 +616,7 @@ function sourceLabel(sourceType: string): string {
           />
         </div>
       </div>
+      </template>
     </el-card>
 
     <el-dialog v-model="editing" title="编辑日程" width="560px">
@@ -670,5 +867,148 @@ function sourceLabel(sourceType: string): string {
   margin: 0 0 12px;
   color: var(--el-text-color-secondary);
   font-size: 12px;
+}
+/* ---- 视图切换与月网格（阶段 13） ---- */
+
+.calendar__view {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.calendar__month-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.calendar__month-title {
+  min-width: 110px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.calendar__month-warn {
+  margin-left: auto;
+  color: var(--el-color-warning);
+  font-size: 12px;
+}
+
+/*
+ * 7 列 × 6 行。行数固定是刻意的：让不同月份的高度一致，切月时下方内容不会被顶来顶去。
+ */
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: 1px solid var(--el-border-color-lighter);
+  border-left: 1px solid var(--el-border-color-lighter);
+}
+
+.calendar__weekday {
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  background: var(--el-fill-color-light);
+  border-right: 1px solid var(--el-border-color-lighter);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.calendar__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 96px;
+  padding: 4px 6px;
+  border-right: 1px solid var(--el-border-color-lighter);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.calendar__cell--muted {
+  background: var(--el-fill-color-lighter);
+  color: var(--el-text-color-placeholder);
+}
+
+.calendar__cell--today {
+  background: var(--el-color-primary-light-9);
+}
+
+.calendar__cell-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calendar__cell-day {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 「+」只在悬停时出现：42 个格子都常驻一个加号会非常吵 */
+.calendar__cell-add {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.calendar__cell:hover .calendar__cell-add {
+  opacity: 1;
+}
+
+.calendar__cell-item {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.calendar__cell-item:hover {
+  background: var(--el-color-primary-light-8);
+}
+
+.calendar__cell-time {
+  flex: none;
+  color: var(--el-text-color-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar__cell-title {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.calendar__cell-cross {
+  flex: none;
+  font-size: 10px;
+  color: var(--el-color-warning);
+}
+
+.calendar__cell-more {
+  margin-top: 2px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--el-color-primary);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.calendar__cell-more-item {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.calendar__cell-more-item:hover {
+  color: var(--el-color-primary);
 }
 </style>

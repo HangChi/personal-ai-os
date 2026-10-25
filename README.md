@@ -4,7 +4,7 @@
 
 用自然语言和个人 AI 助手交互，让它帮你管理任务、检索自己的知识库、安排日程与提醒——全部跑在你自己的机器上。
 
-> **当前状态**：阶段 12（数据导出）实现完成，接下来按新功能逐个开阶段。
+> **当前状态**：阶段 13（日历月视图）实现完成，接下来按新功能逐个开阶段。
 > 五个内置模块可用：对话、任务、知识库、日程与提醒、长期记忆；助手内置 15 个工具，
 > 并可经 MCP 接入外部工具 server（只读直行 / 变更类需人工确认）。
 > 「活动」页可查助手调用过哪些工具、以及每个 MCP server 当前是否连上。
@@ -64,7 +64,7 @@ personal-ai-os/
 │           ├── PersonalOsApplicationTests.java      （Testcontainers 集成测试）
 │           └── common/                              （单元测试）
 ├── frontend/                   Vue 3 + TypeScript + Vite
-│   └── src/{api,router,stores,types,views,styles}
+│   └── src/{api,lib,router,stores,types,views,styles}
 ├── docs/                       架构与开发文档
 ├── specs/                      Spec Kit 特性规格
 ├── .specify/                   Spec Kit 配置与项目宪法
@@ -136,6 +136,7 @@ cd frontend && npm run type-check && npm run build
 | 10 | 富文档解析（PDF 文本层 / Word docx / 图片走视觉模型） | ✅ |
 | 11 | 工具审计与 MCP 状态（活动页：调用记录分页筛选 + server 可用性） | ✅ |
 | 12 | 数据导出（全部业务数据 → 单个 JSON 文件，首页一键下载） | ✅ |
+| 13 | 日历月视图（7×6 网格、切月、按本地时区归属修复） | ✅ |
 
 > 编号 5 空置：原定的「Docker 部署与开源发布」不在当前规划内，暂不实施。
 > 阶段 6 保留既有编号，避免重编号导致 `specs/` 目录、迁移与提交历史错位。
