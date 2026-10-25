@@ -2,6 +2,8 @@ package com.personalos.chat.service;
 
 import com.personalos.chat.dto.ChatStreamEvents;
 import com.personalos.common.ai.AiChatClientProvider;
+import com.personalos.common.ai.AiProperties;
+import com.personalos.common.ai.PromptContributor;
 import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.api.ErrorCode;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -42,10 +45,17 @@ public class ChatCompletionService {
 
     private final AiChatClientProvider aiProvider;
     private final ChatSessionService sessionService;
+    private final AiProperties aiProperties;
+    private final ObjectProvider<PromptContributor> promptContributors;
 
-    public ChatCompletionService(AiChatClientProvider aiProvider, ChatSessionService sessionService) {
+    public ChatCompletionService(AiChatClientProvider aiProvider,
+                                 ChatSessionService sessionService,
+                                 AiProperties aiProperties,
+                                 ObjectProvider<PromptContributor> promptContributors) {
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
+        this.aiProperties = aiProperties;
+        this.promptContributors = promptContributors;
     }
 
     /**
@@ -78,6 +88,9 @@ public class ChatCompletionService {
         send(emitter, EVENT_START, new ChatStreamEvents.Start(conversationId));
 
         Flux<String> contentFlux = chatClient.prompt()
+                // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
+                // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
+                .system(systemPromptWithContributions())
                 .user(userContent)
                 // 会话标识通过 advisor 参数传入，Advisor 据此装载并回写该会话的上下文
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
@@ -133,6 +146,27 @@ public class ChatCompletionService {
         });
 
         return emitter;
+    }
+
+    /**
+     * 拼装本轮请求的系统提示：基础人设 + 各模块贡献的上下文。
+     *
+     * <p>为什么不用 {@code defaultSystem}：它只是**默认值**，请求级 {@code system()} 会替换它。
+     * 若只传贡献内容（如记忆块），阶段 1 定下的人设与行为约束会全部丢失 ——
+     * 这类错误不报错，只会让助手"变了个样"，极难从日志发现。
+     *
+     * <p>贡献者为空或返回空串时**不追加任何内容**（连空行都不加），
+     * 保证「没有任何上下文」时的系统提示与阶段 1 逐字符相同。
+     */
+    private String systemPromptWithContributions() {
+        StringBuilder prompt = new StringBuilder(aiProperties.systemPrompt());
+        promptContributors.orderedStream().forEach(contributor -> {
+            String contribution = contributor.contribute();
+            if (contribution != null && !contribution.isBlank()) {
+                prompt.append("\n\n").append(contribution);
+            }
+        });
+        return prompt.toString();
     }
 
     /**

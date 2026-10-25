@@ -1,8 +1,15 @@
 /**
- * 记忆模块。
+ * 记忆模块：长期记忆（跨会话）。
  *
- * <p>职责：会话记忆的持久化与检索策略（Spring AI ChatMemory 及长期记忆）。
+ * <p>职责：用户显式要求助手记住的信息的存储、管理与注入。
+ * 注入方式是实现 {@code common/ai} 的 {@code PromptContributor}，由对话模块按轮次收集 ——
+ * 因此本模块不依赖 {@code chat}，也不被 {@code chat} 依赖（只经由 SPI 衔接）。
  *
- * <p>阶段 0 仅占位。将在阶段 1（AI 对话与聊天历史）开始填充。
+ * <h2>与「会话内上下文」的分工</h2>
+ * 单个会话内的消息顺序与上下文窗口由 {@code chat.memory.JpaChatMemory} 负责（阶段 1）；
+ * 本模块负责**换会话也应当生效**的那一层约束（阶段 8）。
+ *
+ * <p>结构：{@code controller / service / repository / entity / dto / tool}，
+ * 另有 {@code MemoryPromptContributor} 作为 SPI 适配器。
  */
 package com.personalos.memory;
