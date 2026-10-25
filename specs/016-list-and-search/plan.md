@@ -33,11 +33,11 @@
 chat/repository/ChatSessionRepository.java         改：+ JpaSpecificationExecutor
 chat/dto/ChatSessionQuery.java                     新：keyword / page / size
 chat/service/ChatSessionService.java               改：+ search()
-chat/controller/ChatSessionController.java         改：GET /sessions 加参数
+chat/controller/ChatSessionController.java         改：新增 GET /sessions/search（原 GET /sessions 不动）
 knowledge/repository/KnowledgeDocumentRepository.java 改：+ JpaSpecificationExecutor
 knowledge/dto/KnowledgeDocumentQuery.java          新
 knowledge/service/KnowledgeDocumentService.java    改：+ search()
-knowledge/controller/KnowledgeController.java      改：GET /documents 加参数
+knowledge/controller/KnowledgeController.java      改：新增 GET /documents/search（原 GET /documents 不动）
 ```
 
 **前端**
@@ -54,13 +54,17 @@ frontend/test/list-paging.test.mjs 新
 
 ## Phase 0 / Phase 1 结论
 
-### R-01 保留 `list()`，分页叫 `search()`
+### R-01 新增 `/search` 端点，而不是改造现有端点
 
-导出链路（阶段 12 的 `ChatExportContributor` / `KnowledgeExportContributor`）依赖全量数据。
-若把 `list()` 直接改成分页，导出会变成「只能导出第一页」—— 那比现在更糟。
+现有 `GET /sessions` / `GET /documents` 返回全量数组，被 **6 个集成测试**与导出链路依赖。
+改造它们有两条路，都不划算：
 
-两个方法职责分明：`list()` = 全量（给导出与其他内部用途），
-`search()` = 分页 + 筛选（给界面）。删掉 `list()` 留给将来「明确不再有全量消费者」时再做。
+- 直接改成 `PageDto`：一次波及 6 个测试的契约变更，而本阶段的目标只是「界面能翻页能搜索」；
+- 做成「不带分页参数时返回数组、带参数时返回 Page」：同一路径两种响应形状，
+  前端要按参数判断类型，这是比「两个端点」更糟的设计。
+
+新增 `/sessions/search` 与 `/documents/search`，语义清晰（筛选 + 分页），
+原端点保持不动。`list()`（Service 层全量）本来就不经 HTTP，导出完全不受影响。
 
 ### R-02 SQL 层分页，不用内存切片
 

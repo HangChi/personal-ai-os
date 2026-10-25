@@ -14,8 +14,8 @@ description: "Task list for 阶段 16 — 列表分页与站内搜索"
 - [ ] T002 `ChatSessionRepository` 加 `JpaSpecificationExecutor`
 - [ ] T003 `ChatSessionService.search(query)`：Specification（keyword 匹配标题）+
       按 `updatedAt` 倒序 + 消息条数只对当前页做一次分组查询
-- [ ] T004 `ChatSessionController` 的 `GET /sessions` 加 `keyword` / `page` / `size`，返回 `PageDto`
-- [ ] T005 **`list()` 保持不变**（导出与内部用途依赖全量）
+- [ ] T004 `ChatSessionController` 新增 `GET /sessions/search`（**原 `GET /sessions` 保持全量不动**）
+- [ ] T005 确认 `list()` 与 `GET /sessions` 零改动（导出链路与既有测试依赖它们）
 
 ## Phase 2: 知识库
 
@@ -23,8 +23,8 @@ description: "Task list for 阶段 16 — 列表分页与站内搜索"
 - [ ] T007 `KnowledgeDocumentRepository` 加 `JpaSpecificationExecutor`
 - [ ] T008 `KnowledgeDocumentService.search(query)`：keyword 匹配**标题与文件名**，
       按 `createdAt` 倒序
-- [ ] T009 `KnowledgeController` 的 `GET /documents` 加参数，返回 `PageDto`
-- [ ] T010 **`list()` 保持不变**
+- [ ] T009 `KnowledgeController` 新增 `GET /documents/search`（**原 `GET /documents` 保持全量不动**）
+- [ ] T010 确认 `list()` 与 `GET /documents` 零改动
 
 ## Phase 3: 测试
 

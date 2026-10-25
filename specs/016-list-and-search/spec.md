@@ -74,15 +74,18 @@
 
 ## Requirements *(mandatory)*
 
-- **FR-001**：知识库与会话列表 MUST 支持 `page` + `size` 分页，响应为 `PageDto`。
+- **FR-001**：MUST 新增 `GET /api/v1/chat/sessions/search` 与
+  `GET /api/v1/knowledge/documents/search`，支持 `page` + `size` 分页，响应为 `PageDto`。
+  > 刻意**新增**而不是改造现有端点：现有 `GET /sessions` / `GET /documents` 返回全量数组，
+  > 被 6 个集成测试与导出链路依赖。改造它们意味着「同一路径、两种响应形状」或者一次
+  > 波及 6 个测试的契约变更 —— 而本阶段的目标只是「界面能翻页能搜索」。
 - **FR-002**：两者 MUST 支持关键词筛选（知识库匹配标题与文件名，会话匹配标题）。
 - **FR-003**：分页与筛选 MUST 在 SQL 层完成，MUST NOT 加载全量到内存再切片。
-- **FR-004**：**导出链路 MUST 继续拿到全量数据** —— `ChatExportContributor` 与
-  `KnowledgeExportContributor` 依赖全量 `list()`，因此 `list()` 必须保留，
-  分页是新增能力而不是替换。
+- **FR-004**：**现有全量端点 MUST 保持不变**（`GET /sessions` / `GET /documents`），
+  导出链路与既有测试继续依赖它们。
 - **FR-005**：分页参数越界的收敛行为 MUST 与任务模块一致（非正 size → 20，>100 → 100）。
 - **FR-006**：会话分页时消息条数 MUST 仍然正确（只对当前页做一次分组查询，避免 N+1）。
-- **FR-007**：前端两个页面 MUST 有搜索框与分页控件；搜索词变化时页码 MUST 归零。
+- **FR-007**：前端两个页面 MUST 改用新端点，带搜索框与分页控件；搜索词变化时页码 MUST 归零。
 - **FR-008**：本阶段 MUST NOT 实现跨模块全局搜索 —— 它需要聚合 5 个模块、设计
   排序与权重，是独立问题（见 Assumptions）。
 
