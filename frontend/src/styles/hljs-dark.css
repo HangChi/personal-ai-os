@@ -1,0 +1,72 @@
+/*
+ * highlight.js 暗色覆盖（阶段 18，R-02 / R-04）。
+ *
+ * 亮色用官方 github.css（在 main.ts 引入）；暗色不能把两个主题 CSS 都常驻
+ * （两套 token 颜色互相覆盖，且 +10KB），这里按 html.dark 覆盖关键 token。
+ * 色板取自 highlight.js 官方 github-dark 主题。
+ */
+
+html.dark .hljs {
+  background: #0d1117;
+  color: #c9d1d9;
+}
+
+html.dark .hljs-comment,
+html.dark .hljs-quote {
+  color: #8b949e;
+  font-style: italic;
+}
+
+html.dark .hljs-keyword,
+html.dark .hljs-selector-tag,
+html.dark .hljs-literal,
+html.dark .hljs-type {
+  color: #ff7b72;
+}
+
+html.dark .hljs-string,
+html.dark .hljs-regexp,
+html.dark .hljs-addition {
+  color: #a5d6ff;
+}
+
+html.dark .hljs-number,
+html.dark .hljs-symbol {
+  color: #79c0ff;
+}
+
+html.dark .hljs-title,
+html.dark .hljs-title.function_,
+html.dark .hljs-section,
+html.dark .hljs-name {
+  color: #d2a8ff;
+}
+
+html.dark .hljs-title.class_,
+html.dark .hljs-class .hljs-title,
+html.dark .hljs-built_in {
+  color: #ffa657;
+}
+
+html.dark .hljs-variable,
+html.dark .hljs-template-variable,
+html.dark .hljs-attr,
+html.dark .hljs-attribute {
+  color: #79c0ff;
+}
+
+html.dark .hljs-deletion {
+  color: #ffa198;
+}
+
+html.dark .hljs-meta {
+  color: #8b949e;
+}
+
+html.dark .hljs-emphasis {
+  font-style: italic;
+}
+
+html.dark .hljs-strong {
+  font-weight: 700;
+}

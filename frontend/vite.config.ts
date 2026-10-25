@@ -63,10 +63,22 @@ export default defineConfig({
       'pinia',
       'axios',
       // Markdown 渲染链（阶段 18）：三者均为双格式包，dev 预打包需要显式列出，
-      // 漏了的表现是「生产构建绿、dev 白屏或 CJS export 报错」（specs/018 research R-07）
+      // 漏了的表现是「生产构建绿、dev 白屏或 CJS export 报错」（specs/018 research R-07）。
+      // ⚠️ highlight.js 的 lib/ 子路径是 CJS，且 include 只列根包对子路径不生效
+      // （与下方 dayjs 插件子路径同一约束），必须逐个列出。
       'marked',
-      'highlight.js',
       'dompurify',
+      'highlight.js/lib/core',
+      'highlight.js/lib/languages/bash',
+      'highlight.js/lib/languages/java',
+      'highlight.js/lib/languages/javascript',
+      'highlight.js/lib/languages/json',
+      'highlight.js/lib/languages/markdown',
+      'highlight.js/lib/languages/python',
+      'highlight.js/lib/languages/sql',
+      'highlight.js/lib/languages/typescript',
+      'highlight.js/lib/languages/xml',
+      'highlight.js/lib/languages/yaml',
       // Element Plus 及其依赖闭包（含全部 CJS 包）
       'element-plus',
       'dayjs',

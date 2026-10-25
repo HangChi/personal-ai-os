@@ -9,12 +9,13 @@ import {
   renameSession as renameSessionApi,
   streamChat,
 } from '@/api/chat'
+import { listToolInvocations } from '@/api/activity'
 import {
   cancelOperation,
   confirmOperation,
   listConfirmations,
 } from '@/api/confirmations'
-import type { ChatMessage, ChatSession, TaskConfirmation } from '@/types/api'
+import type { ChatMessage, ChatSession, TaskConfirmation, ToolInvocation } from '@/types/api'
 
 /**
  * 聊天状态：会话列表 + 当前会话消息 + 流式中的临时内容。
@@ -47,6 +48,18 @@ export const useChatStore = defineStore('chat', () => {
    * 理论上模型也可以「在回复里说已删除」，但只有这里才真的会删。
    */
   const pendingConfirmations = ref<TaskConfirmation[]>([])
+
+  /**
+   * 当前会话的工具调用轨迹（阶段 18，User Story 3 / T014）。
+   *
+   * 数据源是审计接口的 conversationId 过滤——该参数后端一直支持，
+   * 只是活动页没用过。消息体本身不带工具字段（ChatMessage 只有
+   * role/content/sequenceNo），SSE 也只有 start/delta/done/error 四种帧，
+   * 所以这是**不新增接口**能拿到真实轨迹的唯一途径。
+   *
+   * 失败时静默留空：轨迹是增强信息，不该阻塞对话本身。
+   */
+  const toolTrail = ref<ToolInvocation[]>([])
 
   let abortController: AbortController | null = null
 
@@ -101,9 +114,11 @@ export const useChatStore = defineStore('chat', () => {
     try {
       messages.value = await listMessages(conversationId)
       await loadConfirmations()
+      await loadToolTrail()
     } catch (cause) {
       messages.value = []
       pendingConfirmations.value = []
+      toolTrail.value = []
       error.value = cause instanceof Error ? cause.message : '加载消息失败'
     } finally {
       loadingMessages.value = false
@@ -121,6 +136,28 @@ export const useChatStore = defineStore('chat', () => {
     } catch {
       // 待确认列表拉取失败不应影响对话本身
       pendingConfirmations.value = []
+    }
+  }
+
+  /**
+   * 拉取当前会话的工具调用轨迹（阶段 18）。
+   *
+   * 与 loadConfirmations 同款容错：失败静默留空。
+   * 拉最近 20 条足够覆盖「本轮助手做了什么」。
+   */
+  async function loadToolTrail(): Promise<void> {
+    if (!currentConversationId.value) {
+      toolTrail.value = []
+      return
+    }
+    try {
+      const result = await listToolInvocations({
+        conversationId: currentConversationId.value,
+        size: 20,
+      })
+      toolTrail.value = result.items
+    } catch {
+      toolTrail.value = []
     }
   }
 
@@ -256,6 +293,8 @@ export const useChatStore = defineStore('chat', () => {
         await loadSessions()
         // 助手可能刚生成了待确认操作，本轮结束后立即拉一次
         await loadConfirmations()
+        // 本轮助手可能调了工具，轨迹一起刷新
+        await loadToolTrail()
       }
     }
   }
@@ -279,6 +318,7 @@ export const useChatStore = defineStore('chat', () => {
     loadingMessages,
     error,
     pendingConfirmations,
+    toolTrail,
     loadSessions,
     searchSessions,
     goToSessionPage,
@@ -289,6 +329,7 @@ export const useChatStore = defineStore('chat', () => {
     send,
     stopStreaming,
     loadConfirmations,
+    loadToolTrail,
     resolveConfirmation,
   }
 })

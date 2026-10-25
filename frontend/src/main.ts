@@ -10,6 +10,9 @@ import { useUiStore } from '@/stores/ui'
 // Element Plus 官方暗色变量表：只在 html.dark 下生效（EP 约定），
 // 与 tokens.css 的 html.dark 阴影修正配合（specs/018 research R-04）
 import 'element-plus/theme-chalk/dark/css-vars.css'
+// highlight.js 亮色主题（github）；暗色覆盖见 styles/hljs-dark.css（R-02）
+import 'highlight.js/styles/github.css'
+import './styles/hljs-dark.css'
 import './styles/main.css'
 
 /**

@@ -1,9 +1,29 @@
 <script setup lang="ts">
+/**
+ * 对话页（阶段 18 改造）。
+ *
+ * 本版改动（User Story 3 / 4）：
+ * - 消息内容走 MarkdownRenderer：Markdown 渲染 + 代码高亮 + DOMPurify 消毒（C-01）
+ * - 气泡加头像 / 相对时间 / 复制按钮
+ * - 新增「工具调用轨迹」折叠区：数据来自审计接口的 conversationId 过滤（T014），
+ *   消息体与 SSE 帧都不带工具字段，这是不新增接口的唯一真实来源
+ * - 会话列表按 今天/昨天/更早 分组 + 相对时间（C-04）
+ */
 import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  ChatLineRound,
+  CopyDocument,
+  QuestionFilled,
+  User,
+} from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { useChatStore } from '@/stores/chat'
+import { groupSessionsByDay } from '@/lib/session-group'
+import { relativeTime } from '@/lib/relative-time'
 import type { ChatRole, ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
@@ -21,6 +41,7 @@ const {
   loadingMessages,
   error,
   pendingConfirmations,
+  toolTrail,
 } = storeToRefs(chatStore)
 
 const draft = ref('')
@@ -33,6 +54,19 @@ const currentTitle = computed(() => {
   const current = sessions.value.find((item) => item.conversationId === currentConversationId.value)
   return current ? current.title : '未选择会话'
 })
+
+/** 会话分组（C-04）：组内顺序即接口顺序，不重排 */
+const sessionGroups = computed(() => groupSessionsByDay(sessions.value))
+
+/** 工具轨迹的结果徽标映射（StatusTag 的 map，未命中回落 info） */
+const OUTCOME_MAP: Record<string, { label: string; type: 'success' | 'danger' | 'warning' | 'info' }> = {
+  SUCCESS: { label: '成功', type: 'success' },
+  FAILED: { label: '失败', type: 'danger' },
+  REJECTED: { label: '被拒绝', type: 'warning' },
+  REQUIRES_CONFIRMATION: { label: '待确认', type: 'warning' },
+  DUPLICATE: { label: '已去重', type: 'info' },
+  IN_PROGRESS: { label: '执行中', type: 'info' },
+}
 
 /** 高风险操作的中文名；未识别时直接展示原始动作码，避免"未知操作"这类无用提示 */
 function actionLabel(action: string): string {
@@ -92,6 +126,21 @@ function roleLabel(role: ChatRole): string {
     default:
       return '系统'
   }
+}
+
+/** 复制整条消息内容 */
+async function copyMessage(content: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(content)
+    ElMessage.success('已复制')
+  } catch {
+    ElMessage.error('复制失败，请手动选择复制')
+  }
+}
+
+/** 工具耗时可读化：null 表示未真正执行（待确认），与 0ms 区分 */
+function formatDuration(durationMs: number | null): string {
+  return durationMs === null ? '—' : `${durationMs} ms`
 }
 
 async function scrollToBottom(): Promise<void> {
@@ -196,35 +245,44 @@ async function handleRename(session: ChatSession): Promise<void> {
         :description="sessionKeyword ? '没有匹配的会话' : '还没有会话'"
         :image-size="60"
       />
-      <ul v-else class="chat__session-list">
-        <li
-          v-for="session in sessions"
-          :key="session.conversationId"
-          :class="[
-            'chat__session',
-            { 'chat__session--active': session.conversationId === currentConversationId },
-          ]"
-          @click="chatStore.selectSession(session.conversationId)"
-        >
-          <div class="chat__session-body">
-            <div class="chat__session-title">{{ session.title }}</div>
-            <div class="chat__session-meta">{{ session.messageCount }} 条消息</div>
-          </div>
-          <div class="chat__session-actions">
-            <el-button link type="primary" size="small" @click.stop="handleRename(session)">
-              重命名
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              size="small"
-              @click.stop="chatStore.removeSession(session.conversationId)"
+
+      <!-- 分组渲染：今天 / 昨天 / 更早（C-04），空组不出现 -->
+      <div v-else class="chat__session-groups">
+        <section v-for="group in sessionGroups" :key="group.key" class="chat__session-group">
+          <div class="chat__session-group-label">{{ group.label }}</div>
+          <ul class="chat__session-list">
+            <li
+              v-for="session in group.items"
+              :key="session.conversationId"
+              :class="[
+                'chat__session',
+                { 'chat__session--active': session.conversationId === currentConversationId },
+              ]"
+              @click="chatStore.selectSession(session.conversationId)"
             >
-              删除
-            </el-button>
-          </div>
-        </li>
-      </ul>
+              <div class="chat__session-body">
+                <div class="chat__session-title">{{ session.title }}</div>
+                <div class="chat__session-meta">
+                  {{ session.messageCount }} 条消息 · {{ relativeTime(session.updatedAt) }}
+                </div>
+              </div>
+              <div class="chat__session-actions">
+                <el-button link type="primary" size="small" @click.stop="handleRename(session)">
+                  重命名
+                </el-button>
+                <el-button
+                  link
+                  type="danger"
+                  size="small"
+                  @click.stop="chatStore.removeSession(session.conversationId)"
+                >
+                  删除
+                </el-button>
+              </div>
+            </li>
+          </ul>
+        </section>
+      </div>
 
       <div v-if="sessionsTotal > 0" class="chat__sessions-pagination">
         <span class="chat__sessions-total">共 {{ sessionsTotal }} 个</span>
@@ -269,18 +327,69 @@ async function handleRename(session: ChatSession): Promise<void> {
           :key="message.id"
           :class="['chat__message', `chat__message--${message.role.toLowerCase()}`]"
         >
-          <div class="chat__message-role">{{ roleLabel(message.role) }}</div>
-          <div class="chat__message-content">{{ message.content }}</div>
+          <div class="chat__message-avatar" :class="`chat__message-avatar--${message.role.toLowerCase()}`">
+            <el-icon :size="14">
+              <User v-if="message.role === 'USER'" />
+              <ChatLineRound v-else />
+            </el-icon>
+          </div>
+          <div class="chat__message-bubble">
+            <div class="chat__message-meta">
+              <span class="chat__message-role">{{ roleLabel(message.role) }}</span>
+              <span class="chat__message-time">{{ relativeTime(message.createdAt) }}</span>
+              <el-button
+                class="chat__message-copy"
+                link
+                type="primary"
+                size="small"
+                title="复制这条消息"
+                @click="copyMessage(message.content)"
+              >
+                <el-icon :size="12"><CopyDocument /></el-icon>
+              </el-button>
+            </div>
+            <MarkdownRenderer class="chat__message-content" :content="message.content" />
+          </div>
         </div>
 
         <div
           v-if="streamingContent"
           class="chat__message chat__message--assistant chat__message--streaming"
         >
-          <div class="chat__message-role">助手</div>
-          <div class="chat__message-content">{{ streamingContent }}</div>
+          <div class="chat__message-avatar chat__message-avatar--assistant">
+            <el-icon :size="14"><ChatLineRound /></el-icon>
+          </div>
+          <div class="chat__message-bubble">
+            <div class="chat__message-meta">
+              <span class="chat__message-role">助手</span>
+              <span class="chat__message-time">正在输入</span>
+            </div>
+            <MarkdownRenderer :content="streamingContent" streaming />
+          </div>
         </div>
       </div>
+
+      <!-- 工具调用轨迹（T014）：审计接口按会话过滤的真实记录，默认折叠 -->
+      <el-collapse v-if="toolTrail.length > 0" class="chat__trail">
+        <el-collapse-item>
+          <template #title>
+            <span class="chat__trail-title">
+              本会话工具调用（{{ toolTrail.length }}）
+              <el-tooltip content="来自审计记录，展示助手在这个会话里真实调用过的工具" placement="top">
+                <el-icon class="chat__trail-help"><QuestionFilled /></el-icon>
+              </el-tooltip>
+            </span>
+          </template>
+          <ul class="chat__trail-list">
+            <li v-for="item in toolTrail" :key="item.id" class="chat__trail-item">
+              <span class="chat__trail-operation">{{ item.operation }}</span>
+              <StatusTag :status="item.outcome" :map="OUTCOME_MAP" />
+              <span class="chat__trail-duration">{{ formatDuration(item.durationMs) }}</span>
+              <span class="chat__trail-time">{{ relativeTime(item.createdAt) }}</span>
+            </li>
+          </ul>
+        </el-collapse-item>
+      </el-collapse>
 
       <div class="chat__confirmations" v-if="pendingConfirmations.length > 0">
         <el-alert
@@ -347,7 +456,7 @@ async function handleRename(session: ChatSession): Promise<void> {
 .chat {
   display: grid;
   grid-template-columns: 260px 1fr;
-  gap: 16px;
+  gap: var(--os-space-4);
   align-items: start;
 }
 
@@ -361,28 +470,42 @@ async function handleRename(session: ChatSession): Promise<void> {
 .chat__sessions-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--os-space-1);
 }
 
 .chat__sessions-filter {
-  margin-top: 8px;
+  margin-top: var(--os-space-2);
 }
 
 .chat__sessions-pagination {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 10px;
+  gap: var(--os-space-2);
+  margin-top: var(--os-space-2);
 }
 
 .chat__sessions-total {
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
 }
 
 .chat__main-title {
   font-weight: 600;
+}
+
+/* ---- 会话分组（阶段 18）---- */
+
+.chat__session-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--os-space-3);
+}
+
+.chat__session-group-label {
+  margin-bottom: var(--os-space-1);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
 }
 
 .chat__session-list {
@@ -391,16 +514,16 @@ async function handleRename(session: ChatSession): Promise<void> {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--os-space-1);
 }
 
 .chat__session {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 8px;
+  gap: var(--os-space-2);
+  padding: var(--os-space-2) 10px;
+  border-radius: var(--os-radius-md);
   cursor: pointer;
   background: var(--el-fill-color-light);
   /* 操作区绝对定位，让标题能占满宽度（否则两个文字按钮会把标题压成几个字） */
@@ -418,17 +541,17 @@ async function handleRename(session: ChatSession): Promise<void> {
 
 .chat__session-actions {
   position: absolute;
-  right: 8px;
+  right: var(--os-space-2);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding-left: 12px;
+  gap: var(--os-space-1);
+  padding-left: var(--os-space-3);
   /* 用父项的背景遮住标题尾部，避免按钮与文字叠在一起 */
   background: inherit;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--os-duration-fast) var(--os-ease);
 }
 
 .chat__session:hover .chat__session-actions,
@@ -456,7 +579,7 @@ async function handleRename(session: ChatSession): Promise<void> {
 }
 
 .chat__session-title {
-  font-size: 13px;
+  font-size: var(--os-font-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -468,8 +591,10 @@ async function handleRename(session: ChatSession): Promise<void> {
 }
 
 .chat__error {
-  margin-bottom: 12px;
+  margin-bottom: var(--os-space-3);
 }
+
+/* ---- 消息气泡（阶段 18：头像 / 元信息行 / Markdown）---- */
 
 .chat__messages {
   height: 52vh;
@@ -477,73 +602,172 @@ async function handleRename(session: ChatSession): Promise<void> {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-right: 6px;
+  gap: var(--os-space-3);
+  padding-right: var(--os-space-1);
 }
 
 .chat__message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--os-space-2);
   max-width: 88%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--el-fill-color-light);
 }
 
 .chat__message--user {
   align-self: flex-end;
-  background: var(--el-color-primary-light-9);
+  flex-direction: row-reverse;
 }
 
 .chat__message--assistant {
   align-self: flex-start;
 }
 
-.chat__message--streaming {
+.chat__message-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-top: 18px;
+  border-radius: 50%;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-regular);
+}
+
+.chat__message-avatar--user {
+  background: var(--el-color-primary);
+  color: var(--el-color-white);
+}
+
+.chat__message-avatar--assistant {
+  background: var(--el-color-primary-light-8);
+  color: var(--el-color-primary);
+}
+
+.chat__message-bubble {
+  min-width: 0;
+  padding: var(--os-space-2) var(--os-space-3);
+  border-radius: var(--os-radius-lg);
+  background: var(--el-fill-color-light);
+}
+
+.chat__message--user .chat__message-bubble {
+  background: var(--el-color-primary-light-9);
+}
+
+.chat__message--streaming .chat__message-bubble {
   border: 1px dashed var(--el-color-warning);
 }
 
+.chat__message-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  margin-bottom: var(--os-space-1);
+}
+
 .chat__message-role {
-  margin-bottom: 4px;
   font-size: 11px;
   color: var(--el-text-color-secondary);
 }
 
-.chat__message-content {
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: 1.65;
+.chat__message-time {
+  font-size: 11px;
+  color: var(--el-text-color-placeholder);
+}
+
+.chat__message-copy {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity var(--os-duration-fast) var(--os-ease);
+}
+
+.chat__message:hover .chat__message-copy,
+.chat__message:focus-within .chat__message-copy {
+  opacity: 1;
+}
+
+/* ---- 工具调用轨迹（T014）---- */
+
+.chat__trail {
+  margin-top: var(--os-space-3);
+  border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.chat__trail-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--os-space-1);
+  font-size: var(--os-font-xs);
+  color: var(--el-text-color-secondary);
+}
+
+.chat__trail-help {
+  cursor: help;
+}
+
+.chat__trail-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--os-space-1);
+}
+
+.chat__trail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  font-size: var(--os-font-xs);
+}
+
+.chat__trail-operation {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  color: var(--el-text-color-regular);
+}
+
+.chat__trail-duration,
+.chat__trail-time {
+  color: var(--el-text-color-secondary);
+}
+
+.chat__trail-time {
+  margin-left: auto;
 }
 
 .chat__composer {
-  margin-top: 12px;
+  margin-top: var(--os-space-3);
 }
 
 .chat__confirmations {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--os-space-2);
+  margin-top: var(--os-space-3);
 }
 
 .chat__confirmation {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: var(--os-space-3);
+  padding: 10px var(--os-space-3);
   border: 1px solid var(--el-color-warning-light-5);
-  border-radius: 8px;
+  border-radius: var(--os-radius-md);
   background: var(--el-color-warning-light-9);
 }
 
 .chat__confirmation-body {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--os-space-2);
   min-width: 0;
 }
 
 .chat__confirmation-summary {
-  font-size: 13px;
+  font-size: var(--os-font-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -551,7 +775,7 @@ async function handleRename(session: ChatSession): Promise<void> {
 
 .chat__confirmation-meta {
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
   white-space: nowrap;
 }
 
@@ -562,8 +786,8 @@ async function handleRename(session: ChatSession): Promise<void> {
 .chat__composer-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--os-space-2);
+  margin-top: var(--os-space-2);
 }
 
 @media (max-width: 900px) {

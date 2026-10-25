@@ -95,6 +95,11 @@
 - 只加 package.json 不加 include：dev server 崩，浪费半天（配置注释原话）。
 - 关闭 noDiscovery：回到 2026-10-14 之前的崩溃路径。
 
+**2026-10-26 实施补丁（Phase B 实测）**：`include` 只列**根包**对子路径不生效——
+`highlight.js/lib/core` 等 12 个子路径模块是 CJS，必须逐个列出，否则症状与「完全没加」相同：
+生产构建绿、dev 白屏（`does not provide an export named 'default'`）。与配置注释里
+dayjs 插件子路径的记载是同一约束，本次是第二次踩到（见 tasks.md 完成记录）。
+
 ## R-08: 公共组件形态
 
 **决策**：`src/components/` 下放 `PageHeader.vue` / `FilterBar.vue` / `EmptyState.vue` / `AppPagination.vue` / `StatusTag.vue` / `MarkdownRenderer.vue` / `ThemeToggle.vue`，依赖 `unplugin-vue-components` 默认目录约定（`src/components`）自动注册，**不手动 import、不全局 main.ts 注册**。

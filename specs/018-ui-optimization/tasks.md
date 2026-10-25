@@ -19,12 +19,12 @@
 
 ## Phase B — 对话页深度优化
 
-- [ ] **T012** `MarkdownRenderer.vue`：marked → DOMPurify → v-html；highlight.js 核心 + 10 语言按需注册；主题联动代码高亮 CSS；复制按钮；流式光标（C-01）
-- [ ] **T013** `ChatView.vue` 消息气泡：MarkdownRenderer 接入（用户 + 助手）、头像、时间（`relative-time`）、复制按钮
-- [ ] **T014** `ChatView.vue` 工具调用轨迹：消息下方可折叠「工具调用」区（工具名 + 结果摘要）；**数据以现有消息字段为限，拿不到的字段降级并在完成记录说明**
-- [ ] **T015** `src/lib/session-group.ts` + `frontend/test/session-group.test.mjs`：今天/昨天/更早分组（保持输入顺序、空组不渲染）
-- [ ] **T016** `ChatView.vue` 会话列表：分组渲染 + 相对时间副标题
-- [ ] **T017** 走查：Markdown 四类语法渲染抽查 + `<script>` payload 不执行 + 流式光标/停止 + `test:logic` / `type_check` / `build` 全绿；截图存档
+- [x] **T012** `MarkdownRenderer.vue`：marked → DOMPurify → v-html；highlight.js 核心 + 10 语言按需注册；主题联动代码高亮 CSS；复制按钮；流式光标（C-01）
+- [x] **T013** `ChatView.vue` 消息气泡：MarkdownRenderer 接入（用户 + 助手）、头像、时间（`relative-time`）、复制按钮
+- [x] **T014** `ChatView.vue` 工具调用轨迹：消息下方可折叠「工具调用」区（工具名 + 结果摘要）；**数据以现有消息字段为限，拿不到的字段降级并在完成记录说明**
+- [x] **T015** `src/lib/session-group.ts` + `frontend/test/session-group.test.mjs`：今天/昨天/更早分组（保持输入顺序、空组不渲染）
+- [x] **T016** `ChatView.vue` 会话列表：分组渲染 + 相对时间副标题
+- [x] **T017** 走查：Markdown 四类语法渲染抽查 + `<script>` payload 不执行 + 流式光标/停止 + `test:logic` / `type_check` / `build` 全绿；截图存档
 
 ## Phase C — 总览页 Dashboard 化
 
@@ -80,6 +80,15 @@
 7. **失败就地提示**：弹窗内的保存失败用 ElMessage.error，不让用户对着无响应的按钮（沿袭 TasksView/CalendarView 既有注释的教训）。
 
 ## 完成记录（实现时回填）
+
+### Phase B（对话页深度优化）
+
+- 门禁：`type-check` 0 错误；`test:logic` 285/285（+12 session-group）；`build` 通过，assets **1212 KB**（基线 1048 / 预算 1362，marked+hljs+dompurify 全量落地后仍在预算内）。
+- 真机：Markdown 四类语法渲染全部通过（清单/代码块/粗体/无裸语法泄漏）、代码高亮生效、复制按钮在；XSS payload（`<script>` + `img onerror`）被 DOMPurify 完全消毒（script 标签 0、onerror 0、`window.__xss` 未设置）；工具轨迹折叠区展示真实审计数据（createTask · 成功 · 4ms）；会话分组 + 相对时间渲染正确；控制台零报错。
+- 偏差：T014 原计划「消息字段拿不到就降级」，实测审计接口 `/agent/tool-invocations` 的 `conversationId` 参数后端一直支持（活动页没用过）→ 做成**真实轨迹**，无需降级、无需新接口。
+- 教训 1（R-07 补丁）：`optimizeDeps.include` 只列根包对**子路径**不生效——`highlight.js/lib/core` 是 CJS，必须逐个列出 12 条子路径，否则「生产构建绿、dev 白屏」（与配置注释里 dayjs 插件子路径同一约束）。
+- 教训 2：hljs 11 没有可注册的 `plaintext` 语言，`hljs.highlight(text, {language:'plaintext'})` 会抛 "Unknown language"——该异常穿过 marked.parse 把 Vue 渲染整页带崩（连环 pageerror）。未识别语言必须走 `escapeHTML` 原文展示。另 hljs 11 不再导出 `escapeHTML`，自写四行转义。
+- 教训 3：Playwright 脚本在 HMR 热更新窗口期跑会命中「按钮 disabled」假故障——改动后先等 HMR 稳定再跑验收。
 
 ### Phase A（设计系统与全局框架）
 
