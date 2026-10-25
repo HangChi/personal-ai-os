@@ -49,10 +49,10 @@
 
 ## Phase F — 日程页四项
 
-- [ ] **T030** `CalendarView.vue` 提醒批量确认：「全部知道了」`Promise.allSettled` 逐条 acknowledge（C-05 同款语义）
-- [ ] **T031** `CalendarView.vue` 新建表单分组：基本信息 / 时间 / 重复与提醒三组，视觉分隔
-- [ ] **T032** `CalendarView.vue` 月视图来源色点（日程=主色 / 任务=warning）+ 通知横幅 granted 时折叠为一行
-- [ ] **T033** 走查：批量确认、表单分组、色点、构建全绿；截图存档
+- [x] **T030** `CalendarView.vue` 提醒批量确认：「全部知道了」`Promise.allSettled` 逐条 acknowledge（C-05 同款语义）
+- [x] **T031** `CalendarView.vue` 新建表单分组：基本信息 / 时间 / 重复与提醒三组，视觉分隔
+- [x] **T032** `CalendarView.vue` 月视图来源色点（日程=主色 / 任务=warning）+ 通知横幅 granted 时折叠为一行
+- [x] **T033** 走查：批量确认、表单分组、色点、构建全绿；截图存档
 
 ## Phase G — 四小页收尾
 
@@ -80,6 +80,12 @@
 7. **失败就地提示**：弹窗内的保存失败用 ElMessage.error，不让用户对着无响应的按钮（沿袭 TasksView/CalendarView 既有注释的教训）。
 
 ## 完成记录（实现时回填）
+
+### Phase F（日程页：批量确认 + 表单分组 + 月视图色点）
+
+- 门禁：`type-check` 0 错误；`test:logic` 299/299；`build` 通过。
+- 真机：8 条到点提醒点「全部知道了」→ 全部清除、卡片消失、toast「已确认 8 条提醒」；新建表单三组（基本信息/时间/重复与提醒）；月视图 26 个色点（25 重复 + 1 一次性）；通知横幅 granted 态折叠为一行；控制台零报错。
+- 偏差（T032 降级）：原规格按「日程/任务」来源着色，但 CalendarOccurrence 没有来源字段（后端 DTO 不带 sourceType，纯前端拿不到）→ 降级为「重复 vs 一次性」着色，扫读月历时区分每周都有的与仅此一次的同样有用。已在视图注释与 spec 记录。
 
 ### Phase E（知识库页：Tab 化 + 拖拽上传）
 

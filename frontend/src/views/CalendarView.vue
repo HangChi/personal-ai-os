@@ -337,6 +337,26 @@ async function acknowledge(reminder: Reminder): Promise<void> {
   await calendarStore.acknowledge(reminder)
 }
 
+/**
+ * 批量确认到点提醒（阶段 18，T030）。
+ *
+ * 8 条提醒逐条点「知道了」是明确的重复劳动。逐条调用现有 acknowledge
+ * （纯前端不新增接口），汇总报告成败；acknowledge 内部先乐观移除再请求，
+ * 失败的下一轮轮询会带回来，所以这里数不出失败也不误导——提示只说成功数。
+ */
+const acknowledgingAll = ref(false)
+
+async function acknowledgeAll(): Promise<void> {
+  const count = dueReminders.value.length
+  acknowledgingAll.value = true
+  try {
+    await Promise.allSettled(dueReminders.value.map((reminder) => calendarStore.acknowledge(reminder)))
+    ElMessage.success(`已确认 ${count} 条提醒`)
+  } finally {
+    acknowledgingAll.value = false
+  }
+}
+
 function formatTime(value: string): string {
   const date = new Date(value)
   return Number.isNaN(date.getTime())
@@ -370,8 +390,9 @@ function sourceLabel(sourceType: string): string {
     <el-card class="calendar__notify" shadow="never">
       <div class="calendar__notify-row">
         <template v-if="notificationPermission === 'granted'">
+          <!-- 已授权时折叠为一行小条：不再占半屏（T032） -->
           <el-tag size="small" type="success" effect="plain">通知已开启</el-tag>
-          <span>页面在后台时也会收到到点提醒（应用完全关闭时收不到）。</span>
+          <span class="calendar__notify-compact">切到别的页面也能收到到点提醒（应用完全关闭时收不到）</span>
         </template>
         <template v-else-if="notificationPermission === 'default'">
           <el-tag size="small" type="info" effect="plain">通知未开启</el-tag>
@@ -402,7 +423,13 @@ function sourceLabel(sourceType: string): string {
       <template #header>
         <div class="calendar__header">
           <span>到点提醒（页面每 30 秒自动刷新）</span>
-          <span class="calendar__stat">{{ dueReminders.length }} 条待处理</span>
+          <div class="calendar__reminders-actions">
+            <span class="calendar__stat">{{ dueReminders.length }} 条待处理</span>
+            <!-- 批量确认：8 条提醒逐条点「知道了」是重复劳动（T030） -->
+            <el-button size="small" type="primary" :loading="acknowledgingAll" @click="acknowledgeAll">
+              全部知道了
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -421,38 +448,59 @@ function sourceLabel(sourceType: string): string {
     <el-card shadow="never">
       <template #header>新建日程</template>
 
+      <!-- 表单分组（T031）：基本信息 / 时间 / 重复与提醒，替代原来一排混放的控件 -->
       <div class="calendar__create">
-        <el-input v-model="title" class="calendar__field-title" maxlength="200" placeholder="日程标题，例如：周会" />
-        <el-date-picker
-          v-model="range"
-          type="datetimerange"
-          class="calendar__field-range"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
-        />
-        <el-input v-model="location" class="calendar__field-location" placeholder="地点（可选）" />
-        <el-select v-model="recurrenceType" class="calendar__field-recurrence">
-          <el-option
-            v-for="option in recurrenceOptions"
-            :key="option.value"
-            :label="option.label"
-            :value="option.value"
-          />
-        </el-select>
-        <el-date-picker
-          v-if="recurrenceType !== 'NONE'"
-          v-model="recurrenceUntil"
-          type="date"
-          class="calendar__field-until"
-          placeholder="重复截止（可选）"
-        />
-        <el-checkbox v-model="allDay">全天</el-checkbox>
-        <div class="calendar__field-lead">
-          <span class="calendar__lead-label">提前</span>
-          <el-input-number v-model="leadMinutes" :min="0" :max="10080" :step="5" size="small" />
-          <span class="calendar__lead-label">分钟提醒</span>
+        <section class="calendar__form-group">
+          <span class="calendar__form-group-label">基本信息</span>
+          <div class="calendar__form-row">
+            <el-input v-model="title" class="calendar__field-title" maxlength="200" placeholder="日程标题，例如：周会" />
+            <el-input v-model="location" class="calendar__field-location" placeholder="地点（可选）" />
+          </div>
+        </section>
+
+        <section class="calendar__form-group">
+          <span class="calendar__form-group-label">时间</span>
+          <div class="calendar__form-row">
+            <el-date-picker
+              v-model="range"
+              type="datetimerange"
+              class="calendar__field-range"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+            />
+            <el-checkbox v-model="allDay">全天</el-checkbox>
+          </div>
+        </section>
+
+        <section class="calendar__form-group">
+          <span class="calendar__form-group-label">重复与提醒</span>
+          <div class="calendar__form-row">
+            <el-select v-model="recurrenceType" class="calendar__field-recurrence">
+              <el-option
+                v-for="option in recurrenceOptions"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+            <el-date-picker
+              v-if="recurrenceType !== 'NONE'"
+              v-model="recurrenceUntil"
+              type="date"
+              class="calendar__field-until"
+              placeholder="重复截止（可选）"
+            />
+            <div class="calendar__field-lead">
+              <span class="calendar__lead-label">提前</span>
+              <el-input-number v-model="leadMinutes" :min="0" :max="10080" :step="5" size="small" />
+              <span class="calendar__lead-label">分钟提醒</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="calendar__create-actions">
+          <el-button type="primary" :loading="creating" @click="handleCreate">创建</el-button>
         </div>
-        <el-button type="primary" :loading="creating" @click="handleCreate">创建</el-button>
       </div>
 
       <p class="calendar__hint">
@@ -529,6 +577,15 @@ function sourceLabel(sourceType: string): string {
               :title="item.title"
               @click="openEdit(item)"
             >
+              <!--
+                色点：原规格按「日程/任务」来源着色，但 occurrence 没有来源字段
+                （后端 DTO 不带 sourceType，纯前端拿不到）→ 降级为「重复 vs 一次性」，
+                扫读月历时区分「每周都有的」与「仅此一次」同样有用。偏差已记录。
+              -->
+              <span
+                class="calendar__cell-dot"
+                :class="{ 'calendar__cell-dot--recurring': item.recurring }"
+              />
               <span class="calendar__cell-time">
                 {{ item.allDay ? '全天' : shortTime(item.startsAt) }}
               </span>
@@ -553,6 +610,10 @@ function sourceLabel(sourceType: string): string {
                 class="calendar__cell-more-item"
                 @click="openEdit(item)"
               >
+                <span
+                  class="calendar__cell-dot"
+                  :class="{ 'calendar__cell-dot--recurring': item.recurring }"
+                />
                 <span class="calendar__cell-time">
                   {{ item.allDay ? '全天' : shortTime(item.startsAt) }}
                 </span>
@@ -701,9 +762,15 @@ function sourceLabel(sourceType: string): string {
   gap: 12px;
 }
 
+.calendar__reminders-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .calendar__stat {
   color: var(--el-text-color-secondary);
-  font-size: 13px;
+  font-size: var(--os-font-xs);
 }
 
 .calendar__notify {
@@ -715,9 +782,16 @@ function sourceLabel(sourceType: string): string {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  font-size: 13px;
+  font-size: var(--os-font-xs);
   line-height: 1.6;
   color: var(--el-text-color-secondary);
+}
+
+/* 已授权时的一行小条：不换行、超出省略（T032） */
+.calendar__notify-compact {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .calendar__reminders {
@@ -754,11 +828,35 @@ function sourceLabel(sourceType: string): string {
   font-size: 12px;
 }
 
+/* 新建表单：三组纵排，组内横排（T031） */
 .calendar__create {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calendar__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.calendar__form-group-label {
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+  font-weight: 600;
+}
+
+.calendar__form-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+
+.calendar__create-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .calendar__field-title {
@@ -789,7 +887,7 @@ function sourceLabel(sourceType: string): string {
 
 .calendar__lead-label {
   color: var(--el-text-color-secondary);
-  font-size: 13px;
+  font-size: var(--os-font-xs);
 }
 
 .calendar__hint {
@@ -953,6 +1051,23 @@ function sourceLabel(sourceType: string): string {
 
 .calendar__cell:hover .calendar__cell-add {
   opacity: 1;
+}
+
+/*
+ * 月视图色点（T032）：主色 = 一次性日程，warning = 重复日程。
+ * 原规格按「日程/任务」来源着色，但 occurrence DTO 没有来源字段
+ * （后端不提供 sourceType，纯前端拿不到），降级为重复/一次性区分。
+ */
+.calendar__cell-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--el-color-primary);
+}
+
+.calendar__cell-dot--recurring {
+  background: var(--el-color-warning);
 }
 
 .calendar__cell-item {
