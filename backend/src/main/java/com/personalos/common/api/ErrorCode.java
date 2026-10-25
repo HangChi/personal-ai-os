@@ -31,6 +31,9 @@ public enum ErrorCode {
     /** 请求方法不被支持。 */
     METHOD_NOT_ALLOWED(40005, "请求方法不被支持", HttpStatus.METHOD_NOT_ALLOWED),
 
+    /** 未登录或会话已过期（阶段 15）。 */
+    UNAUTHORIZED(40100, "未登录或登录已过期", HttpStatus.UNAUTHORIZED),
+
     /** 业务规则冲突（如状态不允许的流转）。 */
     BUSINESS_CONFLICT(40900, "业务规则冲突", HttpStatus.CONFLICT),
 

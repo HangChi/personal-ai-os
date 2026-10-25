@@ -3,6 +3,24 @@
  * 应用根组件：整体布局 + 顶部导航 + 路由出口。
  * 业务状态一律放在 Pinia store 中，不做跨组件透传。
  */
+import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+const { authEnabled, username } = storeToRefs(authStore)
+const route = useRoute()
+const router = useRouter()
+
+/** 登录页不显示导航：点任何一个都会立刻被守卫弹回登录页，只是噪音 */
+const isLoginPage = computed(() => route.name === 'login')
+
+async function handleLogout(): Promise<void> {
+  await authStore.logout()
+  await router.push({ name: 'login' })
+}
 </script>
 
 <template>
@@ -13,7 +31,13 @@
         <span class="app-shell__title">Personal AI OS</span>
       </div>
 
-      <el-menu class="app-shell__nav" mode="horizontal" :router="true" :ellipsis="false">
+      <el-menu
+        v-if="!isLoginPage"
+        class="app-shell__nav"
+        mode="horizontal"
+        :router="true"
+        :ellipsis="false"
+      >
         <el-menu-item index="/">总览</el-menu-item>
         <el-menu-item index="/chat">对话</el-menu-item>
         <el-menu-item index="/tasks">任务</el-menu-item>
@@ -22,8 +46,15 @@
         <el-menu-item index="/memory">记忆</el-menu-item>
         <el-menu-item index="/activity">活动</el-menu-item>
       </el-menu>
+      <div v-else class="app-shell__nav app-shell__nav--empty"></div>
 
-      <span class="app-shell__phase">阶段 14 · 任务标签</span>
+      <div class="app-shell__right">
+        <span class="app-shell__phase">阶段 15 · 单用户认证</span>
+        <template v-if="authEnabled && username">
+          <span class="app-shell__user">{{ username }}</span>
+          <el-button link size="small" @click="handleLogout">登出</el-button>
+        </template>
+      </div>
     </el-header>
 
     <el-main class="app-shell__main">
@@ -84,6 +115,23 @@
   flex: none;
   color: var(--el-text-color-secondary);
   font-size: 13px;
+}
+
+.app-shell__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+
+.app-shell__user {
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+}
+
+/* 登录页没有菜单，用等宽占位把右侧内容推到末尾，避免品牌区与右侧贴在一起 */
+.app-shell__nav--empty {
+  flex: 1;
 }
 
 .app-shell__main {

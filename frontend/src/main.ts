@@ -3,6 +3,8 @@ import { createApp } from 'vue'
 
 import App from './App.vue'
 import router from './router'
+import { setUnauthorizedHandler } from '@/api/http'
+import { useAuthStore } from '@/stores/auth'
 import './styles/main.css'
 
 /**
@@ -14,8 +16,20 @@ import './styles/main.css'
  * 语言包沿用中文默认，无需额外配置。
  */
 const app = createApp(App)
+const pinia = createPinia()
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
+
+// 401 → 清本地登录态并回登录页。
+// 用注册回调而不是让 http.ts 直接 import store：那会形成循环依赖。
+setUnauthorizedHandler(() => {
+  const auth = useAuthStore(pinia)
+  auth.clear()
+  const current = router.currentRoute.value
+  if (current.name !== 'login') {
+    void router.push({ name: 'login', query: { redirect: current.fullPath } })
+  }
+})
 
 app.mount('#app')

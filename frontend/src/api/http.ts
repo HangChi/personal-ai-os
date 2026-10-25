@@ -22,6 +22,28 @@ export const http = axios.create({
 
 export { ApiBusinessError }
 
+/**
+ * 401 处理器。
+ *
+ * <p>用「由入口注册」而不是在 http.ts 里直接 import store：那会形成
+ * `store → api → http → store` 的循环依赖，Vite 下表现为运行时 undefined。
+ */
+let unauthorizedHandler: (() => void) | null = null
+
+export function setUnauthorizedHandler(handler: () => void): void {
+  unauthorizedHandler = handler
+}
+
+/**
+ * 探测类请求的 401 不应触发跳转。
+ *
+ * <p>`/auth/login` 的 401 是「密码错」，把它当成「会话过期」会让用户在登录页上
+ * 被反复刷新；`/auth/me` 理论上不会 401（未登录也返回 200），一并排除更稳。
+ */
+function isAuthProbe(url: string | undefined): boolean {
+  return typeof url === 'string' && (url.includes('/auth/login') || url.includes('/auth/me'))
+}
+
 // 把统一响应体中的 code != 0 转成 rejected Promise，避免每个调用点重复判断。
 // 分类逻辑在 envelope.ts（纯函数，可在 Node 里测试）；这里只做接线。
 http.interceptors.response.use(
@@ -29,7 +51,14 @@ http.interceptors.response.use(
     const businessError = toBusinessError(response.data)
     return businessError ? Promise.reject(businessError) : response
   },
-  (error: unknown) => Promise.reject(interpretAxiosError(error)),
+  (error: unknown) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      if (!isAuthProbe(error.config?.url)) {
+        unauthorizedHandler?.()
+      }
+    }
+    return Promise.reject(interpretAxiosError(error))
+  },
 )
 
 /**

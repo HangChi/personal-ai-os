@@ -72,6 +72,19 @@
         </dependency>
 
         <!--
+          访问控制（阶段 15）：单用户、会话 Cookie。
+
+          为什么用 Spring Security 而不是手写一个认证过滤器：会话固定攻击、cookie 属性、
+          过滤器顺序、注销时清理 SecurityContext —— 这些细节它已经做对了，重写只会更差。
+
+          默认不启用（AUTH_ENABLED=false），全部请求放行，与阶段 14 行为一致。
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!--
           数据库迁移：结构变更一律走 Flyway（宪法原则 IV）。
 
           注意（Boot 4 模块化实测结论）：Flyway 的自动配置已从

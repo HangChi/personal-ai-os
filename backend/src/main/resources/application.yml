@@ -12,6 +12,12 @@ spring:
     name: personal-ai-os
 
   servlet:
+    session:
+      cookie:
+        # 关闭 CSRF 后，SameSite=Lax 是主要防线：跨站 POST 不会带上会话 cookie。
+        # 权衡与残余风险见 SecurityConfig 类注释与 README。
+        same-site: lax
+        http-only: true
     multipart:
       # 必须大于应用层的 5 MiB 上限，否则超限文件会在进入控制器之前
       # 被容器以 500 拒绝，用户看到的是"服务器错误"而不是"文件过大"。
@@ -111,6 +117,13 @@ app:
   name: personal-ai-os
   # 由 Maven 资源过滤在构建时替换为 pom 中的 version
   version: @project.version@
+  auth:
+    # 访问控制（阶段 15）。默认关闭：本地单用户开箱即用，现有测试也依赖这一点。
+    # 对公网开放前务必设为 true 并配置密码 —— 开启后 /api/v1/** 全部需要登录。
+    # 若 enabled=true 而未设置密码，应用会**启动失败**（比「起来了但谁都能进」安全）。
+    enabled: ${AUTH_ENABLED:false}
+    username: ${AUTH_USERNAME:admin}
+    password: ${AUTH_PASSWORD:}
   ai:
     # 送给模型的上下文条数上限。
     # 只影响「送给模型的内容」，不影响库中历史（见 data-model.md 的读写语义约定）。
