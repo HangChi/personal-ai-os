@@ -125,10 +125,25 @@ function formatDateTime(value: string): string {
   return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString('zh-CN', { hour12: false })
 }
 
-function formatScore(score: number | null): string {
-  // score 为 null 只出现在混合检索的「仅关键词命中」——它不是缺失，
-  // 而是这条没走过向量通道。显示「关键词」比显示「—」诚实得多。
-  return score === null || score === undefined ? '关键词命中' : score.toFixed(3)
+/**
+ * 命中来源徽标（混合检索）。
+ *
+ * 三种情况文案不同，不能拼在一起：
+ * - BOTH：两条通道都命中，可信度最高
+ * - 仅关键词命中：score 为 null（没做过嵌入），不能显示「相似度 —」
+ * - 仅向量命中：正常显示相似度
+ */
+function hitBadge(hit: { score: number | null; matchedBy?: string }): {
+  text: string
+  type: 'success' | 'warning' | 'info'
+} {
+  if (hit.matchedBy === 'BOTH') {
+    return { text: '向量+关键词', type: 'success' }
+  }
+  if (hit.score === null || hit.score === undefined) {
+    return { text: '关键词命中', type: 'warning' }
+  }
+  return { text: `相似度 ${hit.score.toFixed(3)}`, type: 'info' }
 }
 </script>
 
@@ -259,12 +274,8 @@ function formatScore(score: number | null): string {
               {{ hit.documentTitle }}
               <span class="knowledge__hit-meta">#{{ hit.chunkIndex + 1 }}</span>
             </span>
-            <el-tag
-              size="small"
-              :type="hit.matchedBy === 'BOTH' ? 'success' : 'info'"
-              effect="plain"
-            >
-              {{ hit.matchedBy === 'BOTH' ? '向量+关键词' : `相似度 ${formatScore(hit.score)}` }}
+            <el-tag size="small" :type="hitBadge(hit).type" effect="plain">
+              {{ hitBadge(hit).text }}
             </el-tag>
           </div>
           <div class="knowledge__hit-content">{{ hit.content }}</div>
@@ -309,12 +320,8 @@ function formatScore(score: number | null): string {
                   [{{ citation.index }}] {{ citation.documentTitle }}
                   <span class="knowledge__hit-meta">{{ citation.filename }} · #{{ citation.chunkIndex + 1 }}</span>
                 </span>
-                <el-tag
-                  size="small"
-                  :type="citation.matchedBy === 'BOTH' ? 'success' : 'info'"
-                  effect="plain"
-                >
-                  {{ citation.matchedBy === 'BOTH' ? '向量+关键词' : `相似度 ${formatScore(citation.score)}` }}
+                <el-tag size="small" :type="hitBadge(citation).type" effect="plain">
+                  {{ hitBadge(citation).text }}
                 </el-tag>
               </div>
               <div class="knowledge__hit-content">{{ citation.content }}</div>
