@@ -23,7 +23,7 @@
         <el-menu-item index="/activity">活动</el-menu-item>
       </el-menu>
 
-      <span class="app-shell__phase">阶段 11 · 工具审计与 MCP 状态</span>
+      <span class="app-shell__phase">阶段 12 · 数据导出</span>
     </el-header>
 
     <el-main class="app-shell__main">

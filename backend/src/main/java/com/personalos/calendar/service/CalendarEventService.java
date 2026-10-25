@@ -193,6 +193,22 @@ public class CalendarEventService {
     }
 
     /**
+     * 全部日程（导出用，阶段 12）。
+     *
+     * <p>按开始时间升序：导出文件是给人看的，时间线顺序比「最近创建」更易读。
+     *
+     * <p>导出的是**日程定义**而不是展开后的发生实例 —— 重复规则可以重新展开，
+     * 而导出实例会把一次「每周」日程变成几百条看不出同源的记录。
+     */
+    @Transactional(readOnly = true)
+    public List<CalendarEventDto> listAll() {
+        return eventRepository.findAll().stream()
+                .sorted(Comparator.comparing(CalendarEventEntity::getStartsAt))
+                .map(this::toDto)
+                .toList();
+    }
+
+    /**
      * 按区间查询，返回**展开后的发生实例**（分页）。
      *
      * <p>2026-10-14 技术债清偿：{@code limit} 静默截断改为 {@code page + size} 分页，

@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
+import { downloadExport } from '@/api/export'
 import { useAppStore } from '@/stores/app'
 
 const appStore = useAppStore()
@@ -22,6 +24,23 @@ function componentTagType(value: string): 'success' | 'info' | 'danger' {
 onMounted(() => {
   void appStore.loadHealth()
 })
+
+/** 导出是页面级的一次性动作，不进 store（没有任何其它页面需要它） */
+const exporting = ref(false)
+const exportError = ref<string | null>(null)
+
+async function handleExport(): Promise<void> {
+  exporting.value = true
+  exportError.value = null
+  try {
+    const filename = await downloadExport()
+    ElMessage.success(`已导出 ${filename}`)
+  } catch (cause) {
+    exportError.value = cause instanceof Error ? cause.message : '导出失败，请稍后重试'
+  } finally {
+    exporting.value = false
+  }
+}
 </script>
 
 <template>
@@ -75,11 +94,44 @@ onMounted(() => {
         <li><strong>日程与提醒</strong>：重复规则、到点提醒（浏览器通知；页面可见时用站内提示）</li>
         <li><strong>长期记忆</strong>：在对话里说「记住…」即跨会话生效，可在记忆页增删改</li>
         <li><strong>MCP 外部工具</strong>：接入外部工具 server；只读工具直接执行，变更类需人工确认</li>
+        <li><strong>活动</strong>：查看助手调用过哪些工具、每个 MCP server 当前是否连上</li>
       </ul>
       <p class="home__hint">
         助手内置工具共 15 个（任务 8 + 知识库 1 + 日程提醒 5 + 长期记忆 1），另可经 MCP 接入外部工具；
         其中删除类操作与 MCP 变更类工具只会生成「待确认事项」，必须由你在界面上确认后才会真正生效。
       </p>
+    </el-card>
+
+    <el-card class="home__card" shadow="never">
+      <template #header>
+        <div class="home__card-header">
+          <span>数据备份</span>
+          <el-button type="primary" :loading="exporting" @click="handleExport">导出数据</el-button>
+        </div>
+      </template>
+
+      <p class="home__hint" style="margin-top: 0">
+        把全部任务、日程、记忆、知识库与对话历史导出为一个 JSON 文件。
+        这是一次性快照，不包含向量索引（可由分块文本重建）。
+      </p>
+
+      <el-alert
+        type="info"
+        :closable="false"
+        show-icon
+        title="知识库导出的是分块文本，不含原始文件"
+        description="上传的 PDF / Word / 图片本身不落库（只保留解析出的分块）。分块文本足以重建检索，但原始文件需要重新上传。"
+      />
+
+      <el-alert
+        v-if="exportError"
+        class="home__export-error"
+        type="error"
+        :closable="false"
+        show-icon
+        title="导出失败"
+        :description="exportError"
+      />
     </el-card>
   </div>
 </template>
@@ -107,5 +159,9 @@ onMounted(() => {
   margin: 12px 0 0;
   color: var(--el-text-color-secondary);
   font-size: 13px;
+}
+
+.home__export-error {
+  margin-top: 12px;
 }
 </style>

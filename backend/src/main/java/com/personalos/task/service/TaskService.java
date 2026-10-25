@@ -93,10 +93,25 @@ public class TaskService {
         return PageDto.of(ordered, query.page(), query.size());
     }
 
+    /**
+     * 全部任务，顺序与界面一致（导出用，阶段 12）。
+     *
+     * <p>不走 {@link #search} 是因为它受分页上限约束（{@code MAX_SIZE=100}），
+     * 拿它做导出会在任务超过 100 条时**静默少导**。这里显式返回全量，
+     * 并复用 {@link #DISPLAY_ORDER} 让文件里的顺序与用户看到的一致。
+     */
+    @Transactional(readOnly = true)
+    public List<TaskDto> listAll() {
+        Instant now = Instant.now();
+        return taskRepository.findAll().stream()
+                .sorted(DISPLAY_ORDER)
+                .map(task -> toDto(task, now))
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public TaskDto get(UUID id) {
-        return toDto(requireTask(id), Instant.now());
-    }
+        return toDto(requireTask(id), Instant.now());    }
 
     @Transactional(readOnly = true)
     public List<TaskDto> findByIds(List<UUID> ids) {

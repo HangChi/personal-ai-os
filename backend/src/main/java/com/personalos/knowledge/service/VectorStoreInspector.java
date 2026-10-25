@@ -1,6 +1,7 @@
 package com.personalos.knowledge.service;
 
 import com.personalos.knowledge.config.KnowledgeProperties;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -74,6 +75,25 @@ public class VectorStoreInspector {
                 "SELECT count(*) FROM " + qualifiedTable() + " WHERE metadata->>'document_id' = ?",
                 Integer.class, documentId.toString());
         return count == null ? 0 : count;
+    }
+
+    /**
+     * 取某个文档的全部分块文本，按分块序号升序（导出用，阶段 12）。
+     *
+     * <p><b>为什么要专门取它</b>：{@code knowledge_document} 只存元数据，
+     * 原文不落库（V4 迁移的设计），分块文本是知识库内容**唯一**的可导出形态。
+     *
+     * <p>{@code chunk_index} 在 {@code metadata} 里是 JSON 文本，直接 {@code ::int} 转换会在
+     * 遇到脏数据时整条查询报错；所以先用正则筛出纯数字再转，非数字的排到最后，
+     * 宁可顺序不完美也不要导不出来。
+     */
+    public List<String> chunksByDocumentId(UUID documentId) {
+        String sql = "SELECT content FROM " + qualifiedTable()
+                + " WHERE metadata->>'document_id' = ?"
+                + " ORDER BY CASE WHEN metadata->>'chunk_index' ~ '^[0-9]+$'"
+                + "               THEN (metadata->>'chunk_index')::int"
+                + "               ELSE 2147483647 END";
+        return jdbcTemplate.queryForList(sql, String.class, documentId.toString());
     }
 
     /**
