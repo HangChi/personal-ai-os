@@ -1,0 +1,63 @@
+/*
+ * 设计令牌（阶段 18，specs/018-ui-optimization）。
+ *
+ * 分两组，边界刻意划开：
+ * - `--os-space-*` / `--os-radius-*` / `--os-shadow-*` / `--os-font-*`：应用自有语义令牌。
+ *   Element Plus 没有对应变量，是真正需要补的洞（实测改造前：`gap:16px` 重复 10+ 处、
+ *   `border-radius:8px` 8 处、`font-size:12/13px` 20+ 处）。
+ * - 颜色**不另起炉灶**：一律消费 Element Plus 的 `--el-*`。EP 自带 9 级 primary 阶梯且
+ *   暗色模式（html.dark）免费跟随；自建颜色阶梯等于维护双轨，必然漂移（research R-05）。
+ *
+ * 页面与组件样式只允许使用这两组变量，禁止裸值（宪法 V：可验证的交付 —— 裸值无法被审查）。
+ */
+
+:root {
+  /* ---- 间距（4 的倍数，覆盖 4/8/12/16/20/24 六档实测高频值）---- */
+  --os-space-1: 4px;
+  --os-space-2: 8px;
+  --os-space-3: 12px;
+  --os-space-4: 16px;
+  --os-space-5: 20px;
+  --os-space-6: 24px;
+
+  /* ---- 圆角（收敛实测的 6/8/10px 三档；12 给弹窗与大卡）---- */
+  --os-radius-sm: 6px;
+  --os-radius-md: 8px;
+  --os-radius-lg: 10px;
+  --os-radius-xl: 12px;
+
+  /*
+   * 阴影。EP 的 box-shadow 变量偏向浮层，卡片需要更轻的一档。
+   * hover 态统一「抬起」：位移 1px + 阴影加深，不用 filter:brightness（暗色下发灰）。
+   */
+  --os-shadow-card: 0 1px 2px 0 rgb(31 45 61 / 4%), 0 1px 3px 0 rgb(31 45 61 / 6%);
+  --os-shadow-card-hover: 0 4px 12px 0 rgb(31 45 61 / 8%), 0 2px 4px 0 rgb(31 45 61 / 6%);
+  --os-shadow-popup: 0 8px 24px 0 rgb(31 45 61 / 12%), 0 2px 6px 0 rgb(31 45 61 / 8%);
+
+  /* ---- 字体节奏（收敛实测 12/13/14 三档；15/16 保留给页面标题）---- */
+  --os-font-xs: 12px;
+  --os-font-sm: 13px;
+  --os-font-md: 14px;
+  --os-font-lg: 15px;
+
+  /* ---- 动效（prefers-reduced-motion 时全局关闭，见 main.css）---- */
+  --os-duration-fast: 0.15s;
+  --os-duration-normal: 0.25s;
+  --os-ease: cubic-bezier(0.25, 0.8, 0.5, 1);
+
+  /* ---- 布局 ---- */
+  /** 主内容区最大宽度：与既有 App.vue 的 1080px 一致 */
+  --os-content-max-width: 1080px;
+  /** 卡片间距：替代各页面 `gap: 16px` 的散落值 */
+  --os-stack-gap: var(--os-space-4);
+}
+
+/*
+ * 深色主题下的阴影修正：亮色阴影是「深色投影」，暗底下几乎不可见，
+ * 改用更深的投影 + 细边框保证卡片边界（EP 暗色变量表不含阴影语义）。
+ */
+html.dark {
+  --os-shadow-card: 0 1px 2px 0 rgb(0 0 0 / 20%), 0 1px 3px 0 rgb(0 0 0 / 24%);
+  --os-shadow-card-hover: 0 4px 12px 0 rgb(0 0 0 / 32%), 0 2px 4px 0 rgb(0 0 0 / 24%);
+  --os-shadow-popup: 0 8px 24px 0 rgb(0 0 0 / 40%), 0 2px 6px 0 rgb(0 0 0 / 28%);
+}

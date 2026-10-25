@@ -161,8 +161,9 @@
 
 | 包 | 版本策略 | gzip 估算 | 用途 |
 |---|---|---|---|
-| marked | ^15.x | ~30 KB | Markdown → HTML（R-01） |
-| highlight.js | ^11.x | ~20 KB（核心+10 语言） | 代码高亮（R-02） |
-| dompurify | ^3.x | ~20 KB | HTML 消毒（R-03） |
+| marked | ^18.x（安装时稳定主线 18.1.1；初稿按 15.x 估体积，实测同量级） | ~30 KB | Markdown → HTML（R-01） |
+| highlight.js | ^11.12.0 | ~20 KB（核心+10 语言） | 代码高亮（R-02） |
+| dompurify | ^3.4.17 | ~20 KB | HTML 消毒（R-03） |
+| @element-plus/icons-vue | ^2.3.2 | 按图标计（每个 ~1 KB；nav 8 + 主题 2 + 搜索 1） | 导航图标 / 主题切换 / 搜索前缀（Phase A 补入白名单：T008 要求导航带图标，~11 个图标下内联 SVG 反而冗长） |
 
-合计 ~70 KB gzip，占当前 gzip 总量（~180 KB）约 39% → 在 SC-001 的 130% 预算内；若超标，降级顺序：highlight.js 语言数 10→6、marked 换 `marked/marked.min.js` 直引（放弃 tree-shaking 收益换体积）。
+合计 ~70 KB gzip + 图标 ~11 KB，约占当前 gzip 总量（~180 KB）的 45% → 在 SC-001 的 130% 预算内；若超标，降级顺序：highlight.js 语言数 10→6、marked 换 `marked/marked.min.js` 直引（放弃 tree-shaking 收益换体积）。

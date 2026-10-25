@@ -62,6 +62,11 @@ export default defineConfig({
       'vue',
       'pinia',
       'axios',
+      // Markdown 渲染链（阶段 18）：三者均为双格式包，dev 预打包需要显式列出，
+      // 漏了的表现是「生产构建绿、dev 白屏或 CJS export 报错」（specs/018 research R-07）
+      'marked',
+      'highlight.js',
+      'dompurify',
       // Element Plus 及其依赖闭包（含全部 CJS 包）
       'element-plus',
       'dayjs',

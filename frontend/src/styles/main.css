@@ -1,5 +1,16 @@
+/*
+ * 全局基础样式。
+ *
+ * 阶段 18 改动：
+ * - 引入 tokens.css（--os-* 设计令牌）——所有页面样式的唯一尺寸来源
+ * - 收编硬编码颜色：改造前 body 背景写死 #f5f7fa、根选择器写死 color-scheme: light，
+ *   暗色模式下这两处就是「改了主题但页面外围还白着」的根因
+ * - prefers-reduced-motion 全局关动画（spec Edge Cases）
+ */
+
+@import './tokens.css';
+
 :root {
-  color-scheme: light;
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei', sans-serif;
@@ -18,9 +29,38 @@ body,
 }
 
 body {
-  background: #f5f7fa;
+  background: var(--el-bg-color-page);
+}
+
+/*
+ * 滚动条跟随主题：color-scheme 让 Chromium/WebKit 的原生滚动条、
+ * 日期输入框右侧箭头等 UA 控件自动换色，不需要自绘。
+ * 深色值由 index.html 引导脚本 / main.ts 同步写到 <html>（contracts C-02）。
+ */
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 code {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}
+
+/* 焦点可见性：键盘导航时给一圈主色浅环（鼠标点击不出现，:focus-visible 语义） */
+:focus-visible {
+  outline: 2px solid var(--el-color-primary-light-5);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -5,17 +5,17 @@
 
 ## Phase A — 设计系统与全局框架
 
-- [ ] **T001** 新增 `marked` / `highlight.js` / `dompurify` 依赖，并同步 `vite.config.ts` `optimizeDeps.include`（R-07）；改完 `rm -rf node_modules/.vite`
-- [ ] **T002** `src/styles/tokens.css`：`--os-space-1..6` / `--os-radius-sm..lg` / `--os-shadow-card|card-hover|popup` / `--os-font-xs|sm|md` + 注释说明每个令牌替代了哪些散落值
-- [ ] **T003** 暗色落地：`element-plus/theme-chalk/dark/css-vars.css` 按需引入（`html.dark`）+ `color-scheme` 随主题 + 收编现有 4 处硬编码 hex（App.vue / main.css / LoginView.vue）
-- [ ] **T004** `src/lib/theme.ts`：`resolveTheme(pref, systemDark)` / `applyTheme(resolved)`（纯函数部分）
-- [ ] **T005** `src/stores/ui.ts`：UiStore 三态主题 + matchMedia 监听 + localStorage `os.theme`
-- [ ] **T006** `main.ts` 挂载前同步应用主题（禁 onMounted 里应用——C-02 反模式）；`index.html` 内联引导脚本兜底首帧
-- [ ] **T007** 公共组件 5 件：`PageHeader` / `FilterBar` / `EmptyState` / `AppPagination` / `StatusTag`（契约 C-03，`src/components/` 自动注册）
-- [ ] **T008** `App.vue` 顶栏重构：图标导航（EP icon 按需）、搜索框加宽 + `Ctrl/Cmd+K` 聚焦、ThemeToggle 挂载、**移除「阶段 17」硬编码**、页脚精简
-- [ ] **T009** `frontend/test/theme.test.mjs`：`resolveTheme` 全分支（三态 × 系统明暗）+ relative-time 边界（59s/60s/23h/24h/7d）
-- [ ] **T010** 走查：主题三态真机切换 + 浮层暗色检查（日期面板/下拉/弹窗/通知）+ `type_check` / `test:logic` / `build` 全绿；截图存档
-- [ ] **T011**（可并行）favicon：`index.html` + `public/favicon.svg`（简单 SVG，AI 字母标）
+- [x] **T001** 新增 `marked` / `highlight.js` / `dompurify` 依赖，并同步 `vite.config.ts` `optimizeDeps.include`（R-07）；改完 `rm -rf node_modules/.vite`
+- [x] **T002** `src/styles/tokens.css`：`--os-space-1..6` / `--os-radius-sm..lg` / `--os-shadow-card|card-hover|popup` / `--os-font-xs|sm|md` + 注释说明每个令牌替代了哪些散落值
+- [x] **T003** 暗色落地：`element-plus/theme-chalk/dark/css-vars.css` 按需引入（`html.dark`）+ `color-scheme` 随主题 + 收编现有 4 处硬编码 hex（App.vue / main.css / LoginView.vue）
+- [x] **T004** `src/lib/theme.ts`：`resolveTheme(pref, systemDark)` / `applyTheme(resolved)`（纯函数部分）
+- [x] **T005** `src/stores/ui.ts`：UiStore 三态主题 + matchMedia 监听 + localStorage `os.theme`
+- [x] **T006** `main.ts` 挂载前同步应用主题（禁 onMounted 里应用——C-02 反模式）；`index.html` 内联引导脚本兜底首帧
+- [x] **T007** 公共组件 5 件：`PageHeader` / `FilterBar` / `EmptyState` / `AppPagination` / `StatusTag`（契约 C-03，`src/components/` 自动注册）
+- [x] **T008** `App.vue` 顶栏重构：图标导航（EP icon 按需）、搜索框加宽 + `Ctrl/Cmd+K` 聚焦、ThemeToggle 挂载、**移除「阶段 17」硬编码**、页脚精简
+- [x] **T009** `frontend/test/theme.test.mjs`：`resolveTheme` 全分支（三态 × 系统明暗）+ relative-time 边界（59s/60s/23h/24h/7d）
+- [x] **T010** 走查：主题三态真机切换 + 浮层暗色检查（日期面板/下拉/弹窗/通知）+ `type_check` / `test:logic` / `build` 全绿；截图存档
+- [x] **T011**（可并行）favicon：`index.html` + `public/favicon.svg`（简单 SVG，AI 字母标）
 
 ## Phase B — 对话页深度优化
 
@@ -81,4 +81,11 @@
 
 ## 完成记录（实现时回填）
 
-<!-- 每 Phase 完成后在此追加：提交 hash、实测数字、与规格的偏差及原因 -->
+### Phase A（设计系统与全局框架）
+
+- 门禁：`type-check` 0 错误；`test:logic` 273/273（基线 248 + 新增 25）；`build` 通过，assets 1056 KB（基线 1048 KB，新依赖尚未被视图引用，tree-shaking 后几乎无增长）。
+- 真机：亮/暗 8 页截图各一套；主题切换后 dataset/class/localStorage 三处一致，刷新保持；暗色下下拉 / 日期面板 / 编辑弹窗 / 通知四个浮层无白块（SC-003）；控制台零报错。
+- 环境插曲：验收时发现后端（8080）与项目 PG（55432）已随上一会话进程回收而宕掉 → `docker compose up -d` + 后端重启后恢复。**与本次改动无关**，但记入当日 log 提醒后续会话先探活。
+- 偏差 1：marked 实际稳定版 18.1.1（research 初稿按 15.x 估体积），已回改 research.md。
+- 偏差 2：新增依赖白名单补入 `@element-plus/icons-vue`（T008 导航图标所需，初稿漏算），已回改 research.md。
+- 教训：vite.config 的 optimizeDeps 改动后必须 `rm -rf node_modules/.vite` 再重启 dev（R-07），本次按此执行，dev server 一次起效。

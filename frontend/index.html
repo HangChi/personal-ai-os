@@ -4,6 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Personal AI OS</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      /*
+       * 主题引导脚本（阶段 18，contracts C-02）。
+       * 与 main.ts 的 applyThemeBeforeMount 同一规则：读 os.theme，system 时跟随
+       * prefers-color-scheme，写 dataset.theme 与 .dark class。
+       * 为什么需要它：CSS/JS 资源加载完成前的窗口期，浏览器已按默认配色画了第一帧；
+       * 只有内联在 <head> 的同步脚本能在那之前改掉 <html>，把白闪压到零。
+       * 改动这三行时必须同步改 main.ts，两边漂移就会出现「刷新才闪/只有首次闪」的怪象。
+       */
+      ;(function () {
+        try {
+          var pref = localStorage.getItem('os.theme')
+          if (pref !== 'light' && pref !== 'dark' && pref !== 'system') pref = 'system'
+          var dark =
+            pref === 'dark' ||
+            (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          var root = document.documentElement
+          root.dataset.theme = dark ? 'dark' : 'light'
+          root.classList.toggle('dark', dark)
+        } catch (e) {
+          /* localStorage 不可用（隐私模式等）时静默跟随默认浅色，不阻塞启动 */
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

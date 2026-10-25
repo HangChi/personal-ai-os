@@ -2,9 +2,26 @@
 /**
  * 应用根组件：整体布局 + 顶部导航 + 路由出口。
  * 业务状态一律放在 Pinia store 中，不做跨组件透传。
+ *
+ * 阶段 18 改动：
+ * - 导航加图标（EP 图标按需 import，避免全量图标包进主包）
+ * - 顶栏搜索加宽 + Ctrl/Cmd+K 全局聚焦（FR-004）
+ * - 挂载 ThemeToggle，移除硬编码「阶段 17」标识——该文案每轮都会过期，
+ *   是项目记忆里记着的坑（硬编码当前状态 = 必然过期的文档）
+ * - 布局尺寸全部走 --os-* 令牌
  */
+import {
+  Calendar,
+  ChatDotRound,
+  DataLine,
+  HomeFilled,
+  Memo,
+  Reading,
+  Search,
+  Tickets,
+} from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
@@ -17,9 +34,21 @@ const router = useRouter()
 /** 登录页不显示导航：点任何一个都会立刻被守卫弹回登录页，只是噪音 */
 const isLoginPage = computed(() => route.name === 'login')
 
+/** 导航项：图标 + 文案 + 路由。index 与 el-menu 的 router 模式对齐 */
+const navItems = [
+  { index: '/', label: '总览', icon: HomeFilled },
+  { index: '/chat', label: '对话', icon: ChatDotRound },
+  { index: '/tasks', label: '任务', icon: Tickets },
+  { index: '/knowledge', label: '知识库', icon: Reading },
+  { index: '/calendar', label: '日程', icon: Calendar },
+  { index: '/memory', label: '记忆', icon: Memo },
+  { index: '/activity', label: '活动', icon: DataLine },
+]
+
 /** 顶栏全局搜索词（阶段 17）：回车后跳到结果页，关键词走 query 而非 store ——
  *  直接分享 /search?q=xxx 也该能用 */
 const searchKeyword = ref('')
+const searchInput = ref<InstanceType<typeof HTMLInputElement> | null>(null)
 
 function runGlobalSearch(): void {
   const term = searchKeyword.value.trim()
@@ -28,6 +57,23 @@ function runGlobalSearch(): void {
   }
   void router.push({ path: '/search', query: { q: term } })
 }
+
+/**
+ * Ctrl/Cmd+K 聚焦搜索框（FR-004）。
+ * 挂在 window 上而不是 el-input 的 keydown：焦点在页面任意处（包括消息流里）
+ * 时都要能唤起，这也是命令面板式交互的肌肉记忆。
+ */
+function handleGlobalKeydown(event: KeyboardEvent): void {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    if (!isLoginPage.value) {
+      searchInput.value?.focus()
+    }
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', handleGlobalKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', handleGlobalKeydown))
 
 async function handleLogout(): Promise<void> {
   await authStore.logout()
@@ -50,29 +96,28 @@ async function handleLogout(): Promise<void> {
         :router="true"
         :ellipsis="false"
       >
-        <el-menu-item index="/">总览</el-menu-item>
-        <el-menu-item index="/chat">对话</el-menu-item>
-        <el-menu-item index="/tasks">任务</el-menu-item>
-        <el-menu-item index="/knowledge">知识库</el-menu-item>
-        <el-menu-item index="/calendar">日程</el-menu-item>
-        <el-menu-item index="/memory">记忆</el-menu-item>
-        <el-menu-item index="/activity">活动</el-menu-item>
+        <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index">
+          <el-icon class="app-shell__nav-icon"><component :is="item.icon" /></el-icon>
+          <span>{{ item.label }}</span>
+        </el-menu-item>
       </el-menu>
       <div v-else class="app-shell__nav app-shell__nav--empty"></div>
 
       <el-input
         v-if="!isLoginPage"
+        ref="searchInput"
         v-model="searchKeyword"
         class="app-shell__search"
         size="small"
         clearable
-        placeholder="全局搜索"
+        placeholder="全局搜索（Ctrl K）"
+        :prefix-icon="Search"
         @keydown.enter="runGlobalSearch"
         @clear="searchKeyword = ''"
       />
 
       <div class="app-shell__right">
-        <span class="app-shell__phase">阶段 17 · 跨模块搜索</span>
+        <ThemeToggle v-if="!isLoginPage" />
         <template v-if="authEnabled && username">
           <span class="app-shell__user">{{ username }}</span>
           <el-button link size="small" @click="handleLogout">登出</el-button>
@@ -81,12 +126,14 @@ async function handleLogout(): Promise<void> {
     </el-header>
 
     <el-main class="app-shell__main">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <transition name="page" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </el-main>
 
-    <el-footer class="app-shell__footer">
-      Personal AI OS · Apache-2.0 · 本地单用户
-    </el-footer>
+    <el-footer class="app-shell__footer"> Personal AI OS · Apache-2.0 · 本地单用户 </el-footer>
   </el-container>
 </template>
 
@@ -98,15 +145,19 @@ async function handleLogout(): Promise<void> {
 .app-shell__header {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: var(--os-space-5);
   border-bottom: 1px solid var(--el-border-color-light);
-  background: #ffffff;
+  background: var(--el-bg-color);
+  /* 顶栏吸顶：长页面（知识库 / 日程）滚动时导航不消失 */
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .app-shell__brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--os-space-2);
   flex: none;
 }
 
@@ -116,15 +167,15 @@ async function handleLogout(): Promise<void> {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--os-radius-md);
   background: var(--el-color-primary);
-  color: #ffffff;
-  font-size: 13px;
+  color: var(--el-color-white);
+  font-size: var(--os-font-xs);
   font-weight: 700;
 }
 
 .app-shell__title {
-  font-size: 16px;
+  font-size: var(--os-font-md);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -134,21 +185,19 @@ async function handleLogout(): Promise<void> {
   border-bottom: none;
 }
 
-.app-shell__phase {
-  flex: none;
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
+.app-shell__nav-icon {
+  margin-right: 6px;
 }
 
 .app-shell__right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--os-space-3);
   flex: none;
 }
 
 .app-shell__user {
-  font-size: 13px;
+  font-size: var(--os-font-xs);
   color: var(--el-text-color-regular);
 }
 
@@ -159,13 +208,14 @@ async function handleLogout(): Promise<void> {
 
 .app-shell__search {
   flex: none;
-  width: 160px;
+  width: 220px;
 }
 
 .app-shell__main {
-  max-width: 1080px;
+  max-width: var(--os-content-max-width);
   width: 100%;
   margin: 0 auto;
+  padding-top: var(--os-space-4);
 }
 
 .app-shell__footer {
@@ -173,6 +223,31 @@ async function handleLogout(): Promise<void> {
   align-items: center;
   justify-content: center;
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
+}
+
+/* 路由切换过渡：短促的淡入上移，给页面切换一点空间感 */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity var(--os-duration-fast) var(--os-ease),
+    transform var(--os-duration-fast) var(--os-ease);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.page-leave-to {
+  opacity: 0;
+}
+
+/* 尊重系统「减少动态效果」偏好（spec Edge Cases） */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active {
+    transition: none;
+  }
 }
 </style>
