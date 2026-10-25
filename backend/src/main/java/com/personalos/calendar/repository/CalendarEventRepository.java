@@ -6,13 +6,17 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
  * 日程仓储。
+ *
+ * <p>阶段 17 起追加 {@link JpaSpecificationExecutor}：全局搜索要按标题/描述/地点筛选。
  */
-public interface CalendarEventRepository extends JpaRepository<CalendarEventEntity, UUID> {
+public interface CalendarEventRepository extends JpaRepository<CalendarEventEntity, UUID>,
+        JpaSpecificationExecutor<CalendarEventEntity> {
 
     /**
      * 取出可能与 {@code [from, to]} 有交集的日程（**原始定义**，不是展开后的实例）。

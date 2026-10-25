@@ -4,7 +4,7 @@
  * 业务状态一律放在 Pinia store 中，不做跨组件透传。
  */
 import { storeToRefs } from 'pinia'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
@@ -16,6 +16,18 @@ const router = useRouter()
 
 /** 登录页不显示导航：点任何一个都会立刻被守卫弹回登录页，只是噪音 */
 const isLoginPage = computed(() => route.name === 'login')
+
+/** 顶栏全局搜索词（阶段 17）：回车后跳到结果页，关键词走 query 而非 store ——
+ *  直接分享 /search?q=xxx 也该能用 */
+const searchKeyword = ref('')
+
+function runGlobalSearch(): void {
+  const term = searchKeyword.value.trim()
+  if (!term) {
+    return
+  }
+  void router.push({ path: '/search', query: { q: term } })
+}
 
 async function handleLogout(): Promise<void> {
   await authStore.logout()
@@ -48,8 +60,19 @@ async function handleLogout(): Promise<void> {
       </el-menu>
       <div v-else class="app-shell__nav app-shell__nav--empty"></div>
 
+      <el-input
+        v-if="!isLoginPage"
+        v-model="searchKeyword"
+        class="app-shell__search"
+        size="small"
+        clearable
+        placeholder="全局搜索"
+        @keydown.enter="runGlobalSearch"
+        @clear="searchKeyword = ''"
+      />
+
       <div class="app-shell__right">
-        <span class="app-shell__phase">阶段 15 · 单用户认证</span>
+        <span class="app-shell__phase">阶段 17 · 跨模块搜索</span>
         <template v-if="authEnabled && username">
           <span class="app-shell__user">{{ username }}</span>
           <el-button link size="small" @click="handleLogout">登出</el-button>
@@ -132,6 +155,11 @@ async function handleLogout(): Promise<void> {
 /* 登录页没有菜单，用等宽占位把右侧内容推到末尾，避免品牌区与右侧贴在一起 */
 .app-shell__nav--empty {
   flex: 1;
+}
+
+.app-shell__search {
+  flex: none;
+  width: 160px;
 }
 
 .app-shell__main {

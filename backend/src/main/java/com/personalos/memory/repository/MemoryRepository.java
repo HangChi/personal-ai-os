@@ -5,14 +5,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 /**
  * 长期记忆仓储。
  *
- * <p>没有自定义 SQL：查询只有「按更新时间倒序全取」和「按内容精确找一条」两种，
- * 由方法名派生即可。数据量预期几十至几百行，不为它加索引或分页（research R-08）。
+ * <p>阶段 17 起追加 {@link JpaSpecificationExecutor}：全局搜索要按内容筛选。
  */
-public interface MemoryRepository extends JpaRepository<MemoryEntity, UUID> {
+public interface MemoryRepository extends JpaRepository<MemoryEntity, UUID>,
+        JpaSpecificationExecutor<MemoryEntity> {
 
     /**
      * 全部记忆，按最近修改倒序。

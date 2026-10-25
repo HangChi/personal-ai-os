@@ -1,10 +1,14 @@
 package com.personalos.knowledge.service;
 
+import com.personalos.common.search.SearchPatterns;
 import com.personalos.knowledge.config.KnowledgeProperties;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -20,6 +24,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class VectorStoreInspector {
+
+    private static final Logger log = LoggerFactory.getLogger(VectorStoreInspector.class);
 
     /** 表名/schema 会拼进 SQL，因此必须限制字符集（虽然来自配置而非用户输入，仍按不可信处理） */
     private static final Pattern SAFE_IDENTIFIER = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
@@ -75,6 +81,34 @@ public class VectorStoreInspector {
                 "SELECT count(*) FROM " + qualifiedTable() + " WHERE metadata->>'document_id' = ?",
                 Integer.class, documentId.toString());
         return count == null ? 0 : count;
+    }
+
+    /**
+     * 分块**内容**命中关键词的文档 id（去重），供全局搜索使用（阶段 17）。
+     *
+     * <p>命中正文时返回的是**文档**而不是单个分块：分块量级比元数据大 1~2 个数量级，
+     * 直接作为结果会让一次搜索返回几十条同源片段，分组就失去意义。
+     *
+     * <p>{@code ESCAPE '\'} 是必需的：关键词里的 {@code %} / {@code _} 必须按字面匹配，
+     * 否则搜 {@code 100%} 会命中「100 之后任意字符」。
+     *
+     * <p>解析不出 UUID 的行直接跳过：宁可少一条，也不让整个搜索因为一条脏数据失败。
+     */
+    public List<UUID> findDocumentIdsByContent(String keyword) {
+        String sql = "SELECT DISTINCT metadata->>'document_id' FROM " + qualifiedTable()
+                + " WHERE content ILIKE ? ESCAPE '\\'";
+        List<UUID> result = new ArrayList<>();
+        for (String raw : jdbcTemplate.queryForList(sql, String.class, SearchPatterns.likePattern(keyword))) {
+            if (raw == null) {
+                continue;
+            }
+            try {
+                result.add(UUID.fromString(raw));
+            } catch (IllegalArgumentException ex) {
+                log.debug("跳过无法解析的 document_id：{}", raw);
+            }
+        }
+        return result;
     }
 
     /**

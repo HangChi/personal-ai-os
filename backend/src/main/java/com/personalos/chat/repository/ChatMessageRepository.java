@@ -46,4 +46,25 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     List<Object[]> countGroupedByConversationId(@Param("conversationIds") Collection<String> conversationIds);
 
     void deleteByConversationId(String conversationId);
+
+    /**
+     * 消息**内容**命中关键词的会话 id（去重），供全局搜索使用（阶段 17）。
+     *
+     * <p>命中正文时返回的是**会话**而不是单条消息：消息量级比元数据大 1~2 个数量级，
+     * 直接作为结果会让一次搜索返回几百条，分组就失去意义。
+     *
+     * <p>用原生 SQL 而不是 JPQL：JPQL 的 {@code escape} 子句在各实现上的支持不一致，
+     * 而这里**必须**转义 —— 否则用户搜 {@code 100%} 时 {@code %} 被当通配符，
+     * 会命中「100 之后任意字符」，是「搜得越准、错得越巧」那一类问题。
+     *
+     * <p>参数必须由调用方传 {@code SearchPatterns.likePattern(keyword)}
+     * （已含 {@code %} 包裹与转义），不要再自行拼接。
+     *
+     * <p>不做 order by：调用方会把「标题命中」的会话排在前面，
+     * 这批只是补充，顺序不影响阅读。
+     */
+    @Query(value = "SELECT DISTINCT conversation_id FROM chat_message "
+            + "WHERE lower(content) LIKE lower(?1) ESCAPE '\\'",
+            nativeQuery = true)
+    List<String> findConversationIdsByContent(String pattern, Pageable pageable);
 }
