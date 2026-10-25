@@ -90,6 +90,27 @@ spring:
       chat:
         model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
         temperature: 0.7
+        options:
+          # 透传给上游的额外请求体字段。
+          #
+          # 为什么需要它：DashScope 的 qwen3.x 是**思考型**模型，默认先输出一大段
+          # reasoning 再给答案。实测同一问题 completion tokens 76（其中 46 是思考），
+          # 关掉后降到 30；读图场景 70 → 15。对话/工具调用/读图三项关掉思考后均正常。
+          #
+          # 实测结论（2026-10-26，qwen3.8-flash）：
+          #   - 工具调用：thinking 开关两种状态都能正确产生 tool_calls
+          #   - 读图：两种状态转录结果一致
+          #   - 所以关闭只是省 token 与等待，不损失能力
+          #
+          # ⚠️ 换回**官方 OpenAI** / DeepSeek 等不认这个字段的服务时，请把本段 extra-body
+          #    整段注释掉 —— 只把 OPENAI_ENABLE_THINKING 改成 true 是不够的，
+          #    参数仍然会被发出去，可能因未知参数被上游拒绝。
+          #
+          # 另注：占位符展开后是**字符串** "false"，不是布尔 false。
+          # 实测 DashScope 能正确按 false 处理（reasoning_tokens=0）；
+          # 若将来换用的服务对类型敏感，需改为 YAML 布尔字面量。
+          extra-body:
+            enable_thinking: ${OPENAI_ENABLE_THINKING:false}
       embedding:
         # 仅当 AI_EMBEDDING_PROVIDER=openai 时读取。
         # OpenAI 兼容服务（如 DashScope 百炼）复用同一个 base-url，
