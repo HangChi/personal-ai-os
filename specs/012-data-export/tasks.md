@@ -54,4 +54,31 @@ description: "Task list for 阶段 12 — 数据导出"
 
 ## 完成记录
 
-（实现后回填）
+**提交**：`d184a8f` feat(export): 阶段 12 数据导出（T001-T019）
+
+**测试**
+- 后端 `./mvnw -B verify`：**231** 通过（原 226 + 新增 5）
+  - `DataExportIntegrationTest`：空库合法 / 三方计数一致（counts↔数组↔库）/
+    知识库含分块文本 / `Content-Disposition` 附件头 / 响应不含 `embedding`
+- 前端 `npm run test:logic`：**155** 断言通过（原 146 + 新增 9，文件名解析与生成）；
+  `type-check` 与 `build` 通过
+
+**真机验证（Playwright，真实下载 + 真实 pgvector）**
+- 首页出现「数据备份」卡片，蓝色提示「知识库导出的是分块文本，不含原始文件」
+- 点击导出 → 下载 `personal-ai-os-export-20261025-120518.json`（9732 字节）
+- 顶层键：`application, version, formatVersion, exportedAt, counts, calendarEvents,
+  knowledgeDocuments, memories, sessions, tasks`
+- `counts = {calendarEvents:6, knowledgeDocuments:3, memories:2, sessions:10, tasks:5}`
+  与各数组长度完全一致
+- `tasks=5` 同时等于 `/api/v1/tasks` 的 `total` 与库中 `count(*)` —— 三方对齐
+- 响应体不含 `"embedding"`；页面 0 错误
+
+**文件体积说明了「不导向量」的收益**：10 个会话 + 3 个知识库文档（含全部分块文本）
+总共 9.7 KB。若带上向量，仅 3 个文档的分块就会是几百 KB 量级。
+
+**踩坑**
+- 任务导出若复用 `search()` 会受 `MAX_SIZE=100` 约束而**静默少导** ——
+  这类「有上限的分页接口被当成全量接口用」的错误不会报错，只会在数据变多后悄悄发生。
+  已改为独立 `listAll()`。
+- `(metadata->>'chunk_index')::int` 遇到一条脏数据会让**整条查询**报错，
+  而不是跳过那一行。排序里先用正则筛纯数字再转换。
