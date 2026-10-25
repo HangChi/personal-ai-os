@@ -8,6 +8,11 @@ import com.personalos.knowledge.dto.KnowledgeAskResponse;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -25,6 +30,9 @@ import org.springframework.stereotype.Service;
 public class KnowledgeQaService {
 
     private static final Logger log = LoggerFactory.getLogger(KnowledgeQaService.class);
+
+    /** 答案中的引用编号，形如 {@code [1]}、{@code [12]} */
+    private static final Pattern CITATION_MARK = Pattern.compile("\\[(\\d+)]");
 
     /** 知识库无相关内容时的固定答复，保证「不编造」是可断言的 */
     public static final String NO_CONTENT_ANSWER = "知识库中没有找到相关内容。";
@@ -74,16 +82,49 @@ public class KnowledgeQaService {
                 .user(buildUserMessage(trimmedQuestion, hits))
                 .call()
                 .content();
+        String content = answer == null ? "" : answer;
 
-        List<CitationDto> citations = new ArrayList<>(hits.size());
-        for (int index = 0; index < hits.size(); index++) {
-            KnowledgeHitDto hit = hits.get(index);
-            citations.add(new CitationDto(index + 1, hit.documentId(), hit.documentTitle(),
-                    hit.filename(), hit.chunkIndex(), hit.content(), hit.score()));
+        List<CitationDto> citations = buildCitations(content, hits);
+
+        log.debug("知识库问答完成 question={} hits={} cited={}",
+                trimmedQuestion, hits.size(), citations.size());
+        return new KnowledgeAskResponse(trimmedQuestion, content, true, citations);
+    }
+
+    /**
+     * 按答案里**实际出现**的 {@code [n]} 构造引用列表。
+     *
+     * <p>为什么必须过滤：检索是 topK，而答案通常只用到其中几条。
+     * 不过滤就意味着「问 Vue 的问题，引用里挂着 PostgreSQL 的片段」——
+     * 用户会以为答案参考了那篇，而它只是恰好被检索到了。
+     *
+     * <p>编号**保持原值不重排**：答案文本里的 {@code [2]} 必须仍指向同一条片段，
+     * 重排会让前端高亮错位。
+     *
+     * <p>模型偶尔一个 {@code [n]} 都不写。此时退回「全部片段」而不是给空列表：
+     * 一个空引用列表会让用户以为答案没有依据，而它确实有。
+     */
+    private List<CitationDto> buildCitations(String answer, List<KnowledgeHitDto> hits) {
+        Set<Integer> cited = new TreeSet<>();
+        Matcher matcher = CITATION_MARK.matcher(answer);
+        while (matcher.find()) {
+            int index = Integer.parseInt(matcher.group(1));
+            // 过滤越界编号：模型可能写出 [7] 而只有 4 条片段
+            if (index >= 1 && index <= hits.size()) {
+                cited.add(index);
+            }
+        }
+        if (cited.isEmpty()) {
+            IntStream.rangeClosed(1, hits.size()).forEach(cited::add);
         }
 
-        log.debug("知识库问答完成 question={} hits={}", trimmedQuestion, hits.size());
-        return new KnowledgeAskResponse(trimmedQuestion, answer == null ? "" : answer, true, citations);
+        List<CitationDto> citations = new ArrayList<>(cited.size());
+        for (int index : cited) {
+            KnowledgeHitDto hit = hits.get(index - 1);
+            citations.add(new CitationDto(index, hit.documentId(), hit.documentTitle(),
+                    hit.filename(), hit.chunkIndex(), hit.content(), hit.score()));
+        }
+        return citations;
     }
 
     /**

@@ -224,11 +224,55 @@ class KnowledgeRagIntegrationTest {
         assertThat(lastPrompt).contains("读已提交").contains("【资料】").contains("支持哪些隔离级别");
     }
 
+    @Test
+    @DisplayName("用例3b：引用只含答案实际用到的片段（2026-10-25 真机发现的缺陷）")
+    void citationsOnlyIncludeFragmentsTheAnswerUses() throws Exception {
+        UUID transactionDoc = uploadDocument("数据库事务.md", TRANSACTION_MARKDOWN, "数据库事务");
+        // 另一篇主题不同、但同样含「数据库 / 隔离级别」字样 —— 目的是让它**也**被 topK 检索到。
+        // 若它没被检索到，本用例仍会通过，但什么也没验证（词袋嵌入靠词面重叠）。
+        UUID cacheDoc = uploadDocument("缓存一致性.md",
+                "# 缓存一致性\n\n数据库的隔离级别与缓存一致性：缓存层要先失效再更新，避免脏读。\n",
+                "缓存一致性");
+
+        // 模型只在答案里引用第 1 条
+        model.enqueueText("共有四种隔离级别 [1]。");
+        KnowledgeAskResponse ask = qaService.ask("支持哪些隔离级别？", 4);
+
+        assertThat(ask.answered()).isTrue();
+        // 检索到了不止一条，但引用列表只剩答案真正用到的那条
+        assertThat(ask.citations()).hasSize(1);
+        assertThat(ask.citations().get(0).index()).isEqualTo(1);
+        assertThat(ask.citations().get(0).documentId()).isEqualTo(transactionDoc);
+        // 关键断言：没被答案引用的文档不得出现在引用里
+        assertThat(ask.citations()).noneMatch(citation -> citation.documentId().equals(cacheDoc));
+    }
+
+    @Test
+    @DisplayName("用例3c：模型写越界编号时不产生对应引用；不写编号时退回全部片段")
+    void citationsHandleOutOfRangeAndMissingMarks() throws Exception {
+        UUID documentId = uploadDocument("数据库事务.md", TRANSACTION_MARKDOWN, "数据库事务");
+
+        // 答案引用了一个不存在的编号 [99] —— 不得为它造出一条引用
+        model.enqueueText("隔离级别见 [99]，另外读已提交也有 [1]。");
+        KnowledgeAskResponse outOfRange = qaService.ask("支持哪些隔离级别？", 4);
+
+        assertThat(outOfRange.citations()).extracting(CitationDto::index)
+                .containsExactly(1);
+        assertThat(outOfRange.citations().get(0).documentId()).isEqualTo(documentId);
+
+        // 一个编号都不写：退回全部片段（空引用列表会让用户以为答案没有依据）
+        model.enqueueText("隔离级别有四种，具体见上文。");
+        KnowledgeAskResponse noMark = qaService.ask("支持哪些隔离级别？", 4);
+
+        assertThat(noMark.citations()).isNotEmpty();
+        assertThat(noMark.citations()).allMatch(citation ->
+                citation.documentId().equals(documentId));
+    }
+
     // ------------------------------------------------------------------ 用例 4
 
     @Test
-    @DisplayName("用例4：删除文档清理其向量，且不影响其它文档（SC-003）")
-    void deletingDocumentRemovesOnlyItsOwnVectors() throws Exception {
+    @DisplayName("用例4：删除文档清理其向量，且不影响其它文档（SC-003）")    void deletingDocumentRemovesOnlyItsOwnVectors() throws Exception {
         UUID transactionDoc = uploadDocument("数据库事务.md", TRANSACTION_MARKDOWN, "数据库事务");
         UUID plantDoc = uploadDocument("植物养护.md", PLANT_MARKDOWN, "植物养护");
 
