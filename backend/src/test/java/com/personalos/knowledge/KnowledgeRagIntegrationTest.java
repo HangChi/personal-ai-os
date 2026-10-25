@@ -56,7 +56,11 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "spring.ai.model.embedding=none",
         // 词袋相似度是「词面重叠」的线性映射，具体数值没有校准意义。
         // 排序断言本身不需要阈值，故置 0 只验证排序与召回，不验证阈值过滤。
-        "app.knowledge.similarity-threshold=0.0"
+        "app.knowledge.similarity-threshold=0.0",
+        // 下面的两个主题文档是刻意写短的（主题 A/B 零词面重叠，才能干净地测检索区分度）。
+        // 生产默认的 350 字符下限会把它们拒收，而那不是本类要测的东西 ——
+        // 入库长度下限有专属的 KnowledgeMinLengthIntegrationTest。
+        "app.knowledge.min-chunk-size-chars=40"
 })
 @Testcontainers
 class KnowledgeRagIntegrationTest {
@@ -213,8 +217,10 @@ class KnowledgeRagIntegrationTest {
             assertThat(citation.documentTitle()).isEqualTo("数据库事务");
             assertThat(citation.content()).isNotBlank();
             assertThat(citation.index()).isPositive();
-            // 引用片段必须真的来自原文（SC-005）
-            assertThat(TRANSACTION_MARKDOWN).contains(citation.content().strip());
+            // 引用片段必须真的来自原文（SC-005）。
+            // 注意剥掉「【章节：…】」前缀 —— 结构切分器会给每块加章节路径，
+            // 那是切分时补的上下文，不属于原文文本。
+            assertThat(TRANSACTION_MARKDOWN).contains(stripSectionPrefix(citation.content().strip()));
         }
 
         // 关键：检索到的片段确实被拼进了提示词 —— 否则"引用"与"回答依据"可能对不上
@@ -412,6 +418,19 @@ class KnowledgeRagIntegrationTest {
         String id = extract(response.body(), "id");
         assertThat(id).isNotNull();
         return UUID.fromString(id);
+    }
+
+    /**
+     * 剥掉结构切分器加的「【章节：…】」前缀。
+     *
+     * <p>那个前缀是切分时补的上下文，不属于原文；断言「引用来自原文」时要排除它。
+     */
+    private static String stripSectionPrefix(String content) {
+        if (!content.startsWith("【章节：")) {
+            return content;
+        }
+        int end = content.indexOf('】');
+        return end < 0 ? content : content.substring(end + 1).strip();
     }
 
     private String createChatSession() throws Exception {

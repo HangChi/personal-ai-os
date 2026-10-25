@@ -39,7 +39,10 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.ai.model.chat=none",
         "spring.ai.model.embedding=none",
-        "app.calendar.scan-enabled=false"
+        "app.calendar.scan-enabled=false",
+        // 测试夹具刻意极短（几行文本 / 极小 PDF），只为验证其他行为；
+        // 入库长度下限由 KnowledgeMinLengthIntegrationTest 专门覆盖
+        "app.knowledge.min-chunk-size-chars=20"
 })
 @Testcontainers
 class DataExportIntegrationTest {

@@ -11,8 +11,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param similarityThreshold 相似度阈值，低于该值的片段不进入上下文
  * @param maxFileSizeBytes    单文件大小上限
  * @param allowedExtensions   允许的扩展名
- * @param chunkSize           分块大小（token 数）
- * @param minChunkSizeChars   分块的最小字符数
+ * @param minChunkSizeChars   分块的最小字符数；也用于入库前拒收过短文档
+ * @param chunkSizeChars      结构切分的目标块大小（字符）
+ * @param chunkOverlapChars   相邻块的字符重叠；0 表示不重叠
  */
 @ConfigurationProperties(prefix = "app.knowledge")
 public record KnowledgeProperties(
@@ -21,8 +22,9 @@ public record KnowledgeProperties(
         double similarityThreshold,
         long maxFileSizeBytes,
         List<String> allowedExtensions,
-        int chunkSize,
-        int minChunkSizeChars) {
+        int minChunkSizeChars,
+        int chunkSizeChars,
+        int chunkOverlapChars) {
 
     /** 检索条数硬上限：避免模型或调用方传一个巨大值把上下文撑爆 */
     public static final int MAX_TOP_K = 20;
@@ -31,8 +33,9 @@ public record KnowledgeProperties(
     private static final int DEFAULT_TOP_K = 4;
     private static final double DEFAULT_THRESHOLD = 0.3;
     private static final long DEFAULT_MAX_FILE_SIZE = 5L * 1024 * 1024;
-    private static final int DEFAULT_CHUNK_SIZE = 800;
     private static final int DEFAULT_MIN_CHUNK_CHARS = 350;
+    private static final int DEFAULT_CHUNK_SIZE_CHARS = 1200;
+    private static final int DEFAULT_CHUNK_OVERLAP_CHARS = 0;
 
     public KnowledgeProperties {
         // 缺省或越界时归一为安全默认值，避免脏配置直接导致运行期怪异行为
@@ -54,11 +57,14 @@ public record KnowledgeProperties(
         if (allowedExtensions == null || allowedExtensions.isEmpty()) {
             allowedExtensions = List.of("md", "markdown", "txt");
         }
-        if (chunkSize <= 0) {
-            chunkSize = DEFAULT_CHUNK_SIZE;
-        }
         if (minChunkSizeChars <= 0) {
             minChunkSizeChars = DEFAULT_MIN_CHUNK_CHARS;
+        }
+        if (chunkSizeChars <= 0) {
+            chunkSizeChars = DEFAULT_CHUNK_SIZE_CHARS;
+        }
+        if (chunkOverlapChars < 0) {
+            chunkOverlapChars = DEFAULT_CHUNK_OVERLAP_CHARS;
         }
     }
 

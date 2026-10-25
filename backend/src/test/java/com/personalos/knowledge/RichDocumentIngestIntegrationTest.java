@@ -48,7 +48,10 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "spring.ai.model.chat=none",
         "spring.ai.model.embedding=none",
         // 词袋相似度是词面重叠的线性映射，阈值置 0 只验证排序与召回
-        "app.knowledge.similarity-threshold=0.0"
+        "app.knowledge.similarity-threshold=0.0",
+        // 测试夹具刻意极短（几行文本 / 极小 PDF），只为验证其他行为；
+        // 入库长度下限由 KnowledgeMinLengthIntegrationTest 专门覆盖
+        "app.knowledge.min-chunk-size-chars=20"
 })
 @Testcontainers
 class RichDocumentIngestIntegrationTest {

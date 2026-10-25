@@ -11,6 +11,7 @@ import com.personalos.knowledge.dto.KnowledgeDocumentQuery;
 import com.personalos.knowledge.entity.KnowledgeDocumentEntity;
 import com.personalos.knowledge.reader.DocumentReaderFactory;
 import com.personalos.knowledge.repository.KnowledgeDocumentRepository;
+import com.personalos.knowledge.splitter.MarkdownStructureTextSplitter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -102,6 +103,21 @@ public class KnowledgeDocumentService {
         List<Document> parsed = readerFactory
                 .create(extension, contentType, bytes, baseMetadata(document))
                 .get();
+
+        // 字符数取「解析后的文本总长」，不是原始字节数：扫描版 PDF 的字节可能很大而文本为 0，
+        // 用户关心的是「有多少字进了索引」
+        int parsedChars = parsed.stream()
+                .mapToInt(entry -> entry.getText().length())
+                .sum();
+        if (parsedChars < properties.minChunkSizeChars()) {
+            // 过短文档源头拒收。评测（scripts/eval）中发现 29 / 92 字符的样例文档
+            // 会因为向量信号过于"集中"而挤进检索前 5，把正确文档挤出榜 ——
+            // 在检索端过滤要么漏放，要么误杀，不如一开始就不让它进库。
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
+                    "解析后内容仅 " + parsedChars + " 字符，少于 "
+                            + properties.minChunkSizeChars() + "，无法形成有效分块");
+        }
+
         List<Document> chunks = chunk(parsed, document.getId());
         if (chunks.isEmpty()) {
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, "解析后没有可索引的内容");
@@ -116,10 +132,7 @@ public class KnowledgeDocumentService {
 
         // 字符数取「解析后的文本总长」，不是原始字节数：扫描版 PDF 的字节可能很大而文本为 0，
         // 用户关心的是「有多少字进了索引」
-        int totalChars = parsed.stream()
-                .mapToInt(document1 -> document1.getText().length())
-                .sum();
-        document.updateStats(totalChars, chunks.size(), Instant.now());
+        document.updateStats(parsedChars, chunks.size(), Instant.now());
         KnowledgeDocumentEntity saved = repository.save(document);
         log.info("知识文档入库完成 id={} filename={} chars={} chunks={}",
                 saved.getId(), filename, saved.getCharCount(), chunks.size());
@@ -219,11 +232,18 @@ public class KnowledgeDocumentService {
      * <p>重新编号而不是沿用切分器给出的顺序，是为了保证它是 0..n-1 连续无缺 ——
      * 引用里展示的「第几段」必须在任何切分参数下都说得通。
      */
+    /**
+     * 切分：结构感知优先，超长节才硬切兜底。
+     *
+     * <p>2026-10-25 从固定 token 切分（{@link TokenTextSplitter}）换成
+     * {@link MarkdownStructureTextSplitter}：后者按标题分节、保留章节路径前缀，
+     * 不会把一句话从中间劈开。换切的动机与效果见 {@code scripts/eval/README.md}。
+     */
     private List<Document> chunk(List<Document> parsed, UUID documentId) {
-        TokenTextSplitter splitter = TokenTextSplitter.builder()
-                .withChunkSize(properties.chunkSize())
-                .withMinChunkSizeChars(properties.minChunkSizeChars())
-                .build();
+        MarkdownStructureTextSplitter splitter = new MarkdownStructureTextSplitter(
+                properties.chunkSizeChars(),
+                properties.minChunkSizeChars(),
+                properties.chunkOverlapChars());
 
         List<Document> split = splitter.transform(parsed);
         List<Document> chunks = new ArrayList<>(split.size());

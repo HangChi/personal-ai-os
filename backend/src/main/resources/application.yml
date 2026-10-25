@@ -139,8 +139,14 @@ app:
     max-file-size-bytes: ${AI_KNOWLEDGE_MAX_FILE_SIZE:5242880}
     # 允许的扩展名（阶段 10 起支持 PDF 文本层、Word docx 与图片）
     allowed-extensions: ${AI_KNOWLEDGE_ALLOWED_EXTENSIONS:md,markdown,txt,pdf,docx,png,jpg,jpeg,webp,gif}
-    # 分块参数（TokenTextSplitter）
-    chunk-size: ${AI_KNOWLEDGE_CHUNK_SIZE:800}
+    # 分块参数（2026-10-25 起改用结构感知切分，见 MarkdownStructureTextSplitter）
+    # chunk-size-chars：目标块大小（字符）。结构切分尽量在标题/段落边界断开，
+    #   而不是像原来那样按 token 硬切 —— 硬切会把一句话劈成两半，两块都只剩半边语义。
+    chunk-size-chars: ${AI_KNOWLEDGE_CHUNK_SIZE_CHARS:1200}
+    # 相邻块的字符重叠。0 表示不重叠：结构切分已在自然边界断开，
+    #   重叠主要弥合跨节上下文；开太大块会膨胀、总块数上升。
+    chunk-overlap-chars: ${AI_KNOWLEDGE_CHUNK_OVERLAP_CHARS:0}
+    # 最小块字符数：低于它的块会并入相邻块；也是入库前拒收过短文档的阈值
     min-chunk-size-chars: ${AI_KNOWLEDGE_MIN_CHUNK_SIZE_CHARS:350}
   calendar:
     # 定时扫描开关。测试里关闭（见 src/test/resources/application.properties），

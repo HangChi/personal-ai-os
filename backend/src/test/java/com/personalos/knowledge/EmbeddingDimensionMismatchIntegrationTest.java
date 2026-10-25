@@ -37,7 +37,11 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  */
 @SpringBootTest(properties = {
         "spring.ai.model.chat=none",
-        "spring.ai.model.embedding=none"
+        "spring.ai.model.embedding=none",
+        // 本用例要验证的是**写入那一刻**的维度报错，夹具刻意极短；
+        // 若不放宽入库长度下限，28 字符的夹具会先被长度校验拦下（错误码不同），
+        // 根本走不到向量写入。长度下限由 KnowledgeMinLengthIntegrationTest 专门覆盖。
+        "app.knowledge.min-chunk-size-chars=20"
 })
 @Testcontainers
 class EmbeddingDimensionMismatchIntegrationTest {

@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""RAG 检索评测：Recall@5 / MRR / Precision@5。
+"""RAG 检索评测：Recall@5 / MRR / Accuracy@1 / 文档多样性@5。
 
 相关文档由**人工标注**（每篇掘金文章的主题是已知的，查询按主题归属）。
 查询刻意用自然问法、不抄标题 —— 抄标题只能测字面匹配，测不出语义检索。
 
-注意指标固有偏差：
-  - 同主题有 2 篇文档（MySQL / Go / HTTP 各 2 篇），它们的主题词高度重叠，
-    所以 Recall@5 会**偏高**（同主题的另一篇也能"蒙对"主题）。
-  - Precision@5 因此也会偏低（top5 里会出现同主题的另一篇，而它不在标注里）。
-  两个偏差方向相反，正好互相制衡，所以要一起看。
+## 关于 Precision@5
+
+**不用它。** 每个查询只标注了 1 篇相关文档，所以 Precision@5 的理论上限是 0.2，
+数值本身没有意义。更要紧的是：在「按片段取 topK」的实现下，同一文档的重复片段
+会把 Precision 刷高（出现 4 次 = 0.8），等于**奖励重复**。2026-10-25 引入
+文档级去重后，这个指标从 48% 掉到 19%，而实际检索质量是变好的 —— 正是这个缺陷的证明。
+
+替代指标用「文档多样性@5」= top5 里不同文档数 / 5。它才真正衡量
+「这个位置是不是被同一篇文档的相邻片段占掉了」。
 """
 import json
 import urllib.request
@@ -62,7 +66,7 @@ def search(query, top_k=TOP_K):
 def main():
     hits_at_5 = 0
     reciprocal_ranks = []
-    precisions = []
+    diversities = []
     top1 = 0
     failures = []
 
@@ -84,8 +88,8 @@ def main():
             reciprocal_ranks.append(0.0)
             failures.append((query, relevant, titles))
 
-        # Precision@5：top5 里属于「标注的那一篇」的占比
-        precisions.append(sum(1 for t in titles if t == relevant) / TOP_K)
+        # 文档多样性：top5 里不同文档数 / 5，衡量「是否被同一文档的相邻片段占满」
+        diversities.append(len(set(titles)) / TOP_K)
 
         rank_text = str(rank) if rank else "未中"
         top5 = " | ".join(t[:16] for t in titles)
@@ -93,10 +97,10 @@ def main():
 
     total = len(QUERIES)
     print("-" * 100)
-    print(f"Recall@{TOP_K}      = {hits_at_5}/{total} = {hits_at_5 / total:.1%}")
-    print(f"MRR            = {sum(reciprocal_ranks) / total:.3f}")
-    print(f"Precision@{TOP_K}   = {sum(precisions) / total:.1%}")
-    print(f"Accuracy@1     = {top1}/{total} = {top1 / total:.1%}")
+    print(f"Recall@{TOP_K}        = {hits_at_5}/{total} = {hits_at_5 / total:.1%}")
+    print(f"MRR              = {sum(reciprocal_ranks) / total:.3f}")
+    print(f"Accuracy@1       = {top1}/{total} = {top1 / total:.1%}")
+    print(f"文档多样性@{TOP_K}     = {sum(diversities) / total:.1%}")
 
     if failures:
         print(f"\n未命中 {len(failures)} 条（相关文档不在 top{TOP_K}）：")

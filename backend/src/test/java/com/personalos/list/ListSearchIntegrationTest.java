@@ -37,7 +37,7 @@ import tools.jackson.databind.ObjectMapper;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"spring.ai.model.chat=none", "spring.ai.model.embedding=none",
-                "app.calendar.scan-enabled=false"})
+                "app.calendar.scan-enabled=false", "app.knowledge.min-chunk-size-chars=20"})
 @Testcontainers
 class ListSearchIntegrationTest {
 
