@@ -50,4 +50,35 @@ description: "Task list for 阶段 11 — 工具审计与 MCP 状态"
 
 ## 完成记录
 
-（实现后回填：提交哈希、测试数、真机验证结论）
+**提交**：`1d28d1d` feat(mcp): 阶段 11 工具审计与 MCP 状态（T001-T019）
+
+**测试**
+- 后端 `./mvnw -B verify`：**226** 通过（原 216 + 新增 10）
+  - `ToolInvocationAuditIntegrationTest`（6）：过滤在分页前 / outcome 筛选 /
+    size 收敛 / 未知 outcome 400 / 同毫秒翻页稳定 / 空库
+  - `McpStatusServiceTest`（4）：未启用 / 已启用 / 注册表缺失 / 不泄漏 env
+- 前端 `npm run test:logic`：**146** 断言通过（原 124 + 新增 22）；
+  `type-check` 与 `build` 通过
+
+**真机验证（Playwright，8081 + 真实 pgvector）**
+- `MCP_ENABLED` 关闭：页面显示「MCP 未启用」+ 配置指引，审计列表正常加载
+- `MCP_ENABLED=true` 且配置 filesystem server（`../mcp-sandbox`，14 工具，
+  3 个 AUTO）+ 一个故意写错的 command：
+  - sandbox 显示「可用 / 14 / directory_tree·list_directory·read_file」
+  - broken 显示「不可用 / 0」+ `Client failed to initialize listing tools`
+  - **应用照常启动**，降级行为与阶段 6 一致
+- 审计：`total=8` 与 SQL `count(*) where source='TOOL'` 一致；
+  筛选「待确认」→ 3 条且标签全为待确认；筛选「失败」→ 空态文案「没有符合筛选条件的记录」
+
+**过程中发现并修掉的两个体验问题**
+1. Element Plus 把空串当「未选择」，「全部结果」显示成英文 placeholder `Select`
+   → 改用 `'ALL'` 作为显式取值
+2. 空表文案不区分「一条都没有」与「筛掉了」，筛完仍说「还没有调用过工具」
+   → 按 `outcome` 是否为空切换文案
+
+**踩坑**
+- `MCP_SERVERS_<名>_ARGS` 里的相对路径是相对**后端工作目录**（`backend/`）解析的，
+  写成 `./mcp-sandbox` 会让 server 报 `None of the specified directories are accessible`，
+  症状是「连接失败」而不是「路径错误」—— 与配置笔误的表现完全一样，容易误判为 server 本身有问题
+- 5173 被旧 dev server 占用时 Vite 会静默换到 5174，而 `curl 5173` 仍走旧配置指向 8080，
+  看起来像「代理没生效」。已给 `vite.config.ts` 加 `VITE_PROXY_TARGET` 覆盖
