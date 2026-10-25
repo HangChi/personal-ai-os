@@ -29,7 +29,7 @@ const searchTopK = ref(4)
 const question = ref('')
 const askTopK = ref(4)
 
-const ACCEPT = '.md,.markdown,.txt'
+const ACCEPT = '.md,.markdown,.txt,.pdf,.docx,.png,.jpg,.jpeg,.webp,.gif'
 const MAX_BYTES = 5 * 1024 * 1024
 
 onMounted(() => {
@@ -154,8 +154,9 @@ function formatScore(score: number | null): string {
       </div>
 
       <p class="knowledge__hint">
-        仅支持 UTF-8 编码的 .md / .markdown / .txt，单文件不超过 5 MiB。
-        上传会触发解析、分块与向量化，时长取决于文档大小。
+        支持 .md / .markdown / .txt（需 UTF-8）、.pdf（文本层，扫描件需 OCR 暂不支持）、
+        .docx（段落与表格）、以及 .png / .jpg / .jpeg / .webp / .gif（需配置可用的视觉模型）。
+        单文件不超过 5 MiB；上传会触发解析、分块与向量化，时长取决于文档大小。
       </p>
     </el-card>
 

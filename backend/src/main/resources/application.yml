@@ -117,8 +117,8 @@ app:
     top-k: ${AI_KNOWLEDGE_TOP_K:4}
     similarity-threshold: ${AI_KNOWLEDGE_SIMILARITY_THRESHOLD:0.3}
     max-file-size-bytes: ${AI_KNOWLEDGE_MAX_FILE_SIZE:5242880}
-    # 允许的扩展名
-    allowed-extensions: md,markdown,txt
+    # 允许的扩展名（阶段 10 起支持 PDF 文本层、Word docx 与图片）
+    allowed-extensions: ${AI_KNOWLEDGE_ALLOWED_EXTENSIONS:md,markdown,txt,pdf,docx,png,jpg,jpeg,webp,gif}
     # 分块参数（TokenTextSplitter）
     chunk-size: ${AI_KNOWLEDGE_CHUNK_SIZE:800}
     min-chunk-size-chars: ${AI_KNOWLEDGE_MIN_CHUNK_SIZE_CHARS:350}

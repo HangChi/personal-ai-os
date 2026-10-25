@@ -7,7 +7,7 @@ import com.personalos.knowledge.KnowledgeMetadata;
 import com.personalos.knowledge.config.KnowledgeProperties;
 import com.personalos.knowledge.dto.KnowledgeDocumentDto;
 import com.personalos.knowledge.entity.KnowledgeDocumentEntity;
-import com.personalos.knowledge.reader.KnowledgeDocumentReader;
+import com.personalos.knowledge.reader.DocumentReaderFactory;
 import com.personalos.knowledge.repository.KnowledgeDocumentRepository;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,15 +42,18 @@ public class KnowledgeDocumentService {
     private final VectorStore vectorStore;
     private final KnowledgeProperties properties;
     private final VectorStoreInspector inspector;
+    private final DocumentReaderFactory readerFactory;
 
     public KnowledgeDocumentService(KnowledgeDocumentRepository repository,
                                     VectorStore vectorStore,
                                     KnowledgeProperties properties,
-                                    VectorStoreInspector inspector) {
+                                    VectorStoreInspector inspector,
+                                    DocumentReaderFactory readerFactory) {
         this.repository = repository;
         this.vectorStore = vectorStore;
         this.properties = properties;
         this.inspector = inspector;
+        this.readerFactory = readerFactory;
     }
 
     /**
@@ -80,10 +83,7 @@ public class KnowledgeDocumentService {
         }
 
         Instant now = Instant.now();
-        String contentType = switch (extension) {
-            case "md", "markdown" -> "text/markdown";
-            default -> "text/plain";
-        };
+        String contentType = contentTypeOf(extension);
         String documentTitle = (title == null || title.isBlank()) ? stripExtension(filename) : title.strip();
         if (documentTitle.length() > 300) {
             documentTitle = documentTitle.substring(0, 300);
@@ -93,7 +93,9 @@ public class KnowledgeDocumentService {
         KnowledgeDocumentEntity document = repository.save(new KnowledgeDocumentEntity(
                 documentTitle, filename, contentType, bytes.length, 0, now));
 
-        List<Document> parsed = new KnowledgeDocumentReader(bytes, baseMetadata(document)).get();
+        List<Document> parsed = readerFactory
+                .create(extension, contentType, bytes, baseMetadata(document))
+                .get();
         List<Document> chunks = chunk(parsed, document.getId());
         if (chunks.isEmpty()) {
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, "解析后没有可索引的内容");
@@ -106,7 +108,12 @@ public class KnowledgeDocumentService {
             throw translateVectorFailure(ex);
         }
 
-        document.updateChunkCount(chunks.size(), Instant.now());
+        // 字符数取「解析后的文本总长」，不是原始字节数：扫描版 PDF 的字节可能很大而文本为 0，
+        // 用户关心的是「有多少字进了索引」
+        int totalChars = parsed.stream()
+                .mapToInt(document1 -> document1.getText().length())
+                .sum();
+        document.updateStats(totalChars, chunks.size(), Instant.now());
         KnowledgeDocumentEntity saved = repository.save(document);
         log.info("知识文档入库完成 id={} filename={} chars={} chunks={}",
                 saved.getId(), filename, saved.getCharCount(), chunks.size());
@@ -247,6 +254,25 @@ public class KnowledgeDocumentService {
         int slash = normalized.lastIndexOf('/');
         String filename = slash >= 0 ? normalized.substring(slash + 1) : normalized;
         return filename.isBlank() ? "untitled.txt" : filename;
+    }
+
+    /**
+     * 扩展名 → MIME 类型。
+     *
+     * <p>图片的 MIME 不只是展示用：它会被传给视觉模型的 {@code Media}，
+     * 写错会让模型收到一个「类型是 text/plain 的图片」，表现为识别不出任何内容。
+     */
+    private String contentTypeOf(String extension) {
+        return switch (extension) {
+            case "md", "markdown" -> "text/markdown";
+            case "pdf" -> "application/pdf";
+            case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "png" -> "image/png";
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "webp" -> "image/webp";
+            case "gif" -> "image/gif";
+            default -> "text/plain";
+        };
     }
 
     private String extensionOf(String filename) {

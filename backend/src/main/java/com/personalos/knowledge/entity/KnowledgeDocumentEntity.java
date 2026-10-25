@@ -105,7 +105,19 @@ public class KnowledgeDocumentEntity {
     /**
      * 回填分块数（在向量写入成功之后调用，保证不变量成立）。
      */
-    public void updateChunkCount(int chunkCount, Instant now) {
+    /**
+     * 入库完成后写入统计信息。
+     *
+     * <p><b>必须同时写 charCount</b>：创建时它是 0（那时还没解析），若只更新 chunkCount，
+     * 文档列表里的「字符数」会永远是 0 —— 阶段 3 起就是这样，直到阶段 10 的集成测试断言
+     * `charCount > 0` 才暴露出来。
+     *
+     * @param charCount  解析出的文本总字符数（分块前）
+     * @param chunkCount 实际写入向量库的片段数
+     * @param now        当前时间
+     */
+    public void updateStats(int charCount, int chunkCount, Instant now) {
+        this.charCount = charCount;
         this.chunkCount = chunkCount;
         this.updatedAt = now;
     }

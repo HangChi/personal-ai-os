@@ -22,7 +22,7 @@
         <el-menu-item index="/memory">记忆</el-menu-item>
       </el-menu>
 
-      <span class="app-shell__phase">阶段 9 · 可靠提醒</span>
+      <span class="app-shell__phase">阶段 10 · 富文档解析</span>
     </el-header>
 
     <el-main class="app-shell__main">

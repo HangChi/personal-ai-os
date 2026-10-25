@@ -133,6 +133,24 @@
             <artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
         </dependency>
 
+        <!--
+          阶段 10：富文档解析（PDF 文本层 / docx / 图片走视觉模型）。
+          - pdfbox 3.x：入口是 Loader.loadPDF（2.x 的 PDDocument.load 在 3.x 已移除）
+          - poi-ooxml 5.x：只引这一块（docx 的 XWPF）；不引 poi-scratchpad，旧版 .doc 不做
+          两者都不在 Spring AI BOM 管辖范围，因此版本显式写死（research R-01 / R-02 / R-06）。
+          实测：pdfbox 3.0.5 与 poi-ooxml 5.5.1 均可从 Maven Central 拉取。
+        -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.5.1</version>
+        </dependency>
+
         <!-- ================= 测试 ================= -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
