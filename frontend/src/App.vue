@@ -20,9 +20,10 @@
         <el-menu-item index="/knowledge">知识库</el-menu-item>
         <el-menu-item index="/calendar">日程</el-menu-item>
         <el-menu-item index="/memory">记忆</el-menu-item>
+        <el-menu-item index="/activity">活动</el-menu-item>
       </el-menu>
 
-      <span class="app-shell__phase">阶段 10 · 富文档解析</span>
+      <span class="app-shell__phase">阶段 11 · 工具审计与 MCP 状态</span>
     </el-header>
 
     <el-main class="app-shell__main">

@@ -222,3 +222,43 @@ export interface ReminderScanResult {
   /** 清理掉的孤儿提醒条数（来源已被删除） */
   pruned: number
 }
+
+/** 工具调用的结果状态，与后端 IdempotencyOutcome 对齐 */
+export type ToolInvocationOutcome =
+  | 'IN_PROGRESS'
+  | 'SUCCESS'
+  | 'REQUIRES_CONFIRMATION'
+  | 'REJECTED'
+  | 'DUPLICATE'
+  | 'FAILED'
+
+/**
+ * 工具调用审计记录（阶段 11）。
+ *
+ * `durationMs` 为 null 表示这次调用**没有真正执行**（如 REQUIRES_CONFIRMATION），
+ * 与「执行了但耗时 0」是两回事，界面上要区分显示。
+ */
+export interface ToolInvocation {
+  id: number
+  operation: string
+  source: 'TOOL' | 'HTTP'
+  outcome: ToolInvocationOutcome
+  durationMs: number | null
+  conversationId: string | null
+  createdAt: string
+}
+
+/** 单个 MCP server 的运行期状态（后端刻意不返回 env/command/args） */
+export interface McpServerStatus {
+  name: string
+  available: boolean
+  failureReason: string | null
+  toolCount: number
+  autoTools: string[]
+}
+
+/** MCP 接入状态总览 */
+export interface McpStatus {
+  enabled: boolean
+  servers: McpServerStatus[]
+}

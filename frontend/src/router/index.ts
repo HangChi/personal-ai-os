@@ -46,6 +46,12 @@ const router = createRouter({
       meta: { title: '记忆' },
     },
     {
+      path: '/activity',
+      name: 'activity',
+      component: () => import('@/views/ActivityView.vue'),
+      meta: { title: '活动' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
