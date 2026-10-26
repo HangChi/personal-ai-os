@@ -27,4 +27,14 @@ public class MemoryPromptContributor implements PromptContributor {
     public String contribute() {
         return memoryService.renderForPrompt();
     }
+
+    /**
+     * 按本轮问题做相关性筛选。
+     *
+     * @param userInput 本轮用户消息；为空时退化为「最近修改优先」
+     */
+    @Override
+    public String contribute(String userInput) {
+        return memoryService.renderForPrompt(userInput);
+    }
 }

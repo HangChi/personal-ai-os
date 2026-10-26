@@ -8,7 +8,11 @@ import com.personalos.memory.dto.MemoryDto;
 import com.personalos.memory.entity.MemoryEntity;
 import com.personalos.memory.repository.MemoryRepository;
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -45,6 +49,17 @@ public class MemoryService {
 
     /** 注入累计字符上限（只算条目正文，不含标题与编号） */
     public static final int INJECT_MAX_CHARS = 6000;
+
+    /**
+     * 相关性排序的候选窗口（2026-10-26）。
+     *
+     * <p>必须显著大于 {@link #INJECT_MAX_COUNT}：只捞 30 条再排序，本质仍是
+     * 「最近修改的 30 条里挑」；窗口放大后才能把很久以前但恰好相关的条目捞出来。
+     */
+    public static final int INJECT_CANDIDATE_LIMIT = 120;
+
+    /** 参与相关度打分的查询长度上限：用户消息可达 4000 字，全量打分会让重叠率分母失真 */
+    private static final int RELEVANCE_QUERY_LIMIT = 200;
 
     /** 记忆标识格式：与库中 uuid 文本形式对齐，同时挡掉路径片段与不可见字符 */
     private static final Pattern ID_PATTERN = Pattern.compile("[A-Za-z0-9-]{1,64}");
@@ -135,12 +150,36 @@ public class MemoryService {
      */
     @Transactional(readOnly = true)
     public String renderForPrompt() {
-        // 只取注入上限所需的条数，不在内存里「全表加载再 break」：
-        // 记忆是长期累积的表，条数没有天然上界，而每次对话都会走这条路径。
-        List<MemoryEntity> memories = repository.findByOrderByUpdatedAtDesc(PageRequest.of(0, INJECT_MAX_COUNT));
-        if (memories.isEmpty()) {
+        return renderForPrompt("");
+    }
+
+    /**
+     * 按「与本轮问题的相关性」挑选记忆并渲染（2026-10-26）。
+     *
+     * <h2>为什么不能只按 updated_at 倒序</h2>
+     * 原先的实现是「最近修改的 30 条全塞」。问题是长期记忆是一组**互不相关**的约束：
+     * 用户问日程时，同样会收到「周报格式」「代码风格」等一堆无关条目 ——
+     * 既占掉预算，也稀释模型对真正相关内容（如「我下午三点后不看会」）的注意力。
+     *
+     * <h2>打分方式：字符二元组重叠</h2>
+     * 不引入分词器与嵌入调用，用查询与记忆的**中文二元组**重叠率当相关度。
+     * 选择它的理由是确定性（同样的输入永远同样的结果、可单元测试）与零依赖
+     * （本模块不该为了排序去依赖知识库的嵌入栈）。
+     * 局限同样明确：同义改写命中不了（「交周报」vs「周报提交」），
+     * 所以排序只是**择优**，不改变「预算内全量注入」的基本行为。
+     *
+     * @param userInput 本轮用户消息；为空或只有一个字时退化为「最近修改优先」
+     * @return 可直接拼在系统提示后的文本；无记忆时为空串
+     */
+    @Transactional(readOnly = true)
+    public String renderForPrompt(String userInput) {
+        // 候选窗口比注入上限大得多：只有先把「可能相关的」都捞出来，排序才有意义。
+        // 120 条 × 单条 ≤2000 字 ≈ 最坏 240 KB/轮，个人规模下可接受；再大就该上向量检索了。
+        List<MemoryEntity> candidates = repository.findByOrderByUpdatedAtDesc(PageRequest.of(0, INJECT_CANDIDATE_LIMIT));
+        if (candidates.isEmpty()) {
             return "";
         }
+        List<MemoryEntity> memories = rankByRelevance(candidates, userInput);
 
         StringBuilder block = new StringBuilder(PROMPT_HEADER).append('\n');
         int included = 0;
@@ -163,6 +202,51 @@ public class MemoryService {
             return "";
         }
         return block.toString().stripTrailing();
+    }
+
+    /**
+     * 按与查询的相关度重排；得分相同则保持传入顺序（即最近修改优先）。
+     *
+     * <p>用稳定排序实现「相关度为主、新近度为辅」的平手规则 ——
+     * 不需要引入权重常量去调和两个量纲不同的分数。
+     */
+    private List<MemoryEntity> rankByRelevance(List<MemoryEntity> candidates, String userInput) {
+        if (userInput == null || userInput.isBlank()) {
+            return candidates;
+        }
+        // 只取前 200 字参与打分：用户消息上限 4000 字，长文会让重叠率分母失真
+        String query = userInput.length() > RELEVANCE_QUERY_LIMIT
+                ? userInput.substring(0, RELEVANCE_QUERY_LIMIT)
+                : userInput;
+        Set<String> queryGrams = bigrams(query);
+        if (queryGrams.isEmpty()) {
+            return candidates;
+        }
+        return candidates.stream()
+                .sorted(Comparator.comparingDouble(
+                        (MemoryEntity memory) -> overlapRatio(queryGrams, bigrams(memory.getContent()))).reversed())
+                .toList();
+    }
+
+    /** 重叠率 = 查询二元组中出现在记忆里的比例（0~1） */
+    private static double overlapRatio(Set<String> queryGrams, Set<String> memoryGrams) {
+        long hit = queryGrams.stream().filter(memoryGrams::contains).count();
+        return (double) hit / queryGrams.size();
+    }
+
+    /**
+     * 中文/英文通用的字符二元组。
+     *
+     * <p>先去掉所有空白并转小写，再逐对取两字符。单字符输入得到空集合 ——
+     * 一个字的查询没有可比对的二元组，此时调用方退化为时间排序而不是「全都不相关」。
+     */
+    private static Set<String> bigrams(String text) {
+        String normalized = text.replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
+        Set<String> grams = new LinkedHashSet<>();
+        for (int i = 0; i + 1 < normalized.length(); i++) {
+            grams.add(normalized.substring(i, i + 2));
+        }
+        return grams;
     }
 
     private String normalize(String content) {

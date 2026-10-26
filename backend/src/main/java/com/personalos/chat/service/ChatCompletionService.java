@@ -131,7 +131,7 @@ public class ChatCompletionService {
             return chatClient.prompt()
                     // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                     // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
-                    .system(systemPromptWithContributions(hits))
+                    .system(systemPromptWithContributions(hits, userContent))
                     .user(userContent)
                     // 会话标识通过 advisor 参数传入，Advisor 据此装载并回写该会话的上下文
                     .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
@@ -256,10 +256,11 @@ public class ChatCompletionService {
      * <p>知识库片段（阶段 19）追加在最后：编号从 [1] 开始，与 citations 事件、
      * 落库快照三处编号一致；附带使用约束（引用编号、无依据明说、不得编造）。
      */
-    private String systemPromptWithContributions(List<KnowledgeHitDto> hits) {
+    private String systemPromptWithContributions(List<KnowledgeHitDto> hits, String userInput) {
         StringBuilder prompt = new StringBuilder(aiProperties.systemPrompt());
         promptContributors.orderedStream().forEach(contributor -> {
-            String contribution = contributor.contribute();
+            // 传入本轮问题：贡献者据此做相关性筛选（如长期记忆按相关度而非纯时间排序）
+            String contribution = contributor.contribute(userInput);
             if (contribution != null && !contribution.isBlank()) {
                 prompt.append("\n\n").append(contribution);
             }

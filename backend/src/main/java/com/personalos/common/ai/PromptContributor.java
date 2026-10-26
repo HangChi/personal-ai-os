@@ -25,4 +25,21 @@ public interface PromptContributor {
      * @return 要追加到系统提示的文本；无内容时返回空串
      */
     String contribute();
+
+    /**
+     * 带「本轮用户输入」的版本（2026-10-26）。
+     *
+     * <p>为什么要多一个参数：上下文是否相关，取决于用户在问什么。长期记忆如果只按
+     * 「最近修改时间」全塞，用户在问日程时也会收到一堆无关的偏好约束 —— 既浪费预算，
+     * 也会稀释模型对真正相关内容的注意力。
+     *
+     * <p>默认实现直接委托给无参版本，因此**既有的贡献者不需要改动**；
+     * 有能力做相关性筛选的实现自己覆盖它即可。
+     *
+     * @param userInput 本轮用户消息原文，可能为空串
+     * @return 要追加到系统提示的文本；无内容时返回空串
+     */
+    default String contribute(String userInput) {
+        return contribute();
+    }
 }

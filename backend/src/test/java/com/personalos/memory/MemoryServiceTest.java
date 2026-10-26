@@ -73,7 +73,7 @@ class MemoryServiceTest {
     }
 
     @Test
-    @DisplayName("renderForPrompt(): 只向仓储索取注入上限条数（不在内存里全表加载再截断）")
+    @DisplayName("renderForPrompt(): 只向仓储索取候选窗口大小（不在内存里全表加载再截断）")
     void renderShouldAskRepositoryForCappedPage() {
         List<MemoryEntity> memories = new ArrayList<>();
         // 仓库按 updated_at 倒序返回；这里按同样的顺序构造，序号 1 是最新的
@@ -84,14 +84,46 @@ class MemoryServiceTest {
 
         String block = service.renderForPrompt();
 
-        // 关键断言：查询本身就带上限，而不是查全表再在 Java 里 break
+        // 关键断言：查询本身就带上限，而不是查全表再在 Java 里 break；
+        // 且这个上限必须是**候选窗口**（大于注入上限），否则排序无从谈起
         ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
         verify(repository).findByOrderByUpdatedAtDesc(captor.capture());
-        assertThat(captor.getValue().getPageSize()).isEqualTo(MemoryService.INJECT_MAX_COUNT);
+        assertThat(captor.getValue().getPageSize()).isEqualTo(MemoryService.INJECT_CANDIDATE_LIMIT);
         assertThat(captor.getValue().getOffset()).isZero();
 
         assertThat(block).contains("1. 第1条记忆");
         assertThat(block).contains(MemoryService.INJECT_MAX_COUNT + ". 第" + MemoryService.INJECT_MAX_COUNT + "条记忆");
+    }
+
+    @Test
+    @DisplayName("renderForPrompt(query): 与本轮问题相关的记忆排到最前，哪怕它修改得更早")
+    void renderShouldRankByRelevance() {
+        Instant older = Instant.parse("2026-09-01T00:00:00Z");
+        Instant newer = Instant.parse("2026-10-01T00:00:00Z");
+        // 仓储按 updated_at 倒序：最不相关的两条反而最新
+        given(repository.findByOrderByUpdatedAtDesc(any(Pageable.class))).willReturn(List.of(
+                memory("代码风格用两空格缩进", newer),
+                memory("每周五下午交周报", newer),
+                memory("我下午三点以后不安排会议", older)));
+
+        String block = service.renderForPrompt("帮我看看今天下午的会议安排");
+
+        assertThat(block)
+                .as("相关度优先于时间：否则问日程时会被无关约束挤出预算")
+                .contains("1. 我下午三点以后不安排会议");
+    }
+
+    @Test
+    @DisplayName("renderForPrompt(query): 查询为空时退化为「最近修改优先」，不做任何重排")
+    void renderShouldFallBackToRecencyWhenQueryBlank() {
+        given(repository.findByOrderByUpdatedAtDesc(any(Pageable.class))).willReturn(List.of(
+                memory("最新的记忆", Instant.parse("2026-10-02T00:00:00Z")),
+                memory("较早的记忆", Instant.parse("2026-10-01T00:00:00Z"))));
+
+        String block = service.renderForPrompt("   ");
+
+        assertThat(block).contains("1. 最新的记忆");
+        assertThat(block).contains("2. 较早的记忆");
     }
 
     @Test
