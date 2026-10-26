@@ -113,7 +113,8 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public TaskDto get(UUID id) {
-        return toDto(requireTask(id), Instant.now());    }
+        return toDto(requireTask(id), Instant.now());
+    }
 
     @Transactional(readOnly = true)
     public List<TaskDto> findByIds(List<UUID> ids) {
