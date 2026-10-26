@@ -15,10 +15,10 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
+import ContextMeter from '@/components/chat/ContextMeter.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
 import ChatSessionList from '@/components/chat/ChatSessionList.vue'
 import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
-import ChatToolTrail from '@/components/chat/ChatToolTrail.vue'
 import ChatWelcome from '@/components/chat/ChatWelcome.vue'
 import { useChatStore } from '@/stores/chat'
 import { clampTopK, conversationKnowledgeKey, type ThinkingLevel } from '@/lib/settings'
@@ -60,6 +60,19 @@ const currentTitle = computed(() => {
   const current = sessions.value.find((item) => item.conversationId === currentConversationId.value)
   return current ? current.title : '新对话'
 })
+
+/**
+ * 是否「最后一条助手消息」—— 工具轨迹只挂在这一条上。
+ *
+ * 审计记录只有会话维度、没有消息维度，无法精确知道哪次调用属于哪条消息；
+ * 挂在最新一条助手消息下是最接近事实的做法（用户刚看到的回复就是它产生的）。
+ */
+function isLastAssistant(index: number): boolean {
+  if (index !== messages.value.length - 1) {
+    return false
+  }
+  return messages.value[index]?.role === 'ASSISTANT'
+}
 
 /** 空态建议问题：点击只填输入框，不自动发送（用户还要改） */
 const suggestions = [
@@ -264,6 +277,8 @@ async function handleRename(session: ChatSession): Promise<void> {
             <span class="chat__main-meta">
               {{ hasOlderMessages ? `已加载 ${messages.length} 条` : `${messages.length} 条消息` }}
             </span>
+            <!-- 上下文仪表盘：状态读数，与消息数并列在卡片头部（不属于操作工具栏） -->
+            <ContextMeter :usage="contextUsage" @change-budget="chatStore.changeContextBudget" />
           </div>
           <el-tag v-if="streaming" type="warning" size="small" effect="plain">生成中</el-tag>
         </div>
@@ -288,14 +303,17 @@ async function handleRename(session: ChatSession): Promise<void> {
             </el-button>
           </div>
 
-          <!-- 消息流 -->
-          <ChatMessageItem v-for="message in messages" :key="message.id" :message="message" @copy="copyMessage" />
+          <!-- 消息流：工具轨迹内联在最后一条助手消息里，不单独占一行 -->
+          <ChatMessageItem
+            v-for="(message, index) in messages"
+            :key="message.id"
+            :message="message"
+            :tool-trail="isLastAssistant(index) ? toolTrail : []"
+            @copy="copyMessage"
+          />
 
           <!-- 流式中的助手消息 -->
           <ChatStreamingItem v-if="streaming" :content="streamingContent" :hint="retrievalHint" />
-
-          <!-- 工具调用轨迹（阶段 18/19） -->
-          <ChatToolTrail v-if="toolTrail.length > 0" :items="toolTrail" />
 
           <!-- 待确认操作（阶段 2） -->
           <ChatConfirmationList
@@ -313,12 +331,8 @@ async function handleRename(session: ChatSession): Promise<void> {
           :knowledge-on="knowledgeOn"
           :top-k="topK"
           :thinking-level="settings.thinkingLevel"
-          :context-tokens="contextUsage.promptTokens"
-          :context-budget-tokens="contextUsage.budgetTokens"
-          :context-window-tokens="contextUsage.contextWindow"
           :enter-send="settings.enterSend"
           @toggle-knowledge="toggleKnowledge"
-          @change-budget="chatStore.changeContextBudget"
           @update:top-k="(value: number | null) => (topK = value)"
           @update:thinking-level="(value: ThinkingLevel) => (settings.thinkingLevel = value)"
           @send="handleSend"

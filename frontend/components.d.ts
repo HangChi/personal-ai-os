@@ -25,6 +25,7 @@ declare module 'vue' {
     ChatStreamingItem: typeof import('./src/components/chat/ChatStreamingItem.vue')['default']
     ChatToolTrail: typeof import('./src/components/chat/ChatToolTrail.vue')['default']
     ChatWelcome: typeof import('./src/components/chat/ChatWelcome.vue')['default']
+    ContextMeter: typeof import('./src/components/chat/ContextMeter.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElButton: typeof import('element-plus/es')['ElButton']

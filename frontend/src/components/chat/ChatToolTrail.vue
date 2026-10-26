@@ -27,6 +27,19 @@ const props = defineProps<{ items: ToolInvocation[] }>()
 /** 汇总行要能一眼看出「有没有失败的」：失败数是唯一需要主动提醒的信号 */
 const failedCount = computed(() => props.items.filter((item) => item.outcome === 'FAILED').length)
 
+/**
+ * 汇总文案：带上工具名，最多 3 个。
+ *
+ * 只写「已调用 1 个工具」信息量太低 —— 用户得展开才知道做了什么。
+ * 带上名字后，多数情况不用展开就已经看明白了。
+ */
+const summaryText = computed(() => {
+  const names = props.items.map((item) => item.operation)
+  const shown = names.slice(0, 3).join('、')
+  const suffix = names.length > 3 ? ` 等 ${names.length} 项` : ''
+  return `${shown}${suffix}`
+})
+
 /** 工具调用结果徽标映射（StatusTag 的 map） */
 const OUTCOME_MAP: Record<string, { label: string; type: 'success' | 'danger' | 'warning' | 'info' }> = {
   SUCCESS: { label: '成功', type: 'success' },
@@ -64,7 +77,8 @@ function formatDuration(durationMs: number | null): string {
       <template #title>
         <span class="chat-trail__summary">
           <el-icon :size="12"><Operation /></el-icon>
-          已调用 {{ items.length }} 个工具
+          <span class="chat-trail__summary-label">已调用 {{ items.length }} 个工具</span>
+          <span class="chat-trail__summary-names">{{ summaryText }}</span>
           <span v-if="failedCount > 0" class="chat-trail__summary-fail">{{ failedCount }} 个失败</span>
           <el-icon class="chat-trail__chevron"><ArrowRight /></el-icon>
         </span>
@@ -87,9 +101,14 @@ function formatDuration(durationMs: number | null): string {
  * 内联活动行：不设外框、不加分隔线，靠左侧缩进与弱化配色「沉」到对话流里。
  * 标题用 11px 弱化色，读作「这批动作的说明」，而不是一个新面板的标题。
  */
+/*
+ * 内联紧凑块：宽度随内容收缩，不做通栏。
+ * 通栏会让这一行看起来像「又一个面板」，而它只是这条回复的过程记录。
+ */
 .chat-trail {
-  /* 与助手气泡左对齐（头像 28 + 间距 12），视觉上归属于助手这一侧 */
-  margin-left: 40px;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
   /* 去掉 EP 折叠面板自带的边框与底色：它是对话流里的一行，不是设置面板 */
   border-top: none;
   --el-collapse-border-color: transparent;
@@ -98,10 +117,16 @@ function formatDuration(durationMs: number | null): string {
 }
 
 .chat-trail :deep(.el-collapse-item__header) {
-  min-height: 24px;
-  padding: 0 var(--os-space-2);
+  min-height: 22px;
+  padding: 0 6px 0 4px;
   border-bottom: none;
-  line-height: 24px;
+  border-radius: var(--os-radius-sm);
+  line-height: 22px;
+}
+
+/* hover 才出底色：默认是一行弱化小字，不抢回复本身的注意力 */
+.chat-trail :deep(.el-collapse-item__header):hover {
+  background: var(--el-fill-color-lighter);
 }
 
 .chat-trail :deep(.el-collapse-item__content) {
@@ -119,6 +144,20 @@ function formatDuration(durationMs: number | null): string {
   gap: 6px;
   font-size: 11px;
   color: var(--el-text-color-secondary);
+  white-space: nowrap;
+}
+
+/* 「已调用 N 个工具」是标签，弱化；工具名是要读的信息，用常规色 */
+.chat-trail__summary-label {
+  color: var(--el-text-color-placeholder);
+}
+
+.chat-trail__summary-names {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--el-text-color-regular);
+  font-family: 'SFMono-Regular', Consolas, monospace;
 }
 
 .chat-trail__summary .el-icon {

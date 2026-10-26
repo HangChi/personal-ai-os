@@ -14,9 +14,14 @@ import { Document } from '@element-plus/icons-vue'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { relativeTime } from '@/lib/relative-time'
-import type { ChatAttachment, ChatMessage } from '@/types/api'
+import ChatToolTrail from '@/components/chat/ChatToolTrail.vue'
+import type { ChatAttachment, ChatMessage, ToolInvocation } from '@/types/api'
 
-defineProps<{ message: ChatMessage }>()
+const props = defineProps<{
+  message: ChatMessage
+  /** 本消息产生的工具调用轨迹（仅最后一条助手消息会传）；空数组不渲染 */
+  toolTrail: ToolInvocation[]
+}>()
 
 /** 附件内容地址：后端给的是相对路径，这里拼 API 基路径 */
 function attachmentUrl(item: ChatAttachment): string {
@@ -38,6 +43,12 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
         <div class="chat-msg__bubble chat-msg__bubble--assistant">
           <MarkdownRenderer :content="message.content" />
         </div>
+        <!--
+          工具轨迹内联在消息内部（阶段 22 末改）：改造前它是消息流末尾的独立一行，
+          读起来像「另一段内容」。内联后它明确归属于这条回复，与引用区同级。
+        -->
+        <ChatToolTrail v-if="props.toolTrail.length > 0" :items="props.toolTrail" class="chat-msg__trail" />
+
         <!-- 引用区（阶段 19） -->
         <div v-if="message.citations.length > 0" class="chat-msg__citations">
           <el-collapse>
@@ -256,6 +267,12 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 
 .chat-msg__action:hover {
   color: var(--el-color-primary);
+}
+
+/* 内联工具轨迹：不再需要左缩进（它已经在消息内容里） */
+.chat-msg__trail {
+  margin-left: 0;
+  margin-top: var(--os-space-2);
 }
 
 /* ---- 附件（阶段 22） ---- */
