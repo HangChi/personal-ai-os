@@ -85,19 +85,44 @@ public class JpaChatMemory implements ChatMemory {
     }
 
     /**
-     * 取出最近 N 条消息作为模型上下文，按顺序正序返回。
+     * 取出最近的消息作为模型上下文，按顺序正序返回。
      *
-     * <p>N 由 {@code app.ai.memory.max-messages} 控制，默认 20。
+     * <h2>双约束（2026-10-26）</h2>
+     * <ol>
+     *   <li><b>条数</b>（{@code app.ai.memory.max-messages}，默认 20）：
+     *       作为粗筛，避免把长会话整段读进内存；</li>
+     *   <li><b>字符预算</b>（{@code app.ai.memory.max-context-chars}，默认 12000）：
+     *       真正的窗口上界。从最新往旧累加，超出预算就整体停 ——
+     *       不切半条消息：半截对话比缺失更容易让模型误解。</li>
+     * </ol>
+     *
+     * <p>预算耗尽时的取舍是「丢更早的」，因此最新一条**无条件保留**：
+     * 即便它自己就超预算（单条上限 4000 字，理论上不该发生），
+     * 送一个空上下文比送一条超长消息更糟。
      */
     @Override
     @Transactional(readOnly = true)
     public List<Message> get(String conversationId) {
         int limit = aiProperties.memory().maxMessages();
-        List<ChatMessageEntity> recent = new ArrayList<>(
-                messageRepository.findRecentByConversationId(conversationId, PageRequest.of(0, limit)));
-        // 仓储按 sequenceNo 倒序取出「最后 N 条」，这里反转成正序
-        Collections.reverse(recent);
-        return recent.stream().map(this::toMessage).toList();
+        int charBudget = aiProperties.memory().maxContextChars();
+
+        // 仓储按 sequenceNo 倒序取出「最后 N 条」（最新在前）
+        List<ChatMessageEntity> recent = messageRepository
+                .findRecentByConversationId(conversationId, PageRequest.of(0, limit));
+
+        List<Message> picked = new ArrayList<>(recent.size());
+        int used = 0;
+        for (ChatMessageEntity entity : recent) {
+            int cost = entity.getContent() == null ? 0 : entity.getContent().length();
+            if (!picked.isEmpty() && used + cost > charBudget) {
+                break;
+            }
+            picked.add(toMessage(entity));
+            used += cost;
+        }
+        // 上面按「新 → 旧」挑，这里转回正序
+        Collections.reverse(picked);
+        return picked;
     }
 
     /**

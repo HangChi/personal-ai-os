@@ -45,7 +45,7 @@ class JpaChatMemoryTest {
     private final ChatMessageRepository messageRepository = mock(ChatMessageRepository.class);
     private final ChatSessionRepository sessionRepository = mock(ChatSessionRepository.class);
     private final JpaChatMemory memory = new JpaChatMemory(messageRepository, sessionRepository,
-            new AiProperties(new AiProperties.Memory(6), "系统提示"));
+            new AiProperties(new AiProperties.Memory(6, 12000), "系统提示"));
 
     @Test
     @DisplayName("add(): 顺序号从当前最大值续接，且不触发任何删除")
@@ -124,6 +124,50 @@ class JpaChatMemoryTest {
         verify(messageRepository).findRecentByConversationId(eq(CID), captor.capture());
         assertThat(captor.getValue().getPageSize()).isEqualTo(6);
         assertThat(captor.getValue().getPageNumber()).isZero();
+    }
+
+    @Test
+    @DisplayName("get(): 字符预算先用尽时，更早的消息整体丢弃（条数没到上限也一样）")
+    void getShouldTrimByCharacterBudget() {
+        JpaChatMemory budgeted = new JpaChatMemory(messageRepository, sessionRepository,
+                new AiProperties(new AiProperties.Memory(10, 250), "系统提示"));
+        given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class)))
+                .willReturn(threeMessages(100));
+
+        List<Message> messages = budgeted.get(CID);
+
+        // 100 + 100 = 200 ≤ 250，再加第三条就是 300 > 250 → 只保留最新两条
+        assertThat(messages).hasSize(2);
+        assertThat(messages.get(0).getText()).startsWith("msg-2-");
+        assertThat(messages.get(1).getText()).startsWith("msg-3-");
+    }
+
+    @Test
+    @DisplayName("get(): 最新一条即使单条超预算也必须保留（不能送空上下文）")
+    void getShouldAlwaysKeepNewestMessage() {
+        JpaChatMemory tight = new JpaChatMemory(messageRepository, sessionRepository,
+                new AiProperties(new AiProperties.Memory(10, 10), "系统提示"));
+        given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class)))
+                .willReturn(threeMessages(200));
+
+        List<Message> messages = tight.get(CID);
+
+        assertThat(messages).hasSize(1);
+        assertThat(messages.get(0).getText()).startsWith("msg-3-");
+    }
+
+    /** 构造三条各 length 字的「新 → 旧」消息（seq 3/2/1），与仓储返回顺序一致；内容带序号便于断言 */
+    private static List<ChatMessageEntity> threeMessages(int length) {
+        return List.of(
+                sizedMessage(3, length),
+                sizedMessage(2, length),
+                sizedMessage(1, length));
+    }
+
+    private static ChatMessageEntity sizedMessage(int sequence, int length) {
+        String prefix = "msg-" + sequence + "-";
+        return new ChatMessageEntity(CID, MessageRole.ASSISTANT,
+                prefix + "x".repeat(Math.max(0, length - prefix.length())), sequence, Instant.now());
     }
 
     @Test

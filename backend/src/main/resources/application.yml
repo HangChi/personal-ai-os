@@ -150,6 +150,10 @@ app:
     # 只影响「送给模型的内容」，不影响库中历史（见 data-model.md 的读写语义约定）。
     memory:
       max-messages: ${AI_MEMORY_MAX_MESSAGES:20}
+      # 送给模型的消息正文总字符预算（近似 token 预算）。条数与体量是两个维度：
+      # 20 条各 4000 字约 8 万字，足以撑爆多数模型的上下文窗口。
+      # 按中文约 1.6 字符/token 估算，12000 字 ≈ 7.5k token，给输出留足空间。
+      max-context-chars: ${AI_MEMORY_MAX_CONTEXT_CHARS:12000}
     system-prompt: ${AI_SYSTEM_PROMPT:你是 Personal AI OS 的个人助手。回答简洁、准确，默认使用中文，必要时使用列表。}
   knowledge:
     # 嵌入维度。必须与 Flyway V4 中 vector_store.embedding 的维度一致，
