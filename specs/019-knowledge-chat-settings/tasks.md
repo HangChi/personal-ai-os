@@ -28,9 +28,9 @@
 
 ## Phase C — 前端：设置页
 
-- [ ] **T065** `views/SettingsView.vue`：外观（主题三态 radio / 侧栏开关）/ 对话（增强默认 / topK / Enter 发送）/ 日程（默认提前量）/ 数据（导出 / 重置偏好）/ 关于（版本 + 后端健康）
-- [ ] **T066** 路由 `/settings`（meta title 设置）+ `App.vue` 导航第 8 项（Setting 图标）
-- [ ] **T067** 门禁 + 真机：设置页各 section、重置偏好流程、导航跳转
+- [x] **T065** `views/SettingsView.vue`：外观（主题三态 radio / 侧栏开关）/ 对话（增强默认 / topK / Enter 发送）/ 日程（默认提前量）/ 数据（导出 / 重置偏好）/ 关于（版本 + 后端健康）
+- [x] **T066** 路由 `/settings`（meta title 设置）+ `App.vue` 导航第 8 项（Setting 图标）
+- [x] **T067** 门禁 + 真机：设置页各 section、重置偏好流程、导航跳转
 
 ## Phase D — 验收与收尾
 
@@ -48,6 +48,16 @@
 6. 每段提交前门禁全绿 + 真机动作留截图（quickstart）；未验项保持未勾选。
 
 ## 完成记录（实现时回填）
+
+### Phase C（前端：设置页）
+
+- 门禁：type-check 0 错；test:logic 348/348；build 通过。
+- 真机（Playwright 全过）：侧栏第 8 项「设置」→ /settings 五 section（外观/对话/日程/数据/关于）；
+  主题切深色即生效且刷新保持；enterSend/topK/lead 改动落盘、刷新保持；
+  **跨页联动**：对话页 Enter 变换行、日程页默认提前量变 30；
+  重置偏好：二次确认存在、取消不丢偏好、确认后 os.* 清空且主题回跟随系统；控制台零报错。
+- 验收脚本误报一条：读 `os.settings.topK` 验证取消后偏好还在——真实键是
+  `os.settings.knowledgeTopK`（键名笔误，非应用问题；隔离复现确认取消行为正确）。
 
 ### Phase B（前端：对话增强交互）
 

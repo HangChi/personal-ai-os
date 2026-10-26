@@ -21,6 +21,7 @@ import {
   Memo,
   Reading,
   Search,
+  Setting,
   Tickets,
 } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
@@ -49,6 +50,7 @@ const navItems = [
   { index: '/calendar', label: '日程', icon: Calendar },
   { index: '/memory', label: '记忆', icon: Memo },
   { index: '/activity', label: '活动', icon: DataLine },
+  { index: '/settings', label: '设置', icon: Setting },
 ]
 
 /** 顶栏全局搜索词（阶段 17）：回车后跳到结果页，关键词走 query 而非 store ——
