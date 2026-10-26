@@ -63,7 +63,8 @@ function page(items, total, page = 0, size = 100) {
 
 {
   handlers.set('/calendar/events', () =>
-    page([{ eventId: 'e1', title: '周会', startsAt: '2026-10-21T09:00:00+08:00' }], 4))
+    page([{ eventId: 'e1', title: '周会', startsAt: '2026-10-21T09:00:00+08:00' }], 4),
+  )
   freshStore()
   const store = useCalendarStore()
   await store.loadOccurrences()
@@ -111,8 +112,7 @@ function page(items, total, page = 0, size = 100) {
 {
   // 本地 10-26 00:30 在东八区是 UTC 10-25 16:30；截取 UTC 会分到 10-25
   const dawn = new Date(2026, 9, 26, 0, 30, 0).toISOString()
-  handlers.set('/calendar/events', () =>
-    page([{ eventId: 'e1', title: '晨读', startsAt: dawn, endsAt: dawn }], 1))
+  handlers.set('/calendar/events', () => page([{ eventId: 'e1', title: '晨读', startsAt: dawn, endsAt: dawn }], 1))
   freshStore()
   const store = useCalendarStore()
   await store.loadOccurrences()

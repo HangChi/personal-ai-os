@@ -1,12 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
-import {
-  mergeSettings,
-  PREFERENCE_KEY_PREFIX,
-  SETTINGS_KEYS,
-  type SettingsState,
-} from '@/lib/settings'
+import { mergeSettings, PREFERENCE_KEY_PREFIX, SETTINGS_KEYS, type SettingsState } from '@/lib/settings'
 
 /**
  * 设置偏好状态（阶段 19，User Story 3）。

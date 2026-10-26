@@ -249,12 +249,7 @@ export interface ReminderScanResult {
 
 /** 工具调用的结果状态，与后端 IdempotencyOutcome 对齐 */
 export type ToolInvocationOutcome =
-  | 'IN_PROGRESS'
-  | 'SUCCESS'
-  | 'REQUIRES_CONFIRMATION'
-  | 'REJECTED'
-  | 'DUPLICATE'
-  | 'FAILED'
+  'IN_PROGRESS' | 'SUCCESS' | 'REQUIRES_CONFIRMATION' | 'REJECTED' | 'DUPLICATE' | 'FAILED'
 
 /**
  * 工具调用审计记录（阶段 11）。

@@ -1,12 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-import {
-  createMemory,
-  listMemories,
-  removeMemory,
-  updateMemory,
-} from '@/api/memory'
+import { createMemory, listMemories, removeMemory, updateMemory } from '@/api/memory'
 import type { Memory } from '@/types/api'
 
 /**

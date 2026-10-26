@@ -29,9 +29,7 @@ export function toBusinessError(body: unknown): ApiBusinessError | null {
     return null
   }
   const envelope = body as Partial<ApiResponse<unknown>>
-  if (typeof envelope.code === 'number'
-      && envelope.code !== API_SUCCESS_CODE
-      && typeof envelope.message === 'string') {
+  if (typeof envelope.code === 'number' && envelope.code !== API_SUCCESS_CODE && typeof envelope.message === 'string') {
     return new ApiBusinessError(envelope.code, envelope.message)
   }
   return null

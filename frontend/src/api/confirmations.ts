@@ -8,10 +8,7 @@ import type { ConfirmationExecutionResult, TaskConfirmation } from '@/types/api'
  * 因此这里的每一个调用都是一次「人做出的决定」。
  */
 
-export function listConfirmations(
-  conversationId?: string,
-  status = 'PENDING',
-): Promise<TaskConfirmation[]> {
+export function listConfirmations(conversationId?: string, status = 'PENDING'): Promise<TaskConfirmation[]> {
   const params: Record<string, string> = { status }
   if (conversationId) {
     params.conversationId = conversationId

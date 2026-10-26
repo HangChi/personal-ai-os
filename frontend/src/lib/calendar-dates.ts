@@ -68,8 +68,7 @@ export function buildMonthCells(cursor: Date, today: Date = new Date()): MonthCe
       key,
       date,
       day: date.getDate(),
-      inMonth: date.getFullYear() === firstOfMonth.getFullYear()
-        && date.getMonth() === firstOfMonth.getMonth(),
+      inMonth: date.getFullYear() === firstOfMonth.getFullYear() && date.getMonth() === firstOfMonth.getMonth(),
       isToday: key === todayKey,
     })
   }

@@ -8,8 +8,7 @@ import { eq, check } from './assert.mjs'
  * 测试在东八区过、在 UTC 环境挂（或反过来）。
  */
 
-const { localDayKey, buildMonthCells, monthRange, shiftMonth, groupByLocalDay } =
-  await import('@/lib/calendar-dates')
+const { localDayKey, buildMonthCells, monthRange, shiftMonth, groupByLocalDay } = await import('@/lib/calendar-dates')
 
 function pad(value) {
   return String(value).padStart(2, '0')
@@ -63,7 +62,10 @@ function pad(value) {
   // 2 月（闰年）也要 42 格，且 29 号在列
   const cells = buildMonthCells(new Date(2028, 1, 1), new Date(2028, 1, 15))
   eq('闰年 2 月仍是 42 格', cells.length, 42)
-  check('闰年有 29 号', cells.some((cell) => cell.inMonth && cell.day === 29))
+  check(
+    '闰年有 29 号',
+    cells.some((cell) => cell.inMonth && cell.day === 29),
+  )
 }
 
 {

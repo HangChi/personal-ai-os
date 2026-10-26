@@ -105,12 +105,7 @@ async function handleLogout(): Promise<void> {
         <span v-show="!navCollapsed" class="app-shell__title">Personal AI OS</span>
       </router-link>
 
-      <el-menu
-        class="app-shell__nav"
-        :collapse="navCollapsed"
-        :default-active="route.path"
-        :router="true"
-      >
+      <el-menu class="app-shell__nav" :collapse="navCollapsed" :default-active="route.path" :router="true">
         <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index" :title="item.label">
           <el-icon><component :is="item.icon" /></el-icon>
           <template #title>{{ item.label }}</template>
@@ -139,12 +134,7 @@ async function handleLogout(): Promise<void> {
 
         <template v-else>
           <!-- 两个按钮按视口二选一：窄屏开抽屉，宽屏折叠侧栏 -->
-          <el-button
-            class="app-shell__burger"
-            link
-            aria-label="打开导航菜单"
-            @click="drawerOpen = true"
-          >
+          <el-button class="app-shell__burger" link aria-label="打开导航菜单" @click="drawerOpen = true">
             <el-icon :size="20"><Fold /></el-icon>
           </el-button>
           <el-button

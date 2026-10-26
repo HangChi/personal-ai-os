@@ -93,12 +93,7 @@ export const useCalendarStore = defineStore('calendar', () => {
    * 这条归零规则最初只在注释里成立、代码没实现——是
    * test/calendar-store.test.mjs 抓出来的（文档与实现漂移的典型）。
    */
-  async function loadOccurrences(
-    from?: string,
-    to?: string,
-    nextPage?: number,
-    sizeOverride?: number,
-  ): Promise<void> {
+  async function loadOccurrences(from?: string, to?: string, nextPage?: number, sizeOverride?: number): Promise<void> {
     loadingOccurrences.value = true
     error.value = null
     const windowChanged = from !== undefined || to !== undefined
@@ -225,11 +220,7 @@ export const useCalendarStore = defineStore('calendar', () => {
    * 其余情况什么都不发（用站内提示冒充送达会制造"系统说提醒了、用户没感知"的假象）。
    */
   function deliverReminders(): void {
-    const result = notifier.dispatch(
-      dueReminders.value,
-      notificationPermission.value,
-      pageIsVisible(),
-    )
+    const result = notifier.dispatch(dueReminders.value, notificationPermission.value, pageIsVisible())
     if (result.channel === 'inline' && result.notices.length > 0) {
       inlineNotices.value = [...inlineNotices.value, ...result.notices]
     }

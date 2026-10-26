@@ -41,10 +41,7 @@ export function defaultFilename(now: Date = new Date()): string {
  */
 export async function downloadExport(): Promise<string> {
   const response = await http.get('/export', { responseType: 'blob' })
-  const filename = resolveFilename(
-    response.headers['content-disposition'] as string | undefined,
-    defaultFilename(),
-  )
+  const filename = resolveFilename(response.headers['content-disposition'] as string | undefined, defaultFilename())
 
   const url = URL.createObjectURL(response.data as Blob)
   try {

@@ -56,11 +56,7 @@ marked.setOptions({ gfm: true, breaks: true })
  */
 /** HTML 转义（hljs 11 不再导出 escapeHTML，这四行就是它的全部） */
 function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 marked.use({

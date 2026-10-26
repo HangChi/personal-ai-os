@@ -27,25 +27,16 @@ onMounted(() => {
     <el-card shadow="never">
       <template #header>
         <div class="search-page__header">
-          <span v-if="searchStore.keyword">
-            搜索「{{ searchStore.keyword }}」· 共 {{ searchStore.totalHits }} 条
-          </span>
+          <span v-if="searchStore.keyword"> 搜索「{{ searchStore.keyword }}」· 共 {{ searchStore.totalHits }} 条 </span>
           <span v-else>全局搜索</span>
         </div>
       </template>
 
       <p class="search-page__hint">
-        跨任务、对话、日程、记忆与知识库搜索。每类最多显示 5 条 ——
-        全局搜索用来定位到哪个模块，更细的筛选请去对应页面。
+        跨任务、对话、日程、记忆与知识库搜索。每类最多显示 5 条 —— 全局搜索用来定位到哪个模块，更细的筛选请去对应页面。
       </p>
 
-      <el-alert
-        v-if="searchStore.error"
-        type="error"
-        :closable="false"
-        show-icon
-        :title="searchStore.error"
-      />
+      <el-alert v-if="searchStore.error" type="error" :closable="false" show-icon :title="searchStore.error" />
 
       <!-- 三种空态要分开：没搜 / 搜了没有 / 正在搜 -->
       <el-empty v-if="!searchStore.keyword" description="在顶部搜索框输入关键词开始搜索" :image-size="70" />
@@ -74,7 +65,10 @@ onMounted(() => {
                   </template>
                 </span>
                 <span v-if="hit.subtitle" class="search-page__hit-subtitle">
-                  <template v-for="(segment, index) in highlightSegments(hit.subtitle, searchStore.keyword)" :key="index">
+                  <template
+                    v-for="(segment, index) in highlightSegments(hit.subtitle, searchStore.keyword)"
+                    :key="index"
+                  >
                     <mark v-if="segment.hit">{{ segment.text }}</mark>
                     <template v-else>{{ segment.text }}</template>
                   </template>

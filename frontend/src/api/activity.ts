@@ -17,9 +17,7 @@ export interface ToolInvocationQuery {
 }
 
 /** 工具调用记录（分页） */
-export function listToolInvocations(
-  params: ToolInvocationQuery = {},
-): Promise<PageDto<ToolInvocation>> {
+export function listToolInvocations(params: ToolInvocationQuery = {}): Promise<PageDto<ToolInvocation>> {
   return requestData<PageDto<ToolInvocation>>({
     url: '/agent/tool-invocations',
     method: 'get',

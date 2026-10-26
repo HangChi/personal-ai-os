@@ -7,12 +7,8 @@ import { eq } from './assert.mjs'
  * 通知调用通过构造函数注入，测试里换成一个记录器即可断言"发了几条、内容是什么"。
  */
 
-const {
-  chooseChannel,
-  ReminderNotifier,
-  SUMMARY_THRESHOLD,
-  createBrowserNotify,
-} = await import('@/notifications/reminder-notifier')
+const { chooseChannel, ReminderNotifier, SUMMARY_THRESHOLD, createBrowserNotify } =
+  await import('@/notifications/reminder-notifier')
 
 function reminder(id, title, options = {}) {
   return {
@@ -123,7 +119,7 @@ function recorder() {
     reminder('r-4', '吃药'),
   ]
 
-  const result = notifier.dispatch(many, 'granted', false)
+  notifier.dispatch(many, 'granted', false)
 
   eq('4 条合并为 1 条', sent.length, 1)
   eq('标题含数量', sent[0].title, '有 4 条提醒到点')

@@ -26,7 +26,13 @@ function page(items, total, page = 0, size = 20) {
 
 {
   handlers.set('/tasks', (config) =>
-    page([{ id: '1', title: '写周报', status: 'TODO', priority: 'HIGH', overdue: true }], 137, config.params.page, config.params.size))
+    page(
+      [{ id: '1', title: '写周报', status: 'TODO', priority: 'HIGH', overdue: true }],
+      137,
+      config.params.page,
+      config.params.size,
+    ),
+  )
   freshStore()
   const store = useTaskStore()
   await store.load()
@@ -95,6 +101,8 @@ function page(items, total, page = 0, size = 20) {
   freshStore()
   const store = useTaskStore()
   await store.load()
-  check('未注册 handler 的请求进入 error（测试忘打桩时可见）',
-      typeof store.error === 'string' && store.error.includes('/tasks'))
+  check(
+    '未注册 handler 的请求进入 error（测试忘打桩时可见）',
+    typeof store.error === 'string' && store.error.includes('/tasks'),
+  )
 }

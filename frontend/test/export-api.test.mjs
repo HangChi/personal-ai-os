@@ -25,11 +25,7 @@ const { resolveFilename, defaultFilename } = await import('@/api/export')
 }
 
 {
-  eq(
-    '无引号也能解析',
-    resolveFilename('attachment; filename=a.json', 'x.json'),
-    'a.json',
-  )
+  eq('无引号也能解析', resolveFilename('attachment; filename=a.json', 'x.json'), 'a.json')
 }
 
 {
@@ -43,11 +39,7 @@ const { resolveFilename, defaultFilename } = await import('@/api/export')
 
 {
   // 文件名的值里带分号时只取到分号前，不能把后面的参数一起吞进去
-  eq(
-    '分号分隔不会吞掉后续参数',
-    resolveFilename('attachment; filename="a.json"; size=123', 'x.json'),
-    'a.json',
-  )
+  eq('分号分隔不会吞掉后续参数', resolveFilename('attachment; filename="a.json"; size=123', 'x.json'), 'a.json')
 }
 
 // ---- 兜底文件名 ----

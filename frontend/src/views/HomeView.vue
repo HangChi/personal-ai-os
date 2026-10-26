@@ -54,11 +54,51 @@ interface StatCard {
 }
 
 const stats = ref<StatCard[]>([
-  { key: 'pending', label: '待办任务', icon: Tickets, value: null, tone: 'primary', route: '/tasks', hint: '未完成的任务数' },
-  { key: 'overdue', label: '已逾期', icon: WarningFilled, value: null, tone: 'danger', route: '/tasks', hint: '超过截止时间未完成' },
-  { key: 'today', label: '今日日程', icon: Calendar, value: null, tone: 'warning', route: '/calendar', hint: '今天到明天的全部发生' },
-  { key: 'memory', label: '长期记忆', icon: Memo, value: null, tone: 'success', route: '/memory', hint: '注入每次对话的条数' },
-  { key: 'docs', label: '知识文档', icon: Document, value: null, tone: 'info', route: '/knowledge', hint: '已建立向量索引的篇数' },
+  {
+    key: 'pending',
+    label: '待办任务',
+    icon: Tickets,
+    value: null,
+    tone: 'primary',
+    route: '/tasks',
+    hint: '未完成的任务数',
+  },
+  {
+    key: 'overdue',
+    label: '已逾期',
+    icon: WarningFilled,
+    value: null,
+    tone: 'danger',
+    route: '/tasks',
+    hint: '超过截止时间未完成',
+  },
+  {
+    key: 'today',
+    label: '今日日程',
+    icon: Calendar,
+    value: null,
+    tone: 'warning',
+    route: '/calendar',
+    hint: '今天到明天的全部发生',
+  },
+  {
+    key: 'memory',
+    label: '长期记忆',
+    icon: Memo,
+    value: null,
+    tone: 'success',
+    route: '/memory',
+    hint: '注入每次对话的条数',
+  },
+  {
+    key: 'docs',
+    label: '知识文档',
+    icon: Document,
+    value: null,
+    tone: 'info',
+    route: '/knowledge',
+    hint: '已建立向量索引的篇数',
+  },
 ])
 
 function setStat(key: string, value: number | null): void {
@@ -100,9 +140,7 @@ onMounted(async () => {
 })
 
 /** 状态标签颜色：UP 走成功色，其余走危险色 */
-const tagType = computed<'success' | 'danger'>(() =>
-  health.value?.status === 'UP' ? 'success' : 'danger',
-)
+const tagType = computed<'success' | 'danger'>(() => (health.value?.status === 'UP' ? 'success' : 'danger'))
 
 /** 依赖分量颜色：UP/CONFIGURED 成功，NOT_CONFIGURED 信息（可选依赖未装配），DOWN 危险 */
 function componentTagType(value: string): 'success' | 'info' | 'danger' {
@@ -214,8 +252,8 @@ const capabilities = [
         </button>
       </div>
       <p class="home__hint">
-        助手内置工具共 15 个（任务 8 + 知识库 1 + 日程提醒 5 + 长期记忆 1），另可经 MCP 接入外部工具；
-        其中删除类操作与 MCP 变更类工具只会生成「待确认事项」，必须由你在界面上确认后才会真正生效。
+        助手内置工具共 15 个（任务 8 + 知识库 1 + 日程提醒 5 + 长期记忆 1），另可经 MCP 接入外部工具； 其中删除类操作与
+        MCP 变更类工具只会生成「待确认事项」，必须由你在界面上确认后才会真正生效。
       </p>
     </el-card>
 

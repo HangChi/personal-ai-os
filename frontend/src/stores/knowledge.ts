@@ -1,18 +1,8 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import {
-  askKnowledge,
-  deleteDocument,
-  listDocuments,
-  searchKnowledge,
-  uploadDocument,
-} from '@/api/knowledge'
-import type {
-  KnowledgeAskResponse,
-  KnowledgeDocument,
-  KnowledgeHit,
-} from '@/types/api'
+import { askKnowledge, deleteDocument, listDocuments, searchKnowledge, uploadDocument } from '@/api/knowledge'
+import type { KnowledgeAskResponse, KnowledgeDocument, KnowledgeHit } from '@/types/api'
 
 /** 知识库状态 */
 export const useKnowledgeStore = defineStore('knowledge', () => {
@@ -35,9 +25,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   const error = ref<string | null>(null)
 
   /** 当前页的片段总数。注意：分页后这只是**这一页**的规模，不是整个知识库 */
-  const totalChunks = computed(() =>
-    documents.value.reduce((sum, document) => sum + document.chunkCount, 0),
-  )
+  const totalChunks = computed(() => documents.value.reduce((sum, document) => sum + document.chunkCount, 0))
 
   const isEmpty = computed(() => documents.value.length === 0)
 

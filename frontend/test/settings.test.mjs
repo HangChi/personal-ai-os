@@ -4,14 +4,8 @@ import { check, eq } from './assert.mjs'
  * 设置偏好纯函数（阶段 19，tasks T057 / contracts C-03）。
  */
 
-const {
-  SETTINGS_DEFAULTS,
-  SETTINGS_KEYS,
-  clampTopK,
-  clampLead,
-  mergeSettings,
-  conversationKnowledgeKey,
-} = await import('@/lib/settings')
+const { SETTINGS_DEFAULTS, SETTINGS_KEYS, clampTopK, clampLead, mergeSettings, conversationKnowledgeKey } =
+  await import('@/lib/settings')
 
 // ---- 默认值 ----
 
@@ -62,10 +56,10 @@ eq('提前量非数字回落默认', clampLead('x'), 15)
 
 {
   const merged = mergeSettings({
-    knowledgeDefaultOn: 'yes',   // 脏：应为布尔
-    knowledgeTopK: 999,          // 脏：越界
-    enterSend: 1,                // 脏：应为布尔
-    reminderLead: 'abc',         // 脏：应为数字
+    knowledgeDefaultOn: 'yes', // 脏：应为布尔
+    knowledgeTopK: 999, // 脏：越界
+    enterSend: 1, // 脏：应为布尔
+    reminderLead: 'abc', // 脏：应为数字
   })
   eq('脏布尔回落默认', merged.knowledgeDefaultOn, false)
   eq('越界 topK 收敛', merged.knowledgeTopK, 20)
@@ -75,9 +69,11 @@ eq('提前量非数字回落默认', clampLead('x'), 15)
 
 // ---- conversationKnowledgeKey ----
 
-eq('合法会话 id 构建键',
+eq(
+  '合法会话 id 构建键',
   conversationKnowledgeKey('cae6eee3-b88e-41a5-ba36-dac348e31a9b'),
-  'os.chat.knowledge.cae6eee3-b88e-41a5-ba36-dac348e31a9b')
+  'os.chat.knowledge.cae6eee3-b88e-41a5-ba36-dac348e31a9b',
+)
 eq('null → null', conversationKnowledgeKey(null), null)
 eq('空串 → null', conversationKnowledgeKey(''), null)
 eq('非法字符（下划线）→ null', conversationKnowledgeKey('bad_id'), null)
@@ -85,11 +81,5 @@ eq('超长 id → null', conversationKnowledgeKey('a'.repeat(65)), null)
 
 // ---- 键名不与既有偏好撞车 ----
 
-check(
-  '设置键互不相同',
-  new Set(Object.values(SETTINGS_KEYS)).size === 4,
-)
-check(
-  '会话键前缀不与设置键相同',
-  !Object.values(SETTINGS_KEYS).some((key) => key.startsWith('os.chat.knowledge.')),
-)
+check('设置键互不相同', new Set(Object.values(SETTINGS_KEYS)).size === 4)
+check('会话键前缀不与设置键相同', !Object.values(SETTINGS_KEYS).some((key) => key.startsWith('os.chat.knowledge.')))

@@ -82,12 +82,7 @@ export const useTaskStore = defineStore('task', () => {
     await load()
   }
 
-  async function create(
-    title: string,
-    priority: TaskPriority,
-    dueAt?: string,
-    tagsValue?: string[],
-  ): Promise<void> {
+  async function create(title: string, priority: TaskPriority, dueAt?: string, tagsValue?: string[]): Promise<void> {
     error.value = null
     try {
       await createTaskApi({ title, priority, dueAt, tags: tagsValue })

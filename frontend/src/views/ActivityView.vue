@@ -16,8 +16,7 @@ import type { ToolInvocationOutcome } from '@/types/api'
  * 审计记录由用户主动查看，自动刷新只会把正在读的行顶走。
  */
 const store = useActivityStore()
-const { invocations, page, size, total, outcome, loading, error, mcp, mcpLoading, mcpError } =
-  storeToRefs(store)
+const { invocations, page, size, total, outcome, loading, error, mcp, mcpLoading, mcpError } = storeToRefs(store)
 
 const OUTCOME_OPTIONS: { value: ToolInvocationOutcome; label: string }[] = [
   { value: 'SUCCESS', label: '成功' },
@@ -27,17 +26,15 @@ const OUTCOME_OPTIONS: { value: ToolInvocationOutcome; label: string }[] = [
   { value: 'DUPLICATE', label: '已去重' },
 ]
 
-const OUTCOME_META: Record<
-  ToolInvocationOutcome,
-  { label: string; type: 'success' | 'danger' | 'warning' | 'info' }
-> = {
-  SUCCESS: { label: '成功', type: 'success' },
-  FAILED: { label: '失败', type: 'danger' },
-  REJECTED: { label: '被拒绝', type: 'warning' },
-  REQUIRES_CONFIRMATION: { label: '待确认', type: 'warning' },
-  DUPLICATE: { label: '已去重', type: 'info' },
-  IN_PROGRESS: { label: '执行中', type: 'info' },
-}
+const OUTCOME_META: Record<ToolInvocationOutcome, { label: string; type: 'success' | 'danger' | 'warning' | 'info' }> =
+  {
+    SUCCESS: { label: '成功', type: 'success' },
+    FAILED: { label: '失败', type: 'danger' },
+    REJECTED: { label: '被拒绝', type: 'warning' },
+    REQUIRES_CONFIRMATION: { label: '待确认', type: 'warning' },
+    DUPLICATE: { label: '已去重', type: 'info' },
+    IN_PROGRESS: { label: '执行中', type: 'info' },
+  }
 
 onMounted(async () => {
   // 两块互不依赖，各自失败不影响另一块
@@ -48,9 +45,7 @@ onMounted(async () => {
  * 空表文案必须区分「一条都没有」与「筛掉了」。
  * 筛选后仍说「还没有调用过工具」会让人以为审计坏了，而实际只是过滤条件太窄。
  */
-const emptyText = computed(() =>
-  outcome.value === null ? '助手还没有调用过工具' : '没有符合筛选条件的记录',
-)
+const emptyText = computed(() => (outcome.value === null ? '助手还没有调用过工具' : '没有符合筛选条件的记录'))
 
 function outcomeMeta(value: ToolInvocationOutcome) {
   return OUTCOME_META[value] ?? { label: value, type: 'info' as const }
@@ -157,16 +152,8 @@ function handlePage(target: number): void {
           <el-table-column prop="toolCount" label="工具数" width="80" />
           <el-table-column label="只读直行" min-width="200">
             <template #default="{ row }">
-              <span v-if="row.autoTools.length === 0" class="activity__muted">
-                无（全部需确认）
-              </span>
-              <el-tag
-                v-for="tool in row.autoTools"
-                :key="tool"
-                class="activity__tool-tag"
-                size="small"
-                effect="plain"
-              >
+              <span v-if="row.autoTools.length === 0" class="activity__muted"> 无（全部需确认） </span>
+              <el-tag v-for="tool in row.autoTools" :key="tool" class="activity__tool-tag" size="small" effect="plain">
                 {{ tool }}
               </el-tag>
             </template>
@@ -186,12 +173,7 @@ function handlePage(target: number): void {
         <div class="activity__card-header">
           <span>工具调用记录</span>
           <div class="activity__filters">
-            <el-select
-              :model-value="outcome ?? 'ALL'"
-              size="small"
-              class="activity__filter"
-              @change="handleOutcome"
-            >
+            <el-select :model-value="outcome ?? 'ALL'" size="small" class="activity__filter" @change="handleOutcome">
               <el-option label="全部结果" value="ALL" />
               <el-option
                 v-for="option in OUTCOME_OPTIONS"
@@ -205,9 +187,7 @@ function handlePage(target: number): void {
               <el-radio-button value="table">表格</el-radio-button>
               <el-radio-button value="timeline">时间线</el-radio-button>
             </el-radio-group>
-            <el-button size="small" :loading="loading" @click="store.loadInvocations()">
-              刷新
-            </el-button>
+            <el-button size="small" :loading="loading" @click="store.loadInvocations()"> 刷新 </el-button>
           </div>
         </div>
       </template>
@@ -261,7 +241,10 @@ function handlePage(target: number): void {
             <ul class="activity__timeline-list">
               <li v-for="item in group.items" :key="item.id" class="activity__timeline-item">
                 <span class="activity__timeline-time">{{ formatTime(item.createdAt).slice(11) }}</span>
-                <span class="activity__timeline-dot" :class="`activity__timeline-dot--${outcomeMeta(item.outcome).type}`" />
+                <span
+                  class="activity__timeline-dot"
+                  :class="`activity__timeline-dot--${outcomeMeta(item.outcome).type}`"
+                />
                 <span class="activity__timeline-operation">{{ item.operation }}</span>
                 <el-tag :type="outcomeMeta(item.outcome).type" size="small" effect="plain">
                   {{ outcomeMeta(item.outcome).label }}

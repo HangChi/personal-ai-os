@@ -41,7 +41,11 @@ function task(id, status, dueAt) {
 
 {
   const columns = groupTasksByStatus([task('x', 'WEIRD')])
-  eq('未知状态不进任何列', columns.reduce((n, c) => n + c.items.length, 0), 0)
+  eq(
+    '未知状态不进任何列',
+    columns.reduce((n, c) => n + c.items.length, 0),
+    0,
+  )
 }
 
 // ---- 默认排序：截止升序，无截止排最后 ----

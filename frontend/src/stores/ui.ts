@@ -24,14 +24,10 @@ export const useUiStore = defineStore('ui', () => {
   /** 用户偏好（三态） */
   const theme = ref<ThemePreference>(normalizePreference(localStorage.getItem(THEME_STORAGE_KEY)))
   /** 解析后的实际主题 */
-  const resolvedTheme = ref<ResolvedTheme>(
-    resolveTheme(theme.value, prefersDark()),
-  )
+  const resolvedTheme = ref<ResolvedTheme>(resolveTheme(theme.value, prefersDark()))
 
   /** 任务页视图（C-05 / FR-010）：table | board */
-  const tasksView = ref<'table' | 'board'>(
-    localStorage.getItem('os.tasks.view') === 'board' ? 'board' : 'table',
-  )
+  const tasksView = ref<'table' | 'board'>(localStorage.getItem('os.tasks.view') === 'board' ? 'board' : 'table')
   /** 知识库 Tab（T026）：documents | search | ask */
   const knowledgeTab = ref<'documents' | 'search' | 'ask'>(
     localStorage.getItem('os.knowledge.tab') === 'search'

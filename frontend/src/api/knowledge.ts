@@ -1,10 +1,5 @@
 import { requestData } from '@/api/http'
-import type {
-  KnowledgeAskResponse,
-  KnowledgeDocument,
-  KnowledgeSearchResponse,
-  PageDto,
-} from '@/types/api'
+import type { KnowledgeAskResponse, KnowledgeDocument, KnowledgeSearchResponse, PageDto } from '@/types/api'
 
 /**
  * 知识库接口客户端。

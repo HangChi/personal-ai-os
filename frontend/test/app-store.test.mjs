@@ -19,13 +19,15 @@ const { useAppStore } = await import('@/stores/app')
 // ---- 成功：状态与依赖分量都拿到 ----
 
 {
-  handlers.set('/health', () => Promise.resolve({
-    status: 'UP',
-    application: 'personal-ai-os',
-    version: '0.1.0-SNAPSHOT',
-    timestamp: '2026-10-14T00:00:00Z',
-    components: { database: 'UP', ai: 'CONFIGURED' },
-  }))
+  handlers.set('/health', () =>
+    Promise.resolve({
+      status: 'UP',
+      application: 'personal-ai-os',
+      version: '0.1.0-SNAPSHOT',
+      timestamp: '2026-10-14T00:00:00Z',
+      components: { database: 'UP', ai: 'CONFIGURED' },
+    }),
+  )
   freshStore()
   const store = useAppStore()
   await store.loadHealth()

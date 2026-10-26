@@ -1,10 +1,6 @@
 import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
 
-import {
-  ApiBusinessError,
-  interpretAxiosError,
-  toBusinessError,
-} from '@/api/envelope'
+import { ApiBusinessError, interpretAxiosError, toBusinessError } from '@/api/envelope'
 import { type ApiResponse } from '@/types/api'
 
 /** 后端 API 基路径；开发期由 Vite 代理转发到 http://localhost:8080 */

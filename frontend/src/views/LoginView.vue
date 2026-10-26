@@ -68,22 +68,9 @@ async function submit(): Promise<void> {
           />
         </el-form-item>
 
-        <el-alert
-          v-if="localError"
-          class="login__error"
-          type="error"
-          :closable="false"
-          show-icon
-          :title="localError"
-        />
+        <el-alert v-if="localError" class="login__error" type="error" :closable="false" show-icon :title="localError" />
 
-        <el-button
-          class="login__submit"
-          type="primary"
-          :loading="loading"
-          native-type="submit"
-          @click="submit"
-        >
+        <el-button class="login__submit" type="primary" :loading="loading" native-type="submit" @click="submit">
           登录
         </el-button>
       </el-form>

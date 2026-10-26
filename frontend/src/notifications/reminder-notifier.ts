@@ -46,10 +46,7 @@ export type NotifyFn = (payload: NoticePayload) => void
  * @param permission  当前通知权限
  * @param pageVisible 页面是否可见
  */
-export function chooseChannel(
-  permission: NotificationPermissionState,
-  pageVisible: boolean,
-): DeliveryChannel {
+export function chooseChannel(permission: NotificationPermissionState, pageVisible: boolean): DeliveryChannel {
   if (pageVisible) {
     return 'inline'
   }
@@ -91,11 +88,7 @@ export class ReminderNotifier {
    * @param permission  当前通知权限
    * @param pageVisible 页面是否可见
    */
-  dispatch(
-    reminders: Reminder[],
-    permission: NotificationPermissionState,
-    pageVisible: boolean,
-  ): DispatchResult {
+  dispatch(reminders: Reminder[], permission: NotificationPermissionState, pageVisible: boolean): DispatchResult {
     const channel = chooseChannel(permission, pageVisible)
     const fresh = reminders.filter((reminder) => !this.notified.has(reminder.id))
     const skipped = reminders.length - fresh.length
@@ -105,9 +98,7 @@ export class ReminderNotifier {
     }
 
     const notices =
-      fresh.length > SUMMARY_THRESHOLD
-        ? [summaryNotice(fresh)]
-        : fresh.map((reminder) => singleNotice(reminder))
+      fresh.length > SUMMARY_THRESHOLD ? [summaryNotice(fresh)] : fresh.map((reminder) => singleNotice(reminder))
 
     // 先记账再发送：即使发送抛异常，也不该在下一轮重复打扰同一条提醒
     for (const reminder of fresh) {
