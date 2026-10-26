@@ -6,6 +6,7 @@ import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.common.text.Texts;
 import com.personalos.memory.dto.MemoryDto;
 import com.personalos.memory.entity.MemoryEntity;
+import com.personalos.memory.entity.MemorySource;
 import com.personalos.memory.repository.MemoryRepository;
 import java.time.Instant;
 import java.util.Comparator;
@@ -93,6 +94,25 @@ public class MemoryService {
      */
     @Transactional
     public MemoryDto create(String content) {
+        return create(content, MemorySource.MANUAL);
+    }
+
+    /**
+     * 自动沉淀写入（阶段 22）：来源标记为 {@link MemorySource#AUTO}。
+     *
+     * <p>与手工写入共用同一套归一、幂等与长度校验 ——
+     * 模型写进来的内容不该有「另一套规则」，否则清理脏数据时会更麻烦。
+     *
+     * <p>幂等命中已有内容时**不修改其来源**：已经存在的条目，来源以最初那次写入为准。
+     *
+     * @param content 待沉淀的陈述
+     * @return 落库后的视图（命中幂等时返回既有那条）
+     */
+    public MemoryDto createAuto(String content) {
+        return create(content, MemorySource.AUTO);
+    }
+
+    private MemoryDto create(String content, MemorySource source) {
         String normalized = normalize(content);
 
         return repository.findFirstByContent(normalized)
@@ -101,8 +121,8 @@ public class MemoryService {
                     return toDto(existing);
                 })
                 .orElseGet(() -> {
-                    MemoryEntity saved = repository.save(new MemoryEntity(normalized, Instant.now()));
-                    log.info("保存记忆 id={} 长度={}", saved.getId(), normalized.length());
+                    MemoryEntity saved = repository.save(new MemoryEntity(normalized, Instant.now(), source));
+                    log.info("保存记忆 id={} 长度={} 来源={}", saved.getId(), normalized.length(), source);
                     return toDto(saved);
                 });
     }
@@ -272,6 +292,6 @@ public class MemoryService {
 
     private MemoryDto toDto(MemoryEntity entity) {
         return new MemoryDto(entity.getId().toString(), entity.getContent(),
-                entity.getCreatedAt(), entity.getUpdatedAt());
+                entity.getSource().name(), entity.getCreatedAt(), entity.getUpdatedAt());
     }
 }

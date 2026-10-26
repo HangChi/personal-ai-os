@@ -2,6 +2,8 @@ package com.personalos.memory.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,14 +41,28 @@ public class MemoryEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    /**
+     * 来源（V13）：区分「用户显式保存」与「模型自动沉淀」。
+     *
+     * <p>存字符串而非 ordinal：枚举顺序一旦调整，ordinal 会静默指向另一个值。
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source", nullable = false, length = 16)
+    private MemorySource source = MemorySource.MANUAL;
+
     /** 供 JPA 使用 */
     protected MemoryEntity() {
     }
 
     public MemoryEntity(String content, Instant now) {
+        this(content, now, MemorySource.MANUAL);
+    }
+
+    public MemoryEntity(String content, Instant now, MemorySource source) {
         this.content = content;
         this.createdAt = now;
         this.updatedAt = now;
+        this.source = source == null ? MemorySource.MANUAL : source;
     }
 
     public UUID getId() {
@@ -63,6 +79,10 @@ public class MemoryEntity {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public MemorySource getSource() {
+        return source;
     }
 
     public void setContent(String content) {

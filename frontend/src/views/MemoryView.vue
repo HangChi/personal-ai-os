@@ -125,7 +125,12 @@ function formatTime(value: string): string {
           <span class="memory__index">{{ index + 1 }}</span>
           <div class="memory__body">
             <div class="memory__text">{{ memory.content }}</div>
-            <div class="memory__meta">最近更新 {{ formatTime(memory.updatedAt) }}</div>
+            <div class="memory__meta">
+              <el-tag v-if="memory.source === 'AUTO'" size="small" type="info" effect="plain" class="memory__source">
+                自动沉淀
+              </el-tag>
+              <span>最近更新 {{ formatTime(memory.updatedAt) }}</span>
+            </div>
           </div>
           <div class="memory__actions">
             <el-button link type="primary" size="small" @click="openEdit(memory)">编辑</el-button>
@@ -250,6 +255,14 @@ function formatTime(value: string): string {
   margin-top: 4px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 自动沉淀的记忆必须能被一眼识别：它是模型自己写的，排查与清理都要靠这个标记 */
+.memory__source {
+  font-size: 11px;
 }
 
 .memory__actions {

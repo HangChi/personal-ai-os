@@ -54,9 +54,13 @@ export interface ChatSession {
  * 跨会话生效：每次会话对话都会把它注入系统提示。
  * 注意这里没有分类/标签字段 —— 后端刻意不存没有消费方的东西。
  */
+/** 记忆来源：MANUAL = 显式保存，AUTO = 轮末由模型自动沉淀 */
+export type MemorySource = 'MANUAL' | 'AUTO'
+
 export interface Memory {
   id: string
   content: string
+  source: MemorySource
   createdAt: string
   updatedAt: string
 }

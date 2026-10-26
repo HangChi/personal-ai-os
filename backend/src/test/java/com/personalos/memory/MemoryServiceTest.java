@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.memory.entity.MemoryEntity;
+import com.personalos.memory.entity.MemorySource;
 import com.personalos.memory.repository.MemoryRepository;
 import com.personalos.memory.service.MemoryService;
 import java.time.Instant;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * {@link MemoryService} 单元测试：只 mock 仓储。
@@ -166,6 +168,45 @@ class MemoryServiceTest {
 
         verify(repository, never()).findFirstByContent(any());
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("create(): 默认来源是 MANUAL，且 DTO 带上该字段")
+    void createMarksManualSource() {
+        given(repository.findFirstByContent("周报周五交")).willReturn(Optional.empty());
+        stubSaveAssigningId();
+
+        assertThat(service.create("周报周五交").source()).isEqualTo("MANUAL");
+    }
+
+    @Test
+    @DisplayName("createAuto(): 来源标记为 AUTO —— 页面据此区分模型自行写入的条目")
+    void createAutoMarksAutoSource() {
+        given(repository.findFirstByContent("用户在做个人 AI OS 项目")).willReturn(Optional.empty());
+        stubSaveAssigningId();
+
+        assertThat(service.createAuto("用户在做个人 AI OS 项目").source()).isEqualTo("AUTO");
+    }
+
+    @Test
+    @DisplayName("createAuto(): 内容已存在时不改动其来源（来源以最初写入为准）")
+    void createAutoKeepsExistingSource() {
+        MemoryEntity existing = new MemoryEntity("周报周五交",
+                Instant.parse("2026-10-01T00:00:00Z"), MemorySource.MANUAL);
+        ReflectionTestUtils.setField(existing, "id", UUID.randomUUID());
+        given(repository.findFirstByContent("周报周五交")).willReturn(Optional.of(existing));
+
+        assertThat(service.createAuto("周报周五交").source()).isEqualTo("MANUAL");
+        verify(repository, never()).save(any());
+    }
+
+    /** 模拟 JPA 保存：补上生成的主键（否则 Service 内部映射 DTO 时 getId() 为 null） */
+    private void stubSaveAssigningId() {
+        given(repository.save(any(MemoryEntity.class))).willAnswer(invocation -> {
+            MemoryEntity saved = invocation.getArgument(0);
+            ReflectionTestUtils.setField(saved, "id", UUID.randomUUID());
+            return saved;
+        });
     }
 
     @Test

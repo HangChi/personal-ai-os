@@ -104,7 +104,8 @@ public class AutoMemoryService implements PostTurnContributor {
         }
         for (String fact : facts) {
             try {
-                memoryService.create(fact);
+                // 走 createAuto：来源标记为 AUTO，页面上能与手工记忆区分开
+                memoryService.createAuto(fact);
             } catch (RuntimeException ex) {
                 // 单条失败不影响其余条目（多半是长度或内容校验没过）
                 log.debug("单条记忆沉淀被拒绝 fact={}", fact, ex);

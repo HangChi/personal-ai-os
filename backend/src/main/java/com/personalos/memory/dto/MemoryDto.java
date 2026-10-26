@@ -9,8 +9,10 @@ import java.time.Instant;
  *
  * @param id        记忆标识
  * @param content   记忆原文
+ * @param source    来源：{@code MANUAL}（显式保存）/ {@code AUTO}（轮末自动沉淀）。
+ *                  V13 起提供，让页面能区分模型自行写入的条目
  * @param createdAt 首次保存时间
  * @param updatedAt 最近修改时间
  */
-public record MemoryDto(String id, String content, Instant createdAt, Instant updatedAt) {
+public record MemoryDto(String id, String content, String source, Instant createdAt, Instant updatedAt) {
 }
