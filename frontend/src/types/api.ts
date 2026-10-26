@@ -64,6 +64,23 @@ export interface Memory {
 /** 消息角色 */
 export type ChatRole = 'USER' | 'ASSISTANT' | 'SYSTEM'
 
+/**
+ * 知识库引用快照（阶段 19），对应后端 ChatCitationDto。
+ *
+ * 与知识页的检索命中不同：这里**不带** score / matchedBy——存档只需要
+ * 「回答当时引用了哪段」。
+ */
+export interface ChatCitation {
+  /** 引用编号 [n]，从 1 开始 */
+  index: number
+  documentId: string
+  documentTitle: string
+  filename: string
+  /** 片段在文档内的序号（0 起） */
+  chunkIndex: number
+  content: string
+}
+
 /** 消息视图，对应后端 ChatMessageDto */
 export interface ChatMessage {
   id: number
@@ -71,6 +88,8 @@ export interface ChatMessage {
   content: string
   sequenceNo: number
   createdAt: string
+  /** 知识库引用快照（阶段 19）：仅助手消息可能非空；用户消息恒为空数组 */
+  citations: ChatCitation[]
 }
 
 /** 任务状态 */

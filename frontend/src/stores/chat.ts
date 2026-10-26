@@ -15,7 +15,7 @@ import {
   confirmOperation,
   listConfirmations,
 } from '@/api/confirmations'
-import type { ChatMessage, ChatSession, TaskConfirmation, ToolInvocation } from '@/types/api'
+import type { ChatCitation, ChatMessage, ChatSession, TaskConfirmation, ToolInvocation } from '@/types/api'
 
 /**
  * 聊天状态：会话列表 + 当前会话消息 + 流式中的临时内容。
@@ -48,6 +48,21 @@ export const useChatStore = defineStore('chat', () => {
    * 理论上模型也可以「在回复里说已删除」，但只有这里才真的会删。
    */
   const pendingConfirmations = ref<TaskConfirmation[]>([])
+
+  /**
+   * 本轮（正在流式输出的这一轮）知识库检索命中（阶段 19）。
+   *
+   * 来源是 SSE citations 事件；done 之后消息列表会带落库后的引用接管，
+   * 这个 ref 只在流式中用于「已找到 N 条依据」的即时展示。
+   */
+  const liveCitations = ref<ChatCitation[]>([])
+  /**
+   * 本轮检索状态：idle 未开启 / searching 检索中 / done 已出结果（阶段 19）。
+   *
+   * 之所以不能只靠 liveCitations 判空：零命中时事件带着空数组到达，
+   * 与「事件还没到」无法区分——状态机会。
+   */
+  const retrievalState = ref<'idle' | 'searching' | 'done'>('idle')
 
   /**
    * 当前会话的工具调用轨迹（阶段 18，User Story 3 / T014）。
@@ -111,6 +126,8 @@ export const useChatStore = defineStore('chat', () => {
     loadingMessages.value = true
     error.value = null
     streamingContent.value = ''
+    liveCitations.value = []
+    retrievalState.value = 'idle'
     try {
       messages.value = await listMessages(conversationId)
       await loadConfirmations()
@@ -229,8 +246,11 @@ export const useChatStore = defineStore('chat', () => {
    *
    * 用户消息先乐观追加到本地列表（否则会出现「点发送后界面毫无反应」的观感），
    * 助手回复逐段追加到 `streamingContent`；结束后统一以服务端数据为准刷新。
+   *
+   * @param options 阶段 19：知识库增强参数。useKnowledge 为 false / 省略时
+   *                不带该字段，行为与阶段 1 一致
    */
-  async function send(content: string): Promise<void> {
+  async function send(content: string, options?: { useKnowledge?: boolean; topK?: number }): Promise<void> {
     const trimmed = content.trim()
     if (trimmed.length === 0 || streaming.value) {
       return
@@ -249,9 +269,12 @@ export const useChatStore = defineStore('chat', () => {
       content: trimmed,
       sequenceNo: messages.value.length + 1,
       createdAt: new Date().toISOString(),
+      citations: [],
     }
     messages.value = [...messages.value, optimisticUserMessage]
     streamingContent.value = ''
+    liveCitations.value = []
+    retrievalState.value = options?.useKnowledge ? 'searching' : 'idle'
     streaming.value = true
     error.value = null
     abortController = new AbortController()
@@ -261,6 +284,10 @@ export const useChatStore = defineStore('chat', () => {
         conversationId,
         trimmed,
         {
+          onCitations: (citations) => {
+            liveCitations.value = citations
+            retrievalState.value = 'done'
+          },
           onDelta: (chunk) => {
             streamingContent.value += chunk
           },
@@ -274,6 +301,7 @@ export const useChatStore = defineStore('chat', () => {
           },
         },
         abortController.signal,
+        options,
       )
     } catch (cause) {
       // abort 也会走到这里；若已主动停止则不再报错
@@ -284,6 +312,7 @@ export const useChatStore = defineStore('chat', () => {
     } finally {
       streaming.value = false
       abortController = null
+      retrievalState.value = 'idle'
       if (conversationId) {
         try {
           messages.value = await listMessages(conversationId)
@@ -319,6 +348,8 @@ export const useChatStore = defineStore('chat', () => {
     error,
     pendingConfirmations,
     toolTrail,
+    liveCitations,
+    retrievalState,
     loadSessions,
     searchSessions,
     goToSessionPage,

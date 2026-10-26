@@ -22,11 +22,14 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { useChatStore } from '@/stores/chat'
+import { clampTopK, conversationKnowledgeKey } from '@/lib/settings'
+import { useSettingsStore } from '@/stores/settings'
 import { groupSessionsByDay } from '@/lib/session-group'
 import { relativeTime } from '@/lib/relative-time'
 import type { ChatRole, ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
+const settingsStore = useSettingsStore()
 const {
   sessions,
   sessionsTotal,
@@ -42,11 +45,88 @@ const {
   error,
   pendingConfirmations,
   toolTrail,
+  liveCitations,
+  retrievalState,
 } = storeToRefs(chatStore)
+const { settings } = storeToRefs(settingsStore)
 
 const draft = ref('')
 const messageArea = ref<HTMLElement | null>(null)
 const resolvingId = ref<string | null>(null)
+
+// ---------------------------------------------------------------- 知识库增强（阶段 19）
+
+/**
+ * 当前会话的增强开关。
+ *
+ * 持久化按会话键存（`os.chat.knowledge.<会话id>`，C-03）；新会话（无键）
+ * 取设置页的全局默认。刻意不用 watch 写回——切会话时 loadKnowledgePref 会
+ * 改这个 ref，watch 紧接着把旧会话的值写到新会话的键上（静默串话）。
+ * 写回只在 toggleKnowledge 里显式发生。
+ */
+const knowledgeOn = ref(false)
+
+function loadKnowledgePref(): void {
+  const key = conversationKnowledgeKey(currentConversationId.value)
+  const stored = key ? localStorage.getItem(key) : null
+  knowledgeOn.value = stored === null ? settings.value.knowledgeDefaultOn : stored === 'true'
+}
+
+watch(currentConversationId, () => loadKnowledgePref())
+
+function toggleKnowledge(next: string | number | boolean): void {
+  knowledgeOn.value = next === true
+  const key = conversationKnowledgeKey(currentConversationId.value)
+  if (key) {
+    localStorage.setItem(key, String(knowledgeOn.value))
+  }
+}
+
+/** 检索条数：直接绑定设置页默认值（clamp 在 setter 里，非法输入进不了 store） */
+const topK = computed({
+  get: () => settings.value.knowledgeTopK,
+  set: (value: number | null) => {
+    settings.value.knowledgeTopK = clampTopK(value)
+  },
+})
+
+/** 流式中的检索提示（C-04）：状态机区分「还没查到」与「查了但没有」 */
+const retrievalHint = computed(() => {
+  if (retrievalState.value === 'searching') {
+    return '正在检索知识库…'
+  }
+  if (retrievalState.value === 'done' && liveCitations.value.length === 0) {
+    return '未找到相关依据'
+  }
+  if (retrievalState.value === 'done') {
+    return `已找到 ${liveCitations.value.length} 条依据`
+  }
+  return null
+})
+
+/**
+ * 输入框键盘行为（FR-012 / 设置驱动）：
+ * - enterSend（默认）：Enter 发送，Shift+Enter 换行
+ * - 关闭时：Enter 换行，Ctrl/Cmd+Enter 发送
+ */
+function handleComposerKeydown(event: KeyboardEvent): void {
+  if (event.key !== 'Enter') {
+    return
+  }
+  if (event.isComposing) {
+    // 中文输入法选词期间的 Enter 不触发发送（否则打不了中文）
+    return
+  }
+  if (settings.value.enterSend) {
+    if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault()
+      void handleSend()
+    }
+  } else if (event.ctrlKey || event.metaKey) {
+    event.preventDefault()
+    void handleSend()
+  }
+}
 
 const canSend = computed(() => draft.value.trim().length > 0 && !streaming.value)
 
@@ -156,6 +236,7 @@ watch([() => messages.value.length, streamingContent], () => {
 })
 
 onMounted(async () => {
+  loadKnowledgePref()
   await chatStore.loadSessions()
   const first = sessions.value[0]
   if (!currentConversationId.value && first) {
@@ -169,7 +250,10 @@ async function handleSend(): Promise<void> {
   }
   const content = draft.value
   draft.value = ''
-  await chatStore.send(content)
+  await chatStore.send(content, {
+    useKnowledge: knowledgeOn.value,
+    topK: topK.value,
+  })
 }
 
 async function handleNewSession(): Promise<void> {
@@ -349,6 +433,31 @@ async function handleRename(session: ChatSession): Promise<void> {
               </el-button>
             </div>
             <MarkdownRenderer class="chat__message-content" :content="message.content" />
+            <!-- 知识库引用区（阶段 19，C-04）：默认折叠，>3 条时收起 -->
+            <div v-if="message.citations.length > 0" class="chat__citations">
+              <el-collapse>
+                <el-collapse-item>
+                  <template #title>
+                    <span class="chat__citations-title">引用来源（{{ message.citations.length }}）</span>
+                  </template>
+                  <div
+                    v-for="citation in message.citations"
+                    :key="citation.index"
+                    class="chat__citation"
+                  >
+                    <div class="chat__citation-head">
+                      <span class="chat__citation-source">
+                        [{{ citation.index }}] {{ citation.documentTitle }}
+                        <span class="chat__citation-meta">
+                          {{ citation.filename }} · #{{ citation.chunkIndex + 1 }}
+                        </span>
+                      </span>
+                    </div>
+                    <div class="chat__citation-content">{{ citation.content }}</div>
+                  </div>
+                </el-collapse-item>
+              </el-collapse>
+            </div>
           </div>
         </div>
 
@@ -362,7 +471,11 @@ async function handleRename(session: ChatSession): Promise<void> {
           <div class="chat__message-bubble">
             <div class="chat__message-meta">
               <span class="chat__message-role">助手</span>
-              <span class="chat__message-time">正在输入</span>
+              <!-- 检索状态机提示（C-04）：检索中 / 已找到 N 条 / 未找到 -->
+              <span v-if="retrievalHint" class="chat__message-time chat__message-time--status">
+                {{ retrievalHint }}
+              </span>
+              <span v-else class="chat__message-time">正在输入</span>
             </div>
             <MarkdownRenderer :content="streamingContent" streaming />
           </div>
@@ -430,6 +543,21 @@ async function handleRename(session: ChatSession): Promise<void> {
         </div>
       </div>
 
+      <!-- 知识库增强控制条（阶段 19）：开关 + 检索条数，常驻不闪烁 -->
+      <div class="chat__knowledge">
+        <div class="chat__knowledge-toggle">
+          <el-switch :model-value="knowledgeOn" @change="toggleKnowledge" />
+          <span class="chat__knowledge-label">知识库增强</span>
+          <el-tooltip content="开启后每条消息先检索知识库，助手基于检索结果回答并标注 [n] 引用" placement="top">
+            <el-icon class="chat__knowledge-help"><QuestionFilled /></el-icon>
+          </el-tooltip>
+        </div>
+        <div v-if="knowledgeOn" class="chat__knowledge-topk">
+          <span class="chat__knowledge-label">检索条数</span>
+          <el-input-number v-model="topK" :min="1" :max="20" size="small" />
+        </div>
+      </div>
+
       <div class="chat__composer">
         <el-input
           v-model="draft"
@@ -438,8 +566,12 @@ async function handleRename(session: ChatSession): Promise<void> {
           maxlength="4000"
           show-word-limit
           resize="none"
-          placeholder="输入消息；Enter 发送，Shift + Enter 换行"
-          @keydown.enter.exact.prevent="handleSend"
+          :placeholder="
+            settings.enterSend
+              ? '输入消息；Enter 发送，Shift + Enter 换行'
+              : '输入消息；Ctrl + Enter 发送，Enter 换行'
+          "
+          @keydown="handleComposerKeydown"
         />
         <div class="chat__composer-actions">
           <el-button v-if="streaming" @click="chatStore.stopStreaming()">停止</el-button>
@@ -739,6 +871,91 @@ async function handleRename(session: ChatSession): Promise<void> {
 
 .chat__composer {
   margin-top: var(--os-space-3);
+}
+
+/* ---- 知识库增强控制条（阶段 19）---- */
+
+.chat__knowledge {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--os-space-4);
+  margin-top: var(--os-space-3);
+  padding: var(--os-space-2) var(--os-space-3);
+  border-radius: var(--os-radius-md);
+  background: var(--el-fill-color-lighter);
+}
+
+.chat__knowledge-toggle,
+.chat__knowledge-topk {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+}
+
+.chat__knowledge-label {
+  color: var(--el-text-color-regular);
+  font-size: var(--os-font-xs);
+}
+
+.chat__knowledge-help {
+  cursor: help;
+  color: var(--el-text-color-secondary);
+}
+
+/* ---- 消息引用区（阶段 19，C-04）---- */
+
+.chat__citations {
+  margin-top: var(--os-space-2);
+  border-top: 1px dashed var(--el-border-color-lighter);
+}
+
+.chat__citations-title {
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+}
+
+.chat__citation {
+  padding: var(--os-space-1) 0 var(--os-space-1) 10px;
+  border-left: 3px solid var(--el-color-primary-light-5);
+}
+
+.chat__citation + .chat__citation {
+  margin-top: var(--os-space-2);
+}
+
+.chat__citation-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--os-space-2);
+}
+
+.chat__citation-source {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.chat__citation-meta {
+  margin-left: var(--os-space-1);
+  color: var(--el-text-color-secondary);
+  font-weight: 400;
+}
+
+.chat__citation-content {
+  margin-top: 2px;
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+  /* 片段可能很长：默认限高，避免把消息流撑爆 */
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat__message-time--status {
+  color: var(--el-color-primary);
 }
 
 .chat__confirmations {

@@ -4,11 +4,13 @@ import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { useCalendarStore } from '@/stores/calendar'
+import { useSettingsStore } from '@/stores/settings'
 import { buildMonthCells, groupByLocalDay, monthRange, shiftMonth } from '@/lib/calendar-dates'
 import type { UpdateEventPayload } from '@/api/calendar'
 import type { CalendarEvent, CalendarOccurrence, RecurrenceType, Reminder } from '@/types/api'
 
 const calendarStore = useCalendarStore()
+const settingsStore = useSettingsStore()
 const {
   dueReminders,
   notificationPermission,
@@ -30,7 +32,7 @@ const allDay = ref(false)
 const range = ref<[Date, Date] | null>(null)
 const recurrenceType = ref<RecurrenceType>('NONE')
 const recurrenceUntil = ref<Date | null>(null)
-const leadMinutes = ref(15)
+const leadMinutes = ref(settingsStore.settings.reminderLead)
 
 const recurrenceOptions: Array<{ label: string; value: RecurrenceType }> = [
   { label: '不重复', value: 'NONE' },

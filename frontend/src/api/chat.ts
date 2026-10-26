@@ -1,5 +1,5 @@
 import { requestData } from '@/api/http'
-import type { ChatMessage, ChatSession, PageDto } from '@/types/api'
+import type { ChatCitation, ChatMessage, ChatSession, PageDto } from '@/types/api'
 
 /**
  * 聊天接口客户端。
@@ -73,12 +73,22 @@ export function listMessages(conversationId: string): Promise<ChatMessage[]> {
 export interface StreamHandlers {
   /** 流建立后触发一次 */
   onStart?: (conversationId: string) => void
+  /** 知识库增强开启且检索完成后触发一次（阶段 19）；空数组表示零命中 */
+  onCitations?: (citations: ChatCitation[]) => void
   /** 每个内容增量触发一次 */
   onDelta: (content: string) => void
   /** 正常结束，参数为完整回复 */
   onDone: (content: string) => void
   /** 失败，参数为可直接展示的中文文案 */
   onError: (message: string) => void
+}
+
+/** 流式对话的可选参数（阶段 19） */
+export interface StreamChatOptions {
+  /** 启用知识库增强：先检索再回答，回复带 [n] 引用 */
+  useKnowledge?: boolean
+  /** 检索条数（1~20，缺省 4；服务端权威收敛） */
+  topK?: number
 }
 
 function streamUrl(conversationId: string): string {
@@ -92,6 +102,8 @@ function streamUrl(conversationId: string): string {
  * 不使用 `EventSource`：它无法发送 POST 请求体，且会自动重连 ——
  * 对话场景下自动重连意味着**重复提问**，是错误行为。
  *
+ * @param options 阶段 19：知识库增强参数。省略 useKnowledge 时请求体不带该字段，
+ *                服务端按 false 处理（与阶段 1 行为一致）
  * @returns 会话被正常结束或失败时 resolve；被 abort 时 reject
  */
 export async function streamChat(
@@ -99,11 +111,19 @@ export async function streamChat(
   content: string,
   handlers: StreamHandlers,
   signal?: AbortSignal,
+  options?: StreamChatOptions,
 ): Promise<void> {
+  const payload: Record<string, unknown> = { content }
+  if (options?.useKnowledge !== undefined) {
+    payload.useKnowledge = options.useKnowledge
+  }
+  if (options?.topK !== undefined) {
+    payload.topK = options.topK
+  }
   const response = await fetch(streamUrl(conversationId), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-    body: JSON.stringify({ content }),
+    body: JSON.stringify(payload),
     signal,
   })
 
@@ -168,6 +188,13 @@ function dispatchEvent(eventName: string, payload: string, handlers: StreamHandl
     case 'start':
       handlers.onStart?.(String(parsed.conversationId ?? ''))
       break
+    case 'citations': {
+      // 阶段 19：知识库检索结果。count 与 citations 长度一致，
+      // 载荷里只消费 citations（count 是给日志/排查看的冗余字段）。
+      const list = Array.isArray(parsed.citations) ? parsed.citations : []
+      handlers.onCitations?.(list as ChatCitation[])
+      break
+    }
     case 'delta':
       handlers.onDelta(String(parsed.content ?? ''))
       break

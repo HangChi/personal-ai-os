@@ -17,14 +17,14 @@
 
 ## Phase B — 前端：对话增强交互
 
-- [ ] **T057** `src/lib/settings.ts` 纯函数：`clampTopK` / `mergeSettings` / `conversationKnowledgeKey` + `frontend/test/settings.test.mjs`（脏值 / 越界 / 键格式）
-- [ ] **T058** `src/stores/settings.ts`：`os.settings.*` 四项偏好 + watch 持久化 + `resetAll()`（清 `os.` 前缀 + reload）
-- [ ] **T059** `api/chat.ts`：`StreamHandlers.onCitations` + `dispatchEvent` citations 分支；`streamChat` 请求体带 `useKnowledge` / `topK`
-- [ ] **T060** `stores/chat.ts`：`send(content, {useKnowledge, topK})`；`liveCitations` ref（本轮命中，供流式中展示）；types/api.ts 加 `ChatCitation` 与 `ChatMessage.citations`
-- [ ] **T061** `ChatView.vue`：输入区增强开关（会话级持久化，新会话取设置默认）+ topK 调整 + 「正在检索知识库… / 已找到 N 条依据」状态 + Enter/Ctrl+Enter 行为（设置驱动）
-- [ ] **T062** `ChatView.vue` 引用区：助手消息下方 `引用来源（N）` 折叠展示（编号/标题/文件名/片段号/内容），样式复用知识页引用样式
-- [ ] **T063** `CalendarView.vue`：`leadMinutes` 初值取 `settings.reminderLead`
-- [ ] **T064** 门禁：type_check + test:logic（基线 314 + 新增）+ build
+- [x] **T057** `src/lib/settings.ts` 纯函数：`clampTopK` / `mergeSettings` / `conversationKnowledgeKey` + `frontend/test/settings.test.mjs`（脏值 / 越界 / 键格式）
+- [x] **T058** `src/stores/settings.ts`：`os.settings.*` 四项偏好 + watch 持久化 + `resetAll()`（清 `os.` 前缀 + reload）
+- [x] **T059** `api/chat.ts`：`StreamHandlers.onCitations` + `dispatchEvent` citations 分支；`streamChat` 请求体带 `useKnowledge` / `topK`
+- [x] **T060** `stores/chat.ts`：`send(content, {useKnowledge, topK})`；`liveCitations` ref（本轮命中，供流式中展示）；types/api.ts 加 `ChatCitation` 与 `ChatMessage.citations`
+- [x] **T061** `ChatView.vue`：输入区增强开关（会话级持久化，新会话取设置默认）+ topK 调整 + 「正在检索知识库… / 已找到 N 条依据」状态 + Enter/Ctrl+Enter 行为（设置驱动）
+- [x] **T062** `ChatView.vue` 引用区：助手消息下方 `引用来源（N）` 折叠展示（编号/标题/文件名/片段号/内容），样式复用知识页引用样式
+- [x] **T063** `CalendarView.vue`：`leadMinutes` 初值取 `settings.reminderLead`
+- [x] **T064** 门禁：type_check + test:logic（基线 314 + 新增）+ build
 
 ## Phase C — 前端：设置页
 
@@ -48,6 +48,16 @@
 6. 每段提交前门禁全绿 + 真机动作留截图（quickstart）；未验项保持未勾选。
 
 ## 完成记录（实现时回填）
+
+### Phase B（前端：对话增强交互）
+
+- 门禁：type-check 0 错；test:logic **348/348**（基线 314 + 新增 34 条 settings 纯函数测试）；build 通过。
+- 真机（Playwright 全过）：开关按会话键持久化；开增强发问 → 4 条引用 + 回答带 [1] 编号；刷新后引用与开关都在；关增强再发无引用；Enter 默认发送；控制台零报错。
+- 实现要点：
+  - 会话级开关**不用 watch 写回**——切会话时 loadKnowledgePref 改 ref，watch 会把旧会话值写到新会话键上（静默串话）；写回只在 toggleKnowledge 显式发生。
+  - 检索状态用三态机（idle/searching/done）而非 liveCitations 判空：零命中时 citations 事件带空数组到达，与「事件没到」无法区分。
+  - topK 用 computed setter 直接绑设置页默认值（clamp 在 setter），避免同步逻辑。
+  - Enter 行为含 isComposing 守卫：中文输入法选词期的 Enter 不触发发送。
 
 ### Phase A（后端：检索注入 + 引用落库）
 
