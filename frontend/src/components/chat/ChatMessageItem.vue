@@ -10,11 +10,19 @@
  */
 import { ChatLineRound, CopyDocument, User } from '@element-plus/icons-vue'
 
+import { Document } from '@element-plus/icons-vue'
+
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { relativeTime } from '@/lib/relative-time'
-import type { ChatMessage } from '@/types/api'
+import type { ChatAttachment, ChatMessage } from '@/types/api'
 
 defineProps<{ message: ChatMessage }>()
+
+/** 附件内容地址：后端给的是相对路径，这里拼 API 基路径 */
+function attachmentUrl(item: ChatAttachment): string {
+  const base = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
+  return `${base}/chat/uploads/${item.id}/content`
+}
 
 const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 </script>
@@ -65,6 +73,28 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
     <!-- 用户：右侧主色气泡 -->
     <template v-else>
       <div class="chat-msg__content chat-msg__content--user">
+        <!-- 附件渲染在气泡**上方**：它是用户带过来的材料，先于文字被读到 -->
+        <div v-if="message.attachments.length > 0" class="chat-msg__attachments">
+          <a
+            v-for="item in message.attachments"
+            :key="item.id"
+            :href="attachmentUrl(item)"
+            target="_blank"
+            rel="noopener"
+            class="chat-msg__attachment"
+            :title="item.filename"
+          >
+            <img
+              v-if="item.contentType.startsWith('image/')"
+              :src="attachmentUrl(item)"
+              :alt="item.filename"
+              class="chat-msg__attachment-image"
+              loading="lazy"
+            />
+            <el-icon v-else class="chat-msg__attachment-icon"><Document /></el-icon>
+            <span class="chat-msg__attachment-name">{{ item.filename }}</span>
+          </a>
+        </div>
         <div class="chat-msg__bubble chat-msg__bubble--user">
           <MarkdownRenderer :content="message.content" />
         </div>
@@ -123,11 +153,12 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 }
 
 /*
- * 可读性上限：不限制宽度时，一条长回答在 1440px 屏上能拉到 130+ 字符/行，
- * 视线换行容易串行。760px 约合中文 38~42 字，是长文阅读的舒适区间。
+ * 宽度上限（2026-10-26 调整）：原先 760px，在 1440px 屏上右侧会空出 350px 以上，
+ * 对话区显得「没占满」。放到 1000px（约合中文 77 字）后内容铺满主列，
+ * 同时仍留出一道右边距，避免文字顶到卡片边缘。
  */
 .chat-msg__content {
-  max-width: 760px;
+  max-width: 1000px;
 }
 
 .chat-msg__content--user {
@@ -225,6 +256,53 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 
 .chat-msg__action:hover {
   color: var(--el-color-primary);
+}
+
+/* ---- 附件（阶段 22） ---- */
+
+.chat-msg__attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--os-space-2);
+  margin-bottom: var(--os-space-2);
+}
+
+.chat-msg__attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  padding: 4px 8px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--os-radius-md);
+  background: var(--el-bg-color);
+  color: var(--el-text-color-regular);
+  font-size: var(--os-font-xs);
+  text-decoration: none;
+}
+
+.chat-msg__attachment:hover {
+  border-color: var(--el-color-primary-light-5);
+  color: var(--el-color-primary);
+}
+
+/* 图片缩略图：固定方块 + 裁切，避免长图把消息流撑歪 */
+.chat-msg__attachment-image {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--os-radius-sm);
+  object-fit: cover;
+  flex: none;
+}
+
+.chat-msg__attachment-icon {
+  color: var(--el-text-color-secondary);
+}
+
+.chat-msg__attachment-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---- 引用区（阶段 19，随新布局收紧） ---- */

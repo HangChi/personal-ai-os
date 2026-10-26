@@ -1,5 +1,7 @@
 import { requestData } from '@/api/http'
-import type { ChatCitation, ChatMessage, ChatSession, PageDto } from '@/types/api'
+import type { ApiResponse } from '@/types/api'
+import type { ChatAttachment, ChatCitation, ChatMessage, ChatSession, PageDto } from '@/types/api'
+import { http } from '@/api/http'
 import type { ThinkingLevel } from '@/lib/settings'
 
 /**
@@ -93,7 +95,7 @@ export interface StreamHandlers {
   /** 每个内容增量触发一次 */
   onDelta: (content: string) => void
   /** 正常结束，参数为完整回复 */
-  onDone: (content: string) => void
+  onDone: (content: string, context?: { promptChars: number; contextBudget: number }) => void
   /** 失败，参数为可直接展示的中文文案 */
   onError: (message: string) => void
 }
@@ -106,6 +108,8 @@ export interface StreamChatOptions {
   topK?: number
   /** 模型思考程度：off=不思考（缺省），standard/deep 对应 DashScope 的思考预算 */
   thinkingLevel?: ThinkingLevel
+  /** 附件名片（阶段 22）：发送前已上传拿到标识，随消息一起持久化 */
+  attachments?: ChatAttachment[]
 }
 
 function streamUrl(conversationId: string): string {
@@ -139,6 +143,9 @@ export async function streamChat(
   }
   if (options?.thinkingLevel !== undefined) {
     payload.thinkingLevel = options.thinkingLevel
+  }
+  if (options?.attachments !== undefined && options.attachments.length > 0) {
+    payload.attachments = options.attachments
   }
   const response = await fetch(streamUrl(conversationId), {
     method: 'POST',
@@ -219,7 +226,10 @@ function dispatchEvent(eventName: string, payload: string, handlers: StreamHandl
       handlers.onDelta(String(parsed.content ?? ''))
       break
     case 'done':
-      handlers.onDone(String(parsed.content ?? ''))
+      handlers.onDone(String(parsed.content ?? ''), {
+        promptChars: Number(parsed.promptChars ?? 0),
+        contextBudget: Number(parsed.contextBudget ?? 0),
+      })
       break
     case 'error':
       handlers.onError(String(parsed.message ?? 'AI 服务调用失败'))
@@ -240,4 +250,33 @@ async function readErrorMessage(response: Response): Promise<string> {
     // 落到下面的兜底文案
   }
   return `请求失败（HTTP ${response.status}）`
+}
+
+/**
+ * 上传一个聊天附件（阶段 22）。
+ *
+ * 单独一步而不是随消息一起提交：文件可能较大，先上传拿到标识，
+ * 「选文件」失败就不会连带把消息发出去；消息发送也不必等待传输。
+ */
+export async function uploadAttachment(file: File): Promise<ChatAttachment> {
+  const form = new FormData()
+  form.append('file', file)
+  const response = await http.post<ApiResponse<ChatAttachment>>('/chat/uploads', form)
+  const body = response.data
+  if (body.code !== 0 || !body.data) {
+    throw new Error(body.message || '附件上传失败')
+  }
+  return body.data
+}
+
+/**
+ * 查询会话的上下文用量（阶段 22 仪表盘）。
+ *
+ * 刷新页面后拿不到上一轮的 done 事件，选中会话时补查一次才能显示仪表盘。
+ */
+export function fetchContextUsage(conversationId: string): Promise<{ promptChars: number; contextBudget: number }> {
+  return requestData<{ promptChars: number; contextBudget: number }>({
+    url: `/chat/sessions/${conversationId}/context`,
+    method: 'get',
+  })
 }

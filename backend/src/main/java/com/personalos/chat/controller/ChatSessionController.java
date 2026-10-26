@@ -1,6 +1,7 @@
 package com.personalos.chat.controller;
 
 import com.personalos.chat.dto.ChatMessageDto;
+import com.personalos.chat.dto.ChatContextUsageDto;
 import com.personalos.chat.dto.ChatSessionDto;
 import com.personalos.chat.dto.ChatSessionQuery;
 import com.personalos.chat.dto.CreateSessionRequest;
@@ -9,6 +10,7 @@ import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.chat.service.ChatCompletionService;
 import com.personalos.chat.service.ChatMessageService;
 import com.personalos.chat.service.ChatSessionService;
+import com.personalos.common.ai.AiProperties;
 import com.personalos.common.api.ApiResponse;
 import com.personalos.common.api.PageDto;
 import com.personalos.common.json.JsonCodec;
@@ -42,13 +44,16 @@ public class ChatSessionController {
     private final ChatSessionService sessionService;
     private final ChatMessageService messageService;
     private final ChatCompletionService completionService;
+    private final AiProperties aiProperties;
 
     public ChatSessionController(ChatSessionService sessionService,
                                  ChatMessageService messageService,
-                                 ChatCompletionService completionService) {
+                                 ChatCompletionService completionService,
+                                 AiProperties aiProperties) {
         this.sessionService = sessionService;
         this.messageService = messageService;
         this.completionService = completionService;
+        this.aiProperties = aiProperties;
     }
 
     /**
@@ -120,7 +125,22 @@ public class ChatSessionController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody StreamChatRequest request) {
         return completionService.stream(conversationId, request.content(), toTurnId(idempotencyKey),
-                request.knowledgeEnabled(), request.resolvedTopK(), request.resolvedThinkingLevel());
+                request.knowledgeEnabled(), request.resolvedTopK(), request.resolvedThinkingLevel(),
+                request.resolvedAttachments());
+    }
+
+    /**
+     * 查询会话的上下文用量（阶段 22 仪表盘）。
+     *
+     * <p>单独端点而不是塞进消息列表：消息列表是高频读路径，
+     * 而仪表盘数据只在选中会话时需要一次，且计算要扫消息表。
+     */
+    @GetMapping("/sessions/{conversationId}/context")
+    public ApiResponse<ChatContextUsageDto> contextUsage(@PathVariable String conversationId) {
+        sessionService.requireSession(conversationId);
+        return ApiResponse.ok(new ChatContextUsageDto(
+                completionService.estimatePromptChars(conversationId),
+                aiProperties.memory().maxContextChars()));
     }
 
     /**

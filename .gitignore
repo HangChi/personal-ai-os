@@ -63,6 +63,9 @@ tmp/
 # ---- 运行时数据目录 ----
 /data/
 /uploads/
+# 聊天附件的落盘位置（阶段 22）。用户上传的文件是隐私数据，一律不入库；
+# 注意 /data/ 只匹配仓库根目录，backend/data/ 必须单独写一条。
+/backend/data/
 
 # ---- Python 缓存（scripts/dev 下的开发脚本）----
 __pycache__/

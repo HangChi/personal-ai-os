@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import {
   createSession as createSessionApi,
   deleteSession as deleteSessionApi,
+  fetchContextUsage,
   listMessages,
   listSessions,
   renameSession as renameSessionApi,
@@ -11,7 +12,14 @@ import {
 } from '@/api/chat'
 import { listToolInvocations } from '@/api/activity'
 import { cancelOperation, confirmOperation, listConfirmations } from '@/api/confirmations'
-import type { ChatCitation, ChatMessage, ChatSession, TaskConfirmation, ToolInvocation } from '@/types/api'
+import type {
+  ChatAttachment,
+  ChatCitation,
+  ChatMessage,
+  ChatSession,
+  TaskConfirmation,
+  ToolInvocation,
+} from '@/types/api'
 import type { ThinkingLevel } from '@/lib/settings'
 
 /**
@@ -84,6 +92,14 @@ export const useChatStore = defineStore('chat', () => {
    */
   const toolTrail = ref<ToolInvocation[]>([])
 
+  /**
+   * 最近一轮的上下文用量（阶段 22 仪表盘）。
+   *
+   * 由后端在 done 事件里给出：前端拿不到拼装后的系统提示，
+   * 自己估算等于给用户看一个假数字。0 表示还没产生过对话。
+   */
+  const contextUsage = ref<{ promptChars: number; contextBudget: number }>({ promptChars: 0, contextBudget: 0 })
+
   let abortController: AbortController | null = null
 
   async function loadSessions(targetPage: number = sessionsPage.value): Promise<void> {
@@ -141,6 +157,12 @@ export const useChatStore = defineStore('chat', () => {
       messages.value = page
       // 刚好装满一页 ⇒ 很可能还有更早的；不足一页 ⇒ 已经到头
       hasOlderMessages.value = page.length === MESSAGE_PAGE_SIZE
+      // 仪表盘数据：done 事件只在当轮有效，刷新页面后靠这里补一次
+      try {
+        contextUsage.value = await fetchContextUsage(conversationId)
+      } catch {
+        // 仪表盘是增强信息，查不到就不显示，不该影响会话打开
+      }
       await loadConfirmations()
       await loadToolTrail()
     } catch (cause) {
@@ -148,6 +170,7 @@ export const useChatStore = defineStore('chat', () => {
       hasOlderMessages.value = false
       pendingConfirmations.value = []
       toolTrail.value = []
+      contextUsage.value = { promptChars: 0, contextBudget: 0 }
       error.value = cause instanceof Error ? cause.message : '加载消息失败'
     } finally {
       loadingMessages.value = false
@@ -221,6 +244,7 @@ export const useChatStore = defineStore('chat', () => {
   async function loadToolTrail(): Promise<void> {
     if (!currentConversationId.value) {
       toolTrail.value = []
+      contextUsage.value = { promptChars: 0, contextBudget: 0 }
       return
     }
     try {
@@ -231,6 +255,7 @@ export const useChatStore = defineStore('chat', () => {
       toolTrail.value = result.items
     } catch {
       toolTrail.value = []
+      contextUsage.value = { promptChars: 0, contextBudget: 0 }
     }
   }
 
@@ -303,7 +328,12 @@ export const useChatStore = defineStore('chat', () => {
    */
   async function send(
     content: string,
-    options?: { useKnowledge?: boolean; topK?: number; thinkingLevel?: ThinkingLevel },
+    options?: {
+      useKnowledge?: boolean
+      topK?: number
+      thinkingLevel?: ThinkingLevel
+      attachments?: ChatAttachment[]
+    },
   ): Promise<void> {
     const trimmed = content.trim()
     if (trimmed.length === 0 || streaming.value) {
@@ -327,6 +357,7 @@ export const useChatStore = defineStore('chat', () => {
       sequenceNo: nextSequenceNo,
       createdAt: new Date().toISOString(),
       citations: [],
+      attachments: options?.attachments ?? [],
     }
     messages.value = [...messages.value, optimisticUserMessage]
     streamingContent.value = ''
@@ -348,7 +379,10 @@ export const useChatStore = defineStore('chat', () => {
           onDelta: (chunk) => {
             streamingContent.value += chunk
           },
-          onDone: () => {
+          onDone: (_content, context) => {
+            if (context && context.contextBudget > 0) {
+              contextUsage.value = context
+            }
             // 清空临时内容，随后由服务端数据接管，避免出现重复渲染
             streamingContent.value = ''
           },
@@ -407,6 +441,7 @@ export const useChatStore = defineStore('chat', () => {
     error,
     pendingConfirmations,
     toolTrail,
+    contextUsage,
     liveCitations,
     retrievalState,
     loadSessions,

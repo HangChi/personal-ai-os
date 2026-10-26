@@ -15,11 +15,17 @@
  * <p>耗时字段可能是 null（未真正执行，例如停在待确认），显示为「—」而不是 0ms ——
  * 两者语义完全不同。
  */
+import { ArrowRight, Operation } from '@element-plus/icons-vue'
+import { computed } from 'vue'
+
 import StatusTag from '@/components/StatusTag.vue'
 import { relativeTime } from '@/lib/relative-time'
 import type { ToolInvocation } from '@/types/api'
 
-defineProps<{ items: ToolInvocation[] }>()
+const props = defineProps<{ items: ToolInvocation[] }>()
+
+/** 汇总行要能一眼看出「有没有失败的」：失败数是唯一需要主动提醒的信号 */
+const failedCount = computed(() => props.items.filter((item) => item.outcome === 'FAILED').length)
 
 /** 工具调用结果徽标映射（StatusTag 的 map） */
 const OUTCOME_MAP: Record<string, { label: string; type: 'success' | 'danger' | 'warning' | 'info' }> = {
@@ -48,18 +54,32 @@ function formatDuration(durationMs: number | null): string {
 </script>
 
 <template>
-  <section class="chat-trail">
-    <h4 class="chat-trail__head">工具调用 · {{ items.length }}</h4>
-    <ul class="chat-trail__list">
-      <li v-for="item in items" :key="item.id" class="chat-trail__item">
-        <span class="chat-trail__dot" :class="`chat-trail__dot--${OUTCOME_DOT[item.outcome] ?? 'info'}`" />
-        <span class="chat-trail__operation">{{ item.operation }}</span>
-        <StatusTag :status="item.outcome" :map="OUTCOME_MAP" />
-        <span class="chat-trail__duration">{{ formatDuration(item.durationMs) }}</span>
-        <span class="chat-trail__time">{{ relativeTime(item.createdAt) }}</span>
-      </li>
-    </ul>
-  </section>
+  <!--
+    默认折叠：工具调用是「想深究时再看」的过程信息，全部展开会挤占对话本身。
+    标题行只给一句汇总（调了几个、成败如何），点一下才展开明细 ——
+    与 WorkBuddy / Codex 一类 agent 的做法一致。
+  -->
+  <el-collapse v-if="items.length > 0" class="chat-trail">
+    <el-collapse-item>
+      <template #title>
+        <span class="chat-trail__summary">
+          <el-icon :size="12"><Operation /></el-icon>
+          已调用 {{ items.length }} 个工具
+          <span v-if="failedCount > 0" class="chat-trail__summary-fail">{{ failedCount }} 个失败</span>
+          <el-icon class="chat-trail__chevron"><ArrowRight /></el-icon>
+        </span>
+      </template>
+      <ul class="chat-trail__list">
+        <li v-for="item in items" :key="item.id" class="chat-trail__item">
+          <span class="chat-trail__dot" :class="`chat-trail__dot--${OUTCOME_DOT[item.outcome] ?? 'info'}`" />
+          <span class="chat-trail__operation">{{ item.operation }}</span>
+          <StatusTag :status="item.outcome" :map="OUTCOME_MAP" />
+          <span class="chat-trail__duration">{{ formatDuration(item.durationMs) }}</span>
+          <span class="chat-trail__time">{{ relativeTime(item.createdAt) }}</span>
+        </li>
+      </ul>
+    </el-collapse-item>
+  </el-collapse>
 </template>
 
 <style scoped>
@@ -70,14 +90,52 @@ function formatDuration(durationMs: number | null): string {
 .chat-trail {
   /* 与助手气泡左对齐（头像 28 + 间距 12），视觉上归属于助手这一侧 */
   margin-left: 40px;
-  padding: var(--os-space-1) 0;
+  /* 去掉 EP 折叠面板自带的边框与底色：它是对话流里的一行，不是设置面板 */
+  border-top: none;
+  --el-collapse-border-color: transparent;
+  --el-collapse-header-bg-color: transparent;
+  --el-collapse-content-bg-color: transparent;
 }
 
-.chat-trail__head {
-  margin: 0 0 var(--os-space-1);
+.chat-trail :deep(.el-collapse-item__header) {
+  min-height: 24px;
+  padding: 0 var(--os-space-2);
+  border-bottom: none;
+  line-height: 24px;
+}
+
+.chat-trail :deep(.el-collapse-item__content) {
+  padding-bottom: var(--os-space-1);
+}
+
+.chat-trail :deep(.el-collapse-item__wrap) {
+  background: transparent;
+}
+
+/* 汇总行：弱化到「一行小字」，箭头提示可展开 */
+.chat-trail__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
-  font-weight: 400;
+  color: var(--el-text-color-secondary);
+}
+
+.chat-trail__summary .el-icon {
   color: var(--el-text-color-placeholder);
+}
+
+.chat-trail__chevron {
+  transition: transform var(--os-duration-fast) var(--os-ease);
+}
+
+/* EP 给展开项加 is-active，箭头随之转向 */
+.chat-trail :deep(.el-collapse-item.is-active) .chat-trail__chevron {
+  transform: rotate(90deg);
+}
+
+.chat-trail__summary-fail {
+  color: var(--el-color-danger);
 }
 
 .chat-trail__list {

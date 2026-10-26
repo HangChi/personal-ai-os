@@ -33,8 +33,16 @@ public final class ChatStreamEvents {
     public record Delta(String content) {
     }
 
-    /** 事件 {@code done}：正常结束时推送，携带完整回复 */
-    public record Done(String conversationId, String content) {
+    /**
+     * 事件 {@code done}：正常结束时推送，携带完整回复。
+     *
+     * @param promptChars   本轮实际送给模型的上下文字符数（系统提示 + 窗口内历史 + 本条消息）。
+     *                      阶段 22 新增，供前端「上下文长度仪表盘」显示真实用量 ——
+     *                      前端拿不到拼装后的系统提示，自己估算等于给用户看一个假数字
+     * @param contextBudget 上下文字符预算（{@code app.ai.memory.max-context-chars}）。
+     *                      一并下发，仪表盘的分母才是真的，而不是前端写死的常量
+     */
+    public record Done(String conversationId, String content, int promptChars, int contextBudget) {
     }
 
     /**

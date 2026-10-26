@@ -11,10 +11,13 @@
  *   <li>输入法选词期间的 Enter 一律不发送（否则打不了中文）</li>
  * </ul>
  */
-import { ArrowDown, Reading } from '@element-plus/icons-vue'
-import { nextTick, onMounted, ref, watch } from 'vue'
+import { ArrowDown, Close, Document, Paperclip, Reading } from '@element-plus/icons-vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
+import { uploadAttachment } from '@/api/chat'
+import { ElMessage } from 'element-plus'
 import { THINKING_HINTS, THINKING_LABELS, type ThinkingLevel } from '@/lib/settings'
+import type { ChatAttachment } from '@/types/api'
 
 const props = defineProps<{
   /** 输入内容（v-model） */
@@ -27,6 +30,10 @@ const props = defineProps<{
   topK: number
   /** 模型思考程度 */
   thinkingLevel: ThinkingLevel
+  /** 本轮上下文字符数（0 表示尚未对话） */
+  contextChars: number
+  /** 上下文字符预算 */
+  contextBudget: number
   /** Enter 是否直接发送（来自设置页偏好） */
   enterSend: boolean
 }>()
@@ -36,9 +43,113 @@ const emit = defineEmits<{
   (e: 'update:topK', value: number | null): void
   (e: 'update:thinkingLevel', value: ThinkingLevel): void
   (e: 'toggle-knowledge', next: boolean): void
-  (e: 'send'): void
+  (e: 'send', attachments: ChatAttachment[]): void
   (e: 'stop'): void
 }>()
+
+/**
+ * 待发送的附件（阶段 22）。
+ *
+ * <p>本地持有而不是提升到父组件：它只在本轮输入有效，发送后即清空。
+ * 提升上去反而要让父组件多管一份「什么时候该清」的状态。
+ */
+const attachments = ref<ChatAttachment[]>([])
+const uploading = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
+
+/** 单文件上限与后端一致（20MB）：前端先挡一道，省得传完才被拒 */
+const MAX_SIZE = 20 * 1024 * 1024
+
+async function pickFiles(files: FileList | null): Promise<void> {
+  if (!files || files.length === 0) {
+    return
+  }
+  uploading.value = true
+  try {
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_SIZE) {
+        ElMessage.error(`${file.name} 超过 20MB`)
+        continue
+      }
+      try {
+        const uploaded = await uploadAttachment(file)
+        attachments.value = [...attachments.value, uploaded]
+      } catch {
+        // 上传失败不影响已选中的其他文件，也不阻断输入
+        ElMessage.error(`${file.name} 上传失败`)
+      }
+    }
+  } finally {
+    uploading.value = false
+    // 清空 input 的 value，否则连续选同一个文件不会触发 change
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
+  }
+}
+
+function removeAttachment(id: string): void {
+  attachments.value = attachments.value.filter((item) => item.id !== id)
+}
+
+/** 发送后由父组件回调这里清空（父组件持有 draft，清空也归它） */
+function handleSend(): void {
+  emit('send', attachments.value)
+  attachments.value = []
+}
+
+/** 文件大小可读化：附件行里显示，避免一长串字节数 */
+function formatSize(bytes: number): string {
+  if (bytes < 1024) {
+    return `${bytes} B`
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(0)} KB`
+  }
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
+
+/**
+ * 仪表盘百分比：超出预算时钉在 100%（条形图不溢出），由颜色与数字表达超限。
+ */
+const meterPercent = computed(() => {
+  if (props.contextBudget <= 0) {
+    return 0
+  }
+  return Math.min(100, Math.round((props.contextChars / props.contextBudget) * 100))
+})
+
+/** 超 85% 转琥珀、超 100% 转红：颜色是「该收尾了」的预警，不是装饰 */
+const meterLevel = computed(() => {
+  const percent = meterPercent.value
+  if (percent >= 100) {
+    return 'chat-composer__meter-fill--over'
+  }
+  if (percent >= 85) {
+    return 'chat-composer__meter-fill--warn'
+  }
+  return ''
+})
+
+const meterText = computed(() => `${formatK(props.contextChars)} / ${formatK(props.contextBudget)}`)
+
+const meterTitle = computed(() => {
+  if (props.contextChars <= 0) {
+    return '本轮尚未产生上下文用量'
+  }
+  return `本轮送给模型约 ${props.contextChars} 字（预算 ${props.contextBudget} 字）。超预算后更早的历史会被整体丢弃，不切半条。`
+})
+
+/** 附件内容地址：后端返回的是相对路径，这里拼上 API 基路径 */
+function attachmentUrl(item: ChatAttachment): string {
+  const base = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
+  return `${base}/chat/uploads/${item.id}/content`
+}
+
+/** 1234 → 1.2k */
+function formatK(value: number): string {
+  return value >= 1000 ? `${(value / 1000).toFixed(1)}k` : String(value)
+}
 
 /** 条数下拉的候选项：常用值 + 上限，避免用户为了填 20 而点十下步进器 */
 const TOP_K_OPTIONS = [2, 4, 6, 8, 12, 20]
@@ -54,11 +165,11 @@ function handleKeydown(event: KeyboardEvent): void {
   if (props.enterSend) {
     if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
       event.preventDefault()
-      emit('send')
+      handleSend()
     }
   } else if (event.ctrlKey || event.metaKey) {
     event.preventDefault()
-    emit('send')
+    handleSend()
   }
 }
 
@@ -95,6 +206,30 @@ onMounted(autosize)
 <template>
   <div class="chat-composer">
     <div class="chat-composer__toolbar">
+      <!--
+        上下文仪表盘：条 + 数字。放在工具栏而不是 footer —— 它描述的是
+        「这一轮带了什么」，与知识库增强同属「本轮上下文构成」。
+      -->
+      <div v-if="contextBudget > 0" class="chat-composer__meter" :title="meterTitle">
+        <span class="chat-composer__meter-label">上下文</span>
+        <span class="chat-composer__meter-track">
+          <span class="chat-composer__meter-fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
+        </span>
+        <span class="chat-composer__meter-value">{{ meterText }}</span>
+      </div>
+
+      <button
+        type="button"
+        class="chat-composer__chip"
+        :class="{ 'chat-composer__chip--on': knowledgeOn }"
+        title="添加附件"
+        @click="fileInput?.click()"
+      >
+        <el-icon :size="12"><Paperclip /></el-icon>
+        附件
+        <span v-if="uploading">…</span>
+      </button>
+
       <button
         type="button"
         class="chat-composer__chip"
@@ -122,7 +257,32 @@ onMounted(autosize)
       </el-select>
     </div>
 
+    <!-- 附件条：只在有附件时出现，避免常驻占位 -->
+    <div v-if="attachments.length > 0" class="chat-composer__attachments">
+      <div v-for="item in attachments" :key="item.id" class="chat-composer__attachment">
+        <el-image
+          v-if="item.contentType.startsWith('image/')"
+          :src="attachmentUrl(item)"
+          fit="cover"
+          class="chat-composer__attachment-thumb"
+        />
+        <el-icon v-else class="chat-composer__attachment-icon"><Document /></el-icon>
+        <span class="chat-composer__attachment-name" :title="item.filename">{{ item.filename }}</span>
+        <span class="chat-composer__attachment-size">{{ formatSize(item.size) }}</span>
+        <el-button link size="small" title="移除" @click="removeAttachment(item.id)">
+          <el-icon :size="12"><Close /></el-icon>
+        </el-button>
+      </div>
+    </div>
+
     <div ref="root" class="chat-composer__box">
+      <input
+        ref="fileInput"
+        type="file"
+        multiple
+        class="chat-composer__file-input"
+        @change="pickFiles(($event.target as HTMLInputElement).files)"
+      />
       <el-input
         :model-value="modelValue"
         class="chat-composer__textarea"
@@ -158,7 +318,7 @@ onMounted(autosize)
           @command="(value: ThinkingLevel) => emit('update:thinkingLevel', value)"
         >
           <el-button text size="small" class="chat-composer__thinking-trigger">
-            思考：{{ THINKING_LABELS[thinkingLevel] }}
+            {{ THINKING_LABELS[thinkingLevel] }}
             <el-icon :size="11"><ArrowDown /></el-icon>
           </el-button>
           <template #dropdown>
@@ -179,7 +339,7 @@ onMounted(autosize)
         </el-dropdown>
 
         <el-button v-if="streaming" round @click="emit('stop')">停止</el-button>
-        <el-button v-else type="primary" round :disabled="modelValue.trim().length === 0" @click="emit('send')">
+        <el-button v-else type="primary" round :disabled="modelValue.trim().length === 0" @click="handleSend">
           发送
         </el-button>
       </div>
@@ -203,6 +363,50 @@ onMounted(autosize)
   flex-wrap: wrap;
   gap: var(--os-space-2);
   margin-bottom: var(--os-space-2);
+}
+
+.chat-composer__meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.chat-composer__meter-label {
+  color: var(--el-text-color-placeholder);
+  font-size: var(--os-font-xs);
+}
+
+/* 48px 细条：够看清比例，又不至于像个按钮 */
+.chat-composer__meter-track {
+  display: inline-block;
+  width: 48px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--el-fill-color);
+  overflow: hidden;
+}
+
+.chat-composer__meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--el-color-primary);
+  transition: width var(--os-duration-normal) var(--os-ease);
+}
+
+.chat-composer__meter-fill--warn {
+  background: var(--el-color-warning);
+}
+
+.chat-composer__meter-fill--over {
+  background: var(--el-color-danger);
+}
+
+.chat-composer__meter-value {
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+  font-variant-numeric: tabular-nums;
 }
 
 .chat-composer__chip {
@@ -268,6 +472,55 @@ onMounted(autosize)
 .chat-composer__thinking-desc {
   color: var(--el-text-color-placeholder);
   font-size: var(--os-font-xs);
+}
+
+/* ---- 附件条 ---- */
+
+.chat-composer__attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--os-space-2);
+  margin-bottom: var(--os-space-2);
+}
+
+.chat-composer__attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 240px;
+  padding: 4px 6px 4px 8px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--os-radius-md);
+  background: var(--el-fill-color-lighter);
+  font-size: var(--os-font-xs);
+}
+
+.chat-composer__attachment-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--os-radius-sm);
+  flex: none;
+}
+
+.chat-composer__attachment-icon {
+  color: var(--el-text-color-secondary);
+}
+
+.chat-composer__attachment-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--el-text-color-regular);
+}
+
+.chat-composer__attachment-size {
+  flex: none;
+  color: var(--el-text-color-placeholder);
+}
+
+/* 原生 file input 常驻隐藏但仍可被 click() 触发 */
+.chat-composer__file-input {
+  display: none;
 }
 
 /* ---- 输入框（带边界的外盒 + 内部无框文本域） ---- */

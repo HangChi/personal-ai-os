@@ -29,13 +29,16 @@ public class ChatMessageService {
     private final ChatMessageRepository messageRepository;
     private final ChatSessionService sessionService;
     private final ChatCitationService citationService;
+    private final ChatAttachmentService attachmentService;
 
     public ChatMessageService(ChatMessageRepository messageRepository,
                               ChatSessionService sessionService,
-                              ChatCitationService citationService) {
+                              ChatCitationService citationService,
+                              ChatAttachmentService attachmentService) {
         this.messageRepository = messageRepository;
         this.sessionService = sessionService;
         this.citationService = citationService;
+        this.attachmentService = attachmentService;
     }
 
     /**
@@ -109,7 +112,8 @@ public class ChatMessageService {
                         message.getContent(),
                         message.getSequenceNo(),
                         message.getCreatedAt(),
-                        citationsByMessage.getOrDefault(message.getId(), List.of())))
+                        citationsByMessage.getOrDefault(message.getId(), List.of()),
+                        attachmentService.fromJson(message.getAttachments())))
                 .toList();
     }
 }

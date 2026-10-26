@@ -65,6 +65,14 @@ export interface Memory {
   updatedAt: string
 }
 
+/** 聊天附件名片（阶段 22）。文件本体经 url 取，这里只是展示元数据 */
+export interface ChatAttachment {
+  id: string
+  filename: string
+  contentType: string
+  size: number
+}
+
 /** 消息角色 */
 export type ChatRole = 'USER' | 'ASSISTANT' | 'SYSTEM'
 
@@ -94,6 +102,8 @@ export interface ChatMessage {
   createdAt: string
   /** 知识库引用快照（阶段 19）：仅助手消息可能非空；用户消息恒为空数组 */
   citations: ChatCitation[]
+  /** 附件名片（阶段 22）：仅用户消息可能有；用户消息恒为空数组 */
+  attachments: ChatAttachment[]
 }
 
 /** 任务状态 */

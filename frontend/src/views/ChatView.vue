@@ -23,7 +23,7 @@ import ChatWelcome from '@/components/chat/ChatWelcome.vue'
 import { useChatStore } from '@/stores/chat'
 import { clampTopK, conversationKnowledgeKey, type ThinkingLevel } from '@/lib/settings'
 import { useSettingsStore } from '@/stores/settings'
-import type { ChatSession, TaskConfirmation } from '@/types/api'
+import type { ChatAttachment, ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
 const settingsStore = useSettingsStore()
@@ -46,6 +46,7 @@ const {
   toolTrail,
   liveCitations,
   retrievalState,
+  contextUsage,
 } = storeToRefs(chatStore)
 const { settings } = storeToRefs(settingsStore)
 
@@ -178,7 +179,7 @@ onMounted(async () => {
   }
 })
 
-async function handleSend(): Promise<void> {
+async function handleSend(attachments: ChatAttachment[] = []): Promise<void> {
   if (!canSend.value) {
     return
   }
@@ -188,6 +189,7 @@ async function handleSend(): Promise<void> {
     useKnowledge: knowledgeOn.value,
     topK: topK.value,
     thinkingLevel: settings.value.thinkingLevel,
+    attachments,
   })
 }
 
@@ -311,6 +313,8 @@ async function handleRename(session: ChatSession): Promise<void> {
           :knowledge-on="knowledgeOn"
           :top-k="topK"
           :thinking-level="settings.thinkingLevel"
+          :context-chars="contextUsage.promptChars"
+          :context-budget="contextUsage.contextBudget"
           :enter-send="settings.enterSend"
           @toggle-knowledge="toggleKnowledge"
           @update:top-k="(value: number | null) => (topK = value)"

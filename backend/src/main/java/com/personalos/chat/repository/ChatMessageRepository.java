@@ -1,6 +1,7 @@
 package com.personalos.chat.repository;
 
 import com.personalos.chat.entity.ChatMessageEntity;
+import com.personalos.chat.entity.MessageRole;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +49,10 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
                                                  Pageable pageable);
 
     long countByConversationId(String conversationId);
+
+    /** 取某会话最新的用户消息（附件挂载用：附件属于用户发的那条） */
+    java.util.Optional<ChatMessageEntity> findFirstByConversationIdAndMessageTypeOrderBySequenceNoDesc(
+            String conversationId, MessageRole messageType);
 
     /**
      * 取顺序号落在 {@code [fromSeq, toSeq]} 区间内的消息，正序。

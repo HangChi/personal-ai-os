@@ -35,6 +35,10 @@ public class ChatMessageEntity {
     @Column(name = "content", nullable = false, columnDefinition = "text")
     private String content;
 
+    /** 附件元数据 JSON 数组（V14）；null = 无附件。文件本体在磁盘上 */
+    @Column(name = "attachments", columnDefinition = "text")
+    private String attachments;
+
     @Column(name = "sequence_no", nullable = false)
     private Integer sequenceNo;
 
@@ -68,6 +72,14 @@ public class ChatMessageEntity {
 
     public String getContent() {
         return content;
+    }
+
+    public String getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(String attachments) {
+        this.attachments = attachments;
     }
 
     public Integer getSequenceNo() {

@@ -1,6 +1,9 @@
 package com.personalos.chat.service;
 
+import com.personalos.chat.dto.ChatAttachmentDto;
 import com.personalos.chat.dto.ChatCitationDto;
+import com.personalos.chat.entity.ChatMessageEntity;
+import com.personalos.chat.entity.MessageRole;
 import com.personalos.chat.dto.ChatStreamEvents;
 import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.chat.dto.ThinkingLevel;
@@ -11,17 +14,20 @@ import com.personalos.common.ai.PostTurnContributor;
 import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
+import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.knowledge.spi.KnowledgeSearchPort;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -61,6 +67,8 @@ public class ChatCompletionService {
     /** 知识库检索窄接口（阶段 19）。用 ObjectProvider：knowledge 模块的 bean 不在时降级为普通对话 */
     private final ObjectProvider<KnowledgeSearchPort> knowledgeSearch;
     private final ChatCitationService citationService;
+    private final ChatMessageRepository messageRepository;
+    private final ChatAttachmentService attachmentService;
     private final ChatSummaryService summaryService;
     /** 轮末钩子（记忆自动沉淀等）：通过 SPI 收集，chat 不认识具体业务模块 */
     private final ObjectProvider<PostTurnContributor> postTurnContributors;
@@ -72,7 +80,9 @@ public class ChatCompletionService {
                                  ObjectProvider<KnowledgeSearchPort> knowledgeSearch,
                                  ChatCitationService citationService,
                                  ChatSummaryService summaryService,
-                                 ObjectProvider<PostTurnContributor> postTurnContributors) {
+                                 ObjectProvider<PostTurnContributor> postTurnContributors,
+                                 ChatMessageRepository messageRepository,
+                                 ChatAttachmentService attachmentService) {
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
         this.aiProperties = aiProperties;
@@ -81,6 +91,8 @@ public class ChatCompletionService {
         this.citationService = citationService;
         this.summaryService = summaryService;
         this.postTurnContributors = postTurnContributors;
+        this.messageRepository = messageRepository;
+        this.attachmentService = attachmentService;
     }
 
     /**
@@ -89,7 +101,8 @@ public class ChatCompletionService {
      * <p>保留此重载：阶段 1~18 的调用方与测试无需改动，行为逐字符一致。
      */
     public SseEmitter stream(String conversationId, String userContent, String turnId) {
-        return stream(conversationId, userContent, turnId, false, StreamChatRequest.DEFAULT_TOP_K, ThinkingLevel.OFF);
+        return stream(conversationId, userContent, turnId, false, StreamChatRequest.DEFAULT_TOP_K,
+                ThinkingLevel.OFF, List.of());
     }
 
     /**
@@ -116,7 +129,8 @@ public class ChatCompletionService {
      * @return SSE 发射器
      */
     public SseEmitter stream(String conversationId, String userContent, String turnId,
-                             boolean useKnowledge, int topK, ThinkingLevel thinkingLevel) {
+                             boolean useKnowledge, int topK, ThinkingLevel thinkingLevel,
+                             List<ChatAttachmentDto> requestAttachments) {
         sessionService.requireSession(conversationId);
         ChatClient chatClient = aiProvider.requireChatClient();
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
@@ -129,6 +143,8 @@ public class ChatCompletionService {
         AtomicBoolean terminated = new AtomicBoolean(false);
         // 命中快照：检索在 defer 里才发生，终帧回调需要读它，故用原子引用跨阶段传递
         AtomicReference<List<KnowledgeHitDto>> hitsRef = new AtomicReference<>(List.of());
+        // 本轮上下文字符数（仪表盘用）：在 defer 里算，终帧回调里读
+        AtomicInteger promptCharsRef = new AtomicInteger(0);
         // 订阅可能先于赋值完成（切了线程池之后尤其如此），回调里必须能容忍 null
         AtomicReference<Disposable> subscriptionRef = new AtomicReference<>();
 
@@ -137,10 +153,16 @@ public class ChatCompletionService {
         Flux<String> contentFlux = Flux.defer(() -> {
             List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter);
             hitsRef.set(hits);
+            String systemPrompt = systemPromptWithContributions(hits, userContent, conversationId);
+            // 上下文用量：系统提示 + 本条用户消息。
+            // 窗口内的历史由 Advisor 在请求链路里装载，这里拿不到原文，
+            // 因此用「窗口条数 × 已存消息的平均长度」估算并在事件里如实标注为估算值。
+            int historyChars = estimateHistoryChars(conversationId);
+            promptCharsRef.set(systemPrompt.length() + userContent.length() + historyChars);
             ChatClient.ChatClientRequestSpec request = chatClient.prompt()
                     // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                     // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
-                    .system(systemPromptWithContributions(hits, userContent, conversationId))
+                    .system(systemPrompt)
                     .user(userContent)
                     // 会话标识通过 advisor 参数传入，Advisor 据此装载并回写该会话的上下文
                     .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
@@ -195,8 +217,26 @@ public class ChatCompletionService {
                     }
 
                     send(emitter, EVENT_DONE,
-                            new ChatStreamEvents.Done(conversationId, fullContent.toString()));
+                            new ChatStreamEvents.Done(conversationId, fullContent.toString(),
+                                    promptCharsRef.get(), aiProperties.memory().maxContextChars()));
                     emitter.complete();
+
+                    // 附件挂载（阶段 22）：附件属于用户发的那条消息，而它由 Advisor 落库，
+                    // 因此只能在此刻补写 attachments 列 —— 与引用挂载同一时机、同一些约束。
+                    List<ChatAttachmentDto> attachments = attachmentService.verify(requestAttachments);
+                    if (!attachments.isEmpty()) {
+                        try {
+                            messageRepository
+                                    .findFirstByConversationIdAndMessageTypeOrderBySequenceNoDesc(
+                                            conversationId, MessageRole.USER)
+                                    .ifPresent(message -> {
+                                        message.setAttachments(attachmentService.toJson(attachments));
+                                        messageRepository.save(message);
+                                    });
+                        } catch (RuntimeException ex) {
+                            log.warn("附件挂载失败（不影响本轮回答） conversationId={}", conversationId, ex);
+                        }
+                    }
 
                     // 轮末动作（阶段 22）：摘要刷新与记忆沉淀都只影响**下一轮**，
                     // 因此一律异步提交，绝不让它们拖住本轮的收尾。
@@ -232,6 +272,51 @@ public class ChatCompletionService {
         });
 
         return emitter;
+    }
+
+    /**
+     * 估算窗口内历史的字符数（供上下文仪表盘）。
+     *
+     * <p>为什么是估算：历史由 {@code MessageChatMemoryAdvisor} 在请求链路里装载，
+     * 这个方法拿不到最终窗口的原文。用「该会话全部消息的总字符 ÷ 消息条数 × 窗口条数」
+     * 逼近，误差来自「窗口只取尾部」与「消息长短不均」。
+     *
+     * <p>仪表盘是给用户看趋势的，不是计费用途 —— 所以估算够用，
+     * 且不值得为它把整条请求链路改成可观测。
+     */
+    /**
+     * 估算某个会话下一次请求的上下文字符数（仪表盘用）。
+     *
+     * <p>与流内计算同源，但独立可调：刷新页面后前端拿不到 done 事件，
+     * 需要单独查一次才能显示仪表盘。
+     */
+    public int estimatePromptChars(String conversationId) {
+        String systemPrompt = systemPromptWithContributions(List.of(), "", conversationId);
+        List<ChatMessageEntity> recent = messageRepository
+                .findRecentByConversationId(conversationId, PageRequest.of(0, 1));
+        int lastUserChars = recent.isEmpty() || recent.get(0).getContent() == null
+                ? 0
+                : recent.get(0).getContent().length();
+        return systemPrompt.length() + lastUserChars + estimateHistoryChars(conversationId);
+    }
+
+    private int estimateHistoryChars(String conversationId) {
+        int limit = aiProperties.memory().maxMessages();
+        List<ChatMessageEntity> recent = messageRepository
+                .findRecentByConversationId(conversationId, PageRequest.of(0, limit + 1));
+        if (recent.isEmpty()) {
+            return 0;
+        }
+        long total = recent.stream()
+                .mapToLong(message -> message.getContent() == null ? 0 : message.getContent().length())
+                .sum();
+        // 多取一条（limit + 1）用于判断「是否还有更早的消息被窗口挡掉」，
+        // 这里只用前 limit 条算平均，避免把窗口外的长消息算进来
+        int counted = Math.min(recent.size(), limit);
+        long countedChars = recent.subList(0, counted).stream()
+                .mapToLong(message -> message.getContent() == null ? 0 : message.getContent().length())
+                .sum();
+        return (int) (countedChars / Math.max(1, counted) * Math.min(counted, limit));
     }
 
     /**
