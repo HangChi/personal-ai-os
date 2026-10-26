@@ -4,7 +4,7 @@ import { check, eq } from './assert.mjs'
  * 设置偏好纯函数（阶段 19，tasks T057 / contracts C-03）。
  */
 
-const { SETTINGS_DEFAULTS, SETTINGS_KEYS, clampTopK, clampLead, mergeSettings, conversationKnowledgeKey } =
+const { SETTINGS_DEFAULTS, SETTINGS_KEYS, clampTopK, clampLead, clampThinkingLevel, mergeSettings, conversationKnowledgeKey } =
   await import('@/lib/settings')
 
 // ---- 默认值 ----
@@ -13,6 +13,7 @@ eq('默认增强关', SETTINGS_DEFAULTS.knowledgeDefaultOn, false)
 eq('默认 topK 4', SETTINGS_DEFAULTS.knowledgeTopK, 4)
 eq('默认 Enter 发送', SETTINGS_DEFAULTS.enterSend, true)
 eq('默认提前 15 分钟', SETTINGS_DEFAULTS.reminderLead, 15)
+eq('默认不思考', SETTINGS_DEFAULTS.thinkingLevel, 'off')
 
 // ---- clampTopK ----
 
@@ -81,5 +82,6 @@ eq('超长 id → null', conversationKnowledgeKey('a'.repeat(65)), null)
 
 // ---- 键名不与既有偏好撞车 ----
 
-check('设置键互不相同', new Set(Object.values(SETTINGS_KEYS)).size === 4)
+// 键数不写死：与「设置项个数」对齐，将来加设置项不用回来改这条
+check('设置键互不相同', new Set(Object.values(SETTINGS_KEYS)).size === Object.keys(SETTINGS_DEFAULTS).length)
 check('会话键前缀不与设置键相同', !Object.values(SETTINGS_KEYS).some((key) => key.startsWith('os.chat.knowledge.')))
