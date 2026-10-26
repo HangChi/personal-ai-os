@@ -4,8 +4,15 @@ import { check, eq } from './assert.mjs'
  * 设置偏好纯函数（阶段 19，tasks T057 / contracts C-03）。
  */
 
-const { SETTINGS_DEFAULTS, SETTINGS_KEYS, clampTopK, clampLead, clampThinkingLevel, mergeSettings, conversationKnowledgeKey } =
-  await import('@/lib/settings')
+const {
+  SETTINGS_DEFAULTS,
+  SETTINGS_KEYS,
+  clampTopK,
+  clampLead,
+  clampThinkingLevel,
+  mergeSettings,
+  conversationKnowledgeKey,
+} = await import('@/lib/settings')
 
 // ---- 默认值 ----
 
@@ -33,6 +40,16 @@ eq('提前量合法值原样', clampLead(30), 30)
 eq('提前量下限 0', clampLead(-1), 0)
 eq('提前量上限 10080', clampLead(99999), 10080)
 eq('提前量非数字回落默认', clampLead('x'), 15)
+
+// ---- clampThinkingLevel ----
+
+eq('standard 原样', clampThinkingLevel('standard'), 'standard')
+eq('deep 原样', clampThinkingLevel('deep'), 'deep')
+eq('off 原样', clampThinkingLevel('off'), 'off')
+eq('大小写变体回落默认', clampThinkingLevel('DEEP'), 'off')
+eq('脏值回落默认', clampThinkingLevel('smart'), 'off')
+eq('null 回落默认', clampThinkingLevel(null), 'off')
+eq('数字回落默认', clampThinkingLevel(1), 'off')
 
 // ---- mergeSettings：脏值回落 ----
 
