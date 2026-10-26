@@ -9,6 +9,7 @@
  * <p>分组在组件内计算：`groupSessionsByDay` 是纯函数，放这里能少一层 props，
  * 也让「列表长什么样」这件事只有一个出处。
  */
+import { Delete, EditPen } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 
 import { groupSessionsByDay } from '@/lib/session-group'
@@ -79,11 +80,28 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
                 {{ session.messageCount }} 条 · {{ relativeTime(session.updatedAt) }}
               </div>
             </div>
+            <!--
+              图标按钮而不是文字按钮：两个文字按钮（重命名/删除）在 260px 的侧栏里
+              既挤占标题宽度，hover 时还会盖在标题上。图标体积固定、语义靠 title 兜底。
+              容器常驻占位、只切换透明度 —— 避免 hover 时标题被挤压位移。
+            -->
             <div class="chat-sessions__item-actions">
-              <el-button link type="primary" size="small" @click.stop="emit('rename', session)"> 重命名 </el-button>
-              <el-button link type="danger" size="small" @click.stop="emit('remove', session.conversationId)">
-                删除
-              </el-button>
+              <el-button
+                link
+                type="primary"
+                size="small"
+                title="重命名"
+                :icon="EditPen"
+                @click.stop="emit('rename', session)"
+              />
+              <el-button
+                link
+                type="danger"
+                size="small"
+                title="删除"
+                :icon="Delete"
+                @click.stop="emit('remove', session.conversationId)"
+              />
             </div>
           </li>
         </ul>
@@ -92,10 +110,13 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 
     <div v-if="total > 0" class="chat-sessions__pagination">
       <span class="chat-sessions__total">共 {{ total }} 个</span>
+      <!--
+        去掉 background：实心蓝底的页码块在 260px 侧栏里过重，且与列表选中态的
+        浅主色底撞色。居中排列，左右不再一边空一边挤。
+      -->
       <el-pagination
         layout="prev, pager, next"
         small
-        background
         :total="total"
         :current-page="page + 1"
         :page-size="size"
@@ -212,17 +233,18 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 }
 
 .chat-sessions__item-actions {
-  position: absolute;
-  right: var(--os-space-2);
-  top: 50%;
-  transform: translateY(-50%);
+  /* 常驻占位、只切换透明度：absolute 定位会让按钮盖在标题上，且 hover 时标题被挤压 */
+  flex: none;
   display: flex;
   align-items: center;
   gap: var(--os-space-1);
-  padding-left: var(--os-space-3);
-  background: inherit;
   opacity: 0;
   transition: opacity var(--os-duration-fast) var(--os-ease);
+}
+
+.chat-sessions__item-actions :deep(.el-button) {
+  margin-left: 0;
+  padding: 4px;
 }
 
 .chat-sessions__item:hover .chat-sessions__item-actions,
@@ -232,11 +254,7 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 
 @media (hover: none) {
   .chat-sessions__item-actions {
-    position: static;
-    transform: none;
     opacity: 1;
-    background: transparent;
-    padding-left: 0;
   }
 }
 
@@ -264,14 +282,18 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 .chat-sessions__pagination {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: var(--os-space-2);
-  margin-top: var(--os-space-2);
+  margin-top: var(--os-space-3);
+  /* 与上方列表分隔：侧栏底部原本光秃秃一排控件，缺少归属 */
+  padding-top: var(--os-space-3);
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .chat-sessions__total {
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
 }
 
 /* 窄屏：列表改为横向可滚动的固定高度区块，不与对话区争高度 */

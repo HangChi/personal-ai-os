@@ -105,13 +105,11 @@ function handleKeydown(event: KeyboardEvent): void {
           @update:model-value="(value: number | undefined) => emit('update:topK', value ?? null)"
         />
       </span>
-      <span class="chat-composer__hint">
-        {{ enterSend ? 'Enter 发送 · Shift+Enter 换行' : 'Ctrl+Enter 发送 · Enter 换行' }}
-      </span>
     </div>
-    <div ref="root" class="chat-composer__input">
+    <div ref="root" class="chat-composer__box">
       <el-input
         :model-value="modelValue"
+        class="chat-composer__textarea"
         type="textarea"
         :rows="2"
         maxlength="4000"
@@ -120,10 +118,18 @@ function handleKeydown(event: KeyboardEvent): void {
         @update:model-value="(value: string) => emit('update:modelValue', value)"
         @keydown="handleKeydown"
       />
-      <div class="chat-composer__actions">
+      <!--
+        操作行进框内：改造前是「裸 textarea + 下方一排控件」，三块各占一行、
+        互相没有归属感。合成一个带边界的输入框后，聚焦高亮、字数、按钮都收在里面，
+        与主流聊天工具的结构一致。
+      -->
+      <div class="chat-composer__footer">
+        <span class="chat-composer__hint">
+          {{ enterSend ? 'Enter 发送 · Shift+Enter 换行' : 'Ctrl+Enter 发送 · Enter 换行' }}
+        </span>
         <span class="chat-composer__count">{{ modelValue.length }} / 4000</span>
-        <el-button v-if="streaming" @click="emit('stop')">停止</el-button>
-        <el-button v-else type="primary" :disabled="modelValue.trim().length === 0" @click="emit('send')">
+        <el-button v-if="streaming" round @click="emit('stop')">停止</el-button>
+        <el-button v-else type="primary" round :disabled="modelValue.trim().length === 0" @click="emit('send')">
           发送
         </el-button>
       </div>
@@ -195,33 +201,51 @@ function handleKeydown(event: KeyboardEvent): void {
 }
 
 .chat-composer__hint {
-  margin-left: auto;
   color: var(--el-text-color-placeholder);
   font-size: var(--os-font-xs);
 }
 
-/* ---- 输入框 ---- */
+/* ---- 输入框（带边界的外盒 + 内部无框文本域） ---- */
 
-.chat-composer__input :deep(.el-textarea__inner) {
+.chat-composer__box {
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--os-radius-xl);
+  background: var(--el-bg-color);
   padding: var(--os-space-2) var(--os-space-3);
-  border-radius: var(--os-radius-lg);
+  transition:
+    border-color var(--os-duration-fast) var(--os-ease),
+    box-shadow var(--os-duration-fast) var(--os-ease);
+}
+
+/* 聚焦高亮落在外盒上：控件内部各自的 focus 描边会被收掉，避免出现两层框 */
+.chat-composer__box:focus-within {
+  border-color: var(--el-color-primary);
+  box-shadow: 0 0 0 3px var(--el-color-primary-light-9);
+}
+
+.chat-composer__textarea :deep(.el-textarea__inner) {
+  padding: var(--os-space-1) 2px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
   font-size: var(--os-font-sm);
   line-height: 1.6;
   /* 两行文本的高度；autosize 会在此基础上按内容上调 */
   min-height: 44px;
-  box-shadow: none;
 }
 
-.chat-composer__actions {
+.chat-composer__footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: var(--os-space-3);
-  margin-top: var(--os-space-2);
+  margin-top: var(--os-space-1);
+}
+
+.chat-composer__footer .chat-composer__hint {
+  margin-right: auto;
 }
 
 .chat-composer__count {
-  margin-right: auto;
   color: var(--el-text-color-placeholder);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
