@@ -180,12 +180,11 @@ public class ChatCompletionService {
                     if (!terminated.compareAndSet(false, true)) {
                         return;
                     }
-                    send(emitter, EVENT_DONE,
-                            new ChatStreamEvents.Done(conversationId, fullContent.toString()));
-                    emitter.complete();
-                    // 引用挂载：Advisor 的 after()（落库）位于本回调的上游（见
-                    // ChatCitationService.attachToLatestAssistant 的时序说明），
-                    // 此刻最新助手消息就是本轮刚落库的那条。
+                    // 引用挂载必须**先于** done 事件（2026-10-26 调整）。
+                    // 原先顺序是「先发 done，再挂引用」，而两者在同一条回调里顺序执行：
+                    // 客户端一收到 done 就可能认为本轮全部结束并去查库，此时引用还没提交 ——
+                    // 集成测试因此间歇性看到 0 条引用（CI 上先炸，本地时序宽松看不出来）。
+                    // 调整后 done 的语义变成「本轮该落的库都落完了」，对客户端也更强。
                     List<KnowledgeHitDto> hits = hitsRef.get();
                     if (hits != null && !hits.isEmpty()) {
                         try {
@@ -194,6 +193,10 @@ public class ChatCompletionService {
                             log.warn("引用挂载失败（不影响本轮回答） conversationId={}", conversationId, ex);
                         }
                     }
+
+                    send(emitter, EVENT_DONE,
+                            new ChatStreamEvents.Done(conversationId, fullContent.toString()));
+                    emitter.complete();
 
                     // 轮末动作（阶段 22）：摘要刷新与记忆沉淀都只影响**下一轮**，
                     // 因此一律异步提交，绝不让它们拖住本轮的收尾。
