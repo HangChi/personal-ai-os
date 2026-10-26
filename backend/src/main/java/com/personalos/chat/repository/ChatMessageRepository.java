@@ -34,6 +34,19 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     @Query("select m from ChatMessageEntity m where m.conversationId = :conversationId order by m.sequenceNo desc")
     List<ChatMessageEntity> findRecentByConversationId(@Param("conversationId") String conversationId, Pageable pageable);
 
+    /**
+     * 取该会话中**早于** {@code beforeSeq} 的若干条消息（倒序取出，调用方负责反转成正序）。
+     *
+     * <p>用于「加载更早消息」：以当前列表最旧一条的顺序号为锚点向前翻页。
+     * 用顺序号而不是 offset 做游标——翻页期间新消息只会追加在尾部，
+     * 顺序号游标不会因插入而错位（offset 会）。
+     */
+    @Query("select m from ChatMessageEntity m where m.conversationId = :conversationId "
+            + "and m.sequenceNo < :beforeSeq order by m.sequenceNo desc")
+    List<ChatMessageEntity> findBeforeSequenceNo(@Param("conversationId") String conversationId,
+                                                 @Param("beforeSeq") int beforeSeq,
+                                                 Pageable pageable);
+
     long countByConversationId(String conversationId);
 
     /**

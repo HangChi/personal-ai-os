@@ -87,11 +87,18 @@ public class ChatSessionController {
     }
 
     /**
-     * 查询会话的全部消息，按顺序正序。
+     * 查询会话消息，按顺序正序。
+     *
+     * <p>不带 {@code limit} 时返回**全部**消息（既有契约不变，导出与老客户端依赖它）。
+     * 带 {@code limit} 时返回**最近 limit 条**；再用返回结果中最小顺序号作为
+     * {@code beforeSeq} 可以继续向前翻页（阶段 21，长会话增量加载）。
      */
     @GetMapping("/sessions/{conversationId}/messages")
-    public ApiResponse<List<ChatMessageDto>> listMessages(@PathVariable String conversationId) {
-        return ApiResponse.ok(messageService.list(conversationId));
+    public ApiResponse<List<ChatMessageDto>> listMessages(
+            @PathVariable String conversationId,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer beforeSeq) {
+        return ApiResponse.ok(messageService.list(conversationId, limit, beforeSeq));
     }
 
     /**
