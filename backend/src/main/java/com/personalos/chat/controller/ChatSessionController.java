@@ -103,13 +103,17 @@ public class ChatSessionController {
      *
      * <p>可选的 {@code Idempotency-Key} 头会被用作**轮次标识**：客户端重试整个对话请求时
      * 复用同一个键，模型在本轮内重复发出的工具调用就不会二次执行（双层幂等的衔接点）。
+     *
+     * <p>阶段 19：请求体的 {@code useKnowledge} / {@code topK} 控制知识库增强——
+     * 开启时先检索再回答，事件序列多一个 {@code citations}。
      */
     @PostMapping("/sessions/{conversationId}/stream")
     public SseEmitter stream(
             @PathVariable String conversationId,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody StreamChatRequest request) {
-        return completionService.stream(conversationId, request.content(), toTurnId(idempotencyKey));
+        return completionService.stream(conversationId, request.content(), toTurnId(idempotencyKey),
+                request.knowledgeEnabled(), request.resolvedTopK());
     }
 
     /**

@@ -4,16 +4,16 @@
 
 ## Phase A — 后端：检索注入 + 引用落库
 
-- [ ] **T047** V11 迁移 `chat_message_citation`（外键级联 + message_id 索引，字段见 data-model）
-- [ ] **T048** `ChatMessageCitationEntity` + `ChatMessageCitationRepository`（按 messageId 批量查 / 按 conversationId 删）
-- [ ] **T049** `knowledge/spi/KnowledgeSearchPort` 窄接口（`List<KnowledgeHitDto> search(String, int)`）；`KnowledgeRetrievalService` implements 之（方法签名已存在，加 implements 即可）
-- [ ] **T050** `StreamChatRequest` 扩展 `useKnowledge` / `topK`（校验注解收敛 1–20，null 回落默认）；`ChatStreamEvents` 加 `Citations` 记录
-- [ ] **T051** `ChatCompletionService`：`useKnowledge` 时经 `ObjectProvider<KnowledgeSearchPort>` 检索（拿不到端口 → 降级提示）；命中片段拼 system 提示（基础人设 + 贡献者 + 编号片段 + 使用约束，C-01 格式）；start 后发 `citations` 事件；检索异常 → error 降级事件 + 流继续
-- [ ] **T052** 终帧落库：done 前查该会话最新 ASSISTANT 消息，把命中快照写入 citation 表（同事务）；查不到只记 WARN 不抛
-- [ ] **T053** `ChatMessageDto` + `ChatCitationDto`；`ChatMessageService.list` 批量附带 citations（一次 in 查询，不 N+1）
-- [ ] **T054** Controller 透传 `useKnowledge` / `topK`
-- [ ] **T055** 集成测试：① 开关关 → 无 citations 事件无落库；② 开关开有命中 → citations 事件 + 落库 + GET messages 带回；③ N=0；④ 检索抛错 → error 降级 + 流完成；⑤ 删会话级联清引用；⑥ topK=99 收敛 20
-- [ ] **T056** `./mvnw -B verify` 全绿（基线 315 + 新增）
+- [x] **T047** V11 迁移 `chat_message_citation`（外键级联 + message_id 索引，字段见 data-model）
+- [x] **T048** `ChatMessageCitationEntity` + `ChatMessageCitationRepository`（按 messageId 批量查 / 按 conversationId 删）
+- [x] **T049** `knowledge/spi/KnowledgeSearchPort` 窄接口（`List<KnowledgeHitDto> search(String, int)`）；`KnowledgeRetrievalService` implements 之（方法签名已存在，加 implements 即可）
+- [x] **T050** `StreamChatRequest` 扩展 `useKnowledge` / `topK`（校验注解收敛 1–20，null 回落默认）；`ChatStreamEvents` 加 `Citations` 记录
+- [x] **T051** `ChatCompletionService`：`useKnowledge` 时经 `ObjectProvider<KnowledgeSearchPort>` 检索（拿不到端口 → 降级提示）；命中片段拼 system 提示（基础人设 + 贡献者 + 编号片段 + 使用约束，C-01 格式）；start 后发 `citations` 事件；检索异常 → error 降级事件 + 流继续
+- [x] **T052** 终帧落库：done 前查该会话最新 ASSISTANT 消息，把命中快照写入 citation 表（同事务）；查不到只记 WARN 不抛
+- [x] **T053** `ChatMessageDto` + `ChatCitationDto`；`ChatMessageService.list` 批量附带 citations（一次 in 查询，不 N+1）
+- [x] **T054** Controller 透传 `useKnowledge` / `topK`
+- [x] **T055** 集成测试：① 开关关 → 无 citations 事件无落库；② 开关开有命中 → citations 事件 + 落库 + GET messages 带回；③ N=0；④ 检索抛错 → error 降级 + 流完成；⑤ 删会话级联清引用；⑥ topK=99 收敛 20
+- [x] **T056** `./mvnw -B verify` 全绿（基线 315 + 新增）
 
 ## Phase B — 前端：对话增强交互
 
@@ -48,3 +48,13 @@
 6. 每段提交前门禁全绿 + 真机动作留截图（quickstart）；未验项保持未勾选。
 
 ## 完成记录（实现时回填）
+
+### Phase A（后端：检索注入 + 引用落库）
+
+- 门禁：`./mvnw -B verify` **321 测试全绿**（基线 315 + 新增 6），BUILD SUCCESS。
+- 新测试 ChatKnowledgeIntegrationTest 6 场景全过：开关关零检索零引用（事件序列与阶段 1 逐字符一致）/ citations 事件先行+系统提示编号注入+落库可查回 / 零命中 count=0 / topK 99→20 / 检索故障降级（error 提示+流继续）/ 删会话级联清引用。
+- 关键时序假设被测试证实：终帧回调里引用成功挂到刚落库的助手消息（Advisor after() 在上游，plan Complexity Tracking 的实测依据成立）。
+- 测试坑：同类用例共享 Testcontainers 库，全局 count 断言会互相干扰 → 仓储加 countByMessageIdIn，断言改按会话计（写进 Notes）。
+- 另一编译坑：Kotlin 风格的 `"event:".length` 写进了 Java 测试（应为 length()），javac 直接拦下。
+
+

@@ -15,6 +15,20 @@ public final class ChatStreamEvents {
     public record Start(String conversationId) {
     }
 
+    /**
+     * 事件 {@code citations}：知识库增强开启且检索完成后推送一次（阶段 19）。
+     *
+     * <p>位置在 {@code start} 之后、第一个 {@code delta} 之前 —— 用户先看到
+     * 「已找到 N 条依据」，再看着回答逐字生成，不会以为检索卡住了。
+     *
+     * <p>N=0（无命中）也推送：前端据此关闭「正在检索」状态并显示「未找到相关依据」。
+     *
+     * @param count      命中条数
+     * @param citations  命中片段快照（编号从 1 开始，与注入系统提示的编号一致）
+     */
+    public record Citations(int count, java.util.List<ChatCitationDto> citations) {
+    }
+
     /** 事件 {@code delta}：每个内容增量推送一次 */
     public record Delta(String content) {
     }

@@ -1,12 +1,18 @@
 package com.personalos.chat.service;
 
+import com.personalos.chat.dto.ChatCitationDto;
 import com.personalos.chat.dto.ChatStreamEvents;
+import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.common.ai.AiChatClientProvider;
 import com.personalos.common.ai.AiProperties;
 import com.personalos.common.ai.PromptContributor;
 import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.api.ErrorCode;
+import com.personalos.knowledge.dto.KnowledgeHitDto;
+import com.personalos.knowledge.spi.KnowledgeSearchPort;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
@@ -42,24 +48,41 @@ public class ChatCompletionService {
     private static final String EVENT_DELTA = "delta";
     private static final String EVENT_DONE = "done";
     private static final String EVENT_ERROR = "error";
+    private static final String EVENT_CITATIONS = "citations";
 
     private final AiChatClientProvider aiProvider;
     private final ChatSessionService sessionService;
     private final AiProperties aiProperties;
     private final ObjectProvider<PromptContributor> promptContributors;
+    /** 知识库检索窄接口（阶段 19）。用 ObjectProvider：knowledge 模块的 bean 不在时降级为普通对话 */
+    private final ObjectProvider<KnowledgeSearchPort> knowledgeSearch;
+    private final ChatCitationService citationService;
 
     public ChatCompletionService(AiChatClientProvider aiProvider,
                                  ChatSessionService sessionService,
                                  AiProperties aiProperties,
-                                 ObjectProvider<PromptContributor> promptContributors) {
+                                 ObjectProvider<PromptContributor> promptContributors,
+                                 ObjectProvider<KnowledgeSearchPort> knowledgeSearch,
+                                 ChatCitationService citationService) {
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
         this.aiProperties = aiProperties;
         this.promptContributors = promptContributors;
+        this.knowledgeSearch = knowledgeSearch;
+        this.citationService = citationService;
     }
 
     /**
-     * 发起一次流式对话。
+     * 发起一次流式对话（不带知识库增强）。
+     *
+     * <p>保留此重载：阶段 1~18 的调用方与测试无需改动，行为逐字符一致。
+     */
+    public SseEmitter stream(String conversationId, String userContent, String turnId) {
+        return stream(conversationId, userContent, turnId, false, StreamChatRequest.DEFAULT_TOP_K);
+    }
+
+    /**
+     * 发起一次流式对话（阶段 19：可选知识库增强）。
      *
      * <p><b>顺序很重要</b>：所有前置校验都在返回 emitter **之前**完成。
      * 这样「会话不存在」「参数非法」「模型未配置」得到的是普通 JSON 错误响应
@@ -71,13 +94,36 @@ public class ChatCompletionService {
      * @param turnId         本轮标识。客户端可用 {@code Idempotency-Key} 头传入；
      *                       它同时是工具层幂等的范围边界 —— 客户端重试整个请求时，
      *                       若复用同一个键，模型重复发出的工具调用就不会二次执行
+     * @param useKnowledge   是否启用知识库增强（先检索再回答，回答带 [n] 引用）
+     * @param topK           检索条数（已由调用方收敛到 1~20）
      * @return SSE 发射器
      */
-    public SseEmitter stream(String conversationId, String userContent, String turnId) {
+    public SseEmitter stream(String conversationId, String userContent, String turnId,
+                             boolean useKnowledge, int topK) {
         sessionService.requireSession(conversationId);
         ChatClient chatClient = aiProvider.requireChatClient();
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
         sessionService.initializeTitleFromFirstMessage(conversationId, userContent);
+
+        // 知识库检索：在返回 emitter 之前完成（失败走降级，不中断本轮对话）。
+        // 命中片段同时用于三处：citations 事件、系统提示注入、终帧落库。
+        List<KnowledgeHitDto> hits = List.of();
+        String degradationNotice = null;
+        if (useKnowledge) {
+            KnowledgeSearchPort port = knowledgeSearch.getIfAvailable();
+            if (port == null) {
+                log.warn("知识库增强开启但检索端口不可用，本轮降级为普通对话 conversationId={}", conversationId);
+            } else {
+                try {
+                    hits = port.search(userContent, topK);
+                } catch (RuntimeException ex) {
+                    // 降级：提示用户但不中断 —— 检索失败不该让整轮对话失败（FR-005）
+                    log.warn("知识库检索失败，本轮降级 conversationId={}", conversationId, ex);
+                    hits = List.of();
+                    degradationNotice = "知识库检索失败，本轮未使用知识库回答";
+                }
+            }
+        }
 
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MILLIS);
         StringBuilder fullContent = new StringBuilder();
@@ -87,10 +133,21 @@ public class ChatCompletionService {
 
         send(emitter, EVENT_START, new ChatStreamEvents.Start(conversationId));
 
+        // 检索结果先于生成内容告知用户：N=0 也发（前端据此关闭「正在检索」态）
+        if (useKnowledge && degradationNotice == null) {
+            List<ChatCitationDto> payload = toCitationDtos(hits);
+            send(emitter, EVENT_CITATIONS,
+                    new ChatStreamEvents.Citations(payload.size(), payload));
+        }
+        if (degradationNotice != null) {
+            send(emitter, EVENT_ERROR,
+                    new ChatStreamEvents.Error(ErrorCode.AI_UPSTREAM_ERROR.getCode(), degradationNotice));
+        }
+
         Flux<String> contentFlux = chatClient.prompt()
                 // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                 // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
-                .system(systemPromptWithContributions())
+                .system(systemPromptWithContributions(hits))
                 .user(userContent)
                 // 会话标识通过 advisor 参数传入，Advisor 据此装载并回写该会话的上下文
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
@@ -100,6 +157,9 @@ public class ChatCompletionService {
                         ToolContextKeys.TURN_ID, turnId))
                 .stream()
                 .content();
+
+        // 终帧落库用的命中快照（引用是增强信息：落库失败只记日志，不回滚对话）
+        final List<KnowledgeHitDto> hitsSnapshot = hits;
 
         Disposable subscription = contentFlux.subscribe(
                 chunk -> {
@@ -126,6 +186,16 @@ public class ChatCompletionService {
                     send(emitter, EVENT_DONE,
                             new ChatStreamEvents.Done(conversationId, fullContent.toString()));
                     emitter.complete();
+                    // 引用挂载：Advisor 的 after()（落库）位于本回调的上游（见
+                    // ChatCitationService.attachToLatestAssistant 的时序说明），
+                    // 此刻最新助手消息就是本轮刚落库的那条。
+                    if (!hitsSnapshot.isEmpty()) {
+                        try {
+                            citationService.attachToLatestAssistant(conversationId, hitsSnapshot);
+                        } catch (RuntimeException ex) {
+                            log.warn("引用挂载失败（不影响本轮回答） conversationId={}", conversationId, ex);
+                        }
+                    }
                 });
 
         emitter.onTimeout(() -> {
@@ -149,7 +219,7 @@ public class ChatCompletionService {
     }
 
     /**
-     * 拼装本轮请求的系统提示：基础人设 + 各模块贡献的上下文。
+     * 拼装本轮请求的系统提示：基础人设 + 各模块贡献的上下文 + （可选）知识库检索片段。
      *
      * <p>为什么不用 {@code defaultSystem}：它只是**默认值**，请求级 {@code system()} 会替换它。
      * 若只传贡献内容（如记忆块），阶段 1 定下的人设与行为约束会全部丢失 ——
@@ -157,8 +227,11 @@ public class ChatCompletionService {
      *
      * <p>贡献者为空或返回空串时**不追加任何内容**（连空行都不加），
      * 保证「没有任何上下文」时的系统提示与阶段 1 逐字符相同。
+     *
+     * <p>知识库片段（阶段 19）追加在最后：编号从 [1] 开始，与 citations 事件、
+     * 落库快照三处编号一致；附带使用约束（引用编号、无依据明说、不得编造）。
      */
-    private String systemPromptWithContributions() {
+    private String systemPromptWithContributions(List<KnowledgeHitDto> hits) {
         StringBuilder prompt = new StringBuilder(aiProperties.systemPrompt());
         promptContributors.orderedStream().forEach(contributor -> {
             String contribution = contributor.contribute();
@@ -166,7 +239,49 @@ public class ChatCompletionService {
                 prompt.append("\n\n").append(contribution);
             }
         });
+        if (hits != null && !hits.isEmpty()) {
+            prompt.append("\n\n").append(buildKnowledgeSection(hits));
+        }
         return prompt.toString();
+    }
+
+    /** 知识库检索片段的系统提示区块（格式即契约，见 contracts C-01）。 */
+    private String buildKnowledgeSection(List<KnowledgeHitDto> hits) {
+        StringBuilder section = new StringBuilder();
+        section.append("以下内容来自用户的个人知识库检索结果（本轮实时检索）：");
+        for (int i = 0; i < hits.size(); i++) {
+            KnowledgeHitDto hit = hits.get(i);
+            section.append("\n\n[").append(i + 1).append("] 文档《")
+                    .append(nullToDash(hit.documentTitle())).append("》（")
+                    .append(nullToDash(hit.filename())).append("，第 ")
+                    .append(hit.chunkIndex() + 1).append(" 段）\n")
+                    .append(hit.content());
+        }
+        section.append("\n\n使用约束：\n")
+                .append("- 回答必须基于上述内容，引用处标注对应编号，如 [1]\n")
+                .append("- 上述内容没有答案时，明确说明「知识库中没有找到相关内容」，不得编造\n")
+                .append("- 不要复述整段原文，提炼回答");
+        return section.toString();
+    }
+
+    /** 检索命中 → citations 事件 / 落库共用的 DTO（编号从 1 开始）。 */
+    private List<ChatCitationDto> toCitationDtos(List<KnowledgeHitDto> hits) {
+        List<ChatCitationDto> dtos = new ArrayList<>(hits.size());
+        for (int i = 0; i < hits.size(); i++) {
+            KnowledgeHitDto hit = hits.get(i);
+            dtos.add(new ChatCitationDto(
+                    i + 1,
+                    hit.documentId().toString(),
+                    hit.documentTitle(),
+                    hit.filename(),
+                    hit.chunkIndex(),
+                    hit.content()));
+        }
+        return dtos;
+    }
+
+    private String nullToDash(String value) {
+        return value == null || value.isBlank() ? "未命名" : value;
     }
 
     /**

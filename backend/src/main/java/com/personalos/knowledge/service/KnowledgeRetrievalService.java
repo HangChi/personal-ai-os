@@ -6,6 +6,7 @@ import com.personalos.knowledge.KnowledgeMetadata;
 import com.personalos.knowledge.config.KnowledgeProperties;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import com.personalos.knowledge.dto.KnowledgeHitDto.MatchedBy;
+import com.personalos.knowledge.spi.KnowledgeSearchPort;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -48,7 +49,7 @@ import tools.jackson.databind.ObjectMapper;
  * 纯向量会返回空，混合检索能给出结果。
  */
 @Service
-public class KnowledgeRetrievalService {
+public class KnowledgeRetrievalService implements KnowledgeSearchPort {
 
     private static final Logger log = LoggerFactory.getLogger(KnowledgeRetrievalService.class);
 
