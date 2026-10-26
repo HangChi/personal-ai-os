@@ -1,15 +1,20 @@
 <script setup lang="ts">
 /**
- * 本会话的工具调用轨迹（从 ChatView 拆出，2026-10-26）。
+ * 本会话的工具调用轨迹（从 ChatView 拆出，2026-10-26；阶段 22 末改版）。
  *
- * <p>数据源是审计接口按 conversationId 过滤的结果。默认折叠：
- * 它是「想深究时再看」的信息，展开会挤占对话本身的空间。
+ * <h2>为什么从「折叠面板」改成「内联活动行」</h2>
+ * 改造前它是一个带顶部分隔线的折叠面板，视觉上是**独立于对话的一块区域** ——
+ * 用户读到助手回复后，底部突然横着一根线和一行「本会话工具调用（1）」，
+ * 既打断阅读流，也不成一组。
+ *
+ * <p>参考主流 agent（Codex / Claude / Cursor）的做法：工具调用是**对话流的一部分**，
+ * 以紧凑的状态行内联出现，一眼能看出「助手做了什么、成没成」，不占独立区块。
+ * 因此这里去掉外框与分隔线，改为「小标题 + 每条一行」的清单，
+ * 每条用状态色点 + 工具名 + 结果 + 耗时表达。
  *
  * <p>耗时字段可能是 null（未真正执行，例如停在待确认），显示为「—」而不是 0ms ——
  * 两者语义完全不同。
  */
-import { QuestionFilled } from '@element-plus/icons-vue'
-
 import StatusTag from '@/components/StatusTag.vue'
 import { relativeTime } from '@/lib/relative-time'
 import type { ToolInvocation } from '@/types/api'
@@ -26,6 +31,16 @@ const OUTCOME_MAP: Record<string, { label: string; type: 'success' | 'danger' | 
   IN_PROGRESS: { label: '执行中', type: 'info' },
 }
 
+/** 状态色点配色：与 OUTCOME_MAP 的语义色一一对应（成功绿 / 失败红 / 等待与拒绝琥珀 / 其余灰蓝） */
+const OUTCOME_DOT: Record<string, string> = {
+  SUCCESS: 'success',
+  FAILED: 'danger',
+  REJECTED: 'warning',
+  REQUIRES_CONFIRMATION: 'warning',
+  DUPLICATE: 'info',
+  IN_PROGRESS: 'info',
+}
+
 /** 工具耗时可读化：null 表示未真正执行（待确认），与 0ms 区分开 */
 function formatDuration(durationMs: number | null): string {
   return durationMs === null ? '—' : `${durationMs} ms`
@@ -33,44 +48,36 @@ function formatDuration(durationMs: number | null): string {
 </script>
 
 <template>
-  <el-collapse class="chat-trail">
-    <el-collapse-item>
-      <template #title>
-        <span class="chat-trail__title">
-          本会话工具调用（{{ items.length }}）
-          <el-tooltip content="来自审计记录，展示助手在这个会话里真实调用过的工具" placement="top">
-            <el-icon class="chat-trail__help"><QuestionFilled /></el-icon>
-          </el-tooltip>
-        </span>
-      </template>
-      <ul class="chat-trail__list">
-        <li v-for="item in items" :key="item.id" class="chat-trail__item">
-          <span class="chat-trail__operation">{{ item.operation }}</span>
-          <StatusTag :status="item.outcome" :map="OUTCOME_MAP" />
-          <span class="chat-trail__duration">{{ formatDuration(item.durationMs) }}</span>
-          <span class="chat-trail__time">{{ relativeTime(item.createdAt) }}</span>
-        </li>
-      </ul>
-    </el-collapse-item>
-  </el-collapse>
+  <section class="chat-trail">
+    <h4 class="chat-trail__head">工具调用 · {{ items.length }}</h4>
+    <ul class="chat-trail__list">
+      <li v-for="item in items" :key="item.id" class="chat-trail__item">
+        <span class="chat-trail__dot" :class="`chat-trail__dot--${OUTCOME_DOT[item.outcome] ?? 'info'}`" />
+        <span class="chat-trail__operation">{{ item.operation }}</span>
+        <StatusTag :status="item.outcome" :map="OUTCOME_MAP" />
+        <span class="chat-trail__duration">{{ formatDuration(item.durationMs) }}</span>
+        <span class="chat-trail__time">{{ relativeTime(item.createdAt) }}</span>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <style scoped>
+/*
+ * 内联活动行：不设外框、不加分隔线，靠左侧缩进与弱化配色「沉」到对话流里。
+ * 标题用 11px 弱化色，读作「这批动作的说明」，而不是一个新面板的标题。
+ */
 .chat-trail {
-  margin-top: var(--os-space-3);
-  border-top: 1px solid var(--el-border-color-lighter);
+  /* 与助手气泡左对齐（头像 28 + 间距 12），视觉上归属于助手这一侧 */
+  margin-left: 40px;
+  padding: var(--os-space-1) 0;
 }
 
-.chat-trail__title {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--os-space-1);
+.chat-trail__head {
+  margin: 0 0 var(--os-space-1);
   font-size: 11px;
-  color: var(--el-text-color-secondary);
-}
-
-.chat-trail__help {
-  cursor: help;
+  font-weight: 400;
+  color: var(--el-text-color-placeholder);
 }
 
 .chat-trail__list {
@@ -79,7 +86,7 @@ function formatDuration(durationMs: number | null): string {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: var(--os-space-1);
+  gap: 2px;
 }
 
 .chat-trail__item {
@@ -87,7 +94,40 @@ function formatDuration(durationMs: number | null): string {
   align-items: center;
   flex-wrap: wrap;
   gap: var(--os-space-2);
+  padding: 3px var(--os-space-2);
+  border-radius: var(--os-radius-sm);
   font-size: 11px;
+  line-height: 1.6;
+  transition: background var(--os-duration-fast) var(--os-ease);
+}
+
+.chat-trail__item:hover {
+  background: var(--el-fill-color-lighter);
+}
+
+/* 状态点：6px 圆点，颜色即结果，省掉每行一个徽标的重量 */
+.chat-trail__dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--el-text-color-placeholder);
+}
+
+.chat-trail__dot--success {
+  background: var(--el-color-success);
+}
+
+.chat-trail__dot--danger {
+  background: var(--el-color-danger);
+}
+
+.chat-trail__dot--warning {
+  background: var(--el-color-warning);
+}
+
+.chat-trail__dot--info {
+  background: var(--el-color-info);
 }
 
 .chat-trail__operation {
@@ -95,12 +135,20 @@ function formatDuration(durationMs: number | null): string {
   color: var(--el-text-color-regular);
 }
 
-.chat-trail__duration,
-.chat-trail__time {
+.chat-trail__duration {
   color: var(--el-text-color-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 .chat-trail__time {
   margin-left: auto;
+  color: var(--el-text-color-placeholder);
+}
+
+@media (max-width: 900px) {
+  /* 窄屏时间戳让位给主要信息 */
+  .chat-trail__time {
+    display: none;
+  }
 }
 </style>

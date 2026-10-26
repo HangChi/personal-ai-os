@@ -11,7 +11,7 @@
  *   <li>输入法选词期间的 Enter 一律不发送（否则打不了中文）</li>
  * </ul>
  */
-import { Reading } from '@element-plus/icons-vue'
+import { ArrowDown, Reading } from '@element-plus/icons-vue'
 import { nextTick, onMounted, ref, watch } from 'vue'
 
 import { THINKING_HINTS, THINKING_LABELS, type ThinkingLevel } from '@/lib/settings'
@@ -120,20 +120,6 @@ onMounted(autosize)
       >
         <el-option v-for="option in TOP_K_OPTIONS" :key="option" :label="`${option} 条`" :value="option" />
       </el-select>
-
-      <div class="chat-composer__thinking">
-        <span class="chat-composer__thinking-label">思考</span>
-        <el-radio-group
-          :model-value="thinkingLevel"
-          size="small"
-          @change="(value: ThinkingLevel) => emit('update:thinkingLevel', value)"
-        >
-          <el-radio-button v-for="level in THINKING_LEVELS" :key="level" :value="level">
-            {{ THINKING_LABELS[level] }}
-          </el-radio-button>
-        </el-radio-group>
-        <span class="chat-composer__thinking-hint">{{ THINKING_HINTS[thinkingLevel] }}</span>
-      </div>
     </div>
 
     <div ref="root" class="chat-composer__box">
@@ -158,6 +144,40 @@ onMounted(autosize)
           {{ enterSend ? 'Enter 发送 · Shift+Enter 换行' : 'Ctrl+Enter 发送 · Enter 换行' }}
         </span>
         <span class="chat-composer__count">{{ modelValue.length }} / 4000</span>
+
+        <!--
+          思考程度从工具栏搬到 footer，并改成下拉触发。
+          原来它在工具栏占一整段（标签 + 三选一 + 一长串说明），把「知识库增强」
+          挤到角落，且分段按钮在窄屏会折行。搬到 footer 后：工具栏只留知识库，
+          这里一个按钮显示当前档位，点开才列出三档与代价 —— 与 Codex 一类
+          agent 的「模型/推理设置放在发送区附近」一致。
+        -->
+        <el-dropdown
+          trigger="click"
+          placement="top-end"
+          @command="(value: ThinkingLevel) => emit('update:thinkingLevel', value)"
+        >
+          <el-button text size="small" class="chat-composer__thinking-trigger">
+            思考：{{ THINKING_LABELS[thinkingLevel] }}
+            <el-icon :size="11"><ArrowDown /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu class="chat-composer__thinking-menu">
+              <el-dropdown-item
+                v-for="level in THINKING_LEVELS"
+                :key="level"
+                :command="level"
+                :disabled="level === thinkingLevel"
+              >
+                <span :class="{ 'chat-composer__thinking-option--on': level === thinkingLevel }">
+                  {{ THINKING_LABELS[level] }}
+                </span>
+                <span class="chat-composer__thinking-desc">{{ THINKING_HINTS[level] }}</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+
         <el-button v-if="streaming" round @click="emit('stop')">停止</el-button>
         <el-button v-else type="primary" round :disabled="modelValue.trim().length === 0" @click="emit('send')">
           发送
@@ -222,28 +242,32 @@ onMounted(autosize)
   box-shadow: none;
 }
 
-.chat-composer__thinking {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--os-space-2);
-  margin-left: auto;
-}
-
-.chat-composer__thinking-label {
+/* footer 里的思考档位触发器：文字按钮，不抢「发送」的主色 */
+.chat-composer__thinking-trigger {
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
 }
 
-/* 档位说明是「为什么慢」的唯一解释，窄屏放不下就先牺牲它 */
-.chat-composer__thinking-hint {
-  color: var(--el-text-color-placeholder);
-  font-size: var(--os-font-xs);
+.chat-composer__thinking-trigger:hover {
+  color: var(--el-color-primary);
 }
 
-@media (max-width: 1200px) {
-  .chat-composer__thinking-hint {
-    display: none;
-  }
+/* 下拉里每档一行：档名 + 代价说明（说明是「为什么慢」的唯一解释，放进菜单才不占版面） */
+.chat-composer__thinking-menu .el-dropdown-menu__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--os-space-2);
+  padding: 7px 12px;
+}
+
+.chat-composer__thinking-option--on {
+  color: var(--el-color-primary);
+  font-weight: 500;
+}
+
+.chat-composer__thinking-desc {
+  color: var(--el-text-color-placeholder);
+  font-size: var(--os-font-xs);
 }
 
 /* ---- 输入框（带边界的外盒 + 内部无框文本域） ---- */
