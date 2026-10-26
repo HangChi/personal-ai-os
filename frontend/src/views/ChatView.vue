@@ -211,40 +211,40 @@ async function handleNewSession(): Promise<void> {
 }
 
 /**
- * 重命名会话。
+ * 行内重命名完成：标题已在列表里 trim 与校验，这里只负责落库。
  *
- * 用对话框而不是列表内联编辑：列表项本身点击即切换会话，
- * 内联输入框要额外处理点击穿透、失焦保存、Esc 退出三类边界，容易点出「改名字却切走了会话」。
- *
- * 校验口径与后端一致：按 `trim()` 后的长度判定（后端也是先去空白再算长度）。
+ * 改造前用 ElMessageBox.prompt 弹窗——样式与页面割裂，且「改个名字要弹一层模态」
+ * 本身就很重。行内编辑的三个边界（点击穿透、失焦保存 vs Esc 取消、空标题）
+ * 由 ChatSessionList 处理，父组件不掺和。
  */
-async function handleRename(session: ChatSession): Promise<void> {
-  let newTitle: string
-  try {
-    const { value } = await ElMessageBox.prompt('输入新的会话标题', '重命名会话', {
-      inputValue: session.title,
-      confirmButtonText: '保存',
-      cancelButtonText: '取消',
-      inputValidator: (input: string) => {
-        const trimmed = input.trim()
-        if (trimmed.length === 0) {
-          return '标题不能为空'
-        }
-        if (trimmed.length > 200) {
-          return '标题长度不能超过 200'
-        }
-        return true
-      },
-    })
-    newTitle = value.trim()
-  } catch {
-    return
-  }
-
-  const success = await chatStore.renameSession(session.conversationId, newTitle)
+async function handleRename(session: ChatSession, title: string): Promise<void> {
+  const success = await chatStore.renameSession(session.conversationId, title)
   if (success) {
     ElMessage.success('已重命名')
   }
+}
+
+/**
+ * 删除会话：二次确认。
+ *
+ * 会话连带**全部消息、附件与引用**一起级联删除且不可恢复 ——
+ * 侧栏里一个图标按钮点下去就没了，误触成本太高。
+ * 这里刻意保留弹窗：破坏性操作本就该打断一下，与「重命名改行内」不矛盾。
+ */
+async function handleRemove(conversationId: string): Promise<void> {
+  const target = sessions.value.find((item) => item.conversationId === conversationId)
+  const title = target ? target.title : '该会话'
+  try {
+    await ElMessageBox.confirm(`删除会话「${title}」？其中的全部消息会一起删除，且无法恢复。`, '删除会话', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      confirmButtonClass: 'el-button--danger',
+    })
+  } catch {
+    return
+  }
+  await chatStore.removeSession(conversationId)
 }
 </script>
 
@@ -263,7 +263,7 @@ async function handleRename(session: ChatSession): Promise<void> {
       @create="handleNewSession"
       @select="chatStore.selectSession($event)"
       @rename="handleRename"
-      @remove="chatStore.removeSession($event)"
+      @remove="handleRemove"
       @search="chatStore.searchSessions()"
       @page-change="chatStore.goToSessionPage($event)"
     />

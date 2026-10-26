@@ -10,7 +10,7 @@
  * 也让「列表长什么样」这件事只有一个出处。
  */
 import { Delete, EditPen } from '@element-plus/icons-vue'
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 import { groupSessionsByDay } from '@/lib/session-group'
 import { relativeTime } from '@/lib/relative-time'
@@ -29,13 +29,64 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:keyword', value: string): void
   (e: 'select', conversationId: string): void
+  /** 行内重命名完成：带上新标题（已 trim、已校验），由父组件落库 */
+  (e: 'rename', session: ChatSession, title: string): void
+  /** 请求删除：父组件负责二次确认 */
+  (e: 'remove', conversationId: string): void
   (e: 'refresh'): void
   (e: 'create'): void
-  (e: 'rename', session: ChatSession): void
-  (e: 'remove', conversationId: string): void
   (e: 'page-change', page: number): void
   (e: 'search'): void
 }>()
+
+/**
+ * 行内重命名状态。
+ *
+ * 改造前用 ElMessageBox.prompt 弹窗：样式与页面割裂，且「改个名字要弹一层模态」
+ * 本身就很重。改成行内编辑 —— 双击标题（或点编辑图标）就地改，Enter 保存、Esc 取消。
+ *
+ * 三个必须处理的边界：
+ * 1. 点输入框不能触发「选中会话」（item 上有 click，需 stopPropagation）；
+ * 2. 失焦保存，但不能在 Esc 取消后又被失焦保存一次（用 editCancelled 标记）；
+ * 3. 空标题视为取消，不把会话名清空。
+ */
+const editingId = ref<string | null>(null)
+const editingValue = ref('')
+const editCancelled = ref(false)
+
+function startEdit(session: ChatSession): void {
+  editingId.value = session.conversationId
+  editingValue.value = session.title
+  editCancelled.value = false
+}
+
+function commitEdit(session: ChatSession): void {
+  if (editCancelled.value) {
+    return
+  }
+  const trimmed = editingValue.value.trim()
+  editingId.value = null
+  if (trimmed.length === 0 || trimmed.length > 200 || trimmed === session.title) {
+    return
+  }
+  emit('rename', session, trimmed)
+}
+
+function cancelEdit(): void {
+  editCancelled.value = true
+  editingId.value = null
+}
+
+// 进入编辑态后聚焦并全选，省得用户再手动清空原标题
+watch(editingId, async (id) => {
+  if (!id) {
+    return
+  }
+  await nextTick()
+  const input = document.querySelector<HTMLInputElement>('.chat-sessions__rename')
+  input?.focus()
+  input?.select()
+})
 
 const groups = computed(() => groupSessionsByDay(props.sessions))
 </script>
@@ -83,8 +134,22 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
               :class="['chat-sessions__item', { 'chat-sessions__item--active': session.conversationId === currentId }]"
               @click="emit('select', session.conversationId)"
             >
-              <div class="chat-sessions__body">
-                <div class="chat-sessions__title-text">{{ session.title }}</div>
+              <div class="chat-sessions__body" @dblclick="startEdit(session)">
+                <input
+                  v-if="editingId === session.conversationId"
+                  :value="editingValue"
+                  class="chat-sessions__rename"
+                  maxlength="200"
+                  @click.stop
+                  @dblclick.stop
+                  @input="editingValue = ($event.target as HTMLInputElement).value"
+                  @keydown.enter="commitEdit(session)"
+                  @keydown.esc="cancelEdit"
+                  @blur="commitEdit(session)"
+                />
+                <div v-else class="chat-sessions__title-text" :title="session.title + '（双击重命名）'">
+                  {{ session.title }}
+                </div>
                 <div class="chat-sessions__meta">
                   {{ session.messageCount }} 条 · {{ relativeTime(session.updatedAt) }}
                 </div>
@@ -101,7 +166,7 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
                   size="small"
                   title="重命名"
                   :icon="EditPen"
-                  @click.stop="emit('rename', session)"
+                  @click.stop="startEdit(session)"
                 />
                 <el-button
                   link
@@ -236,7 +301,19 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   color: var(--el-color-primary);
 }
 
-.chat-sessions__item--active .chat-sessions__meta {
+.chat-sessions__item--active .chat-sessions__rename {
+  width: 100%;
+  padding: 1px 4px;
+  border: 1px solid var(--el-color-primary);
+  border-radius: var(--os-radius-sm);
+  background: var(--el-bg-color);
+  color: var(--el-text-color-primary);
+  font-size: var(--os-font-xs);
+  line-height: 1.5;
+  outline: none;
+}
+
+.chat-sessions__meta {
   color: var(--el-text-color-secondary);
 }
 
@@ -290,6 +367,18 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: color var(--os-duration-fast) var(--os-ease);
+}
+
+.chat-sessions__rename {
+  width: 100%;
+  padding: 1px 4px;
+  border: 1px solid var(--el-color-primary);
+  border-radius: var(--os-radius-sm);
+  background: var(--el-bg-color);
+  color: var(--el-text-color-primary);
+  font-size: var(--os-font-xs);
+  line-height: 1.5;
+  outline: none;
 }
 
 .chat-sessions__meta {
