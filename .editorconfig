@@ -1,0 +1,29 @@
+# ============================================================
+# 跨编辑器的基础约定（2026-10-26 补）
+# 只管「不该被讨论的东西」：编码、换行、缩进、行尾空格。
+# 具体语言风格（引号、分号、折行宽度）交给各自的格式化器：
+#   - 前端：Prettier（frontend/.prettierrc.json）
+#   - 后端：见 README 的「代码风格」一节
+# ============================================================
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Java：4 空格缩进（与既有代码一致）
+[*.java]
+indent_size = 4
+
+# Maven / Gradle 脚本
+[*.{xml,yml,yaml,json}]
+indent_size = 2
+
+# Markdown 允许行尾两个空格表示硬换行，因此不裁剪尾随空白
+[*.md]
+trim_trailing_whitespace = false

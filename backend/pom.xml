@@ -199,6 +199,35 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+            <!--
+              覆盖率（2026-10-26 补）：只生成报告，**不设门禁**。
+
+              为什么先不设 check goal：门禁需要一个经过论证的阈值，
+              拍脑袋定 80% 只会逼着后来的人写无意义的断言去凑数。
+              先让数字可见（target/site/jacoco/index.html），
+              等到知道真实水位后再决定要不要卡。
+            -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.13</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

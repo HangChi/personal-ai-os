@@ -1,0 +1,10 @@
+# Prettier 只格式化源码与配置，不碰构建产物与锁文件
+dist
+dist-*
+coverage
+node_modules
+package-lock.json
+
+# unplugin-auto-import / unplugin-vue-components 生成，勿手改也勿格式化
+auto-imports.d.ts
+components.d.ts
