@@ -93,11 +93,16 @@ public class AiChatClientProvider {
             }
             builder = builder.defaultAdvisors(advisorBuilder.build());
         }
-        if (!tools.isEmpty()) {
-            builder = builder.defaultTools(tools.toArray());
-        }
-        if (!toolCallbacks.isEmpty()) {
-            builder = builder.defaultToolCallbacks(toolCallbacks.toArray(new ToolCallback[0]));
+        if (!tools.isEmpty() || !toolCallbacks.isEmpty()) {
+            // 两类工具合成一次 defaultTools()：它接受 Object...，其中 @Tool 标注的普通对象
+            // 会被包装成回调，已经是 ToolCallback 的实例则原样使用。
+            //
+            // 2026-10-26 改：原先对回调单独调用 defaultToolCallbacks(...)，而它已被标记
+            // 「deprecated for removal」—— 留着不只是警告，Spring AI 哪天删除该重载就会编译失败。
+            // 合并后仍保持「先 @Tool 对象、后现成回调」的原顺序。
+            List<Object> toolArgs = new ArrayList<>(tools);
+            toolArgs.addAll(toolCallbacks);
+            builder = builder.defaultTools(toolArgs.toArray());
         }
 
         this.chatClient = builder.build();

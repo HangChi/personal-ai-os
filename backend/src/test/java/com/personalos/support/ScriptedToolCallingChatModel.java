@@ -83,11 +83,6 @@ public class ScriptedToolCallingChatModel implements ChatModel {
         return ToolCallingChatOptions.builder().build();
     }
 
-    @Override
-    public ChatOptions getDefaultOptions() {
-        return ToolCallingChatOptions.builder().build();
-    }
-
     public List<List<Message>> receivedInstructions() {
         return receivedInstructions;
     }
