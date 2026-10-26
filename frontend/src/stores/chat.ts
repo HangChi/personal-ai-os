@@ -5,6 +5,7 @@ import {
   createSession as createSessionApi,
   deleteSession as deleteSessionApi,
   fetchContextUsage,
+  setContextBudget,
   listMessages,
   listSessions,
   renameSession as renameSessionApi,
@@ -12,6 +13,7 @@ import {
 } from '@/api/chat'
 import { listToolInvocations } from '@/api/activity'
 import { cancelOperation, confirmOperation, listConfirmations } from '@/api/confirmations'
+import type { ContextUsage } from '@/api/chat'
 import type {
   ChatAttachment,
   ChatCitation,
@@ -93,12 +95,19 @@ export const useChatStore = defineStore('chat', () => {
   const toolTrail = ref<ToolInvocation[]>([])
 
   /**
-   * 最近一轮的上下文用量（阶段 22 仪表盘）。
+   * 最近一轮的上下文用量（阶段 22 仪表盘，token 口径）。
    *
-   * 由后端在 done 事件里给出：前端拿不到拼装后的系统提示，
-   * 自己估算等于给用户看一个假数字。0 表示还没产生过对话。
+   * 由后端给出：前端拿不到拼装后的系统提示，自己估算等于给用户看假数字。
+   * budgetTokens 是**用户选择的预算**（同时是窗口裁剪阈值），
+   * contextWindow 是模型支持的最大上下文 —— 前者才是仪表盘的分母。
    */
-  const contextUsage = ref<{ promptChars: number; contextBudget: number }>({ promptChars: 0, contextBudget: 0 })
+  const contextUsage = ref<ContextUsage>({ promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true })
+
+  /** 设置上下文预算（token）；服务端会收敛到 [1, 模型窗口] */
+  async function changeContextBudget(tokens: number): Promise<void> {
+    const next = await setContextBudget(tokens)
+    contextUsage.value = { ...contextUsage.value, budgetTokens: next.budgetTokens, contextWindow: next.contextWindow }
+  }
 
   let abortController: AbortController | null = null
 
@@ -170,7 +179,7 @@ export const useChatStore = defineStore('chat', () => {
       hasOlderMessages.value = false
       pendingConfirmations.value = []
       toolTrail.value = []
-      contextUsage.value = { promptChars: 0, contextBudget: 0 }
+      contextUsage.value = { promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true }
       error.value = cause instanceof Error ? cause.message : '加载消息失败'
     } finally {
       loadingMessages.value = false
@@ -244,7 +253,7 @@ export const useChatStore = defineStore('chat', () => {
   async function loadToolTrail(): Promise<void> {
     if (!currentConversationId.value) {
       toolTrail.value = []
-      contextUsage.value = { promptChars: 0, contextBudget: 0 }
+      contextUsage.value = { promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true }
       return
     }
     try {
@@ -255,7 +264,7 @@ export const useChatStore = defineStore('chat', () => {
       toolTrail.value = result.items
     } catch {
       toolTrail.value = []
-      contextUsage.value = { promptChars: 0, contextBudget: 0 }
+      contextUsage.value = { promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true }
     }
   }
 
@@ -380,8 +389,9 @@ export const useChatStore = defineStore('chat', () => {
             streamingContent.value += chunk
           },
           onDone: (_content, context) => {
-            if (context && context.contextBudget > 0) {
-              contextUsage.value = context
+            // done 事件只带本轮用量；预算与模型窗口以选中会话时查到的为准
+            if (context && context.promptTokens >= 0 && contextUsage.value.contextWindow > 0) {
+              contextUsage.value = { ...contextUsage.value, promptTokens: context.promptTokens }
             }
             // 清空临时内容，随后由服务端数据接管，避免出现重复渲染
             streamingContent.value = ''
@@ -442,6 +452,7 @@ export const useChatStore = defineStore('chat', () => {
     pendingConfirmations,
     toolTrail,
     contextUsage,
+    changeContextBudget,
     liveCitations,
     retrievalState,
     loadSessions,

@@ -313,10 +313,12 @@ async function handleRename(session: ChatSession): Promise<void> {
           :knowledge-on="knowledgeOn"
           :top-k="topK"
           :thinking-level="settings.thinkingLevel"
-          :context-chars="contextUsage.promptChars"
-          :context-budget="contextUsage.contextBudget"
+          :context-tokens="contextUsage.promptTokens"
+          :context-budget-tokens="contextUsage.budgetTokens"
+          :context-window-tokens="contextUsage.contextWindow"
           :enter-send="settings.enterSend"
           @toggle-knowledge="toggleKnowledge"
+          @change-budget="chatStore.changeContextBudget"
           @update:top-k="(value: number | null) => (topK = value)"
           @update:thinking-level="(value: ThinkingLevel) => (settings.thinkingLevel = value)"
           @send="handleSend"
@@ -330,15 +332,18 @@ async function handleRename(session: ChatSession): Promise<void> {
 <style scoped>
 /*
  * 全高对话列（FR-001）。
- * 156px = 顶栏 60 + main 上距 16 + main 下距 20（EP el-main 默认）+ 页脚 60
- * （2026-10-26 实测；少算那 20px 会让页面多出 20px 滚动）。
- * 改 App.vue 骨架高度时同步改这里。
+ *
+ * 高度用 100% 而不是 calc(100vh - 156px)：外壳 .app-shell__main 已是
+ * flex:1 的列容器，这里只要铺满它即可。魔法数字在顶栏/页脚高度变化时必然失准，
+ * 表现为页面底部空一条（2026-10-26 用户反馈「没铺满」的根因之一）。
  */
 .chat {
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: var(--os-space-4);
-  height: calc(100vh - 156px);
+  /* flex:1 撑满 main 的剩余高度；不写 height:100%（父链上有 auto 高度元素时它不解析） */
+  flex: 1;
+  min-height: 0;
   align-items: stretch;
 }
 
@@ -423,6 +428,7 @@ async function handleRename(session: ChatSession): Promise<void> {
   .chat {
     grid-template-columns: 1fr;
     height: auto;
+    flex: none;
   }
 
   /*

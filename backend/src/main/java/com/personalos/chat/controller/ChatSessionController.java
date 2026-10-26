@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,15 +46,18 @@ public class ChatSessionController {
     private final ChatMessageService messageService;
     private final ChatCompletionService completionService;
     private final AiProperties aiProperties;
+    private final com.personalos.common.ai.ContextBudgetService contextBudget;
 
     public ChatSessionController(ChatSessionService sessionService,
                                  ChatMessageService messageService,
                                  ChatCompletionService completionService,
-                                 AiProperties aiProperties) {
+                                 AiProperties aiProperties,
+                                 com.personalos.common.ai.ContextBudgetService contextBudget) {
         this.sessionService = sessionService;
         this.messageService = messageService;
         this.completionService = completionService;
         this.aiProperties = aiProperties;
+        this.contextBudget = contextBudget;
     }
 
     /**
@@ -139,8 +143,28 @@ public class ChatSessionController {
     public ApiResponse<ChatContextUsageDto> contextUsage(@PathVariable String conversationId) {
         sessionService.requireSession(conversationId);
         return ApiResponse.ok(new ChatContextUsageDto(
-                completionService.estimatePromptChars(conversationId),
-                aiProperties.memory().maxContextChars()));
+                completionService.estimatePromptTokens(conversationId),
+                contextBudget.budgetTokens(),
+                contextBudget.contextWindowTokens(),
+                true));
+    }
+
+    /**
+     * 设置上下文预算（token）。
+     *
+     * <p>预算同时是**窗口裁剪阈值**：选 300K 就按 300K 裁，选模型满窗就基本不裁。
+     * 服务端收敛到 [1, 模型窗口] —— 超过窗口的预算模型根本吃不下。
+     */
+    @PutMapping("/context-budget")
+    public ApiResponse<ChatContextUsageDto> setContextBudget(@RequestBody java.util.Map<String, Integer> body) {
+        Integer tokens = body.get("tokens");
+        if (tokens == null || tokens <= 0) {
+            throw new com.personalos.common.exception.BusinessException(
+                    com.personalos.common.api.ErrorCode.VALIDATION_FAILED, "预算必须是正整数");
+        }
+        contextBudget.setBudgetTokens(tokens);
+        return ApiResponse.ok(new ChatContextUsageDto(0, contextBudget.budgetTokens(),
+                contextBudget.contextWindowTokens(), true));
     }
 
     /**

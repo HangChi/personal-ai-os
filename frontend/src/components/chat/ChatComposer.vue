@@ -30,10 +30,12 @@ const props = defineProps<{
   topK: number
   /** 模型思考程度 */
   thinkingLevel: ThinkingLevel
-  /** 本轮上下文字符数（0 表示尚未对话） */
-  contextChars: number
-  /** 上下文字符预算 */
-  contextBudget: number
+  /** 本轮上下文 token 数（0 表示尚未对话） */
+  contextTokens: number
+  /** 用户选择的预算（token）—— 仪表盘的分母 */
+  contextBudgetTokens: number
+  /** 模型支持的上下文窗口（token）—— 预算的上限 */
+  contextWindowTokens: number
   /** Enter 是否直接发送（来自设置页偏好） */
   enterSend: boolean
 }>()
@@ -43,6 +45,7 @@ const emit = defineEmits<{
   (e: 'update:topK', value: number | null): void
   (e: 'update:thinkingLevel', value: ThinkingLevel): void
   (e: 'toggle-knowledge', next: boolean): void
+  (e: 'change-budget', tokens: number): void
   (e: 'send', attachments: ChatAttachment[]): void
   (e: 'stop'): void
 }>()
@@ -113,10 +116,10 @@ function formatSize(bytes: number): string {
  * 仪表盘百分比：超出预算时钉在 100%（条形图不溢出），由颜色与数字表达超限。
  */
 const meterPercent = computed(() => {
-  if (props.contextBudget <= 0) {
+  if (props.contextBudgetTokens <= 0) {
     return 0
   }
-  return Math.min(100, Math.round((props.contextChars / props.contextBudget) * 100))
+  return Math.min(100, Math.round((props.contextTokens / props.contextBudgetTokens) * 100))
 })
 
 /** 超 85% 转琥珀、超 100% 转红：颜色是「该收尾了」的预警，不是装饰 */
@@ -131,18 +134,54 @@ const meterLevel = computed(() => {
   return ''
 })
 
-const meterText = computed(() => `${formatK(props.contextChars)} / ${formatK(props.contextBudget)}`)
+const meterText = computed(() => `${formatTokens(props.contextTokens)} / ${formatTokens(props.contextBudgetTokens)}`)
+
+/**
+ * 预算档位：从模型窗口推导，而不是写死一串数字。
+ * 128K 窗口给 32K/64K/128K，1M 窗口给 32K/128K/512K/1M ——
+ * 写死的话换个模型就对不上了。
+ */
+const budgetPresets = computed(() => {
+  const window = props.contextWindowTokens
+  if (window <= 0) {
+    return []
+  }
+  // 固定档位（都是 1024 的整数倍，显示不带小数点），按模型窗口过滤。
+  // 不用 window/2 这类算术值：64000 会显示成「62.5K」，档位名带小数点很难看。
+  const candidates = [32_768, 65_536, 131_072, 524_288, 1_048_576]
+  // 满窗永远是一个选项：配置的窗口不一定是整齐数（如 200000），
+  // 只靠固定档位会漏掉「用满模型能力」这一档
+  candidates.push(Math.floor(window / 1024) * 1024)
+  return [...new Set(candidates)].filter((value) => value >= 1024 && value <= window).sort((a, b) => a - b)
+})
+
+/**
+ * token 可读化：按 1024 进制（32768 → 32K，131072 → 128K，1048576 → 1M）。
+ * 用 1000 进制会把 32768 显示成「32.8K」—— 档位名带着小数点很难看。
+ */
+function formatTokens(value: number): string {
+  if (value >= 1024 * 1024) {
+    const m = value / (1024 * 1024)
+    return `${Number.isInteger(m) ? m : m.toFixed(1)}M`
+  }
+  if (value >= 1024) {
+    const k = value / 1024
+    return `${Number.isInteger(k) ? k : k.toFixed(1)}K`
+  }
+  return String(value)
+}
 
 const meterTitle = computed(() => {
-  if (props.contextChars <= 0) {
+  if (props.contextBudgetTokens <= 0) {
     return '本轮尚未产生上下文用量'
   }
-  // 说清构成：空会话也有几百字，那是系统提示（人设 + 记忆块），
-  // 不理解构成的话，「新会话就 252 字」看着就像坏了。
+  // 说清构成：空会话也有几百 token，那是系统提示（人设 + 记忆块），
+  // 不理解构成的话，「新会话就上百 token」看着就像坏了。
   return (
-    `本轮预计送给模型约 ${props.contextChars} 字，预算 ${props.contextBudget} 字。\n` +
+    `本轮预计送入模型约 ${formatTokens(props.contextTokens)} token，预算 ${formatTokens(props.contextBudgetTokens)}` +
+    `（模型上限 ${formatTokens(props.contextWindowTokens)}）。\n` +
     '构成：系统提示（人设 + 会话摘要 + 长期记忆 + 检索片段）+ 窗口内历史 + 本条消息。\n' +
-    '超预算后更早的历史会被整体丢弃，不切半条。'
+    '超预算后更早的历史会被整体丢弃，不切半条。点击可改预算。'
   )
 })
 
@@ -155,11 +194,6 @@ function attachmentUrl(item: ChatAttachment): string {
 const thinkingTooltip = computed(
   () => `思考程度：${THINKING_LABELS[props.thinkingLevel]} — ${THINKING_HINTS[props.thinkingLevel]}`,
 )
-
-/** 1234 → 1.2k */
-function formatK(value: number): string {
-  return value >= 1000 ? `${(value / 1000).toFixed(1)}k` : String(value)
-}
 
 /** 条数下拉的候选项：常用值 + 上限，避免用户为了填 20 而点十下步进器 */
 const TOP_K_OPTIONS = [2, 4, 6, 8, 12, 20]
@@ -259,16 +293,38 @@ onMounted(autosize)
       </span>
 
       <!--
-        上下文仪表盘：条 + 数字。放在工具栏而不是 footer —— 它描述的是
-        「这一轮带了什么」，与知识库增强同属「本轮上下文构成」。
+        上下文仪表盘（token 口径）。
+        分母是**用户选择的预算**，不是模型窗口：窗口只是上限，
+        用户可以在它之内选一个更小的值（例如 1M 的模型选 300K）。
+        点仪表盘可以改预算 —— 预算同时是窗口裁剪阈值，所以必须落到服务端。
       -->
-      <div v-if="contextBudget > 0" class="chat-composer__meter" :title="meterTitle">
-        <span class="chat-composer__meter-label">上下文</span>
-        <span class="chat-composer__meter-track">
-          <span class="chat-composer__meter-fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
-        </span>
-        <span class="chat-composer__meter-value">{{ meterText }}</span>
-      </div>
+      <el-dropdown
+        v-if="contextBudgetTokens > 0"
+        trigger="click"
+        placement="top-end"
+        @command="(value: number) => emit('change-budget', value)"
+      >
+        <div class="chat-composer__meter" :title="meterTitle">
+          <span class="chat-composer__meter-label">上下文</span>
+          <span class="chat-composer__meter-track">
+            <span class="chat-composer__meter-fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
+          </span>
+          <span class="chat-composer__meter-value">{{ meterText }}</span>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu class="chat-composer__budget-menu">
+            <div class="chat-composer__budget-head">上下文预算 · 模型上限 {{ formatTokens(contextWindowTokens) }}</div>
+            <el-dropdown-item
+              v-for="preset in budgetPresets"
+              :key="preset"
+              :command="preset"
+              :class="{ 'chat-composer__budget-item--on': preset === contextBudgetTokens }"
+            >
+              {{ formatTokens(preset) }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
 
     <!-- 附件条：只在有附件时出现，避免常驻占位 -->
@@ -439,6 +495,22 @@ onMounted(autosize)
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
   font-variant-numeric: tabular-nums;
+}
+
+/* 预算下拉：档位清单 + 模型上限说明 */
+.chat-composer__budget-menu {
+  min-width: 148px;
+}
+
+.chat-composer__budget-head {
+  padding: 6px 12px 4px;
+  color: var(--el-text-color-placeholder);
+  font-size: var(--os-font-xs);
+}
+
+.chat-composer__budget-item--on {
+  color: var(--el-color-primary);
+  font-weight: 500;
 }
 
 .chat-composer__chip {

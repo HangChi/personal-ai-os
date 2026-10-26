@@ -41,13 +41,16 @@ public class JpaChatMemory implements ChatMemory {
     private final ChatMessageRepository messageRepository;
     private final ChatSessionRepository sessionRepository;
     private final AiProperties aiProperties;
+    private final com.personalos.common.ai.ContextBudgetService contextBudget;
 
     public JpaChatMemory(ChatMessageRepository messageRepository,
                          ChatSessionRepository sessionRepository,
-                         AiProperties aiProperties) {
+                         AiProperties aiProperties,
+                         com.personalos.common.ai.ContextBudgetService contextBudget) {
         this.messageRepository = messageRepository;
         this.sessionRepository = sessionRepository;
         this.aiProperties = aiProperties;
+        this.contextBudget = contextBudget;
     }
 
     /**
@@ -130,7 +133,9 @@ public class JpaChatMemory implements ChatMemory {
      */
     private List<ChatMessageEntity> selectWindow(String conversationId) {
         int limit = aiProperties.memory().maxMessages();
-        int charBudget = aiProperties.memory().maxContextChars();
+        // 字符预算来自「用户选择的 token 预算」折算，而不是配置里的写死阈值 ——
+        // 这样仪表盘显示的分母与实际裁剪阈值永远是同一个数
+        int charBudget = contextBudget.effectiveCharBudget();
 
         // 仓储按 sequenceNo 倒序取出「最后 N 条」（最新在前）
         List<ChatMessageEntity> recent = messageRepository

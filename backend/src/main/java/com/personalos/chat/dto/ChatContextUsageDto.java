@@ -1,14 +1,16 @@
 package com.personalos.chat.dto;
 
 /**
- * 会话的上下文用量（阶段 22 仪表盘）。
+ * 会话的上下文用量（阶段 22 仪表盘，token 口径）。
  *
- * <p>刷新页面后前端拿不到上一轮的 done 事件，仪表盘会消失；这个接口让它
- * 在选中会话时就能显示。口径与 done 事件一致：系统提示 + 窗口内历史 + 最近一条用户消息，
- * 其中历史部分是**估算**（见 ChatCompletionService.estimateHistoryChars）。
+ * <p>分母是**用户选择的预算**（不是模型窗口，也不是写死的字符阈值）：
+ * 模型窗口只是上限，用户可以在它之内选一个更小的值。
  *
- * @param promptChars   估算的上下文字符数
- * @param contextBudget 字符预算（app.ai.memory.max-context-chars）
+ * @param promptTokens   估算的上下文字符数折算成的 token
+ * @param budgetTokens   用户当前选择的预算（token）
+ * @param contextWindow  模型支持的上下文窗口（token）
+ * @param estimated      true 表示 promptTokens 是估算值（历史部分按窗口条数求和，
+ *                       工具调用往返未计入）；false 表示精确
  */
-public record ChatContextUsageDto(int promptChars, int contextBudget) {
+public record ChatContextUsageDto(int promptTokens, int budgetTokens, int contextWindow, boolean estimated) {
 }

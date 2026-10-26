@@ -44,8 +44,11 @@ class JpaChatMemoryTest {
 
     private final ChatMessageRepository messageRepository = mock(ChatMessageRepository.class);
     private final ChatSessionRepository sessionRepository = mock(ChatSessionRepository.class);
+    /** 预算服务：显式设成 12000 字符等价的 token 数，与旧行为一致 */
+    private final com.personalos.common.ai.ContextBudgetService budget = budgetWithChars(12000);
+
     private final JpaChatMemory memory = new JpaChatMemory(messageRepository, sessionRepository,
-            new AiProperties(new AiProperties.Memory(6, 12000), "系统提示"));
+            new AiProperties(new AiProperties.Memory(6, 0), "系统提示"), budget);
 
     @Test
     @DisplayName("add(): 顺序号从当前最大值续接，且不触发任何删除")
@@ -130,7 +133,8 @@ class JpaChatMemoryTest {
     @DisplayName("get(): 字符预算先用尽时，更早的消息整体丢弃（条数没到上限也一样）")
     void getShouldTrimByCharacterBudget() {
         JpaChatMemory budgeted = new JpaChatMemory(messageRepository, sessionRepository,
-                new AiProperties(new AiProperties.Memory(10, 250), "系统提示"));
+                new AiProperties(new AiProperties.Memory(10, 0), "系统提示"),
+                budgetWithChars(250));
         given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class)))
                 .willReturn(threeMessages(100));
 
@@ -146,7 +150,8 @@ class JpaChatMemoryTest {
     @DisplayName("get(): 最新一条即使单条超预算也必须保留（不能送空上下文）")
     void getShouldAlwaysKeepNewestMessage() {
         JpaChatMemory tight = new JpaChatMemory(messageRepository, sessionRepository,
-                new AiProperties(new AiProperties.Memory(10, 10), "系统提示"));
+                new AiProperties(new AiProperties.Memory(10, 0), "系统提示"),
+                budgetWithChars(250));
         given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class)))
                 .willReturn(threeMessages(200));
 
@@ -162,6 +167,15 @@ class JpaChatMemoryTest {
                 sizedMessage(3, length),
                 sizedMessage(2, length),
                 sizedMessage(1, length));
+    }
+
+    /** 造一个「字符预算 = chars」的预算服务（内部按 1.6 折算成 token） */
+    private static com.personalos.common.ai.ContextBudgetService budgetWithChars(int chars) {
+        com.personalos.common.ai.ContextBudgetService service =
+                new com.personalos.common.ai.ContextBudgetService(
+                        new AiProperties(new AiProperties.Memory(10, 0), "系统提示"));
+        service.setBudgetTokens(Math.max(1, (int) Math.round(chars / com.personalos.common.ai.ContextBudgetService.CHARS_PER_TOKEN)));
+        return service;
     }
 
     private static ChatMessageEntity sizedMessage(int sequence, int length) {

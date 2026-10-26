@@ -32,19 +32,24 @@ public record AiProperties(Memory memory, String systemPrompt) {
      * <p><b>重要</b>：这些上限只作用于「送给模型的消息」，不影响数据库中保存的历史
      * （见 specs/002-ai-chat/data-model.md 的读写语义约定）。
      *
-     * <h2>为什么除了条数还要有字符预算（2026-10-26）</h2>
-     * 只按条数切窗有一个致命盲区：条数与体量完全解耦。20 条各 4000 字的消息约合
-     * 8 万字，足以撑爆多数模型的上下文窗口；反过来 20 条「好」「嗯」又白白浪费额度。
-     * 加一层字符预算后，窗口规模有了可预期的上界，而条数继续作为「别把长会话整段读进内存」
-     * 的粗筛。
+     * <h2>条数与预算的分工（2026-10-26 重构）</h2>
+     * 条数是**粗筛**（别把长会话整段读进内存）；真正的窗口上界是 token 预算，
+     * 由 {@link ContextBudgetService} 持有、用户可选（默认 32K）。
+     * 早先这里还有一个 {@code maxContextChars} 字符阈值，重构后没有消费方了 ——
+     * 留着只会让人以为改它能影响窗口，因此删掉。
      *
-     * @param maxMessages     送给模型的最大消息条数，非正值会被归一为默认值
-     * @param maxContextChars 送给模型的消息正文总字符预算（近似 token 预算），非正值归一为默认值
+     * @param maxMessages        送给模型的最大消息条数，非正值会被归一为默认值
+     * @param contextWindowTokens 模型支持的上下文窗口（token）。qwen 系列常见 128K；
+     *                           长上下文模型（如 qwen-long 的 1M）改这一个值即可
      */
-    public record Memory(int maxMessages, int maxContextChars) {
+    public record Memory(int maxMessages, int contextWindowTokens) {
 
-        /** 默认字符预算。按中文约 1.6 字符/token 估算，12000 字 ≈ 7.5k token，留足输出空间 */
-        private static final int DEFAULT_MAX_CONTEXT_CHARS = 12000;
+        /**
+         * 默认模型上下文窗口（token）。
+         * 取 131072（128Ki）而不是 128000：前端档位按 1024 进制生成，
+         * 用 1000 进制的数会让「满窗」档位被过滤掉。
+         */
+        private static final int DEFAULT_CONTEXT_WINDOW_TOKENS = 131_072;
 
         // 注意：这里刻意**不提供** Memory(int) 便捷构造器。
         // 2026-10-26 实测：record 一旦有两个构造器，Spring Boot 的构造器绑定会挑错那个，
@@ -55,8 +60,8 @@ public record AiProperties(Memory memory, String systemPrompt) {
             if (maxMessages <= 0) {
                 maxMessages = DEFAULT_MAX_MESSAGES;
             }
-            if (maxContextChars <= 0) {
-                maxContextChars = DEFAULT_MAX_CONTEXT_CHARS;
+            if (contextWindowTokens <= 0) {
+                contextWindowTokens = DEFAULT_CONTEXT_WINDOW_TOKENS;
             }
         }
     }

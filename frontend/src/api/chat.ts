@@ -95,7 +95,7 @@ export interface StreamHandlers {
   /** 每个内容增量触发一次 */
   onDelta: (content: string) => void
   /** 正常结束，参数为完整回复 */
-  onDone: (content: string, context?: { promptChars: number; contextBudget: number }) => void
+  onDone: (content: string, context?: { promptTokens: number }) => void
   /** 失败，参数为可直接展示的中文文案 */
   onError: (message: string) => void
 }
@@ -227,8 +227,7 @@ function dispatchEvent(eventName: string, payload: string, handlers: StreamHandl
       break
     case 'done':
       handlers.onDone(String(parsed.content ?? ''), {
-        promptChars: Number(parsed.promptChars ?? 0),
-        contextBudget: Number(parsed.contextBudget ?? 0),
+        promptTokens: Number(parsed.promptTokens ?? 0),
       })
       break
     case 'error':
@@ -274,9 +273,35 @@ export async function uploadAttachment(file: File): Promise<ChatAttachment> {
  *
  * 刷新页面后拿不到上一轮的 done 事件，选中会话时补查一次才能显示仪表盘。
  */
-export function fetchContextUsage(conversationId: string): Promise<{ promptChars: number; contextBudget: number }> {
-  return requestData<{ promptChars: number; contextBudget: number }>({
+/** 上下文用量（token 口径）。分母是用户选择的预算，不是模型窗口 */
+export interface ContextUsage {
+  /** 本轮预计送入模型的 token 数（估算） */
+  promptTokens: number
+  /** 用户当前选择的预算（token） */
+  budgetTokens: number
+  /** 模型支持的上下文窗口（token） */
+  contextWindow: number
+  /** 是否为估算值 */
+  estimated: boolean
+}
+
+export function fetchContextUsage(conversationId: string): Promise<ContextUsage> {
+  return requestData<ContextUsage>({
     url: `/chat/sessions/${conversationId}/context`,
     method: 'get',
+  })
+}
+
+/**
+ * 设置上下文预算（token）。
+ *
+ * 预算同时是窗口裁剪阈值，所以必须落到服务端 —— 前端自己记一份的话，
+ * 仪表盘的分母和实际裁剪就不是同一个数了。
+ */
+export function setContextBudget(tokens: number): Promise<ContextUsage> {
+  return requestData<ContextUsage>({
+    url: '/chat/context-budget',
+    method: 'put',
+    data: { tokens },
   })
 }

@@ -194,6 +194,11 @@ async function handleLogout(): Promise<void> {
 </template>
 
 <style scoped>
+/*
+ * 外壳只保留 min-height：el-container 本身就是 flex 容器，
+ * 再声明一次 display 会把 EP 的方向判断覆盖掉，反而把页面撑出滚动条（实测）。
+ * 真正要撑满的是 main —— 见下面的 flex:1。
+ */
 .app-shell {
   min-height: 100vh;
 }
@@ -341,7 +346,15 @@ async function handleLogout(): Promise<void> {
  * 对话页是左右分栏 + 全高对话列，限宽会让两侧各空一大块，
  * 因此用 --wide 退出限宽（见路由 meta.fullWidth）。
  */
+/*
+ * main 撑满外壳剩余空间，并自身成为 flex 列容器 ——
+ * 子视图（如对话页）用 height:100% 即可铺满，不再依赖 calc。
+ */
 .app-shell__main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   max-width: var(--os-content-max-width);
   width: 100%;
   margin: 0 auto;

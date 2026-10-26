@@ -8,6 +8,7 @@ import com.personalos.chat.dto.ChatStreamEvents;
 import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.chat.dto.ThinkingLevel;
 import com.personalos.common.ai.AiChatClientProvider;
+import com.personalos.common.ai.ContextBudgetService;
 import com.personalos.common.ai.AiProperties;
 import com.personalos.common.ai.PromptContributor;
 import com.personalos.common.ai.PostTurnContributor;
@@ -218,7 +219,7 @@ public class ChatCompletionService {
 
                     send(emitter, EVENT_DONE,
                             new ChatStreamEvents.Done(conversationId, fullContent.toString(),
-                                    promptCharsRef.get(), aiProperties.memory().maxContextChars()));
+                                    ContextBudgetService.toTokens(promptCharsRef.get())));
                     emitter.complete();
 
                     // 附件挂载（阶段 22）：附件属于用户发的那条消息，而它由 Advisor 落库，
@@ -296,6 +297,11 @@ public class ChatCompletionService {
         // 下一轮用户要发什么这里不可能知道，所以不计入。
         String systemPrompt = systemPromptWithContributions(List.of(), "", conversationId);
         return systemPrompt.length() + estimateHistoryChars(conversationId);
+    }
+
+    /** 仪表盘口径：估算 token 数（字符 ÷ 1.6） */
+    public int estimatePromptTokens(String conversationId) {
+        return ContextBudgetService.toTokens(estimatePromptChars(conversationId));
     }
 
     private int estimateHistoryChars(String conversationId) {
