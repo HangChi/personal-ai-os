@@ -1,5 +1,6 @@
 package com.personalos.mcp.client;
 
+import com.personalos.common.config.AppProperties;
 import com.personalos.mcp.config.McpConfigValidator;
 import com.personalos.mcp.config.McpProperties;
 import io.modelcontextprotocol.client.McpClient;
@@ -48,6 +49,13 @@ public class McpClientRegistry implements DisposableBean {
 
     private final McpProperties properties;
     private final McpConfigValidator configValidator;
+    /**
+     * 应用自身信息，用于向 MCP server 声明 clientInfo。
+     *
+     * <p>刻意接 {@link AppProperties} 而不是写字面量：{@code app.version} 由 Maven 资源过滤
+     * 从 pom 注入，手写的版本号在每次发版后都会与实际版本漂移，而且没有任何机制提醒你。
+     */
+    private final AppProperties appProperties;
 
     /** server 名 → 已连接客户端（按配置顺序，保证日志与状态可读） */
     private final Map<String, McpSyncClient> clients = new LinkedHashMap<>();
@@ -55,9 +63,11 @@ public class McpClientRegistry implements DisposableBean {
     /** server 名 → 状态（含不可用的） */
     private final Map<String, McpServerStatus> statuses = new LinkedHashMap<>();
 
-    public McpClientRegistry(McpProperties properties, McpConfigValidator configValidator) {
+    public McpClientRegistry(McpProperties properties, McpConfigValidator configValidator,
+                             AppProperties appProperties) {
         this.properties = properties;
         this.configValidator = configValidator;
+        this.appProperties = appProperties;
     }
 
     /**
@@ -87,7 +97,12 @@ public class McpClientRegistry implements DisposableBean {
             McpSyncClient client = McpClient.sync(new StdioClientTransport(parameters, JSON_MAPPER))
                     // 2 参构造器自 mcp-core 2.0 起已过时（record 增加了 title/description/icons
                     // 等字段）。builder 的 (name, version) 就是原来的语义，其余字段留空。
-                    .clientInfo(McpSchema.Implementation.builder("personal-ai-os", "0.1.0-SNAPSHOT").build())
+                    //
+                    // 名字与版本取自 app.* 而非写死：版本由 pom 经资源过滤注入，
+                    // 手写会随发版漂移（server 侧看到的永远是第一个版本）。
+                    .clientInfo(McpSchema.Implementation
+                            .builder(appProperties.name(), appProperties.version())
+                            .build())
                     .initializationTimeout(timeout)
                     .requestTimeout(timeout)
                     .build();

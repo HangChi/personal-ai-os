@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.config.AppProperties;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.mcp.client.McpClientRegistry;
 import com.personalos.mcp.client.McpServerStatus;
@@ -34,6 +35,14 @@ class McpClientRegistryIntegrationTest {
 
     private static final String JAVA = System.getProperty("java.home") + "/bin/java";
 
+    /**
+     * 手工构造注册表时用的应用信息。
+     *
+     * <p>生产环境由 Spring 注入真实的 {@code app.*}（版本来自 pom）；这里给一个固定值，
+     * 断言不依赖具体版本号——测的是「连得上、工具数对、关得掉」。
+     */
+    private static final AppProperties APP_INFO = new AppProperties("personal-ai-os", "0.1.0-test");
+
     @TempDir
     Path tempDir;
 
@@ -53,7 +62,7 @@ class McpClientRegistryIntegrationTest {
         Path marker = tempDir.resolve("closed.marker");
         McpProperties properties = properties("test", JAVA, spawnHelperArgs(marker), Duration.ofSeconds(15));
 
-        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator());
+        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator(), APP_INFO);
         registry.connectAll();
 
         McpServerStatus status = registry.statuses().get("test");
@@ -63,6 +72,12 @@ class McpClientRegistryIntegrationTest {
         // 两者刻意分开：连接层的职责是如实转述 server，质检放在装配层
         assertThat(status.toolCount()).isEqualTo(4);
         assertThat(registry.isAvailable("test")).isTrue();
+
+        // clientInfo 必须来自 AppProperties，而不是某个写死的字面量：
+        // 版本由 pom 经资源过滤注入，写死会在每次发版后静默漂移（server 侧永远看到第一个版本）。
+        McpSchema.Implementation clientInfo = registry.clients().get("test").getClientInfo();
+        assertThat(clientInfo.name()).isEqualTo(APP_INFO.name());
+        assertThat(clientInfo.version()).isEqualTo(APP_INFO.version());
 
         McpSchema.CallToolResult result = registry.clients().get("test").callTool(
                 McpSchema.CallToolRequest.builder("echo").arguments(Map.of("text", "hello")).build());
@@ -78,7 +93,7 @@ class McpClientRegistryIntegrationTest {
         Path marker = tempDir.resolve("closed.marker");
         McpProperties properties = properties("test", JAVA, spawnHelperArgs(marker), Duration.ofSeconds(15));
 
-        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator());
+        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator(), APP_INFO);
         registry.connectAll();
         registry.destroy();
 
@@ -97,7 +112,7 @@ class McpClientRegistryIntegrationTest {
     void brokenCommandMarksUnavailable() {
         McpProperties properties = properties("broken", "/nonexistent/mcp-server", List.of(), Duration.ofSeconds(5));
 
-        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator());
+        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator(), APP_INFO);
         registry.connectAll();
 
         McpServerStatus status = registry.statuses().get("broken");
@@ -113,7 +128,7 @@ class McpClientRegistryIntegrationTest {
         // sleep 1 保证即便传输没来得及杀进程，它也会自行退出，不在测试机上留孤儿。
         McpProperties properties = properties("hang", "/bin/sleep", List.of("1"), Duration.ofMillis(400));
 
-        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator());
+        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator(), APP_INFO);
         registry.connectAll();
 
         assertThat(registry.statuses().get("hang").available()).isFalse();
@@ -129,7 +144,7 @@ class McpClientRegistryIntegrationTest {
                 "bad", new McpProperties.ServerConfig("/nonexistent/mcp-server", List.of(), Map.of(), Set.of(),
                         Duration.ofSeconds(5))));
 
-        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator());
+        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator(), APP_INFO);
         registry.connectAll();
 
         assertThat(registry.isAvailable("good")).isTrue();
@@ -144,7 +159,7 @@ class McpClientRegistryIntegrationTest {
         McpProperties properties = new McpProperties(true, Map.of(
                 "oops", new McpProperties.ServerConfig(null, List.of(), Map.of(), Set.of(), null)));
 
-        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator());
+        McpClientRegistry registry = new McpClientRegistry(properties, new McpConfigValidator(), APP_INFO);
 
         assertThatThrownBy(registry::connectAll)
                 .isInstanceOf(BusinessException.class)
