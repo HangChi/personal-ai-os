@@ -97,7 +97,12 @@ async function handleLogout(): Promise<void> {
 </script>
 
 <template>
-  <el-container class="app-shell">
+  <!--
+    app-shell--fixed：对话页专用。外壳锁死为视口高且不滚动，
+    于是「长高」的压力全部传给消息区内部的 overflow-y —— 页面本身永远不出现滚动条。
+    其他页面（任务/知识库/设置）不加这个类，保持整页滚动。
+  -->
+  <el-container :class="['app-shell', { 'app-shell--fixed': route.meta.fullWidth }]">
     <!-- 侧栏：宽屏主导航；登录页不渲染 -->
     <el-aside v-if="!isLoginPage" class="app-shell__aside" :width="navCollapsed ? '64px' : '208px'">
       <router-link to="/" class="app-shell__brand" title="返回总览">
@@ -201,6 +206,18 @@ async function handleLogout(): Promise<void> {
  */
 .app-shell {
   min-height: 100vh;
+}
+
+/*
+ * 对话页：外壳锁死视口高度且自身不滚动。
+ *
+ * 只写 min-height 的话，外壳会随内容长高（实测 14 条消息时被撑到 1857px），
+ * 于是整页出现滚动条，而消息区自己的 overflow-y 永远没机会触发。
+ * 锁死高度后，长高的压力沿 flex 链一路传到 .chat__messages，由它内部滚动。
+ */
+.app-shell--fixed {
+  height: 100dvh;
+  overflow: hidden;
 }
 
 /* ---- 侧栏 ---- */
