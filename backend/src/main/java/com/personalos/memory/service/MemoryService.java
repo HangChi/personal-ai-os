@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -134,7 +135,9 @@ public class MemoryService {
      */
     @Transactional(readOnly = true)
     public String renderForPrompt() {
-        List<MemoryEntity> memories = repository.findAllByOrderByUpdatedAtDesc();
+        // 只取注入上限所需的条数，不在内存里「全表加载再 break」：
+        // 记忆是长期累积的表，条数没有天然上界，而每次对话都会走这条路径。
+        List<MemoryEntity> memories = repository.findByOrderByUpdatedAtDesc(PageRequest.of(0, INJECT_MAX_COUNT));
         if (memories.isEmpty()) {
             return "";
         }

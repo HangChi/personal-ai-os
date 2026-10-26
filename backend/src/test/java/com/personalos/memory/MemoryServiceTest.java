@@ -21,6 +21,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.data.domain.Pageable;
 
 /**
  * {@link MemoryService} 单元测试：只 mock 仓储。
@@ -52,7 +54,7 @@ class MemoryServiceTest {
     @Test
     @DisplayName("renderForPrompt(): 无记忆时返回空串（调用方据此完全不追加内容）")
     void renderShouldBeEmptyWhenNoMemory() {
-        given(repository.findAllByOrderByUpdatedAtDesc()).willReturn(List.of());
+        given(repository.findByOrderByUpdatedAtDesc(any(Pageable.class))).willReturn(List.of());
 
         assertThat(service.renderForPrompt()).isEmpty();
     }
@@ -60,7 +62,7 @@ class MemoryServiceTest {
     @Test
     @DisplayName("renderForPrompt(): 含标题、引导句与编号列表")
     void renderShouldContainHeaderAndItems() {
-        given(repository.findAllByOrderByUpdatedAtDesc())
+        given(repository.findByOrderByUpdatedAtDesc(any(Pageable.class)))
                 .willReturn(List.of(memory("周报每周五下午交", Instant.parse("2026-10-01T00:00:00Z"))));
 
         String block = service.renderForPrompt();
@@ -71,21 +73,25 @@ class MemoryServiceTest {
     }
 
     @Test
-    @DisplayName("renderForPrompt(): 超过 30 条时只取最近的 30 条，且顺序为仓库返回顺序")
-    void renderShouldCapAtCount() {
+    @DisplayName("renderForPrompt(): 只向仓储索取注入上限条数（不在内存里全表加载再截断）")
+    void renderShouldAskRepositoryForCappedPage() {
         List<MemoryEntity> memories = new ArrayList<>();
         // 仓库按 updated_at 倒序返回；这里按同样的顺序构造，序号 1 是最新的
-        for (int i = 1; i <= 35; i++) {
+        for (int i = 1; i <= MemoryService.INJECT_MAX_COUNT; i++) {
             memories.add(memory("第" + i + "条记忆", Instant.parse("2026-10-01T00:00:00Z").plusSeconds(1000 - i)));
         }
-        given(repository.findAllByOrderByUpdatedAtDesc()).willReturn(memories);
+        given(repository.findByOrderByUpdatedAtDesc(any(Pageable.class))).willReturn(memories);
 
         String block = service.renderForPrompt();
 
+        // 关键断言：查询本身就带上限，而不是查全表再在 Java 里 break
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        verify(repository).findByOrderByUpdatedAtDesc(captor.capture());
+        assertThat(captor.getValue().getPageSize()).isEqualTo(MemoryService.INJECT_MAX_COUNT);
+        assertThat(captor.getValue().getOffset()).isZero();
+
         assertThat(block).contains("1. 第1条记忆");
-        assertThat(block).contains("30. 第30条记忆");
-        assertThat(block).doesNotContain("31. 第31条记忆");
-        assertThat(block).doesNotContain("第31条记忆");
+        assertThat(block).contains(MemoryService.INJECT_MAX_COUNT + ". 第" + MemoryService.INJECT_MAX_COUNT + "条记忆");
     }
 
     @Test
@@ -100,7 +106,7 @@ class MemoryServiceTest {
             memories.add(memory(prefix + "x".repeat(2000 - prefix.length()),
                     Instant.parse("2026-10-01T00:00:00Z")));
         }
-        given(repository.findAllByOrderByUpdatedAtDesc()).willReturn(memories);
+        given(repository.findByOrderByUpdatedAtDesc(any(Pageable.class))).willReturn(memories);
 
         String block = service.renderForPrompt();
 
