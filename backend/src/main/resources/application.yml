@@ -155,6 +155,25 @@ app:
       # 按中文约 1.6 字符/token 估算，12000 字 ≈ 7.5k token，给输出留足空间。
       max-context-chars: ${AI_MEMORY_MAX_CONTEXT_CHARS:12000}
     system-prompt: ${AI_SYSTEM_PROMPT:你是 Personal AI OS 的个人助手。回答简洁、准确，默认使用中文，必要时使用列表。}
+  # 上下文治理（阶段 22）：窗口之外的历史怎么处理。
+  # 刻意与 app.ai 分开：那边是「用哪个模型、带多少窗口」，这里是「多出来的历史去哪」。
+  context:
+    summary:
+      # 滚动摘要：把已滑出上下文窗口的历史压成一段文字，注入系统提示。
+      # 关掉后既不生成也不注入，行为回到「只有窗口、更早的对话对模型不可见」。
+      enabled: ${AI_CONTEXT_SUMMARY_ENABLED:true}
+      # 触发一次摘要所需的最少新增消息条数（太小会每轮都调模型）
+      min-messages: ${AI_CONTEXT_SUMMARY_MIN_MESSAGES:4}
+      # 送给摘要模型的原文上限（按「从新往旧」截断）
+      max-excerpt-chars: ${AI_CONTEXT_SUMMARY_MAX_EXCERPT:4000}
+      # 摘要本身的长度上限
+      max-summary-chars: ${AI_CONTEXT_SUMMARY_MAX_CHARS:1200}
+    auto-memory:
+      # 记忆自动沉淀：每轮结束后让模型抽取值得长期记住的陈述。
+      # **默认关闭**：写错的记忆会变成永久约束，风险高于收益，请明确知情后再开。
+      enabled: ${AI_CONTEXT_AUTO_MEMORY_ENABLED:false}
+      # 每轮最多沉淀条数
+      max-items: ${AI_CONTEXT_AUTO_MEMORY_MAX_ITEMS:3}
   knowledge:
     # 嵌入维度。必须与 Flyway V4 中 vector_store.embedding 的维度一致，
     # 否则应用**启动失败**并给出修复指引（与其在写入时才报原始 SQL 错误，不如启动就拦住）。

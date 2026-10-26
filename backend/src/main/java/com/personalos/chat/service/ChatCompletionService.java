@@ -6,6 +6,7 @@ import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.common.ai.AiChatClientProvider;
 import com.personalos.common.ai.AiProperties;
 import com.personalos.common.ai.PromptContributor;
+import com.personalos.common.ai.PostTurnContributor;
 import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
@@ -59,19 +60,26 @@ public class ChatCompletionService {
     /** 知识库检索窄接口（阶段 19）。用 ObjectProvider：knowledge 模块的 bean 不在时降级为普通对话 */
     private final ObjectProvider<KnowledgeSearchPort> knowledgeSearch;
     private final ChatCitationService citationService;
+    private final ChatSummaryService summaryService;
+    /** 轮末钩子（记忆自动沉淀等）：通过 SPI 收集，chat 不认识具体业务模块 */
+    private final ObjectProvider<PostTurnContributor> postTurnContributors;
 
     public ChatCompletionService(AiChatClientProvider aiProvider,
                                  ChatSessionService sessionService,
                                  AiProperties aiProperties,
                                  ObjectProvider<PromptContributor> promptContributors,
                                  ObjectProvider<KnowledgeSearchPort> knowledgeSearch,
-                                 ChatCitationService citationService) {
+                                 ChatCitationService citationService,
+                                 ChatSummaryService summaryService,
+                                 ObjectProvider<PostTurnContributor> postTurnContributors) {
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
         this.aiProperties = aiProperties;
         this.promptContributors = promptContributors;
         this.knowledgeSearch = knowledgeSearch;
         this.citationService = citationService;
+        this.summaryService = summaryService;
+        this.postTurnContributors = postTurnContributors;
     }
 
     /**
@@ -131,7 +139,7 @@ public class ChatCompletionService {
             return chatClient.prompt()
                     // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                     // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
-                    .system(systemPromptWithContributions(hits, userContent))
+                    .system(systemPromptWithContributions(hits, userContent, conversationId))
                     .user(userContent)
                     // 会话标识通过 advisor 参数传入，Advisor 据此装载并回写该会话的上下文
                     .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
@@ -179,6 +187,20 @@ public class ChatCompletionService {
                             log.warn("引用挂载失败（不影响本轮回答） conversationId={}", conversationId, ex);
                         }
                     }
+
+                    // 轮末动作（阶段 22）：摘要刷新与记忆沉淀都只影响**下一轮**，
+                    // 因此一律异步提交，绝不让它们拖住本轮的收尾。
+                    String reply = fullContent.toString();
+                    summaryService.refreshAsync(conversationId);
+                    postTurnContributors.orderedStream().forEach(contributor -> {
+                        try {
+                            contributor.afterTurn(conversationId, userContent, reply);
+                        } catch (RuntimeException ex) {
+                            // SPI 实现若同步抛错，不能影响已经产生的回答
+                            log.warn("轮末钩子执行失败 contributor={} conversationId={}",
+                                    contributor.getClass().getSimpleName(), conversationId, ex);
+                        }
+                    });
                 });
         subscriptionRef.set(subscription);
 
@@ -256,8 +278,29 @@ public class ChatCompletionService {
      * <p>知识库片段（阶段 19）追加在最后：编号从 [1] 开始，与 citations 事件、
      * 落库快照三处编号一致；附带使用约束（引用编号、无依据明说、不得编造）。
      */
-    private String systemPromptWithContributions(List<KnowledgeHitDto> hits, String userInput) {
+    /**
+     * 拼装本轮请求的系统提示。
+     *
+     * <p>顺序即优先级：<b>基础人设 → 早前对话摘要 → 各模块上下文（长期记忆等）→ 知识库片段</b>。
+     * 摘要紧跟人设，是因为它回答「这段对话之前发生了什么」，属于对话本身的一部分；
+     * 记忆与检索则是外部知识，排在后面。
+     *
+     * <p>为什么不用 {@code defaultSystem}：它只是**默认值**，请求级 {@code system()} 会替换它。
+     * 若只传贡献内容（如记忆块），阶段 1 定下的人设与行为约束会全部丢失 ——
+     * 这类错误不报错，只会让助手"变了个样"，极难从日志发现。
+     *
+     * <p>各段为空时**不追加任何内容**（连空行都不加），保证「没有任何上下文」时的系统提示
+     * 与阶段 1 逐字符相同。
+     */
+    private String systemPromptWithContributions(List<KnowledgeHitDto> hits, String userInput,
+                                                 String conversationId) {
         StringBuilder prompt = new StringBuilder(aiProperties.systemPrompt());
+
+        String summary = summaryService.renderForConversation(conversationId);
+        if (!summary.isBlank()) {
+            prompt.append("\n\n").append(summary);
+        }
+
         promptContributors.orderedStream().forEach(contributor -> {
             // 传入本轮问题：贡献者据此做相关性筛选（如长期记忆按相关度而非纯时间排序）
             String contribution = contributor.contribute(userInput);

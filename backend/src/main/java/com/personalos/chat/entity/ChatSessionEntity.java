@@ -29,6 +29,18 @@ public class ChatSessionEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    /**
+     * 滚动摘要：已滑出上下文窗口的历史对话的压缩结果（V12）。
+     *
+     * <p>null 与空串语义不同：null = 从未生成过；空串 = 生成过但模型没给出内容。
+     */
+    @Column(name = "context_summary", columnDefinition = "text")
+    private String contextSummary;
+
+    /** 摘要已覆盖到的消息 sequence_no（含）；0 表示尚无摘要 */
+    @Column(name = "summary_upto_seq", nullable = false)
+    private Integer summaryUptoSeq = 0;
+
     /** 供 JPA 使用 */
     protected ChatSessionEntity() {
     }
@@ -62,5 +74,30 @@ public class ChatSessionEntity {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getContextSummary() {
+        return contextSummary;
+    }
+
+    public int getSummaryUptoSeq() {
+        return summaryUptoSeq == null ? 0 : summaryUptoSeq;
+    }
+
+    /**
+     * 更新滚动摘要及其覆盖边界。
+     *
+     * <p>边界只允许**前进**：乱序的异步任务（例如同一会话连续两轮都触发了摘要）
+     * 若用旧结果覆盖新结果，会把已经压进去的内容重新变回「未摘要」。
+     *
+     * @param summary 新的摘要文本；空白视为「无摘要」
+     * @param uptoSeq 已覆盖到的 sequence_no
+     */
+    public void applySummary(String summary, int uptoSeq) {
+        if (uptoSeq <= getSummaryUptoSeq()) {
+            return;
+        }
+        this.contextSummary = summary;
+        this.summaryUptoSeq = uptoSeq;
     }
 }

@@ -103,6 +103,32 @@ public class JpaChatMemory implements ChatMemory {
     @Override
     @Transactional(readOnly = true)
     public List<Message> get(String conversationId) {
+        return selectWindow(conversationId).stream().map(this::toMessage).toList();
+    }
+
+    /**
+     * 当前上下文窗口里**最早一条**的 sequence_no；窗口为空时返回 maxSeq + 1。
+     *
+     * <p>供滚动摘要定位「哪些消息已经滑出窗口」用。刻意复用同一套窗口计算
+     * （{@link #selectWindow}）：如果摘要按「maxSeq - maxMessages」另算一遍边界，
+     * 一旦字符预算生效让窗口变短，两者就会出现缝隙 —— 那些消息既不在窗口里、
+     * 也没被摘要覆盖，等于凭空消失。
+     */
+    @Transactional(readOnly = true)
+    public int contextStartSequence(String conversationId) {
+        List<ChatMessageEntity> window = selectWindow(conversationId);
+        if (window.isEmpty()) {
+            return messageRepository.findMaxSequenceNo(conversationId) + 1;
+        }
+        return window.get(0).getSequenceNo();
+    }
+
+    /**
+     * 窗口选择的唯一实现：先按条数粗筛（仓储倒序取），再按字符预算从新到旧裁剪。
+     *
+     * @return 窗口内的消息实体，**正序**（最早在前）
+     */
+    private List<ChatMessageEntity> selectWindow(String conversationId) {
         int limit = aiProperties.memory().maxMessages();
         int charBudget = aiProperties.memory().maxContextChars();
 
@@ -110,14 +136,14 @@ public class JpaChatMemory implements ChatMemory {
         List<ChatMessageEntity> recent = messageRepository
                 .findRecentByConversationId(conversationId, PageRequest.of(0, limit));
 
-        List<Message> picked = new ArrayList<>(recent.size());
+        List<ChatMessageEntity> picked = new ArrayList<>(recent.size());
         int used = 0;
         for (ChatMessageEntity entity : recent) {
             int cost = entity.getContent() == null ? 0 : entity.getContent().length();
             if (!picked.isEmpty() && used + cost > charBudget) {
                 break;
             }
-            picked.add(toMessage(entity));
+            picked.add(entity);
             used += cost;
         }
         // 上面按「新 → 旧」挑，这里转回正序

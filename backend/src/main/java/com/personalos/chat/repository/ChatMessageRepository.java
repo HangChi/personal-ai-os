@@ -50,6 +50,19 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     long countByConversationId(String conversationId);
 
     /**
+     * 取顺序号落在 {@code [fromSeq, toSeq]} 区间内的消息，正序。
+     *
+     * <p>供滚动摘要使用：摘要要消费的正是「已滑出上下文窗口、且尚未被摘要覆盖」那一段。
+     * 上界用闭区间而不是 {@code <}，因为边界消息本身也需要进摘要 ——
+     * 它已经不在窗口里了。
+     */
+    @Query("select m from ChatMessageEntity m where m.conversationId = :conversationId "
+            + "and m.sequenceNo between :fromSeq and :toSeq order by m.sequenceNo asc")
+    List<ChatMessageEntity> findRangeBySequenceNo(@Param("conversationId") String conversationId,
+                                                   @Param("fromSeq") int fromSeq,
+                                                   @Param("toSeq") int toSeq);
+
+    /**
      * 一次性统计多个会话的消息数，避免在会话列表里逐条查询造成 N+1。
      *
      * @return 每项为 {@code [conversationId, count]}

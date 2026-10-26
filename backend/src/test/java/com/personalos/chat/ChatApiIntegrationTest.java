@@ -53,7 +53,10 @@ import reactor.core.publisher.Flux;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.ai.model.chat=none",
-        "app.ai.memory.max-messages=6"
+        "app.ai.memory.max-messages=6",
+        // 本类的断言都基于「桩模型最后一次收到的指令」，而轮末摘要刷新会**再调一次**桩模型。
+        // 把触发阈值调到够不着，保证异步摘要永不在这些用例里发生（注入路径另有用例覆盖）。
+        "app.context.summary.min-messages=100000"
 })
 @Testcontainers
 class ChatApiIntegrationTest {
@@ -329,6 +332,26 @@ class ChatApiIntegrationTest {
         assertThat(joined).doesNotContain(USER_TURN_1);   // 最早的已被窗口滑出
         assertThat(joined).contains(USER_TURN_3);         // 较新的仍在上下文里
         assertThat(joined).contains(CURRENT_TURN);        // 本轮消息当然在
+    }
+
+    @Test
+    @DisplayName("会话摘要注入系统提示（阶段 22）：早前对话压成的摘要在 system 里可见")
+    void summaryIsInjectedIntoSystemPrompt() throws Exception {
+        String conversationId = createSession();
+        ChatSessionEntity session = sessionRepository.findById(conversationId).orElseThrow();
+        session.applySummary("用户正在开发个人 AI OS，习惯用中文沟通", 4);
+        sessionRepository.save(session);
+
+        streamOnce(conversationId, "继续刚才的话题");
+
+        String system = stub.lastInstructions().stream()
+                .filter(message -> message.getMessageType() == MessageType.SYSTEM)
+                .map(Message::getText)
+                .reduce("", (a, b) -> a + "\n" + b);
+        assertThat(system)
+                .as("摘要要进系统提示，否则窗口外的历史对模型等于不存在")
+                .contains("早前对话摘要")
+                .contains("用户正在开发个人 AI OS");
     }
 
     // ---------------------------------------------------------------- 会话隔离
