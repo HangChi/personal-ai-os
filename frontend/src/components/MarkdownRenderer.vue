@@ -65,12 +65,20 @@ function escapeHtml(text: string): string {
 
 marked.use({
   renderer: {
+    /**
+     * 代码块：输出「头部条容器 + pre」结构（阶段 20，FR-005）。
+     *
+     * 头部条（语言名 + 复制按钮）由 decorateCodeBlocks 用 DOM 后处理注入——
+     * 不写进 marked 输出：v-html 里挂不了 Vue 事件，且原生创建的按钮
+     * 不过 DOMPurify，行为更可控。容器用 div（DOMPurify 默认放行；
+     * figure 各版本策略不一，不赌）。
+     */
     code({ text, lang }: { text: string; lang?: string }): string {
       if (lang && hljs.getLanguage(lang)) {
         const { value } = hljs.highlight(text, { language: lang })
-        return `<pre><code class="hljs language-${lang}">${value}</code></pre>`
+        return `<div class="md-code"><pre><code class="hljs language-${lang}">${value}</code></pre></div>`
       }
-      return `<pre><code class="hljs">${escapeHtml(text)}</code></pre>`
+      return `<div class="md-code"><pre><code class="hljs">${escapeHtml(text)}</code></pre></div>`
     },
   },
 })
@@ -98,11 +106,12 @@ const sanitizedHtml = computed(() => {
 })
 
 /**
- * 给每个代码块加复制按钮。
+ * 给每个代码块加「头部条」：语言名 + 复制按钮（阶段 20，FR-005）。
  *
  * 在渲染后用 DOM 后处理注入（而不是写进 marked 渲染器）：v-html 的内容
  * 无法挂 Vue 事件，按钮用原生 addEventListener，并用 data 属性标记
- * 「已处理」，避免流式重渲染时重复添加。
+ * 「已处理」，避免流式重渲染时重复添加。头部条是独立 div（插到 pre 前），
+ * 不再悬浮在代码上——旧版复制按钮压在代码右上角会遮挡内容。
  */
 async function decorateCodeBlocks(): Promise<void> {
   await nextTick()
@@ -110,18 +119,33 @@ async function decorateCodeBlocks(): Promise<void> {
   if (!root) {
     return
   }
-  for (const pre of root.querySelectorAll('pre')) {
-    if (pre.dataset.decorated === '1') {
+  for (const wrapper of root.querySelectorAll<HTMLElement>('.md-code')) {
+    if (wrapper.dataset.decorated === '1') {
       continue
     }
-    pre.dataset.decorated = '1'
+    wrapper.dataset.decorated = '1'
+    const code = wrapper.querySelector('code')
+    const pre = wrapper.querySelector('pre')
+    if (!code || !pre) {
+      continue
+    }
+    // 语言名从 hljs 的 class 读（language-java → java）；未识别显示 text
+    const langClass = [...code.classList].find((name) => name.startsWith('language-'))
+    const language = langClass ? langClass.slice('language-'.length) : 'text'
+
+    const header = document.createElement('div')
+    header.className = 'md-code__header'
+
+    const label = document.createElement('span')
+    label.className = 'md-code__lang'
+    label.textContent = language
+
     const button = document.createElement('button')
     button.type = 'button'
-    button.className = 'md-code-copy'
+    button.className = 'md-code__copy'
     button.textContent = '复制'
     button.addEventListener('click', () => {
-      const code = pre.querySelector('code')?.textContent ?? ''
-      void navigator.clipboard.writeText(code).then(
+      void navigator.clipboard.writeText(code.textContent ?? '').then(
         () => {
           button.textContent = '已复制'
           window.setTimeout(() => {
@@ -133,7 +157,9 @@ async function decorateCodeBlocks(): Promise<void> {
         },
       )
     })
-    pre.appendChild(button)
+
+    header.append(label, button)
+    wrapper.insertBefore(header, pre)
   }
 }
 
@@ -223,6 +249,10 @@ function toggleExpand(): void {
   margin: var(--os-space-2) 0;
 }
 
+/*
+ * 列表（阶段 20，FR-006）：主色标记 + 舒适行距。
+ * `::marker` 染色让列表一眼是「设计过的」，而不是浏览器默认大黑点。
+ */
 .md__body :deep(ul),
 .md__body :deep(ol) {
   margin: var(--os-space-2) 0;
@@ -230,7 +260,17 @@ function toggleExpand(): void {
 }
 
 .md__body :deep(li) {
-  margin: 2px 0;
+  margin: 3px 0;
+  line-height: 1.7;
+}
+
+.md__body :deep(li::marker) {
+  color: var(--el-color-primary);
+}
+
+/* 嵌套列表标记缩小一圈，避免层级噪音 */
+.md__body :deep(li li::marker) {
+  color: var(--el-text-color-placeholder);
 }
 
 .md__body :deep(a) {
@@ -246,8 +286,10 @@ function toggleExpand(): void {
 
 .md__body :deep(blockquote) {
   margin: var(--os-space-2) 0;
-  padding: 2px var(--os-space-3);
-  border-left: 3px solid var(--el-border-color);
+  padding: var(--os-space-1) var(--os-space-3);
+  border-left: 3px solid var(--el-color-primary-light-5);
+  background: var(--el-fill-color-lighter);
+  border-radius: 0 var(--os-radius-sm) var(--os-radius-sm) 0;
   color: var(--el-text-color-secondary);
 }
 
@@ -298,28 +340,55 @@ function toggleExpand(): void {
   border-top: 1px solid var(--el-border-color-lighter);
 }
 
-/* 代码块复制按钮：绝对定位在右上角，悬停才明显（不挡代码） */
-.md__body :deep(.md-code-copy) {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  padding: 2px 8px;
+/* ---- 代码块：头部条（语言 + 复制）+ pre（阶段 20，FR-005）---- */
+
+.md__body :deep(.md-code) {
+  margin: var(--os-space-2) 0;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--os-radius-md);
+  overflow: hidden;
+  /* hljs 主题画 pre 的底色，头部条用界面色 —— 两段视觉分开 */
+}
+
+.md__body :deep(.md-code__header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+  background: var(--el-fill-color-light);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.md__body :deep(.md-code__lang) {
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+}
+
+.md__body :deep(.md-code__copy) {
+  padding: 1px 8px;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: var(--os-radius-sm);
   background: var(--el-bg-color);
   color: var(--el-text-color-secondary);
   font-size: 11px;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity var(--os-duration-fast) var(--os-ease);
+  transition:
+    color var(--os-duration-fast) var(--os-ease),
+    border-color var(--os-duration-fast) var(--os-ease);
 }
 
-.md__body :deep(pre:hover .md-code-copy) {
-  opacity: 1;
-}
-
-.md__body :deep(.md-code-copy:hover) {
+.md__body :deep(.md-code__copy:hover) {
   color: var(--el-color-primary);
   border-color: var(--el-color-primary-light-5);
+}
+
+.md__body :deep(.md-code pre) {
+  margin: 0;
+  padding: var(--os-space-2) var(--os-space-3);
+  border-radius: 0;
+  overflow-x: auto;
+  font-size: var(--os-font-xs);
+  line-height: 1.6;
 }
 </style>
