@@ -61,11 +61,25 @@ export function renameSession(conversationId: string, title: string): Promise<Ch
   })
 }
 
-/** 查询会话全部消息（按顺序正序） */
-export function listMessages(conversationId: string): Promise<ChatMessage[]> {
+/** 消息分页参数（阶段 21） */
+export interface MessageListQuery {
+  /** 返回条数（1~200）。省略则返回全部消息（老契约，导出等场景用） */
+  limit?: number
+  /** 只取顺序号小于它的消息，用于「加载更早」；省略表示取最新的 limit 条 */
+  beforeSeq?: number
+}
+
+/**
+ * 查询会话消息（按顺序正序）。
+ *
+ * 不带参数时返回全部 —— 与阶段 1 的契约一致；界面请带 `limit`，
+ * 并按返回结果中最小顺序号继续向前翻页。
+ */
+export function listMessages(conversationId: string, query: MessageListQuery = {}): Promise<ChatMessage[]> {
   return requestData<ChatMessage[]>({
     url: `/chat/sessions/${conversationId}/messages`,
     method: 'get',
+    params: query,
   })
 }
 

@@ -10,12 +10,16 @@ import {
   streamChat,
 } from '@/api/chat'
 import { listToolInvocations } from '@/api/activity'
-import {
-  cancelOperation,
-  confirmOperation,
-  listConfirmations,
-} from '@/api/confirmations'
+import { cancelOperation, confirmOperation, listConfirmations } from '@/api/confirmations'
 import type { ChatCitation, ChatMessage, ChatSession, TaskConfirmation, ToolInvocation } from '@/types/api'
+
+/**
+ * 首屏与每次「加载更早」的消息条数（阶段 21）。
+ *
+ * 50 是折中：一屏大约 6~8 轮对话，50 条足够填满并且留有余量；
+ * 再大就失去了分页的意义，再小则频繁翻页。
+ */
+const MESSAGE_PAGE_SIZE = 50
 
 /**
  * 聊天状态：会话列表 + 当前会话消息 + 流式中的临时内容。
@@ -35,6 +39,9 @@ export const useChatStore = defineStore('chat', () => {
   const sessionKeyword = ref('')
   const currentConversationId = ref<string | null>(null)
   const messages = ref<ChatMessage[]>([])
+  /** 更早的消息是否还可能存在（阶段 21：首屏只取最近一页，向前翻页靠它判断） */
+  const hasOlderMessages = ref(false)
+  const loadingOlder = ref(false)
   const streamingContent = ref('')
   const streaming = ref(false)
   const loadingSessions = ref(false)
@@ -129,16 +136,64 @@ export const useChatStore = defineStore('chat', () => {
     liveCitations.value = []
     retrievalState.value = 'idle'
     try {
-      messages.value = await listMessages(conversationId)
+      const page = await listMessages(conversationId, { limit: MESSAGE_PAGE_SIZE })
+      messages.value = page
+      // 刚好装满一页 ⇒ 很可能还有更早的；不足一页 ⇒ 已经到头
+      hasOlderMessages.value = page.length === MESSAGE_PAGE_SIZE
       await loadConfirmations()
       await loadToolTrail()
     } catch (cause) {
       messages.value = []
+      hasOlderMessages.value = false
       pendingConfirmations.value = []
       toolTrail.value = []
       error.value = cause instanceof Error ? cause.message : '加载消息失败'
     } finally {
       loadingMessages.value = false
+    }
+  }
+
+  /**
+   * 加载更早的消息（阶段 21）。
+   *
+   * <p>以当前最旧一条的顺序号作为游标向前翻，而不是用 offset：
+   * 翻页期间新消息只会追加在尾部，offset 会因此错位（重复或漏项），
+   * 顺序号游标不会。
+   */
+  async function loadOlderMessages(): Promise<void> {
+    const conversationId = currentConversationId.value
+    const oldest = messages.value[0]
+    if (!conversationId || !oldest || !hasOlderMessages.value || loadingOlder.value) {
+      return
+    }
+    loadingOlder.value = true
+    try {
+      const older = await listMessages(conversationId, {
+        limit: MESSAGE_PAGE_SIZE,
+        beforeSeq: oldest.sequenceNo,
+      })
+      messages.value = [...older, ...messages.value]
+      hasOlderMessages.value = older.length === MESSAGE_PAGE_SIZE
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '加载更早消息失败'
+    } finally {
+      loadingOlder.value = false
+    }
+  }
+
+  /**
+   * 用服务端的权威数据刷新「尾部」，同时保留已经加载的更早历史。
+   *
+   * <p>不能整体替换成最近一页：用户可能已经向上翻过几页，
+   * 整体替换会让视图突然跳回最新的一页。
+   */
+  async function refreshTail(conversationId: string): Promise<void> {
+    const tail = await listMessages(conversationId, { limit: MESSAGE_PAGE_SIZE })
+    const oldestTailSeq = tail.length > 0 ? tail[0].sequenceNo : Number.POSITIVE_INFINITY
+    const kept = messages.value.filter((message) => message.sequenceNo < oldestTailSeq)
+    messages.value = [...kept, ...tail]
+    if (kept.length === 0) {
+      hasOlderMessages.value = tail.length === MESSAGE_PAGE_SIZE
     }
   }
 
@@ -184,10 +239,7 @@ export const useChatStore = defineStore('chat', () => {
    * @param approve true 确认执行，false 取消
    * @returns 执行结果描述，失败时返回 null
    */
-  async function resolveConfirmation(
-    confirmation: TaskConfirmation,
-    approve: boolean,
-  ): Promise<string | null> {
+  async function resolveConfirmation(confirmation: TaskConfirmation, approve: boolean): Promise<string | null> {
     error.value = null
     try {
       if (!approve) {
@@ -231,9 +283,7 @@ export const useChatStore = defineStore('chat', () => {
     error.value = null
     try {
       const updated = await renameSessionApi(conversationId, title)
-      sessions.value = sessions.value.map((item) =>
-        item.conversationId === conversationId ? updated : item,
-      )
+      sessions.value = sessions.value.map((item) => (item.conversationId === conversationId ? updated : item))
       return true
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '重命名会话失败'
@@ -263,11 +313,14 @@ export const useChatStore = defineStore('chat', () => {
     }
 
     const conversationId = currentConversationId.value
+    // 乐观消息的顺序号必须取「当前最大 + 1」而不是「条数 + 1」：
+    // 分页之后列表可能只是会话的尾部一段，条数与顺序号已经不再相等
+    const nextSequenceNo = messages.value.reduce((max, message) => Math.max(max, message.sequenceNo), 0) + 1
     const optimisticUserMessage: ChatMessage = {
       id: -1,
       role: 'USER',
       content: trimmed,
-      sequenceNo: messages.value.length + 1,
+      sequenceNo: nextSequenceNo,
       createdAt: new Date().toISOString(),
       citations: [],
     }
@@ -315,7 +368,7 @@ export const useChatStore = defineStore('chat', () => {
       retrievalState.value = 'idle'
       if (conversationId) {
         try {
-          messages.value = await listMessages(conversationId)
+          await refreshTail(conversationId)
         } catch {
           // 刷新失败不影响本轮已展示的内容
         }
@@ -341,6 +394,8 @@ export const useChatStore = defineStore('chat', () => {
     sessionKeyword,
     currentConversationId,
     messages,
+    hasOlderMessages,
+    loadingOlder,
     streamingContent,
     streaming,
     loadingSessions,
@@ -355,6 +410,7 @@ export const useChatStore = defineStore('chat', () => {
     goToSessionPage,
     createSession,
     selectSession,
+    loadOlderMessages,
     removeSession,
     renameSession,
     send,

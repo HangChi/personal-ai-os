@@ -1,27 +1,28 @@
 <script setup lang="ts">
 /**
- * 对话页（阶段 20 重设计）。
+ * 对话页（阶段 20 重设计；2026-10-26 按职责拆分为子组件）。
  *
- * 布局：全高对话列——消息区撑满可滚动，输入区停靠底部（不再有断裂空白带）。
- * 消息：助手消息去气泡（头像 + 内容直排），用户消息右对齐主色气泡；
- *       操作（复制 / 时间）悬停浮现。流式：首 token 前三点打字动画。
- * 输入区：工具行（知识库增强 chip + Enter 行为提示）+ 停靠 composer。
- * 空态：欢迎语 + 建议问题 chips。
+ * <p>本文件只保留「编排」：会话与消息来自 store，滚动与键盘行为、
+ * 二次确认弹窗在这里；具体的会话列表、消息气泡、流式占位、工具轨迹、
+ * 待确认卡片、输入区各自成组件（`components/chat/`）。
  *
+ * <p>布局：全高对话列——消息区撑满可滚动，输入区停靠底部（不再有断裂空白带）。
  * 阶段 19 功能全保留：知识库增强（会话级开关）、引用区、工具轨迹、待确认。
  */
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ChatLineRound, CopyDocument, QuestionFilled, User } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
-import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
-import StatusTag from '@/components/StatusTag.vue'
+import ChatComposer from '@/components/chat/ChatComposer.vue'
+import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
+import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
+import ChatSessionList from '@/components/chat/ChatSessionList.vue'
+import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
+import ChatToolTrail from '@/components/chat/ChatToolTrail.vue'
+import ChatWelcome from '@/components/chat/ChatWelcome.vue'
 import { useChatStore } from '@/stores/chat'
 import { clampTopK, conversationKnowledgeKey } from '@/lib/settings'
 import { useSettingsStore } from '@/stores/settings'
-import { groupSessionsByDay } from '@/lib/session-group'
-import { relativeTime } from '@/lib/relative-time'
 import type { ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
@@ -34,6 +35,8 @@ const {
   sessionKeyword,
   currentConversationId,
   messages,
+  hasOlderMessages,
+  loadingOlder,
   streamingContent,
   streaming,
   loadingSessions,
@@ -45,9 +48,6 @@ const {
   retrievalState,
 } = storeToRefs(chatStore)
 const { settings } = storeToRefs(settingsStore)
-
-/** 会话分组（C-04）：组内顺序即接口顺序，不重排 */
-const sessionGroups = computed(() => groupSessionsByDay(sessions.value))
 
 const draft = ref('')
 const messageArea = ref<HTMLElement | null>(null)
@@ -67,34 +67,6 @@ const suggestions = [
   '我的周报什么时候交？',
   '总结一下我知识库里的主要内容',
 ]
-
-/** 工具调用结果徽标映射（StatusTag 的 map） */
-const OUTCOME_MAP: Record<string, { label: string; type: 'success' | 'danger' | 'warning' | 'info' }> = {
-  SUCCESS: { label: '成功', type: 'success' },
-  FAILED: { label: '失败', type: 'danger' },
-  REJECTED: { label: '被拒绝', type: 'warning' },
-  REQUIRES_CONFIRMATION: { label: '待确认', type: 'warning' },
-  DUPLICATE: { label: '已去重', type: 'info' },
-  IN_PROGRESS: { label: '执行中', type: 'info' },
-}
-
-/** 高风险操作的中文名；未识别时直接展示原始动作码，避免"未知操作"这类无用提示 */
-function actionLabel(action: string): string {
-  switch (action) {
-    case 'DELETE_TASK':
-      return '删除任务'
-    case 'SCHEDULE_TASK':
-      return '修改截止时间'
-    case 'SET_PRIORITY':
-      return '修改优先级'
-    case 'DELETE_CALENDAR_EVENT':
-      return '删除日程'
-    case 'MCP_TOOL_CALL':
-      return '调用外部工具'
-    default:
-      return action
-  }
-}
 
 /**
  * 处理待确认操作。
@@ -134,11 +106,6 @@ async function copyMessage(content: string): Promise<void> {
   } catch {
     ElMessage.error('复制失败，请手动选择复制')
   }
-}
-
-/** 工具耗时可读化：null 表示未真正执行（待确认），与 0ms 区分开 */
-function formatDuration(durationMs: number | null): string {
-  return durationMs === null ? '—' : `${durationMs} ms`
 }
 
 async function scrollToBottom(): Promise<void> {
@@ -201,27 +168,6 @@ const retrievalHint = computed(() => {
   }
   return null
 })
-
-/**
- * 输入框键盘行为：
- * - enterSend（默认）：Enter 发送，Shift+Enter 换行
- * - 关闭时：Enter 换行，Ctrl/Cmd+Enter 发送
- */
-function handleComposerKeydown(event: KeyboardEvent): void {
-  if (event.key !== 'Enter' || event.isComposing) {
-    // isComposing：中文输入法选词期间的 Enter 不触发发送（否则打不了中文）
-    return
-  }
-  if (settings.value.enterSend) {
-    if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
-      event.preventDefault()
-      void handleSend()
-    }
-  } else if (event.ctrlKey || event.metaKey) {
-    event.preventDefault()
-    void handleSend()
-  }
-}
 
 onMounted(async () => {
   loadKnowledgePref()
@@ -289,84 +235,22 @@ async function handleRename(session: ChatSession): Promise<void> {
 <template>
   <div class="chat">
     <!-- ============ 会话列表 ============ -->
-    <el-card class="chat__sessions" shadow="never">
-      <template #header>
-        <div class="chat__sessions-header">
-          <span class="chat__sessions-title">会话</span>
-          <div class="chat__sessions-actions">
-            <el-button size="small" :loading="loadingSessions" @click="chatStore.loadSessions()">
-              刷新
-            </el-button>
-            <el-button type="primary" size="small" @click="handleNewSession">新建</el-button>
-          </div>
-        </div>
-        <el-input
-          v-model="sessionKeyword"
-          class="chat__sessions-filter"
-          clearable
-          size="small"
-          placeholder="按标题搜索会话"
-          @keydown.enter="chatStore.searchSessions()"
-          @clear="chatStore.searchSessions()"
-        />
-      </template>
-
-      <el-empty
-        v-if="sessions.length === 0"
-        :description="sessionKeyword ? '没有匹配的会话' : '还没有会话'"
-        :image-size="60"
-      />
-
-      <div v-else class="chat__session-groups">
-        <section v-for="group in sessionGroups" :key="group.key" class="chat__session-group">
-          <div class="chat__session-group-label">{{ group.label }}</div>
-          <ul class="chat__session-list">
-            <li
-              v-for="session in group.items"
-              :key="session.conversationId"
-              :class="[
-                'chat__session',
-                { 'chat__session--active': session.conversationId === currentConversationId },
-              ]"
-              @click="chatStore.selectSession(session.conversationId)"
-            >
-              <div class="chat__session-body">
-                <div class="chat__session-title">{{ session.title }}</div>
-                <div class="chat__session-meta">
-                  {{ session.messageCount }} 条 · {{ relativeTime(session.updatedAt) }}
-                </div>
-              </div>
-              <div class="chat__session-actions">
-                <el-button link type="primary" size="small" @click.stop="handleRename(session)">
-                  重命名
-                </el-button>
-                <el-button
-                  link
-                  type="danger"
-                  size="small"
-                  @click.stop="chatStore.removeSession(session.conversationId)"
-                >
-                  删除
-                </el-button>
-              </div>
-            </li>
-          </ul>
-        </section>
-      </div>
-
-      <div v-if="sessionsTotal > 0" class="chat__sessions-pagination">
-        <span class="chat__sessions-total">共 {{ sessionsTotal }} 个</span>
-        <el-pagination
-          layout="prev, pager, next"
-          small
-          background
-          :total="sessionsTotal"
-          :current-page="sessionsPage + 1"
-          :page-size="sessionsSize"
-          @current-change="(next: number) => chatStore.goToSessionPage(next - 1)"
-        />
-      </div>
-    </el-card>
+    <ChatSessionList
+      v-model:keyword="sessionKeyword"
+      :sessions="sessions"
+      :current-id="currentConversationId"
+      :total="sessionsTotal"
+      :page="sessionsPage"
+      :size="sessionsSize"
+      :loading="loadingSessions"
+      @refresh="chatStore.loadSessions()"
+      @create="handleNewSession"
+      @select="chatStore.selectSession($event)"
+      @rename="handleRename"
+      @remove="chatStore.removeSession($event)"
+      @search="chatStore.searchSessions()"
+      @page-change="chatStore.goToSessionPage($event)"
+    />
 
     <!-- ============ 主对话列（全高） ============ -->
     <el-card class="chat__main" shadow="never">
@@ -374,7 +258,9 @@ async function handleRename(session: ChatSession): Promise<void> {
         <div class="chat__main-header">
           <div class="chat__main-heading">
             <span class="chat__main-title" :title="currentTitle">{{ currentTitle }}</span>
-            <span class="chat__main-meta">{{ messages.length }} 条消息</span>
+            <span class="chat__main-meta">
+              {{ hasOlderMessages ? `已加载 ${messages.length} 条` : `${messages.length} 条消息` }}
+            </span>
           </div>
           <el-tag v-if="streaming" type="warning" size="small" effect="plain">生成中</el-tag>
         </div>
@@ -383,228 +269,52 @@ async function handleRename(session: ChatSession): Promise<void> {
       <div class="chat__body">
         <!-- 消息滚动区 -->
         <div ref="messageArea" v-loading="loadingMessages" class="chat__messages">
-          <el-alert
-            v-if="error"
-            class="chat__error"
-            type="error"
-            :closable="false"
-            show-icon
-            :title="error"
-          />
+          <el-alert v-if="error" class="chat__error" type="error" :closable="false" show-icon :title="error" />
 
           <!-- 空态：欢迎 + 建议问题 -->
-          <div v-if="messages.length === 0 && !streamingContent && !loadingMessages" class="chat__welcome">
-            <span class="chat__welcome-badge">AI</span>
-            <p class="chat__welcome-title">有什么可以帮你？</p>
-            <p class="chat__welcome-hint">我可以操作任务与日程、检索你的知识库、记住你说的事</p>
-            <div class="chat__welcome-chips">
-              <button
-                v-for="item in suggestions"
-                :key="item"
-                type="button"
-                class="chat__suggestion"
-                @click="draft = item"
-              >
-                {{ item }}
-              </button>
-            </div>
+          <ChatWelcome
+            v-if="messages.length === 0 && !streamingContent && !loadingMessages"
+            :suggestions="suggestions"
+            @pick="draft = $event"
+          />
+
+          <!-- 更早的消息入口（阶段 21）：首屏只取最近一页，向上翻是显式动作 -->
+          <div v-if="hasOlderMessages || loadingOlder" class="chat__load-older">
+            <el-button text size="small" :loading="loadingOlder" @click="chatStore.loadOlderMessages()">
+              加载更早的消息
+            </el-button>
           </div>
 
           <!-- 消息流 -->
-          <div
-            v-for="message in messages"
-            :key="message.id"
-            :class="['chat__msg', `chat__msg--${message.role.toLowerCase()}`]"
-          >
-            <!-- 助手：头像在左，内容直排 -->
-            <template v-if="message.role !== 'USER'">
-              <span class="chat__msg-avatar chat__msg-avatar--assistant">
-                <el-icon :size="14"><ChatLineRound /></el-icon>
-              </span>
-              <div class="chat__msg-content">
-                <MarkdownRenderer :content="message.content" />
-                <!-- 引用区（阶段 19） -->
-                <div v-if="message.citations.length > 0" class="chat__citations">
-                  <el-collapse>
-                    <el-collapse-item>
-                      <template #title>
-                        <span class="chat__citations-title">引用来源（{{ message.citations.length }}）</span>
-                      </template>
-                      <div
-                        v-for="citation in message.citations"
-                        :key="citation.index"
-                        class="chat__citation"
-                      >
-                        <div class="chat__citation-head">
-                          <span class="chat__citation-source">
-                            [{{ citation.index }}] {{ citation.documentTitle }}
-                            <span class="chat__citation-meta">
-                              {{ citation.filename }} · #{{ citation.chunkIndex + 1 }}
-                            </span>
-                          </span>
-                        </div>
-                        <div class="chat__citation-content">{{ citation.content }}</div>
-                      </div>
-                    </el-collapse-item>
-                  </el-collapse>
-                </div>
-                <!-- 悬停操作行 -->
-                <div class="chat__msg-actions">
-                  <span class="chat__msg-time">{{ relativeTime(message.createdAt) }}</span>
-                  <button type="button" class="chat__msg-action" @click="copyMessage(message.content)">
-                    <el-icon :size="11"><CopyDocument /></el-icon>
-                    复制
-                  </button>
-                </div>
-              </div>
-            </template>
-
-            <!-- 用户：右侧主色气泡 -->
-            <template v-else>
-              <div class="chat__msg-content chat__msg-content--user">
-                <div class="chat__msg-bubble">
-                  <MarkdownRenderer :content="message.content" />
-                </div>
-                <div class="chat__msg-actions chat__msg-actions--user">
-                  <span class="chat__msg-time">{{ relativeTime(message.createdAt) }}</span>
-                  <button type="button" class="chat__msg-action" @click="copyMessage(message.content)">
-                    <el-icon :size="11"><CopyDocument /></el-icon>
-                    复制
-                  </button>
-                </div>
-              </div>
-              <span class="chat__msg-avatar chat__msg-avatar--user">
-                <el-icon :size="14"><User /></el-icon>
-              </span>
-            </template>
-          </div>
+          <ChatMessageItem v-for="message in messages" :key="message.id" :message="message" @copy="copyMessage" />
 
           <!-- 流式中的助手消息 -->
-          <div v-if="streaming" class="chat__msg chat__msg--assistant">
-            <span class="chat__msg-avatar chat__msg-avatar--assistant">
-              <el-icon :size="14"><ChatLineRound /></el-icon>
-            </span>
-            <div class="chat__msg-content">
-              <!-- 首 token 前：三点打字动画（检索中附状态文字） -->
-              <div v-if="!streamingContent" class="chat__typing">
-                <span class="chat__typing-dot" />
-                <span class="chat__typing-dot" />
-                <span class="chat__typing-dot" />
-                <span v-if="retrievalHint" class="chat__typing-text">{{ retrievalHint }}</span>
-              </div>
-              <template v-else>
-                <MarkdownRenderer :content="streamingContent" streaming />
-                <div v-if="retrievalHint" class="chat__typing-text chat__typing-text--below">
-                  {{ retrievalHint }}
-                </div>
-              </template>
-            </div>
-          </div>
+          <ChatStreamingItem v-if="streaming" :content="streamingContent" :hint="retrievalHint" />
 
           <!-- 工具调用轨迹（阶段 18/19） -->
-          <el-collapse v-if="toolTrail.length > 0" class="chat__trail">
-            <el-collapse-item>
-              <template #title>
-                <span class="chat__trail-title">
-                  本会话工具调用（{{ toolTrail.length }}）
-                  <el-tooltip content="来自审计记录，展示助手在这个会话里真实调用过的工具" placement="top">
-                    <el-icon class="chat__trail-help"><QuestionFilled /></el-icon>
-                  </el-tooltip>
-                </span>
-              </template>
-              <ul class="chat__trail-list">
-                <li v-for="item in toolTrail" :key="item.id" class="chat__trail-item">
-                  <span class="chat__trail-operation">{{ item.operation }}</span>
-                  <StatusTag :status="item.outcome" :map="OUTCOME_MAP" />
-                  <span class="chat__trail-duration">{{ formatDuration(item.durationMs) }}</span>
-                  <span class="chat__trail-time">{{ relativeTime(item.createdAt) }}</span>
-                </li>
-              </ul>
-            </el-collapse-item>
-          </el-collapse>
+          <ChatToolTrail v-if="toolTrail.length > 0" :items="toolTrail" />
 
           <!-- 待确认操作（阶段 2） -->
-          <div class="chat__confirmations" v-if="pendingConfirmations.length > 0">
-            <el-alert
-              type="warning"
-              :closable="false"
-              show-icon
-              title="助手申请执行高风险操作，需要你确认后才会真正生效"
-            />
-            <div
-              v-for="confirmation in pendingConfirmations"
-              :key="confirmation.id"
-              class="chat__confirmation"
-            >
-              <div class="chat__confirmation-body">
-                <el-tag type="warning" size="small" effect="plain">
-                  {{ actionLabel(confirmation.action) }}
-                </el-tag>
-                <span class="chat__confirmation-summary">{{ confirmation.summary }}</span>
-                <span class="chat__confirmation-meta">影响 {{ confirmation.affectedCount }} 项</span>
-              </div>
-              <div class="chat__confirmation-actions">
-                <el-button
-                  size="small"
-                  :loading="resolvingId === confirmation.id"
-                  @click="handleConfirmation(confirmation, false)"
-                >
-                  取消
-                </el-button>
-                <el-button
-                  size="small"
-                  type="danger"
-                  :loading="resolvingId === confirmation.id"
-                  @click="handleConfirmation(confirmation, true)"
-                >
-                  确认执行
-                </el-button>
-              </div>
-            </div>
-          </div>
+          <ChatConfirmationList
+            v-if="pendingConfirmations.length > 0"
+            :items="pendingConfirmations"
+            :resolving-id="resolvingId"
+            @resolve="handleConfirmation"
+          />
         </div>
 
         <!-- ============ 停靠输入区 ============ -->
-        <div class="chat__dock">
-          <div class="chat__dock-toolbar">
-            <button
-              type="button"
-              class="chat__dock-chip"
-              :class="{ 'chat__dock-chip--on': knowledgeOn }"
-              :title="knowledgeOn ? '点击关闭知识库增强' : '开启后每条消息先检索知识库再回答'"
-              @click="toggleKnowledge(!knowledgeOn)"
-            >
-              <span class="chat__dock-chip-dot" />
-              知识库增强
-              <template v-if="knowledgeOn">· {{ topK }} 条</template>
-            </button>
-            <span v-if="knowledgeOn" class="chat__dock-topk">
-              条数
-              <el-input-number v-model="topK" :min="1" :max="20" size="small" controls-position="right" />
-            </span>
-            <span class="chat__dock-hint">
-              {{ settings.enterSend ? 'Enter 发送 · Shift+Enter 换行' : 'Ctrl+Enter 发送 · Enter 换行' }}
-            </span>
-          </div>
-          <div class="chat__composer">
-            <el-input
-              v-model="draft"
-              type="textarea"
-              :rows="3"
-              maxlength="4000"
-              resize="none"
-              :placeholder="knowledgeOn ? '输入消息，将基于知识库回答' : '输入消息'"
-              @keydown="handleComposerKeydown"
-            />
-            <div class="chat__composer-actions">
-              <span class="chat__composer-count">{{ draft.length }} / 4000</span>
-              <el-button v-if="streaming" @click="chatStore.stopStreaming()">停止</el-button>
-              <el-button v-else type="primary" :disabled="!canSend" @click="handleSend">
-                发送
-              </el-button>
-            </div>
-          </div>
-        </div>
+        <ChatComposer
+          v-model="draft"
+          :streaming="streaming"
+          :knowledge-on="knowledgeOn"
+          :top-k="topK"
+          :enter-send="settings.enterSend"
+          @toggle-knowledge="toggleKnowledge"
+          @update:top-k="(value: number | null) => (topK = value)"
+          @send="handleSend"
+          @stop="chatStore.stopStreaming()"
+        />
       </div>
     </el-card>
   </div>
@@ -623,156 +333,6 @@ async function handleRename(session: ChatSession): Promise<void> {
   gap: var(--os-space-4);
   height: calc(100vh - 156px);
   align-items: stretch;
-}
-
-/* ---- 会话列表卡（全高，内部滚动） ---- */
-
-.chat__sessions {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.chat__sessions :deep(.el-card__body) {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: var(--os-space-3);
-}
-
-.chat__sessions-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.chat__sessions-title {
-  font-size: var(--os-font-sm);
-  font-weight: 500;
-}
-
-.chat__sessions-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--os-space-1);
-}
-
-.chat__sessions-filter {
-  margin-top: var(--os-space-2);
-}
-
-.chat__session-groups {
-  display: flex;
-  flex-direction: column;
-  gap: var(--os-space-4);
-}
-
-.chat__session-group-label {
-  margin-bottom: var(--os-space-1);
-  padding: 0 var(--os-space-1);
-  color: var(--el-text-color-placeholder);
-  font-size: 11px;
-}
-
-.chat__session-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.chat__session {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--os-space-2);
-  padding: var(--os-space-2) 10px;
-  border-radius: var(--os-radius-md);
-  cursor: pointer;
-  transition: background var(--os-duration-fast) var(--os-ease);
-}
-
-.chat__session:hover {
-  background: var(--el-fill-color);
-}
-
-/* 当前会话：主色左边条 + 浅底（阶段 20，FR-009） */
-.chat__session--active {
-  background: var(--el-color-primary-light-9);
-}
-
-.chat__session--active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 20%;
-  bottom: 20%;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--el-color-primary);
-}
-
-.chat__session-actions {
-  position: absolute;
-  right: var(--os-space-2);
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  gap: var(--os-space-1);
-  padding-left: var(--os-space-3);
-  background: inherit;
-  opacity: 0;
-  transition: opacity var(--os-duration-fast) var(--os-ease);
-}
-
-.chat__session:hover .chat__session-actions,
-.chat__session:focus-within .chat__session-actions {
-  opacity: 1;
-}
-
-@media (hover: none) {
-  .chat__session-actions {
-    position: static;
-    transform: none;
-    opacity: 1;
-    background: transparent;
-    padding-left: 0;
-  }
-}
-
-.chat__session-body {
-  min-width: 0;
-  flex: 1;
-}
-
-.chat__session-title {
-  font-size: var(--os-font-xs);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.chat__session-meta {
-  margin-top: 1px;
-  font-size: 11px;
-  color: var(--el-text-color-placeholder);
-}
-
-.chat__sessions-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--os-space-2);
-  margin-top: var(--os-space-2);
-}
-
-.chat__sessions-total {
-  color: var(--el-text-color-secondary);
-  font-size: 11px;
 }
 
 /* ---- 主对话卡（全高列） ---- */
@@ -842,444 +402,11 @@ async function handleRename(session: ChatSession): Promise<void> {
   flex: none;
 }
 
-/* ---- 空态欢迎 ---- */
-
-.chat__welcome {
-  margin: auto;
+/* 「加载更早」停靠在消息流顶部，居中且不抢视觉（它是可选动作，不是主流程） */
+.chat__load-older {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: var(--os-space-5);
-}
-
-.chat__welcome-badge {
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--os-radius-lg);
-  background: var(--el-color-primary);
-  color: var(--el-color-white);
-  font-size: var(--os-font-md);
-  font-weight: 500;
-}
-
-.chat__welcome-title {
-  margin: var(--os-space-3) 0 0;
-  font-size: var(--os-font-lg);
-  font-weight: 500;
-}
-
-.chat__welcome-hint {
-  margin: var(--os-space-1) 0 0;
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
-}
-
-.chat__welcome-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--os-space-2);
-  margin-top: var(--os-space-4);
-}
-
-.chat__suggestion {
-  padding: 6px 12px;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 999px;
-  background: var(--el-bg-color);
-  color: var(--el-text-color-regular);
-  font-size: var(--os-font-xs);
-  cursor: pointer;
-  transition:
-    border-color var(--os-duration-fast) var(--os-ease),
-    color var(--os-duration-fast) var(--os-ease);
-}
-
-.chat__suggestion:hover {
-  border-color: var(--el-color-primary-light-5);
-  color: var(--el-color-primary);
-}
-
-/* ---- 消息：助手（无气泡） / 用户（主色气泡） ---- */
-
-.chat__msg {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--os-space-3);
-}
-
-.chat__msg--user {
-  justify-content: flex-end;
-}
-
-.chat__msg-avatar {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  margin-top: 2px;
-  border-radius: 50%;
-}
-
-.chat__msg-avatar--assistant {
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-}
-
-.chat__msg-avatar--user {
-  background: var(--el-color-primary);
-  color: var(--el-color-white);
-}
-
-.chat__msg-content {
-  min-width: 0;
-  flex: 1;
-  font-size: var(--os-font-sm);
-  line-height: 1.75;
-}
-
-.chat__msg-content--user {
-  flex: 0 1 auto;
-  max-width: 75%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.chat__msg-bubble {
-  padding: var(--os-space-2) var(--os-space-3);
-  border-radius: var(--os-radius-lg);
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-}
-
-.chat__msg-bubble :deep(.md__body) {
-  font-size: var(--os-font-sm);
-  line-height: 1.7;
-}
-
-/* 悬停操作行：默认隐形，不抢版面（FR-003） */
-.chat__msg-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--os-space-2);
-  margin-top: var(--os-space-1);
-  opacity: 0;
-  transition: opacity var(--os-duration-fast) var(--os-ease);
-}
-
-.chat__msg-actions--user {
-  justify-content: flex-end;
-}
-
-.chat__msg:hover .chat__msg-actions,
-.chat__msg:focus-within .chat__msg-actions {
-  opacity: 1;
-}
-
-@media (hover: none) {
-  .chat__msg-actions {
-    opacity: 1;
-  }
-}
-
-.chat__msg-time {
-  color: var(--el-text-color-placeholder);
-  font-size: 11px;
-}
-
-.chat__msg-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--el-text-color-secondary);
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.chat__msg-action:hover {
-  color: var(--el-color-primary);
-}
-
-/* ---- 流式打字动画（阶段 20，FR-004） ---- */
-
-.chat__typing {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: var(--os-space-2) 0;
-}
-
-.chat__typing-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--el-text-color-placeholder);
-  animation: chat-typing-bounce 1.2s infinite ease-in-out;
-}
-
-.chat__typing-dot:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.chat__typing-dot:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-@keyframes chat-typing-bounce {
-  0%,
-  60%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.4;
-  }
-  30% {
-    transform: translateY(-4px);
-    opacity: 1;
-  }
-}
-
-.chat__typing-text {
-  margin-left: var(--os-space-2);
-  color: var(--el-text-color-secondary);
-  font-size: 11px;
-}
-
-.chat__typing-text--below {
-  margin: var(--os-space-1) 0 0;
-}
-
-/* ---- 引用区（阶段 19，随新布局收紧） ---- */
-
-.chat__citations {
-  margin-top: var(--os-space-3);
-}
-
-.chat__citations-title {
-  color: var(--el-text-color-secondary);
-  font-size: 11px;
-}
-
-.chat__citation {
-  padding: var(--os-space-1) 0 var(--os-space-1) 10px;
-  border-left: 3px solid var(--el-color-primary-light-5);
-}
-
-.chat__citation + .chat__citation {
-  margin-top: var(--os-space-2);
-}
-
-.chat__citation-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--os-space-2);
-}
-
-.chat__citation-source {
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.chat__citation-meta {
-  margin-left: var(--os-space-1);
-  color: var(--el-text-color-secondary);
-  font-weight: 400;
-}
-
-.chat__citation-content {
-  margin-top: 2px;
-  color: var(--el-text-color-secondary);
-  font-size: 11px;
-  line-height: 1.5;
-  max-height: 120px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* ---- 工具轨迹 ---- */
-
-.chat__trail {
-  margin-top: var(--os-space-3);
-  border-top: 1px solid var(--el-border-color-lighter);
-}
-
-.chat__trail-title {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--os-space-1);
-  font-size: 11px;
-  color: var(--el-text-color-secondary);
-}
-
-.chat__trail-help {
-  cursor: help;
-}
-
-.chat__trail-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--os-space-1);
-}
-
-.chat__trail-item {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--os-space-2);
-  font-size: 11px;
-}
-
-.chat__trail-operation {
-  font-family: 'SFMono-Regular', Consolas, monospace;
-  color: var(--el-text-color-regular);
-}
-
-.chat__trail-duration,
-.chat__trail-time {
-  color: var(--el-text-color-secondary);
-}
-
-.chat__trail-time {
-  margin-left: auto;
-}
-
-/* ---- 待确认 ---- */
-
-.chat__confirmations {
-  display: flex;
-  flex-direction: column;
-  gap: var(--os-space-2);
-}
-
-.chat__confirmation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--os-space-3);
-  padding: var(--os-space-2) var(--os-space-3);
-  border: 1px solid var(--el-color-warning-light-5);
-  border-radius: var(--os-radius-md);
-  background: var(--el-color-warning-light-9);
-}
-
-.chat__confirmation-body {
-  display: flex;
-  align-items: center;
-  gap: var(--os-space-2);
-  min-width: 0;
-}
-
-.chat__confirmation-summary {
-  font-size: var(--os-font-xs);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.chat__confirmation-meta {
-  color: var(--el-text-color-secondary);
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.chat__confirmation-actions {
-  flex: none;
-}
-
-/* ---- 停靠输入区 ---- */
-
-.chat__dock {
-  flex: none;
-  padding: var(--os-space-3) var(--os-space-5) var(--os-space-4);
-  border-top: 1px solid var(--el-border-color-lighter);
-  background: var(--el-bg-color);
-}
-
-.chat__dock-toolbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--os-space-3);
-  margin-bottom: var(--os-space-2);
-}
-
-.chat__dock-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 999px;
-  background: var(--el-bg-color);
-  color: var(--el-text-color-secondary);
-  font-size: 11px;
-  cursor: pointer;
-  transition:
-    border-color var(--os-duration-fast) var(--os-ease),
-    color var(--os-duration-fast) var(--os-ease);
-}
-
-.chat__dock-chip-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--el-text-color-placeholder);
-}
-
-.chat__dock-chip--on {
-  border-color: var(--el-color-primary-light-5);
-  color: var(--el-color-primary);
-}
-
-.chat__dock-chip--on .chat__dock-chip-dot {
-  background: var(--el-color-primary);
-}
-
-.chat__dock-topk {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--el-text-color-secondary);
-  font-size: 11px;
-}
-
-.chat__dock-topk :deep(.el-input-number) {
-  width: 76px;
-}
-
-.chat__dock-hint {
-  margin-left: auto;
-  color: var(--el-text-color-placeholder);
-  font-size: 11px;
-}
-
-.chat__composer-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--os-space-3);
-  margin-top: var(--os-space-2);
-}
-
-.chat__composer-count {
-  margin-right: auto;
-  color: var(--el-text-color-placeholder);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
+  padding-bottom: var(--os-space-2);
 }
 
 /* ---- 窄屏：单列，高度不强行全高 ---- */
@@ -1290,23 +417,8 @@ async function handleRename(session: ChatSession): Promise<void> {
     height: auto;
   }
 
-  .chat__sessions {
-    max-height: 300px;
-  }
-
   .chat__messages {
     min-height: 50vh;
-  }
-
-  .chat__msg-content--user {
-    max-width: 85%;
-  }
-}
-
-/* 尊重系统「减少动态效果」偏好 */
-@media (prefers-reduced-motion: reduce) {
-  .chat__typing-dot {
-    animation: none;
   }
 }
 </style>
