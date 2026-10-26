@@ -137,7 +137,13 @@ const meterTitle = computed(() => {
   if (props.contextChars <= 0) {
     return '本轮尚未产生上下文用量'
   }
-  return `本轮送给模型约 ${props.contextChars} 字（预算 ${props.contextBudget} 字）。超预算后更早的历史会被整体丢弃，不切半条。`
+  // 说清构成：空会话也有几百字，那是系统提示（人设 + 记忆块），
+  // 不理解构成的话，「新会话就 252 字」看着就像坏了。
+  return (
+    `本轮预计送给模型约 ${props.contextChars} 字，预算 ${props.contextBudget} 字。\n` +
+    '构成：系统提示（人设 + 会话摘要 + 长期记忆 + 检索片段）+ 窗口内历史 + 本条消息。\n' +
+    '超预算后更早的历史会被整体丢弃，不切半条。'
+  )
 })
 
 /** 附件内容地址：后端返回的是相对路径，这里拼上 API 基路径 */
@@ -210,13 +216,11 @@ onMounted(autosize)
 <template>
   <div class="chat-composer">
     <div class="chat-composer__toolbar">
-      <button
-        type="button"
-        class="chat-composer__chip"
-        :class="{ 'chat-composer__chip--on': knowledgeOn }"
-        title="添加附件"
-        @click="fileInput?.click()"
-      >
+      <!--
+        附件按钮**没有**选中态：它是个瞬时动作（打开文件选择器），不是开关。
+        曾经误把知识库的 --on 类绑定复制到这里，导致一开知识库附件也变蓝。
+      -->
+      <button type="button" class="chat-composer__chip" title="添加附件" @click="fileInput?.click()">
         <el-icon :size="12"><Paperclip /></el-icon>
         附件
         <span v-if="uploading">…</span>
@@ -349,13 +353,17 @@ onMounted(autosize)
                 v-for="level in THINKING_LEVELS"
                 :key="level"
                 :command="level"
-                :disabled="level === thinkingLevel"
+                :title="THINKING_HINTS[level]"
               >
+                <!--
+                  只放档位名，不放代价说明：说明放在原生 title 里（hover 才看），
+                  菜单保持三行短标签 —— 原来把说明并排挤在一行里又长又吵。
+                  当前档不再禁用：禁用会让用户以为点坏了，实际只是想关菜单而已。
+                -->
                 <span class="chat-composer__thinking-option">
-                  <span :class="{ 'chat-composer__thinking-option--on': level === thinkingLevel }">{{
-                    THINKING_LABELS[level]
-                  }}</span>
-                  <span class="chat-composer__thinking-desc">{{ THINKING_HINTS[level] }}</span>
+                  <span :class="{ 'chat-composer__thinking-option--on': level === thinkingLevel }">
+                    {{ THINKING_LABELS[level] }}
+                  </span>
                 </span>
               </el-dropdown-item>
             </el-dropdown-menu>
