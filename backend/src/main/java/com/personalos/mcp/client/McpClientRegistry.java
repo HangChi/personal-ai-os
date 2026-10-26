@@ -85,7 +85,9 @@ public class McpClientRegistry implements DisposableBean {
                     .build();
             Duration timeout = config.connectTimeout();
             McpSyncClient client = McpClient.sync(new StdioClientTransport(parameters, JSON_MAPPER))
-                    .clientInfo(new McpSchema.Implementation("personal-ai-os", "0.1.0-SNAPSHOT"))
+                    // 2 参构造器自 mcp-core 2.0 起已过时（record 增加了 title/description/icons
+                    // 等字段）。builder 的 (name, version) 就是原来的语义，其余字段留空。
+                    .clientInfo(McpSchema.Implementation.builder("personal-ai-os", "0.1.0-SNAPSHOT").build())
                     .initializationTimeout(timeout)
                     .requestTimeout(timeout)
                     .build();

@@ -58,8 +58,12 @@ public class McpConfirmationHandler implements ConfirmationActionHandler {
             throw new ResourceNotFoundException("MCP server 不可用：" + payload.server());
         }
 
+        // 2 参构造器已过时（record 增加了 meta 字段，用于进度令牌等协议扩展）；
+        // builder 不传 meta 即与原行为一致。
         McpSchema.CallToolResult result = client.callTool(
-                new McpSchema.CallToolRequest(payload.tool(), payload.arguments()));
+                McpSchema.CallToolRequest.builder(payload.tool())
+                        .arguments(payload.arguments())
+                        .build());
         log.info("已执行 MCP 待确认调用 server={} tool={} isError={}",
                 payload.server(), payload.tool(), Boolean.TRUE.equals(result.isError()));
         return 1;

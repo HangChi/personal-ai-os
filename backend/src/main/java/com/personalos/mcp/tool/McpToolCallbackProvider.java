@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.mcp.McpToolNamePrefixGenerator;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -56,7 +57,16 @@ public class McpToolCallbackProvider implements ToolCallbackProvider {
             McpProperties.ServerConfig config = properties.servers().get(serverName);
             Set<String> autoTools = config == null ? Set.of() : config.autoTools();
 
-            for (ToolCallback raw : new SyncMcpToolCallbackProvider(entry.getValue()).getToolCallbacks()) {
+            // 2026-10-26：spring-ai-mcp 2.0 把 SyncMcpToolCallbackProvider 的**全部**构造器
+            // 都标成了已过时（含 varargs 与 List 重载），改走 Builder。两个非默认项都是刻意的：
+            //   - 保持默认的「接受全部工具」：白名单/黑名单由本项目的 McpToolPolicy 决定；
+            //   - noPrefix()：前缀由 McpToolNaming 统一加（server__tool），
+            //     框架再加一次会变成 server__server__tool，模型和策略表都对不上。
+            SyncMcpToolCallbackProvider provider = new SyncMcpToolCallbackProvider.Builder()
+                    .mcpClients(List.of(entry.getValue()))
+                    .toolNamePrefixGenerator(McpToolNamePrefixGenerator.noPrefix())
+                    .build();
+            for (ToolCallback raw : provider.getToolCallbacks()) {
                 String originalName = raw.getToolDefinition().name();
                 if (!hasUsableSchema(raw.getToolDefinition(), jsonCodec)) {
                     log.warn("MCP 工具 schema 异常，已剔除：server={}, tool={}", serverName, originalName);

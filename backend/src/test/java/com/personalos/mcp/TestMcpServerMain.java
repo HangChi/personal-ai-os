@@ -83,32 +83,26 @@ public final class TestMcpServerMain {
                         new StdioServerTransportProvider(new JacksonMcpJsonMapperSupplier().get(),
                                 observedIn, protocolOut))
                 .serverInfo("test-mcp-server", "0.0.1")
-                .toolCall(McpSchema.Tool.builder()
-                                .name("echo")
+                .toolCall(McpSchema.Tool.builder("echo", Map.of(
+                                "type", "object",
+                                "properties", Map.of("text", Map.of("type", "string")),
+                                "required", List.of("text")))
                                 .description("回显输入文本")
-                                .inputSchema(Map.of(
-                                        "type", "object",
-                                        "properties", Map.of("text", Map.of("type", "string")),
-                                        "required", List.of("text")))
                                 .build(),
                         (exchange, request) -> McpSchema.CallToolResult.builder()
                                 .textContent(List.of("echo:" + request.arguments().get("text")))
                                 .build())
-                .toolCall(McpSchema.Tool.builder()
-                                .name("ping")
+                .toolCall(McpSchema.Tool.builder("ping", Map.of("type", "object", "properties", Map.of()))
                                 .description("返回 pong")
-                                .inputSchema(Map.of("type", "object", "properties", Map.of()))
                                 .build(),
                         (exchange, request) -> McpSchema.CallToolResult.builder()
                                 .textContent(List.of("pong"))
                                 .build())
-                .toolCall(McpSchema.Tool.builder()
-                                .name("record")
+                .toolCall(McpSchema.Tool.builder("record", Map.of(
+                                "type", "object",
+                                "properties", Map.of("text", Map.of("type", "string")),
+                                "required", List.of("text")))
                                 .description("把文本追加写入日志文件（有副作用，用于验证确认链路）")
-                                .inputSchema(Map.of(
-                                        "type", "object",
-                                        "properties", Map.of("text", Map.of("type", "string")),
-                                        "required", List.of("text")))
                                 .build(),
                         (exchange, request) -> {
                             try {
@@ -123,10 +117,9 @@ public final class TestMcpServerMain {
                                     .textContent(List.of("recorded"))
                                     .build();
                         })
-                .toolCall(McpSchema.Tool.builder()
-                                .name("broken_schema")
+                .toolCall(McpSchema.Tool.builder("broken_schema",
+                                Map.of("properties", Map.of("text", Map.of("type", "string"))))
                                 .description("故意缺少 type:object 的坏 schema，用于验证装配期剔除")
-                                .inputSchema(Map.of("properties", Map.of("text", Map.of("type", "string"))))
                                 .build(),
                         (exchange, request) -> McpSchema.CallToolResult.builder()
                                 .textContent(List.of("never-exposed"))

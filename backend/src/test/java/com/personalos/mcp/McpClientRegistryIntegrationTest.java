@@ -65,7 +65,7 @@ class McpClientRegistryIntegrationTest {
         assertThat(registry.isAvailable("test")).isTrue();
 
         McpSchema.CallToolResult result = registry.clients().get("test").callTool(
-                new McpSchema.CallToolRequest("echo", Map.of("text", "hello")));
+                McpSchema.CallToolRequest.builder("echo").arguments(Map.of("text", "hello")).build());
         assertThat(result.content()).hasSize(1);
         assertThat(((McpSchema.TextContent) result.content().get(0)).text()).isEqualTo("echo:hello");
 
