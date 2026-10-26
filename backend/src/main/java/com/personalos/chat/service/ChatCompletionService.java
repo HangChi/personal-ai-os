@@ -291,32 +291,25 @@ public class ChatCompletionService {
      * 需要单独查一次才能显示仪表盘。
      */
     public int estimatePromptChars(String conversationId) {
+        // 只含系统提示 + 窗口内历史：窗口里已经包含最新的那些消息，
+        // 再单独加一条「最新消息长度」就是重复计算（2026-10-26 修）。
+        // 下一轮用户要发什么这里不可能知道，所以不计入。
         String systemPrompt = systemPromptWithContributions(List.of(), "", conversationId);
-        List<ChatMessageEntity> recent = messageRepository
-                .findRecentByConversationId(conversationId, PageRequest.of(0, 1));
-        int lastUserChars = recent.isEmpty() || recent.get(0).getContent() == null
-                ? 0
-                : recent.get(0).getContent().length();
-        return systemPrompt.length() + lastUserChars + estimateHistoryChars(conversationId);
+        return systemPrompt.length() + estimateHistoryChars(conversationId);
     }
 
     private int estimateHistoryChars(String conversationId) {
         int limit = aiProperties.memory().maxMessages();
+        // 取窗口条数上限内最新的若干条，直接求字符和 —— 就是窗口内历史的字符数。
+        //
+        // 与「条数窗口」完全一致；只有当**字符预算**把窗口裁得更短时，这里会偏大
+        // （裁掉的是更早的消息，而我们统计的是最新的 limit 条，通常不会正好是被裁的那条）。
+        // 这个偏差方向是「偏大」，对仪表盘是安全的：宁可让用户以为快满了，也不要显示假的宽裕。
         List<ChatMessageEntity> recent = messageRepository
-                .findRecentByConversationId(conversationId, PageRequest.of(0, limit + 1));
-        if (recent.isEmpty()) {
-            return 0;
-        }
-        long total = recent.stream()
+                .findRecentByConversationId(conversationId, PageRequest.of(0, limit));
+        return (int) recent.stream()
                 .mapToLong(message -> message.getContent() == null ? 0 : message.getContent().length())
                 .sum();
-        // 多取一条（limit + 1）用于判断「是否还有更早的消息被窗口挡掉」，
-        // 这里只用前 limit 条算平均，避免把窗口外的长消息算进来
-        int counted = Math.min(recent.size(), limit);
-        long countedChars = recent.subList(0, counted).stream()
-                .mapToLong(message -> message.getContent() == null ? 0 : message.getContent().length())
-                .sum();
-        return (int) (countedChars / Math.max(1, counted) * Math.min(counted, limit));
     }
 
     /**
