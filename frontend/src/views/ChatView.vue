@@ -418,8 +418,22 @@ async function handleRename(session: ChatSession): Promise<void> {
     height: auto;
   }
 
+  /*
+   * 侧栏限高：不限制时它会把会话列表全部展开（实测 860px 视口里占 300px），
+   * 把对话区挤到下半屏。卡片内部本来就会滚动，限高后对话区立刻回到首屏。
+   * 200px 是量出来的：再高就把空态的输入框顶出首屏（手机上第一件事是打字）。
+   */
+  .chat-sessions {
+    max-height: 200px;
+  }
+
+  /*
+   * 消息区在窄屏的最小高度。
+   * 50vh 会把空态欢迎区撑得很高，输入框被顶出首屏 —— 手机上第一件事是打字，
+   * 看不到输入框等于空转。收到 30vh：有消息时靠内容自然撑高，空态时输入框紧跟其后。
+   */
   .chat__messages {
-    min-height: 50vh;
+    min-height: 30vh;
   }
 }
 </style>
