@@ -11,7 +11,7 @@
  *   <li>输入法选词期间的 Enter 一律不发送（否则打不了中文）</li>
  * </ul>
  */
-import { ArrowDown, Close, Document, Paperclip, Reading } from '@element-plus/icons-vue'
+import { Close, Document, MagicStick, Paperclip, Reading } from '@element-plus/icons-vue'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { uploadAttachment } from '@/api/chat'
@@ -146,6 +146,10 @@ function attachmentUrl(item: ChatAttachment): string {
   return `${base}/chat/uploads/${item.id}/content`
 }
 
+const thinkingTooltip = computed(
+  () => `思考程度：${THINKING_LABELS[props.thinkingLevel]} — ${THINKING_HINTS[props.thinkingLevel]}`,
+)
+
 /** 1234 → 1.2k */
 function formatK(value: number): string {
   return value >= 1000 ? `${(value / 1000).toFixed(1)}k` : String(value)
@@ -206,18 +210,6 @@ onMounted(autosize)
 <template>
   <div class="chat-composer">
     <div class="chat-composer__toolbar">
-      <!--
-        上下文仪表盘：条 + 数字。放在工具栏而不是 footer —— 它描述的是
-        「这一轮带了什么」，与知识库增强同属「本轮上下文构成」。
-      -->
-      <div v-if="contextBudget > 0" class="chat-composer__meter" :title="meterTitle">
-        <span class="chat-composer__meter-label">上下文</span>
-        <span class="chat-composer__meter-track">
-          <span class="chat-composer__meter-fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
-        </span>
-        <span class="chat-composer__meter-value">{{ meterText }}</span>
-      </div>
-
       <button
         type="button"
         class="chat-composer__chip"
@@ -245,16 +237,34 @@ onMounted(autosize)
         条数改成下拉而不是数字步进器：步进器为了选 20 要点十下，且在窄工具栏里
         两侧按钮把数字挤成一条缝。下拉一次点选，宽度也固定。
       -->
-      <el-select
-        v-if="knowledgeOn"
-        class="chat-composer__topk"
-        :model-value="topK"
-        size="small"
-        title="检索条数"
-        @change="(value: number) => emit('update:topK', value)"
-      >
-        <el-option v-for="option in TOP_K_OPTIONS" :key="option" :label="`${option} 条`" :value="option" />
-      </el-select>
+      <!--
+        槽位宽度固定：知识库一开，条数下拉凭空出现会把左边的「附件」等图标推走。
+        常驻占位、只切换可见性，工具栏几何形态就始终不变。
+      -->
+      <span class="chat-composer__topk-slot">
+        <el-select
+          v-if="knowledgeOn"
+          class="chat-composer__topk"
+          :model-value="topK"
+          size="small"
+          title="检索条数"
+          @change="(value: number) => emit('update:topK', value)"
+        >
+          <el-option v-for="option in TOP_K_OPTIONS" :key="option" :label="`${option} 条`" :value="option" />
+        </el-select>
+      </span>
+
+      <!--
+        上下文仪表盘：条 + 数字。放在工具栏而不是 footer —— 它描述的是
+        「这一轮带了什么」，与知识库增强同属「本轮上下文构成」。
+      -->
+      <div v-if="contextBudget > 0" class="chat-composer__meter" :title="meterTitle">
+        <span class="chat-composer__meter-label">上下文</span>
+        <span class="chat-composer__meter-track">
+          <span class="chat-composer__meter-fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
+        </span>
+        <span class="chat-composer__meter-value">{{ meterText }}</span>
+      </div>
     </div>
 
     <!-- 附件条：只在有附件时出现，避免常驻占位 -->
@@ -317,9 +327,21 @@ onMounted(autosize)
           placement="top-end"
           @command="(value: ThinkingLevel) => emit('update:thinkingLevel', value)"
         >
-          <el-button text size="small" class="chat-composer__thinking-trigger">
-            {{ THINKING_LABELS[thinkingLevel] }}
-            <el-icon :size="11"><ArrowDown /></el-icon>
+          <!--
+            纯图标触发器：不显示「思考」二字，也不显示档位文字 ——
+            档位用颜色区分（灰=关闭 / 主色=标准 / 琥珀=深度），
+            当前档位与代价由原生 title 提示。
+            刻意**不用** el-tooltip 包裹：它会插在按钮外层抢走点击，
+            实测导致下拉菜单打不开（点了只显示提示，选项弹不出来）。
+          -->
+          <el-button
+            text
+            size="small"
+            class="chat-composer__thinking-trigger"
+            :class="`chat-composer__thinking-trigger--${props.thinkingLevel}`"
+            :title="thinkingTooltip"
+          >
+            <el-icon :size="14"><MagicStick /></el-icon>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu class="chat-composer__thinking-menu">
@@ -329,10 +351,12 @@ onMounted(autosize)
                 :command="level"
                 :disabled="level === thinkingLevel"
               >
-                <span :class="{ 'chat-composer__thinking-option--on': level === thinkingLevel }">
-                  {{ THINKING_LABELS[level] }}
+                <span class="chat-composer__thinking-option">
+                  <span :class="{ 'chat-composer__thinking-option--on': level === thinkingLevel }">{{
+                    THINKING_LABELS[level]
+                  }}</span>
+                  <span class="chat-composer__thinking-desc">{{ THINKING_HINTS[level] }}</span>
                 </span>
-                <span class="chat-composer__thinking-desc">{{ THINKING_HINTS[level] }}</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -446,22 +470,44 @@ onMounted(autosize)
   box-shadow: none;
 }
 
-/* footer 里的思考档位触发器：文字按钮，不抢「发送」的主色 */
+/* footer 里的思考档位触发器：纯图标，颜色即档位 */
 .chat-composer__thinking-trigger {
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
+  color: var(--el-text-color-placeholder);
+}
+
+.chat-composer__thinking-trigger--standard {
+  color: var(--el-color-primary);
+}
+
+.chat-composer__thinking-trigger--deep {
+  color: var(--el-color-warning);
 }
 
 .chat-composer__thinking-trigger:hover {
   color: var(--el-color-primary);
 }
 
-/* 下拉里每档一行：档名 + 代价说明（说明是「为什么慢」的唯一解释，放进菜单才不占版面） */
-.chat-composer__thinking-menu .el-dropdown-menu__item {
+/* topK 槽位：常驻占位，宽度与下拉一致 */
+.chat-composer__topk-slot {
+  flex: none;
+  display: inline-block;
+  width: 78px;
+}
+
+/*
+ * 下拉菜单是 EP teleport 到 body 的，**scoped 样式够不到它** ——
+ * 必须用 :deep()，且选择器要能匹配到「带本组件 scope id 的菜单根元素」。
+ * 改造前漏了 :deep，结果档名与说明裸奔成一行（"关闭不思考：最快、最省…"）。
+ */
+.chat-composer__thinking-menu :deep(.el-dropdown-menu__item) {
+  padding: 7px 12px;
+}
+
+.chat-composer__thinking-option {
   display: flex;
   align-items: baseline;
   gap: var(--os-space-2);
-  padding: 7px 12px;
+  white-space: nowrap;
 }
 
 .chat-composer__thinking-option--on {

@@ -21,7 +21,9 @@ const router = createRouter({
       path: '/chat',
       name: 'chat',
       component: () => import('@/views/ChatView.vue'),
-      meta: { title: '对话' },
+      // fullWidth：对话页要铺满视口（左右分栏 + 全高对话列），
+      // 不吃外壳那套 1080px 居中限宽 —— 那是给「一列内容」的页面准备的。
+      meta: { title: '对话', fullWidth: true },
     },
     {
       path: '/tasks',

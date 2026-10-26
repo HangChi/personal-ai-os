@@ -170,7 +170,7 @@ async function handleLogout(): Promise<void> {
         </template>
       </el-header>
 
-      <el-main class="app-shell__main">
+      <el-main :class="['app-shell__main', { 'app-shell__main--wide': route.meta.fullWidth }]">
         <router-view v-slot="{ Component }">
           <transition name="page" mode="out-in">
             <component :is="Component" />
@@ -336,11 +336,20 @@ async function handleLogout(): Promise<void> {
   margin-right: 6px;
 }
 
+/*
+ * 主内容区限宽 1080px 并居中：适合「一列内容」的页面（任务/知识库/设置）。
+ * 对话页是左右分栏 + 全高对话列，限宽会让两侧各空一大块，
+ * 因此用 --wide 退出限宽（见路由 meta.fullWidth）。
+ */
 .app-shell__main {
   max-width: var(--os-content-max-width);
   width: 100%;
   margin: 0 auto;
   padding-top: var(--os-space-4);
+}
+
+.app-shell__main--wide {
+  max-width: none;
 }
 
 .app-shell__footer {
