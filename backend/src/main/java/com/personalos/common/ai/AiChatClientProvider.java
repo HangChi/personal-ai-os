@@ -4,6 +4,7 @@ import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -11,7 +12,9 @@ import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.ToolCallingAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.model.tool.ToolCallingManager;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.beans.factory.ObjectProvider;
@@ -45,6 +48,12 @@ public class AiChatClientProvider {
      */
     private final ChatClient plainChatClient;
 
+    /**
+     * 底层聊天模型。留着引用不是为了「以后可能用到」——{@link #thinkingOptions(int)}
+     * 需要读它的默认选项来做按请求合并（见该方法注释里「为什么必须 mutate 而不是新建」）。
+     */
+    private final ChatModel chatModel;
+
     public AiChatClientProvider(ObjectProvider<ChatModel> chatModels,
                                 ObjectProvider<ToolCallingManager> toolCallingManagers,
                                 ObjectProvider<ToolContributor> toolContributors,
@@ -57,8 +66,11 @@ public class AiChatClientProvider {
                     + "请将 AI_CHAT_PROVIDER 设为 ollama 或 openai 后重启。");
             this.chatClient = null;
             this.plainChatClient = null;
+            this.chatModel = null;
             return;
         }
+
+        this.chatModel = chatModel;
 
         this.plainChatClient = ChatClient.builder(chatModel)
                 .defaultSystem(aiProperties.systemPrompt())
@@ -117,6 +129,41 @@ public class AiChatClientProvider {
      */
     public boolean isConfigured() {
         return chatClient != null;
+    }
+
+    /**
+     * 把「思考程度」应用到请求上，返回应用后的请求（不支持时原样返回）。
+     *
+     * <h2>为什么必须基于模型默认选项合并</h2>
+     * {@code ChatClient} 请求级 {@code options()} 会**整体替换**模型的默认选项。
+     * 直接 {@code OpenAiChatOptions.builder()...build()} 会把 model / temperature 等配置
+     * 全部丢掉，症状是「换了个模型」而不是报错。因此这里走 {@code mutate()}：
+     * 先拿到模型当前的默认选项，只改 extraBody。
+     *
+     * <h2>为什么把这段逻辑放在本类而不是调用方</h2>
+     * {@code OpenAiChatOptions} 是 provider 专有类型。放在这里，{@code chat} 模块
+     * 就不需要为了一个参数去 import 具体 provider 的类 —— 换 provider 时改动只有这一处。
+     * 另外 Spring AI 的 {@code options(B)} 有形参边界 {@code <B extends ChatOptions.Builder<?>>}，
+     * 静态类型写成 {@code Builder<?>} 会因捕获转换无法匹配，只能在这里用具体类型调用。
+     *
+     * @param request        当前请求
+     * @param thinkingBudget 思考预算（token）；≤0 表示不思考，原样返回
+     * @return 应用了思考参数的请求；模型非 OpenAI 系时原样返回
+     */
+    public ChatClient.ChatClientRequestSpec applyThinkingOptions(ChatClient.ChatClientRequestSpec request,
+                                                                 int thinkingBudget) {
+        if (thinkingBudget <= 0 || chatModel == null) {
+            return request;
+        }
+        ChatOptions base = chatModel.getOptions();
+        if (!(base instanceof OpenAiChatOptions openAiOptions)) {
+            log.debug("当前模型选项类型不支持按请求设置思考程度：{}",
+                    base == null ? "null" : base.getClass().getSimpleName());
+            return request;
+        }
+        // DashScope 兼容模式的思考参数：enable_thinking + thinking_budget
+        return request.options(openAiOptions.mutate()
+                .extraBody(Map.of("enable_thinking", true, "thinking_budget", thinkingBudget)));
     }
 
     /**

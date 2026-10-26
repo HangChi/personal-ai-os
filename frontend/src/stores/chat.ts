@@ -12,6 +12,7 @@ import {
 import { listToolInvocations } from '@/api/activity'
 import { cancelOperation, confirmOperation, listConfirmations } from '@/api/confirmations'
 import type { ChatCitation, ChatMessage, ChatSession, TaskConfirmation, ToolInvocation } from '@/types/api'
+import type { ThinkingLevel } from '@/lib/settings'
 
 /**
  * 首屏与每次「加载更早」的消息条数（阶段 21）。
@@ -300,7 +301,10 @@ export const useChatStore = defineStore('chat', () => {
    * @param options 阶段 19：知识库增强参数。useKnowledge 为 false / 省略时
    *                不带该字段，行为与阶段 1 一致
    */
-  async function send(content: string, options?: { useKnowledge?: boolean; topK?: number }): Promise<void> {
+  async function send(
+    content: string,
+    options?: { useKnowledge?: boolean; topK?: number; thinkingLevel?: ThinkingLevel },
+  ): Promise<void> {
     const trimmed = content.trim()
     if (trimmed.length === 0 || streaming.value) {
       return

@@ -18,6 +18,25 @@ export interface SettingsState {
   enterSend: boolean
   /** 日程新建表单的默认提前提醒分钟数 */
   reminderLead: number
+  /** 模型思考程度：off=不思考（默认），standard/deep 对应 DashScope 的思考预算 */
+  thinkingLevel: ThinkingLevel
+}
+
+/** 思考程度取值（与后端 chat.dto.ThinkingLevel 对齐） */
+export type ThinkingLevel = 'off' | 'standard' | 'deep'
+
+/** 思考程度的中文标签（UI 与测试共用一处，避免两处文案漂移） */
+export const THINKING_LABELS: Record<ThinkingLevel, string> = {
+  off: '关闭',
+  standard: '标准',
+  deep: '深度',
+}
+
+/** 思考档位的说明：悬浮提示用，说明「深」到底深在哪、代价是什么 */
+export const THINKING_HINTS: Record<ThinkingLevel, string> = {
+  off: '不思考：最快、最省，日常简单问答够用',
+  standard: '标准思考：适合一般推理，首字节略慢',
+  deep: '深度思考：复杂排错与方案权衡，首字节明显变慢',
 }
 
 export const SETTINGS_DEFAULTS: SettingsState = {
@@ -25,6 +44,7 @@ export const SETTINGS_DEFAULTS: SettingsState = {
   knowledgeTopK: 4,
   enterSend: true,
   reminderLead: 15,
+  thinkingLevel: 'off',
 }
 
 /** 检索条数边界（与后端 StreamChatRequest.MAX_TOP_K 对齐） */
@@ -40,6 +60,7 @@ export const SETTINGS_KEYS = {
   knowledgeTopK: 'os.settings.knowledgeTopK',
   enterSend: 'os.settings.enterSend',
   reminderLead: 'os.settings.reminderLead',
+  thinkingLevel: 'os.settings.thinkingLevel',
 } as const
 
 /** 会话级增强开关的键前缀（C-03） */
@@ -61,6 +82,16 @@ export function clampTopK(value: unknown): number {
   return clampInt(value, TOP_K_MIN, TOP_K_MAX, SETTINGS_DEFAULTS.knowledgeTopK)
 }
 
+/**
+ * 思考程度收敛：只接受三个合法值，其余（含脏值、大小写变体）一律回落默认。
+ *
+ * <p>刻意不做大小写归一：合法值由前端自己产生，出现 'OFF' 这类值说明存储被手改过，
+ * 此时按默认处理比「猜测用户想开思考」更安全。
+ */
+export function clampThinkingLevel(value: unknown): ThinkingLevel {
+  return value === 'standard' || value === 'deep' ? value : SETTINGS_DEFAULTS.thinkingLevel
+}
+
 /** 提前提醒分钟数收敛到 [0, 10080] */
 export function clampLead(value: unknown): number {
   return clampInt(value, LEAD_MIN, LEAD_MAX, SETTINGS_DEFAULTS.reminderLead)
@@ -77,6 +108,7 @@ export function mergeSettings(stored: Partial<Record<keyof SettingsState, unknow
     knowledgeTopK: clampTopK(stored.knowledgeTopK),
     enterSend: clampBoolean(stored.enterSend, SETTINGS_DEFAULTS.enterSend),
     reminderLead: clampLead(stored.reminderLead),
+    thinkingLevel: clampThinkingLevel(stored.thinkingLevel),
   }
 }
 

@@ -1,5 +1,6 @@
 import { requestData } from '@/api/http'
 import type { ChatCitation, ChatMessage, ChatSession, PageDto } from '@/types/api'
+import type { ThinkingLevel } from '@/lib/settings'
 
 /**
  * 聊天接口客户端。
@@ -97,12 +98,14 @@ export interface StreamHandlers {
   onError: (message: string) => void
 }
 
-/** 流式对话的可选参数（阶段 19） */
+/** 流式对话的可选参数（阶段 19；阶段 22 增加思考程度） */
 export interface StreamChatOptions {
   /** 启用知识库增强：先检索再回答，回复带 [n] 引用 */
   useKnowledge?: boolean
   /** 检索条数（1~20，缺省 4；服务端权威收敛） */
   topK?: number
+  /** 模型思考程度：off=不思考（缺省），standard/deep 对应 DashScope 的思考预算 */
+  thinkingLevel?: ThinkingLevel
 }
 
 function streamUrl(conversationId: string): string {
@@ -133,6 +136,9 @@ export async function streamChat(
   }
   if (options?.topK !== undefined) {
     payload.topK = options.topK
+  }
+  if (options?.thinkingLevel !== undefined) {
+    payload.thinkingLevel = options.thinkingLevel
   }
   const response = await fetch(streamUrl(conversationId), {
     method: 'POST',

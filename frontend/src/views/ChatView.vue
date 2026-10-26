@@ -21,7 +21,7 @@ import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
 import ChatToolTrail from '@/components/chat/ChatToolTrail.vue'
 import ChatWelcome from '@/components/chat/ChatWelcome.vue'
 import { useChatStore } from '@/stores/chat'
-import { clampTopK, conversationKnowledgeKey } from '@/lib/settings'
+import { clampTopK, conversationKnowledgeKey, type ThinkingLevel } from '@/lib/settings'
 import { useSettingsStore } from '@/stores/settings'
 import type { ChatSession, TaskConfirmation } from '@/types/api'
 
@@ -187,6 +187,7 @@ async function handleSend(): Promise<void> {
   await chatStore.send(content, {
     useKnowledge: knowledgeOn.value,
     topK: topK.value,
+    thinkingLevel: settings.value.thinkingLevel,
   })
 }
 
@@ -309,9 +310,11 @@ async function handleRename(session: ChatSession): Promise<void> {
           :streaming="streaming"
           :knowledge-on="knowledgeOn"
           :top-k="topK"
+          :thinking-level="settings.thinkingLevel"
           :enter-send="settings.enterSend"
           @toggle-knowledge="toggleKnowledge"
           @update:top-k="(value: number | null) => (topK = value)"
+          @update:thinking-level="(value: ThinkingLevel) => (settings.thinkingLevel = value)"
           @send="handleSend"
           @stop="chatStore.stopStreaming()"
         />

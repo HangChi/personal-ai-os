@@ -20,6 +20,7 @@ export const useSettingsStore = defineStore('settings', () => {
       knowledgeTopK: readStored(SETTINGS_KEYS.knowledgeTopK),
       enterSend: readStored(SETTINGS_KEYS.enterSend),
       reminderLead: readStored(SETTINGS_KEYS.reminderLead),
+      thinkingLevel: readStored(SETTINGS_KEYS.thinkingLevel),
     }),
   )
 
@@ -30,6 +31,7 @@ export const useSettingsStore = defineStore('settings', () => {
       localStorage.setItem(SETTINGS_KEYS.knowledgeTopK, String(next.knowledgeTopK))
       localStorage.setItem(SETTINGS_KEYS.enterSend, String(next.enterSend))
       localStorage.setItem(SETTINGS_KEYS.reminderLead, String(next.reminderLead))
+      localStorage.setItem(SETTINGS_KEYS.thinkingLevel, next.thinkingLevel)
     },
     { deep: true },
   )

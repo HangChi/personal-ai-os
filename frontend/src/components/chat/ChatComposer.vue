@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * 对话输入区（从 ChatView 拆出，2026-10-26）。
+ * 对话输入区（从 ChatView 拆出，2026-10-26；阶段 22 增加思考程度）。
  *
- * <p>包含三样东西：知识库增强 chip（含条数）、输入框、发送/停止。
+ * <p>包含：知识库增强开关（含条数）、思考程度、输入框、发送/停止。
  * 键盘行为在这里实现而不是父组件，因为它完全由「输入框聚焦时的按键」触发：
  *
  * <ul>
@@ -11,7 +11,10 @@
  *   <li>输入法选词期间的 Enter 一律不发送（否则打不了中文）</li>
  * </ul>
  */
+import { Reading } from '@element-plus/icons-vue'
 import { nextTick, onMounted, ref, watch } from 'vue'
+
+import { THINKING_HINTS, THINKING_LABELS, type ThinkingLevel } from '@/lib/settings'
 
 const props = defineProps<{
   /** 输入内容（v-model） */
@@ -22,6 +25,8 @@ const props = defineProps<{
   knowledgeOn: boolean
   /** 检索条数 */
   topK: number
+  /** 模型思考程度 */
+  thinkingLevel: ThinkingLevel
   /** Enter 是否直接发送（来自设置页偏好） */
   enterSend: boolean
 }>()
@@ -29,15 +34,38 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
   (e: 'update:topK', value: number | null): void
+  (e: 'update:thinkingLevel', value: ThinkingLevel): void
   (e: 'toggle-knowledge', next: boolean): void
   (e: 'send'): void
   (e: 'stop'): void
 }>()
 
+/** 条数下拉的候选项：常用值 + 上限，避免用户为了填 20 而点十下步进器 */
+const TOP_K_OPTIONS = [2, 4, 6, 8, 12, 20]
+
+/** 思考档位（顺序即展示顺序） */
+const THINKING_LEVELS: ThinkingLevel[] = ['off', 'standard', 'deep']
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key !== 'Enter' || event.isComposing) {
+    // isComposing：中文输入法选词期间的 Enter 不触发发送
+    return
+  }
+  if (props.enterSend) {
+    if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault()
+      emit('send')
+    }
+  } else if (event.ctrlKey || event.metaKey) {
+    event.preventDefault()
+    emit('send')
+  }
+}
+
 /**
  * 输入框随内容长高（上限 160px）。
  *
- * <p>固定 3 行有两个问题：短消息时输入框显得空荡，长消息时 3 行装不下、
+ * <p>固定行数有两个问题：短消息时输入框显得空荡，长消息时行数装不下、
  * 中途还得手动拖（已禁用 resize）。改成 2 行起步、按 scrollHeight 增长，
  * 超过上限后再内部滚动 —— 与主流聊天工具的手感一致。
  */
@@ -62,22 +90,6 @@ watch(
 
 // 挂载时也算一次：从「点击建议问题」进来的内容可能一进来就不止两行
 onMounted(autosize)
-
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.key !== 'Enter' || event.isComposing) {
-    // isComposing：中文输入法选词期间的 Enter 不触发发送
-    return
-  }
-  if (props.enterSend) {
-    if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
-      event.preventDefault()
-      emit('send')
-    }
-  } else if (event.ctrlKey || event.metaKey) {
-    event.preventDefault()
-    emit('send')
-  }
-}
 </script>
 
 <template>
@@ -90,22 +102,40 @@ function handleKeydown(event: KeyboardEvent): void {
         :title="knowledgeOn ? '点击关闭知识库增强' : '开启后每条消息先检索知识库再回答'"
         @click="emit('toggle-knowledge', !knowledgeOn)"
       >
-        <span class="chat-composer__chip-dot" />
+        <el-icon :size="12"><Reading /></el-icon>
         知识库增强
-        <template v-if="knowledgeOn">· {{ topK }} 条</template>
       </button>
-      <span v-if="knowledgeOn" class="chat-composer__topk">
-        条数
-        <el-input-number
-          :model-value="topK"
-          :min="1"
-          :max="20"
+
+      <!--
+        条数改成下拉而不是数字步进器：步进器为了选 20 要点十下，且在窄工具栏里
+        两侧按钮把数字挤成一条缝。下拉一次点选，宽度也固定。
+      -->
+      <el-select
+        v-if="knowledgeOn"
+        class="chat-composer__topk"
+        :model-value="topK"
+        size="small"
+        title="检索条数"
+        @change="(value: number) => emit('update:topK', value)"
+      >
+        <el-option v-for="option in TOP_K_OPTIONS" :key="option" :label="`${option} 条`" :value="option" />
+      </el-select>
+
+      <div class="chat-composer__thinking">
+        <span class="chat-composer__thinking-label">思考</span>
+        <el-radio-group
+          :model-value="thinkingLevel"
           size="small"
-          controls-position="right"
-          @update:model-value="(value: number | undefined) => emit('update:topK', value ?? null)"
-        />
-      </span>
+          @change="(value: ThinkingLevel) => emit('update:thinkingLevel', value)"
+        >
+          <el-radio-button v-for="level in THINKING_LEVELS" :key="level" :value="level">
+            {{ THINKING_LABELS[level] }}
+          </el-radio-button>
+        </el-radio-group>
+        <span class="chat-composer__thinking-hint">{{ THINKING_HINTS[thinkingLevel] }}</span>
+      </div>
     </div>
+
     <div ref="root" class="chat-composer__box">
       <el-input
         :model-value="modelValue"
@@ -138,8 +168,6 @@ function handleKeydown(event: KeyboardEvent): void {
 </template>
 
 <style scoped>
-/* ---- 停靠输入区 ---- */
-
 .chat-composer {
   flex: none;
   padding: var(--os-space-3) var(--os-space-5) var(--os-space-4);
@@ -147,62 +175,75 @@ function handleKeydown(event: KeyboardEvent): void {
   background: var(--el-bg-color);
 }
 
+/* ---- 工具行 ---- */
+
 .chat-composer__toolbar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--os-space-3);
+  gap: var(--os-space-2);
   margin-bottom: var(--os-space-2);
 }
 
 .chat-composer__chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
+  gap: 5px;
+  padding: 4px 10px;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 999px;
   background: var(--el-bg-color);
   color: var(--el-text-color-secondary);
-  /* 11px 在多数屏幕上偏小，chip 是可点击控件，按令牌升到 12px */
   font-size: var(--os-font-xs);
   cursor: pointer;
   transition:
     border-color var(--os-duration-fast) var(--os-ease),
+    background var(--os-duration-fast) var(--os-ease),
     color var(--os-duration-fast) var(--os-ease);
 }
 
-.chat-composer__chip-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--el-text-color-placeholder);
-}
-
-.chat-composer__chip--on {
+.chat-composer__chip:hover {
   border-color: var(--el-color-primary-light-5);
   color: var(--el-color-primary);
 }
 
-.chat-composer__chip--on .chat-composer__chip-dot {
-  background: var(--el-color-primary);
+/* 开启态必须有底色：只描边的话，在浅底上「开没开」基本看不出来 */
+.chat-composer__chip--on {
+  border-color: var(--el-color-primary-light-5);
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
 }
 
 .chat-composer__topk {
+  width: 78px;
+}
+
+.chat-composer__topk :deep(.el-select__wrapper) {
+  box-shadow: none;
+}
+
+.chat-composer__thinking {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--os-space-2);
+  margin-left: auto;
+}
+
+.chat-composer__thinking-label {
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
 }
 
-.chat-composer__topk :deep(.el-input-number) {
-  width: 76px;
-}
-
-.chat-composer__hint {
+/* 档位说明是「为什么慢」的唯一解释，窄屏放不下就先牺牲它 */
+.chat-composer__thinking-hint {
   color: var(--el-text-color-placeholder);
   font-size: var(--os-font-xs);
+}
+
+@media (max-width: 1200px) {
+  .chat-composer__thinking-hint {
+    display: none;
+  }
 }
 
 /* ---- 输入框（带边界的外盒 + 内部无框文本域） ---- */
@@ -243,11 +284,13 @@ function handleKeydown(event: KeyboardEvent): void {
 
 .chat-composer__footer .chat-composer__hint {
   margin-right: auto;
+  color: var(--el-text-color-placeholder);
+  font-size: var(--os-font-xs);
 }
 
 .chat-composer__count {
   color: var(--el-text-color-placeholder);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   font-variant-numeric: tabular-nums;
 }
 </style>

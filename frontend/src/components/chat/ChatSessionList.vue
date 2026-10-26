@@ -62,50 +62,60 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
       />
     </template>
 
-    <el-empty v-if="sessions.length === 0" :description="keyword ? '没有匹配的会话' : '还没有会话'" :image-size="60" />
+    <!--
+      滚动只包住列表：分页是「我在第几页」的常驻信息，应该钉在卡片底部。
+      改造前它跟列表一起滚，会话多时要滚到最底才能翻页。
+    -->
+    <div class="chat-sessions__scroll">
+      <el-empty
+        v-if="sessions.length === 0"
+        :description="keyword ? '没有匹配的会话' : '还没有会话'"
+        :image-size="60"
+      />
 
-    <div v-else class="chat-sessions__groups">
-      <section v-for="group in groups" :key="group.key" class="chat-sessions__group">
-        <div class="chat-sessions__group-label">{{ group.label }}</div>
-        <ul class="chat-sessions__list">
-          <li
-            v-for="session in group.items"
-            :key="session.conversationId"
-            :class="['chat-sessions__item', { 'chat-sessions__item--active': session.conversationId === currentId }]"
-            @click="emit('select', session.conversationId)"
-          >
-            <div class="chat-sessions__body">
-              <div class="chat-sessions__title-text">{{ session.title }}</div>
-              <div class="chat-sessions__meta">
-                {{ session.messageCount }} 条 · {{ relativeTime(session.updatedAt) }}
+      <div class="chat-sessions__groups">
+        <section v-for="group in groups" :key="group.key" class="chat-sessions__group">
+          <div class="chat-sessions__group-label">{{ group.label }}</div>
+          <ul class="chat-sessions__list">
+            <li
+              v-for="session in group.items"
+              :key="session.conversationId"
+              :class="['chat-sessions__item', { 'chat-sessions__item--active': session.conversationId === currentId }]"
+              @click="emit('select', session.conversationId)"
+            >
+              <div class="chat-sessions__body">
+                <div class="chat-sessions__title-text">{{ session.title }}</div>
+                <div class="chat-sessions__meta">
+                  {{ session.messageCount }} 条 · {{ relativeTime(session.updatedAt) }}
+                </div>
               </div>
-            </div>
-            <!--
+              <!--
               图标按钮而不是文字按钮：两个文字按钮（重命名/删除）在 260px 的侧栏里
               既挤占标题宽度，hover 时还会盖在标题上。图标体积固定、语义靠 title 兜底。
               容器常驻占位、只切换透明度 —— 避免 hover 时标题被挤压位移。
             -->
-            <div class="chat-sessions__item-actions">
-              <el-button
-                link
-                type="primary"
-                size="small"
-                title="重命名"
-                :icon="EditPen"
-                @click.stop="emit('rename', session)"
-              />
-              <el-button
-                link
-                type="danger"
-                size="small"
-                title="删除"
-                :icon="Delete"
-                @click.stop="emit('remove', session.conversationId)"
-              />
-            </div>
-          </li>
-        </ul>
-      </section>
+              <div class="chat-sessions__item-actions">
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  title="重命名"
+                  :icon="EditPen"
+                  @click.stop="emit('rename', session)"
+                />
+                <el-button
+                  link
+                  type="danger"
+                  size="small"
+                  title="删除"
+                  :icon="Delete"
+                  @click.stop="emit('remove', session.conversationId)"
+                />
+              </div>
+            </li>
+          </ul>
+        </section>
+      </div>
     </div>
 
     <div v-if="total > 0" class="chat-sessions__pagination">
@@ -136,6 +146,15 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 }
 
 .chat-sessions :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+}
+
+/* 滚动只发生在列表容器里；分页与空态不参与滚动 */
+.chat-sessions__scroll {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
@@ -280,14 +299,14 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 }
 
 .chat-sessions__pagination {
+  /* 钉在卡片底部：flex: none + 自身内边距，不随列表滚动 */
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: var(--os-space-2);
-  margin-top: var(--os-space-3);
-  /* 与上方列表分隔：侧栏底部原本光秃秃一排控件，缺少归属 */
-  padding-top: var(--os-space-3);
+  padding: var(--os-space-3);
   border-top: 1px solid var(--el-border-color-lighter);
 }
 

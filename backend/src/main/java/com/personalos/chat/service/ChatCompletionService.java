@@ -3,6 +3,7 @@ package com.personalos.chat.service;
 import com.personalos.chat.dto.ChatCitationDto;
 import com.personalos.chat.dto.ChatStreamEvents;
 import com.personalos.chat.dto.StreamChatRequest;
+import com.personalos.chat.dto.ThinkingLevel;
 import com.personalos.common.ai.AiChatClientProvider;
 import com.personalos.common.ai.AiProperties;
 import com.personalos.common.ai.PromptContributor;
@@ -88,11 +89,11 @@ public class ChatCompletionService {
      * <p>保留此重载：阶段 1~18 的调用方与测试无需改动，行为逐字符一致。
      */
     public SseEmitter stream(String conversationId, String userContent, String turnId) {
-        return stream(conversationId, userContent, turnId, false, StreamChatRequest.DEFAULT_TOP_K);
+        return stream(conversationId, userContent, turnId, false, StreamChatRequest.DEFAULT_TOP_K, ThinkingLevel.OFF);
     }
 
     /**
-     * 发起一次流式对话（阶段 19：可选知识库增强）。
+     * 发起一次流式对话（阶段 19：可选知识库增强；阶段 22：可选思考程度）。
      *
      * <p><b>顺序很重要</b>：所有前置校验都在返回 emitter **之前**完成。
      * 这样「会话不存在」「参数非法」「模型未配置」得到的是普通 JSON 错误响应
@@ -115,7 +116,7 @@ public class ChatCompletionService {
      * @return SSE 发射器
      */
     public SseEmitter stream(String conversationId, String userContent, String turnId,
-                             boolean useKnowledge, int topK) {
+                             boolean useKnowledge, int topK, ThinkingLevel thinkingLevel) {
         sessionService.requireSession(conversationId);
         ChatClient chatClient = aiProvider.requireChatClient();
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
@@ -136,7 +137,7 @@ public class ChatCompletionService {
         Flux<String> contentFlux = Flux.defer(() -> {
             List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter);
             hitsRef.set(hits);
-            return chatClient.prompt()
+            ChatClient.ChatClientRequestSpec request = chatClient.prompt()
                     // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                     // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
                     .system(systemPromptWithContributions(hits, userContent, conversationId))
@@ -146,7 +147,13 @@ public class ChatCompletionService {
                     // 工具调用时需要的上下文：工具方法通过 ToolContext 参数读取
                     .toolContext(Map.of(
                             ToolContextKeys.CONVERSATION_ID, conversationId,
-                            ToolContextKeys.TURN_ID, turnId))
+                            ToolContextKeys.TURN_ID, turnId));
+
+            // 思考程度（阶段 22）：由 provider 门面在模型默认选项上合并，
+            // 非 OpenAI 系模型时原样返回，此处无需判断 provider 类型。
+            request = aiProvider.applyThinkingOptions(request, thinkingLevel.budget());
+
+            return request
                     .stream()
                     .content();
         }).subscribeOn(Schedulers.boundedElastic());

@@ -120,7 +120,7 @@ public class ChatSessionController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody StreamChatRequest request) {
         return completionService.stream(conversationId, request.content(), toTurnId(idempotencyKey),
-                request.knowledgeEnabled(), request.resolvedTopK());
+                request.knowledgeEnabled(), request.resolvedTopK(), request.resolvedThinkingLevel());
     }
 
     /**
