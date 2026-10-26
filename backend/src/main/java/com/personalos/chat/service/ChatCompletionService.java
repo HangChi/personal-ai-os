@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * 流式对话编排：把模型的 {@code Flux<String>} 桥接为 SSE 事件流。
@@ -89,6 +91,12 @@ public class ChatCompletionService {
      * （404 / 400 / 503），而不是一个已经切成 {@code text/event-stream}
      * 却只推了一条错误事件的半截流 —— 后者会让客户端难以区分失败原因。
      *
+     * <p><b>知识库检索不在这个线程上跑</b>（2026-10-26 调整）：检索要调一次嵌入模型，
+     * 是几百毫秒级的阻塞调用。放在这里会让「首字节」被它拖住，Tomcat 线程也一直被占。
+     * 现在它被包进 {@link Flux#defer} 并切到弹性线程池：本方法发出 {@code start}
+     * 后立即返回，检索与生成都在后台完成。事件顺序不变
+     * （{@code start → citations → delta* → done}），仍是「先给依据、再出内容」。
+     *
      * @param conversationId 会话标识（隔离边界）
      * @param userContent    本条用户消息
      * @param turnId         本轮标识。客户端可用 {@code Idempotency-Key} 头传入；
@@ -105,61 +113,35 @@ public class ChatCompletionService {
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
         sessionService.initializeTitleFromFirstMessage(conversationId, userContent);
 
-        // 知识库检索：在返回 emitter 之前完成（失败走降级，不中断本轮对话）。
-        // 命中片段同时用于三处：citations 事件、系统提示注入、终帧落库。
-        List<KnowledgeHitDto> hits = List.of();
-        String degradationNotice = null;
-        if (useKnowledge) {
-            KnowledgeSearchPort port = knowledgeSearch.getIfAvailable();
-            if (port == null) {
-                log.warn("知识库增强开启但检索端口不可用，本轮降级为普通对话 conversationId={}", conversationId);
-            } else {
-                try {
-                    hits = port.search(userContent, topK);
-                } catch (RuntimeException ex) {
-                    // 降级：提示用户但不中断 —— 检索失败不该让整轮对话失败（FR-005）
-                    log.warn("知识库检索失败，本轮降级 conversationId={}", conversationId, ex);
-                    hits = List.of();
-                    degradationNotice = "知识库检索失败，本轮未使用知识库回答";
-                }
-            }
-        }
-
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MILLIS);
         StringBuilder fullContent = new StringBuilder();
         // 终止标记：保证 done / error 只发一次，并让 onCompletion 能区分
         // 「正常结束」与「客户端断连」
         AtomicBoolean terminated = new AtomicBoolean(false);
+        // 命中快照：检索在 defer 里才发生，终帧回调需要读它，故用原子引用跨阶段传递
+        AtomicReference<List<KnowledgeHitDto>> hitsRef = new AtomicReference<>(List.of());
+        // 订阅可能先于赋值完成（切了线程池之后尤其如此），回调里必须能容忍 null
+        AtomicReference<Disposable> subscriptionRef = new AtomicReference<>();
 
         send(emitter, EVENT_START, new ChatStreamEvents.Start(conversationId));
 
-        // 检索结果先于生成内容告知用户：N=0 也发（前端据此关闭「正在检索」态）
-        if (useKnowledge && degradationNotice == null) {
-            List<ChatCitationDto> payload = toCitationDtos(hits);
-            send(emitter, EVENT_CITATIONS,
-                    new ChatStreamEvents.Citations(payload.size(), payload));
-        }
-        if (degradationNotice != null) {
-            send(emitter, EVENT_ERROR,
-                    new ChatStreamEvents.Error(ErrorCode.AI_UPSTREAM_ERROR.getCode(), degradationNotice));
-        }
-
-        Flux<String> contentFlux = chatClient.prompt()
-                // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
-                // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
-                .system(systemPromptWithContributions(hits))
-                .user(userContent)
-                // 会话标识通过 advisor 参数传入，Advisor 据此装载并回写该会话的上下文
-                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
-                // 工具调用时需要的上下文：工具方法通过 ToolContext 参数读取
-                .toolContext(Map.of(
-                        ToolContextKeys.CONVERSATION_ID, conversationId,
-                        ToolContextKeys.TURN_ID, turnId))
-                .stream()
-                .content();
-
-        // 终帧落库用的命中快照（引用是增强信息：落库失败只记日志，不回滚对话）
-        final List<KnowledgeHitDto> hitsSnapshot = hits;
+        Flux<String> contentFlux = Flux.defer(() -> {
+            List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter);
+            hitsRef.set(hits);
+            return chatClient.prompt()
+                    // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
+                    // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
+                    .system(systemPromptWithContributions(hits))
+                    .user(userContent)
+                    // 会话标识通过 advisor 参数传入，Advisor 据此装载并回写该会话的上下文
+                    .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
+                    // 工具调用时需要的上下文：工具方法通过 ToolContext 参数读取
+                    .toolContext(Map.of(
+                            ToolContextKeys.CONVERSATION_ID, conversationId,
+                            ToolContextKeys.TURN_ID, turnId))
+                    .stream()
+                    .content();
+        }).subscribeOn(Schedulers.boundedElastic());
 
         Disposable subscription = contentFlux.subscribe(
                 chunk -> {
@@ -189,33 +171,76 @@ public class ChatCompletionService {
                     // 引用挂载：Advisor 的 after()（落库）位于本回调的上游（见
                     // ChatCitationService.attachToLatestAssistant 的时序说明），
                     // 此刻最新助手消息就是本轮刚落库的那条。
-                    if (!hitsSnapshot.isEmpty()) {
+                    List<KnowledgeHitDto> hits = hitsRef.get();
+                    if (hits != null && !hits.isEmpty()) {
                         try {
-                            citationService.attachToLatestAssistant(conversationId, hitsSnapshot);
+                            citationService.attachToLatestAssistant(conversationId, hits);
                         } catch (RuntimeException ex) {
                             log.warn("引用挂载失败（不影响本轮回答） conversationId={}", conversationId, ex);
                         }
                     }
                 });
+        subscriptionRef.set(subscription);
 
         emitter.onTimeout(() -> {
             terminated.set(true);
-            subscription.dispose();
+            disposeQuietly(subscriptionRef.get());
             emitter.complete();
         });
         emitter.onError(throwable -> {
             terminated.set(true);
-            subscription.dispose();
+            disposeQuietly(subscriptionRef.get());
         });
         emitter.onCompletion(() -> {
             // 只有「客户端提前断连」才会走到这里且 terminated 仍为 false；
             // 此时取消上游订阅，避免继续消耗模型额度
             if (!terminated.get()) {
-                subscription.dispose();
+                disposeQuietly(subscriptionRef.get());
             }
         });
 
         return emitter;
+    }
+
+    /**
+     * 检索本轮的知识库片段，并把结果（或降级提示）作为 SSE 事件先发出去。
+     *
+     * <p>调用发生在 {@link Flux#defer} 内部 —— 也就是订阅之后、生成之前，
+     * 因此不会阻塞 servlet 线程。失败只降级不中断：检索挂了不该让整轮对话失败（FR-005）。
+     *
+     * @return 命中片段；未开启增强、端口缺失或检索失败时为空列表
+     */
+    private List<KnowledgeHitDto> retrieveForPrompt(String conversationId, String userContent,
+                                                    int topK, boolean useKnowledge, SseEmitter emitter) {
+        if (!useKnowledge) {
+            return List.of();
+        }
+        List<KnowledgeHitDto> hits = List.of();
+        KnowledgeSearchPort port = knowledgeSearch.getIfAvailable();
+        if (port == null) {
+            log.warn("知识库增强开启但检索端口不可用，本轮降级为普通对话 conversationId={}", conversationId);
+        } else {
+            try {
+                hits = port.search(userContent, topK);
+            } catch (RuntimeException ex) {
+                log.warn("知识库检索失败，本轮降级 conversationId={}", conversationId, ex);
+                send(emitter, EVENT_ERROR,
+                        new ChatStreamEvents.Error(ErrorCode.AI_UPSTREAM_ERROR.getCode(),
+                                "知识库检索失败，本轮未使用知识库回答"));
+                return List.of();
+            }
+        }
+        // 检索结果先于生成内容告知用户：N=0 也发（前端据此关闭「正在检索」态）
+        List<ChatCitationDto> payload = toCitationDtos(hits);
+        send(emitter, EVENT_CITATIONS, new ChatStreamEvents.Citations(payload.size(), payload));
+        return hits;
+    }
+
+    /** 取消上游订阅；null（订阅尚未建立）与重复取消都视为正常。 */
+    private void disposeQuietly(Disposable subscription) {
+        if (subscription != null && !subscription.isDisposed()) {
+            subscription.dispose();
+        }
     }
 
     /**
