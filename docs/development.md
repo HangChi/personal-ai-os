@@ -95,6 +95,19 @@ cd backend
 
 首次运行会拉取镜像与依赖，耗时较长；之后会走缓存。
 
+### 覆盖率
+
+`test` 阶段会自动生成 JaCoCo 报告（不设门禁，失败不会因覆盖率不足而中断）：
+
+```
+backend/target/site/jacoco/index.html   # 浏览器打开看逐类明细
+backend/target/site/jacoco/jacoco.csv   # 想自己汇总时用这个
+```
+
+2026-10-26 基线：行覆盖 **86.1%**、分支覆盖 **67.8%**、指令覆盖 **87.0%**。
+分支覆盖偏低主要来自「同一方法的多条防御分支只有一条被测到」，
+补测试时优先看这里比看行覆盖更有收获。
+
 ## 四、启动前端
 
 ```bash
@@ -114,7 +127,15 @@ npm run type-check   # vue-tsc 类型检查
 npm run build        # 生产构建，产物在 frontend/dist
 npm run preview      # 预览构建产物
 npm run test:logic   # 前端逻辑测试（零依赖，见下）
+npm run lint         # ESLint（flat config，见 frontend/eslint.config.js）
+npm run lint:fix     # 自动修复可修的项
+npm run format       # Prettier 格式化
+npm run format:check # 只检查不改写（CI 用这一条）
 ```
+
+**提交前建议跑一遍** `npm run lint && npm run format:check && npm run type-check`。
+CI（`.github/workflows/ci.yml`）会在每次 push / PR 上把这些加上后端测试全跑一遍；
+本地跑过就不会在 PR 里才发现。
 
 开发期 `/api` 由 Vite 代理到 `http://localhost:8080`（见 `vite.config.ts`），因此不需要配置 CORS。
 

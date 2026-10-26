@@ -48,7 +48,6 @@ personal-ai-os/
 │       ├── main/java/com/personalos/
 │       │   ├── PersonalOsApplication.java
 │       │   ├── common/         统一响应 / 错误码 / 全局异常 / 健康检查 / 公共配置 / AI 装配（common/ai）
-│       │   ├── ai/             空占位：跨模块 AI 基础设施实际在 common/ai（未搬迁）
 │       │   ├── chat/           阶段 1：会话与消息（含会话内上下文窗口）
 │       │   ├── memory/         阶段 8：长期记忆（跨会话，注入系统提示）
 │       │   ├── agent/          阶段 2：Agent 编排与工具调用（含审计查询）
@@ -64,9 +63,13 @@ personal-ai-os/
 │           ├── PersonalOsApplicationTests.java      （Testcontainers 集成测试）
 │           └── common/                              （单元测试）
 ├── frontend/                   Vue 3 + TypeScript + Vite
-│   └── src/{api,components,lib,router,stores,types,views,styles}
+│   └── src/{api,components,lib,notifications,router,stores,types,views,styles}
 │       ├── components/         公共组件（PageHeader/FilterBar/EmptyState/AppPagination/StatusTag/MarkdownRenderer/ThemeToggle）
-│       ├── lib/                纯函数（calendar-dates / theme / relative-time / session-group / board / highlight-text）
+│       │   ├── chat/           对话页拆分：会话列表 / 消息 / 流式占位 / 工具轨迹 / 待确认 / 输入区 / 欢迎语
+│       │   ├── task/           任务页拆分：新建表单 / 表格 / 看板 / 编辑弹窗
+│       │   ├── calendar/       日程页拆分：通知条 / 到点提醒 / 新建表单 / 月网格 / 列表 / 编辑弹窗
+│       │   └── knowledge/      知识库页拆分：文档 / 检索 / 问答 / 命中列表
+│       ├── lib/                纯函数（calendar-dates / calendar-format / task-meta / format / theme / relative-time / session-group / board / highlight-text）
 │       └── styles/             设计令牌 tokens.css + 暗色覆盖 + hljs 暗色主题
 ├── docs/                       架构与开发文档
 ├── specs/                      Spec Kit 特性规格
