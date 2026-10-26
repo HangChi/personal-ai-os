@@ -152,7 +152,7 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   margin-bottom: var(--os-space-1);
   padding: 0 var(--os-space-1);
   color: var(--el-text-color-placeholder);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
 }
 
 .chat-sessions__list {
@@ -173,16 +173,31 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   padding: var(--os-space-2) 10px;
   border-radius: var(--os-radius-md);
   cursor: pointer;
-  transition: background var(--os-duration-fast) var(--os-ease);
+  transition:
+    background var(--os-duration-fast) var(--os-ease),
+    color var(--os-duration-fast) var(--os-ease);
 }
 
 .chat-sessions__item:hover {
   background: var(--el-fill-color);
 }
 
-/* 当前会话：主色左边条 + 浅底（阶段 20，FR-009） */
+/*
+ * 当前会话：主色左边条 + 浅底（阶段 20，FR-009）。
+ * 标题同时加重、meta 提到 secondary：选中态不能只靠背景色 ——
+ * 浅主色底在白底上很淡，弱视/暗色模式下几乎看不出来。
+ */
 .chat-sessions__item--active {
   background: var(--el-color-primary-light-9);
+}
+
+.chat-sessions__item--active .chat-sessions__title-text {
+  font-weight: 500;
+  color: var(--el-color-primary);
+}
+
+.chat-sessions__item--active .chat-sessions__meta {
+  color: var(--el-text-color-secondary);
 }
 
 .chat-sessions__item--active::before {
@@ -232,14 +247,17 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 
 .chat-sessions__title-text {
   font-size: var(--os-font-xs);
+  font-weight: 400;
+  color: var(--el-text-color-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--os-duration-fast) var(--os-ease);
 }
 
 .chat-sessions__meta {
-  margin-top: 1px;
-  font-size: 11px;
+  margin-top: 2px;
+  font-size: var(--os-font-xs);
   color: var(--el-text-color-placeholder);
 }
 

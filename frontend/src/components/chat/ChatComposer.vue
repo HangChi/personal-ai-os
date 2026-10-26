@@ -11,6 +11,8 @@
  *   <li>输入法选词期间的 Enter 一律不发送（否则打不了中文）</li>
  * </ul>
  */
+import { nextTick, onMounted, ref, watch } from 'vue'
+
 const props = defineProps<{
   /** 输入内容（v-model） */
   modelValue: string
@@ -31,6 +33,35 @@ const emit = defineEmits<{
   (e: 'send'): void
   (e: 'stop'): void
 }>()
+
+/**
+ * 输入框随内容长高（上限 160px）。
+ *
+ * <p>固定 3 行有两个问题：短消息时输入框显得空荡，长消息时 3 行装不下、
+ * 中途还得手动拖（已禁用 resize）。改成 2 行起步、按 scrollHeight 增长，
+ * 超过上限后再内部滚动 —— 与主流聊天工具的手感一致。
+ */
+const root = ref<HTMLElement | null>(null)
+
+function autosize(): void {
+  const element = root.value?.querySelector('textarea')
+  if (!element) {
+    return
+  }
+  element.style.height = 'auto'
+  element.style.height = `${Math.min(element.scrollHeight, 160)}px`
+}
+
+watch(
+  () => props.modelValue,
+  async () => {
+    await nextTick()
+    autosize()
+  },
+)
+
+// 挂载时也算一次：从「点击建议问题」进来的内容可能一进来就不止两行
+onMounted(autosize)
 
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key !== 'Enter' || event.isComposing) {
@@ -78,11 +109,11 @@ function handleKeydown(event: KeyboardEvent): void {
         {{ enterSend ? 'Enter 发送 · Shift+Enter 换行' : 'Ctrl+Enter 发送 · Enter 换行' }}
       </span>
     </div>
-    <div class="chat-composer__input">
+    <div ref="root" class="chat-composer__input">
       <el-input
         :model-value="modelValue"
         type="textarea"
-        :rows="3"
+        :rows="2"
         maxlength="4000"
         resize="none"
         :placeholder="knowledgeOn ? '输入消息，将基于知识库回答' : '输入消息'"
@@ -127,7 +158,8 @@ function handleKeydown(event: KeyboardEvent): void {
   border-radius: 999px;
   background: var(--el-bg-color);
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  /* 11px 在多数屏幕上偏小，chip 是可点击控件，按令牌升到 12px */
+  font-size: var(--os-font-xs);
   cursor: pointer;
   transition:
     border-color var(--os-duration-fast) var(--os-ease),
@@ -165,7 +197,19 @@ function handleKeydown(event: KeyboardEvent): void {
 .chat-composer__hint {
   margin-left: auto;
   color: var(--el-text-color-placeholder);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
+}
+
+/* ---- 输入框 ---- */
+
+.chat-composer__input :deep(.el-textarea__inner) {
+  padding: var(--os-space-2) var(--os-space-3);
+  border-radius: var(--os-radius-lg);
+  font-size: var(--os-font-sm);
+  line-height: 1.6;
+  /* 两行文本的高度；autosize 会在此基础上按内容上调 */
+  min-height: 44px;
+  box-shadow: none;
 }
 
 .chat-composer__actions {

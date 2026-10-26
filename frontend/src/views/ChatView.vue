@@ -366,7 +366,7 @@ async function handleRename(session: ChatSession): Promise<void> {
 }
 
 .chat__main-title {
-  font-size: var(--os-font-sm);
+  font-size: var(--os-font-md);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -375,8 +375,8 @@ async function handleRename(session: ChatSession): Promise<void> {
 
 .chat__main-meta {
   flex: none;
-  color: var(--el-text-color-placeholder);
-  font-size: 11px;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
 }
 
 .chat__body {
@@ -394,8 +394,9 @@ async function handleRename(session: ChatSession): Promise<void> {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--os-space-5);
-  padding: var(--os-space-5) var(--os-space-5) var(--os-space-3);
+  /* 气泡自带内边距后，20px 的间距显得过散；收到 16px 并保留底部余量 */
+  gap: var(--os-space-4);
+  padding: var(--os-space-4) var(--os-space-5) var(--os-space-4);
 }
 
 .chat__error {

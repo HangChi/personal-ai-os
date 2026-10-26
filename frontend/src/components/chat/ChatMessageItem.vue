@@ -27,7 +27,9 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
         <el-icon :size="14"><ChatLineRound /></el-icon>
       </span>
       <div class="chat-msg__content">
-        <MarkdownRenderer :content="message.content" />
+        <div class="chat-msg__bubble chat-msg__bubble--assistant">
+          <MarkdownRenderer :content="message.content" />
+        </div>
         <!-- 引用区（阶段 19） -->
         <div v-if="message.citations.length > 0" class="chat-msg__citations">
           <el-collapse>
@@ -63,7 +65,7 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
     <!-- 用户：右侧主色气泡 -->
     <template v-else>
       <div class="chat-msg__content chat-msg__content--user">
-        <div class="chat-msg__bubble">
+        <div class="chat-msg__bubble chat-msg__bubble--user">
           <MarkdownRenderer :content="message.content" />
         </div>
         <div class="chat-msg__actions chat-msg__actions--user">
@@ -120,24 +122,63 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
   line-height: 1.75;
 }
 
+/*
+ * 可读性上限：不限制宽度时，一条长回答在 1440px 屏上能拉到 130+ 字符/行，
+ * 视线换行容易串行。760px 约合中文 38~42 字，是长文阅读的舒适区间。
+ */
+.chat-msg__content {
+  max-width: 760px;
+}
+
 .chat-msg__content--user {
   flex: 0 1 auto;
-  max-width: 75%;
+  max-width: 82%;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 }
 
 .chat-msg__bubble {
-  padding: var(--os-space-2) var(--os-space-3);
+  padding: var(--os-space-3) var(--os-space-4);
   border-radius: var(--os-radius-lg);
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
+  /* 气泡内的 Markdown 自带段距，这里不再叠一层 */
+  width: fit-content;
+  max-width: 100%;
+}
+
+/*
+ * 助手气泡：浅填充底，不加边框。
+ * 改造前助手消息**没有容器**——文字直接铺在页面白底上，与背景糊成一片，
+ * 是「对话页很丑」最主要的一条。给一层 fill 之后，用户/助手、引用、正文的边界才分明。
+ */
+.chat-msg__bubble--assistant {
+  background: var(--el-fill-color-light);
+  /* 圆角朝向头像那一侧收窄：气泡的「尖角」暗示说话人方向 */
+  border-bottom-left-radius: var(--os-radius-sm);
 }
 
 .chat-msg__bubble :deep(.md__body) {
   font-size: var(--os-font-sm);
-  line-height: 1.7;
+  line-height: 1.75;
+}
+
+.chat-msg__bubble :deep(.md__body > :first-child) {
+  margin-top: 0;
+}
+
+.chat-msg__bubble :deep(.md__body > :last-child) {
+  margin-bottom: 0;
+}
+
+/*
+ * 用户气泡：浅主色底 + 主文本色。
+ * 改造前是「浅蓝底 + 主色蓝字」，蓝字落在浅蓝底上对比度不足，长句读起来发虚；
+ * 换成深色文字后对比度足够，同时保留主色底以区分说话方。
+ */
+.chat-msg__bubble--user {
+  background: var(--el-color-primary-light-8);
+  color: var(--el-text-color-primary);
+  border-bottom-right-radius: var(--os-radius-sm);
 }
 
 /* 悬停操作行：默认隐形，不抢版面（FR-003） */
