@@ -6,6 +6,7 @@ import com.personalos.common.ai.AiProperties;
 import com.personalos.memory.entity.MemoryEntity;
 import com.personalos.memory.repository.MemoryRepository;
 import com.personalos.support.HttpTestClient;
+import com.personalos.support.Instants;
 import com.personalos.support.ScriptedToolCallingChatModel;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -156,7 +157,11 @@ class MemoryIntegrationTest {
 
         assertThat(updated.status()).isEqualTo(200);
         assertThat(extractString(updated.body(), "content")).isEqualTo("周报每周五上午交");
-        assertThat(extractString(updated.body(), "createdAt")).isEqualTo(createdAt);
+        // createdAt 由 POST 的**内存实体**序列化而来（JVM 时钟，Linux 上带纳秒），
+        // PATCH 时是从库读回的（TIMESTAMPTZ 只到微秒）—— 直接比字符串在 CI 上必然不等。
+        assertThat(Instants.sameTextAtStoragePrecision(extractString(updated.body(), "createdAt"), createdAt))
+                .as("created_at 不应被编辑改动（按存储精度比较）")
+                .isTrue();
         assertThat(extractString(updated.body(), "updatedAt")).isNotEqualTo(updatedAtBefore);
     }
 

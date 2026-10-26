@@ -25,6 +25,7 @@ import com.personalos.common.exception.BusinessException;
 import com.personalos.common.idempotency.OperationRecordRepository;
 import com.personalos.support.HttpTestClient;
 import com.personalos.support.HttpTestClient.SseEvent;
+import com.personalos.support.Instants;
 import com.personalos.support.ScriptedToolCallingChatModel;
 import com.personalos.task.dto.CreateTaskRequest;
 import com.personalos.task.dto.TaskDto;
@@ -345,7 +346,12 @@ class CalendarReminderIntegrationTest {
 
         assertThat(first.status()).isEqualTo("READ");
         assertThat(second.status()).isEqualTo("READ");
-        assertThat(second.readAt()).as("重复标记应保留首次阅读时间").isEqualTo(first.readAt());
+        // 首次 markRead 返回的是**内存里**刚落的时间（纳秒），第二次是从库里读回的（微秒），
+        // 直接 equals 会在 Linux 上挂（JVM 时钟到纳秒，TIMESTAMPTZ 只存到微秒）。
+        // 要验证的是「第二次没有覆盖首次」，那就按存储精度比较。
+        assertThat(Instants.sameAtStoragePrecision(second.readAt(), first.readAt()))
+                .as("重复标记应保留首次阅读时间")
+                .isTrue();
         assertThat(reminderService.list(null, true, null)).isEmpty();
     }
 
