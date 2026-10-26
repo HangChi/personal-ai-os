@@ -82,7 +82,7 @@ class ListSearchIntegrationTest {
 
     private List<String> titles(JsonNode items) {
         List<String> result = new ArrayList<>();
-        items.forEach(item -> result.add(item.path("title").asText()));
+        items.forEach(item -> result.add(item.path("title").asString()));
         return result;
     }
 
@@ -109,8 +109,8 @@ class ListSearchIntegrationTest {
         assertThat(second.path("items").size()).isEqualTo(5);
 
         Set<String> all = new HashSet<>();
-        first.path("items").forEach(item -> all.add(item.path("conversationId").asText()));
-        second.path("items").forEach(item -> all.add(item.path("conversationId").asText()));
+        first.path("items").forEach(item -> all.add(item.path("conversationId").asString()));
+        second.path("items").forEach(item -> all.add(item.path("conversationId").asString()));
         assertThat(all).as("两页合起来应恰好 25 个不重复会话").hasSize(25);
     }
 
@@ -124,7 +124,7 @@ class ListSearchIntegrationTest {
         JsonNode hit = get("/api/v1/chat/sessions/search?keyword="
                 + URLEncoder.encode("周报", StandardCharsets.UTF_8));
         assertThat(hit.path("total").asLong()).isEqualTo(1);
-        assertThat(hit.path("items").get(0).path("title").asText()).isEqualTo("关于周报的讨论");
+        assertThat(hit.path("items").get(0).path("title").asString()).isEqualTo("关于周报的讨论");
 
         JsonNode miss = get("/api/v1/chat/sessions/search?keyword="
                 + URLEncoder.encode("不存在的词", StandardCharsets.UTF_8));
@@ -155,7 +155,7 @@ class ListSearchIntegrationTest {
         createSessions(22);
         // 给第一个会话发两条消息
         HttpTestClient.Response created = http.post("/api/v1/chat/sessions", "{\"title\":\"有很多消息\"}");
-        String conversationId = mapper.readTree(created.body()).path("data").path("conversationId").asText();
+        String conversationId = mapper.readTree(created.body()).path("data").path("conversationId").asString();
         for (int index = 0; index < 2; index += 1) {
             // 直接写消息（不需要模型：用 /stream 会调用 ChatModel）
             jdbcTemplate.update(
@@ -170,7 +170,7 @@ class ListSearchIntegrationTest {
         JsonNode target = null;
         for (int index = 0; index < items.size(); index += 1) {
             JsonNode item = items.get(index);
-            if (conversationId.equals(item.path("conversationId").asText())) {
+            if (conversationId.equals(item.path("conversationId").asString())) {
                 target = item;
             }
         }
@@ -211,8 +211,8 @@ class ListSearchIntegrationTest {
         assertThat(second.path("items").size()).isEqualTo(5);
 
         Set<String> ids = new HashSet<>();
-        first.path("items").forEach(item -> ids.add(item.path("id").asText()));
-        second.path("items").forEach(item -> ids.add(item.path("id").asText()));
+        first.path("items").forEach(item -> ids.add(item.path("id").asString()));
+        second.path("items").forEach(item -> ids.add(item.path("id").asString()));
         assertThat(ids).hasSize(25);
     }
 
@@ -231,7 +231,7 @@ class ListSearchIntegrationTest {
         JsonNode byFilename = get("/api/v1/knowledge/documents/search?keyword="
                 + URLEncoder.encode("isolation", StandardCharsets.UTF_8));
         assertThat(byFilename.path("total").asLong()).isEqualTo(1);
-        assertThat(byFilename.path("items").get(0).path("filename").asText()).isEqualTo("isolation.md");
+        assertThat(byFilename.path("items").get(0).path("filename").asString()).isEqualTo("isolation.md");
     }
 
     @Test

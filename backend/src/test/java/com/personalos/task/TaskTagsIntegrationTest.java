@@ -73,7 +73,7 @@ class TaskTagsIntegrationTest {
     /** 手动遍历而不是 convertValue：Jackson 3 的 TypeFactory API 与 2.x 有差异，不值得为测试引入 */
     private List<String> tagList(JsonNode array) {
         List<String> result = new java.util.ArrayList<>();
-        array.forEach(node -> result.add(node.asText()));
+        array.forEach(node -> result.add(node.asString()));
         return result;
     }
 
@@ -91,7 +91,7 @@ class TaskTagsIntegrationTest {
     void shouldReplaceTags() throws Exception {
         JsonNode created = create("写周报", "[\"工作\",\"本周\"]");
 
-        JsonNode updated = patch(created.path("id").asText(), "{\"tags\":[\"学习\"]}");
+        JsonNode updated = patch(created.path("id").asString(), "{\"tags\":[\"学习\"]}");
 
         assertThat(tagList(updated.path("tags"))).containsExactly("学习");
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM task_tag", Integer.class)).isEqualTo(1);
@@ -102,7 +102,7 @@ class TaskTagsIntegrationTest {
     void shouldClearTagsWithEmptyArray() throws Exception {
         JsonNode created = create("写周报", "[\"工作\"]");
 
-        JsonNode updated = patch(created.path("id").asText(), "{\"tags\":[]}");
+        JsonNode updated = patch(created.path("id").asString(), "{\"tags\":[]}");
 
         assertThat(updated.path("tags").isEmpty()).isTrue();
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM task_tag", Integer.class)).isZero();
@@ -113,9 +113,9 @@ class TaskTagsIntegrationTest {
     void shouldKeepTagsWhenOmitted() throws Exception {
         JsonNode created = create("写周报", "[\"工作\"]");
 
-        JsonNode updated = patch(created.path("id").asText(), "{\"title\":\"写周报（改）\"}");
+        JsonNode updated = patch(created.path("id").asString(), "{\"title\":\"写周报（改）\"}");
 
-        assertThat(updated.path("title").asText()).isEqualTo("写周报（改）");
+        assertThat(updated.path("title").asString()).isEqualTo("写周报（改）");
         assertThat(tagList(updated.path("tags"))).containsExactly("工作");
     }
 
@@ -128,7 +128,7 @@ class TaskTagsIntegrationTest {
         assertThat(response.status()).isEqualTo(400);
         JsonNode body = mapper.readTree(response.body());
         assertThat(body.path("code").asInt()).isEqualTo(40000);
-        assertThat(body.path("message").asText()).contains("最多 5 个");
+        assertThat(body.path("message").asString()).contains("最多 5 个");
     }
 
     @Test
@@ -139,7 +139,7 @@ class TaskTagsIntegrationTest {
                 "{\"title\":\"写周报\",\"tags\":[\"" + longTag + "\"]}");
 
         assertThat(response.status()).isEqualTo(400);
-        assertThat(mapper.readTree(response.body()).path("message").asText()).contains("不能超过 20");
+        assertThat(mapper.readTree(response.body()).path("message").asString()).contains("不能超过 20");
     }
 
     @Test
@@ -167,7 +167,7 @@ class TaskTagsIntegrationTest {
         JsonNode result = listTasks("?tag=" + URLEncoder.encode("工作", StandardCharsets.UTF_8));
 
         assertThat(result.path("total").asInt()).isEqualTo(1);
-        assertThat(result.path("items").get(0).path("title").asText()).isEqualTo("写周报");
+        assertThat(result.path("items").get(0).path("title").asString()).isEqualTo("写周报");
     }
 
     @Test
@@ -208,7 +208,7 @@ class TaskTagsIntegrationTest {
         create("写周报", "[\"工作\"]");
         JsonNode study = create("读论文", "[\"学习\"]");
 
-        assertThat(http.delete("/api/v1/tasks/" + study.path("id").asText(), Map.of()).status())
+        assertThat(http.delete("/api/v1/tasks/" + study.path("id").asString(), Map.of()).status())
                 .isEqualTo(200);
 
         HttpTestClient.Response response = http.get("/api/v1/tasks/tags");

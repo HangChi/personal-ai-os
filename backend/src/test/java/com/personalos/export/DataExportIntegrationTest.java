@@ -115,9 +115,9 @@ class DataExportIntegrationTest {
     void shouldExportEmptyDatabase() throws Exception {
         JsonNode body = export();
 
-        assertThat(body.path("application").asText()).isEqualTo("personal-ai-os");
-        assertThat(body.path("formatVersion").asText()).isEqualTo(DataExportService.FORMAT_VERSION);
-        assertThat(body.path("exportedAt").asText()).isNotBlank();
+        assertThat(body.path("application").asString()).isEqualTo("personal-ai-os");
+        assertThat(body.path("formatVersion").asString()).isEqualTo(DataExportService.FORMAT_VERSION);
+        assertThat(body.path("exportedAt").asString()).isNotBlank();
 
         for (String key : new String[]{"sessions", "tasks", "calendarEvents", "memories",
                 "knowledgeDocuments"}) {
@@ -154,11 +154,11 @@ class DataExportIntegrationTest {
         // 会话内嵌套 messages，且新会话没有消息
         assertThat(body.path("sessions").get(0).path("messages").isArray()).isTrue();
         assertThat(body.path("sessions").get(0).path("messages").isEmpty()).isTrue();
-        assertThat(body.path("sessions").get(0).path("session").path("conversationId").asText()).isNotBlank();
+        assertThat(body.path("sessions").get(0).path("session").path("conversationId").asString()).isNotBlank();
 
         // 任务字段要真在（不是只有计数）
-        assertThat(body.path("tasks").get(0).path("title").asText()).isNotBlank();
-        assertThat(body.path("tasks").get(0).path("status").asText()).isEqualTo("TODO");
+        assertThat(body.path("tasks").get(0).path("title").asString()).isNotBlank();
+        assertThat(body.path("tasks").get(0).path("status").asString()).isEqualTo("TODO");
     }
 
     @Test
@@ -172,15 +172,15 @@ class DataExportIntegrationTest {
 
         assertThat(body.path("counts").path("knowledgeDocuments").asInt()).isEqualTo(1);
         JsonNode document = body.path("knowledgeDocuments").get(0);
-        assertThat(document.path("document").path("title").asText()).isEqualTo("数据库事务");
-        assertThat(document.path("document").path("filename").asText()).isEqualTo("transaction.md");
+        assertThat(document.path("document").path("title").asString()).isEqualTo("数据库事务");
+        assertThat(document.path("document").path("filename").asString()).isEqualTo("transaction.md");
         assertThat(document.path("document").path("charCount").asInt()).isGreaterThan(0);
 
         JsonNode chunks = document.path("chunks");
         assertThat(chunks.isArray()).isTrue();
         assertThat(chunks.isEmpty()).isFalse();
         StringBuilder joined = new StringBuilder();
-        chunks.forEach(chunk -> joined.append(chunk.asText()));
+        chunks.forEach(chunk -> joined.append(chunk.asString()));
         assertThat(joined.toString()).contains("隔离级别");
     }
 

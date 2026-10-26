@@ -89,7 +89,7 @@ class GlobalSearchIntegrationTest {
         JsonNode groups = result.path("groups");
         for (int index = 0; index < groups.size(); index += 1) {
             JsonNode group = groups.get(index);
-            if (module.equals(group.path("module").asText())) {
+            if (module.equals(group.path("module").asString())) {
                 return group;
             }
         }
@@ -117,11 +117,11 @@ class GlobalSearchIntegrationTest {
         HttpTestClient.Response session = http.post("/api/v1/chat/sessions",
                 "{\"title\":\"关于" + KEYWORD + "的对话\"}");
         assertThat(session.status()).isEqualTo(201);
-        String conversationId = mapper.readTree(session.body()).path("data").path("conversationId").asText();
+        String conversationId = mapper.readTree(session.body()).path("data").path("conversationId").asString();
 
         // 另一个会话：仅**消息内容**命中（标题不含）
         HttpTestClient.Response other = http.post("/api/v1/chat/sessions", "{\"title\":\"随便聊聊\"}");
-        String otherId = mapper.readTree(other.body()).path("data").path("conversationId").asText();
+        String otherId = mapper.readTree(other.body()).path("data").path("conversationId").asString();
         jdbcTemplate.update(
                 "INSERT INTO chat_message (conversation_id, sequence_no, message_type, content, created_at) "
                         + "VALUES (?, 0, 'USER', ?, now())",
@@ -145,7 +145,7 @@ class GlobalSearchIntegrationTest {
         assertThat(result.path("groups")).hasSize(5);
         assertThat(findGroup(result, "对话").path("hits")).hasSize(2);
         assertThat(result.path("groups").findValues("module").stream()
-                .map(JsonNode::asText).toList())
+                .map(JsonNode::asString).toList())
                 .containsExactlyInAnyOrder("任务", "对话", "日程", "记忆", "知识库");
     }
 
@@ -158,11 +158,11 @@ class GlobalSearchIntegrationTest {
 
         JsonNode taskGroup = findGroup(result, "任务");
         assertThat(taskGroup).isNotNull();
-        assertThat(taskGroup.path("hits").get(0).path("matchedField").asText()).isEqualTo("标题");
+        assertThat(taskGroup.path("hits").get(0).path("matchedField").asString()).isEqualTo("标题");
 
         JsonNode calendarGroup = findGroup(result, "日程");
         assertThat(calendarGroup).isNotNull();
-        assertThat(calendarGroup.path("hits").get(0).path("matchedField").asText()).isEqualTo("描述");
+        assertThat(calendarGroup.path("hits").get(0).path("matchedField").asString()).isEqualTo("描述");
     }
 
     @Test
@@ -178,7 +178,7 @@ class GlobalSearchIntegrationTest {
         // 两个会话：一个标题命中、一个消息内容命中
         assertThat(chatGroup.path("hits")).hasSize(2);
         assertThat(chatGroup.path("hits").findValues("matchedField").stream()
-                .map(JsonNode::asText).toList())
+                .map(JsonNode::asString).toList())
                 .contains("标题", "消息内容");
         // 同一会话不重复出现
         assertThat(chatGroup.path("hits").findValues("id")).doesNotHaveDuplicates();
@@ -190,7 +190,7 @@ class GlobalSearchIntegrationTest {
         // 一个会话：标题含关键词，且消息内容也含关键词
         HttpTestClient.Response session = http.post("/api/v1/chat/sessions",
                 "{\"title\":\"标题含" + KEYWORD + "\"}");
-        String conversationId = mapper.readTree(session.body()).path("data").path("conversationId").asText();
+        String conversationId = mapper.readTree(session.body()).path("data").path("conversationId").asString();
         jdbcTemplate.update(
                 "INSERT INTO chat_message (conversation_id, sequence_no, message_type, content, created_at) "
                         + "VALUES (?, 0, 'USER', ?, now())",
@@ -201,7 +201,7 @@ class GlobalSearchIntegrationTest {
         JsonNode chatGroup = findGroup(result, "对话");
         assertThat(chatGroup).isNotNull();
         assertThat(chatGroup.path("hits")).hasSize(1);
-        assertThat(chatGroup.path("hits").get(0).path("matchedField").asText()).isEqualTo("标题");
+        assertThat(chatGroup.path("hits").get(0).path("matchedField").asString()).isEqualTo("标题");
     }
 
     @Test
@@ -250,7 +250,7 @@ class GlobalSearchIntegrationTest {
         JsonNode taskGroup = findGroup(result, "任务");
         assertThat(taskGroup).isNotNull();
         assertThat(taskGroup.path("hits")).hasSize(1);
-        assertThat(taskGroup.path("hits").get(0).path("title").asText()).isEqualTo("完成率 100% 的报告");
+        assertThat(taskGroup.path("hits").get(0).path("title").asString()).isEqualTo("完成率 100% 的报告");
     }
 
     @Test
@@ -258,13 +258,13 @@ class GlobalSearchIntegrationTest {
     void shouldEscapeWildcardsInMessageContent() throws Exception {
         HttpTestClient.Response withPercent = http.post("/api/v1/chat/sessions",
                 "{\"title\":\"含百分号的会话\"}");
-        String percentId = mapper.readTree(withPercent.body()).path("data").path("conversationId").asText();
+        String percentId = mapper.readTree(withPercent.body()).path("data").path("conversationId").asString();
         jdbcTemplate.update(
                 "INSERT INTO chat_message (conversation_id, sequence_no, message_type, content, created_at) "
                         + "VALUES (?, 0, 'USER', '完成率 100%', now())", percentId);
 
         HttpTestClient.Response plain = http.post("/api/v1/chat/sessions", "{\"title\":\"普通会话\"}");
-        String plainId = mapper.readTree(plain.body()).path("data").path("conversationId").asText();
+        String plainId = mapper.readTree(plain.body()).path("data").path("conversationId").asString();
         jdbcTemplate.update(
                 "INSERT INTO chat_message (conversation_id, sequence_no, message_type, content, created_at) "
                         + "VALUES (?, 0, 'USER', '买牛奶', now())", plainId);
@@ -274,7 +274,7 @@ class GlobalSearchIntegrationTest {
         JsonNode chatGroup = findGroup(result, "对话");
         assertThat(chatGroup).isNotNull();
         assertThat(chatGroup.path("hits")).hasSize(1);
-        assertThat(chatGroup.path("hits").get(0).path("title").asText()).isEqualTo("含百分号的会话");
+        assertThat(chatGroup.path("hits").get(0).path("title").asString()).isEqualTo("含百分号的会话");
     }
 
     @Test
@@ -285,7 +285,7 @@ class GlobalSearchIntegrationTest {
         // 不制造真故障（那需要改代码），改为验证：正常路径下 HTTP 200 且结构完整。
         // 真正的故障隔离由 GlobalSearchService 的 try-catch 保证，单元层面见其注释。
         JsonNode result = search(KEYWORD, "");
-        assertThat(result.path("keyword").asText()).isEqualTo(KEYWORD);
+        assertThat(result.path("keyword").asString()).isEqualTo(KEYWORD);
         assertThat(result.path("groups")).hasSize(5);
     }
 }

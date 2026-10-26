@@ -90,10 +90,10 @@ class ToolInvocationAuditIntegrationTest {
         JsonNode items = data.path("items");
         assertThat(items).hasSize(2);
         assertThat(items).allSatisfy(item ->
-                assertThat(item.path("source").asText()).isEqualTo("TOOL"));
+                assertThat(item.path("source").asString()).isEqualTo("TOOL"));
         // 顺序：时间倒序 → createTask（t=2s）在 findTasks（t=1s）之前
-        assertThat(items.get(0).path("operation").asText()).isEqualTo("createTask");
-        assertThat(items.get(1).path("operation").asText()).isEqualTo("findTasks");
+        assertThat(items.get(0).path("operation").asString()).isEqualTo("createTask");
+        assertThat(items.get(1).path("operation").asString()).isEqualTo("findTasks");
     }
 
     @Test
@@ -105,7 +105,7 @@ class ToolInvocationAuditIntegrationTest {
 
         JsonNode failed = getData("/api/v1/agent/tool-invocations?outcome=FAILED");
         assertThat(failed.path("total").asLong()).isEqualTo(1);
-        assertThat(failed.path("items").get(0).path("operation").asText()).isEqualTo("createTask");
+        assertThat(failed.path("items").get(0).path("operation").asString()).isEqualTo("createTask");
 
         JsonNode all = getData("/api/v1/agent/tool-invocations");
         assertThat(all.path("total").asLong()).isEqualTo(3);

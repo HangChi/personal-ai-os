@@ -80,7 +80,7 @@ class AuthIntegrationTest {
         assertThat(response.headers().firstValue("Content-Type").orElse("")).contains("application/json");
         JsonNode body = mapper.readTree(response.body());
         assertThat(body.path("code").asInt()).isEqualTo(40100);
-        assertThat(body.path("timestamp").asText()).isNotBlank();
+        assertThat(body.path("timestamp").asString()).isNotBlank();
     }
 
     @Test
@@ -123,8 +123,8 @@ class AuthIntegrationTest {
 
         assertThat(wrongPassword.statusCode()).isEqualTo(401);
         assertThat(wrongUser.statusCode()).isEqualTo(401);
-        String first = mapper.readTree(wrongPassword.body()).path("message").asText();
-        String second = mapper.readTree(wrongUser.body()).path("message").asText();
+        String first = mapper.readTree(wrongPassword.body()).path("message").asString();
+        String second = mapper.readTree(wrongUser.body()).path("message").asString();
         assertThat(first).isEqualTo(second).isEqualTo("用户名或密码错误");
     }
 
@@ -136,7 +136,7 @@ class AuthIntegrationTest {
         HttpResponse<String> login = login("admin", PASSWORD);
         assertThat(login.statusCode()).isEqualTo(200);
         JsonNode data = mapper.readTree(login.body()).path("data");
-        assertThat(data.path("username").asText()).isEqualTo("admin");
+        assertThat(data.path("username").asString()).isEqualTo("admin");
         assertThat(data.path("authEnabled").asBoolean()).isTrue();
 
         // 同一个 client（带 cookie）现在应能访问
@@ -157,7 +157,7 @@ class AuthIntegrationTest {
         HttpResponse<String> created = post("/api/v1/tasks", "{\"title\":\"认证后的任务\"}");
 
         assertThat(created.statusCode()).isEqualTo(201);
-        assertThat(mapper.readTree(created.body()).path("data").path("title").asText())
+        assertThat(mapper.readTree(created.body()).path("data").path("title").asString())
                 .isEqualTo("认证后的任务");
     }
 }
