@@ -1,19 +1,21 @@
 <script setup lang="ts">
 /**
- * 应用根组件：整体布局 + 顶部导航 + 路由出口。
+ * 应用根组件：侧栏导航 + 顶栏（搜索 / 主题 / 用户）+ 路由出口。
  * 业务状态一律放在 Pinia store 中，不做跨组件透传。
  *
- * 阶段 18 改动：
- * - 导航加图标（EP 图标按需 import，避免全量图标包进主包）
- * - 顶栏搜索加宽 + Ctrl/Cmd+K 全局聚焦（FR-004）
- * - 挂载 ThemeToggle，移除硬编码「阶段 17」标识——该文案每轮都会过期，
- *   是项目记忆里记着的坑（硬编码当前状态 = 必然过期的文档）
- * - 布局尺寸全部走 --os-* 令牌
+ * 布局演进：
+ * - 阶段 0-17：顶部横向导航。7 个模块到顶后顶栏拥挤（375px 直接溢出），
+ *   窄屏只能整个藏进抽屉。
+ * - 阶段 18 追加（2026-10-26）：横向菜单改为**左侧导航栏**。顶栏只剩
+ *   折叠按钮 / 搜索 / 主题 / 用户。侧栏可折叠为纯图标（64px），
+ *   选择持久化到 localStorage；<768px 侧栏隐藏，走汉堡 + 抽屉（原有机制）。
+ *   模块以后加到 10 个也不再挤——这是侧栏相对顶栏的核心收益。
  */
 import {
   Calendar,
   ChatDotRound,
   DataLine,
+  Expand,
   Fold,
   HomeFilled,
   Memo,
@@ -26,9 +28,12 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
+import { useUiStore } from '@/stores/ui'
 
 const authStore = useAuthStore()
+const uiStore = useUiStore()
 const { authEnabled, username } = storeToRefs(authStore)
+const { navCollapsed } = storeToRefs(uiStore)
 const route = useRoute()
 const router = useRouter()
 
@@ -51,7 +56,7 @@ const navItems = [
 const searchKeyword = ref('')
 const searchInput = ref<InstanceType<typeof HTMLInputElement> | null>(null)
 
-/** 窄屏抽屉导航（阶段 18，FR-014）：<768px 时横向菜单放不下，改汉堡 + 抽屉 */
+/** 窄屏抽屉导航（阶段 18）：<768px 侧栏隐藏，改汉堡 + 抽屉 */
 const drawerOpen = ref(false)
 
 function runGlobalSearch(): void {
@@ -79,6 +84,10 @@ function handleGlobalKeydown(event: KeyboardEvent): void {
 onMounted(() => window.addEventListener('keydown', handleGlobalKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', handleGlobalKeydown))
 
+function toggleNav(): void {
+  navCollapsed.value = !navCollapsed.value
+}
+
 async function handleLogout(): Promise<void> {
   await authStore.logout()
   await router.push({ name: 'login' })
@@ -87,57 +96,98 @@ async function handleLogout(): Promise<void> {
 
 <template>
   <el-container class="app-shell">
-    <el-header class="app-shell__header">
-      <el-button
-        v-if="!isLoginPage"
-        class="app-shell__burger"
-        link
-        aria-label="打开导航菜单"
-        @click="drawerOpen = true"
-      >
-        <el-icon :size="20"><Fold /></el-icon>
-      </el-button>
-
-      <div class="app-shell__brand">
+    <!-- 侧栏：宽屏主导航；登录页不渲染 -->
+    <el-aside v-if="!isLoginPage" class="app-shell__aside" :width="navCollapsed ? '64px' : '208px'">
+      <router-link to="/" class="app-shell__brand" title="返回总览">
         <span class="app-shell__logo">AI</span>
-        <span class="app-shell__title">Personal AI OS</span>
-      </div>
+        <span v-show="!navCollapsed" class="app-shell__title">Personal AI OS</span>
+      </router-link>
 
       <el-menu
-        v-if="!isLoginPage"
         class="app-shell__nav"
-        mode="horizontal"
+        :collapse="navCollapsed"
+        :default-active="route.path"
         :router="true"
-        :ellipsis="false"
       >
-        <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index">
-          <el-icon class="app-shell__nav-icon"><component :is="item.icon" /></el-icon>
-          <span>{{ item.label }}</span>
+        <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index" :title="item.label">
+          <el-icon><component :is="item.icon" /></el-icon>
+          <template #title>{{ item.label }}</template>
         </el-menu-item>
       </el-menu>
-      <div v-else class="app-shell__nav app-shell__nav--empty"></div>
 
-      <el-input
-        v-if="!isLoginPage"
-        ref="searchInput"
-        v-model="searchKeyword"
-        class="app-shell__search"
-        size="small"
-        clearable
-        placeholder="全局搜索（Ctrl K）"
-        :prefix-icon="Search"
-        @keydown.enter="runGlobalSearch"
-        @clear="searchKeyword = ''"
-      />
-
-      <div class="app-shell__right">
-        <ThemeToggle v-if="!isLoginPage" />
-        <template v-if="authEnabled && username">
-          <span class="app-shell__user">{{ username }}</span>
-          <el-button link size="small" @click="handleLogout">登出</el-button>
-        </template>
+      <div class="app-shell__aside-footer">
+        <el-button link class="app-shell__collapse" :title="navCollapsed ? '展开侧栏' : '收起侧栏'" @click="toggleNav">
+          <el-icon :size="16"><Expand v-if="navCollapsed" /><Fold v-else /></el-icon>
+          <span v-show="!navCollapsed">收起</span>
+        </el-button>
       </div>
-    </el-header>
+    </el-aside>
+
+    <el-container class="app-shell__body">
+      <el-header class="app-shell__header">
+        <!-- 登录页：顶栏只放品牌与主题，其余空间留白 -->
+        <template v-if="isLoginPage">
+          <div class="app-shell__brand app-shell__brand--header">
+            <span class="app-shell__logo">AI</span>
+            <span class="app-shell__title">Personal AI OS</span>
+          </div>
+          <div class="app-shell__header-spacer" />
+          <ThemeToggle />
+        </template>
+
+        <template v-else>
+          <!-- 两个按钮按视口二选一：窄屏开抽屉，宽屏折叠侧栏 -->
+          <el-button
+            class="app-shell__burger"
+            link
+            aria-label="打开导航菜单"
+            @click="drawerOpen = true"
+          >
+            <el-icon :size="20"><Fold /></el-icon>
+          </el-button>
+          <el-button
+            class="app-shell__collapse-top"
+            link
+            :aria-label="navCollapsed ? '展开侧栏' : '收起侧栏'"
+            @click="toggleNav"
+          >
+            <el-icon :size="18"><Expand v-if="navCollapsed" /><Fold v-else /></el-icon>
+          </el-button>
+
+          <div class="app-shell__header-spacer" />
+
+          <el-input
+            ref="searchInput"
+            v-model="searchKeyword"
+            class="app-shell__search"
+            size="small"
+            clearable
+            placeholder="全局搜索（Ctrl K）"
+            :prefix-icon="Search"
+            @keydown.enter="runGlobalSearch"
+            @clear="searchKeyword = ''"
+          />
+
+          <div class="app-shell__right">
+            <ThemeToggle />
+            <template v-if="authEnabled && username">
+              <span class="app-shell__user">{{ username }}</span>
+              <el-button link size="small" @click="handleLogout">登出</el-button>
+            </template>
+          </div>
+        </template>
+      </el-header>
+
+      <el-main class="app-shell__main">
+        <router-view v-slot="{ Component }">
+          <transition name="page" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </el-main>
+
+      <el-footer class="app-shell__footer"> Personal AI OS · Apache-2.0 · 本地单用户 </el-footer>
+    </el-container>
 
     <!-- 窄屏导航抽屉（<768px 才看得到） -->
     <el-drawer v-model="drawerOpen" title="导航" direction="ltr" size="220px">
@@ -148,16 +198,6 @@ async function handleLogout(): Promise<void> {
         </el-menu-item>
       </el-menu>
     </el-drawer>
-
-    <el-main class="app-shell__main">
-      <router-view v-slot="{ Component }">
-        <transition name="page" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
-    </el-main>
-
-    <el-footer class="app-shell__footer"> Personal AI OS · Apache-2.0 · 本地单用户 </el-footer>
   </el-container>
 </template>
 
@@ -166,16 +206,16 @@ async function handleLogout(): Promise<void> {
   min-height: 100vh;
 }
 
-.app-shell__header {
+/* ---- 侧栏 ---- */
+
+.app-shell__aside {
   display: flex;
-  align-items: center;
-  gap: var(--os-space-5);
-  border-bottom: 1px solid var(--el-border-color-light);
+  flex-direction: column;
+  border-right: 1px solid var(--el-border-color-light);
   background: var(--el-bg-color);
-  /* 顶栏吸顶：长页面（知识库 / 日程）滚动时导航不消失 */
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  /* 折叠/展开的宽度过渡 */
+  transition: width var(--os-duration-normal) var(--os-ease);
+  overflow: hidden;
 }
 
 .app-shell__brand {
@@ -183,6 +223,15 @@ async function handleLogout(): Promise<void> {
   align-items: center;
   gap: var(--os-space-2);
   flex: none;
+  height: 56px;
+  padding: 0 var(--os-space-4);
+  text-decoration: none;
+  color: inherit;
+}
+
+.app-shell__brand--header {
+  height: auto;
+  padding: 0;
 }
 
 .app-shell__logo {
@@ -196,6 +245,7 @@ async function handleLogout(): Promise<void> {
   color: var(--el-color-white);
   font-size: var(--os-font-xs);
   font-weight: 700;
+  flex: none;
 }
 
 .app-shell__title {
@@ -204,13 +254,60 @@ async function handleLogout(): Promise<void> {
   white-space: nowrap;
 }
 
+/* 垂直菜单：铺满侧栏中部，可滚动；EP 默认底色去掉，用侧栏自己的 */
 .app-shell__nav {
   flex: 1;
-  border-bottom: none;
+  overflow-y: auto;
+  border-right: none;
+  background: transparent;
 }
 
-.app-shell__nav-icon {
-  margin-right: 6px;
+.app-shell__nav :deep(.el-menu-item) {
+  height: 44px;
+  margin: 2px var(--os-space-2);
+  border-radius: var(--os-radius-md);
+}
+
+.app-shell__nav :deep(.el-menu-item.is-active) {
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+  font-weight: 500;
+}
+
+.app-shell__aside-footer {
+  flex: none;
+  padding: var(--os-space-2);
+  border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.app-shell__collapse {
+  width: 100%;
+  justify-content: center;
+  gap: var(--os-space-2);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+
+/* ---- 顶栏 ---- */
+
+.app-shell__body {
+  min-width: 0;
+}
+
+.app-shell__header {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-3);
+  border-bottom: 1px solid var(--el-border-color-light);
+  background: var(--el-bg-color);
+  /* 顶栏吸顶：长页面（知识库 / 日程）滚动时操作区不消失 */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-shell__header-spacer {
+  flex: 1;
 }
 
 .app-shell__right {
@@ -225,21 +322,26 @@ async function handleLogout(): Promise<void> {
   color: var(--el-text-color-regular);
 }
 
-/* 登录页没有菜单，用等宽占位把右侧内容推到末尾，避免品牌区与右侧贴在一起 */
-.app-shell__nav--empty {
-  flex: 1;
-}
-
 .app-shell__search {
   flex: none;
   width: 220px;
 }
 
-/* 汉堡按钮：宽屏隐藏 */
+/* 折叠按钮（宽屏）与汉堡（窄屏）按视口二选一 */
 .app-shell__burger {
   display: none;
   flex: none;
   color: var(--el-text-color-regular);
+}
+
+.app-shell__collapse-top {
+  display: inline-flex;
+  flex: none;
+  color: var(--el-text-color-regular);
+}
+
+.app-shell__nav-icon {
+  margin-right: 6px;
 }
 
 .app-shell__main {
@@ -258,16 +360,11 @@ async function handleLogout(): Promise<void> {
 }
 
 /*
- * 窄屏（<768px，FR-014）：横向菜单 7 项放不下 → 隐藏，改汉堡 + 抽屉。
- * 品牌标题同时隐藏（只留 Logo），搜索框收缩。
+ * 窄屏（<768px，FR-014）：侧栏收起为抽屉，顶栏左侧改汉堡；
+ * 品牌标题隐藏（抽屉里有全称），搜索框收缩。
  */
 @media (max-width: 768px) {
-  .app-shell__header {
-    gap: var(--os-space-2);
-    padding: 0 var(--os-space-3);
-  }
-
-  .app-shell__nav {
+  .app-shell__aside {
     display: none;
   }
 
@@ -275,15 +372,19 @@ async function handleLogout(): Promise<void> {
     display: inline-flex;
   }
 
-  .app-shell__title {
+  .app-shell__collapse-top {
     display: none;
+  }
+
+  .app-shell__header {
+    gap: var(--os-space-2);
+    padding: 0 var(--os-space-3);
   }
 
   .app-shell__search {
     width: auto;
     flex: 1;
     min-width: 0;
-    margin-left: auto;
   }
 
   .app-shell__main {

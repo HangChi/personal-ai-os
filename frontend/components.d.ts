@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppPagination: typeof import('./src/components/AppPagination.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
+    ElAside: typeof import('element-plus/es')['ElAside']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']

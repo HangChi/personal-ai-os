@@ -41,6 +41,9 @@ export const useUiStore = defineStore('ui', () => {
         : 'documents',
   )
 
+  /** 侧栏导航折叠（阶段 18 追加）：true = 纯图标模式，localStorage 持久化 */
+  const navCollapsed = ref(localStorage.getItem('os.nav.collapsed') === '1')
+
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
   // system 偏好下跟随操作系统；显式偏好不受系统变化影响。
@@ -83,12 +86,14 @@ export const useUiStore = defineStore('ui', () => {
    */
   watch(tasksView, (next) => localStorage.setItem('os.tasks.view', next))
   watch(knowledgeTab, (next) => localStorage.setItem('os.knowledge.tab', next))
+  watch(navCollapsed, (next) => localStorage.setItem('os.nav.collapsed', next ? '1' : '0'))
 
   return {
     theme,
     resolvedTheme,
     tasksView,
     knowledgeTab,
+    navCollapsed,
     toggleTheme,
   }
 })

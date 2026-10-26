@@ -69,6 +69,13 @@
 - [x] **T041** `npm run type_check` / `test:logic` / `build` 终跑 + `du -sk dist/assets/*` 体积记录（对 SC-001 130% 预算）
 - [x] **T042** README 状态行更新（前端小节）；`.workbuddy/memory` 当日 log + MEMORY.md 回填（含 R-07 optimizeDeps 新依赖教训）
 
+## 后续追加（顶栏过挤的后续优化）
+
+- [x] **T043** `stores/ui.ts` 加 `navCollapsed`（localStorage `os.nav.collapsed` 持久化，watch 落盘）
+- [x] **T044** `App.vue` 布局重构：横向菜单 → 左侧 `el-aside` 导航栏（208px 展开 / 64px 折叠纯图标），顶栏只留折叠钮 / 搜索 / 主题 / 用户；登录页顶栏保留品牌区
+- [x] **T045** 折叠交互：侧栏底部「收起」+ 顶栏折叠钮双入口；`el-menu--collapse` 自动出 tooltip；品牌可点击回总览
+- [x] **T046** 验收：展开 208px/折叠 64px 且持久化、折叠态点击仍可导航、窄屏 375px 零溢出（侧栏隐藏走汉堡抽屉）、暗色正常、控制台零报错
+
 ## Notes（贯穿全清单的硬约束）
 
 1. **零后端改动**：任何「要不要加个接口」的念头都回到 spec Out of Scope；批量操作一律 `Promise.allSettled` 逐条现有接口。
@@ -80,6 +87,12 @@
 7. **失败就地提示**：弹窗内的保存失败用 ElMessage.error，不让用户对着无响应的按钮（沿袭 TasksView/CalendarView 既有注释的教训）。
 
 ## 完成记录（实现时回填）
+
+### 后续追加：顶栏横向导航改左侧导航栏（T043-T046，2026-10-26）
+
+- 动因：用户反馈「Header 的菜单太多了」——7 个模块的横向菜单到顶，窄屏只能整个藏进抽屉。三方案（侧栏 / 分组下拉 / 精简+更多）对比后用户选侧栏。
+- 实现：`el-aside` 侧栏（208px ↔ 64px 折叠，过渡动画），折叠态 `os.nav.collapsed` 持久化；顶栏只剩折叠钮 / 搜索 / 主题 / 用户；品牌可点击回总览；<768px 侧栏隐藏、走既有汉堡 + 抽屉。
+- 验收：展开 208px / 折叠 64px（class 与 localStorage 双落地）、折叠态点击「日程」正常跳转、窄屏零溢出、暗色截图正常、控制台零报错；门禁 314/314 + type-check + build 全绿。
 
 ### Phase H（收尾终检）
 
