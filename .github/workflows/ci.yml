@@ -1,0 +1,103 @@
+# ============================================================
+# CI：每次 push / PR 都跑一遍「后端测试 + 前端全套检查」
+#
+# 存在的意义：本仓库有 321 条后端测试与 348 条前端断言，
+# 但在此之前它们只在开发者「想起来」的时候运行 ——
+# 等于没有。这里把「跑过」变成合并的前提。
+#
+# 刻意不做的事：
+#   - 不构建镜像：部署不在本项目范围内（见 README「明确不做」）。
+#   - 不做覆盖率门禁：先让数字可见（jacoco 报告作为产物上传），
+#     知道真实水位后再决定阈值。
+# ============================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 同一分支的新提交取消上一轮，避免排队等待过期的结果
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: 后端测试
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # Testcontainers 需要 Docker；ubuntu-latest 自带，这里只确认可用
+      - name: 确认 Docker 可用（Testcontainers 前置）
+        run: docker info > /dev/null
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          # 与 pom 的 <java.version>21</java.version> 对齐
+          java-version: '21'
+          cache: maven
+
+      - name: 运行测试
+        working-directory: backend
+        run: ./mvnw -B --no-transfer-progress test
+
+      - name: 上传覆盖率报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: backend/target/site/jacoco
+          if-no-files-found: warn
+
+      - name: 上传测试报告（失败时用于定位）
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: backend/target/surefire-reports
+          if-no-files-found: ignore
+
+  frontend:
+    name: 前端检查
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # 与 package.json 的 engines 对齐
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 安装依赖
+        working-directory: frontend
+        run: npm ci
+
+      # 顺序刻意如此：先快后慢，且 lint 失败时不必等类型检查
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: 格式检查
+        working-directory: frontend
+        run: npm run format:check
+
+      - name: 类型检查
+        working-directory: frontend
+        run: npm run type-check
+
+      - name: 逻辑测试
+        working-directory: frontend
+        run: npm run test:logic
+
+      - name: 构建
+        working-directory: frontend
+        run: npm run build
