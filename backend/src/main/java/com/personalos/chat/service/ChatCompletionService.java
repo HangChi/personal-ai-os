@@ -14,7 +14,9 @@ import com.personalos.common.ai.PromptContributor;
 import com.personalos.common.ai.PostTurnContributor;
 import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.web.RequestIdFilter;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
+import com.personalos.chat.metrics.ChatStreamMetrics;
 import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.knowledge.spi.KnowledgeSearchPort;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.data.domain.PageRequest;
@@ -107,6 +110,8 @@ public class ChatCompletionService {
     private final ChatSummaryService summaryService;
     /** 轮末钩子（记忆自动沉淀等）：通过 SPI 收集，chat 不认识具体业务模块 */
     private final ObjectProvider<PostTurnContributor> postTurnContributors;
+    /** 活跃流数指标：SSE 请求不会快速结束，HTTP 指标看不出「卡住」，只能靠它 */
+    private final ChatStreamMetrics metrics;
 
     public ChatCompletionService(AiChatClientProvider aiProvider,
                                  ChatSessionService sessionService,
@@ -117,7 +122,8 @@ public class ChatCompletionService {
                                  ChatSummaryService summaryService,
                                  ObjectProvider<PostTurnContributor> postTurnContributors,
                                  ChatMessageRepository messageRepository,
-                                 ChatAttachmentService attachmentService) {
+                                 ChatAttachmentService attachmentService,
+                                 ChatStreamMetrics metrics) {
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
         this.aiProperties = aiProperties;
@@ -128,6 +134,7 @@ public class ChatCompletionService {
         this.postTurnContributors = postTurnContributors;
         this.messageRepository = messageRepository;
         this.attachmentService = attachmentService;
+        this.metrics = metrics;
     }
 
     /**
@@ -166,6 +173,9 @@ public class ChatCompletionService {
     public SseEmitter stream(String conversationId, String userContent, String turnId,
                              boolean useKnowledge, int topK, ThinkingLevel thinkingLevel,
                              List<ChatAttachmentDto> requestAttachments) {
+        // 先把 requestId 抓成局部变量：回调可能跑在第四个、第五个池化线程上，
+        // 那时请求线程早被回收、MDC 也清空了。见 runWithRequestId 的说明。
+        String requestId = MDC.get(RequestIdFilter.MDC_KEY);
         sessionService.requireSession(conversationId);
         ChatClient chatClient = aiProvider.requireChatClient();
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
@@ -184,6 +194,17 @@ public class ChatCompletionService {
         AtomicReference<Disposable> subscriptionRef = new AtomicReference<>();
 
         send(emitter, EVENT_START, new ChatStreamEvents.Start(conversationId));
+        // 计入活跃流：从这一刻起，模型可能一直不出字，HTTP 指标却是安静的白板，
+        // 只有这个数字能说明「有一条流在跑」
+        metrics.streamOpened();
+        // 终止路径有四条（done / error / 超时 / 客户端断开），彼此可能重叠触发，
+        // 用独立的原子标记保证活跃数只减一次 —— 负数比不准确更糟，它会让人以为指标坏了
+        AtomicBoolean streamClosed = new AtomicBoolean(false);
+        Runnable closeStream = () -> {
+            if (streamClosed.compareAndSet(false, true)) {
+                metrics.streamClosed();
+            }
+        };
         // 心跳紧跟 start：模型的静默期正是从这一刻开始的，
         // 晚一步启动就等于把「首 token 之前」这段最长的空窗暴露给代理的空闲判定。
         ScheduledFuture<?> heartbeat = startHeartbeat(emitter);
@@ -226,24 +247,26 @@ public class ChatCompletionService {
                     fullContent.append(chunk);
                     send(emitter, EVENT_DELTA, new ChatStreamEvents.Delta(chunk));
                 },
-                error -> {
+                error -> runWithRequestId(requestId, () -> {
                     if (!terminated.compareAndSet(false, true)) {
                         return;
                     }
                     stopHeartbeat(heartbeat);
+                    closeStream.run();
                     log.warn("流式对话失败 conversationId={}", conversationId, error);
                     ErrorCode errorCode = classify(error);
                     send(emitter, EVENT_ERROR,
                             new ChatStreamEvents.Error(errorCode.getCode(), errorCode.getDefaultMessage()));
                     emitter.complete();
-                },
-                () -> {
+                }),
+                () -> runWithRequestId(requestId, () -> {
                     if (!terminated.compareAndSet(false, true)) {
                         return;
                     }
                     // 心跳先停：后续的落库与钩子都在同一个线程里串行执行，
                     // 期间继续发注释帧只会让「已经结束了」的连接多撑几秒。
                     stopHeartbeat(heartbeat);
+                    closeStream.run();
                     // 引用挂载必须**先于** done 事件（2026-10-26 调整）。
                     // 原先顺序是「先发 done，再挂引用」，而两者在同一条回调里顺序执行：
                     // 客户端一收到 done 就可能认为本轮全部结束并去查库，此时引用还没提交 ——
@@ -293,24 +316,27 @@ public class ChatCompletionService {
                                     contributor.getClass().getSimpleName(), conversationId, ex);
                         }
                     });
-                });
+                }));
         subscriptionRef.set(subscription);
 
         emitter.onTimeout(() -> {
             terminated.set(true);
             stopHeartbeat(heartbeat);
+            closeStream.run();
             disposeQuietly(subscriptionRef.get());
             emitter.complete();
         });
         emitter.onError(throwable -> {
             terminated.set(true);
             stopHeartbeat(heartbeat);
+            closeStream.run();
             disposeQuietly(subscriptionRef.get());
         });
         emitter.onCompletion(() -> {
             // 只有「客户端提前断连」才会走到这里且 terminated 仍为 false；
             // 此时取消上游订阅，避免继续消耗模型额度
             stopHeartbeat(heartbeat);
+            closeStream.run();
             if (!terminated.get()) {
                 disposeQuietly(subscriptionRef.get());
             }
@@ -400,6 +426,32 @@ public class ChatCompletionService {
     private void disposeQuietly(Disposable subscription) {
         if (subscription != null && !subscription.isDisposed()) {
             subscription.dispose();
+        }
+    }
+
+    /**
+     * 在日志上下文里执行一段回调，把异步日志与发起它的请求关联起来。
+     *
+     * <h2>为什么光有调度钩子不够</h2>
+     * {@code MdcSchedulerHook} 只能覆盖「订阅时切一次线程」这一跳。而流式的真实路径是
+     * HTTP 客户端在自己的线程池里发信号，错误回调可能落在**第三个**池化线程上 ——
+     * 那一跳的提交者本身已经没有 MDC，钩子无从捕获。
+     * 实测：{@code defer} 内的日志带着 requestId（boundedElastic-1），
+     * 而在 boundedElastic-3 上的失败日志就丢了。
+     *
+     * <p>所以在回调入口显式恢复。用 try/finally 清理：回调跑在池化线程上，
+     * 残留会串到下一个请求。
+     */
+    private void runWithRequestId(String requestId, Runnable action) {
+        if (requestId == null || requestId.isBlank()) {
+            action.run();
+            return;
+        }
+        MDC.put(RequestIdFilter.MDC_KEY, requestId);
+        try {
+            action.run();
+        } finally {
+            MDC.remove(RequestIdFilter.MDC_KEY);
         }
     }
 

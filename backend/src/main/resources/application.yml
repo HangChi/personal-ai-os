@@ -145,6 +145,18 @@ app:
     enabled: ${AUTH_ENABLED:false}
     username: ${AUTH_USERNAME:admin}
     password: ${AUTH_PASSWORD:}
+  rate-limit:
+    # 模型调用限流（P1）。只作用于 /chat/**/stream、/chat/uploads、
+    # /knowledge/documents 三个会真实产生模型成本的 POST 端点。
+    #
+    # 默认 60 次/分钟：正常对话（一问一答含思考）远达不到这个节奏，
+    # 而写错的重试循环会在一秒内撞满。桶是平滑补充的，不存在固定窗口
+    # 「末尾打满 + 开头打满」的两倍速率问题。
+    #
+    # 批量导入知识库/压测时用 APP_RATE_LIMIT_ENABLED=false 临时关掉。
+    enabled: ${APP_RATE_LIMIT_ENABLED:true}
+    capacity: ${APP_RATE_LIMIT_CAPACITY:60}
+    period: ${APP_RATE_LIMIT_PERIOD:1m}
   ai:
     # 送给模型的上下文条数上限。
     # 只影响「送给模型的内容」，不影响库中历史（见 data-model.md 的读写语义约定）。
@@ -225,8 +237,10 @@ management:
   endpoints:
     web:
       exposure:
-        # 阶段 0 只暴露健康与构建信息，不开放其它端点
-        include: health,info
+        # health/info 给探针，metrics 给排障（P1 起加入）。
+        # 刻意不暴露 env/beans/configprops：它们会把配置与环境变量**原样**吐出来，
+        # 对公网开放前这里是最容易泄密的一道口子。
+        include: health,info,metrics
   endpoint:
     health:
       # 本地单用户场景下展示细节便于排错；
@@ -241,3 +255,29 @@ info:
   app:
     name: ${spring.application.name}
     version: ${app.version}
+
+# ============================================================
+# 日志（P1 可观测性）
+# ============================================================
+logging:
+  pattern:
+    # 在 Boot 默认格式上插入 requestId 与线程名。
+    #
+    # 12 个连字符是「没有 requestId」的占位：SSE 结束后的异步回调、启动期日志
+    # 都会长这样。保留占位而不是省略整段，是为了让所有行的列宽对齐 ——
+    # 日志一旦左右跳，人眼就扫不出模式了。
+    #
+    # 线程名保留：流式对话的日志一半在 tomcat 线程、一半在 boundedElastic，
+    # 分不清线程就容易把「模型慢」误判成「接口慢」。
+    console: "%d{HH:mm:ss.SSS} %5p [%X{requestId:------------}] [%15.15t] %-40.40logger{39} : %msg%n"
+
+  # 结构化日志：接入 ELK / Loki 时用环境变量切过去，无需改这份文件：
+  #
+  #     LOGGING_STRUCTURED_FORMAT_CONSOLE=ecs   ./mvnw spring-boot:run
+  #
+  # 刻意**不设为默认**：本项目是本地单用户应用，日常就靠人眼看控制台，
+  # 一屏 JSON 的可读性远不如上面的文本格式。需要集中采集时再开。
+  #
+  # 注意两者互斥：一旦启用结构化格式，上面的 pattern.console 不再生效
+  # （结构化的字段里已包含 requestId，因为 ECS 会读取整个 MDC）。
+
