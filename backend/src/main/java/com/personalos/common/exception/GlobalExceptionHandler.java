@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -36,12 +37,17 @@ public class GlobalExceptionHandler {
 
     /**
      * 业务异常（含资源不存在）。
+     *
+     * <p>显式设 {@code Content-Type: application/json}：SSE 端点（{@code Accept: text/event-stream}）
+     * 的前置校验失败走这里时，若不做内容协商的例外，Jackson 转换器会因 Accept 不匹配而被拒绝，
+     * 响应变成 406 —— 客户端拿不到错误码，只看到「无法接受的响应」。
      */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException ex) {
         ErrorCode errorCode = ex.getErrorCode();
         log.warn("业务异常: code={}, message={}", errorCode.getCode(), ex.getMessage());
         return ResponseEntity.status(errorCode.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(errorCode, ex.getMessage()));
     }
 
@@ -57,6 +63,7 @@ public class GlobalExceptionHandler {
                 + (detail.isBlank() ? "" : ": " + detail);
         log.warn("参数校验失败: {}", message);
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED, message));
     }
 
@@ -72,6 +79,7 @@ public class GlobalExceptionHandler {
                 + (detail.isBlank() ? "" : ": " + detail);
         log.warn("约束校验失败: {}", message);
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED, message));
     }
 
@@ -87,6 +95,7 @@ public class GlobalExceptionHandler {
                 + ": 参数 " + ex.getName() + " 取值非法";
         log.warn("参数类型不匹配: name={}, value={}", ex.getName(), ex.getValue());
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED, message));
     }
 
@@ -97,6 +106,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(NoResourceFoundException ex) {
         log.warn("资源未找到: {}", ex.getResourcePath());
         return ResponseEntity.status(ErrorCode.RESOURCE_NOT_FOUND.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.RESOURCE_NOT_FOUND));
     }
 
@@ -107,6 +117,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleNoHandlerFound(NoHandlerFoundException ex) {
         log.warn("未找到处理器: {} {}", ex.getHttpMethod(), ex.getRequestURL());
         return ResponseEntity.status(ErrorCode.RESOURCE_NOT_FOUND.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.RESOURCE_NOT_FOUND));
     }
 
@@ -120,6 +131,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
         log.warn("上传文件超过容器限制: {}", ex.getMessage());
         return ResponseEntity.status(ErrorCode.UNSUPPORTED_DOCUMENT.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.UNSUPPORTED_DOCUMENT, "文件过大，请压缩或拆分后重新上传"));
     }
 
@@ -134,6 +146,7 @@ public class GlobalExceptionHandler {
         // 只记异常类型的摘要，不回显请求体：请求体可能含用户隐私
         log.warn("请求体无法解析: {}", ex.getMessage());
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED, "请求体格式错误，请检查 JSON 结构与字段类型"));
     }
 
@@ -151,6 +164,7 @@ public class GlobalExceptionHandler {
         String message = ErrorCode.VALIDATION_FAILED.getDefaultMessage() + ": 缺少参数 " + name;
         log.warn("缺少必需的请求参数: {}", name);
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED, message));
     }
 
@@ -161,6 +175,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
         log.warn("请求方法不被支持: method={}, supported={}", ex.getMethod(), ex.getSupportedHttpMethods());
         return ResponseEntity.status(ErrorCode.METHOD_NOT_ALLOWED.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.METHOD_NOT_ALLOWED,
                         "请求方法 " + ex.getMethod() + " 不被支持"));
     }
@@ -176,6 +191,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         log.warn("数据库约束冲突: {}", ex.getMostSpecificCause().getMessage());
         return ResponseEntity.status(ErrorCode.BUSINESS_CONFLICT.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.BUSINESS_CONFLICT,
                         "数据不符合服务端约束（可能超出长度限制或与已有记录冲突），请检查后重试"));
     }
@@ -189,6 +205,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleUnexpectedException(Exception ex) {
         log.error("未捕获异常，已按内部错误处理", ex);
         return ResponseEntity.status(ErrorCode.INTERNAL_ERROR.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.INTERNAL_ERROR));
     }
 

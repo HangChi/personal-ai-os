@@ -25,8 +25,11 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 
 /**
  * {@link JpaChatMemory} 单元测试。
@@ -46,9 +49,20 @@ class JpaChatMemoryTest {
     private final ChatSessionRepository sessionRepository = mock(ChatSessionRepository.class);
     /** 预算服务：显式设成 12000 字符等价的 token 数，与旧行为一致 */
     private final com.personalos.common.ai.ContextBudgetService budget = budgetWithChars(12000);
+    /**
+     * 事务管理器替身：让 TransactionTemplate 直接执行回调、不真开事务。
+     * 这里测的是「顺序号续接 / 角色映射」等纯逻辑，事务语义由集成测试覆盖。
+     */
+    private final PlatformTransactionManager transactionManager = noOpTransactionManager();
 
     private final JpaChatMemory memory = new JpaChatMemory(messageRepository, sessionRepository,
-            new AiProperties(new AiProperties.Memory(6, 0), "系统提示"), budget);
+            new AiProperties(new AiProperties.Memory(6, 0), "系统提示"), budget, transactionManager);
+
+    private static PlatformTransactionManager noOpTransactionManager() {
+        PlatformTransactionManager manager = mock(PlatformTransactionManager.class);
+        given(manager.getTransaction(any())).willReturn(mock(TransactionStatus.class));
+        return manager;
+    }
 
     @Test
     @DisplayName("add(): 顺序号从当前最大值续接，且不触发任何删除")
@@ -134,7 +148,7 @@ class JpaChatMemoryTest {
     void getShouldTrimByCharacterBudget() {
         JpaChatMemory budgeted = new JpaChatMemory(messageRepository, sessionRepository,
                 new AiProperties(new AiProperties.Memory(10, 0), "系统提示"),
-                budgetWithChars(250));
+                budgetWithChars(250), transactionManager);
         given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class)))
                 .willReturn(threeMessages(100));
 
@@ -151,7 +165,7 @@ class JpaChatMemoryTest {
     void getShouldAlwaysKeepNewestMessage() {
         JpaChatMemory tight = new JpaChatMemory(messageRepository, sessionRepository,
                 new AiProperties(new AiProperties.Memory(10, 0), "系统提示"),
-                budgetWithChars(250));
+                budgetWithChars(250), transactionManager);
         given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class)))
                 .willReturn(threeMessages(200));
 
@@ -206,5 +220,41 @@ class JpaChatMemoryTest {
         memory.clear(CID);
 
         verify(messageRepository).deleteByConversationId(CID);
+    }
+
+    @Test
+    @DisplayName("add(): TOOL 消息不再抛异常，内容序列化为可读文本（审查 #13）")
+    void addShouldAcceptToolMessage() {
+        given(messageRepository.findMaxSequenceNo(CID)).willReturn(0);
+        given(sessionRepository.findById(CID)).willReturn(Optional.empty());
+
+        ToolResponseMessage toolMessage = ToolResponseMessage.builder()
+                .responses(List.of(new ToolResponseMessage.ToolResponse("1", "createTask", "任务已创建")))
+                .build();
+
+        memory.add(CID, List.of(new UserMessage("创建一个任务"), toolMessage));
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<ChatMessageEntity>> captor = ArgumentCaptor.forClass(List.class);
+        verify(messageRepository).saveAll(captor.capture());
+
+        List<ChatMessageEntity> saved = captor.getValue();
+        assertThat(saved).hasSize(2);
+        assertThat(saved.get(1).getMessageType()).isEqualTo(MessageRole.TOOL);
+        // ToolResponseMessage.getText() 恒为 null，必须序列化 responses 而不是存空串
+        assertThat(saved.get(1).getContent()).contains("createTask").contains("任务已创建");
+    }
+
+    @Test
+    @DisplayName("get(): TOOL 消息读回时降级为 AssistantMessage（无法重建 id/name 结构）")
+    void getShouldMapToolToAssistant() {
+        given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class))).willReturn(List.of(
+                new ChatMessageEntity(CID, MessageRole.TOOL, "createTask: 任务已创建", 1, Instant.now())));
+
+        List<Message> messages = memory.get(CID);
+
+        assertThat(messages).hasSize(1);
+        assertThat(messages.get(0)).isInstanceOf(AssistantMessage.class);
+        assertThat(messages.get(0).getText()).isEqualTo("createTask: 任务已创建");
     }
 }

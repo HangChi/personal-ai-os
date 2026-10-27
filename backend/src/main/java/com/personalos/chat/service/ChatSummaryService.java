@@ -302,6 +302,7 @@ public class ChatSummaryService {
             case USER -> "用户";
             case ASSISTANT -> "助手";
             case SYSTEM -> "系统";
+            case TOOL -> "工具";
         };
     }
 

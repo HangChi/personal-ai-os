@@ -13,6 +13,7 @@ import com.personalos.common.ai.AiChatClientProvider;
 import com.personalos.common.ai.ContextBudgetService;
 import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.api.ErrorCode;
+import com.personalos.common.exception.BusinessException;
 import com.personalos.common.web.RequestIdFilter;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import com.personalos.knowledge.spi.KnowledgeSearchPort;
@@ -21,6 +22,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -91,6 +93,13 @@ public class ChatCompletionService {
     private final ChatAttachmentContextBuilder attachmentContextBuilder;
     /** 用量记账（清单第 7 项）：异步写，失败不影响回答 */
     private final TokenUsageRecorder usageRecorder;
+    /**
+     * 会话级互斥（审查 #13）：正在流式的会话 → true。
+     *
+     * <p>用 {@link ConcurrentHashMap#putIfAbsent} 做原子抢占。进程内有效——
+     * 单用户自托管单实例，不需要分布式锁；进程重启后内存锁自然清空。
+     */
+    private final ConcurrentHashMap<String, Boolean> activeStreams = new ConcurrentHashMap<>();
 
     public ChatCompletionService(AiChatClientProvider aiProvider,
                                  ChatSessionService sessionService,
@@ -170,6 +179,14 @@ public class ChatCompletionService {
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
         sessionService.initializeTitleFromFirstMessage(conversationId, userContent);
 
+        // 会话级互斥（审查 #13）：同会话同时只允许一条流。
+        // 前端虽有一次一条流的限制，但多标签页 / 直连 API 都能绕过——后端必须有自己的防线。
+        // 不拦的后果是两条流并发写消息，撞 sequence_no 唯一约束（见 JpaChatMemory 的锁）。
+        // putIfAbsent 原子抢占；释放统一在 closeStream（所有终止路径都会走到，且只执行一次）。
+        if (activeStreams.putIfAbsent(conversationId, Boolean.TRUE) != null) {
+            throw new BusinessException(ErrorCode.BUSINESS_CONFLICT, "该会话正在生成回复，请稍候");
+        }
+
         long streamTimeout = timeoutFor(thinkingLevel);
         // emitter 自带的超时只作兜底：它比我们自己的看门狗晚 5 秒。
         // 真正给客户端发 error 帧的是下面那个 scheduledTimeout ——
@@ -201,6 +218,9 @@ public class ChatCompletionService {
         AtomicBoolean streamClosed = new AtomicBoolean(false);
         Runnable closeStream = () -> {
             if (streamClosed.compareAndSet(false, true)) {
+                // 释放会话互斥锁：这里被所有终止路径（done/error/超时/断连）调用，
+                // streamClosed 保证只执行一次，因此锁恰好释放一次
+                activeStreams.remove(conversationId);
                 metrics.streamClosed();
             }
         };

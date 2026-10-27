@@ -10,15 +10,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * 基于 JPA 的 {@link ChatMemory} 实现。
@@ -38,19 +43,35 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class JpaChatMemory implements ChatMemory {
 
+    private static final Logger log = LoggerFactory.getLogger(JpaChatMemory.class);
+
     private final ChatMessageRepository messageRepository;
     private final ChatSessionRepository sessionRepository;
     private final AiProperties aiProperties;
     private final com.personalos.common.ai.ContextBudgetService contextBudget;
+    /**
+     * 写路径的显式事务模板。
+     *
+     * <p><b>为什么 add 不用 {@code @Transactional}</b>（2026-10-27 集成测试实锤）：
+     * {@code MessageChatMemoryAdvisor.before()} 调的是 {@code ChatMemory} 接口的
+     * default 方法 {@code add(String, Message)}，其内部 {@code this.add(String, List)}
+     * 是 self-invocation —— 绕过了 Spring 代理，方法上的 {@code @Transactional}
+     * **静默失效**。此前没暴露，是因为 {@code saveAll} 自带事务、普通查询无事务也能跑；
+     * 但悲观锁查询（{@code FOR UPDATE}）必须在活动事务里执行，一上锁立刻抛
+     * {@code No active transaction}。显式 TransactionTemplate 不经过代理，没有这个隐患。
+     */
+    private final TransactionTemplate writeTransaction;
 
     public JpaChatMemory(ChatMessageRepository messageRepository,
                          ChatSessionRepository sessionRepository,
                          AiProperties aiProperties,
-                         com.personalos.common.ai.ContextBudgetService contextBudget) {
+                         com.personalos.common.ai.ContextBudgetService contextBudget,
+                         PlatformTransactionManager transactionManager) {
         this.messageRepository = messageRepository;
         this.sessionRepository = sessionRepository;
         this.aiProperties = aiProperties;
         this.contextBudget = contextBudget;
+        this.writeTransaction = new TransactionTemplate(transactionManager);
     }
 
     /**
@@ -59,31 +80,37 @@ public class JpaChatMemory implements ChatMemory {
      * <p>同时刷新会话的最近活动时间（FR-019）。
      */
     @Override
-    @Transactional
     public void add(String conversationId, List<Message> messages) {
         if (messages == null || messages.isEmpty()) {
             return;
         }
 
-        int nextSequence = messageRepository.findMaxSequenceNo(conversationId);
-        Instant now = Instant.now();
+        // 整个写路径包在显式事务里（见 writeTransaction 的注释：@Transactional 在这里会失效）
+        writeTransaction.executeWithoutResult(status -> {
+            // 先锁会话行（审查 #13）：把「同会话的并发写」串行化。
+            // 否则 findMaxSequenceNo + saveAll 是 check-then-act——两个并发请求都读到
+            // 同一个 max，各自 +1 后撞 UNIQUE(conversation_id, sequence_no)。
+            sessionRepository.findByIdForUpdate(conversationId);
 
-        List<ChatMessageEntity> entities = new ArrayList<>(messages.size());
-        for (Message message : messages) {
-            nextSequence++;
-            entities.add(new ChatMessageEntity(
-                    conversationId,
-                    toRole(message.getMessageType()),
-                    // content 为 NOT NULL；工具调用等场景下 getText() 可能为 null
-                    Objects.requireNonNullElse(message.getText(), ""),
-                    nextSequence,
-                    now));
-        }
-        messageRepository.saveAll(entities);
+            int nextSequence = messageRepository.findMaxSequenceNo(conversationId);
+            Instant now = Instant.now();
 
-        sessionRepository.findById(conversationId).ifPresent(session -> {
-            session.setUpdatedAt(now);
-            sessionRepository.save(session);
+            List<ChatMessageEntity> entities = new ArrayList<>(messages.size());
+            for (Message message : messages) {
+                nextSequence++;
+                entities.add(new ChatMessageEntity(
+                        conversationId,
+                        toRole(message.getMessageType()),
+                        contentOf(message),
+                        nextSequence,
+                        now));
+            }
+            messageRepository.saveAll(entities);
+
+            sessionRepository.findById(conversationId).ifPresent(session -> {
+                session.setUpdatedAt(now);
+                sessionRepository.save(session);
+            });
         });
     }
 
@@ -104,7 +131,6 @@ public class JpaChatMemory implements ChatMemory {
      * 送一个空上下文比送一条超长消息更糟。
      */
     @Override
-    @Transactional(readOnly = true)
     public List<Message> get(String conversationId) {
         return selectWindow(conversationId).stream().map(this::toMessage).toList();
     }
@@ -117,7 +143,6 @@ public class JpaChatMemory implements ChatMemory {
      * 一旦字符预算生效让窗口变短，两者就会出现缝隙 —— 那些消息既不在窗口里、
      * 也没被摘要覆盖，等于凭空消失。
      */
-    @Transactional(readOnly = true)
     public int contextStartSequence(String conversationId) {
         List<ChatMessageEntity> window = selectWindow(conversationId);
         if (window.isEmpty()) {
@@ -158,11 +183,13 @@ public class JpaChatMemory implements ChatMemory {
 
     /**
      * 清空该会话的全部消息（配合删除会话使用）。
+     *
+     * <p>同样走显式事务：删除是写操作，必须真实提交；且与 add 一样不依赖
+     * 会被 self-invocation 绕过的 {@code @Transactional} 代理。
      */
     @Override
-    @Transactional
     public void clear(String conversationId) {
-        messageRepository.deleteByConversationId(conversationId);
+        writeTransaction.executeWithoutResult(status -> messageRepository.deleteByConversationId(conversationId));
     }
 
     private MessageRole toRole(MessageType messageType) {
@@ -170,9 +197,32 @@ public class JpaChatMemory implements ChatMemory {
             case USER -> MessageRole.USER;
             case ASSISTANT -> MessageRole.ASSISTANT;
             case SYSTEM -> MessageRole.SYSTEM;
-            default -> throw new IllegalStateException(
-                    "阶段 1 不支持的消息类型：" + messageType + "（阶段 2 引入工具调用时需同步扩展本映射）");
+            case TOOL -> MessageRole.TOOL;
+            default -> {
+                // 未知类型降级为 ASSISTANT + warn：绝不在写路径抛异常。
+                // 抛异常的后果是「用户消息已落库、这条写不进去」——历史出现断裂，
+                // 而下一轮模型会把那条悬空的提问当事实。降级至少保住上下文连续。
+                log.warn("未知消息类型 {}，降级为 ASSISTANT 写入", messageType);
+                yield MessageRole.ASSISTANT;
+            }
         };
+    }
+
+    /**
+     * 提取消息的落库文本。
+     *
+     * <p>{@code ToolResponseMessage} 的 {@code getText()} 恒为 null（它的正文在
+     * {@code responses} 里，每个是 {@code id + name + responseData}）。只存 getText()
+     * 会把工具结果存成空串——历史里这条等于没写。这里把 responses 拼成可读文本，
+     * 至少让「工具返回了什么」在上下文里可追溯。
+     */
+    private String contentOf(Message message) {
+        if (message instanceof ToolResponseMessage toolResponse) {
+            return toolResponse.getResponses().stream()
+                    .map(response -> response.name() + ": " + response.responseData())
+                    .collect(Collectors.joining("\n"));
+        }
+        return Objects.requireNonNullElse(message.getText(), "");
     }
 
     private Message toMessage(ChatMessageEntity entity) {
@@ -180,6 +230,9 @@ public class JpaChatMemory implements ChatMemory {
             case USER -> new UserMessage(entity.getContent());
             case ASSISTANT -> new AssistantMessage(entity.getContent());
             case SYSTEM -> new SystemMessage(entity.getContent());
+            // 工具结果读回时作为助手文本呈现：无法从 content 重建 ToolResponse 的
+            // id/name 结构（写库时只留了拼接文本），用文本形式保住「工具返回了什么」即可
+            case TOOL -> new AssistantMessage(entity.getContent());
         };
     }
 }

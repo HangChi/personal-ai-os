@@ -17,6 +17,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -214,6 +218,33 @@ class ChatStreamTerminationIntegrationTest {
         verify(heartbeatScheduler, times(2)).stop(any());
     }
 
+    @Test
+    @DisplayName("会话级互斥：同会话第二条并发流被拒绝为 409（审查 #13）")
+    void concurrentStreamToSameSessionIsRejected() throws Exception {
+        // 第一条流持续约 3 秒，保证第二条到达时它仍持有会话锁
+        stub.slowTail(true);
+        String conversationId = createSession();
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            Future<List<SseEvent>> first = executor.submit(() -> streamEvents(conversationId, "第一条流"));
+            // 等第一条流建立连接并抢占会话锁（它在 start 事件之后、生成期间持续持锁）
+            Thread.sleep(400);
+
+            HttpResponse<String> second = streamRaw(conversationId, "第二条流");
+            assertThat(second.statusCode())
+                    .as("同会话并发第二条流应被拒绝，否则两条流并发写消息会撞 sequence_no 唯一约束")
+                    .isEqualTo(409);
+            assertThat(second.body()).contains("40900");
+
+            // 第一条流最终会收尾（本测试超时仅 400ms、慢尾 3 秒，故它必然超时 → error 而非 done），
+            // 关键是它正常结束并释放了锁 —— 断言「能等到结果」而不是具体是哪种结束
+            assertThat(first.get(10, TimeUnit.SECONDS)).isNotNull();
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
     // ---------------------------------------------------------------- 工具方法
 
     private String createSession() throws Exception {
@@ -230,15 +261,7 @@ class ChatStreamTerminationIntegrationTest {
     }
 
     private List<SseEvent> streamEvents(String conversationId, String content) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder(
-                        URI.create(baseUrl() + "/api/v1/chat/sessions/" + conversationId + "/stream"))
-                .timeout(Duration.ofSeconds(30))
-                .header("Content-Type", "application/json")
-                .header("Accept", "text/event-stream")
-                .POST(HttpRequest.BodyPublishers.ofString("{\"content\":\"" + content + "\"}"))
-                .build();
-
-        HttpResponse<Stream<String>> response = httpClient.send(request, HttpResponse.BodyHandlers.ofLines());
+        HttpResponse<Stream<String>> response = streamRawLines(conversationId, content);
         assertThat(response.statusCode()).as("SSE 状态码应为 200").isEqualTo(200);
 
         List<SseEvent> events = new ArrayList<>();
@@ -253,6 +276,29 @@ class ChatStreamTerminationIntegrationTest {
             }
         }
         return events;
+    }
+
+    /** 发流式请求，返回原始字符串响应（用于被拒绝的非 SSE 场景，如 409） */
+    private HttpResponse<String> streamRaw(String conversationId, String content) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(
+                        URI.create(baseUrl() + "/api/v1/chat/sessions/" + conversationId + "/stream"))
+                .timeout(Duration.ofSeconds(30))
+                .header("Content-Type", "application/json")
+                .header("Accept", "text/event-stream")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"content\":\"" + content + "\"}"))
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<Stream<String>> streamRawLines(String conversationId, String content) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(
+                        URI.create(baseUrl() + "/api/v1/chat/sessions/" + conversationId + "/stream"))
+                .timeout(Duration.ofSeconds(30))
+                .header("Content-Type", "application/json")
+                .header("Accept", "text/event-stream")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"content\":\"" + content + "\"}"))
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofLines());
     }
 
     private String baseUrl() {
