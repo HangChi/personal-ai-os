@@ -86,7 +86,8 @@ defineProps<{
   padding: 0.75em 1em;
   border-radius: var(--os-radius-2xl);
   border-bottom-left-radius: var(--os-radius-xs);
-  background: var(--el-bg-color);
+  background: var(--os-bubble-bg);
+  border: 1px solid var(--os-bubble-border);
   box-shadow: var(--os-shadow-bubble);
   width: fit-content;
   max-width: 100%;

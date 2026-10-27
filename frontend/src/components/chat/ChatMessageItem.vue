@@ -159,11 +159,10 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
   box-shadow: inset 0 0 0 1px var(--el-color-primary-light-7);
 }
 
-/* 用户头像与气泡同为实底主色，改用白底主色图标避免「两团同色块糊在一起」 */
+/* 用户头像用实底主色：气泡是浅主色底，头像实底才成为「说话方锚点」 */
 .chat-msg__avatar--user {
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-  box-shadow: inset 0 0 0 1px var(--el-color-primary-light-7);
+  background: var(--el-color-primary);
+  color: var(--os-on-primary);
 }
 
 /*
@@ -200,80 +199,57 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 }
 
 /*
- * 助手气泡：白底 + 极轻阴影，不加边框。
+ * 助手气泡：浅底 + 明确边框 + 极轻阴影，三者并存。
  *
- * 改造前是「浅灰底 #f6f7fa + 1px 边框 #eceff4」——底色与卡片白只差 1.03:1，
- * 等于靠一根几乎看不见的线撑边界，读起来是「灰扑扑的一块」。双重弱化不如单点强化：
- * 白底让内容自己立住，阴影给一层脱离感。暗色下底色由 --el-bg-color 自动换成深色。
+ * 这里有一段弯路值得记下：阶段 24 我曾把底色和边框当成「双重弱化」，
+ * 改成白底+阴影——结果对话卡片本身就是白底，气泡对比度 1.000，整个消失了。
+ * 实测结论：单靠底色最深只有 1.17（看不出体积），单靠边框要到 1.8 才成轮廓，
+ * 所以它们是**互补**关系，缺一不可。
  */
 .chat-msg__bubble--assistant {
-  background: var(--el-bg-color);
+  background: var(--os-bubble-bg);
+  border: 1px solid var(--os-bubble-border);
   box-shadow: var(--os-shadow-bubble);
   /* 圆角朝向头像那一侧收窄：气泡的「尖角」暗示说话人方向 */
   border-bottom-left-radius: var(--os-radius-xs);
 }
 
 /*
- * 用户气泡：主色实底 + 高对比前景。
+ * 用户气泡：浅主色底 + 主色边框，与助手气泡同构（都是「浅底 + 边框 + 深字」）。
  *
- * 改造前是「浅主色底 + 深字」，与助手气泡同属浅色系，两者只靠色相区分——
- * 一屏里十几轮往返时，视觉上分不出「谁在说话」。改成实底后：
- * ①方向一眼可辨 ②自己说的话自然成为视觉重点（这是对话里最常回看的内容）。
+ * 这里有一段弯路。阶段 24 嫌"两边都是浅色分不清谁在说话"，把用户气泡改成了
+ * 主色实底 #4f46e5。实测底色亮度 126 vs 助手 244，**亮度差 118** ——
+ * 一屏里成了一块极响的色块，把注意力从「回答正文」抢走了，整体反而更丑。
  *
- * 前景色用 --os-on-primary 而不是写死 #fff：暗色主色是**提亮**后的 #818cf8，
- * 白字只有 2.98:1（实测），必须配深字。这个变量在两套主题下各有一个正确值。
+ * 现在的做法：靠**色相**区分说话人（蓝紫 vs 中性灰），而不是明暗对立。
+ * 两侧亮度 242 vs 244（差 2），视觉重量平衡；边框 2.446 / 底色差 1.157，
+ * 边界依然明确。这也让「用户气泡里的 Markdown」不再需要整套反色 ——
+ * 它和助手气泡一样是浅底深字，MarkdownRenderer 的配色直接可用。
  */
 .chat-msg__bubble--user {
-  background: var(--el-color-primary);
-  color: var(--os-on-primary);
+  background: var(--os-bubble-user-bg);
+  border: 1px solid var(--os-bubble-user-border);
+  color: var(--el-text-color-primary);
   border-bottom-right-radius: var(--os-radius-xs);
 }
 
 /*
- * 用户气泡内的 Markdown 要整体反色。
- *
- * 规则不能只写 color —— MarkdownRenderer 里有 19 处 var(--el-*) 取色
- * （行内代码底、引用块底、表格边框、链接色……），它们全按「浅底深字」调的。
- * 直接套实底会出现「深底上的浅灰行内代码」这类几乎看不见的组合，
- * 因此把这些变量在气泡作用域内就地重绑。
- *
- * 半透明白而不是另配一组实色：换主色时自动跟随，不用维护第二套调色板。
+ * 只覆盖链接与强调色：默认主色（#4f46e5）落在浅主色底（#eeedfc）上对比 5.436，够用，
+ * 但用更深一档（#3f38b7，7.378）能让「引用/链接」在气泡里更明确地跳出来。
+ * 其余变量全部沿用全局值 —— 不再维护一整套反色映射。
  */
 .chat-msg__bubble--user :deep(.md__body) {
-  color: var(--os-on-primary);
-  --el-text-color-primary: var(--os-on-primary);
-  --el-text-color-regular: rgb(255 255 255 / 92%);
-  --el-text-color-secondary: rgb(255 255 255 / 78%);
-  --el-text-color-placeholder: rgb(255 255 255 / 62%);
-  --el-fill-color: rgb(255 255 255 / 18%);
-  --el-fill-color-light: rgb(255 255 255 / 14%);
-  --el-fill-color-lighter: rgb(255 255 255 / 10%);
-  --el-border-color-lighter: rgb(255 255 255 / 24%);
-  --el-border-color-light: rgb(255 255 255 / 30%);
-  /* 链接与强调：主色在白底上是深蓝，在实底上必须提亮才看得见 */
-  --el-color-primary: var(--os-on-primary);
-  --el-color-primary-light-5: rgb(255 255 255 / 55%);
+  --el-color-primary: var(--el-color-primary-dark-2);
 }
 
-/*
- * 暗色例外：主色实底变亮（#818cf8）后，上面那套「半透明白」全部失效 ——
- * 白字压亮底本来就只有 2.98:1，再半透明更看不见。暗色下改用「半透明黑」。
- */
+/* 暗色下主色阶梯方向相反（dark-2 是更亮的），链接改用更亮一档 */
 html.dark .chat-msg__bubble--user :deep(.md__body) {
-  --el-text-color-regular: rgb(22 24 42 / 88%);
-  --el-text-color-secondary: rgb(22 24 42 / 72%);
-  --el-text-color-placeholder: rgb(22 24 42 / 56%);
-  --el-fill-color: rgb(22 24 42 / 12%);
-  --el-fill-color-light: rgb(22 24 42 / 10%);
-  --el-fill-color-lighter: rgb(22 24 42 / 6%);
-  --el-border-color-lighter: rgb(22 24 42 / 18%);
-  --el-border-color-light: rgb(22 24 42 / 24%);
-  --el-color-primary-light-5: rgb(22 24 42 / 50%);
+  --el-color-primary: var(--el-color-primary-light-3);
 }
 
 /*
- * 代码块不需要在这里特判：它已改用 --os-code-* 独立令牌（见 MarkdownRenderer），
- * 永远是「一块浅色卡片」，放在实底气泡上会自动成立。
+ * 代码块不需要特判：它已改用 --os-code-* 独立令牌（见 MarkdownRenderer），
+ * 永远是「一块浅色卡片」，放在任何底色上都成立。
  */
 
 .chat-msg__bubble :deep(.md__body) {
