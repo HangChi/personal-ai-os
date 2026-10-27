@@ -3,6 +3,7 @@ package com.personalos.export;
 import com.personalos.common.api.ApiResponse;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -31,7 +32,7 @@ public class DataImportController {
      * 请求体上限 20MB。
      *
      * <p>个人库的完整导出通常几百 KB 到几 MB；20MB 足够覆盖十年量级，
-     * 同时挡住「误传一个大文件把内存打满」——整份 JSON 会先读进内存再解析。
+     * 同时挡住「误传一个大文件把内存打满」。
      */
     private static final int MAX_BODY_BYTES = 20 * 1024 * 1024;
 
@@ -42,10 +43,19 @@ public class DataImportController {
     }
 
     @PostMapping(value = "/import", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResponse<DataImportService.ImportResult> importData(@RequestBody String rawJson) {
+    public ApiResponse<DataImportService.ImportResult> importData(@RequestBody String rawJson,
+                                                                  HttpServletRequest request) {
+        // 先看 Content-Length（审查 P2）：超限直接拒绝，**不把 body 读进内存**。
+        // 改造前是 @RequestBody String 先整份读进 String（UTF-16，峰值 2~3 倍），
+        // 默认无认证时这就是一个 OOM 入口。头预检把超限挡在反序列化之前。
+        long contentLength = request.getContentLengthLong();
+        if (contentLength > MAX_BODY_BYTES) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "文件过大，上限 20MB");
+        }
         if (rawJson == null || rawJson.isBlank()) {
             throw new BusinessException(ErrorCode.VALIDATION_FAILED, "请求体为空，请上传导出文件的内容");
         }
+        // chunked 传输无 Content-Length（contentLength 为 -1），仍需这一道兜底
         if (rawJson.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > MAX_BODY_BYTES) {
             throw new BusinessException(ErrorCode.VALIDATION_FAILED, "文件过大，上限 20MB");
         }

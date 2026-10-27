@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 
 /**
  * 操作记录仓储。
@@ -22,4 +23,8 @@ public interface OperationRecordRepository extends JpaRepository<OperationRecord
     List<OperationRecordEntity> findByConversationIdOrderByCreatedAtDesc(String conversationId, Pageable pageable);
 
     List<OperationRecordEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    /** 删除早于某时刻的记录（保留期清理，审查 P2）。批量删除必须标 @Modifying */
+    @Modifying
+    int deleteByCreatedAtBefore(java.time.Instant threshold);
 }

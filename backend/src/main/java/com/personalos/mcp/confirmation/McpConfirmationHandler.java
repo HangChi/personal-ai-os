@@ -60,12 +60,28 @@ public class McpConfirmationHandler implements ConfirmationActionHandler {
 
         // 2 参构造器已过时（record 增加了 meta 字段，用于进度令牌等协议扩展）；
         // builder 不传 meta 即与原行为一致。
-        McpSchema.CallToolResult result = client.callTool(
-                McpSchema.CallToolRequest.builder(payload.tool())
-                        .arguments(payload.arguments())
-                        .build());
-        log.info("已执行 MCP 待确认调用 server={} tool={} isError={}",
-                payload.server(), payload.tool(), Boolean.TRUE.equals(result.isError()));
+        McpSchema.CallToolResult result;
+        try {
+            result = client.callTool(
+                    McpSchema.CallToolRequest.builder(payload.tool())
+                            .arguments(payload.arguments())
+                            .build());
+        } catch (RuntimeException ex) {
+            // 子进程可能在启动后崩溃：这次调用失败要回写 registry 状态（审查 P2），
+            // 否则 isAvailable 仍读内存里那份「可用」快照，后续调用继续白等超时
+            registry.markUnavailable(payload.server(), ex.getMessage());
+            throw ex;
+        }
+        if (Boolean.TRUE.equals(result.isError())) {
+            // MCP 协议用 isError 标记「工具执行失败」。改造前这里只 log 一句就 return 1，
+            // 于是「外部写入失败」被记成成功、令牌还作废了——用户看到「已执行」，
+            // 实际目标一行未改，且无法重试（审查 P2）。
+            // 抛业务异常让 ConfirmationService 记 FAILED，用户能看到真实结果。
+            log.warn("MCP 工具执行失败 server={} tool={}", payload.server(), payload.tool());
+            throw new BusinessException(com.personalos.common.api.ErrorCode.BUSINESS_CONFLICT,
+                    "MCP 工具执行失败：" + payload.tool() + "（目标未变更）");
+        }
+        log.info("已执行 MCP 待确认调用 server={} tool={}", payload.server(), payload.tool());
         return 1;
     }
 }

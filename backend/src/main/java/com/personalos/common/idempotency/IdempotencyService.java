@@ -9,7 +9,9 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 两层幂等的统一实现。
@@ -26,6 +28,19 @@ import org.springframework.stereotype.Service;
 public class IdempotencyService {
 
     private static final Logger log = LoggerFactory.getLogger(IdempotencyService.class);
+
+    /**
+     * IN_PROGRESS 残留的废弃阈值（审查 P2）。
+     *
+     * <p>占位（IN_PROGRESS）与回填是两个独立事务，进程若在中间崩溃，记录会永久停在
+     * IN_PROGRESS —— 此后同一幂等键的所有请求都命中它、被当成「处理中」而拿不到结果。
+     * 超过这个时长仍停在 IN_PROGRESS，就视为崩溃残留，删除后允许重新执行。
+     * 5 分钟远超任何一次正常执行（最慢的是模型调用，也远不到 5 分钟）。
+     */
+    static final long IN_PROGRESS_STALE_SECONDS = 300;
+
+    /** 幂等记录的保留期：审计价值会随时间衰减，无限堆积会拖慢按键查询 */
+    private static final int RETENTION_DAYS = 30;
 
     private final OperationRecordRepository repository;
 
@@ -47,7 +62,16 @@ public class IdempotencyService {
     public IdempotentResult execute(IdempotencyRequest request, Supplier<IdempotentResult> action) {
         Optional<OperationRecordEntity> existing = repository.findByIdempotencyKey(request.key());
         if (existing.isPresent()) {
-            return replay(existing.get(), request);
+            OperationRecordEntity record = existing.get();
+            // 崩溃残留：占位后进程死掉，记录永久停在 IN_PROGRESS。超阈值则废弃重来，
+            // 否则这个键永远「正在处理中」，既不能重试也不能复用（审查 P2）
+            if (record.getOutcome() == IdempotencyOutcome.IN_PROGRESS && isStale(record)) {
+                log.warn("清理崩溃残留的 IN_PROGRESS 幂等记录：key={} createdAt={}",
+                        record.getIdempotencyKey(), record.getCreatedAt());
+                repository.delete(record);
+            } else {
+                return replay(record, request);
+            }
         }
 
         OperationRecordEntity placeholder = new OperationRecordEntity(request.key(), request.source(),
@@ -98,7 +122,34 @@ public class IdempotencyService {
             log.debug("命中进行中的幂等记录：key={}", request.key());
             return IdempotentResult.of(record.getResponsePayload(), IdempotencyOutcome.DUPLICATE);
         }
+        if (record.getOutcome() == IdempotencyOutcome.FAILED) {
+            // 之前执行失败：responsePayload 是 null，原样回放会让调用方拿到「成功但空响应」，
+            // 分不清是失败还是空结果。改为明确报错，用户换一个幂等键即可重试（审查 P2）
+            throw new BusinessException(ErrorCode.BUSINESS_CONFLICT,
+                    "该操作之前执行失败，请更换幂等键后重试：" + request.key());
+        }
         return new IdempotentResult(record.getResponsePayload(), record.getOutcome(), true);
+    }
+
+    /**
+     * 定期清理过期幂等记录（审查 P2）。
+     *
+     * <p>操作记录承担审计，但「几个月前建了哪个任务」的审计价值已归零，而无限堆积
+     * 会让按键查询（唯一索引）变慢。保留 30 天，之后可安全删除。
+     */
+    @Scheduled(cron = "0 30 4 * * *")
+    @Transactional
+    public void cleanupExpiredRecords() {
+        Instant threshold = Instant.now().minusSeconds((long) RETENTION_DAYS * 24 * 3600);
+        int deleted = repository.deleteByCreatedAtBefore(threshold);
+        if (deleted > 0) {
+            log.info("清理过期幂等记录 {} 条（早于 {}）", deleted, threshold);
+        }
+    }
+
+    /** 崩溃残留判定：IN_PROGRESS 且超过废弃阈值 */
+    private boolean isStale(OperationRecordEntity record) {
+        return record.getCreatedAt().isBefore(Instant.now().minusSeconds(IN_PROGRESS_STALE_SECONDS));
     }
 
     private Integer elapsedMillis(long startNanos) {

@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -114,16 +115,26 @@ public class MemoryService {
 
     private MemoryDto create(String content, MemorySource source) {
         String normalized = normalize(content);
+        String contentHash = com.personalos.common.json.JsonCodec.sha256Hex(normalized);
 
-        return repository.findFirstByContent(normalized)
+        return repository.findByContentHash(contentHash)
                 .map(existing -> {
                     log.info("记忆已存在，未重复写入 id={}", existing.getId());
                     return toDto(existing);
                 })
                 .orElseGet(() -> {
-                    MemoryEntity saved = repository.save(new MemoryEntity(normalized, Instant.now(), source));
-                    log.info("保存记忆 id={} 长度={} 来源={}", saved.getId(), normalized.length(), source);
-                    return toDto(saved);
+                    try {
+                        MemoryEntity saved = repository.save(new MemoryEntity(normalized, Instant.now(), source));
+                        log.info("保存记忆 id={} 长度={} 来源={}", saved.getId(), normalized.length(), source);
+                        return toDto(saved);
+                    } catch (DataIntegrityViolationException ex) {
+                        // 并发去重（V17 唯一键）：两个请求同时查到「不存在」、同时 save，
+                        // 后一个撞 uk_memory_content_hash。此时返回先落库的那条，行为与幂等命中一致
+                        MemoryEntity winner = repository.findByContentHash(contentHash)
+                                .orElseThrow(() -> ex);
+                        log.info("记忆并发去重命中 id={}", winner.getId());
+                        return toDto(winner);
+                    }
                 });
     }
 
@@ -133,8 +144,8 @@ public class MemoryService {
      * <p>判定顺序：标识格式 → 内容校验 → 存在性。内容非法时**不查库**，
      * 与阶段 7 的重命名保持同一顺序（contracts 判定顺序即契约）。
      *
-     * <p>刻意不做「与其它条目重复」拦截：用户是在显式修改这一条，
-     * 允许两条内容相同属于用户的选择，系统不去猜测意图。
+     * <p>V17 起加了 content_hash 唯一键，「改成与另一条完全相同」会被数据库拒绝——
+     * 这里把约束冲突转成明确提示，而不是让用户看到 500。
      */
     @Transactional
     public MemoryDto update(String id, String content) {
@@ -146,7 +157,12 @@ public class MemoryService {
         entity.setContent(normalized);
         entity.touch(Instant.now());
         log.info("修改记忆 id={} 长度={}", id, normalized.length());
-        return toDto(repository.save(entity));
+        try {
+            return toDto(repository.save(entity));
+        } catch (DataIntegrityViolationException ex) {
+            throw new BusinessException(ErrorCode.BUSINESS_CONFLICT,
+                    "已存在内容相同的记忆，请直接修改那条或取消本次编辑");
+        }
     }
 
     /** 删除一条记忆（不做去重/软删：存的就是用户显式要求，删了就该彻底消失） */

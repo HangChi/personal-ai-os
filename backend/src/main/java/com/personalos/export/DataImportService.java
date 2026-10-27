@@ -305,13 +305,15 @@ public class DataImportService {
             }
             Instant createdAt = memory.createdAt() == null ? Instant.now() : memory.createdAt();
             entityManager.createNativeQuery(
-                            "insert into memory (id, content, created_at, updated_at, source) "
-                                    + "values (?1, ?2, ?3, ?4, ?5)")
+                            "insert into memory (id, content, content_hash, created_at, updated_at, source) "
+                                    + "values (?1, ?2, ?3, ?4, ?5, ?6)")
                     .setParameter(1, memory.id())
                     .setParameter(2, memory.content())
-                    .setParameter(3, ts(createdAt))
-                    .setParameter(4, ts(memory.updatedAt() == null ? createdAt : memory.updatedAt()))
-                    .setParameter(5, isBlank(memory.source()) ? "MANUAL" : memory.source())
+                    // V17 起 content_hash 是 NOT NULL 唯一键；导入时与写入路径同口径重算
+                    .setParameter(3, JsonCodec.sha256Hex(memory.content()))
+                    .setParameter(4, ts(createdAt))
+                    .setParameter(5, ts(memory.updatedAt() == null ? createdAt : memory.updatedAt()))
+                    .setParameter(6, isBlank(memory.source()) ? "MANUAL" : memory.source())
                     .executeUpdate();
             imported++;
         }

@@ -34,6 +34,16 @@ public class MemoryEntity {
     @Column(name = "content", nullable = false, columnDefinition = "text")
     private String content;
 
+    /**
+     * 内容 SHA-256（小写 hex，V17）：去重的唯一键。
+     *
+     * <p>与 {@code content} 同步维护（构造器与 {@link #setContent} 都重算）。
+     * 数据库有 {@code uk_memory_content_hash} 唯一约束，并发重复写入会在约束处失败，
+     * 由 Service 层捕获后转为「返回既有条目」——把「不重复」从约定变成硬约束。
+     */
+    @Column(name = "content_hash", length = 64, nullable = false)
+    private String contentHash;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -60,6 +70,7 @@ public class MemoryEntity {
 
     public MemoryEntity(String content, Instant now, MemorySource source) {
         this.content = content;
+        this.contentHash = hash(content);
         this.createdAt = now;
         this.updatedAt = now;
         this.source = source == null ? MemorySource.MANUAL : source;
@@ -71,6 +82,10 @@ public class MemoryEntity {
 
     public String getContent() {
         return content;
+    }
+
+    public String getContentHash() {
+        return contentHash;
     }
 
     public Instant getCreatedAt() {
@@ -87,10 +102,16 @@ public class MemoryEntity {
 
     public void setContent(String content) {
         this.content = content;
+        this.contentHash = hash(content);
     }
 
     /** 记录一次修改：刷新 updated_at，created_at 保持不变 */
     public void touch(Instant now) {
         this.updatedAt = now;
+    }
+
+    /** 内容哈希（与 V17 回填 SQL 的 encode(digest(content,'sha256'),'hex') 口径一致） */
+    private static String hash(String content) {
+        return com.personalos.common.json.JsonCodec.sha256Hex(content);
     }
 }

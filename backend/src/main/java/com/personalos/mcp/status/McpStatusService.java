@@ -1,5 +1,8 @@
 package com.personalos.mcp.status;
 
+import com.personalos.common.api.ErrorCode;
+import com.personalos.common.exception.BusinessException;
+import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.mcp.client.McpClientRegistry;
 import com.personalos.mcp.client.McpServerStatus;
 import com.personalos.mcp.config.McpProperties;
@@ -63,5 +66,22 @@ public class McpStatusService {
             }
         }
         return new McpStatusDto(true, servers);
+    }
+
+    /**
+     * 重连指定 server（审查 P2）。
+     *
+     * <p>子进程运行期崩溃后，状态页可手动触发重连，而不必重启整个应用。
+     * 失败同样只标记不可用、不抛出——重连是「再试一次」，不保证成功。
+     */
+    public void reconnect(String name) {
+        McpClientRegistry registry = registryProvider.getIfAvailable();
+        if (registry == null) {
+            throw new BusinessException(ErrorCode.AI_NOT_CONFIGURED, "MCP 未启用，无法重连");
+        }
+        if (!properties.servers().containsKey(name)) {
+            throw new ResourceNotFoundException("未知的 MCP server：" + name);
+        }
+        registry.reconnect(name);
     }
 }

@@ -35,4 +35,7 @@ public interface MemoryRepository extends JpaRepository<MemoryEntity, UUID>,
 
     /** 按内容查找（用于显式写入的幂等去重，见 research R-06） */
     Optional<MemoryEntity> findFirstByContent(String content);
+
+    /** 按内容哈希查找（V17 唯一键，去重的硬约束依据） */
+    Optional<MemoryEntity> findByContentHash(String contentHash);
 }

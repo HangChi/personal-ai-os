@@ -6,6 +6,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -24,6 +26,20 @@ import org.springframework.ai.document.DocumentReader;
  * 但知识库里少了半篇内容，而且没有任何迹象。
  */
 public class DocxDocumentReader implements DocumentReader {
+
+    /**
+     * zip bomb 防护（审查 P2）。
+     *
+     * <p>POI 默认 {@code IOUtils.setByteArrayMaxOverride} 为 -1（无上限），
+     * 且 {@code ZipSecureFile.setMinInflateRatio} 默认为 0 —— 一个压缩比 90:1 的
+     * 5MB docx 可以解出数百 MB，把内存打爆。这里把单次读取上限压到 64MB、
+     * 最小压缩比 0.01（解压后不超过压缩前的 100 倍），超出即抛异常而不是硬撑。
+     * 静态初始化块：进程内设一次，对 docx/xlsx/pptx 全部生效。
+     */
+    static {
+        IOUtils.setByteArrayMaxOverride(64 * 1024 * 1024);
+        ZipSecureFile.setMinInflateRatio(0.01);
+    }
 
     private final byte[] bytes;
     private final Map<String, Object> metadata;

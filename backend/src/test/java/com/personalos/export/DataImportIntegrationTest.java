@@ -192,8 +192,9 @@ class DataImportIntegrationTest {
     @Test
     @DisplayName("目标库非空时明确拒绝，而不是把数据混进去")
     void rejectsNonEmptyDatabase() {
-        jdbc.update("insert into memory (id, content, created_at, updated_at, source) "
-                + "values (?, '已有数据', now(), now(), 'MANUAL')", UUID.randomUUID());
+        jdbc.update("insert into memory (id, content, content_hash, created_at, updated_at, source) "
+                + "values (?, '已有数据', ?, now(), now(), 'MANUAL')", UUID.randomUUID(),
+                com.personalos.common.json.JsonCodec.sha256Hex("已有数据"));
 
         assertThatThrownBy(() -> importService.importAll(fullPayload()))
                 .isInstanceOf(BusinessException.class)

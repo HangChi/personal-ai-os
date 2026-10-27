@@ -12,6 +12,7 @@ import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.memory.entity.MemoryEntity;
 import com.personalos.memory.entity.MemorySource;
+import com.personalos.common.json.JsonCodec;
 import com.personalos.memory.repository.MemoryRepository;
 import com.personalos.memory.service.MemoryService;
 import java.time.Instant;
@@ -166,14 +167,14 @@ class MemoryServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("2000");
 
-        verify(repository, never()).findFirstByContent(any());
+        verify(repository, never()).findByContentHash(any());
         verify(repository, never()).save(any());
     }
 
     @Test
     @DisplayName("create(): 默认来源是 MANUAL，且 DTO 带上该字段")
     void createMarksManualSource() {
-        given(repository.findFirstByContent("周报周五交")).willReturn(Optional.empty());
+        given(repository.findByContentHash(JsonCodec.sha256Hex("周报周五交"))).willReturn(Optional.empty());
         stubSaveAssigningId();
 
         assertThat(service.create("周报周五交").source()).isEqualTo("MANUAL");
@@ -182,7 +183,7 @@ class MemoryServiceTest {
     @Test
     @DisplayName("createAuto(): 来源标记为 AUTO —— 页面据此区分模型自行写入的条目")
     void createAutoMarksAutoSource() {
-        given(repository.findFirstByContent("用户在做个人 AI OS 项目")).willReturn(Optional.empty());
+        given(repository.findByContentHash(JsonCodec.sha256Hex("用户在做个人 AI OS 项目"))).willReturn(Optional.empty());
         stubSaveAssigningId();
 
         assertThat(service.createAuto("用户在做个人 AI OS 项目").source()).isEqualTo("AUTO");
@@ -194,7 +195,7 @@ class MemoryServiceTest {
         MemoryEntity existing = new MemoryEntity("周报周五交",
                 Instant.parse("2026-10-01T00:00:00Z"), MemorySource.MANUAL);
         ReflectionTestUtils.setField(existing, "id", UUID.randomUUID());
-        given(repository.findFirstByContent("周报周五交")).willReturn(Optional.of(existing));
+        given(repository.findByContentHash(JsonCodec.sha256Hex("周报周五交"))).willReturn(Optional.of(existing));
 
         assertThat(service.createAuto("周报周五交").source()).isEqualTo("MANUAL");
         verify(repository, never()).save(any());

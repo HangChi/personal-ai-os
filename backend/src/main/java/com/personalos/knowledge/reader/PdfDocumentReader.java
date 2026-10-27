@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -26,6 +27,15 @@ import org.springframework.ai.document.DocumentReader;
  */
 public class PdfDocumentReader implements DocumentReader {
 
+    /**
+     * 页数上限（审查 P2）：超出直接拒绝。
+     *
+     * <p>超大 PDF 会让解析 + 逐块嵌入都变成分钟级操作，且个人知识库场景下
+     * 500 页以上的文档几乎没有全文检索价值。给一个明确上限，比「让用户等到超时」
+     * 更诚实。
+     */
+    private static final int MAX_PAGES = 500;
+
     private final byte[] bytes;
     private final Map<String, Object> metadata;
 
@@ -37,7 +47,13 @@ public class PdfDocumentReader implements DocumentReader {
     @Override
     public List<Document> get() {
         String text;
-        try (PDDocument pdf = Loader.loadPDF(bytes)) {
+        try (PDDocument pdf = Loader.loadPDF(bytes, "", null, "",
+                MemoryUsageSetting.setupMixed(16 * 1024 * 1024).streamCache)) {
+            // 16MB 以内全内存，超出部分落临时文件——避免几百 MB 的 PDF 一次性吃光堆
+            if (pdf.getNumberOfPages() > MAX_PAGES) {
+                throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
+                        "PDF 页数超过上限（" + MAX_PAGES + " 页），请拆分后分批上传");
+            }
             text = new PDFTextStripper().getText(pdf);
         } catch (InvalidPasswordException ex) {
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,

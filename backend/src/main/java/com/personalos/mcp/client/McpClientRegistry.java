@@ -136,6 +136,47 @@ public class McpClientRegistry implements DisposableBean {
         return status != null && status.available();
     }
 
+    /**
+     * 调用失败回写状态（审查 P2）。
+     *
+     * <p>启动时 connect 成功后，子进程可能在运行期崩溃。若不回写，{@code isAvailable}
+     * 仍读内存里那份「可用」快照，每轮工具调用都白等一次 10 秒超时。这里把失败
+     * 记回状态，并顺手关掉那个已死的客户端——后续调用能立刻得到「不可用」的明确结果，
+     * 而不是超时。
+     *
+     * @param name   server 名
+     * @param reason 失败原因（用于状态页展示）
+     */
+    public void markUnavailable(String name, String reason) {
+        statuses.put(name, McpServerStatus.unavailable(name, reason));
+        McpSyncClient client = clients.remove(name);
+        if (client != null) {
+            try {
+                client.close();
+            } catch (Exception ex) {
+                log.debug("关闭已失效的 MCP client 失败：name={}, reason={}", name, ex.getMessage());
+            }
+        }
+        log.warn("MCP server 调用失败，已标记不可用：name={}, reason={}", name, reason);
+    }
+
+    /**
+     * 重连单个 server（供状态页手动触发，审查 P2）。
+     *
+     * <p>与 {@link #connect} 不同：这里在重连前先清掉旧状态，避免「旧失败原因」残留在状态页。
+     * 失败时同样只标记不可用，不抛出。
+     */
+    public void reconnect(String name) {
+        McpProperties.ServerConfig config = properties.servers().get(name);
+        if (config == null) {
+            log.warn("重连未知的 MCP server：name={}", name);
+            return;
+        }
+        clients.remove(name);
+        statuses.remove(name);
+        connect(name, config);
+    }
+
     @Override
     public void destroy() {
         for (Map.Entry<String, McpSyncClient> entry : clients.entrySet()) {
