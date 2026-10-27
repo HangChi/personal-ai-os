@@ -9,7 +9,7 @@
  * <p>分组在组件内计算：`groupSessionsByDay` 是纯函数，放这里能少一层 props，
  * 也让「列表长什么样」这件事只有一个出处。
  */
-import { Delete, EditPen } from '@element-plus/icons-vue'
+import { Delete, Download, EditPen } from '@element-plus/icons-vue'
 import { computed, nextTick, ref, watch } from 'vue'
 
 import { groupSessionsByDay } from '@/lib/session-group'
@@ -33,6 +33,8 @@ const emit = defineEmits<{
   (e: 'rename', session: ChatSession, title: string): void
   /** 请求删除：父组件负责二次确认 */
   (e: 'remove', conversationId: string): void
+  /** 导出该会话为 Markdown（父组件负责下载与提示） */
+  (e: 'export', session: ChatSession): void
   (e: 'refresh'): void
   (e: 'create'): void
   (e: 'page-change', page: number): void
@@ -213,6 +215,15 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
                   :aria-label="`重命名会话：${session.title}`"
                   :icon="EditPen"
                   @click.stop="startEdit(session)"
+                />
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  title="导出为 Markdown"
+                  :aria-label="`导出会话：${session.title}`"
+                  :icon="Download"
+                  @click.stop="emit('export', session)"
                 />
                 <el-button
                   link

@@ -1,4 +1,5 @@
 import { apiBaseUrl, notifyUnauthorized, requestData } from '@/api/http'
+import { resolveFilename, triggerBlobDownload } from '@/api/export'
 import type { ApiResponse } from '@/types/api'
 import type { ChatAttachment, ChatCitation, ChatMessage, ChatSession, PageDto } from '@/types/api'
 import { http } from '@/api/http'
@@ -328,6 +329,28 @@ async function readErrorMessage(response: Response): Promise<string> {
     // 落到下面的兜底文案
   }
   return `请求失败（HTTP ${response.status}）`
+}
+
+/**
+ * 导出单个会话为 Markdown 并触发下载。
+ *
+ * <p>与全量导出的区别：那个是给机器读的迁移格式，这个是给人读的（粘笔记、发出去）。
+ * 两者共用 {@code triggerBlobDownload}，只在「取什么」上不同。
+ *
+ * @returns 实际使用的文件名
+ */
+export async function downloadSessionMarkdown(conversationId: string): Promise<string> {
+  const response = await http.get(`/chat/sessions/${conversationId}/export`, {
+    responseType: 'blob',
+    // 会话再长也是一次数据库查询，不需要导出那种分钟级超时
+    timeout: 30_000,
+  })
+  const filename = resolveFilename(
+    response.headers['content-disposition'] as string | undefined,
+    `会话-${conversationId.slice(0, 8)}.md`,
+  )
+  triggerBlobDownload(response.data as Blob, filename)
+  return filename
 }
 
 /**

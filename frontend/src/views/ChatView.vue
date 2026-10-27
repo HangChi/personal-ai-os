@@ -13,6 +13,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
+import { downloadSessionMarkdown } from '@/api/chat'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
@@ -233,6 +234,21 @@ async function handleRename(session: ChatSession, title: string): Promise<void> 
 async function handleRemove(conversationId: string): Promise<void> {
   await chatStore.removeSession(conversationId)
 }
+
+/**
+ * 导出单个会话为 Markdown。
+ *
+ * <p>不弹二次确认：导出是只读操作，没有破坏性，多一次弹窗只增加摩擦。
+ * 失败时提示文案直接来自后端（如会话已不存在）。
+ */
+async function handleExportSession(session: ChatSession): Promise<void> {
+  try {
+    const filename = await downloadSessionMarkdown(session.conversationId)
+    ElMessage.success(`已导出 ${filename}`)
+  } catch (cause) {
+    ElMessage.error(cause instanceof Error ? cause.message : '导出失败，请稍后重试')
+  }
+}
 </script>
 
 <template>
@@ -251,6 +267,7 @@ async function handleRemove(conversationId: string): Promise<void> {
       @select="chatStore.selectSession($event)"
       @rename="handleRename"
       @remove="handleRemove"
+      @export="handleExportSession"
       @search="chatStore.searchSessions()"
       @page-change="chatStore.goToSessionPage($event)"
     />

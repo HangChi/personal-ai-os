@@ -8,6 +8,7 @@ import com.personalos.chat.dto.CreateSessionRequest;
 import com.personalos.chat.dto.RenameSessionRequest;
 import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.chat.service.ChatCompletionService;
+import com.personalos.chat.service.ChatMarkdownExporter;
 import com.personalos.chat.service.ChatMessageService;
 import com.personalos.chat.service.ChatSessionService;
 import com.personalos.common.ai.AiProperties;
@@ -15,9 +16,14 @@ import com.personalos.common.api.ApiResponse;
 import com.personalos.common.api.PageDto;
 import com.personalos.common.json.JsonCodec;
 import jakarta.validation.Valid;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -47,17 +53,20 @@ public class ChatSessionController {
     private final ChatCompletionService completionService;
     private final AiProperties aiProperties;
     private final com.personalos.common.ai.ContextBudgetService contextBudget;
+    private final ChatMarkdownExporter markdownExporter;
 
     public ChatSessionController(ChatSessionService sessionService,
                                  ChatMessageService messageService,
                                  ChatCompletionService completionService,
                                  AiProperties aiProperties,
-                                 com.personalos.common.ai.ContextBudgetService contextBudget) {
+                                 com.personalos.common.ai.ContextBudgetService contextBudget,
+                                 ChatMarkdownExporter markdownExporter) {
         this.sessionService = sessionService;
         this.messageService = messageService;
         this.completionService = completionService;
         this.aiProperties = aiProperties;
         this.contextBudget = contextBudget;
+        this.markdownExporter = markdownExporter;
     }
 
     /**
@@ -205,5 +214,27 @@ public class ChatSessionController {
         }
         String trimmed = idempotencyKey.strip();
         return trimmed.length() <= 64 ? trimmed : JsonCodec.sha256Hex(trimmed);
+    }
+
+    /**
+     * 导出单个会话为 Markdown。
+     *
+     * <p>与全量导出（{@code /export}）受众不同：那个是给机器读的迁移格式，
+     * 这个是给人读的 —— 粘进笔记、发出去、存档。所以不套统一信封，
+     * 响应体就是文件本身。
+     *
+     * <p>文件名用 RFC 5987 的 {@code filename*} 形式：标题里几乎必有中文，
+     * 直接塞进 {@code filename=} 会在部分浏览器上变成乱码。
+     */
+    @GetMapping(value = "/sessions/{conversationId}/export", produces = "text/markdown;charset=UTF-8")
+    public ResponseEntity<String> exportMarkdown(@PathVariable String conversationId) {
+        ChatMarkdownExporter.ExportDocument document = markdownExporter.export(conversationId);
+        String encodedName = URLEncoder.encode(document.filename(), StandardCharsets.UTF_8)
+                // URLEncoder 把空格编成 +，而 filename* 语法里 + 就是字面量
+                .replace("+", "%20");
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/markdown;charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedName)
+                .body(document.markdown());
     }
 }

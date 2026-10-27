@@ -42,9 +42,9 @@ export function defaultFilename(now: Date = new Date()): string {
 const EXPORT_TIMEOUT_MILLIS = 120_000
 
 /**
- * 请求并触发浏览器下载。
+ * 触发浏览器下载。
  *
- * 顺序是刻意的：**先等请求成功，再创建 ObjectURL**。
+ * <p>顺序是刻意的：**先等请求成功，再创建 ObjectURL**。
  * 反过来（先建链接再填内容）会在失败时留下一个 0 字节文件，
  * 用户以为备份成功，实际上是空的 —— 比报错严重得多。
  *
@@ -56,8 +56,18 @@ export async function downloadExport(): Promise<string> {
     timeout: EXPORT_TIMEOUT_MILLIS,
   })
   const filename = resolveFilename(response.headers['content-disposition'] as string | undefined, defaultFilename())
+  triggerBlobDownload(response.data as Blob, filename)
+  return filename
+}
 
-  const url = URL.createObjectURL(response.data as Blob)
+/**
+ * 把 Blob 交给浏览器下载。
+ *
+ * <p>抽出来给两处用：全量导出与单会话 Markdown。两者只在「取什么」上不同，
+ * 「怎么让浏览器存下来」是同一件事 —— 复制一遍迟早有一处忘记 revoke。
+ */
+export function triggerBlobDownload(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob)
   try {
     const link = document.createElement('a')
     link.href = url
@@ -68,7 +78,6 @@ export async function downloadExport(): Promise<string> {
   } finally {
     URL.revokeObjectURL(url)
   }
-  return filename
 }
 
 /** 导入结果：各模块实际写入了多少条 */
