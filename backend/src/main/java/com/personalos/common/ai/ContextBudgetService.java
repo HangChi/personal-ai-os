@@ -24,12 +24,19 @@ package com.personalos.common.ai;
 public class ContextBudgetService {
 
     /**
-     * 字符 / token 折算比。
+     * 字符 / token 折算比（中文口径）。
      *
-     * <p>按中文偏保守取 1.6（英文实际约 4）。方向上「高估用量」是安全的：
-     * 宁可让用户以为快满了，也不要显示假的宽裕。
+     * <p><b>这个数是实测的，不是估的</b>（2026-10-27，qwen3.8-flash，
+     * 用真实 {@code prompt_tokens} 差值法反推）：中文 1 token ≈ 1.68 字，
+     * 这里取 1.6 略偏保守。原注释「英文实际约 4」也是错的 —— 实测 5.7，
+     * 详见 {@link TokenEstimation}。
+     *
+     * <p>预算阈值故意继续用单一中文口径：预算是一个<b>用户可见的分母</b>
+     * （「300K 里用了 18K」），分母必须稳定且可解释。若按每条消息的语言
+     * 分别折算，同一个预算在不同会话里对应的字符数会产生肉眼可见的跳变，
+     * 用户会以为预算被改了。估算真实用量时才按语言区分（见 {@link TokenEstimation}）。
      */
-    public static final double CHARS_PER_TOKEN = 1.6;
+    public static final double CHARS_PER_TOKEN = TokenEstimation.CJK_CHARS_PER_TOKEN;
 
     private final AiProperties aiProperties;
 
@@ -71,8 +78,24 @@ public class ContextBudgetService {
         return (int) Math.round(budgetTokens * CHARS_PER_TOKEN);
     }
 
-    /** 把字符数折算成 token（仪表盘用） */
+    /**
+     * 把字符数折算成 token（仪表盘用）。
+     *
+     * <p>用中文口径固定折算，与 {@link #effectiveCharBudget()} 互为逆运算 ——
+     * 仪表盘的分子与分母必须同口径，否则会出现「占了 90% 却还没被裁剪」这种
+     * 用户能直接看出来的矛盾。按语言区分口径的版本只用于估算实际 token 消耗。
+     */
     public static int toTokens(int chars) {
-        return (int) Math.round(chars / CHARS_PER_TOKEN);
+        return TokenEstimation.toTokens(chars, CHARS_PER_TOKEN);
+    }
+
+    /**
+     * 按文本真实构成折算 token（用于估算本轮实际用量）。
+     *
+     * <p>与 {@link #toTokens(int)} 的区别：那个是「预算口径」（稳定、可解释），
+     * 这个是「实际用量口径」（中英文差 3.5 倍，必须区分）。
+     */
+    public static int toTokensByContent(String text) {
+        return TokenEstimation.toTokens(text, text == null ? 0 : text.length());
     }
 }

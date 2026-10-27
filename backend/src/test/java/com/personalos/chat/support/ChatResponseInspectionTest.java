@@ -114,11 +114,12 @@ class ChatResponseInspectionTest {
     }
 
     @Test
-    @DisplayName("估算用量：按字符折算并标为 ESTIMATED，且与仪表盘口径一致")
-    void estimatedUsesSameRatioAsDashboard() {
-        // 1600 字符 / 1.6 = 1000 token
-        StreamUsage usage = StreamUsage.estimated(null, 1600, 160);
+    @DisplayName("估算用量：中文按 1.6 字/token 折算并标为 ESTIMATED")
+    void estimatedUsesCjkRatioForChinese() {
+        String chinese = "测".repeat(1600);
+        StreamUsage usage = StreamUsage.estimated(null, chinese, 1600, "测".repeat(160), 160);
 
+        // 实测中文 1 token ≈ 1.679 字，取 1.6 → 1600 / 1.6 = 1000
         assertThat(usage.promptTokens()).isEqualTo(1000);
         assertThat(usage.completionTokens()).isEqualTo(100);
         assertThat(usage.source()).isEqualTo(TokenUsageSource.ESTIMATED);
@@ -126,8 +127,19 @@ class ChatResponseInspectionTest {
     }
 
     @Test
+    @DisplayName("估算用量：英文按 5.5 字符/token 折算，不再高估 3.5 倍")
+    void estimatedUsesLatinRatioForEnglish() {
+        String english = "a".repeat(5500);
+        StreamUsage usage = StreamUsage.estimated(null, english, 5500, "a".repeat(550), 550);
+
+        // 实测英文 1 token ≈ 5.698 字符；旧实现用 1.6 会算成 3438，高估 3.5 倍
+        assertThat(usage.promptTokens()).isEqualTo(1000);
+        assertThat(usage.completionTokens()).isEqualTo(100);
+    }
+
+    @Test
     @DisplayName("估算用量：零字符时不算「有意义」，避免写入空记录")
     void estimatedOfZeroIsNotMeaningful() {
-        assertThat(StreamUsage.estimated(null, 0, 0).isMeaningful()).isFalse();
+        assertThat(StreamUsage.estimated(null, null, 0, null, 0).isMeaningful()).isFalse();
     }
 }

@@ -128,7 +128,7 @@ class TokenUsageIntegrationTest {
     @Test
     @DisplayName("估算用量也能落库，且不会被误标成 ACTUAL")
     void persistsEstimatedUsage() {
-        recorder.record("conv-est", StreamUsage.estimated(null, 1600, 160));
+        recorder.record("conv-est", StreamUsage.estimated(null, "测".repeat(1600), 1600, "测".repeat(160), 160));
 
         TokenUsageEntity row = waitForRows(1).get(0);
 

@@ -204,6 +204,10 @@ public class ChatCompletionService {
         // 系统提示+历史+用户消息属于 prompt，模型生成的部分属于 completion。
         // 合成一个总数会让统计页的「输入/输出」两列失去意义。
         AtomicInteger systemPromptCharsRef = new AtomicInteger(0);
+        // 估算用量时要按语言选折算比（中英差 3.5 倍），因此需要原文而不只是长度。
+        // 只留用户消息这一段：历史与系统提示以中文为主，用用户消息判口径已足够，
+        // 且它是三种语言场景（中文提问 / 英文提问 / 混排）里最具指示性的一段。
+        AtomicReference<String> promptSampleRef = new AtomicReference<>("");
         // 订阅可能先于赋值完成（切了线程池之后尤其如此），回调里必须能容忍 null
         AtomicReference<Disposable> subscriptionRef = new AtomicReference<>();
         // 超时看门狗的句柄（见下面 stopEverything 与 scheduleOnce 处）
@@ -242,6 +246,8 @@ public class ChatCompletionService {
             systemPromptCharsRef.set(systemPrompt.length());
             promptCharsRef.set(systemPrompt.length() + userContent.length()
                     + promptAssembler.estimateHistoryChars(conversationId));
+            // 用户消息用作语言口径的判定样本（见 promptSampleRef 的声明处注释）
+            promptSampleRef.set(userContent);
             ChatClient.ChatClientRequestSpec request = chatClient.prompt()
                     // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                     // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
@@ -404,7 +410,8 @@ public class ChatCompletionService {
                     // 有真实 usage 时以它为准，否则退回估算值 —— 但要标出来源，
                     // 不能让前端把估算值当计费口径展示给用户。
                     StreamUsage usage = resolveUsage(usageRef.get(),
-                            promptCharsRef.get(), systemPromptCharsRef.get(), reply.length());
+                            promptSampleRef.get(), promptCharsRef.get(),
+                            systemPromptCharsRef.get(), reply);
                     send(emitter, EVENT_DONE, new ChatStreamEvents.Done(conversationId, reply,
                             usage.promptTokens()));
                     emitter.complete();
@@ -466,17 +473,20 @@ public class ChatCompletionService {
      * 「送进去的」与「生成出来的」，不是「系统提示」与「其余」。
      *
      * @param actual           流里采集到的真实用量；可能为 null
+     * @param promptSample     提示的代表性文本（用户消息），用于判定折算口径
      * @param promptChars      本轮送入模型的字符数
      * @param systemPromptChars 系统提示字符数（仅用于日志排查，不参与折算）
-     * @param replyChars       模型生成的字符数
+     * @param reply            模型生成的正文，用于判定折算口径
      * @return 供事件下发与落库使用的用量
      */
-    private StreamUsage resolveUsage(StreamUsage actual, int promptChars, int systemPromptChars, int replyChars) {
+    private StreamUsage resolveUsage(StreamUsage actual, String promptSample, int promptChars,
+                                     int systemPromptChars, String reply) {
         if (actual != null) {
             return actual;
         }
         // 模型名拿不到（provider 未上报）时留空，不编造一个假名字
-        StreamUsage estimated = StreamUsage.estimated(null, promptChars, replyChars);
+        StreamUsage estimated = StreamUsage.estimated(null, promptSample, promptChars,
+                reply, reply == null ? 0 : reply.length());
         log.debug("上游未返回用量，本轮按字符估算 promptTokens={} completionTokens={}（系统提示 {} 字符）",
                 estimated.promptTokens(), estimated.completionTokens(), systemPromptChars);
         return estimated;
@@ -492,7 +502,14 @@ public class ChatCompletionService {
         return promptAssembler.estimatePromptChars(conversationId);
     }
 
-    /** 仪表盘口径：估算 token 数（字符 ÷ 1.6） */
+    /**
+     * 仪表盘口径：估算 token 数。
+     *
+     * <p>用中文固定口径而不是按内容判断语言 —— 这个数与分母
+     * （{@code effectiveCharBudget()}）必须互为逆运算，否则会出现
+     * 「显示占了 90% 却还没被裁剪」这种用户一眼能看穿的矛盾。
+     * 同一会话里语言构成基本稳定，固定口径不会造成可见跳变。
+     */
     public int estimatePromptTokens(String conversationId) {
         return ContextBudgetService.toTokens(estimatePromptChars(conversationId));
     }

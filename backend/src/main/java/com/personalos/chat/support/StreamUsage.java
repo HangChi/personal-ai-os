@@ -1,6 +1,7 @@
 package com.personalos.chat.support;
 
 import com.personalos.chat.entity.TokenUsageSource;
+import com.personalos.common.ai.TokenEstimation;
 
 /**
  * 一轮对话采集到的用量（流结束时确定，不可变）。
@@ -21,22 +22,25 @@ public record StreamUsage(String model, int promptTokens, int completionTokens, 
         return promptTokens > 0 || completionTokens > 0;
     }
 
-    /** 按「字符 ÷ 1.6」折算出的估算用量（provider 未上报 usage 时的降级路径） */
-    public static StreamUsage estimated(String model, int promptChars, int completionChars) {
-        return new StreamUsage(model, toTokens(promptChars), toTokens(completionChars),
-                TokenUsageSource.ESTIMATED);
-    }
-
     /**
-     * 字符 → token 折算。
+     * 按内容构成折算出的估算用量（provider 未上报 usage 时的降级路径）。
      *
-     * <p>与 {@code ContextBudgetService.CHARS_PER_TOKEN}（1.6）保持一致：
-     * 仪表盘显示的分母与此处的折算必须是同一个数，否则用户会看到
-     * 「仪表盘说用了 1K，统计页说用了 3K」这种自相矛盾。
-     * 这里不直接引用那个常量是为了让 chat.support 不依赖 common.ai 的预算服务 ——
-     * 两者只是碰巧采用同一个默认值，不该因此耦合；一致性由测试保证。
+     * <h2>为什么这里按语言区分，而预算阈值不区分</h2>
+     * 这是「这一轮实际烧了多少 token」的估算，中英文差 3.5 倍（实测：中文
+     * 1 token ≈ 1.68 字，英文 1 token ≈ 5.70 字符），用同一个系数必然错一头。
+     * 而预算阈值是用户可见的分母，必须稳定 —— 两者诉求不同，故口径不同。
+     *
+     * @param model           模型名；未知时传 {@code null}
+     * @param promptText      送入模型的提示原文，用于判断折算口径；为 {@code null} 时按中文口径
+     * @param promptChars     提示的字符数
+     * @param completionText  模型生成的正文，用于判断折算口径
+     * @param completionChars 正文的字符数
      */
-    private static int toTokens(int chars) {
-        return Math.max((int) Math.round(chars / 1.6), 0);
+    public static StreamUsage estimated(String model, String promptText, int promptChars,
+                                        String completionText, int completionChars) {
+        return new StreamUsage(model,
+                TokenEstimation.toTokens(promptText, promptChars),
+                TokenEstimation.toTokens(completionText, completionChars),
+                TokenUsageSource.ESTIMATED);
     }
 }
