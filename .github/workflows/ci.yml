@@ -110,6 +110,13 @@ jobs:
         working-directory: frontend
         run: npm run test:logic
 
+      # 组件测试（P2，2026-10-27）：模板与交互层，跑在 happy-dom 里。
+      # 与上一步是两个独立链路：test:logic 用 Node 原生 ESM 跑纯函数与 store，
+      # 组件测试需要 SFC 编译 —— 前者毫秒级，后者十几秒，都留着。
+      - name: 组件测试
+        working-directory: frontend
+        run: npm run test:component
+
       - name: 构建
         working-directory: frontend
         run: npm run build
