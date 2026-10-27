@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
+import { parseStoredSidebarWidth, SIDEBAR_WIDTH_STORAGE_KEY } from '@/lib/sidebar'
 import {
   normalizePreference,
   resolveTheme,
@@ -39,6 +40,19 @@ export const useUiStore = defineStore('ui', () => {
 
   /** 侧栏导航折叠（阶段 18 追加）：true = 纯图标模式，localStorage 持久化 */
   const navCollapsed = ref(localStorage.getItem('os.nav.collapsed') === '1')
+
+  /**
+   * 侧栏展开态宽度（阶段 18 追加，拖拽调宽）。
+   *
+   * 存在 store 而不是 App.vue 的局部 ref：宽度是跨组件的界面状态（折叠态与展开态
+   * 共用一套 token），且「刷新后保持」的落盘逻辑与 navCollapsed 挨着最好维护。
+   * 「重置全部偏好」清 `os.` 前缀时也会连带清掉它 —— 放在组件里就漏了。
+   *
+   * 初始化按当前视口收敛：上次在宽屏拖到 420，换到 1024 屏打开时不能直接溢出。
+   * 注意存的是「用户意图」，运行时生效宽度由 App.vue 的 effectiveSidebarWidth
+   * 再按当前视口夹一次（窗口临时缩小不该把 420 永久改写成 320）。
+   */
+  const sidebarWidth = ref(parseStoredSidebarWidth(localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY), window.innerWidth))
 
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -83,6 +97,15 @@ export const useUiStore = defineStore('ui', () => {
   watch(tasksView, (next) => localStorage.setItem('os.tasks.view', next))
   watch(knowledgeTab, (next) => localStorage.setItem('os.knowledge.tab', next))
   watch(navCollapsed, (next) => localStorage.setItem('os.nav.collapsed', next ? '1' : '0'))
+  /*
+   * 宽度同样走 watch：写入方是拖拽把手与键盘微调，两者都是命令式赋值，
+   * 用 setter 也能覆盖，但保持与 navCollapsed 一致的做法。
+   * 这里不做二次收敛——写入方都已按视口夹过，重复夹一次会让「存的值」和
+   * 「用的值」出现两个真相。
+   */
+  watch(sidebarWidth, (next) => {
+    localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(next))
+  })
 
   return {
     theme,
@@ -90,6 +113,7 @@ export const useUiStore = defineStore('ui', () => {
     tasksView,
     knowledgeTab,
     navCollapsed,
+    sidebarWidth,
     toggleTheme,
   }
 })

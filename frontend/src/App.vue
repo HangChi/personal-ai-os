@@ -33,10 +33,19 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 
+import {
+  clampSidebarWidth,
+  resolveSidebarMaxWidth,
+  SIDEBAR_DEFAULT_WIDTH,
+  SIDEBAR_KEYBOARD_STEP,
+  SIDEBAR_MIN_WIDTH,
+  stepSidebarWidth,
+} from '@/lib/sidebar'
+
 const authStore = useAuthStore()
 const uiStore = useUiStore()
 const { authEnabled, username } = storeToRefs(authStore)
-const { navCollapsed } = storeToRefs(uiStore)
+const { navCollapsed, sidebarWidth } = storeToRefs(uiStore)
 const route = useRoute()
 const router = useRouter()
 
@@ -116,9 +125,123 @@ function handleGlobalKeydown(event: KeyboardEvent): void {
 onMounted(() => window.addEventListener('keydown', handleGlobalKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', handleGlobalKeydown))
 
+/* ---- 侧栏拖拽调宽（阶段 18 追加） ---- */
+
 function toggleNav(): void {
   navCollapsed.value = !navCollapsed.value
 }
+
+/** 拖拽中的临时状态：pointerId 与按下时的起点，放手即清空 */
+const resizing = ref(false)
+let resizePointerId: number | null = null
+let resizeStartX = 0
+let resizeStartWidth = 0
+
+/** 视口宽（响应式）：宽度上限依赖它，resize 后必须重算 */
+const viewportWidth = ref(typeof window === 'undefined' ? 0 : window.innerWidth)
+
+/**
+ * 生效宽度 = 用户存的宽度按当前视口收敛后的值。
+ *
+ * 刻意不在 resize 时把收敛结果写回 store：store 里存的是「用户意图」，
+ * 窗口临时缩小只是让它显示不出全宽，拉回来就该恢复原样。
+ * 若在 resize 里写回，一次窗口缩放就会把 420 永久改写成 320，用户再也不会知道
+ * 原来的宽度去哪了 —— 这是纯粹的副作用持久化。
+ */
+const effectiveSidebarWidth = computed(() => clampSidebarWidth(sidebarWidth.value, viewportWidth.value))
+
+/** el-aside 的宽度：折叠态走令牌，展开态走像素值 */
+const asideWidth = computed(() =>
+  navCollapsed.value ? 'var(--os-sidebar-width-collapsed)' : `${effectiveSidebarWidth.value}px`,
+)
+/** 无障碍取值：折叠态报 64，展开态报实际宽度 */
+const asideAriaNow = computed(() => (navCollapsed.value ? 64 : effectiveSidebarWidth.value))
+/** 上限随视口变化，aria-valuemax 必须与实际钳制口径一致 */
+const asideAriaMax = computed(() => resolveSidebarMaxWidth(viewportWidth.value))
+
+/**
+ * 拖拽期间给 <html> 挂类，靠 CSS 关掉 width 过渡。
+ *
+ * 不这么做的话，每次 pointermove 触发的宽度变化都会重新跑一遍 0.25s 过渡，
+ * 表现是「指示线跟着鼠标走、侧栏慢半拍追」，肉眼就是明显滞后。
+ */
+function setResizeCursor(active: boolean): void {
+  document.documentElement.classList.toggle('os-resizing', active)
+}
+
+function startResize(event: PointerEvent): void {
+  // 折叠态没有「拖宽」语义：宽度由 64px 令牌决定，先展开再拖会让人以为拖不动
+  if (navCollapsed.value || event.button !== 0) {
+    return
+  }
+  event.preventDefault()
+  resizing.value = true
+  resizePointerId = event.pointerId
+  resizeStartX = event.clientX
+  // 以「生效宽度」为基准：窗口刚被缩窄过时，store 里的值可能大于当前显示宽度
+  resizeStartWidth = effectiveSidebarWidth.value
+  // 捕获指针：鼠标移出侧栏（甚至移出窗口）后仍能收到 move/up，
+  // 否则快速甩动会在边界处丢掉 pointerup，留下一个卡住的拖拽态。
+  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+  setResizeCursor(true)
+}
+
+function onResizeMove(event: PointerEvent): void {
+  if (!resizing.value || event.pointerId !== resizePointerId) {
+    return
+  }
+  sidebarWidth.value = clampSidebarWidth(resizeStartWidth + (event.clientX - resizeStartX), viewportWidth.value)
+}
+
+function endResize(event: PointerEvent): void {
+  if (!resizing.value || event.pointerId !== resizePointerId) {
+    return
+  }
+  resizing.value = false
+  resizePointerId = null
+  const target = event.currentTarget as HTMLElement
+  if (target.hasPointerCapture(event.pointerId)) {
+    target.releasePointerCapture(event.pointerId)
+  }
+  setResizeCursor(false)
+}
+
+/** 双击复位：拖歪了不用去猜默认值是多少 */
+function resetResize(): void {
+  sidebarWidth.value = clampSidebarWidth(SIDEBAR_DEFAULT_WIDTH, viewportWidth.value)
+}
+
+/**
+ * 键盘微调（无障碍）：左右方向键 ±8px，Home 复位。
+ * 用 role="separator" 后这条是应有之义——纯鼠标的拖拽对键盘用户等于不存在。
+ */
+function onResizeKeydown(event: KeyboardEvent): void {
+  if (navCollapsed.value) {
+    return
+  }
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    event.preventDefault()
+    const delta = event.key === 'ArrowRight' ? SIDEBAR_KEYBOARD_STEP : -SIDEBAR_KEYBOARD_STEP
+    sidebarWidth.value = stepSidebarWidth(effectiveSidebarWidth.value, delta, viewportWidth.value)
+  } else if (event.key === 'Home') {
+    event.preventDefault()
+    resetResize()
+  }
+}
+
+/**
+ * 视口变化只更新 viewportWidth，宽度由 effectiveSidebarWidth 自动重算。
+ * 不写回 store —— 见 effectiveSidebarWidth 的注释。
+ */
+function handleViewportResize(): void {
+  viewportWidth.value = window.innerWidth
+}
+
+onMounted(() => window.addEventListener('resize', handleViewportResize))
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleViewportResize)
+  setResizeCursor(false)
+})
 
 async function handleLogout(): Promise<void> {
   await authStore.logout()
@@ -134,11 +257,33 @@ async function handleLogout(): Promise<void> {
   -->
   <el-container :class="['app-shell', { 'app-shell--fixed': route.meta.fullWidth }]">
     <!-- 侧栏：宽屏主导航；登录页不渲染 -->
-    <el-aside
-      v-if="!isLoginPage"
-      class="app-shell__aside"
-      :width="navCollapsed ? 'var(--os-sidebar-width-collapsed)' : 'var(--os-sidebar-width)'"
-    >
+    <el-aside v-if="!isLoginPage" class="app-shell__aside" :width="asideWidth">
+      <!--
+        右边缘的拖拽把手。放在 el-aside 内部（absolute 贴右），
+        而不是当兄弟元素：侧栏宽度变了把手必须跟着走，挂在内部最省事。
+        ⚠️ el-aside 的 width 属性并不写 `width`，而是写内联 `--el-aside-width`
+        （组件源码 ns.cssVarBlock({ width })，样式表里 width: var(--el-aside-width,300px)）。
+        所以想改宽度只能走这个属性，直接写 CSS width 会被内联变量压过。
+      -->
+      <div
+        v-if="!navCollapsed"
+        class="app-shell__resizer"
+        :class="{ 'app-shell__resizer--active': resizing }"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="调整侧栏宽度"
+        :aria-valuemin="SIDEBAR_MIN_WIDTH"
+        :aria-valuemax="asideAriaMax"
+        :aria-valuenow="asideAriaNow"
+        tabindex="0"
+        title="拖动调整宽度，双击复位"
+        @pointerdown="startResize"
+        @pointermove="onResizeMove"
+        @pointerup="endResize"
+        @pointercancel="endResize"
+        @dblclick="resetResize"
+        @keydown="onResizeKeydown"
+      />
       <router-link to="/" class="app-shell__brand" title="返回总览">
         <span class="app-shell__logo">AI</span>
         <span v-show="!navCollapsed" class="app-shell__title">Personal AI OS</span>
@@ -308,6 +453,78 @@ async function handleLogout(): Promise<void> {
   /* 折叠/展开的宽度过渡 */
   transition: width var(--os-duration-normal) var(--os-ease);
   overflow: hidden;
+}
+
+/*
+ * 拖拽期间关闭宽度过渡。
+ *
+ * 不关的话每次 pointermove 都重启一次 0.25s 过渡，侧栏变成「慢半拍追鼠标」，
+ * 只有指示线跟着走 —— 手感上是拖不动的。作用域选择器会编译成
+ * `html.os-resizing .app-shell__aside[data-v-x]`，能命中。
+ */
+html.os-resizing .app-shell__aside {
+  transition: none;
+}
+
+/*
+ * 拖拽把手：贴右边缘的一条窄带。
+ *
+ * 命中区 8px，可见指示线只有 2px：4px 的可见线在视觉上像一道多出来的竖线，
+ * 1px 又难以确认「拖到了」。
+ * ⚠️ 必须整条留在侧栏内部（right: 0 而不是 right: -4px）：父级是 overflow: hidden，
+ * 伸出去的部分会被裁掉，只有真正在内侧的那几像素能收到事件。
+ * 位置用 absolute 而非 flex 行：侧栏是纵向 flex，多一个子元素会挤掉菜单高度。
+ */
+.app-shell__resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none; /* 触屏上别把拖拽当滚动手势 */
+}
+
+/* 指示线：平时透明，hover / 拖拽 / 键盘聚焦时才显形（压在右边框上） */
+.app-shell__resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--el-color-primary);
+  opacity: 0;
+  transition: opacity var(--os-duration-fast) var(--os-ease);
+}
+
+/*
+ * 指示线透明度取值来自实测，不是随手写的 0.6：
+ * 0.6 时叠在侧栏底上的实际色只有 2.795:1（亮）/ 2.908:1（暗），
+ * 够不上「UI 图形组件 3:1」这条线 —— 指示线本身就是提示，不该自己先隐身。
+ * 0.75 实测 3.78:1（亮）/ 3.77:1（暗），拖拽中再抬到 1。
+ */
+.app-shell__resizer:hover::after,
+.app-shell__resizer:focus-visible::after {
+  opacity: 0.75;
+}
+
+/*
+ * 拖拽中满不透明。
+ *
+ * ⚠️ 这里必须写成双类（0-2-1），不能只写 `.app-shell__resizer--active::after`（0-1-1）：
+ * 拖拽时指针必然停在把手上，`:hover` 一定同时命中，而 hover 那条是 0-2-1 ——
+ * 单类会被它盖掉，实测拖拽中指示线始终停在 hover 的 0.75，「拖住了」缺少最强反馈。
+ * 双类与 hover 同特异性且位置在后，平局由后者胜。
+ */
+.app-shell__resizer.app-shell__resizer--active::after {
+  opacity: 1;
+}
+
+/* 焦点环交给全局 :focus-visible，把手的可见反馈靠上面那条指示线 */
+.app-shell__resizer:focus-visible {
+  outline: none;
 }
 
 /*
