@@ -8,11 +8,16 @@ import com.personalos.chat.memory.JpaChatMemory;
 import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.chat.repository.ChatSessionRepository;
 import com.personalos.common.ai.AiChatClientProvider;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,6 +44,16 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <h2>失败策略</h2>
  * 全程静默：模型不可用、返回空、超时 —— 一律保留旧摘要并记 debug 日志。
  * 摘要是**增强信息**，它失败不该让用户看到任何错误（对话本身是好的）。
+ *
+ * <h2>为什么拆成三段（2026-10-27）</h2>
+ * 早期实现把「读快照 + 调模型 + 写摘要」全放在一个 {@code TransactionTemplate} 里。
+ * 一次摘要的模型调用是一次完整 HTTP，正常 2~5 秒、慢起来几十秒，而那些时间里
+ * **一直握着一条数据库连接**。Hikari 池只有 10 条、连接超时 5 秒 ——
+ * 几个慢摘要就能把池占满，正常请求（读消息、校验会话）5 秒后失败，
+ * 表现是「聊着聊着整个应用卡死」，日志里却只有一行 debug。
+ *
+ * <p>拆开后：事务 A 只读快照（毫秒级）→ **事务外**调模型 → 事务 B 校验后写入。
+ * 模型再慢也只占一个后台线程，不再占连接。
  */
 @Service
 public class ChatSummaryService {
@@ -62,7 +77,10 @@ public class ChatSummaryService {
     private final AiChatClientProvider aiProvider;
     private final ContextProperties properties;
     private final ExecutorService executor;
-    private final TransactionTemplate transactionTemplate;
+    /** 只读快照事务：毫秒级，读完即结束 */
+    private final TransactionTemplate readOnlyTemplate;
+    /** 写摘要事务：模型调用之后才开，只做一次写入 */
+    private final TransactionTemplate writeTemplate;
 
     public ChatSummaryService(ChatSessionRepository sessionRepository,
                               ChatMessageRepository messageRepository,
@@ -77,7 +95,12 @@ public class ChatSummaryService {
         this.aiProvider = aiProvider;
         this.properties = properties;
         this.executor = executor;
-        this.transactionTemplate = new TransactionTemplate(transactionManager);
+
+        // 没有用 @Transactional：refresh 由异步线程调用，走不到 Spring 代理，
+        // 注解会静默失效。显式模板把「事务边界」写成看得见的东西。
+        this.readOnlyTemplate = new TransactionTemplate(transactionManager);
+        this.readOnlyTemplate.setReadOnly(true);
+        this.writeTemplate = new TransactionTemplate(transactionManager);
     }
 
     /**
@@ -117,61 +140,138 @@ public class ChatSummaryService {
     /**
      * 同步刷新一次摘要。可见于测试，也便于运维手动触发。
      *
-     * <p>没有用 {@code @Transactional}：它由异步线程调用，走不到 Spring 代理，
-     * 注解会静默失效。这里显式用 TransactionTemplate，把「事务边界」写成看得见的东西。
+     * <p>三段式：只读快照 → **事务外**调模型 → 校验后写入。任何一步失败都保留旧摘要。
      */
     public void refresh(String conversationId) {
+        if (!properties.summary().enabled()) {
+            return;
+        }
         try {
-            transactionTemplate.executeWithoutResult(status -> doRefresh(conversationId));
+            SummarySnapshot snapshot = readOnlyTemplate.execute(status -> loadSnapshot(conversationId));
+            if (snapshot == null) {
+                return; // 窗口没推进、新增消息不足、或会话已删除
+            }
+
+            // 事务外：一次完整 HTTP，最慢的一步。绝不能占着数据库连接做这件事
+            String summary = summarize(snapshot.existingSummary(), snapshot.transcript());
+            if (summary == null || summary.isBlank()) {
+                return;
+            }
+
+            String finalSummary = truncate(summary.trim(), properties.summary().maxSummaryChars());
+            writeTemplate.executeWithoutResult(status -> applySnapshot(snapshot, finalSummary));
         } catch (RuntimeException ex) {
             // 摘要失败不能影响任何用户可见行为
             log.debug("摘要刷新失败，保留旧摘要 conversationId={}", conversationId, ex);
         }
     }
 
-    private void doRefresh(String conversationId) {
+    /**
+     * 第一段：读快照（只读事务）。
+     *
+     * @return 没有可摘要的内容时返回 {@code null}
+     */
+    private SummarySnapshot loadSnapshot(String conversationId) {
         ChatSessionEntity session = sessionRepository.findById(conversationId).orElse(null);
         if (session == null) {
-            return;
+            return null;
         }
         // 窗口起点 - 1 = 最后一条已经滑出窗口的消息
         int boundary = chatMemory.contextStartSequence(conversationId) - 1;
         if (boundary <= session.getSummaryUptoSeq()) {
-            return; // 还没有新的消息滑出窗口
+            return null; // 还没有新的消息滑出窗口
         }
 
         List<ChatMessageEntity> pending = messageRepository.findRangeBySequenceNo(
                 conversationId, session.getSummaryUptoSeq() + 1, boundary);
         if (pending.size() < properties.summary().minMessages()) {
-            return;
+            return null;
         }
 
-        String summary = summarize(session.getContextSummary(), pending);
-        if (summary == null || summary.isBlank()) {
-            return;
-        }
-        session.applySummary(truncate(summary.trim(), properties.summary().maxSummaryChars()), boundary);
-        sessionRepository.save(session);
-        log.info("会话摘要已更新 conversationId={} 覆盖到 seq={} 长度={}",
-                conversationId, boundary, session.getContextSummary().length());
+        // 把要送模型的内容在这里就拼成纯文本：
+        // 一是它只依赖已加载的实体字段（出事务后安全），
+        // 二是避免把 JPA 实体带出事务边界（那会引出延迟加载问题）。
+        String transcript = buildTranscript(pending, properties.summary().maxExcerptChars());
+        return new SummarySnapshot(conversationId, boundary, session.getSummaryUptoSeq(),
+                session.getContextSummary(), transcript);
     }
 
-    /** 调模型生成新摘要；任何异常返回 null（由调用方保留旧值） */
-    private String summarize(String existingSummary, List<ChatMessageEntity> pending) {
+    /**
+     * 第三段：写入（独立事务）。
+     *
+     * <p><b>必须重新校验 {@code summaryUptoSeq} 没变</b>：模型调用期间可能已有另一次
+     * 摘要跑完并写入了更新的边界。此时本次结果基于过期的输入，直接丢弃 ——
+     * 否则会把「已经压缩过的旧内容」重新写回去，或者覆盖掉更新的摘要。
+     */
+    private void applySnapshot(SummarySnapshot snapshot, String summary) {
+        ChatSessionEntity session = sessionRepository.findById(snapshot.conversationId()).orElse(null);
+        if (session == null) {
+            return;
+        }
+        if (session.getSummaryUptoSeq() != snapshot.previousUptoSeq()) {
+            log.debug("摘要输入已过期，丢弃本次结果 conversationId={} 期望seq={} 实际seq={}",
+                    snapshot.conversationId(), snapshot.previousUptoSeq(), session.getSummaryUptoSeq());
+            return;
+        }
+        session.applySummary(summary, snapshot.boundary());
+        sessionRepository.save(session);
+        log.info("会话摘要已更新 conversationId={} 覆盖到 seq={} 长度={}",
+                snapshot.conversationId(), snapshot.boundary(), summary.length());
+    }
+
+    /**
+     * 一次摘要所需的一切（全部是值，不含实体）。
+     *
+     * @param conversationId  会话标识
+     * @param boundary        本次要覆盖到的边界（窗口起点 - 1）
+     * @param previousUptoSeq 读取时的已覆盖边界，写入前用它做乐观校验
+     * @param existingSummary 已有摘要（可能为空）
+     * @param transcript      已拼好的「角色：内容」纯文本
+     */
+    private record SummarySnapshot(String conversationId, int boundary, int previousUptoSeq,
+                                   String existingSummary, String transcript) {
+    }
+
+    /**
+     * 调模型生成新摘要；任何异常或超时都返回 null（由调用方保留旧值）。
+     *
+     * <h2>为什么在虚拟线程里等</h2>
+     * Spring AI 的 {@code .call()} 没有单次调用超时（HTTP 超时是全局的，不能为摘要单独收紧 ——
+     * 那会连带掐断本该长跑的流式对话）。而模型卡住时不能无限占着一个平台线程：
+     * 这个执行器只有 1~2 个线程，两个卡住的摘要就能让后续所有摘要排队。
+     *
+     * <p>放到虚拟线程里带超时等待，超时就放弃本次结果。被放弃的那次 HTTP 调用
+     * 会在后台自然结束，虚拟线程的代价可以忽略 —— 比钉住平台线程划算得多。
+     */
+    private String summarize(String existingSummary, String transcript) {
         StringBuilder prompt = new StringBuilder();
         if (existingSummary != null && !existingSummary.isBlank()) {
             prompt.append("已有摘要（需要与新增对话合并）：\n").append(existingSummary).append("\n\n");
         }
-        prompt.append("新增对话：\n").append(buildTranscript(pending, properties.summary().maxExcerptChars()));
+        prompt.append("新增对话：\n").append(transcript);
+        String promptText = prompt.toString();
+
+        FutureTask<String> task = new FutureTask<>(() -> aiProvider.requirePlainChatClient()
+                .prompt()
+                .system(SUMMARY_SYSTEM)
+                .user(promptText)
+                .call()
+                .content());
+        Thread.ofVirtual().name("summary-call").start(task);
+
+        Duration timeout = properties.summary().timeout();
         try {
-            return aiProvider.requirePlainChatClient()
-                    .prompt()
-                    .system(SUMMARY_SYSTEM)
-                    .user(prompt.toString())
-                    .call()
-                    .content();
-        } catch (RuntimeException ex) {
-            log.debug("摘要模型调用失败", ex);
+            return task.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (TimeoutException ex) {
+            task.cancel(true);
+            log.debug("摘要模型调用超时（{}），保留旧摘要", timeout);
+            return null;
+        } catch (ExecutionException ex) {
+            log.debug("摘要模型调用失败", ex.getCause());
+            return null;
+        } catch (InterruptedException ex) {
+            task.cancel(true);
+            Thread.currentThread().interrupt();
             return null;
         }
     }

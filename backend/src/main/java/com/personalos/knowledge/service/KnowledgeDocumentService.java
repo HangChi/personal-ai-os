@@ -30,16 +30,28 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 知识文档的入库、列表与删除。
+ * 知识文档的入库、更新、列表与删除。
  *
- * <h2>为什么整个流程放在一个事务里</h2>
- * {@code PgVectorStore} 用的是同一个 {@code DataSource} 上的 {@code JdbcTemplate}，
- * 因此它会**加入**当前事务。于是「文档记录 + 向量」这两处写入要么一起成功、要么一起回滚，
- * 不会出现「文档记录写了但向量没写」这种半成品状态。
+ * <h2>事务边界为什么不是「整个流程一个事务」（2026-10-27 修正）</h2>
+ * 早先的注释写着「一个事务保证文档记录与向量要么都成、要么都回滚」。原子性本身没错，
+ * 但它换来了一个更糟的代价：**解析与向量化都在事务里**。向量化是每个分块一次嵌入 HTTP 调用，
+ * 一本几十页的文档要几十秒 —— 这期间一直握着一条数据库连接（池只有 10 条、连接超时 5 秒），
+ * 几个人同时上传就能让全站请求开始超时。
+ *
+ * <p>现在只让两处**真正的写入**进短事务，长耗时步骤在事务外：
+ * <ol>
+ *   <li>入库：落记录（取 id）→ 事务外解析+向量化 → 更新计数；向量化失败则删掉刚建的记录。</li>
+ *   <li>替换：事务外解析 → 删旧向量+自检 → 事务外向量化 → 更新记录。</li>
+ * </ol>
+ * 代价是失败时可能留下「文档记录在、向量为空」，那是**可恢复**的（再传一次即可），
+ * 已记录在 data-model.md。比起全站连接被占满，这个代价小得多。
  */
 @Service
 public class KnowledgeDocumentService {
@@ -58,27 +70,44 @@ public class KnowledgeDocumentService {
     private final VectorStoreInspector inspector;
     private final DocumentReaderFactory readerFactory;
 
+    /** 短事务模板（默认传播行为）。长耗时步骤一律在它外面做 */
+    private final TransactionTemplate transactionTemplate;
+
     public KnowledgeDocumentService(KnowledgeDocumentRepository repository,
                                     VectorStore vectorStore,
                                     KnowledgeProperties properties,
                                     VectorStoreInspector inspector,
-                                    DocumentReaderFactory readerFactory) {
+                                    DocumentReaderFactory readerFactory,
+                                    PlatformTransactionManager transactionManager) {
         this.repository = repository;
         this.vectorStore = vectorStore;
         this.properties = properties;
         this.inspector = inspector;
         this.readerFactory = readerFactory;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
+    }
+
+    /** 取事务模板。方法名直白，是为了在调用点一眼看出「这里开事务了」 */
+    private TransactionTemplate requireTx() {
+        return transactionTemplate;
     }
 
     /**
      * 上传并建立索引：校验 → 解析 → 分块 → 向量化 → 落库。
+     *
+     * <h2>为什么不再整个方法一个事务（2026-10-27）</h2>
+     * 解析（可能是几十页 PDF）与向量化（**每个分块一次嵌入 HTTP 调用**）都可能耗时数秒到数十秒。
+     * 这些工作若在事务里，会一直占着一条数据库连接：Hikari 池 10 条、连接超时 5 秒，
+     * 几个人同时传文件就能让正常请求开始超时。现在只让「写一行记录」和「更新统计」进事务。
+     *
+     * <p>代价是需要显式补偿：向量化失败时要删掉刚建的文档记录，
+     * 否则列表里会留下一个 0 分块的条目（看起来上传成功了，检索却永远查不到它）。
      *
      * @param originalFilename 原始文件名（用于取扩展名与默认标题）
      * @param title            标题，可为空
      * @param bytes            文件字节
      * @return 入库后的文档视图
      */
-    @Transactional
     public KnowledgeDocumentDto ingest(String originalFilename, String title, byte[] bytes) {
         String filename = sanitizeFilename(originalFilename);
         String extension = extensionOf(filename);
@@ -101,12 +130,10 @@ public class KnowledgeDocumentService {
         String documentTitle = (title == null || title.isBlank()) ? stripExtension(filename) : title.strip();
         documentTitle = truncateTitle(documentTitle);
 
-        // 先落文档记录以取得 id —— 向量元数据需要它，而元数据必须在写入向量前就准备好
-        KnowledgeDocumentEntity document = repository.save(new KnowledgeDocumentEntity(
-                documentTitle, filename, contentType, bytes.length, 0, now));
-
+        // 解析在事务外：此时还不知道 document_id，而 chunk() 会给每个分块补上它，
+        // 所以读者只需拿到标题/文件名（它们决定引用里显示什么）
         List<Document> parsed = readerFactory
-                .create(extension, contentType, bytes, baseMetadata(document))
+                .create(extension, contentType, bytes, metadataFor(null, documentTitle, filename))
                 .get();
 
         // 字符数取「解析后的文本总长」，不是原始字节数：扫描版 PDF 的字节可能很大而文本为 0，
@@ -123,25 +150,51 @@ public class KnowledgeDocumentService {
                             + properties.minChunkSizeChars() + "，无法形成有效分块");
         }
 
-        List<Document> chunks = chunk(parsed, document.getId());
+        // 短事务 1：先落文档记录以取得 id —— 向量元数据与检索过滤都依赖它
+        String finalTitle = documentTitle;
+        KnowledgeDocumentEntity created = requireTx().execute(status -> repository.save(
+                new KnowledgeDocumentEntity(finalTitle, filename, contentType, bytes.length, 0, now)));
+        UUID documentId = created.getId();
+
+        List<Document> chunks = chunk(parsed, documentId);
         if (chunks.isEmpty()) {
+            discardQuietly(documentId);
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, "解析后没有可索引的内容");
         }
 
+        // 事务外：向量化（每个分块一次嵌入调用），失败则回滚掉刚建的记录
         try {
             vectorStore.add(chunks);
         } catch (RuntimeException ex) {
+            discardQuietly(documentId);
             // 维度不一致、模型不可达等问题只会在这一刻暴露，翻译成人能看懂的提示
             throw translateVectorFailure(ex);
         }
 
-        // 字符数取「解析后的文本总长」，不是原始字节数：扫描版 PDF 的字节可能很大而文本为 0，
-        // 用户关心的是「有多少字进了索引」
-        document.updateStats(parsedChars, chunks.size(), Instant.now());
-        KnowledgeDocumentEntity saved = repository.save(document);
+        // 短事务 2：只写计数
+        KnowledgeDocumentEntity saved = requireTx().execute(status -> {
+            KnowledgeDocumentEntity document = repository.findById(documentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("知识文档不存在：" + documentId));
+            document.updateStats(parsedChars, chunks.size(), Instant.now());
+            return repository.save(document);
+        });
         log.info("知识文档入库完成 id={} filename={} chars={} chunks={}",
                 saved.getId(), filename, saved.getCharCount(), chunks.size());
         return toDto(saved);
+    }
+
+    /**
+     * 尽力删掉一个半成品文档记录（向量化失败时调用）。
+     *
+     * <p>失败只记 warn：真正的问题（模型不可达）马上会以业务异常抛给用户，
+     * 这里再抛一个只会把原始原因盖掉。
+     */
+    private void discardQuietly(UUID documentId) {
+        try {
+            requireTx().executeWithoutResult(status -> repository.deleteById(documentId));
+        } catch (RuntimeException ex) {
+            log.warn("清理半成品文档失败，需人工清理 id={}", documentId, ex);
+        }
     }
 
     /**
@@ -233,8 +286,11 @@ public class KnowledgeDocumentService {
      *
      * <h2>标题跟着文件名走</h2>
      * 换了一个文件却还显示旧标题，用户会以为没生效。
+     *
+     * <h2>事务边界（2026-10-27）</h2>
+     * 与 {@link #ingest} 同理：解析与向量化都在事务外，只让「删旧向量」与「更新记录」
+     * 各占一个短事务。中间失败时文档记录仍是旧内容、向量为空 —— 可再更新一次。
      */
-    @Transactional
     public KnowledgeDocumentDto update(UUID documentId, String originalFilename, byte[] bytes) {
         KnowledgeDocumentEntity document = requireDocument(documentId);
 
@@ -276,27 +332,37 @@ public class KnowledgeDocumentService {
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, "解析后没有可索引的内容");
         }
 
-        vectorStore.delete(new FilterExpressionBuilder()
-                .eq(KnowledgeMetadata.DOCUMENT_ID, documentId.toString())
-                .build());
-        int leftover = inspector.countByDocumentId(documentId);
-        if (leftover != 0) {
-            throw new IllegalStateException(String.format(
-                    "旧向量清理未完全生效：document_id=%s 仍残留 %d 条。已回滚本次更新。",
-                    documentId, leftover));
-        }
+        // 短事务 1：删旧向量 + 自检。**必须先删再写**：新旧分块边界完全不同，
+        // 两批混在一个 document_id 下会让检索返回「文档里已经不存在的段落」。
+        requireTx().executeWithoutResult(status -> {
+            vectorStore.delete(new FilterExpressionBuilder()
+                    .eq(KnowledgeMetadata.DOCUMENT_ID, documentId.toString())
+                    .build());
+            int leftover = inspector.countByDocumentId(documentId);
+            if (leftover != 0) {
+                throw new IllegalStateException(String.format(
+                        "旧向量清理未完全生效：document_id=%s 仍残留 %d 条。已回滚本次更新。",
+                        documentId, leftover));
+            }
+        });
 
+        // 事务外：向量化。失败时最坏情况是「文档记录还是旧内容、向量为空」——
+        // 用户可以再更新一次，属可恢复失败（见 data-model.md）。
         try {
             vectorStore.add(chunks);
         } catch (RuntimeException ex) {
             throw translateVectorFailure(ex);
         }
 
-        // 用同一个 newTitle 落库：向量元数据与实体标题必须是同一个值，
+        // 短事务 2：用同一个 newTitle 落库。向量元数据与实体标题必须是同一个值，
         // 否则「引用显示的名字」与「文档列表里的名字」会对不上
-        document.replaceContent(newTitle, filename, contentType, bytes.length,
-                parsedChars, chunks.size(), Instant.now());
-        KnowledgeDocumentEntity saved = repository.save(document);
+        KnowledgeDocumentEntity saved = requireTx().execute(status -> {
+            KnowledgeDocumentEntity current = repository.findById(documentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("知识文档不存在：" + documentId));
+            current.replaceContent(newTitle, filename, contentType, bytes.length,
+                    parsedChars, chunks.size(), Instant.now());
+            return repository.save(current);
+        });
         log.info("知识文档已更新 id={} filename={} chars={} chunks={}",
                 documentId, filename, parsedChars, chunks.size());
         return toDto(saved);
@@ -322,7 +388,10 @@ public class KnowledgeDocumentService {
      */
     private Map<String, Object> metadataFor(UUID documentId, String title, String filename) {
         Map<String, Object> metadata = new LinkedHashMap<>();
-        metadata.put(KnowledgeMetadata.DOCUMENT_ID, documentId.toString());
+        // 入库时还不知道 id（记录尚未创建），chunk() 会补上它；其余场景必须给值
+        if (documentId != null) {
+            metadata.put(KnowledgeMetadata.DOCUMENT_ID, documentId.toString());
+        }
         metadata.put(KnowledgeMetadata.DOCUMENT_TITLE, title);
         metadata.put(KnowledgeMetadata.FILENAME, filename);
         return metadata;

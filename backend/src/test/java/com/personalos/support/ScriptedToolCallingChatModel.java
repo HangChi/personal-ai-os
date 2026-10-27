@@ -1,5 +1,6 @@
 package com.personalos.support;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -30,6 +31,10 @@ public class ScriptedToolCallingChatModel implements ChatModel {
     private final Queue<ChatResponse> script = new ConcurrentLinkedQueue<>();
     private final List<List<Message>> receivedInstructions = new CopyOnWriteArrayList<>();
     private final AtomicInteger callCounter = new AtomicInteger();
+    /** 非 null 时下一次（及之后的）流式调用直接失败 */
+    private volatile RuntimeException streamError;
+    /** 非 null 时流式内容延迟到达，用于触发超时 */
+    private volatile Duration streamDelay;
 
     /** 入队一次「调用某个工具」的回复 */
     public void enqueueToolCall(String toolName, String argumentsJson) {
@@ -66,7 +71,21 @@ public class ScriptedToolCallingChatModel implements ChatModel {
     public Flux<ChatResponse> stream(Prompt prompt) {
         receivedInstructions.add(List.copyOf(prompt.getInstructions()));
         ChatResponse next = script.poll();
-        return Flux.just(next == null ? textResponse("（脚本已空）") : next);
+        if (streamError != null) {
+            return Flux.error(streamError);
+        }
+        Flux<ChatResponse> response = Flux.just(next == null ? textResponse("（脚本已空）") : next);
+        return streamDelay == null ? response : response.delayElements(streamDelay);
+    }
+
+    /** 让下一次流式调用直接失败（验证上游报错路径：必须发 error 帧且不丢半截回答） */
+    public void failStreamWith(RuntimeException error) {
+        this.streamError = error;
+    }
+
+    /** 让流式内容延迟到达（验证超时路径：超时必须发 error 帧而不是静默关流） */
+    public void delayStreamBy(Duration delay) {
+        this.streamDelay = delay;
     }
 
     /**
@@ -90,6 +109,8 @@ public class ScriptedToolCallingChatModel implements ChatModel {
     public void reset() {
         script.clear();
         receivedInstructions.clear();
+        streamError = null;
+        streamDelay = null;
     }
 
     private ChatResponse textResponse(String text) {

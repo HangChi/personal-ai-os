@@ -82,4 +82,20 @@ public class SseHeartbeatScheduler {
             heartbeat.cancel(false);
         }
     }
+
+    /**
+     * 在 {@code delay} 之后执行一次任务，用于**自己实现流超时**。
+     *
+     * <h2>为什么不用 SseEmitter 自带的超时</h2>
+     * {@code SseEmitter} 的 timeout 是 servlet 异步请求的超时。它一触发，容器就把这个
+     * 异步请求判为结束 —— 此时在 {@code onTimeout} 回调里再 {@code send()} 一个 error 帧，
+     * 写出去的内容**到不了客户端**（实测：回调确实执行了、send 也没抛异常，但客户端只看到
+     * 到一半就 EOF）。而那正是用户最需要一句解释的时刻。
+     *
+     * <p>所以超时由我们自己在连接仍然活着时触发：先发 error 帧、再 complete。
+     * emitters 自带的 timeout 留作兜底（比这里稍长），防止我们的任务因故没跑。
+     */
+    public ScheduledFuture<?> scheduleOnce(Runnable task, long delayMillis) {
+        return SCHEDULER.schedule(task, delayMillis, TimeUnit.MILLISECONDS);
+    }
 }

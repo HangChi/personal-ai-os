@@ -1,5 +1,6 @@
 package com.personalos.common.ai;
 
+import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -20,7 +21,7 @@ public record ContextProperties(Summary summary, AutoMemory autoMemory) {
 
     public ContextProperties {
         if (summary == null) {
-            summary = new Summary(true, 0, 0, 0);
+            summary = new Summary(true, 0, 0, 0, null);
         }
         if (autoMemory == null) {
             autoMemory = new AutoMemory(false, 0);
@@ -35,12 +36,16 @@ public record ContextProperties(Summary summary, AutoMemory autoMemory) {
      *                        太小会让每轮都调一次模型；太大则摘要长期滞后
      * @param maxExcerptChars 送给摘要模型的原文上限（截断到最近这么多字符）
      * @param maxSummaryChars 摘要本身的长度上限（超出截断）
+     * @param timeout         单次摘要调用的等待上限。超时即放弃本次、保留旧摘要 ——
+     *                        模型卡住时不能无限占着后台线程（那里只有 1~2 个）
      */
-    public record Summary(boolean enabled, int minMessages, int maxExcerptChars, int maxSummaryChars) {
+    public record Summary(boolean enabled, int minMessages, int maxExcerptChars, int maxSummaryChars,
+                          Duration timeout) {
 
         private static final int DEFAULT_MIN_MESSAGES = 4;
         private static final int DEFAULT_MAX_EXCERPT_CHARS = 4000;
         private static final int DEFAULT_MAX_SUMMARY_CHARS = 1200;
+        private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
 
         public Summary {
             if (minMessages <= 0) {
@@ -51,6 +56,9 @@ public record ContextProperties(Summary summary, AutoMemory autoMemory) {
             }
             if (maxSummaryChars <= 0) {
                 maxSummaryChars = DEFAULT_MAX_SUMMARY_CHARS;
+            }
+            if (timeout == null || timeout.isNegative() || timeout.isZero()) {
+                timeout = DEFAULT_TIMEOUT;
             }
         }
     }

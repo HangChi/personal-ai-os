@@ -15,6 +15,7 @@ import com.personalos.common.web.RequestIdFilter;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import com.personalos.knowledge.spi.KnowledgeSearchPort;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +23,14 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -59,9 +62,12 @@ public class ChatCompletionService {
 
     private static final Logger log = LoggerFactory.getLogger(ChatCompletionService.class);
 
-    /** SSE 超时（毫秒）。超过即关闭连接，避免连接悬挂。
-     *  注意：这是「整个流的存活时间上限」，不是首字节超时。 */
-    private static final long SSE_TIMEOUT_MILLIS = 120_000L;
+    /**
+     * 整条流的存活时间上限（「深度思考」档会翻倍，见 {@link #timeoutFor}）。
+     *
+     * <p>可配置是为了让超时路径能被测试；线上不需要调它。
+     */
+    private final Duration baseStreamTimeout;
 
     private static final String EVENT_START = "start";
     private static final String EVENT_DELTA = "delta";
@@ -88,7 +94,8 @@ public class ChatCompletionService {
                                  ChatTurnFinisher finisher,
                                  ChatStreamMetrics metrics,
                                  SseHeartbeatScheduler heartbeatScheduler,
-                                 ChatAttachmentContextBuilder attachmentContextBuilder) {
+                                 ChatAttachmentContextBuilder attachmentContextBuilder,
+                                 @Value("${app.chat.stream-timeout:120s}") Duration baseStreamTimeout) {
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
         this.promptAssembler = promptAssembler;
@@ -97,6 +104,19 @@ public class ChatCompletionService {
         this.metrics = metrics;
         this.heartbeatScheduler = heartbeatScheduler;
         this.attachmentContextBuilder = attachmentContextBuilder;
+        this.baseStreamTimeout = baseStreamTimeout;
+    }
+
+    /**
+     * 按思考深度决定这条流能活多久。
+     *
+     * <p>固定 120 秒对「深度思考」是不够的：8192 的思考预算在思考型模型上，
+     * 光是生成 reasoning 就可能超过两分钟 —— 用户看到的是「等到一半连接就断了」。
+     * 而关掉思考的普通问答并不需要更长的窗口，给它同样的额度只是让卡死的连接多挂两分钟。
+     */
+    private long timeoutFor(ThinkingLevel thinkingLevel) {
+        long base = baseStreamTimeout.toMillis();
+        return thinkingLevel == ThinkingLevel.DEEP ? base * 2 : base;
     }
 
     /**
@@ -143,7 +163,11 @@ public class ChatCompletionService {
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
         sessionService.initializeTitleFromFirstMessage(conversationId, userContent);
 
-        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MILLIS);
+        long streamTimeout = timeoutFor(thinkingLevel);
+        // emitter 自带的超时只作兜底：它比我们自己的看门狗晚 5 秒。
+        // 真正给客户端发 error 帧的是下面那个 scheduledTimeout ——
+        // servlet 异步超时一旦触发，容器已经判定响应结束，再写什么都到不了客户端。
+        SseEmitter emitter = new SseEmitter(streamTimeout + 5_000L);
         StringBuilder fullContent = new StringBuilder();
         // 终止标记：保证 done / error 只发一次，并让 onCompletion 能区分
         // 「正常结束」与「客户端断连」
@@ -154,6 +178,8 @@ public class ChatCompletionService {
         AtomicInteger promptCharsRef = new AtomicInteger(0);
         // 订阅可能先于赋值完成（切了线程池之后尤其如此），回调里必须能容忍 null
         AtomicReference<Disposable> subscriptionRef = new AtomicReference<>();
+        // 超时看门狗的句柄（见下面 stopEverything 与 scheduleOnce 处）
+        AtomicReference<ScheduledFuture<?>> watchdogRef = new AtomicReference<>();
 
         send(emitter, EVENT_START, new ChatStreamEvents.Start(conversationId));
         // 计入活跃流：从这一刻起，模型可能一直不出字，HTTP 指标却是安静的白板，
@@ -211,24 +237,97 @@ public class ChatCompletionService {
                     .content();
         }).subscribeOn(Schedulers.boundedElastic());
 
+        // ------------------------------------------------------------------ 终止收口
+        // 四条终止路径（正常完成 / 上游错误 / 超时 / 客户端断连）此前各写了一段清理，
+        // 漏掉一处就是「连接关了但模型还在烧 token」或「用户只看到转圈」。
+        // 现在统一成一个收尾动作，只有「怎么告知用户」这一句不同。
+
+        /** 停止一切后续动作：心跳、看门狗、活跃指标、上游订阅。重复调用安全。 */
+        Runnable stopEverything = () -> {
+            heartbeatScheduler.stop(heartbeat);
+            heartbeatScheduler.stop(watchdogRef.get());
+            closeStream.run();
+            disposeQuietly(subscriptionRef.get());
+        };
+
+        /**
+         * 失败收尾：先按需发 error 帧，再把已产生的半截回答落库，最后关闭。
+         *
+         * <p><b>为什么必须落半截回答</b>：用户消息由 Advisor 在订阅时就写了，
+         * 而助手消息要等流正常终止才写。失败时若什么都不写，历史里就留下一条
+         * 只有提问没有回答的记录 —— 下一轮模型会把它当成「用户在自言自语」，
+         * 摘要也会把它当事实压进去。落一条带中断标记的回答，上下文才是自洽的。
+         */
+        BiConsumer<ErrorCode, Boolean> failWith = (errorCode, notifyClient) -> runWithRequestId(requestId, () -> {
+            if (!terminated.compareAndSet(false, true)) {
+                return; // 已有别的路径收过尾，不能重复写消息
+            }
+            stopEverything.run();
+            if (notifyClient) {
+                // 发送失败（客户端已断开）无需再通知，但收尾必须照做
+                send(emitter, EVENT_ERROR,
+                        new ChatStreamEvents.Error(errorCode.getCode(), errorCode.getDefaultMessage()));
+            }
+            finisher.recordInterruptedReply(conversationId, fullContent.toString());
+            emitter.complete();
+        });
+
+        // 自己的看门狗：到点先发 error 帧再关流。必须在订阅之前就位 ——
+        // 模型「连上了但一个字节也不出」正是需要它的场景。
+        // 句柄放原子引用里，好让上面的 stopEverything 能引用到它（声明顺序所限）。
+        watchdogRef.set(heartbeatScheduler.scheduleOnce(() -> {
+            log.warn("流式对话超时（{}ms，思考档={}） conversationId={}",
+                    streamTimeout, thinkingLevel.code(), conversationId);
+            failWith.accept(ErrorCode.AI_TIMEOUT, true);
+        }, streamTimeout));
+
+        // 回调必须**先注册再订阅**：客户端在 start 之后立刻断开时，
+        // onCompletion 可能早于下面这行 subscribe 的返回 —— 那时 subscriptionRef 还是 null，
+        // dispose 变成 no-op，模型白白继续生成到自然结束。
+        emitter.onTimeout(() -> {
+            // 走到这里说明看门狗没能按时收尾（例如调度线程被打满）。
+            // 此时响应已被容器判为结束，只能做清理，发不出任何事件。
+            log.warn("SSE 异步请求超时（兜底路径） conversationId={}", conversationId);
+            if (terminated.compareAndSet(false, true)) {
+                stopEverything.run();
+                finisher.recordInterruptedReply(conversationId, fullContent.toString());
+            }
+            emitter.complete();
+        });
+        emitter.onError(throwable -> {
+            log.warn("SSE 连接异常 conversationId={}", conversationId, throwable);
+            failWith.accept(ErrorCode.INTERNAL_ERROR, false);
+        });
+        emitter.onCompletion(() -> {
+            // 正常结束时 terminated 已为 true，这里什么都不做；
+            // 只有「客户端提前断连」才会走到这里且仍未终止 —— 此时必须取消上游
+            if (!terminated.get()) {
+                stopEverything.run();
+            }
+        });
+
         Disposable subscription = contentFlux.subscribe(
                 chunk -> {
                     if (terminated.get() || chunk == null || chunk.isEmpty()) {
                         return;
                     }
                     fullContent.append(chunk);
-                    send(emitter, EVENT_DELTA, new ChatStreamEvents.Delta(chunk));
+                    // 发送失败 = 客户端已经走了。必须立刻取消上游，
+                    // 否则每个 delta 都往死 socket 写一次异常，而模型还在继续烧 token。
+                    if (!send(emitter, EVENT_DELTA, new ChatStreamEvents.Delta(chunk))) {
+                        terminateQuietly(terminated, stopEverything, "客户端已断开");
+                    }
                 },
                 error -> runWithRequestId(requestId, () -> {
                     if (!terminated.compareAndSet(false, true)) {
                         return;
                     }
-                    heartbeatScheduler.stop(heartbeat);
-                    closeStream.run();
+                    stopEverything.run();
                     log.warn("流式对话失败 conversationId={}", conversationId, error);
                     ErrorCode errorCode = classify(error);
                     send(emitter, EVENT_ERROR,
                             new ChatStreamEvents.Error(errorCode.getCode(), errorCode.getDefaultMessage()));
+                    finisher.recordInterruptedReply(conversationId, fullContent.toString());
                     emitter.complete();
                 }),
                 () -> runWithRequestId(requestId, () -> {
@@ -254,31 +353,27 @@ public class ChatCompletionService {
                     finisher.afterDone(conversationId, userContent, reply, requestAttachments);
                 }));
         subscriptionRef.set(subscription);
-
-        emitter.onTimeout(() -> {
-            terminated.set(true);
-            heartbeatScheduler.stop(heartbeat);
-            closeStream.run();
-            disposeQuietly(subscriptionRef.get());
-            emitter.complete();
-        });
-        emitter.onError(throwable -> {
-            terminated.set(true);
-            heartbeatScheduler.stop(heartbeat);
-            closeStream.run();
-            disposeQuietly(subscriptionRef.get());
-        });
-        emitter.onCompletion(() -> {
-            // 只有「客户端提前断连」才会走到这里且 terminated 仍为 false；
-            // 此时取消上游订阅，避免继续消耗模型额度
-            heartbeatScheduler.stop(heartbeat);
-            closeStream.run();
-            if (!terminated.get()) {
-                disposeQuietly(subscriptionRef.get());
-            }
-        });
+        // 订阅返回前就已被终止（上面任一路径抢先）：这里补一次 dispose，
+        // 否则那次 dispose 落在 null 上，等于没取消。
+        if (terminated.get()) {
+            disposeQuietly(subscription);
+        }
 
         return emitter;
+    }
+
+    /**
+     * 静默终止：不发任何事件，只做清理。
+     *
+     * <p>用于「已经无法通知客户端」的场合（连接已断），因此不需要 MDC 也不需要落库 ——
+     * 半截回答会在 {@link ChatTurnFinisher#recordInterruptedReply} 由失败路径补写，
+     * 而这里连客户端都没有了。
+     */
+    private void terminateQuietly(AtomicBoolean terminated, Runnable stopEverything, String reason) {
+        if (terminated.compareAndSet(false, true)) {
+            log.debug("流式对话中止：{}", reason);
+            stopEverything.run();
+        }
     }
 
     /**
@@ -384,12 +479,18 @@ public class ChatCompletionService {
      *
      * <p>发送失败（客户端已断开 / emitter 已结束）只记日志，不向上抛 ——
      * 否则会污染全局异常处理，把「客户端走了」误报成服务端错误。
+     *
+     * @return {@code false} 表示连接已不可用。调用方据此终止上游订阅：
+     *         早期这里只打 debug 就返回，于是客户端关掉页面后模型仍继续生成，
+     *         每个 delta 都往死 socket 写一次 —— 白烧额度且日志里几乎看不出来
      */
-    private void send(SseEmitter emitter, String eventName, Object payload) {
+    private boolean send(SseEmitter emitter, String eventName, Object payload) {
         try {
             emitter.send(SseEmitter.event().name(eventName).data(payload, MediaType.APPLICATION_JSON));
+            return true;
         } catch (IOException | IllegalStateException ex) {
             log.debug("SSE 事件发送失败，客户端可能已断开：event={}", eventName, ex);
+            return false;
         }
     }
 

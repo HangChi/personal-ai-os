@@ -9,6 +9,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.stereotype.Service;
 
 /**
@@ -39,21 +41,27 @@ public class ChatTurnFinisher {
 
     private static final Logger log = LoggerFactory.getLogger(ChatTurnFinisher.class);
 
+    /** 中断标记。措辞要让人和模型都能读懂「这条回答没说完」 */
+    private static final String INTERRUPTED_MARKER = "（本条回答因连接中断未说完）";
+
     private final ChatCitationService citationService;
     private final ChatAttachmentService attachmentService;
     private final ChatMessageRepository messageRepository;
     private final ChatSummaryService summaryService;
+    private final ChatMemory chatMemory;
     private final ObjectProvider<PostTurnContributor> postTurnContributors;
 
     public ChatTurnFinisher(ChatCitationService citationService,
                             ChatAttachmentService attachmentService,
                             ChatMessageRepository messageRepository,
                             ChatSummaryService summaryService,
+                            ChatMemory chatMemory,
                             ObjectProvider<PostTurnContributor> postTurnContributors) {
         this.citationService = citationService;
         this.attachmentService = attachmentService;
         this.messageRepository = messageRepository;
         this.summaryService = summaryService;
+        this.chatMemory = chatMemory;
         this.postTurnContributors = postTurnContributors;
     }
 
@@ -72,6 +80,31 @@ public class ChatTurnFinisher {
             citationService.attachToLatestAssistant(conversationId, hits);
         } catch (RuntimeException ex) {
             log.warn("引用挂载失败（不影响本轮回答） conversationId={}", conversationId, ex);
+        }
+    }
+
+    /**
+     * 流没有正常结束时，把已经产生的半截回答落库并标注中断。
+     *
+     * <h2>为什么这条记录不能省</h2>
+     * 用户消息由记忆 Advisor 在**订阅时**就写入，而助手消息要等流正常终止才写。
+     * 于是超时/上游报错时，历史里会留下一条「只有提问、没有回答」的记录：
+     * 下一轮模型会把它读成一个悬空的问题，摘要也会把它当作既有事实压缩进去 ——
+     * 用户看到的是「助手忘了我刚才问了什么」，而代码看起来毫无问题。
+     *
+     * <p>标注「回答中断」而不是假装完整：模型据此知道这条回答不完整，
+     * 不会把半句话当成结论。
+     *
+     * @param partialReply 已经推给客户端的增量；为空时写入纯标记文案，
+     *                     否则悬空的提问仍在上下文里
+     */
+    public void recordInterruptedReply(String conversationId, String partialReply) {
+        String body = partialReply == null ? "" : partialReply.strip();
+        String content = body.isEmpty() ? INTERRUPTED_MARKER : body + "\n\n" + INTERRUPTED_MARKER;
+        try {
+            chatMemory.add(conversationId, List.of(new AssistantMessage(content)));
+        } catch (RuntimeException ex) {
+            log.warn("中断回答落库失败（不影响已推送的内容） conversationId={}", conversationId, ex);
         }
     }
 

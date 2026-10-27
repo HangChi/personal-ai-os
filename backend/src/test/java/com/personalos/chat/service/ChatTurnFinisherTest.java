@@ -2,6 +2,7 @@ package com.personalos.chat.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -22,7 +23,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
 
 /**
  * {@link ChatTurnFinisher} 的契约测试。
@@ -39,6 +44,7 @@ class ChatTurnFinisherTest {
     private ChatAttachmentService attachmentService;
     private ChatMessageRepository messageRepository;
     private ChatSummaryService summaryService;
+    private ChatMemory chatMemory;
     private PostTurnContributor firstHook;
     private PostTurnContributor secondHook;
     private ChatTurnFinisher finisher;
@@ -49,11 +55,12 @@ class ChatTurnFinisherTest {
         attachmentService = mock(ChatAttachmentService.class);
         messageRepository = mock(ChatMessageRepository.class);
         summaryService = mock(ChatSummaryService.class);
+        chatMemory = mock(ChatMemory.class);
         firstHook = mock(PostTurnContributor.class);
         secondHook = mock(PostTurnContributor.class);
 
         finisher = new ChatTurnFinisher(citationService, attachmentService, messageRepository,
-                summaryService, new StaticObjectProvider<>(List.of(firstHook, secondHook)));
+                summaryService, chatMemory, new StaticObjectProvider<>(List.of(firstHook, secondHook)));
 
         // 默认无附件：大多数用例只关心别的分支
         when(attachmentService.verify(any())).thenReturn(List.of());
@@ -151,5 +158,46 @@ class ChatTurnFinisherTest {
 
         assertThat(true).as("走到这里且没有异常即通过").isTrue();
         verify(messageRepository, never()).save(any());
+    }
+
+    // ------------------------------------------------------------------ 中断回答落库
+
+    @SuppressWarnings("unchecked")
+    private List<Message> capturedMessages() {
+        ArgumentCaptor<List<Message>> captor = ArgumentCaptor.forClass(List.class);
+        verify(chatMemory).add(eq(CONVERSATION), captor.capture());
+        return captor.getValue();
+    }
+
+    @Test
+    @DisplayName("中断时把半截回答落库并标注中断（否则历史里留下只有提问没有回答的记录）")
+    void recordsPartialReplyOnInterruption() {
+        finisher.recordInterruptedReply(CONVERSATION, "我正在为你整理");
+
+        List<Message> saved = capturedMessages();
+        assertThat(saved).hasSize(1);
+        String content = saved.get(0).getText();
+        assertThat(content).startsWith("我正在为你整理").contains("中断");
+        assertThat(saved.get(0)).isInstanceOf(AssistantMessage.class);
+    }
+
+    @Test
+    @DisplayName("一个字都没生成时也写一条标记：否则悬空的提问仍会留在上下文里")
+    void recordsMarkerWhenNothingGenerated() {
+        finisher.recordInterruptedReply(CONVERSATION, "   ");
+
+        String content = capturedMessages().get(0).getText();
+        assertThat(content).isNotBlank().contains("中断");
+    }
+
+    @Test
+    @DisplayName("落库失败不外抛：已经推给客户端的内容不能因此消失")
+    void swallowsRecordFailure() {
+        doThrow(new IllegalStateException("库挂了"))
+                .when(chatMemory).add(anyString(), anyList());
+
+        finisher.recordInterruptedReply(CONVERSATION, "半截");
+
+        verify(chatMemory).add(eq(CONVERSATION), anyList());
     }
 }

@@ -18,17 +18,21 @@ import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.chat.repository.ChatSessionRepository;
 import com.personalos.common.ai.AiChatClientProvider;
 import com.personalos.common.ai.ContextProperties;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * {@link ChatSummaryService} 单元测试。
@@ -44,6 +48,9 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 class ChatSummaryServiceTest {
 
     private static final String CID = "44444444-4444-4444-4444-444444444444";
+
+    /** 摘要调用的等待上限；本类不验证超时本身（那条在下面的超时用例里单独给短值） */
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
 
     private final ChatSessionRepository sessionRepository = mock(ChatSessionRepository.class);
     private final ChatMessageRepository messageRepository = mock(ChatMessageRepository.class);
@@ -78,7 +85,7 @@ class ChatSummaryServiceTest {
 
     private static ContextProperties enabled(int minMessages) {
         return new ContextProperties(
-                new ContextProperties.Summary(true, minMessages, 4000, 1200),
+                new ContextProperties.Summary(true, minMessages, 4000, 1200, DEFAULT_TIMEOUT),
                 new ContextProperties.AutoMemory(false, 3));
     }
 
@@ -107,7 +114,7 @@ class ChatSummaryServiceTest {
     @DisplayName("功能关闭时：不渲染、也不提交后台任务")
     void disabledMeansNoOp() {
         ContextProperties disabled = new ContextProperties(
-                new ContextProperties.Summary(false, 4, 4000, 1200),
+                new ContextProperties.Summary(false, 4, 4000, 1200, DEFAULT_TIMEOUT),
                 new ContextProperties.AutoMemory(false, 3));
         ChatSummaryService service = service(disabled);
 
@@ -174,5 +181,93 @@ class ChatSummaryServiceTest {
 
     private static ChatMessageEntity message(int sequence, String content) {
         return new ChatMessageEntity(CID, MessageRole.USER, content, sequence, Instant.now());
+    }
+
+    // ------------------------------------------------------------------ 三段事务
+
+    /** 搭好 ChatClient 的流式调用链，返回最后那段可用于打桩/校验的 CallResponseSpec */
+    private ChatClient.CallResponseSpec stubModel(String content) {
+        ChatClient client = mock(ChatClient.class);
+        ChatClient.ChatClientRequestSpec request = mock(ChatClient.ChatClientRequestSpec.class);
+        ChatClient.CallResponseSpec call = mock(ChatClient.CallResponseSpec.class);
+        given(aiProvider.requirePlainChatClient()).willReturn(client);
+        given(client.prompt()).willReturn(request);
+        given(request.system(any(String.class))).willReturn(request);
+        given(request.user(any(String.class))).willReturn(request);
+        given(request.call()).willReturn(call);
+        given(call.content()).willReturn(content);
+        return call;
+    }
+
+    @Test
+    @DisplayName("模型调用发生在事务之外：否则一次慢摘要会钉住一条数据库连接（池只有 10 条）")
+    void modelCallRunsOutsideTransaction() {
+        ChatSessionEntity session = new ChatSessionEntity(CID, "标题", Instant.EPOCH, Instant.EPOCH);
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(session));
+        given(chatMemory.contextStartSequence(CID)).willReturn(9);
+        given(messageRepository.findRangeBySequenceNo(eq(CID), anyInt(), anyInt()))
+                .willReturn(List.of(message(1, "第一条"), message(2, "第二条")));
+
+        ChatClient.CallResponseSpec call = stubModel("新摘要");
+        AtomicBoolean transactionActiveDuringCall = new AtomicBoolean(true);
+        given(call.content()).willAnswer(invocation -> {
+            transactionActiveDuringCall.set(TransactionSynchronizationManager.isActualTransactionActive());
+            return "新摘要";
+        });
+
+        service(enabled(1)).refresh(CID);
+
+        assertThat(transactionActiveDuringCall)
+                .as("模型调用必须在两个短事务之间；若为 true，说明又回到「事务内调模型」")
+                .isFalse();
+        verify(sessionRepository).save(any());
+    }
+
+    @Test
+    @DisplayName("模型超时 → 保留旧摘要，不写入")
+    void timeoutKeepsExistingSummary() {
+        ChatSessionEntity session = new ChatSessionEntity(CID, "标题", Instant.EPOCH, Instant.EPOCH);
+        session.applySummary("旧摘要", 3);
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(session));
+        given(chatMemory.contextStartSequence(CID)).willReturn(9);
+        given(messageRepository.findRangeBySequenceNo(eq(CID), anyInt(), anyInt()))
+                .willReturn(List.of(message(4, "新内容")));
+
+        ChatClient.CallResponseSpec call = stubModel("不会被用到");
+        given(call.content()).willAnswer(invocation -> {
+            Thread.sleep(500); // 超过下面配置的 50ms 超时
+            return "迟到的摘要";
+        });
+
+        ContextProperties tightTimeout = new ContextProperties(
+                new ContextProperties.Summary(true, 1, 4000, 1200, Duration.ofMillis(50)),
+                new ContextProperties.AutoMemory(false, 3));
+        service(tightTimeout).refresh(CID);
+
+        verify(sessionRepository, never()).save(any());
+        assertThat(session.getContextSummary()).isEqualTo("旧摘要");
+    }
+
+    @Test
+    @DisplayName("模型调用期间边界已被推进 → 丢弃本次结果，不覆盖更新的摘要")
+    void discardsResultWhenBoundaryAdvancedMeanwhile() {
+        // 第一次读到的快照：已覆盖 3
+        ChatSessionEntity stale = new ChatSessionEntity(CID, "标题", Instant.EPOCH, Instant.EPOCH);
+        stale.applySummary("旧摘要", 3);
+        // 第二次读（写入前校验）：已被并发推进到 8
+        ChatSessionEntity advanced = new ChatSessionEntity(CID, "标题", Instant.EPOCH, Instant.EPOCH);
+        advanced.applySummary("并发写入的新摘要", 8);
+
+        // loadSnapshot 读一次，applySnapshot 再读一次
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(stale), Optional.of(advanced));
+        given(chatMemory.contextStartSequence(CID)).willReturn(9);
+        given(messageRepository.findRangeBySequenceNo(eq(CID), anyInt(), anyInt()))
+                .willReturn(List.of(message(4, "新内容")));
+        stubModel("基于旧输入生成的摘要");
+
+        service(enabled(1)).refresh(CID);
+
+        verify(sessionRepository, never()).save(any());
+        assertThat(advanced.getContextSummary()).as("并发写入的摘要不能被覆盖").isEqualTo("并发写入的新摘要");
     }
 }

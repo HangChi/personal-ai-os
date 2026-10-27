@@ -48,6 +48,15 @@ public enum ErrorCode {
             "嵌入模型输出维度与向量表结构不一致，请检查嵌入模型配置或新增迁移重建向量列",
             HttpStatus.INTERNAL_SERVER_ERROR),
 
+    /**
+     * 流式回答超时（整条流超过存活上限仍未结束）。
+     *
+     * <p>单独一个码而不是复用 {@link #AI_UPSTREAM_ERROR}：超时与「上游报错」的重试策略不同 ——
+     * 超时通常是思考预算过大或模型过载，用户降低思考深度就能改善；
+     * 而上游报错多半是配置或网络问题。
+     */
+    AI_TIMEOUT(50202, "模型响应超时，请稍后重试或降低思考深度", HttpStatus.GATEWAY_TIMEOUT),
+
     /** AI 模型未配置（未提供任何可用的 ChatModel）。 */
     AI_NOT_CONFIGURED(50300, "AI 模型未配置，请设置 AI_CHAT_PROVIDER 为 ollama 或 openai", HttpStatus.SERVICE_UNAVAILABLE),
 
