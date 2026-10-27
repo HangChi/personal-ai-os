@@ -15,7 +15,7 @@
  * <p>耗时字段可能是 null（未真正执行，例如停在待确认），显示为「—」而不是 0ms ——
  * 两者语义完全不同。
  */
-import { ArrowRight, Operation } from '@element-plus/icons-vue'
+import { Operation } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 
 import StatusTag from '@/components/StatusTag.vue'
@@ -80,7 +80,11 @@ function formatDuration(durationMs: number | null): string {
           <span class="chat-trail__summary-label">已调用 {{ items.length }} 个工具</span>
           <span class="chat-trail__summary-names">{{ summaryText }}</span>
           <span v-if="failedCount > 0" class="chat-trail__summary-fail">{{ failedCount }} 个失败</span>
-          <el-icon class="chat-trail__chevron"><ArrowRight /></el-icon>
+          <!--
+            不要再自己塞一个箭头：el-collapse-item 的 header 自带
+            .el-collapse-item__arrow（EP 按 is-active 自动旋转）。
+            自己画的 ArrowRight 会与它并排出现两个箭头（实测相距 12px）。
+          -->
         </span>
       </template>
       <ul class="chat-trail__list">
@@ -169,13 +173,14 @@ function formatDuration(durationMs: number | null): string {
   color: var(--el-text-color-placeholder);
 }
 
-.chat-trail__chevron {
-  transition: transform var(--os-duration-fast) var(--os-ease);
-}
-
-/* EP 给展开项加 is-active，箭头随之转向 */
-.chat-trail :deep(.el-collapse-item.is-active) .chat-trail__chevron {
-  transform: rotate(90deg);
+/*
+ * EP 自带的展开箭头：它默认靠右贴边，但这一行是 inline-block 且宽度随内容收缩，
+ * 箭头会紧贴在最后一段文字后面，看起来像「文字的一部分」。
+ * 加一点左边距把它推开，并统一成弱化色（默认是 regular，比这一行本身还重）。
+ */
+.chat-trail :deep(.el-collapse-item__arrow) {
+  margin-left: var(--os-space-1);
+  color: var(--el-text-color-placeholder);
 }
 
 .chat-trail__summary-fail {
