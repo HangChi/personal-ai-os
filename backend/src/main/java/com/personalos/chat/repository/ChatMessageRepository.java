@@ -102,6 +102,17 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     List<String> findAttachmentJsonByConversationId(@Param("conversationId") String conversationId);
 
     /**
+     * 从 {@code fromSeq}（含）起的附件快照，供 rewind 清理磁盘文件（审查 P3）。
+     *
+     * <p>rewind 删的是「某序号及之后」，只需清理被删那段消息的附件 —— 按序号范围
+     * 取，而不是取整个会话（那样会误删还留在前面的消息的附件）。
+     */
+    @Query("select m.attachments from ChatMessageEntity m "
+            + "where m.conversationId = :conversationId and m.sequenceNo >= :fromSeq and m.attachments is not null")
+    List<String> findAttachmentJsonFromSequence(@Param("conversationId") String conversationId,
+                                                @Param("fromSeq") int fromSeq);
+
+    /**
      * 全库附件快照（只 select 这一列），供孤儿文件巡检使用。
      *
      * <p>单用户量级下没问题：一万条消息每行几十字节，合计几百 KB。

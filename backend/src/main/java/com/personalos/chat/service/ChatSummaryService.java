@@ -228,10 +228,6 @@ public class ChatSummaryService {
      * @param existingSummary 已有摘要（可能为空）
      * @param transcript      已拼好的「角色：内容」纯文本
      */
-    private record SummarySnapshot(String conversationId, int boundary, int previousUptoSeq,
-                                   String existingSummary, String transcript) {
-    }
-
     /**
      * 调模型生成新摘要；任何异常或超时都返回 null（由调用方保留旧值）。
      *

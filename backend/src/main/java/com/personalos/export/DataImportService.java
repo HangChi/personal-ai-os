@@ -66,7 +66,8 @@ public class DataImportService {
 
     /** 空库校验覆盖的表；顺序只影响报错文案 */
     private static final List<String> GUARDED_TABLES = List.of(
-            "chat_session", "task", "calendar_event", "memory", "knowledge_document");
+            "chat_session", "chat_message", "task", "task_tag", "calendar_event",
+            "memory", "knowledge_document", "confirmation", "operation_record");
 
     private final EntityManager entityManager;
     private final VectorStore vectorStore;

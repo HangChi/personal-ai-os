@@ -136,4 +136,31 @@ class ChatMarkdownExporterTest {
         assertThat(filename).startsWith("标".repeat(60) + "-").endsWith(".md");
         assertThat(filename.length()).isLessThan(80);
     }
+
+    @Test
+    @DisplayName("未闭合的代码围栏会被配平：否则后面所有消息都被吞进代码块（审查 P3）")
+    void balancesUnclosedFences() {
+        givenSession("围栏", Instant.parse("2026-10-27T02:00:00Z"));
+        // 第一条消息带一条未闭合的 ``` 围栏，后面还有一条正常消息
+        when(messageService.list(CONVERSATION)).thenReturn(List.of(
+                message("ASSISTANT", "看这段代码：\n```python\nprint(1)", List.of(), List.of()),
+                message("USER", "再问一句", List.of(), List.of())));
+
+        String markdown = exporter.export(CONVERSATION).markdown();
+
+        // 配平后围栏数量是偶数（2 个：开 + 补的闭），第二条消息不在代码块里
+        int fences = countFences(markdown);
+        assertThat(fences).as("围栏应配平成偶数").isEven();
+        assertThat(markdown).contains("再问一句");
+    }
+
+    private static int countFences(String markdown) {
+        int count = 0;
+        int index = 0;
+        while ((index = markdown.indexOf("```", index)) >= 0) {
+            count++;
+            index += 3;
+        }
+        return count;
+    }
 }

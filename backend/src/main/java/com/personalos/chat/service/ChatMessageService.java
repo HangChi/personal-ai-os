@@ -1,5 +1,6 @@
 package com.personalos.chat.service;
 
+import com.personalos.chat.dto.ChatAttachmentDto;
 import com.personalos.chat.dto.ChatCitationDto;
 import com.personalos.chat.dto.ChatMessageDto;
 import com.personalos.chat.entity.ChatMessageEntity;
@@ -75,11 +76,45 @@ public class ChatMessageService {
         if (fromSequenceNo <= 0) {
             throw new BusinessException(ErrorCode.VALIDATION_FAILED, "fromSequenceNo 必须为正整数");
         }
+        // 附件快照必须在删记录之前取（审查 P3）：删完就找不到这些 id，磁盘文件会永久残留。
+        // 与 ChatSessionService.delete 同一套「先取快照、事务提交后删文件」的纪律。
+        List<ChatAttachmentDto> doomedAttachments = parseAttachments(
+                messageRepository.findAttachmentJsonFromSequence(conversationId, fromSequenceNo));
         // 摘要可能覆盖到被删区间，无法精确裁剪 —— 整段作废，由下一轮重新生成
         sessionService.requireSession(conversationId).invalidateSummaryFrom(fromSequenceNo);
         int deleted = messageRepository.deleteFromSequence(conversationId, fromSequenceNo);
-        log.info("回退消息 conversationId={} fromSeq={} 删除 {} 条", conversationId, fromSequenceNo, deleted);
+        log.info("回退消息 conversationId={} fromSeq={} 删除 {} 条 附件 {} 个",
+                conversationId, fromSequenceNo, deleted, doomedAttachments.size());
+        deleteFilesAfterCommit(doomedAttachments);
         return deleted;
+    }
+
+    /** 解析附件快照 JSON 列表；坏数据跳过（与 ChatSessionService 同一口径） */
+    private List<ChatAttachmentDto> parseAttachments(List<String> jsonList) {
+        if (jsonList == null || jsonList.isEmpty()) {
+            return List.of();
+        }
+        return jsonList.stream()
+                .flatMap(json -> attachmentService.fromJson(json).stream())
+                .toList();
+    }
+
+    /** 事务提交后删磁盘文件；无活跃事务时直接删 */
+    private void deleteFilesAfterCommit(List<ChatAttachmentDto> attachments) {
+        if (attachments.isEmpty()) {
+            return;
+        }
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            attachmentService.deleteAll(attachments);
+            return;
+        }
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        attachmentService.deleteAll(attachments);
+                    }
+                });
     }
 
     @Transactional(readOnly = true)

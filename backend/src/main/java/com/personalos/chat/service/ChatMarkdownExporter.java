@@ -91,11 +91,30 @@ public class ChatMarkdownExporter {
         markdown.append("### ").append(user ? "你" : "助手").append("\n\n");
         // 正文原样保留：它本身就是 Markdown（对话里的代码块、列表都要活下来），
         // 再做一次转义反而会毁掉格式
-        markdown.append(message.content() == null ? "" : message.content().strip()).append("\n\n");
+        String content = message.content() == null ? "" : message.content().strip();
+        markdown.append(balanceFences(content)).append("\n\n");
 
         appendAttachments(markdown, message.attachments());
         appendCitations(markdown, message.citations());
         markdown.append("---\n\n");
+    }
+
+    /**
+     * 配平 ``` 围栏（审查 P3）。
+     *
+     * <p>正文是模型生成的 Markdown，可能带着一条**未闭合**的代码块（模型输出被截断时
+     * 尤其常见）。不配平的话，后面的消息、分隔符、甚至整份导出的剩余部分都会被
+     * Markdown 解析器当成代码块内容 —— 一条坏消息毁掉整份文件。这里统计三连反引号
+     * 的数量，奇数则补一个闭合围栏。
+     */
+    private String balanceFences(String content) {
+        int fences = 0;
+        int index = 0;
+        while ((index = content.indexOf("```", index)) >= 0) {
+            fences++;
+            index += 3;
+        }
+        return fences % 2 == 1 ? content + "\n```" : content;
     }
 
     private void appendAttachments(StringBuilder markdown, List<ChatAttachmentDto> attachments) {
