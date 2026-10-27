@@ -200,6 +200,7 @@ onMounted(autosize)
         class="chat-composer__chip"
         :class="{ 'chat-composer__chip--on': knowledgeOn }"
         :title="knowledgeOn ? '点击关闭知识库增强' : '开启后每条消息先检索知识库再回答'"
+        :aria-pressed="knowledgeOn"
         @click="emit('toggle-knowledge', !knowledgeOn)"
       >
         <el-icon :size="12"><Reading /></el-icon>
@@ -240,7 +241,13 @@ onMounted(autosize)
         <el-icon v-else class="chat-composer__attachment-icon"><Document /></el-icon>
         <span class="chat-composer__attachment-name" :title="item.filename">{{ item.filename }}</span>
         <span class="chat-composer__attachment-size">{{ formatSize(item.size) }}</span>
-        <el-button link size="small" title="移除" @click="removeAttachment(item.id)">
+        <el-button
+          link
+          size="small"
+          title="移除"
+          :aria-label="`移除附件 ${item.filename}`"
+          @click="removeAttachment(item.id)"
+        >
           <el-icon :size="12"><Close /></el-icon>
         </el-button>
       </div>
@@ -301,6 +308,7 @@ onMounted(autosize)
             class="chat-composer__thinking-trigger"
             :class="`chat-composer__thinking-trigger--${props.thinkingLevel}`"
             :title="thinkingTooltip"
+            :aria-label="`思考程度：${THINKING_LABELS[props.thinkingLevel]}。${thinkingTooltip}`"
           >
             <el-icon :size="14"><MagicStick /></el-icon>
           </el-button>

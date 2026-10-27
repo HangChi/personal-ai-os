@@ -200,11 +200,17 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
               容器常驻占位、只切换透明度 —— 避免 hover 时标题被挤压位移。
             -->
               <div v-else class="chat-sessions__item-actions">
+                <!--
+                  aria-label 带上会话标题（P3）：列表里每一行都有「重命名」「删除」，
+                  只写动作名时读屏用户分不清要操作哪一条 —— title 不足以承担这个职责，
+                  它不保证被朗读，也不适合作为唯一来源。
+                -->
                 <el-button
                   link
                   type="primary"
                   size="small"
                   title="重命名"
+                  :aria-label="`重命名会话：${session.title}`"
                   :icon="EditPen"
                   @click.stop="startEdit(session)"
                 />
@@ -213,6 +219,7 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
                   type="danger"
                   size="small"
                   title="删除"
+                  :aria-label="`删除会话：${session.title}`"
                   :icon="Delete"
                   @click.stop="startDelete(session)"
                 />

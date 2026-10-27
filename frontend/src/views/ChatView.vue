@@ -265,13 +265,29 @@ async function handleRemove(conversationId: string): Promise<void> {
               {{ hasOlderMessages ? `已加载 ${messages.length} 条` : `${messages.length} 条消息` }}
             </span>
           </div>
-          <el-tag v-if="streaming" type="warning" size="small" effect="plain">生成中</el-tag>
+          <el-tag v-if="streaming" type="warning" size="small" effect="plain" role="status">生成中</el-tag>
         </div>
       </template>
 
       <div class="chat__body">
         <!-- 消息滚动区 -->
-        <div ref="messageArea" v-loading="loadingMessages" class="chat__messages">
+        <!--
+          无障碍（P3）：整个消息区是一个 live region。
+          - role="log" 表示「持续追加的记录」，读屏会按新增顺序播报；
+          - aria-busy 在流式期间为 true：模型的每个 delta 都会改 DOM，
+            不 busy 的话读屏会不停打断自己去读半句话，体验比不播报还差。
+            置 busy 后它会等这一轮结束（streaming=false）再朗读新增内容。
+        -->
+        <div
+          ref="messageArea"
+          v-loading="loadingMessages"
+          class="chat__messages"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+          aria-label="对话消息"
+          :aria-busy="streaming"
+        >
           <el-alert v-if="error" class="chat__error" type="error" :closable="false" show-icon :title="error" />
 
           <!-- 空态：欢迎 + 建议问题 -->
