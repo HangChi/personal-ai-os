@@ -72,6 +72,20 @@ public class ChatSessionEntity {
         return updatedAt;
     }
 
+    /**
+     * 消息被回退（重新生成 / 编辑重发）后调用：摘要可能包含已删除的内容。
+     *
+     * <p>不做「把边界降到 fromSeq-1」那种精细回退 —— 摘要是一段连续文字，
+     * 无法从中精确删掉某几条消息贡献的信息。边界一旦覆盖到被删区间，
+     * 唯一安全的做法是整段作废，让下一轮重新生成。
+     */
+    public void invalidateSummaryFrom(int fromSeq) {
+        if (summaryUptoSeq != null && summaryUptoSeq >= fromSeq) {
+            contextSummary = null;
+            summaryUptoSeq = 0;
+        }
+    }
+
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }

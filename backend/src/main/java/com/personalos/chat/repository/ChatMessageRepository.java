@@ -79,6 +79,19 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     void deleteByConversationId(String conversationId);
 
     /**
+     * 删除某会话中 {@code sequenceNo >= fromSeq} 的全部消息（回退用）。
+     *
+     * <p>用批量删除而不是「先查再逐条删」：重发一次可能要删掉几十条消息，
+     * 逐条删会触发同样多的 SELECT。
+     *
+     * @return 实际删除的条数
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("delete from ChatMessageEntity m where m.conversationId = :conversationId "
+            + "and m.sequenceNo >= :fromSeq")
+    int deleteFromSequence(@Param("conversationId") String conversationId, @Param("fromSeq") int fromSeq);
+
+    /**
      * 取某个会话下所有消息的附件快照（JSON 串，只含有附件的那部分消息）。
      *
      * <p>用于删除会话时清理磁盘文件：删完记录就再也找不到这些 id 了，

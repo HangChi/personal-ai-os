@@ -24,7 +24,7 @@ import ChatWelcome from '@/components/chat/ChatWelcome.vue'
 import { useChatStore } from '@/stores/chat'
 import { clampTopK, conversationKnowledgeKey, type ThinkingLevel } from '@/lib/settings'
 import { useSettingsStore } from '@/stores/settings'
-import type { ChatAttachment, ChatSession, TaskConfirmation } from '@/types/api'
+import type { ChatAttachment, ChatMessage, ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
 const settingsStore = useSettingsStore()
@@ -242,6 +242,31 @@ async function handleRemove(conversationId: string): Promise<void> {
  * <p>不弹二次确认：导出是只读操作，没有破坏性，多一次弹窗只增加摩擦。
  * 失败时提示文案直接来自后端（如会话已不存在）。
  */
+/**
+ * 编辑用户消息后重发。
+ *
+ * <p>用 prompt 而不是行内编辑：行内编辑要处理「保存 vs 取消」「失焦」「Enter 换行」
+ * 一整套边界，与重命名输入框同一量级。这一版先保证能力可用；
+ * 交互形式可以后续照搬重命名的行内做法。
+ */
+async function handleEditMessage(message: ChatMessage): Promise<void> {
+  try {
+    const result = await ElMessageBox.prompt(
+      '修改后将从这条消息重新开始，其后的对话会被删除。',
+      '编辑并重发',
+      {
+        inputValue: message.content,
+        inputType: 'textarea',
+        confirmButtonText: '重发',
+        cancelButtonText: '取消',
+      },
+    )
+    await chatStore.editAndResend(message, result.value ?? '')
+  } catch {
+    // 取消编辑不是错误
+  }
+}
+
 async function handleExportSession(session: ChatSession): Promise<void> {
   try {
     const filename = await downloadSessionMarkdown(session.conversationId)
@@ -397,6 +422,8 @@ async function jumpToMatch(step: number): Promise<void> {
             :message="message"
             :tool-trail="isLastAssistant(index) ? toolTrail : []"
             @copy="copyMessage"
+            @regenerate="chatStore.regenerate()"
+            @edit="handleEditMessage"
           />
 
           <!-- 流式中的助手消息 -->

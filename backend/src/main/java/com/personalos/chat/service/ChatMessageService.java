@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.springframework.data.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class ChatMessageService {
+
+    private static final Logger log = LoggerFactory.getLogger(ChatMessageService.class);
 
     /** 单次分页上限。超过它的请求多半是「想拿全量」，那就该用显式的全量路径。 */
     public static final int MAX_LIMIT = 200;
@@ -53,6 +57,31 @@ public class ChatMessageService {
      * {@link #list(String, Integer, Integer)} —— 一段用了一年的会话可能上千条消息，
      * 一次性返回会让首屏变慢、且前端要一次性渲染全部 DOM。
      */
+    /**
+     * 回退到某条消息之前：删除 {@code fromSequenceNo} 及其之后的全部消息。
+     *
+     * <h2>为什么是「删除 + 重发」而不是「原地改」</h2>
+     * 重新生成与编辑重发在数据层面是同一件事：**后面的一切都作废**。
+     * 原地替换助手消息看着更省事，但会留下「第 5 条被改过、第 6 条还是旧回答引发的」
+     * 这种断裂对话 —— 模型下一轮读到的历史是自相矛盾的。
+     *
+     * <p>回退后由前端重新调用 {@code /stream} 发送（原内容或编辑后的内容），
+     * 走的仍是同一条经过验证的链路，不必在 SSE 入口里加分支。
+     *
+     * @return 实际删除的条数
+     */
+    @Transactional
+    public int rewind(String conversationId, int fromSequenceNo) {
+        if (fromSequenceNo <= 0) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "fromSequenceNo 必须为正整数");
+        }
+        // 摘要可能覆盖到被删区间，无法精确裁剪 —— 整段作废，由下一轮重新生成
+        sessionService.requireSession(conversationId).invalidateSummaryFrom(fromSequenceNo);
+        int deleted = messageRepository.deleteFromSequence(conversationId, fromSequenceNo);
+        log.info("回退消息 conversationId={} fromSeq={} 删除 {} 条", conversationId, fromSequenceNo, deleted);
+        return deleted;
+    }
+
     @Transactional(readOnly = true)
     public List<ChatMessageDto> list(String conversationId) {
         sessionService.requireSession(conversationId);

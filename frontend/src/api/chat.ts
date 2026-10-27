@@ -318,6 +318,22 @@ function dispatchEvent(eventName: string, payload: string, handlers: StreamHandl
   }
 }
 
+/**
+ * 回退到某条消息之前（删除该顺序号及其之后的所有消息）。
+ *
+ * <p>只删除、不发流：调用方随后用 `streamChat` 重发，复用的仍是同一条链路。
+ */
+export function rewindMessages(
+  conversationId: string,
+  fromSequenceNo: number,
+): Promise<{ deleted: number }> {
+  return requestData<{ deleted: number }>({
+    url: `/chat/sessions/${conversationId}/rewind`,
+    method: 'post',
+    params: { fromSequenceNo },
+  })
+}
+
 /** 从统一错误结构中提取可读文案 */
 async function readErrorMessage(response: Response): Promise<string> {
   try {

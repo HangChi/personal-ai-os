@@ -1,16 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-import {
-  createSession as createSessionApi,
-  deleteSession as deleteSessionApi,
-  fetchContextUsage,
-  setContextBudget,
-  listMessages,
-  listSessions,
-  renameSession as renameSessionApi,
-  streamChat,
-} from '@/api/chat'
+import { createSession as createSessionApi, deleteSession as deleteSessionApi, fetchContextUsage, setContextBudget, listMessages, listSessions, renameSession as renameSessionApi, streamChat, rewindMessages } from '@/api/chat'
 import { listToolInvocations } from '@/api/activity'
 import { cancelOperation, confirmOperation, listConfirmations } from '@/api/confirmations'
 import type { ContextUsage } from '@/api/chat'
@@ -429,6 +420,51 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  /**
+   * 重新生成最后一条回答。
+   *
+   * <p>做法是「回退到那条用户消息 + 用原内容重发」，而不是原地替换助手消息：
+   * 后者会留下「第 5 条改过、第 6 条还是旧回答引发的」这种断裂对话。
+   * 重发走的是既有 {@link send}，因此思考档位、知识库开关、附件等行为完全一致。
+   */
+  async function regenerate(): Promise<void> {
+    const conversationId = currentConversationId.value
+    if (!conversationId || streaming.value) {
+      return
+    }
+    const lastUser = [...messages.value].reverse().find((message) => message.role === 'USER')
+    if (!lastUser) {
+      return
+    }
+    try {
+      await rewindMessages(conversationId, lastUser.sequenceNo)
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '重新生成失败'
+      return
+    }
+    await refreshTail(conversationId)
+    await send(lastUser.content)
+  }
+
+  /**
+   * 编辑用户消息后重发：回退到该消息（含）并删除其后所有内容，再用新内容发送。
+   */
+  async function editAndResend(message: ChatMessage, newContent: string): Promise<void> {
+    const conversationId = currentConversationId.value
+    const content = newContent.trim()
+    if (!conversationId || streaming.value || content.length === 0) {
+      return
+    }
+    try {
+      await rewindMessages(conversationId, message.sequenceNo)
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '重发失败'
+      return
+    }
+    await refreshTail(conversationId)
+    await send(content)
+  }
+
   /** 停止生成（客户端断开，服务端会取消上游订阅） */
   function stopStreaming(): void {
     abortController?.abort()
@@ -464,6 +500,8 @@ export const useChatStore = defineStore('chat', () => {
     removeSession,
     renameSession,
     send,
+    regenerate,
+    editAndResend,
     stopStreaming,
     loadConfirmations,
     loadToolTrail,

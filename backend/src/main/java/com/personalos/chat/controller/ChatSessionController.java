@@ -217,6 +217,23 @@ public class ChatSessionController {
     }
 
     /**
+     * 回退到某条消息之前（重新生成 / 编辑重发的前置动作）。
+     *
+     * <p>只做删除，不发流：调用方随后用原内容或编辑后的内容调 {@code /stream}，
+     * 复用的仍是同一条经过验证的流式链路。
+     *
+     * @param fromSequenceNo 从该顺序号起（含）删除
+     * @return 删除条数
+     */
+    @PostMapping("/sessions/{conversationId}/rewind")
+    public ApiResponse<java.util.Map<String, Integer>> rewind(
+            @PathVariable String conversationId,
+            @RequestParam("fromSequenceNo") int fromSequenceNo) {
+        int deleted = messageService.rewind(conversationId, fromSequenceNo);
+        return ApiResponse.ok(java.util.Map.of("deleted", deleted));
+    }
+
+    /**
      * 导出单个会话为 Markdown。
      *
      * <p>与全量导出（{@code /export}）受众不同：那个是给机器读的迁移格式，

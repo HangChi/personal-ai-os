@@ -29,7 +29,11 @@ function attachmentUrl(item: ChatAttachment): string {
   return `${base}/chat/uploads/${item.id}/content`
 }
 
-const emit = defineEmits<{ (e: 'copy', content: string): void }>()
+const emit = defineEmits<{ (e: 'copy', content: string): void   /** 仅助手消息：重跑最后一条回答 */
+  (e: 'regenerate'): void
+  /** 仅用户消息：编辑后重发 */
+  (e: 'edit', message: ChatMessage): void
+}>()
 </script>
 
 <template>
@@ -81,6 +85,10 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
             <el-icon :size="11"><CopyDocument /></el-icon>
             复制
           </button>
+          <button type="button" class="chat-msg__action" @click="emit('regenerate')">
+            <el-icon :size="11"><RefreshRight /></el-icon>
+            重新生成
+          </button>
         </div>
       </div>
     </template>
@@ -118,6 +126,10 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
           <button type="button" class="chat-msg__action" @click="emit('copy', message.content)">
             <el-icon :size="11"><CopyDocument /></el-icon>
             复制
+          </button>
+          <button type="button" class="chat-msg__action" @click="emit('edit', message)">
+            <el-icon :size="11"><EditPen /></el-icon>
+            编辑
           </button>
         </div>
       </div>
