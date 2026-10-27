@@ -14,6 +14,7 @@ import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { downloadSessionMarkdown } from '@/api/chat'
+import { matchMessageIds, nextMatchCursor } from '@/lib/chat-search'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
@@ -249,6 +250,38 @@ async function handleExportSession(session: ChatSession): Promise<void> {
     ElMessage.error(cause instanceof Error ? cause.message : '导出失败，请稍后重试')
   }
 }
+
+// ------------------------------------------------------------------ 会话内搜索
+/*
+ * 只搜「已加载的消息」而不是整个会话：长会话按页加载，服务端全文搜索还要处理
+ * 「命中在第 300 条、但界面上只有最近 50 条」的跳转问题（得再翻好几页）——
+ * 那属于另一个功能。这里解决的是「刚才那句在哪儿」，用户要找的几乎总在眼前这段。
+ * 界面上如实写明范围，避免用户以为搜过了全部。
+ */
+const searchKeyword = ref('')
+const matchCursor = ref(0)
+
+const matchIds = computed(() => matchMessageIds(messages.value, searchKeyword.value))
+
+watch(searchKeyword, () => {
+  matchCursor.value = 0
+})
+
+/** 跳到上一处 / 下一处，首尾循环 */
+async function jumpToMatch(step: number): Promise<void> {
+  if (matchIds.value.length === 0) {
+    return
+  }
+  matchCursor.value = nextMatchCursor(matchCursor.value, matchIds.value.length, step)
+  await nextTick()
+  const selector = `[data-message-id="${matchIds.value[matchCursor.value]}"]`
+  const target = messageArea.value?.querySelector(selector)
+  target?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  // 短暂描边：不做文本级高亮 —— 消息正文是渲染后的 Markdown，
+  // 在里面插 <mark> 要改动渲染管线，代价远大于收益
+  target?.classList.add('chat__msg-hit')
+  window.setTimeout(() => target?.classList.remove('chat__msg-hit'), 1800)
+}
 </script>
 
 <template>
@@ -282,7 +315,43 @@ async function handleExportSession(session: ChatSession): Promise<void> {
               {{ hasOlderMessages ? `已加载 ${messages.length} 条` : `${messages.length} 条消息` }}
             </span>
           </div>
-          <el-tag v-if="streaming" type="warning" size="small" effect="plain" role="status">生成中</el-tag>
+          <div class="chat__header-actions">
+            <div class="chat__search">
+              <el-input
+                v-model="searchKeyword"
+                size="small"
+                clearable
+                class="chat__search-input"
+                placeholder="在已加载的消息中查找"
+                aria-label="在已加载的消息中查找"
+                @keyup.enter="jumpToMatch(1)"
+              />
+              <template v-if="searchKeyword.trim()">
+                <span class="chat__search-count">
+                  {{ matchIds.length ? `${matchCursor + 1}/${matchIds.length}` : '无匹配' }}
+                </span>
+                <el-button
+                  link
+                  size="small"
+                  :disabled="matchIds.length === 0"
+                  aria-label="上一处匹配"
+                  @click="jumpToMatch(-1)"
+                >
+                  ↑
+                </el-button>
+                <el-button
+                  link
+                  size="small"
+                  :disabled="matchIds.length === 0"
+                  aria-label="下一处匹配"
+                  @click="jumpToMatch(1)"
+                >
+                  ↓
+                </el-button>
+              </template>
+            </div>
+            <el-tag v-if="streaming" type="warning" size="small" effect="plain" role="status">生成中</el-tag>
+          </div>
         </div>
       </template>
 
@@ -483,5 +552,37 @@ async function handleExportSession(session: ChatSession): Promise<void> {
   .chat__messages {
     min-height: 30vh;
   }
+}
+/* ---- 会话内搜索 ---- */
+.chat__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+}
+
+.chat__search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat__search-input {
+  width: 200px;
+}
+
+/* 计数用等宽数字：切换匹配时宽度不跳，视线不会被带着走 */
+.chat__search-count {
+  font-size: var(--os-font-xs);
+  color: var(--el-text-color-secondary);
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+  text-align: right;
+}
+
+/* 命中定位：只在跳转后短暂描边，不改变消息本身的排版 */
+.chat__messages :deep(.chat__msg-hit) {
+  outline: 2px solid var(--el-color-primary-light-5);
+  outline-offset: 4px;
+  border-radius: var(--os-radius-sm);
 }
 </style>

@@ -33,7 +33,9 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 </script>
 
 <template>
-  <div :class="['chat-msg', `chat-msg--${message.role.toLowerCase()}`]">
+  <!-- data-message-id：会话内搜索据此滚动定位。用属性而不是 ref 数组，
+       因为消息是 v-for 生成的、数量随翻页变化，ref 顺序不稳 -->
+  <div :class="['chat-msg', `chat-msg--${message.role.toLowerCase()}`]" :data-message-id="message.id">
     <!-- 助手：头像在左，内容直排 -->
     <template v-if="message.role !== 'USER'">
       <span class="chat-msg__avatar chat-msg__avatar--assistant">
