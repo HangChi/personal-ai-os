@@ -357,7 +357,7 @@ function toggleExpand(): void {
 
 .md__body :deep(.md-code__lang) {
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   font-family: 'SFMono-Regular', Consolas, monospace;
 }
 
@@ -367,7 +367,7 @@ function toggleExpand(): void {
   border-radius: var(--os-radius-sm);
   background: var(--el-bg-color);
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   cursor: pointer;
   transition:
     color var(--os-duration-fast) var(--os-ease),

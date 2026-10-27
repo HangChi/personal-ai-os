@@ -190,6 +190,13 @@ function switchView(next: 'table' | 'board'): void {
 
 <template>
   <div class="tasks">
+    <header class="tasks__head">
+      <div>
+        <h1 class="tasks__title">任务</h1>
+        <p class="tasks__subtitle">表格与看板两种视图，数据同一份；也可以在对话里用自然语言增删改。</p>
+      </div>
+    </header>
+
     <TaskCreateForm
       ref="createForm"
       :tags="tags"
@@ -299,7 +306,29 @@ function switchView(next: 'table' | 'board'): void {
 .tasks {
   display: flex;
   flex-direction: column;
-  gap: var(--os-stack-gap);
+  gap: var(--os-space-5);
+}
+
+/* ---- 页头 ---- */
+
+.tasks__head {
+  min-width: 0;
+}
+
+.tasks__title {
+  margin: 0;
+  font-size: var(--os-font-2xl);
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+}
+
+.tasks__subtitle {
+  margin: var(--os-space-2) 0 0;
+  max-width: 68ch;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
+  line-height: 1.65;
 }
 
 .tasks__view-switch {
@@ -327,13 +356,15 @@ function switchView(next: 'table' | 'board'): void {
   justify-content: space-between;
   gap: var(--os-space-3);
   margin-bottom: var(--os-space-3);
-  padding: var(--os-space-2) var(--os-space-3);
+  padding: var(--os-space-2) var(--os-space-4);
+  border: 1px solid var(--el-color-primary-light-8);
   border-radius: var(--os-radius-md);
   background: var(--el-color-primary-light-9);
 }
 
 .tasks__batch-count {
-  font-size: var(--os-font-xs);
+  font-size: var(--os-font-sm);
+  font-weight: 500;
   color: var(--el-color-primary);
 }
 

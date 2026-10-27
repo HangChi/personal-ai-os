@@ -218,6 +218,6 @@ defineExpose({ fillSlot, reset })
 .cal-create__hint {
   margin: 12px 0 0;
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
 }
 </style>

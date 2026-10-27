@@ -117,16 +117,29 @@ const meterTitle = computed(() => {
 </template>
 
 <style scoped>
-/* 头部状态读数：弱化到「一行小字 + 细条」，不抢标题 */
+/*
+ * 头部状态读数：弱化到「一行小字 + 细条」，不抢标题。
+ * 但它同时是 tooltip 的触发点，可点区只有 12px 高太难点 ——
+ * 用 padding + 负外边距撑到 24px，视觉位置与留白都不变。
+ */
 .context-meter {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 24px;
+  margin: -6px 0;
+  padding: 6px 2px;
+  border-radius: var(--os-radius-sm);
   cursor: pointer;
 }
 
+.context-meter:hover {
+  background: var(--el-fill-color-light);
+}
+
+/* 上下文用量是「要不要压缩」的判断依据，用 secondary 而不是 placeholder */
 .context-meter__label {
-  color: var(--el-text-color-placeholder);
+  color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
 }
 

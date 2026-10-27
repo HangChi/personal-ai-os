@@ -90,16 +90,18 @@ const columns = computed(() => groupTasksByStatus(props.tasks))
 }
 
 .task-board__title {
-  font-size: var(--os-font-xs);
+  font-size: var(--os-font-sm);
   font-weight: 600;
+  color: var(--el-text-color-regular);
 }
 
 .task-board__count {
-  padding: 0 6px;
-  border-radius: 999px;
+  padding: 0 var(--os-space-2);
+  border-radius: var(--os-radius-round);
   background: var(--el-bg-color);
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
+  font-variant-numeric: tabular-nums;
 }
 
 .task-board__list {
@@ -112,16 +114,26 @@ const columns = computed(() => groupTasksByStatus(props.tasks))
 }
 
 .task-board__card {
-  padding: var(--os-space-2) var(--os-space-3);
+  padding: var(--os-space-3);
+  border: 1px solid var(--el-border-color-lighter);
   border-radius: var(--os-radius-md);
   background: var(--el-bg-color);
   box-shadow: var(--os-shadow-card);
+  transition:
+    border-color var(--os-duration-fast) var(--os-ease),
+    box-shadow var(--os-duration-fast) var(--os-ease);
+}
+
+.task-board__card:hover {
+  border-color: var(--el-color-primary-light-7);
+  box-shadow: var(--os-shadow-card-hover);
 }
 
 .task-board__card-title {
-  font-size: var(--os-font-xs);
+  font-size: var(--os-font-sm);
   font-weight: 600;
   line-height: 1.5;
+  color: var(--el-text-color-primary);
 }
 
 .task-board__card-title--done {
@@ -130,9 +142,9 @@ const columns = computed(() => groupTasksByStatus(props.tasks))
 }
 
 .task-board__card-description {
-  margin-top: 2px;
+  margin-top: var(--os-space-1);
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   line-height: 1.5;
   /* 描述最多两行，超出省略——看板卡片要能一扫多张 */
   display: -webkit-box;
@@ -151,7 +163,7 @@ const columns = computed(() => groupTasksByStatus(props.tasks))
 
 .task-board__card-due {
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
 }
 
 .task-board__tags {

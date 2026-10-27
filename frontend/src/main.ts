@@ -13,6 +13,9 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 // highlight.js 亮色主题（github）；暗色覆盖见 styles/hljs-dark.css（R-02）
 import 'highlight.js/styles/github.css'
 import './styles/hljs-dark.css'
+// theme.css 必须在 EP 两份样式之后：它覆盖 EP 的主色/圆角/字体变量与组件内部 px
+// 实现，放在前面会被 EP 自身规则盖掉（阶段 23）
+import './styles/theme.css'
 import './styles/main.css'
 
 /**

@@ -168,7 +168,7 @@ function submit(): void {
 .cal-edit__note {
   margin: 0 0 12px;
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
 }
 
 .cal-edit__label {

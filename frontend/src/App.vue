@@ -22,7 +22,9 @@ import {
   Reading,
   Search,
   Setting,
+  SwitchButton,
   Tickets,
+  User,
 } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
@@ -41,17 +43,38 @@ const router = useRouter()
 /** 登录页不显示导航：点任何一个都会立刻被守卫弹回登录页，只是噪音 */
 const isLoginPage = computed(() => route.name === 'login')
 
-/** 导航项：图标 + 文案 + 路由。index 与 el-menu 的 router 模式对齐 */
-const navItems = [
-  { index: '/', label: '总览', icon: HomeFilled },
-  { index: '/chat', label: '对话', icon: ChatDotRound },
-  { index: '/tasks', label: '任务', icon: Tickets },
-  { index: '/knowledge', label: '知识库', icon: Reading },
-  { index: '/calendar', label: '日程', icon: Calendar },
-  { index: '/memory', label: '记忆', icon: Memo },
-  { index: '/activity', label: '活动', icon: DataLine },
-  { index: '/settings', label: '设置', icon: Setting },
+/**
+ * 导航分组（阶段 23）。
+ *
+ * 改造前 8 项平铺在一条菜单里，「设置」和「对话」视觉权重完全相同。
+ * 分组后「日常使用」与「查看 / 配置」分开，9 项以上也不会糊成一片。
+ * index 与 el-menu 的 router 模式对齐（即路由 path）。
+ */
+const navGroups = [
+  {
+    key: 'workspace',
+    label: '工作区',
+    items: [
+      { index: '/', label: '总览', icon: HomeFilled },
+      { index: '/chat', label: '对话', icon: ChatDotRound },
+      { index: '/tasks', label: '任务', icon: Tickets },
+      { index: '/knowledge', label: '知识库', icon: Reading },
+      { index: '/calendar', label: '日程', icon: Calendar },
+    ],
+  },
+  {
+    key: 'system',
+    label: '系统',
+    items: [
+      { index: '/memory', label: '记忆', icon: Memo },
+      { index: '/activity', label: '活动', icon: DataLine },
+      { index: '/settings', label: '设置', icon: Setting },
+    ],
+  },
 ]
+
+/** 抽屉里用扁平列表（抽屉空间小，分组标题反而占位） */
+const navItems = navGroups.flatMap((group) => group.items)
 
 /** 顶栏全局搜索词（阶段 17）：回车后跳到结果页，关键词走 query 而非 store ——
  *  直接分享 /search?q=xxx 也该能用 */
@@ -60,6 +83,13 @@ const searchInput = ref<InstanceType<typeof HTMLInputElement> | null>(null)
 
 /** 窄屏抽屉导航（阶段 18）：<768px 侧栏隐藏，改汉堡 + 抽屉 */
 const drawerOpen = ref(false)
+
+/** macOS 用 ⌘K，其余平台显示 Ctrl K（改造前一律写 "Ctrl K"，Mac 用户看着别扭） */
+const isMac = computed(() => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform))
+const searchHint = computed(() => (isMac.value ? '⌘ K' : 'Ctrl K'))
+
+/** 用户名首字作头像文字（无头像上传能力，用首字母是最低成本的「有身份」） */
+const userInitial = computed(() => (username.value ? username.value.slice(0, 1).toUpperCase() : '?'))
 
 function runGlobalSearch(): void {
   const term = searchKeyword.value.trim()
@@ -104,23 +134,31 @@ async function handleLogout(): Promise<void> {
   -->
   <el-container :class="['app-shell', { 'app-shell--fixed': route.meta.fullWidth }]">
     <!-- 侧栏：宽屏主导航；登录页不渲染 -->
-    <el-aside v-if="!isLoginPage" class="app-shell__aside" :width="navCollapsed ? '64px' : '208px'">
+    <el-aside
+      v-if="!isLoginPage"
+      class="app-shell__aside"
+      :width="navCollapsed ? 'var(--os-sidebar-width-collapsed)' : 'var(--os-sidebar-width)'"
+    >
       <router-link to="/" class="app-shell__brand" title="返回总览">
         <span class="app-shell__logo">AI</span>
         <span v-show="!navCollapsed" class="app-shell__title">Personal AI OS</span>
       </router-link>
 
       <el-menu class="app-shell__nav" :collapse="navCollapsed" :default-active="route.path" :router="true">
-        <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index" :title="item.label">
-          <el-icon><component :is="item.icon" /></el-icon>
-          <template #title>{{ item.label }}</template>
-        </el-menu-item>
+        <!-- 分组导航：折叠态下不显示分组标题（64px 放不下，且图标本身已足够） -->
+        <template v-for="group in navGroups" :key="group.key">
+          <li v-show="!navCollapsed" class="app-shell__group-label">{{ group.label }}</li>
+          <el-menu-item v-for="item in group.items" :key="item.index" :index="item.index" :title="item.label">
+            <el-icon><component :is="item.icon" /></el-icon>
+            <template #title>{{ item.label }}</template>
+          </el-menu-item>
+        </template>
       </el-menu>
 
       <div class="app-shell__aside-footer">
         <el-button link class="app-shell__collapse" :title="navCollapsed ? '展开侧栏' : '收起侧栏'" @click="toggleNav">
           <el-icon :size="16"><Expand v-if="navCollapsed" /><Fold v-else /></el-icon>
-          <span v-show="!navCollapsed">收起</span>
+          <span v-show="!navCollapsed">收起侧栏</span>
         </el-button>
       </div>
     </el-aside>
@@ -153,24 +191,44 @@ async function handleLogout(): Promise<void> {
 
           <div class="app-shell__header-spacer" />
 
-          <el-input
-            ref="searchInput"
-            v-model="searchKeyword"
-            class="app-shell__search"
-            size="small"
-            clearable
-            placeholder="全局搜索（Ctrl K）"
-            :prefix-icon="Search"
-            @keydown.enter="runGlobalSearch"
-            @clear="searchKeyword = ''"
-          />
+          <!-- 搜索：胶囊形 + 右侧快捷键提示（改造前是裸 el-input，看不出可 Ctrl K） -->
+          <div class="app-shell__search">
+            <el-input
+              ref="searchInput"
+              v-model="searchKeyword"
+              class="app-shell__search-input"
+              clearable
+              placeholder="搜索任务、对话、日程…"
+              :prefix-icon="Search"
+              @keydown.enter="runGlobalSearch"
+              @clear="searchKeyword = ''"
+            />
+            <kbd v-show="!searchKeyword" class="app-shell__kbd">{{ searchHint }}</kbd>
+          </div>
 
           <div class="app-shell__right">
             <ThemeToggle />
-            <template v-if="authEnabled && username">
-              <span class="app-shell__user">{{ username }}</span>
-              <el-button link size="small" @click="handleLogout">登出</el-button>
-            </template>
+            <!-- 用户区改头像 + 下拉：改造前是「用户名 + 登出」两个裸文本，权重很低 -->
+            <el-dropdown v-if="authEnabled && username" trigger="click">
+              <button type="button" class="app-shell__user" :title="username">
+                <span class="app-shell__avatar">{{ userInitial }}</span>
+                <span class="app-shell__user-name">{{ username }}</span>
+              </button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item disabled>
+                    <span class="app-shell__user-email">已登录：{{ username }}</span>
+                  </el-dropdown-item>
+                  <el-dropdown-item divided @click="handleLogout">
+                    <el-icon><SwitchButton /></el-icon>
+                    登出
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <span v-else class="app-shell__guest" title="未开启访问控制">
+              <el-icon :size="16"><User /></el-icon>
+            </span>
           </div>
         </template>
       </el-header>
@@ -183,11 +241,17 @@ async function handleLogout(): Promise<void> {
         </router-view>
       </el-main>
 
-      <el-footer class="app-shell__footer"> Personal AI OS · Apache-2.0 · 本地单用户 </el-footer>
+      <el-footer class="app-shell__footer">
+        <span>Personal AI OS</span>
+        <span class="app-shell__footer-dot">·</span>
+        <span>Apache-2.0</span>
+        <span class="app-shell__footer-dot">·</span>
+        <span>本地单用户</span>
+      </el-footer>
     </el-container>
 
     <!-- 窄屏导航抽屉（<768px 才看得到） -->
-    <el-drawer v-model="drawerOpen" title="导航" direction="ltr" size="220px">
+    <el-drawer v-model="drawerOpen" title="导航" direction="ltr" size="240px">
       <el-menu :default-active="route.path" :router="true" @select="drawerOpen = false">
         <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index">
           <el-icon class="app-shell__nav-icon"><component :is="item.icon" /></el-icon>
@@ -222,49 +286,76 @@ async function handleLogout(): Promise<void> {
 
 /* ---- 侧栏 ---- */
 
+/*
+ * 侧栏锁在视口高度内并常驻（sticky）。
+ *
+ * 改造前只有 flex 列布局、没有高度约束：首页内容 1284px 高时侧栏被一起撑到
+ * 1284px（实测），页面向下滚动导航就滑出视口 —— 长长的列表页里想切页得先滚回顶部。
+ * 对话页因为外壳锁死 100dvh 侥幸没暴露这个问题。
+ *
+ * overflow: hidden 原本是为了折叠动画（宽度收窄时不溢出），
+ * 但同时会裁掉菜单——菜单自己需要滚动，所以把滚动下沉到 .app-shell__nav。
+ */
 .app-shell__aside {
+  position: sticky;
+  top: 0;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--el-border-color-light);
+  height: 100vh;
+  height: 100dvh;
+  border-right: 1px solid var(--el-border-color-lighter);
   background: var(--el-bg-color);
   /* 折叠/展开的宽度过渡 */
   transition: width var(--os-duration-normal) var(--os-ease);
   overflow: hidden;
 }
 
+/*
+ * 品牌区高度必须与 --os-header-height 严格一致。
+ * 改造前这里是 56px、顶栏 60px：两条水平线在拐角处错开 4px，
+ * 表现为侧栏右边框与顶栏下边框接不上（截图里是一道很轻的台阶，但确实在）。
+ */
 .app-shell__brand {
   display: flex;
   align-items: center;
   gap: var(--os-space-2);
   flex: none;
-  height: 56px;
+  height: var(--os-header-height);
   padding: 0 var(--os-space-4);
+  border-bottom: 1px solid transparent;
   text-decoration: none;
   color: inherit;
 }
 
 .app-shell__brand--header {
-  height: auto;
   padding: 0;
+  border-bottom: none;
 }
 
+/*
+ * Logo：主色渐变 + 内高光。纯色方块在浅色侧栏上略显扁平，
+ * 一层 135° 渐变足以让它看起来像个「应用图标」而不是「一个蓝色 div」。
+ */
 .app-shell__logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--os-radius-md);
-  background: var(--el-color-primary);
-  color: var(--el-color-white);
+  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
+  box-shadow: 0 1px 3px 0 rgb(79 70 229 / 32%);
+  color: #fff;
   font-size: var(--os-font-xs);
   font-weight: 700;
+  letter-spacing: 0.2px;
   flex: none;
 }
 
 .app-shell__title {
   font-size: var(--os-font-md);
   font-weight: 600;
+  letter-spacing: -0.1px;
   white-space: nowrap;
 }
 
@@ -274,12 +365,37 @@ async function handleLogout(): Promise<void> {
   overflow-y: auto;
   border-right: none;
   background: transparent;
+  padding: var(--os-space-2) 0;
+}
+
+/* 分组标题：小号、全大写间距、不可点 —— 只做视觉分隔 */
+.app-shell__group-label {
+  margin: var(--os-space-3) 0 var(--os-space-1);
+  padding: 0 var(--os-space-2) 0 calc(var(--os-space-4) + var(--os-space-2));
+  color: var(--el-text-color-placeholder);
+  font-size: var(--os-font-xs);
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  list-style: none;
+  white-space: nowrap;
+}
+
+/* 第一组的标题不需要上方留白（品牌区下方已有 padding） */
+.app-shell__nav > .app-shell__group-label:first-child {
+  margin-top: var(--os-space-1);
 }
 
 .app-shell__nav :deep(.el-menu-item) {
-  height: 44px;
+  /* 高度与 line-height 都在 theme.css 里锁成 40px；
+     这里只管外边距与圆角，避免两处各写一个高度导致再次错位 */
   margin: 2px var(--os-space-2);
   border-radius: var(--os-radius-md);
+  color: var(--el-text-color-regular);
+}
+
+.app-shell__nav :deep(.el-menu-item:hover) {
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-primary);
 }
 
 .app-shell__nav :deep(.el-menu-item.is-active) {
@@ -288,18 +404,34 @@ async function handleLogout(): Promise<void> {
   font-weight: 500;
 }
 
+/* 折叠态：图标居中、去掉左右外边距（64px 里只剩图标） */
+.app-shell__nav :deep(.el-menu--collapse .el-menu-item) {
+  margin-left: var(--os-space-2);
+  margin-right: var(--os-space-2);
+}
+
 .app-shell__aside-footer {
   flex: none;
   padding: var(--os-space-2);
   border-top: 1px solid var(--el-border-color-lighter);
 }
 
+/*
+ * 折叠按钮：宽度占满侧栏，但高度得单独给。
+ * link 款按钮的 padding 被压到 0 后实测只有 22px 高，低于 24px 最小可点尺寸
+ * —— 这是侧栏唯一的常驻按钮，点不中会很烦。
+ */
 .app-shell__collapse {
   width: 100%;
+  min-height: 28px;
   justify-content: center;
   gap: var(--os-space-2);
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
+}
+
+.app-shell__collapse:hover {
+  color: var(--el-color-primary);
 }
 
 /* ---- 顶栏 ---- */
@@ -312,12 +444,16 @@ async function handleLogout(): Promise<void> {
   display: flex;
   align-items: center;
   gap: var(--os-space-3);
-  border-bottom: 1px solid var(--el-border-color-light);
+  height: var(--os-header-height);
+  border-bottom: 1px solid var(--el-border-color-lighter);
   background: var(--el-bg-color);
   /* 顶栏吸顶：长页面（知识库 / 日程）滚动时操作区不消失 */
   position: sticky;
   top: 0;
   z-index: 10;
+  /* 半透明 + 毛玻璃：内容从下方滚过时文字不会与顶栏糊在一起 */
+  backdrop-filter: saturate(180%) blur(8px);
+  background: color-mix(in srgb, var(--el-bg-color) 88%, transparent);
 }
 
 .app-shell__header-spacer {
@@ -327,18 +463,119 @@ async function handleLogout(): Promise<void> {
 .app-shell__right {
   display: flex;
   align-items: center;
-  gap: var(--os-space-3);
+  gap: var(--os-space-2);
   flex: none;
 }
 
-.app-shell__user {
-  font-size: var(--os-font-xs);
-  color: var(--el-text-color-regular);
-}
+/* ---- 顶栏搜索（胶囊 + 快捷键提示） ---- */
 
 .app-shell__search {
+  position: relative;
   flex: none;
-  width: 220px;
+  width: 260px;
+}
+
+/*
+ * 胶囊形搜索框：EP 输入框默认圆角 8px，这里单独抬到 round。
+ * 选中态（聚焦）由 EP 自己的 focus 边框处理，不重复写。
+ */
+.app-shell__search :deep(.el-input__wrapper) {
+  border-radius: var(--os-radius-round);
+  background: var(--el-fill-color-light);
+  box-shadow: none;
+  padding-right: 52px;
+  transition: background var(--os-duration-fast) var(--os-ease);
+}
+
+.app-shell__search :deep(.el-input__wrapper:hover) {
+  background: var(--el-fill-color);
+}
+
+.app-shell__search :deep(.el-input__wrapper.is-focus) {
+  background: var(--el-bg-color);
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+}
+
+/*
+ * 快捷键提示贴在输入框右内侧。
+ * pointer-events:none 是必须的 —— 否则点击 kbd 区域不会聚焦输入框，
+ * 用户会觉得「搜索框右边一截点不动」。
+ */
+.app-shell__kbd {
+  position: absolute;
+  top: 50%;
+  right: var(--os-space-2);
+  transform: translateY(-50%);
+  padding: 1px 6px;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--os-radius-sm);
+  background: var(--el-bg-color);
+  color: var(--el-text-color-placeholder);
+  font-family: inherit;
+  font-size: var(--os-font-xs);
+  line-height: 16px;
+  pointer-events: none;
+}
+
+/* ---- 用户区 ---- */
+
+.app-shell__user {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  padding: 3px var(--os-space-2) 3px 3px;
+  border: 1px solid transparent;
+  border-radius: var(--os-radius-round);
+  background: none;
+  color: var(--el-text-color-regular);
+  font-family: inherit;
+  font-size: var(--os-font-xs);
+  cursor: pointer;
+  transition: background var(--os-duration-fast) var(--os-ease);
+}
+
+.app-shell__user:hover {
+  background: var(--el-fill-color-light);
+  border-color: var(--el-border-color-lighter);
+}
+
+/* 头像：主色浅底 + 主色字，与 Logo 同色系但不抢它 */
+.app-shell__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+  font-size: var(--os-font-xs);
+  font-weight: 600;
+  flex: none;
+}
+
+.app-shell__user-name {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell__user-email {
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+
+/* 未开启认证时的占位图标（不是可点元素，只是说明「没有用户概念」） */
+.app-shell__guest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-placeholder);
 }
 
 /* 折叠按钮（宽屏）与汉堡（窄屏）按视口二选一 */
@@ -348,9 +585,12 @@ async function handleLogout(): Promise<void> {
   color: var(--el-text-color-regular);
 }
 
+/* 顶栏折叠按钮：只放一个图标，宽度会缩到 20px，补到 24px 见方 */
 .app-shell__collapse-top {
   display: inline-flex;
   flex: none;
+  min-width: 24px;
+  min-height: 24px;
   color: var(--el-text-color-regular);
 }
 
@@ -375,25 +615,56 @@ async function handleLogout(): Promise<void> {
   max-width: var(--os-content-max-width);
   width: 100%;
   margin: 0 auto;
-  /* EP 的 el-main 自带 20px 四周内边距；对话页要贴边，这里显式压掉左右与底部 */
-  padding: var(--os-space-2) var(--os-space-3) var(--os-space-2);
+  /*
+   * 内容区上下留白给足（24px），左右 20px。
+   * 改造前是 8px/12px：卡片几乎贴着顶栏与窗口边缘，页面显得局促。
+   * 顶部多给一点是因为顶栏有下边框，视觉上需要「呼吸」。
+   */
+  padding: var(--os-space-5) var(--os-space-5) var(--os-space-6);
 }
 
 /*
  * 沉浸式页面（对话）：内边距再压一档，让对话区尽量贴住视口边缘。
- * 原先左右各 20px、上方 16px，宽屏下两边白边很明显。
+ * 上下留 12px 而不贴死：卡片圆角与阴影需要空间，否则像被切掉一角。
  */
 .app-shell__main--wide {
   max-width: none;
-  padding: var(--os-space-2) var(--os-space-2) var(--os-space-2);
+  padding: var(--os-space-3);
 }
 
+/*
+ * 页脚收成一条细行。
+ * 改造前它是 EP 默认 60px 高、居中一行 12px 灰字 —— 占掉 60px 却只放三个词，
+ * 在 900px 视口里纯属浪费。
+ */
 .app-shell__footer {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--os-space-2);
+  flex: none;
+  height: 34px;
+  padding: 0 var(--os-space-5);
+  border-top: 1px solid var(--el-border-color-lighter);
+  background: var(--el-bg-color);
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
+}
+
+/*
+ * 分隔点：用 secondary 而不是 border-color。
+ * 改造后实测 border-color(#eceff4) 在底色上只有 1.37:1 —— 三个词读起来是
+ * 「Personal AI OSApache-2.0本地单用户」，点几乎不存在。用 secondary 后
+ * 它读作真正的分隔符，同时仍明显弱于正文（不抢注意力）。
+ */
+.app-shell__footer-dot {
+  color: var(--el-text-color-placeholder);
+  user-select: none;
+}
+
+/* 对话页是固定视口高，页脚留着会挤压消息区 → 该页隐藏 */
+.app-shell--fixed .app-shell__footer {
+  display: none;
 }
 
 /*
@@ -424,9 +695,21 @@ async function handleLogout(): Promise<void> {
     min-width: 0;
   }
 
+  /* 窄屏不显示快捷键提示（没有物理键盘的场景居多，且挤占输入区） */
+  .app-shell__kbd {
+    display: none;
+  }
+
+  .app-shell__search :deep(.el-input__wrapper) {
+    padding-right: 11px;
+  }
+
   .app-shell__main {
-    padding-left: var(--os-space-3);
-    padding-right: var(--os-space-3);
+    padding: var(--os-space-4) var(--os-space-3) var(--os-space-5);
+  }
+
+  .app-shell__main--wide {
+    padding: var(--os-space-2);
   }
 }
 

@@ -108,7 +108,7 @@ defineProps<{
 .chat-streaming__hint {
   margin-left: var(--os-space-2);
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
 }
 
 .chat-streaming__hint--below {

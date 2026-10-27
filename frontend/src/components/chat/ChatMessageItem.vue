@@ -158,20 +158,17 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
   color: var(--el-color-white);
 }
 
-.chat-msg__content {
-  min-width: 0;
-  flex: 1;
-  font-size: var(--os-font-sm);
-  line-height: 1.75;
-}
-
 /*
  * 宽度上限（2026-10-26 调整）：原先 760px，在 1440px 屏上右侧会空出 350px 以上，
  * 对话区显得「没占满」。放到 1000px（约合中文 77 字）后内容铺满主列，
  * 同时仍留出一道右边距，避免文字顶到卡片边缘。
  */
 .chat-msg__content {
+  min-width: 0;
+  flex: 1;
   max-width: 1000px;
+  font-size: var(--os-font-sm);
+  line-height: 1.75;
 }
 
 .chat-msg__content--user {
@@ -197,6 +194,7 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
  */
 .chat-msg__bubble--assistant {
   background: var(--el-fill-color-light);
+  border: 1px solid var(--el-border-color-lighter);
   /* 圆角朝向头像那一侧收窄：气泡的「尖角」暗示说话人方向 */
   border-bottom-left-radius: var(--os-radius-sm);
 }
@@ -220,7 +218,8 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
  * 换成深色文字后对比度足够，同时保留主色底以区分说话方。
  */
 .chat-msg__bubble--user {
-  background: var(--el-color-primary-light-8);
+  background: var(--el-color-primary-light-9);
+  border: 1px solid var(--el-color-primary-light-7);
   color: var(--el-text-color-primary);
   border-bottom-right-radius: var(--os-radius-sm);
 }
@@ -252,18 +251,26 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 
 .chat-msg__time {
   color: var(--el-text-color-placeholder);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
 }
 
+/*
+ * 可点区补到 24px 高（阶段 23）：原先 padding:0 + 12px 字，实测只有 38×17px，
+ * 低于最小可点尺寸——「复制」是悬停才浮现的按钮，本来就难命中。
+ * 用负外边距抵消多出来的留白，视觉位置不变。
+ */
 .chat-msg__action {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 0;
+  min-height: 24px;
+  margin: -4px 0;
+  padding: 4px 2px;
   border: none;
+  border-radius: var(--os-radius-sm);
   background: none;
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   cursor: pointer;
 }
 
@@ -332,7 +339,7 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 
 .chat-msg__citations-title {
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
 }
 
 .chat-msg__citation {
@@ -352,7 +359,7 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 }
 
 .chat-msg__citation-source {
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   font-weight: 500;
 }
 
@@ -363,9 +370,9 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 }
 
 .chat-msg__citation-content {
-  margin-top: 2px;
+  margin-top: var(--os-space-1);
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   line-height: 1.5;
   max-height: 120px;
   overflow-y: auto;

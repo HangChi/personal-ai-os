@@ -116,12 +116,17 @@ function formatDuration(durationMs: number | null): string {
   --el-collapse-content-bg-color: transparent;
 }
 
+/*
+ * 折叠头实测只有 23px 高（全局给的是 30px，但组件内的 :deep 更具体，把它压回来了）。
+ * 这里显式给 26px：对话流里要紧凑，但 22px 以下的命中区太难点。
+ */
 .chat-trail :deep(.el-collapse-item__header) {
-  min-height: 22px;
-  padding: 0 6px 0 4px;
+  min-height: 26px;
+  padding: 4px 6px 4px 4px;
   border-bottom: none;
   border-radius: var(--os-radius-sm);
-  line-height: 22px;
+  font-size: var(--os-font-xs);
+  line-height: 1.5;
 }
 
 /* hover 才出底色：默认是一行弱化小字，不抢回复本身的注意力 */
@@ -142,7 +147,7 @@ function formatDuration(durationMs: number | null): string {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   color: var(--el-text-color-secondary);
   white-space: nowrap;
 }
@@ -193,7 +198,7 @@ function formatDuration(durationMs: number | null): string {
   gap: var(--os-space-2);
   padding: 3px var(--os-space-2);
   border-radius: var(--os-radius-sm);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   line-height: 1.6;
   transition: background var(--os-duration-fast) var(--os-ease);
 }

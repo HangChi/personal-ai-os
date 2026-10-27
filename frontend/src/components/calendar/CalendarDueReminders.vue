@@ -97,6 +97,6 @@ const emit = defineEmits<{
 
 .cal-reminders__meta {
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
 }
 </style>

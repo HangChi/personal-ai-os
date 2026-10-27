@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Lock, User } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
@@ -42,8 +43,13 @@ async function submit(): Promise<void> {
 
 <template>
   <div class="login">
+    <!-- 背景装饰层：两团极淡的主色光晕。纯白/纯灰的登录页会显得「没过设计」，
+         光晕是最低成本的空间感（不含图片、不影响对比度） -->
+    <div class="login__glow login__glow--a" aria-hidden="true" />
+    <div class="login__glow login__glow--b" aria-hidden="true" />
+
     <el-card class="login__card" shadow="always">
-      <!-- 品牌区（阶段 18，T038）：与全站令牌一致的Logo + 名称 + 一句定位 -->
+      <!-- 品牌区（阶段 18，T038）：与全站令牌一致的 Logo + 名称 + 一句定位 -->
       <div class="login__brand">
         <span class="login__logo">AI</span>
         <div class="login__brand-text">
@@ -51,11 +57,17 @@ async function submit(): Promise<void> {
           <span class="login__tagline">对话 · 任务 · 知识库 · 日程 · 记忆</span>
         </div>
       </div>
-      <p class="login__hint">这个实例已开启访问控制，请先登录。</p>
 
-      <el-form label-position="top" @submit.prevent="submit">
+      <h1 class="login__heading">登录</h1>
+      <p class="login__hint">这个实例已开启访问控制，请先登录后继续。</p>
+
+      <el-form label-position="top" size="large" @submit.prevent="submit">
         <el-form-item label="用户名">
-          <el-input v-model="username" autocomplete="username" placeholder="用户名" />
+          <el-input v-model="username" autocomplete="username" placeholder="请输入用户名">
+            <template #prefix>
+              <el-icon><User /></el-icon>
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item label="密码">
           <el-input
@@ -63,9 +75,13 @@ async function submit(): Promise<void> {
             type="password"
             show-password
             autocomplete="current-password"
-            placeholder="密码"
+            placeholder="请输入密码"
             @keydown.enter="submit"
-          />
+          >
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+          </el-input>
         </el-form-item>
 
         <el-alert v-if="localError" class="login__error" type="error" :closable="false" show-icon :title="localError" />
@@ -74,40 +90,85 @@ async function submit(): Promise<void> {
           登录
         </el-button>
       </el-form>
+
+      <p class="login__footnote">本地单用户实例 · 凭据只保存在本机</p>
     </el-card>
   </div>
 </template>
 
 <style scoped>
+/*
+ * 登录页布局：撑满外壳剩余高度并居中。
+ * 外壳在登录页不渲染侧栏，main 本身就是全宽 —— 这里只需要「水平垂直居中」。
+ */
 .login {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
+  /* 减去顶栏高度，避免卡片偏下（外壳 main 是 flex 列容器，这里用 min-height 撑满） */
+  min-height: calc(100dvh - var(--os-header-height) - 120px);
+  padding: var(--os-space-6) var(--os-space-4);
+  overflow: hidden;
 }
 
+/* ---- 背景光晕 ---- */
+
+.login__glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.login__glow--a {
+  top: -120px;
+  left: 12%;
+  width: 420px;
+  height: 420px;
+  background: var(--el-color-primary-light-7);
+}
+
+.login__glow--b {
+  right: 10%;
+  bottom: -140px;
+  width: 360px;
+  height: 360px;
+  background: var(--el-color-primary-light-8);
+}
+
+/* ---- 卡片 ---- */
+
 .login__card {
-  width: 380px;
+  position: relative;
+  width: 400px;
+  max-width: 100%;
   border-radius: var(--os-radius-xl);
   box-shadow: var(--os-shadow-popup);
+}
+
+.login__card :deep(.el-card__body) {
+  padding: var(--os-space-7) var(--os-space-6) var(--os-space-6);
 }
 
 .login__brand {
   display: flex;
   align-items: center;
   gap: var(--os-space-3);
-  margin-bottom: var(--os-space-2);
+  margin-bottom: var(--os-space-6);
 }
 
 .login__logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--os-radius-lg);
-  background: var(--el-color-primary);
-  color: var(--el-color-white);
+  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
+  box-shadow: 0 2px 8px 0 rgb(79 70 229 / 32%);
+  color: #fff;
   font-size: var(--os-font-md);
   font-weight: 700;
   flex: none;
@@ -116,12 +177,12 @@ async function submit(): Promise<void> {
 .login__brand-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--os-space-1);
   min-width: 0;
 }
 
 .login__title {
-  font-size: var(--os-font-md);
+  font-size: var(--os-font-lg);
   font-weight: 600;
 }
 
@@ -130,10 +191,19 @@ async function submit(): Promise<void> {
   font-size: var(--os-font-xs);
 }
 
+/* 卡片内的主标题：品牌区负责「是谁」，这里负责「要做什么」 */
+.login__heading {
+  margin: 0;
+  font-size: var(--os-font-2xl);
+  font-weight: 650;
+  letter-spacing: -0.2px;
+}
+
 .login__hint {
-  margin: 0 0 var(--os-space-4);
+  margin: var(--os-space-2) 0 var(--os-space-5);
   color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
+  font-size: var(--os-font-sm);
+  line-height: 1.6;
 }
 
 .login__error {
@@ -142,5 +212,17 @@ async function submit(): Promise<void> {
 
 .login__submit {
   width: 100%;
+  height: 42px;
+  margin-top: var(--os-space-2);
+  font-size: var(--os-font-md);
+}
+
+.login__footnote {
+  margin: var(--os-space-5) 0 0;
+  padding-top: var(--os-space-4);
+  border-top: 1px solid var(--el-border-color-lighter);
+  color: var(--el-text-color-placeholder);
+  font-size: var(--os-font-xs);
+  text-align: center;
 }
 </style>

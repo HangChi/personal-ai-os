@@ -24,17 +24,19 @@ onMounted(() => {
 
 <template>
   <div class="search-page">
-    <el-card shadow="never">
-      <template #header>
-        <div class="search-page__header">
-          <span v-if="searchStore.keyword"> 搜索「{{ searchStore.keyword }}」· 共 {{ searchStore.totalHits }} 条 </span>
-          <span v-else>全局搜索</span>
-        </div>
-      </template>
-
-      <p class="search-page__hint">
-        跨任务、对话、日程、记忆与知识库搜索。每类最多显示 5 条 —— 全局搜索用来定位到哪个模块，更细的筛选请去对应页面。
+    <header class="search-page__head">
+      <h1 class="search-page__title">
+        <template v-if="searchStore.keyword">「{{ searchStore.keyword }}」</template>
+        <template v-else>全局搜索</template>
+      </h1>
+      <p v-if="searchStore.keyword" class="search-page__count">
+        在任务、对话、日程、记忆与知识库中找到 {{ searchStore.totalHits }} 条
       </p>
+      <p v-else class="search-page__count">在顶部搜索框输入关键词，或按 ⌘ K / Ctrl K 唤起。</p>
+    </header>
+
+    <el-card shadow="never">
+      <p class="search-page__hint">每类最多显示 5 条 —— 全局搜索用来定位到哪个模块，更细的筛选请去对应页面。</p>
 
       <el-alert v-if="searchStore.error" type="error" :closable="false" show-icon :title="searchStore.error" />
 
@@ -87,43 +89,67 @@ onMounted(() => {
 .search-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--os-space-5);
 }
 
-.search-page__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+/* ---- 页头 ---- */
+
+.search-page__head {
+  min-width: 0;
+}
+
+.search-page__title {
+  margin: 0;
+  font-size: var(--os-font-2xl);
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+  /* 关键词可能很长，长到换行也不要撑破内容区 */
+  word-break: break-word;
+}
+
+.search-page__count {
+  margin: var(--os-space-2) 0 0;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
 }
 
 .search-page__hint {
-  margin: 0 0 16px;
+  margin: 0 0 var(--os-space-4);
   color: var(--el-text-color-secondary);
-  font-size: 13px;
+  font-size: var(--os-font-xs);
+  line-height: 1.6;
 }
 
 .search-page__groups {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--os-space-5);
 }
 
+/*
+ * 分组头（阶段 23）：模块名 + 命中数，下边框收紧为一条虚线。
+ * 改造前是实线 + 12px 数字，六组叠起来上半屏全是横线；虚线弱得多。
+ */
 .search-page__group-header {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  padding-bottom: 6px;
+  gap: var(--os-space-2);
+  margin-bottom: var(--os-space-1);
+  padding-bottom: var(--os-space-2);
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
 .search-page__group-name {
+  font-size: var(--os-font-md);
   font-weight: 600;
+  color: var(--el-text-color-primary);
 }
 
 .search-page__group-count {
-  color: var(--el-text-color-secondary);
-  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  font-size: var(--os-font-xs);
+  font-variant-numeric: tabular-nums;
 }
 
 .search-page__hits {
@@ -132,44 +158,72 @@ onMounted(() => {
   list-style: none;
 }
 
-.search-page__hit {
-  border-bottom: 1px dashed var(--el-border-color-lighter);
-}
-
-.search-page__hit:last-child {
-  border-bottom: none;
-}
-
+/*
+ * 命中行：整行可点 + 悬停浅底。
+ * 改造前只有文字变蓝（没有背景），鼠标划过时几乎看不出「这一行是链接」；
+ * 而且 padding 只有 8px 4px，可点区高度不足 32px。
+ */
 .search-page__hit-link {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 8px 4px;
+  align-items: center;
+  gap: var(--os-space-3);
+  padding: var(--os-space-2) var(--os-space-3);
+  border-radius: var(--os-radius-md);
   color: inherit;
   text-decoration: none;
+  transition: background var(--os-duration-fast) var(--os-ease);
 }
 
 .search-page__hit-link:hover {
+  background: var(--el-fill-color-light);
+}
+
+.search-page__hit-link:hover .search-page__hit-title {
   color: var(--el-color-primary);
 }
 
 .search-page__hit-title {
   flex: 0 1 auto;
   font-size: var(--os-font-md);
+  font-weight: 500;
+  transition: color var(--os-duration-fast) var(--os-ease);
 }
 
 .search-page__hit-subtitle {
   flex: 1 1 auto;
+  min-width: 0;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* 关键词高亮（C-07）：warning 浅底 + 继承字色，不用第三方组件 */
+/*
+ * 关键词高亮（C-07）：warning 浅底 + 继承字色，不用第三方组件。
+ *
+ * 底色是浅黄，副标题本身是 secondary，两者叠起来实测只有 3.83:1。
+ * 高亮的目的是「跳出来」，所以这里改用 regular 字色，不靠继承。
+ */
 .search-page__hit-title mark,
 .search-page__hit-subtitle mark {
-  padding: 0 1px;
-  border-radius: 2px;
-  background: var(--el-color-warning-light-9);
-  color: inherit;
+  padding: 0 2px;
+  border-radius: 3px;
+  background: var(--el-color-warning-light-8);
+  color: var(--el-text-color-regular);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  /* 窄屏 subtitle 换行到标题下方，否则标题被挤成两三个字一行 */
+  .search-page__hit-link {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--os-space-1);
+  }
+
+  .search-page__hit-subtitle {
+    white-space: normal;
+  }
 }
 </style>

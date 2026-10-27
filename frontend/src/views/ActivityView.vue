@@ -102,10 +102,15 @@ function handlePage(target: number): void {
 
 <template>
   <div class="activity">
+    <header class="activity__head">
+      <h1 class="activity__title">活动</h1>
+      <p class="activity__subtitle">助手调用过哪些工具、每个 MCP server 当前是否连上 —— 审计与接入状态都在这一页。</p>
+    </header>
+
     <el-card class="activity__card" shadow="never">
       <template #header>
         <div class="activity__card-header">
-          <span>MCP 接入状态</span>
+          <span class="activity__card-title">MCP 接入状态</span>
           <el-button size="small" :loading="mcpLoading" @click="store.loadMcp()">刷新</el-button>
         </div>
       </template>
@@ -171,7 +176,7 @@ function handlePage(target: number): void {
     <el-card class="activity__card" shadow="never">
       <template #header>
         <div class="activity__card-header">
-          <span>工具调用记录</span>
+          <span class="activity__card-title">工具调用记录</span>
           <div class="activity__filters">
             <el-select :model-value="outcome ?? 'ALL'" size="small" class="activity__filter" @change="handleOutcome">
               <el-option label="全部结果" value="ALL" />
@@ -276,16 +281,45 @@ function handlePage(target: number): void {
 .activity {
   max-width: 1080px;
   margin: 0 auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--os-space-5);
+}
+
+/* ---- 页头 ---- */
+
+.activity__head {
+  min-width: 0;
+}
+
+.activity__title {
+  margin: 0;
+  font-size: var(--os-font-2xl);
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+}
+
+.activity__subtitle {
+  margin: var(--os-space-2) 0 0;
+  max-width: 68ch;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
+  line-height: 1.65;
 }
 
 .activity__card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--os-space-4);
+  flex-wrap: wrap;
+}
+
+.activity__card-title {
+  font-size: var(--os-font-xl);
+  font-weight: 600;
 }
 
 .activity__filters {
@@ -330,6 +364,7 @@ function handlePage(target: number): void {
   align-items: center;
   flex-wrap: wrap;
   gap: var(--os-space-2);
+  padding: var(--os-space-1) 0;
   font-size: var(--os-font-xs);
 }
 
@@ -370,23 +405,23 @@ function handlePage(target: number): void {
 }
 
 .activity__tool-tag {
-  margin: 0 4px 4px 0;
+  margin: 0 var(--os-space-1) var(--os-space-1) 0;
 }
 
 .activity__muted {
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
 }
 
 .activity__reason {
   color: var(--el-color-danger);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
   word-break: break-all;
 }
 
 .activity__pagination {
   display: flex;
   justify-content: flex-end;
-  margin-top: 12px;
+  margin-top: var(--os-space-3);
 }
 </style>

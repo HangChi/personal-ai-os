@@ -12,13 +12,15 @@
  */
 
 :root {
-  /* ---- 间距（4 的倍数，覆盖 4/8/12/16/20/24 六档实测高频值）---- */
+  /* ---- 间距（4 的倍数，覆盖 4/8/12/16/20/24/32/40 八档实测高频值）---- */
   --os-space-1: 4px;
   --os-space-2: 8px;
   --os-space-3: 12px;
   --os-space-4: 16px;
   --os-space-5: 20px;
   --os-space-6: 24px;
+  --os-space-7: 32px;
+  --os-space-8: 40px;
 
   /* ---- 圆角（收敛实测的 6/8/10px 三档；12 给弹窗与大卡）---- */
   --os-radius-sm: 6px;
@@ -34,11 +36,19 @@
   --os-shadow-card-hover: 0 4px 12px 0 rgb(31 45 61 / 8%), 0 2px 4px 0 rgb(31 45 61 / 6%);
   --os-shadow-popup: 0 8px 24px 0 rgb(31 45 61 / 12%), 0 2px 6px 0 rgb(31 45 61 / 8%);
 
-  /* ---- 字体节奏（收敛实测 12/13/14 三档；15/16 保留给页面标题）---- */
+  /* ---- 字体节奏（收敛实测 12/13/14 三档；15/16/17/22/26/32 给标题与数字）---- */
   --os-font-xs: 12px;
   --os-font-sm: 13px;
   --os-font-md: 14px;
   --os-font-lg: 15px;
+  /** 卡片内的小标题 / 区块标题 */
+  --os-font-xl: 17px;
+  /** 页面主标题 */
+  --os-font-2xl: 22px;
+  /** 总览页的欢迎标题 */
+  --os-font-3xl: 26px;
+  /** 统计数字 */
+  --os-font-stat: 30px;
 
   /* ---- 动效（prefers-reduced-motion 时全局关闭，见 main.css）---- */
   --os-duration-fast: 0.15s;
@@ -50,6 +60,11 @@
   --os-content-max-width: 1080px;
   /** 卡片间距：替代各页面 `gap: 16px` 的散落值 */
   --os-stack-gap: var(--os-space-4);
+  /** 侧栏宽度（展开 / 折叠）：外壳与页面共用，避免两处各写一个数 */
+  --os-sidebar-width: 224px;
+  --os-sidebar-width-collapsed: 64px;
+  /** 外壳顶栏高度：侧栏品牌区必须与它同高，否则接缝错位（改造前 56 vs 60，差 4px） */
+  --os-header-height: 60px;
 }
 
 /*

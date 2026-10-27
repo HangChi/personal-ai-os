@@ -101,7 +101,7 @@ function actionLabel(action: string): string {
 
 .chat-confirmations__meta {
   color: var(--el-text-color-secondary);
-  font-size: 11px;
+  font-size: var(--os-font-xs);
   white-space: nowrap;
 }
 

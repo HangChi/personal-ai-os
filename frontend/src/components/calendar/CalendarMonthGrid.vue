@@ -110,12 +110,13 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 .cal-month__bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--os-space-2);
+  margin-bottom: var(--os-space-3);
 }
 
 .cal-month__title {
   min-width: 110px;
+  font-size: var(--os-font-md);
   text-align: center;
   font-weight: 600;
 }
@@ -123,7 +124,7 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 .cal-month__warn {
   margin-left: auto;
   color: var(--el-color-warning);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
 }
 
 /*
@@ -137,9 +138,10 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 }
 
 .cal-month__weekday {
-  padding: 6px 8px;
+  padding: var(--os-space-2);
   text-align: center;
-  font-size: 12px;
+  font-size: var(--os-font-xs);
+  font-weight: 500;
   color: var(--el-text-color-secondary);
   background: var(--el-fill-color-light);
   border-right: 1px solid var(--el-border-color-lighter);
@@ -149,9 +151,9 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 .cal-month__cell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--os-space-1);
   min-height: 96px;
-  padding: 4px 6px;
+  padding: var(--os-space-1) var(--os-space-2);
   border-right: 1px solid var(--el-border-color-lighter);
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
@@ -172,14 +174,14 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 }
 
 .cal-month__cell-day {
-  font-size: 12px;
+  font-size: var(--os-font-xs);
   font-weight: 600;
 }
 
 /* 「+」只在悬停时出现：42 个格子都常驻一个加号会非常吵 */
 .cal-month__cell-add {
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity var(--os-duration-fast) var(--os-ease);
 }
 
 .cal-month__cell:hover .cal-month__cell-add {
@@ -208,8 +210,8 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
   align-items: baseline;
   gap: 4px;
   padding: 1px 4px;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: var(--os-radius-sm);
+  font-size: var(--os-font-xs);
   cursor: pointer;
   overflow: hidden;
 }
@@ -233,7 +235,7 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 
 .cal-month__cell-cross {
   flex: none;
-  font-size: 10px;
+  font-size: var(--os-font-xs);
   color: var(--el-color-warning);
 }
 
@@ -243,16 +245,16 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
   border: none;
   background: none;
   color: var(--el-color-primary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
   text-align: left;
   cursor: pointer;
 }
 
 .cal-month__cell-more-item {
   display: flex;
-  gap: 6px;
-  padding: 4px 0;
-  font-size: 12px;
+  gap: var(--os-space-2);
+  padding: var(--os-space-1) 0;
+  font-size: var(--os-font-xs);
   cursor: pointer;
 }
 

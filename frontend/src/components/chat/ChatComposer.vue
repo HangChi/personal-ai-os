@@ -537,13 +537,17 @@ onMounted(autosize)
 /* ---- 输入框（带边界的外盒 + 内部无框文本域） ---- */
 
 .chat-composer__box {
-  border: 1px solid var(--el-border-color);
+  border: 1px solid var(--el-border-color-light);
   border-radius: var(--os-radius-xl);
   background: var(--el-bg-color);
   padding: var(--os-space-2) var(--os-space-3);
   transition:
     border-color var(--os-duration-fast) var(--os-ease),
     box-shadow var(--os-duration-fast) var(--os-ease);
+}
+
+.chat-composer__box:hover {
+  border-color: var(--el-border-color);
 }
 
 /* 聚焦高亮落在外盒上：控件内部各自的 focus 描边会被收掉，避免出现两层框 */
@@ -557,10 +561,15 @@ onMounted(autosize)
   border: none;
   background: transparent;
   box-shadow: none;
-  font-size: var(--os-font-sm);
-  line-height: 1.6;
+  /*
+   * 输入框正文 14px 而不是 13px（阶段 23）：这是全应用打字最多的地方，
+   * 13px 中文在 1x 屏上偏小；且 iOS Safari 对 <16px 的输入框会自动放大页面，
+   * 14px 至少与正文一致，不会显得比消息内容更小。
+   */
+  font-size: var(--os-font-md);
+  line-height: 1.65;
   /* 两行文本的高度；autosize 会在此基础上按内容上调 */
-  min-height: 44px;
+  min-height: 46px;
 }
 
 .chat-composer__footer {

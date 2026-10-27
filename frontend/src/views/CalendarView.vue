@@ -260,6 +260,11 @@ async function acknowledgeAll(): Promise<void> {
 
 <template>
   <div class="calendar">
+    <header class="calendar__head">
+      <h1 class="calendar__title">日程</h1>
+      <p class="calendar__subtitle">支持重复规则与到点提醒；月视图里点格子空白处可快速新建。</p>
+    </header>
+
     <CalendarNotifyBanner
       :permission="notificationPermission"
       :requesting="requestingPermission"
@@ -287,7 +292,7 @@ async function acknowledgeAll(): Promise<void> {
       <template #header>
         <div class="calendar__header">
           <div class="calendar__view">
-            <span>日程</span>
+            <span class="calendar__card-title">{{ viewMode === 'month' ? '月视图' : '日程列表' }}</span>
             <el-radio-group :model-value="viewMode" size="small" @change="handleViewChange">
               <el-radio-button value="list">列表</el-radio-button>
               <el-radio-button value="month">月</el-radio-button>
@@ -342,19 +347,48 @@ async function acknowledgeAll(): Promise<void> {
 .calendar {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--os-space-5);
+}
+
+/* ---- 页头 ---- */
+
+.calendar__head {
+  min-width: 0;
+}
+
+.calendar__title {
+  margin: 0;
+  font-size: var(--os-font-2xl);
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+}
+
+.calendar__subtitle {
+  margin: var(--os-space-2) 0 0;
+  max-width: 68ch;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
+  line-height: 1.65;
 }
 
 .calendar__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--os-space-3);
+  flex-wrap: wrap;
 }
 
 .calendar__view {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--os-space-3);
+  flex-wrap: wrap;
+}
+
+.calendar__card-title {
+  font-size: var(--os-font-xl);
+  font-weight: 600;
 }
 </style>

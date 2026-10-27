@@ -95,12 +95,12 @@ function recurrenceLabel(type: string): string {
 
 .cal-list__total {
   color: var(--el-text-color-secondary);
-  font-size: 13px;
+  font-size: var(--os-font-sm);
 }
 
 .cal-list__day-label {
   margin-bottom: 6px;
-  font-size: 13px;
+  font-size: var(--os-font-sm);
   font-weight: 600;
   color: var(--el-text-color-regular);
 }
@@ -117,7 +117,7 @@ function recurrenceLabel(type: string): string {
   flex: none;
   width: 130px;
   color: var(--el-text-color-secondary);
-  font-size: 13px;
+  font-size: var(--os-font-sm);
 }
 
 .cal-list__item-title {
@@ -126,7 +126,7 @@ function recurrenceLabel(type: string): string {
 
 .cal-list__item-location {
   color: var(--el-text-color-secondary);
-  font-size: 12px;
+  font-size: var(--os-font-xs);
 }
 
 .cal-list__item-action {

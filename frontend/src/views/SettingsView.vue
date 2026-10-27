@@ -16,7 +16,6 @@ import { storeToRefs } from 'pinia'
 import { onMounted, ref } from 'vue'
 
 import { downloadExport } from '@/api/export'
-import PageHeader from '@/components/PageHeader.vue'
 import { useAppStore } from '@/stores/app'
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
@@ -77,11 +76,12 @@ async function handleReset(): Promise<void> {
 
 <template>
   <div class="settings">
-    <el-card shadow="never">
-      <template #header>
-        <PageHeader title="设置" description="偏好保存在此浏览器，刷新后仍生效" />
-      </template>
+    <header class="settings__head">
+      <h1 class="settings__title">设置</h1>
+      <p class="settings__subtitle">这些偏好只保存在此浏览器（localStorage），不写入后端，换设备不会同步。</p>
+    </header>
 
+    <el-card shadow="never">
       <!-- 外观 -->
       <section class="settings__section">
         <h3 class="settings__section-title">外观</h3>
@@ -196,9 +196,30 @@ async function handleReset(): Promise<void> {
 .settings {
   display: flex;
   flex-direction: column;
-  gap: var(--os-stack-gap);
+  gap: var(--os-space-5);
   max-width: 760px;
   margin: 0 auto;
+  width: 100%;
+}
+
+.settings__head {
+  min-width: 0;
+}
+
+.settings__title {
+  margin: 0;
+  font-size: var(--os-font-2xl);
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+}
+
+.settings__subtitle {
+  margin: var(--os-space-2) 0 0;
+  max-width: 62ch;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
+  line-height: 1.65;
 }
 
 .settings__section + .settings__section {
@@ -209,7 +230,7 @@ async function handleReset(): Promise<void> {
 
 .settings__section-title {
   margin: 0 0 var(--os-space-3);
-  font-size: var(--os-font-sm);
+  font-size: var(--os-font-md);
   font-weight: 600;
   color: var(--el-text-color-primary);
 }
@@ -220,7 +241,12 @@ async function handleReset(): Promise<void> {
   justify-content: space-between;
   gap: var(--os-space-4);
   flex-wrap: wrap;
-  padding: var(--os-space-2) 0;
+  padding: var(--os-space-3) 0;
+}
+
+/* 相邻行之间一条极淡的分隔线：比加大 padding 更能表达「这是两条独立设置」 */
+.settings__row + .settings__row {
+  border-top: 1px solid var(--el-border-color-extra-light);
 }
 
 .settings__row-text {
@@ -232,7 +258,8 @@ async function handleReset(): Promise<void> {
 }
 
 .settings__row-label {
-  font-size: var(--os-font-sm);
+  font-size: var(--os-font-md);
+  color: var(--el-text-color-primary);
 }
 
 .settings__row-hint {

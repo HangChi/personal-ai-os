@@ -341,71 +341,6 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   color: var(--el-color-primary);
 }
 
-.chat-sessions__item--active /* 行内删除确认条：与列表项同底色系，但用边框和红字让它明显区别于普通行 */
-.chat-sessions__confirm {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--os-space-2);
-  padding: 0 var(--os-space-2);
-  border-radius: var(--os-radius-md);
-  background: var(--el-bg-color);
-  font-size: var(--os-font-xs);
-}
-
-.chat-sessions__confirm-text {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--el-text-color-regular);
-}
-
-.chat-sessions__confirm-btn {
-  flex: none;
-  padding: 2px 8px;
-  border: 1px solid var(--el-border-color);
-  border-radius: var(--os-radius-sm);
-  background: var(--el-bg-color);
-  color: var(--el-text-color-regular);
-  font-size: var(--os-font-xs);
-  cursor: pointer;
-}
-
-.chat-sessions__confirm-btn:hover {
-  border-color: var(--el-color-primary-light-5);
-  color: var(--el-color-primary);
-}
-
-.chat-sessions__confirm-btn--danger {
-  border-color: var(--el-color-danger-light-5);
-  color: var(--el-color-danger);
-}
-
-.chat-sessions__confirm-btn--danger:hover {
-  border-color: var(--el-color-danger);
-  background: var(--el-color-danger-light-9);
-  color: var(--el-color-danger);
-}
-
-.chat-sessions__rename {
-  width: 100%;
-  padding: 1px 4px;
-  border: 1px solid var(--el-color-primary);
-  border-radius: var(--os-radius-sm);
-  background: var(--el-bg-color);
-  color: var(--el-text-color-primary);
-  font-size: var(--os-font-xs);
-  line-height: 1.5;
-  outline: none;
-}
-
-.chat-sessions__meta {
-  color: var(--el-text-color-secondary);
-}
-
 .chat-sessions__item--active::before {
   content: '';
   position: absolute;
@@ -427,9 +362,16 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   transition: opacity var(--os-duration-fast) var(--os-ease);
 }
 
+/*
+ * 图标按钮的可点区从 22×22 扩到 26×26（阶段 23）。
+ * 22px 低于 24px 的最小可点尺寸——悬停浮现的小图标本来就难命中，
+ * 鼠标稍微偏一格就点不到。padding 从 4px 抬到 6px，图标本身不变。
+ */
 .chat-sessions__item-actions :deep(.el-button) {
+  min-width: 26px;
+  min-height: 26px;
   margin-left: 0;
-  padding: 4px;
+  padding: 6px;
 }
 
 .chat-sessions__item:hover .chat-sessions__item-actions,
@@ -449,7 +391,7 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 }
 
 .chat-sessions__title-text {
-  font-size: var(--os-font-xs);
+  font-size: var(--os-font-sm);
   font-weight: 400;
   color: var(--el-text-color-primary);
   overflow: hidden;
@@ -519,10 +461,14 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   outline: none;
 }
 
+/*
+ * 会话元信息（条数 · 时间）是要读的内容，不是占位符。
+ * placeholder 实测只有 3.95:1，读起来发糊；secondary 约 6:1。
+ */
 .chat-sessions__meta {
   margin-top: 2px;
   font-size: var(--os-font-xs);
-  color: var(--el-text-color-placeholder);
+  color: var(--el-text-color-secondary);
 }
 
 .chat-sessions__pagination {

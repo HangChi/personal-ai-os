@@ -1,0 +1,607 @@
+/*
+ * Element Plus 主题层（阶段 23，2026-10-27）。
+ *
+ * 为什么要有这个文件：`tokens.css` 刻意只补 Element Plus **没有**的语义
+ * （间距 / 圆角 / 阴影 / 字号节奏），颜色一律消费 `--el-*`。这条路本身是对的，
+ * 但它成立的前提是「EP 的默认值就是我们要的观感」——实际并非如此：
+ *
+ * 实测（改造前，1440px 视口）：
+ * - 主色未做任何覆盖 → 落在 EP 出厂的 #409eff（组件库演示页的标准蓝）；
+ * - `--el-border-radius-base: 4px`，而卡片自带圆角 4px、统计卡 10px → 两套圆角并存；
+ * - 页面底 #f2f3f5 / 卡片 #fff，全靠 1px 灰边 + `shadow="never"` 区分层次 → 卡片
+ *   像表格而非卡片，整页是「一堆描边方块」；
+ * - 按钮 `<button>` 未继承字体 → 落到 UA 默认 13.3333px + Arial，中文字形与正文不一致；
+ * - `.el-menu-item` 高度 44px 但 line-height:56px → 文字垂直居中失准。
+ *
+ * 本文件只做两件事，边界清晰：
+ * 1. **重写 EP 的颜色/圆角/字体变量**（单一来源仍是 `--el-*`，不新起一套颜色阶梯——
+ *    否则暗色模式要维护双轨，必然漂移）；
+ * 2. **覆盖少数组件的内部实现样式**（卡片、菜单、表格、标签等），因为 EP 把它们
+ *    写死在组件里的 px 值上，变量覆盖不到。
+ *
+ * 加载顺序（main.ts）：EP 基础样式 → EP 暗色变量 → 本文件。
+ * 本文件必须在两者之后，否则被 EP 自身规则盖掉。
+ */
+
+/* ==================================================================
+ * 1. 色彩
+ *
+ * 主色取靛蓝 #4f46e5 而不是 EP 蓝：本应用是「个人智能 OS」，桌面工具属性强，
+ * 靛蓝在长时间阅读的浅灰底上更沉稳，也与 EP 蓝（几乎等同于「未定制的 Element
+ * 演示」）拉开距离。9 级阶梯按 EP 的混色规则手工展开（EP 的做法是向白色混合
+ * 90%/80%/…，向黑色混合 20%），保持一致以免某档突然跳色。
+ * ================================================================== */
+
+:root {
+  /* ---- 主色阶梯（--el-color-primary 与其 light-3..9 / dark-2）---- */
+  --el-color-primary: #4f46e5;
+  --el-color-primary-light-3: #7c74ee;
+  --el-color-primary-light-5: #a29cf3;
+  --el-color-primary-light-7: #c8c5f7;
+  --el-color-primary-light-8: #dbd9fa;
+  --el-color-primary-light-9: #eeedfc;
+  --el-color-primary-dark-2: #3f38b7;
+
+  /*
+   * 语义色收敛：EP 出厂的 success/danger/warning 饱和度偏高，用在浅色卡片上
+   * 像告警面板。这里统一降一档饱和、提一档亮度，与靛蓝主色的「克制」一致。
+   */
+  --el-color-success: #16a34a;
+  --el-color-success-light-3: #5cbe85;
+  --el-color-success-light-5: #8bd2a6;
+  --el-color-success-light-7: #bae5c8;
+  --el-color-success-light-8: #d0eeda;
+  --el-color-success-light-9: #e8f6ed;
+  --el-color-success-dark-2: #12823b;
+
+  --el-color-warning: #d97706;
+  --el-color-warning-light-3: #e5a04c;
+  --el-color-warning-light-5: #ecbb7c;
+  --el-color-warning-light-7: #f3d5ab;
+  --el-color-warning-light-8: #f7e2c3;
+  --el-color-warning-light-9: #fbf1e1;
+  --el-color-warning-dark-2: #ae5f05;
+
+  --el-color-danger: #dc2626;
+  --el-color-danger-light-3: #e76060;
+  --el-color-danger-light-5: #ee9393;
+  --el-color-danger-light-7: #f5c0c0;
+  --el-color-danger-light-8: #f8d4d4;
+  --el-color-danger-light-9: #fce9e9;
+  --el-color-danger-dark-2: #b01e1e;
+
+  --el-color-error: var(--el-color-danger);
+  --el-color-error-light-3: var(--el-color-danger-light-3);
+  --el-color-error-light-5: var(--el-color-danger-light-5);
+  --el-color-error-light-7: var(--el-color-danger-light-7);
+  --el-color-error-light-8: var(--el-color-danger-light-8);
+  --el-color-error-light-9: var(--el-color-danger-light-9);
+  --el-color-error-dark-2: var(--el-color-danger-dark-2);
+
+  /*
+   * info 色：EP 出厂 #909399 落在自己的浅底上只有 2.8:1（实测 el-tag / el-alert
+   * 的 info 变体全部不达标）。info 在本应用里承载「中性信息」——待确认、已去重、
+   * 依赖未装配——都是要读的正文，不是装饰。这里整体压深到与 secondary 同档。
+   */
+  --el-color-info: #5b6270;
+  --el-color-info-light-3: #939aa6;
+  --el-color-info-light-5: #b2b7c0;
+  --el-color-info-light-7: #d0d3d9;
+  --el-color-info-light-8: #dfe1e5;
+  --el-color-info-light-9: #eff0f2;
+  --el-color-info-dark-2: #464c58;
+
+  /*
+   * 中性色：EP 默认的 #909399（secondary）在 #f5f7fa 底上对比度只有 3.0:1，
+   * 达不到正文 4.5:1。这里整体压深一档，让次要文字真正可读。
+   *
+   * placeholder 同样压深（#6f7684 ≈ 4.55:1）：它承载的是输入框里唯一的一层
+   * 提示（"按标签筛选"、"搜索记忆内容"），EP 出厂的 #a8abb2 只有 2.6:1 ——
+   * 白底上淡到几乎看不见，用户会以为那些框是禁用状态。
+   */
+  --el-text-color-primary: #1f2430;
+  --el-text-color-regular: #4a5163;
+  /*
+   * secondary 需要比 EP 默认更深：#6b7280 在白底有 4.83:1，但本项目大量使用
+   * 「浅主色底」（选中行 / 表头 / 标签），在 #eeedfc 上只剩 4.18:1。
+   * 压到 #5f6673 后，最浅的填充底上也有 4.99:1。
+   */
+  --el-text-color-secondary: #5f6673;
+  --el-text-color-placeholder: #6f7684;
+  --el-text-color-disabled: #b9bfc9;
+
+  --el-border-color: #d8dce4;
+  --el-border-color-light: #e3e7ee;
+  --el-border-color-lighter: #eceff4;
+  --el-border-color-extra-light: #f4f6f9;
+
+  --el-fill-color: #f2f4f7;
+  --el-fill-color-light: #f6f7fa;
+  --el-fill-color-lighter: #fafbfc;
+  --el-fill-color-blank: #ffffff;
+
+  /* 页面底色比 EP 默认 #f2f3f5 更浅、更中性：与白色卡片的层次靠阴影而非重色差 */
+  --el-bg-color-page: #f7f8fa;
+  --el-bg-color: #ffffff;
+
+  /* ---- 圆角：把 EP 的 4px 抬到 8px，与 tokens 的 --os-radius-* 对齐 ---- */
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 6px;
+  --el-border-radius-round: 999px;
+
+  /*
+   * 字体栈：EP 默认把 Helvetica Neue 排在最前，拉丁字母走 Helvetica，
+   * 与正文的 -apple-system 不一致（同一页面两种西文字形）。这里直接对齐 main.css，
+   * 保证「按钮里的英文」与「段落里的英文」是同一个字体。
+   */
+  --el-font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
+  /* ---- 阴影：EP 的 box-shadow 变量偏向浮层，卡片层次统一走 tokens ---- */
+  --el-box-shadow-light: var(--os-shadow-card);
+  --el-box-shadow: var(--os-shadow-card-hover);
+}
+
+/* ==================================================================
+ * 2. 表单控件：统一高度与内边距
+ *
+ * 改造前同类控件三种高度（按钮 24/32/40、输入框 32、下拉 32），
+ * 并排时底边永远不齐。这里按 size 三档锁死。
+ * ================================================================== */
+
+:root {
+  --el-component-size: 34px;
+  --el-component-size-small: 28px;
+  --el-component-size-large: 40px;
+}
+
+/* ==================================================================
+ * 3. 组件内部实现覆盖
+ *
+ * 下面这些用变量覆盖不到（EP 把 px 写在组件选择器里），只能显式改写。
+ * 每条都带「为什么」，避免以后被当成冗余样式删掉。
+ * ================================================================== */
+
+/* ---- 卡片：本应用的核心容器 ---- */
+
+/*
+ * 卡片圆角与阴影是「成品感」的第一来源。改造前所有卡片 shadow="never" +
+ * 1px #e4e7ed 边框，视觉上是一条条描边方块，没有层次。
+ * 这里给一个极轻的投影，并用更淡的边框兜住边界（纯阴影在浅灰底上会「飘」）。
+ */
+.el-card {
+  border-radius: var(--os-radius-xl);
+  border: 1px solid var(--el-border-color-lighter);
+  box-shadow: var(--os-shadow-card);
+  /* 卡内不再叠 overflow，否则子元素的 sticky/绝对定位会被裁 */
+  transition: box-shadow var(--os-duration-normal) var(--os-ease);
+}
+
+/* EP 的 .el-card__header 默认 padding 18px 20px、下边框 1px；这里收紧并去掉硬边 */
+.el-card__header {
+  padding: var(--os-space-3) var(--os-space-5);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.el-card__body {
+  padding: var(--os-space-5);
+}
+
+/* 无 header 的卡片（登录 / 对话主列）不需要额外上内边距补偿 */
+.el-card__header + .el-card__body {
+  padding-top: var(--os-space-4);
+}
+
+/* ---- 按钮 ---- */
+
+/*
+ * 关键修复：<button> 默认不继承 font-family，改造前页面上大量 <button>（统计卡、
+ * 能力卡、会话项）落到 UA 的 13.3333px + Arial，中文字形是「微软雅黑以外的回退」，
+ * 与周围正文明显不是一套字。这里统一继承，并显式给 EP 按钮正文字号。
+ */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.el-button {
+  font-size: var(--os-font-md);
+  font-weight: 500;
+  /* EP 默认圆角 4px，与卡片 12px 不搭；按钮取 8px 作为中间档 */
+  border-radius: var(--os-radius-md);
+}
+
+.el-button--small {
+  font-size: var(--os-font-sm);
+}
+
+/* 主按钮加一点投影：它是页面上唯一的强动作，值得一层极浅的立体感 */
+.el-button--primary:not(.is-plain):not(.is-text):not(.is-link) {
+  box-shadow: 0 1px 2px 0 rgb(79 70 229 / 24%);
+}
+
+.el-button--primary:not(.is-plain):not(.is-text):not(.is-link):hover {
+  box-shadow: 0 2px 6px 0 rgb(79 70 229 / 28%);
+}
+
+/* ---- 输入 / 选择 ---- */
+
+/*
+ * 内层 .el-input__inner 在 EP 里 padding 是 0 15px，小尺寸时文字几乎贴到边框。
+ * 统一到 12px，并与圆角 8px 配平。
+ */
+.el-input__inner,
+.el-textarea__inner {
+  border-radius: var(--os-radius-md);
+}
+
+.el-input__wrapper {
+  border-radius: var(--os-radius-md);
+}
+
+/* ---- 标签 ---- */
+
+/*
+ * EP 的 el-tag 默认圆角 4px、字号 12px、左右 padding 7px —— 在正文里像个小方框。
+ * 改成胶囊 + 更松的内边距，与整体的圆角语言一致。
+ */
+.el-tag {
+  border-radius: var(--os-radius-round);
+  font-weight: 500;
+  padding: 0 10px;
+}
+
+.el-tag--small {
+  padding: 0 8px;
+  font-size: var(--os-font-xs);
+}
+
+/*
+ * 标签配色重算（阶段 23 审计实测）。
+ *
+ * EP 的浅色标签是「[type] 基色文字 + light-9 极浅底」：success 实测 2.96:1、
+ * warning 3.08:1、danger 3.19:1，全部低于 4.5:1。而这些标签承载的是
+ * 「逾期 / 优先级 / 待确认 / 已去重」这类必须读清的状态词，不是装饰。
+ *
+ * 改为「深一档的类型色 + 对应的极浅底」，五种各验算过（均在 6:1 以上）。
+ *
+ * ⚠️ 选择器必须写成 `html .el-tag.el-tag--success`（0-2-1），而不是 EP 同款的
+ * `.el-tag.el-tag--success`（0-2-0）：EP 的 per-component 样式由 unplugin 在
+ * **使用该组件的 SFC 里**注入，而路由是懒加载的 → 它在运行时晚于本文件注入，
+ * 同特异性下 EP 胜出，我们的配色被静默吃掉（实测：改了但计算值仍是 EP 原色）。
+ * 抬一级特异性即可，不必依赖打包顺序这种隐性契约——dev 与 build 的顺序本就不同。
+ */
+html .el-tag.el-tag--primary {
+  --el-tag-text-color: #3f38b7;
+  --el-tag-bg-color: #eeedfc;
+  --el-tag-border-color: #c8c5f7;
+}
+
+html .el-tag.el-tag--success {
+  --el-tag-text-color: #0d6b30;
+  --el-tag-bg-color: #e9f7ee;
+  --el-tag-border-color: #b7e3c6;
+}
+
+html .el-tag.el-tag--warning {
+  --el-tag-text-color: #8a4b04;
+  --el-tag-bg-color: #fdf3e3;
+  --el-tag-border-color: #f3d5ab;
+}
+
+html .el-tag.el-tag--danger {
+  --el-tag-text-color: #a51c1c;
+  --el-tag-bg-color: #fdeaea;
+  --el-tag-border-color: #f5c0c0;
+}
+
+html .el-tag.el-tag--info {
+  --el-tag-text-color: #4a5163;
+  --el-tag-bg-color: #f2f3f5;
+  --el-tag-border-color: #d8dce4;
+}
+
+/*
+ * effect="plain" 的标签是「透明底 + 类型色文字 + 类型色边框」，
+ * 文字直接落在页面/卡片底色上 —— 同样抬特异性换深色文字。
+ */
+html .el-tag.is-plain.el-tag--primary {
+  --el-tag-text-color: #3f38b7;
+}
+
+html .el-tag.is-plain.el-tag--success {
+  --el-tag-text-color: #0d6b30;
+}
+
+html .el-tag.is-plain.el-tag--warning {
+  --el-tag-text-color: #8a4b04;
+}
+
+html .el-tag.is-plain.el-tag--danger {
+  --el-tag-text-color: #a51c1c;
+}
+
+html .el-tag.is-plain.el-tag--info {
+  --el-tag-text-color: #4a5163;
+}
+
+/* ---- 菜单（侧栏导航） ---- */
+
+/*
+ * 改造前：.el-menu-item 高度 44px，但 EP 内联的 line-height 仍是 56px，
+ * 于是文字在 44px 的盒子里按 56px 行高排，视觉上偏下。
+ * 这里把 line-height 与 height 对齐，并统一圆角与选中态。
+ */
+.el-menu-item {
+  height: 40px;
+  line-height: 40px;
+  font-size: var(--os-font-md);
+}
+
+.el-menu-item.is-active {
+  font-weight: 500;
+}
+
+/* ---- 表格 ---- */
+
+/* EP 表格的斑马纹与边框偏重；去掉斑马，靠行高与 hover 区分 */
+.el-table {
+  --el-table-border-color: var(--el-border-color-lighter);
+  --el-table-header-bg-color: var(--el-fill-color-lighter);
+  --el-table-header-text-color: var(--el-text-color-regular);
+  --el-table-row-hover-bg-color: var(--el-color-primary-light-9);
+  font-size: var(--os-font-md);
+}
+
+.el-table th.el-table__cell {
+  font-weight: 500;
+}
+
+/*
+ * link 款按钮实测只有 32×19px（阶段 23 审计），低于 24px 最小可点尺寸。
+ * 表格行内与卡片列表里的行内按钮（编辑/删除/完成）是列表页最常点的东西，
+ * 加一点纵向内边距把它撑到 24px。
+ *
+ * 加 `html` 前缀是必须的：EP 的 `.el-button--primary.is-link` 已是 0-2-0，
+ * 与不带前缀的写法同特异性，谁赢取决于注入顺序 —— 实测 EP 胜出、高度仍是 19px。
+ * 抬到 0-2-1 才稳赢，且不依赖打包顺序。
+ */
+html .el-button.is-link {
+  min-height: 24px;
+  padding: 2px 0;
+}
+
+/* ---- 折叠面板 ---- */
+
+/* 引用来源的折叠头实测 23px 高；抬到 28px，既可点又不显笨重 */
+.el-collapse-item__header {
+  min-height: 30px;
+  font-size: var(--os-font-sm);
+}
+
+/* ---- 单选按钮组 / 分页 ---- */
+
+/* 选中态是「主色底 + 白字」，两种尺寸下都要保证字够大 */
+.el-radio-button__inner {
+  font-size: var(--os-font-sm);
+}
+
+/* ---- 分页 ---- */
+
+.el-pagination.is-background .el-pager li,
+.el-pagination.is-background .btn-prev,
+.el-pagination.is-background .btn-next {
+  border-radius: var(--os-radius-sm);
+}
+
+/*
+ * 当前页在暗色下是「主色底 + 白字」，实测只有 2.98:1（差一点点够不到 3.0）。
+ *
+ * 注意：暗色主题里 --el-color-primary-dark-2 是**更亮**的 #a5aef9（方向与亮色相反），
+ * 所以加深底色是走不通的。改成和主按钮同样的做法 —— 浅底深字。
+ */
+html.dark .el-pagination.is-background .el-pager li.is-active {
+  background: var(--el-color-primary);
+  color: #16182a;
+  font-weight: 600;
+}
+
+/* ---- 弹窗 / 抽屉 / 消息 ---- */
+
+.el-dialog {
+  border-radius: var(--os-radius-xl);
+}
+
+.el-dialog__header {
+  padding-bottom: var(--os-space-3);
+  margin-right: 0;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.el-dialog__body {
+  padding-top: var(--os-space-4);
+}
+
+.el-message {
+  border-radius: var(--os-radius-lg);
+  box-shadow: var(--os-shadow-popup);
+}
+
+.el-popper {
+  border-radius: var(--os-radius-lg) !important;
+}
+
+/* ---- 空态 ---- */
+
+/* EP 的空态插图偏大，在卡片里显得空荡；缩小一档并把文案调淡 */
+.el-empty__description p {
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
+}
+
+/* ---- 骨架屏 ---- */
+
+.el-skeleton__item {
+  border-radius: var(--os-radius-sm);
+}
+
+/* ==================================================================
+ * 4. 暗色模式
+ *
+ * 只覆盖「亮色推导不适用」的部分：底色、文字、边框、填充，以及阴影
+ * （亮色阴影是深色投影，暗底下等于不可见，必须换成更深的黑色投影）。
+ * 主色阶梯在暗色下要**提亮**——同一个 #4f46e5 落在深底上对比不足。
+ * ================================================================== */
+
+html.dark {
+  --el-color-primary: #818cf8;
+  --el-color-primary-light-3: #9ba4f5;
+  --el-color-primary-light-5: #b4bcf8;
+  --el-color-primary-light-7: #3a3570;
+  --el-color-primary-light-8: #2c2957;
+  --el-color-primary-light-9: #232140;
+  --el-color-primary-dark-2: #a5aef9;
+
+  --el-color-success: #4ade80;
+  --el-color-success-light-3: #3aa863;
+  --el-color-success-light-5: #2d804b;
+  --el-color-success-light-7: #235c38;
+  --el-color-success-light-8: #1d4a2d;
+  --el-color-success-light-9: #163322;
+
+  --el-color-warning: #fbbf24;
+  --el-color-warning-light-3: #b98f22;
+  --el-color-warning-light-5: #8c6c1c;
+  --el-color-warning-light-7: #624c16;
+  --el-color-warning-light-8: #4d3c12;
+  --el-color-warning-light-9: #2e250d;
+
+  --el-color-danger: #f87171;
+  --el-color-danger-light-3: #b85454;
+  --el-color-danger-light-5: #8a4040;
+  --el-color-danger-light-7: #612e2e;
+  --el-color-danger-light-8: #4c2525;
+  --el-color-danger-light-9: #2e1717;
+
+  --el-color-error: var(--el-color-danger);
+  --el-color-error-light-3: var(--el-color-danger-light-3);
+  --el-color-error-light-5: var(--el-color-danger-light-5);
+  --el-color-error-light-7: var(--el-color-danger-light-7);
+  --el-color-error-light-8: var(--el-color-danger-light-8);
+  --el-color-error-light-9: var(--el-color-danger-light-9);
+
+  --el-text-color-primary: #e8eaf0;
+  --el-text-color-regular: #c2c7d2;
+  --el-text-color-secondary: #a2a9b8;
+  --el-text-color-placeholder: #868d9c;
+  --el-text-color-disabled: #575d6b;
+
+  --el-border-color: #3a3f4d;
+  --el-border-color-light: #333845;
+  --el-border-color-lighter: #2c303c;
+  --el-border-color-extra-light: #262a34;
+
+  --el-fill-color: #262a35;
+  --el-fill-color-light: #22252f;
+  --el-fill-color-lighter: #1e212a;
+  --el-fill-color-blank: #1a1d25;
+
+  --el-bg-color-page: #14161c;
+  --el-bg-color: #1a1d25;
+
+  /* 暗色下主按钮用提亮后的主色，白字对比不足 → 改深字 */
+  --el-button-text-color: var(--el-text-color-primary);
+}
+
+html.dark .el-button--primary:not(.is-plain):not(.is-text):not(.is-link) {
+  color: #16182a;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 40%);
+}
+
+html.dark .el-button--primary:not(.is-plain):not(.is-text):not(.is-link):hover {
+  box-shadow: 0 2px 6px 0 rgb(0 0 0 / 50%);
+}
+
+/* 暗色下卡片边框要更明显（阴影在深底上几乎不可见，边界全靠边框） */
+html.dark .el-card {
+  border-color: var(--el-border-color-light);
+}
+
+html.dark .el-table {
+  --el-table-header-bg-color: var(--el-fill-color-light);
+  --el-table-tr-bg-color: var(--el-bg-color);
+  --el-table-bg-color: var(--el-bg-color);
+}
+
+/*
+ * 暗色下两个「基色底」组件必须改字色（阶段 23 审计实测）。
+ *
+ * ① el-tag 的深色变体：EP 在暗色下仍用 light-3 作底（如 success 的 #3aa863），
+ *    而字色是 --el-color-white → 实测 2.98:1。改成「深底 + 亮字」：底用更暗的
+ *    light-7/8，字用原基色。
+ * ② el-radio-button 选中态同理（主色底 + 白字在深色主题里对比不足）。
+ */
+html.dark html .el-tag.el-tag--primary {
+  --el-tag-text-color: #c3c9fb;
+  --el-tag-bg-color: #2c2957;
+  --el-tag-border-color: #3a3570;
+}
+
+html.dark html .el-tag.el-tag--success {
+  --el-tag-text-color: #9ce9b4;
+  --el-tag-bg-color: #1d4a2d;
+  --el-tag-border-color: #235c38;
+}
+
+html.dark html .el-tag.el-tag--warning {
+  --el-tag-text-color: #fddc8f;
+  --el-tag-bg-color: #4d3c12;
+  --el-tag-border-color: #624c16;
+}
+
+html.dark html .el-tag.el-tag--danger {
+  --el-tag-text-color: #fcc0c0;
+  --el-tag-bg-color: #4c2525;
+  --el-tag-border-color: #612e2e;
+}
+
+html.dark html .el-tag.el-tag--info {
+  --el-tag-text-color: #d4d8e0;
+  --el-tag-bg-color: #333845;
+  --el-tag-border-color: #3a3f4d;
+}
+
+/* plain 变体在暗色下是「透明底 + 亮类型色字」，基色已提亮，只需微调 */
+html.dark html .el-tag.is-plain.el-tag--primary {
+  --el-tag-text-color: #b4bcf8;
+}
+
+html.dark html .el-tag.is-plain.el-tag--success {
+  --el-tag-text-color: #86e0a4;
+}
+
+html.dark html .el-tag.is-plain.el-tag--warning {
+  --el-tag-text-color: #fbd06a;
+}
+
+html.dark html .el-tag.is-plain.el-tag--danger {
+  --el-tag-text-color: #fba3a3;
+}
+
+html.dark html .el-tag.is-plain.el-tag--info {
+  --el-tag-text-color: #d4d8e0;
+}
+
+/* 单选按钮组选中态：暗色主色是亮紫，白字不够 → 改深字 */
+html.dark .el-radio-button .el-radio-button__original-radio:checked + .el-radio-button__inner {
+  color: #16182a;
+  font-weight: 600;
+}
+
+/* 浅色主题下选中态同样是「主色底 + 白字」，一并加重字重提升可读性 */
+html:not(.dark) .el-radio-button .el-radio-button__original-radio:checked + .el-radio-button__inner {
+  font-weight: 600;
+}
