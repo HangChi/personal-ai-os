@@ -370,6 +370,7 @@ AUTH_PASSWORD=<你的密码>      # 开启时必填
 ## 文档
 
 - [架构说明](docs/architecture.md)
+- [接口清单](docs/api.md)（48 个端点与特殊约定）
 - [本地开发指南](docs/development.md)
 - [运维手册](docs/operations.md)（部署 / 备份恢复 / 迁移回滚 / 故障排查）
 - [阶段 0 规格](specs/001-project-skeleton/spec.md) ｜ [实现计划](specs/001-project-skeleton/plan.md) ｜ [版本决策与踩坑](specs/001-project-skeleton/research.md)

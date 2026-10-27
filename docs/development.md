@@ -79,11 +79,26 @@ curl -s http://localhost:8080/actuator/health
 > `docker compose` 会自动读取根目录 `.env`；如需让后端也读取这些变量，
 > 在 shell 中 `set -a && source .env && set +a` 后再启动，或直接使用默认值（默认值与 `.env.example` 一致）。
 
+### 可观测性（2026-10-27 起）
+
+| 能力 | 怎么看 |
+|---|---|
+| 请求链路 ID | 响应头 `X-Request-Id` 回显；日志每行 `[requestId]`，`grep` 一个值即还原整次请求 |
+| 模型调用限流 | `APP_RATE_LIMIT_ENABLED` / `CAPACITY` / `PERIOD`，默认 60 次/分钟；只拦对话流、附件上传、知识库入库 |
+| 运行态指标 | `/actuator/metrics`，其中 `personalos.chat.streams.active` 是「有没有流卡住」的直接证据 |
+| 结构化日志 | `LOGGING_STRUCTURED_FORMAT_CONSOLE=ecs` 切 JSON（接 ELK/Loki），本地默认保持可读文本 |
+
+排障路径与常见症状对照表见 [`operations.md`](operations.md) 第 2 节与第 5 节。
+
+> ⚠️ 集成测试里限流是**关闭**的（`src/test/resources/application.properties`）。
+> 令牌桶是进程内单例，配置相同的 `@SpringBootTest` 共享上下文，全量套件一分钟内必超 60 次 ——
+> 后半程用例会收到与自身逻辑无关的 429。限流本身的正确性由独立的单元测试覆盖。
+
 ## 三、运行后端测试
 
 ```bash
 cd backend
-./mvnw -B verify
+./mvnw -B test
 ```
 
 测试使用 **Testcontainers** 拉起与 `compose.yml` 相同的 `pgvector/pgvector:pg17` 镜像，
@@ -95,18 +110,22 @@ cd backend
 
 首次运行会拉取镜像与依赖，耗时较长；之后会走缓存。
 
-### 覆盖率
+### 覆盖率（含门禁）
 
-`test` 阶段会自动生成 JaCoCo 报告（不设门禁，失败不会因覆盖率不足而中断）：
+`test` 阶段会生成 JaCoCo 报告，**并执行覆盖率检查**：
 
 ```
 backend/target/site/jacoco/index.html   # 浏览器打开看逐类明细
 backend/target/site/jacoco/jacoco.csv   # 想自己汇总时用这个
 ```
 
-2026-10-26 基线：行覆盖 **86.1%**、分支覆盖 **67.8%**、指令覆盖 **87.0%**。
-分支覆盖偏低主要来自「同一方法的多条防御分支只有一条被测到」，
-补测试时优先看这里比看行覆盖更有收获。
+门禁阈值：**行 83%、分支 65%**（CI 跑的就是 `/mvnw test`，所以它在合并前必然生效）。
+这个数字不是拍的：先跑一轮拿到真实水位（84.7% / 67.0%），再往下留约两档 ——
+目的是拦住**断崖式下跌**（有人删了一片测试），而不是精确控制到小数点。
+低于阈值时构建失败，不会静默通过。
+
+分支覆盖比行覆盖更值得看：偏低通常来自「同一方法的多条防御分支只有一条被测到」，
+补测试时优先补这里比补行覆盖更有收获。
 
 ## 四、启动前端
 
@@ -123,17 +142,23 @@ npm run dev                  # http://localhost:5173
 其他命令：
 
 ```bash
-npm run type-check   # vue-tsc 类型检查
-npm run build        # 生产构建，产物在 frontend/dist
-npm run preview      # 预览构建产物
-npm run test:logic   # 前端逻辑测试（零依赖，见下）
-npm run lint         # ESLint（flat config，见 frontend/eslint.config.js）
-npm run lint:fix     # 自动修复可修的项
-npm run format       # Prettier 格式化
-npm run format:check # 只检查不改写（CI 用这一条）
+npm run type-check     # vue-tsc 类型检查
+npm run build          # 生产构建，产物在 frontend/dist
+npm run preview        # 预览构建产物
+npm run test:logic     # 纯函数与 store（零依赖，见下）
+npm run test:component # 组件渲染与交互（vitest + happy-dom，见下）
+npm run lint           # ESLint（flat config，见 frontend/eslint.config.js）
+npm run lint:fix       # 自动修复可修的项
+npm run format         # Prettier 格式化
+npm run format:check   # 只检查不改写（CI 用这一条）
 ```
 
-**提交前建议跑一遍** `npm run lint && npm run format:check && npm run type-check`。
+**提交前建议跑一遍与 CI 等价的六步**：
+
+```bash
+npm run lint && npm run format:check && npm run type-check \
+  && npm run test:logic && npm run test:component && npm run build
+```
 CI（`.github/workflows/ci.yml`）会在每次 push / PR 上把这些加上后端测试全跑一遍；
 本地跑过就不会在 PR 里才发现。
 
@@ -152,6 +177,39 @@ CI（`.github/workflows/ci.yml`）会在每次 push / PR 上把这些加上后�
 
 **运行要求 Node ≥ 22.18**（类型剥离默认开启；20.x 会因无法解析 TS 语法而失败）。
 本机 `node --version` 为 22.22.2，满足。测试替身与断言都不进生产构建。
+
+### 前端组件测试（第二条链路）
+
+`.vue` 需要 SFC 编译与 DOM，Node 原生做不到，因此另有一条基于
+**vitest + happy-dom + @vue/test-utils** 的链路：
+
+```bash
+npm run test:component   # 17 项，十几秒
+```
+
+两条链路并存是刻意的，不是历史遗留：
+
+| 链路 | 覆盖 | 耗时 | 什么时候跑 |
+|---|---|---|---|
+| `test:logic` | 纯函数、store | 一秒内 | 改逻辑时随手跑 |
+| `test:component` | `.vue` 渲染与真实事件 | 十几秒 | 动模板/样式/事件前后 |
+
+**为什么模板层非测不可**：本项目的缺陷有一类只出现在这一层 ——
+气泡在容器里「消失」（元素底与容器底同色）、侧栏拖拽慢半拍（hover 与 active 的
+CSS 特异性打架）、输入法选词时按回车把消息发出去。这些**纯函数测试按定义抓不到**，
+只能靠人眼或组件测试。
+
+三个配置上的坑（都踩过）：
+
+1. **`vitest.config.ts` 不复用 `vite.config.ts`**。主配置里的
+   `optimizeDeps.noDiscovery` 是给 dev server 在本沙箱里不崩用的，两个 unplugin
+   在测试环境只会注入无用语句。测试配置只保留 `vue` 插件与 `@` 别名。
+2. **必须在 `test/component/setup.ts` 里全量注册 Element Plus**。生产代码靠
+   unplugin 自动注册，测试环境没有那个插件，`<el-collapse>` 会**静默渲染成空标签** ——
+   断言全变成「什么都找不到」，看起来像测试写错了。
+3. **happy-dom 没有 `matchMedia`**。Element Plus 的若干组件挂载时会查询
+   `prefers-color-scheme`，缺了这个 API 会直接抛错，而报错指向组件内部，
+   很难联想到是环境缺 API。setup 里已补了桩。
 
 ## 五、没有模型时如何联调
 
@@ -216,7 +274,7 @@ curl -s "http://localhost:8080/api/v1/agent/confirmations?status=PENDING" | pyth
 > 它存在的意义是让「前端流式渲染 + SSE 契约 + Agent 工具调用 + 知识库 RAG」
 > 在没有真实模型时也可复现验证。
 
-## 七、前端真机验证
+## 六、前端真机验证
 
 后端的集成测试覆盖服务端；`type-check` 与 `build` 只能证明「能编译」，
 对「点击之后会发生什么」一无所知。`scripts/dev/verify-frontend.js` 补上这一段 ——
@@ -245,7 +303,7 @@ cd - && NODE_PATH=/Users/songhangchi/.workbuddy/binaries/node/workspace/node_mod
 > ② Playwright 升级后期望的 Chromium 编号会变（例如 1.64 要 1248，而缓存里是 1243），
 > 脚本会先用 `executablePath` 指向缓存里的浏览器，失败再退回本机 Chrome。
 
-## 六、常见问题
+## 七、常见问题
 
 **Q：`docker compose up -d` 报端口被占用**
 本机 5432/5433 可能已被其它 PostgreSQL 容器占用。改 `.env` 的 `POSTGRES_PORT` 为一个空闲端口（默认 55432 已避开）。
@@ -275,9 +333,13 @@ cd - && NODE_PATH=/Users/songhangchi/.workbuddy/binaries/node/workspace/node_mod
 重优化——**改完先手动 `rm -rf frontend/node_modules/.vite` 再启动**（shell 的 rm 不走 Node 进程，
 不会被守护拦截）。
 
-## 七、数据库结构变更流程
+## 八、数据库结构变更流程
 
 1. 在 `backend/src/main/resources/db/migration/` 新增脚本，命名 `V<n>__<snake_case>.sql`。
 2. **不要**改已有迁移脚本（Flyway 会校验 checksum）。需要修正时新增一个更高版本的脚本。
 3. 脚本应尽量幂等（`CREATE ... IF NOT EXISTS`）。
-4. 跑一次 `./mvnw -B verify` 验证在干净库上可完整重放。
+4. 跑一次 `./mvnw -B test` 验证在干净库上可完整重放。
+
+> 回滚策略见 [`operations.md`](operations.md) 第 4 节。核心事实：**Flyway 社区版没有 undo**，
+> 所以「回滚」不是靠回退迁移，而是靠**写迁移时就保证前向兼容**（只加列加表、
+> 破坏性变更分两步），真需要回退时走备份恢复。

@@ -45,15 +45,18 @@ personal-ai-os/
 
 | 模块 | 职责 | 落地阶段 |
 |---|---|---|
-| `common` | 统一响应、错误码、全局异常、健康检查、公共配置、**ChatClient 装配** | 阶段 0 ✅ / 阶段 1 ✅ |
-| `ai` | 模型接入、`ChatClient` 装配、Advisor 链、Embedding 模型选择 | 阶段 1 ✅（装配落在 `common/ai`，业务编排在 `chat`） |
-| `chat` | 会话管理、消息历史、SSE 流式输出 | 阶段 1 ✅ |
-| `memory` | 会话记忆的持久化与检索策略 | 阶段 1 |
-| `agent` | Agent 编排与工具（Tool Calling）注册 | 阶段 2 |
-| `task` | 个人任务 CRUD 与状态流转 | 阶段 2 |
-| `knowledge` | 文档摄入（解析、切分、嵌入）与基于 pgvector 的 RAG 检索问答 | 阶段 3 ✅ |
-| `calendar` | 日程（重复规则）与提醒（物化 + 轮询送达） | 阶段 4 ✅ |
-| `calendar` | 日程事件与定时提醒 | 阶段 4 |
+| `common` | 统一响应、错误码、全局异常、健康检查、公共配置；`common/ai` 承载 ChatClient 装配与上下文预算；`common/web` 承载请求链路 ID、限流、MDC 传播 | ✅ |
+| `chat` | 会话管理、消息历史、SSE 流式输出、上下文治理（摘要 / 预算 / 引用） | ✅ |
+| `memory` | 长期记忆（显式写入 + 按相关性注入系统提示） | ✅ |
+| `agent` | Agent 编排与工具（Tool Calling）注册、执行审计查询 | ✅ |
+| `task` | 个人任务 CRUD 与状态流转、标签 | ✅ |
+| `knowledge` | 文档摄入（解析、切分、嵌入）与混合检索 RAG | ✅ |
+| `calendar` | 日程（重复规则）与提醒（物化 + 轮询送达） | ✅ |
+| `mcp` | MCP 客户端（外部工具 + 策略分级 + 人工确认） | ✅ |
+| `export` | 数据导出（SPI 贡献者 + 组装） | ✅ |
+
+> 根包下已不存在独立的 `ai/` 模块：装配落在 `common/ai`（业务编排在 `chat`），
+> 空占位包已经清理或本就未建，读者不必按名字去找。
 
 每个业务模块内部按 `controller / service / repository / entity / dto` 分层。
 
@@ -124,22 +127,44 @@ controller  →  service  →  repository  →  database
 
 ## 9. 阶段路线图
 
-| 阶段 | 内容 | 状态 |
-|---|---|---|
-| 0 | 项目骨架：Monorepo、后端基座、数据库迁移、前端基座、文档 | ✅ 完成 |
-| 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | ✅ 完成 |
-| 2 | 任务 CRUD 与 Tool Calling（含两阶段人工确认与两层幂等） | ✅ 完成 |
-| 3 | 个人知识库与 RAG（pgvector + 引用溯源） | ✅ 完成 |
-| 4 | 日程与定时提醒（重复规则 + 提醒物化） | ✅ 完成 |
-| 6 | MCP 客户端接入（外部工具 + 策略分级 + 确认） | ✅ 完成 |
-| 7 | 会话重命名（PATCH 部分更新 + 标题校验口径统一） | ✅ 完成 |
-| 8 | 长期记忆（显式写入 + 注入系统提示 + 管理页） | ✅ 完成 |
-| 9 | 可靠提醒（浏览器通知 + 站内降级 + 权限状态可见） | ✅ 完成 |
-| 10 | 富文档解析（PDF 文本层 / docx / 图片走视觉模型） | ✅ 完成 |
+**完整列表以 [README 的阶段路线图](../README.md#阶段路线图) 为准（阶段 0–26）。**
+
+这里不再重复维护同一张表：本文件此前单独列过一份，结果只更新到阶段 10，
+与 README 差了十几行 —— 两份表必然失同步，而读者不会知道哪一份才对。
+
+- 阶段 0–4、6 的规格与决策在 `specs/001`–`specs/020` 下；
+- 阶段 21 以后是体验与工程质量轮次（UI 重构、可观测性、测试设施），
+  没有单独的 spec 目录，改动以提交历史为准。
 
 **阶段严格串行**：不提前实现未进入当前阶段的模块。
 （编号 5 空置：原定的「Docker 部署与开源发布」不在当前规划内，暂不实施；
-阶段 6 保留既有编号，避免 `specs/` 目录与提交历史错位。后续功能从新编号继续。）
+阶段 6 保留既有编号，避免 `specs/` 目录与提交历史错位。）
+
+## 10. 对话链路（阶段 1）
+
+```
+前端 ChatView.vue
+   │  fetch + ReadableStream（POST，非 EventSource）
+   ▼
+ChatSessionController  ──POST /api/v1/chat/sessions/{id}/stream──▶  返回 SseEmitter
+   │
+   ▼
+ChatCompletionService
+   │  ① 先校验（会话存在 / 模型已配置 / 入参合法）——失败则返回普通 JSON 错误
+   │  ② ChatClient.prompt().user(...).advisors(conversationId).stream().content()
+   ▼
+MessageChatMemoryAdvisor ── 读：ChatMemory.get() 取最近 N 条历史注入 prompt
+   │                      └─ 写：用户消息（调用前）、助手消息（完成后）
+   ▼
+JpaChatMemory ──▶ chat_message 表（**追加式，永不裁剪**）
+```
+
+两个容易踩的点，都已固化在实现里：
+
+1. **上下文窗口 ≠ 历史裁剪**。`MessageWindowChatMemory` 会把裁剪后的窗口整体写回仓库，
+   等于用窗口覆盖历史。因此本项目自行实现 `ChatMemory`：`add` 只追加，`get` 才做窗口。
+2. **失败轮次只落用户消息**。用户消息在模型调用前写入、助手消息在完成后写入，
+   所以失败时不会产生「半截助手回复」；前端收到 `error` 后应重新拉取消息，而不是本地伪造。
 
 ## 11. 任务 Agent 链路（阶段 2）
 
@@ -259,32 +284,6 @@ RecurrenceCalculator（纯函数：规则 + 区间 → 发生时刻；本地时�
 `ConfirmationRegistry` 会在启动期校验「每个动作都有处理器且无重复注册」——
 若等到用户点「确认」才发现没人处理，那一刻决定已经不可逆。
 
-## 10. 对话链路（阶段 1）
-
-```
-前端 ChatView.vue
-   │  fetch + ReadableStream（POST，非 EventSource）
-   ▼
-ChatSessionController  ──POST /api/v1/chat/sessions/{id}/stream──▶  返回 SseEmitter
-   │
-   ▼
-ChatCompletionService
-   │  ① 先校验（会话存在 / 模型已配置 / 入参合法）——失败则返回普通 JSON 错误
-   │  ② ChatClient.prompt().user(...).advisors(conversationId).stream().content()
-   ▼
-MessageChatMemoryAdvisor ── 读：ChatMemory.get() 取最近 N 条历史注入 prompt
-   │                      └─ 写：用户消息（调用前）、助手消息（完成后）
-   ▼
-JpaChatMemory ──▶ chat_message 表（**追加式，永不裁剪**）
-```
-
-两个容易踩的点，都已固化在实现里：
-
-1. **上下文窗口 ≠ 历史裁剪**。`MessageWindowChatMemory` 会把裁剪后的窗口整体写回仓库，
-   等于用窗口覆盖历史。因此本项目自行实现 `ChatMemory`：`add` 只追加，`get` 才做窗口。
-2. **失败轮次只落用户消息**。用户消息在模型调用前写入、助手消息在完成后写入，
-   所以失败时不会产生「半截助手回复」；前端收到 `error` 后应重新拉取消息，而不是本地伪造。
-
 ## 14. MCP 接入链路（阶段 6）
 
 ```
@@ -340,8 +339,11 @@ AiChatClientProvider 收集 ToolCallbackProvider → 挂到 ChatClient（对话�
 | 3 | 长期记忆 | ≤30 条 / ≤6000 字 | 按与本轮问题的相关性择优（字符二元组重叠），相关度相同看新近度 |
 | 4 | 知识库片段 | topK ≤20 | 仅 `useKnowledge=true`，带 `[n]` 编号 |
 
-窗口本身是**双约束**：条数（`max-messages`，粗筛）+ 字符预算（`max-context-chars`，真正的上界）。
-从新往旧累加，超预算整体停 —— 不切半条消息。
+窗口是**双约束**：条数（`max-messages`，粗筛）+ token 预算（用户可选、默认 32K，
+由 `ContextBudgetService` 持有）。从新往旧累加，超预算整体停 —— 不切半条消息。
+
+> 早先还有一个 `max-context-chars` 字符阈值，重构后没有消费方，代码与文档一并删掉 ——
+> 留着它会让人以为改它能影响窗口。
 
 **滚动摘要的关键约定**
 
@@ -356,3 +358,51 @@ AiChatClientProvider 收集 ToolCallbackProvider → 挂到 ChatClient（对话�
 **记忆自动沉淀默认关闭**。它是整套机制里唯一有副作用的部分：写错的摘要只是少点信息，
 写错的记忆会变成永久约束（一次性偏好被固化成规则，之后每轮都照它执行）且难以察觉。
 开关、每轮上限、内容幂等（同内容不重复落库）是三重约束。
+
+## 16. 可观测性（2026-10-27）
+
+四项能力都是「出问题时看得见」的基础设施，此前完全空白。
+
+### 16.1 请求链路 ID
+
+`RequestIdFilter`（`HIGHEST_PRECEDENCE`，排在 Security 之前）为每个请求分配 ID：
+透传合规的入站 `X-Request-Id`，否则生成 12 位十六进制；写入 MDC 并回显响应头。
+日志格式插入 `[requestId]`，一次 `grep` 可还原整次请求。
+
+**MDC 传播有三条独立通路，漏一条的症状都只是「日志少了那个字段」**：
+
+| 通路 | 载体 | 覆盖 |
+|---|---|---|
+| servlet 线程 | `RequestIdFilter` | 请求处理全程 |
+| Reactor 调度 | `MdcSchedulerHook`（`Schedulers.onScheduleHook`） | `subscribeOn(boundedElastic)` 这一跳 |
+| JDK 线程池 | `MdcPropagatingExecutor`（提交时捕获） | 轮末摘要与记忆沉淀 |
+
+调度钩子**盖不住多跳**：流式的错误回调可能落在第三个池化线程上（HTTP 客户端自己的调度），
+那一跳的提交者已无 MDC。因此 `ChatCompletionService` 在回调入口显式
+`runWithRequestId` 恢复上下文 —— 这里是唯一不靠钩子的地方，因为只有它知道
+「这次回调属于哪个请求」。
+
+### 16.2 模型调用限流
+
+令牌桶（自实现，未引 Bucket4j）：单用户进程内场景，`synchronized` + 两个字段足够。
+只拦三个会真实产生模型成本的 POST：`/chat/**/stream`、`/chat/uploads`、
+`/knowledge/documents`。查询类一律不限 —— 翻页翻快了不该 429。
+
+选桶而不是固定窗口计数：后者存在「窗口末尾打满 + 下一窗口开头打满」的两倍速率问题。
+配置非法时构造即抛，避免「配错了等于没限流」。
+
+### 16.3 运行态指标
+
+`personalos.chat.streams.active`（Gauge）回答的是「服务是不是卡住了」：
+SSE 请求不会快速结束，`http.server.requests` 在模型半天不出字时一片安静，
+只有活跃流数持续不降才是直接证据。四条终止路径共用一个原子标记，保证只减一次
+（负数比不准确更糟，它会让人以为指标坏了）。
+
+`/actuator/metrics` 已暴露，但**刻意不暴露** `env` / `beans` / `configprops —— 它们会把配置
+与环境变量原样吐出来，是对公网开放前最容易泄密的口子。
+
+### 16.4 日志
+
+默认保留可读文本格式（本项目是本地应用，日常就靠肉眼看控制台）；
+接 ELK / Loki 时用 `LOGGING_STRUCTURED_FORMAT_CONSOLE=ecs` 切 JSON，无需改代码。
+两者互斥：结构化格式启用后 `logging.pattern.console` 不再生效。
