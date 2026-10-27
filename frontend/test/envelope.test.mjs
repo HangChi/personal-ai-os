@@ -49,7 +49,14 @@ check(
   networkClassified instanceof Error && !(networkClassified instanceof ApiBusinessError),
 )
 check('  提示包含「无法连接后端服务」', networkClassified.message.includes('无法连接后端服务'))
-check('  提示保留原始错误信息', networkClassified.message.includes('ECONNREFUSED'))
+check('  英文原文不再拼进用户文案（只进 console）', !networkClassified.message.includes('ECONNREFUSED'))
+
+// 超时与 5xx 是两件不同的事，要分档提示（审查 P2）
+const timedOut = new axios.AxiosError('timeout of 10000ms exceeded', 'ECONNABORTED')
+check('超时 → 「请求超时」而非「连不上后端」', interpretAxiosError(timedOut).message.includes('超时'))
+
+const serverError = new axios.AxiosError('Request failed', 'ERR_BAD_RESPONSE', undefined, undefined, { status: 500 })
+check('5xx 无信封 → 「服务器开小差」而非「连不上后端」', interpretAxiosError(serverError).message.includes('服务器'))
 
 const unknown = interpretAxiosError(new TypeError('完全不是 axios 的错误'))
-check('非 axios 错误 → 未知错误兜底', unknown.message === '无法连接后端服务：未知错误')
+check('非 axios 错误 → 未知错误兜底', unknown.message === '未知错误')

@@ -22,6 +22,11 @@ const password = ref('')
 const localError = ref<string | null>(null)
 
 async function submit(): Promise<void> {
+  // 防连点（审查 P2）：点击按钮 + 表单 submit + 回车可能同时触发，
+  // 登录请求已经在途时直接返回，避免一次点击发两次登录请求
+  if (loading.value) {
+    return
+  }
   const name = username.value.trim()
   if (!name || !password.value) {
     localError.value = '请输入用户名与密码'
@@ -35,8 +40,10 @@ async function submit(): Promise<void> {
     ElMessage.error(localError.value)
     return
   }
-  // 登录前想去的页面（守卫带过来的 redirect），没有就回首页
-  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+  // 登录前想去的页面（守卫带过来的 redirect），没有就回首页。
+  // 只接受站内相对路径，挡住 `//evil.com` 这种协议相对跳转（审查 P2）
+  const raw = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+  const redirect = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/'
   await router.replace(redirect)
 }
 </script>
@@ -76,7 +83,6 @@ async function submit(): Promise<void> {
             show-password
             autocomplete="current-password"
             placeholder="请输入密码"
-            @keydown.enter="submit"
           >
             <template #prefix>
               <el-icon><Lock /></el-icon>
@@ -86,9 +92,9 @@ async function submit(): Promise<void> {
 
         <el-alert v-if="localError" class="login__error" type="error" :closable="false" show-icon :title="localError" />
 
-        <el-button class="login__submit" type="primary" :loading="loading" native-type="submit" @click="submit">
-          登录
-        </el-button>
+        <!-- native-type="submit" 单独驱动表单提交；不再绑 @click ——
+             两者并存会一次点击发两次登录请求（审查 P2） -->
+        <el-button class="login__submit" type="primary" :loading="loading" native-type="submit"> 登录 </el-button>
       </el-form>
 
       <p class="login__footnote">本地单用户实例 · 凭据只保存在本机</p>

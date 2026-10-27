@@ -52,7 +52,20 @@ export function interpretAxiosError(error: unknown): Error {
     if (businessError) {
       return businessError
     }
-    return new Error(`无法连接后端服务：${error.message}`)
+    // 连接层的三种失败要分开说（审查 P2）：5xx / 超时 / 断网是三件不同的事，
+    // 混成一句「无法连接」会让用户误以为后端没起。英文原文只进 console 供排错，
+    // 不再拼进用户可见的文案。
+    const status = error.response?.status
+    if (status !== undefined && status >= 500) {
+      console.error('服务端错误：', error)
+      return new Error('服务器开小差了，请稍后重试')
+    }
+    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+      console.error('请求超时：', error)
+      return new Error('请求超时，请稍后重试')
+    }
+    console.error('网络请求失败：', error)
+    return new Error('无法连接后端服务，请确认服务已启动')
   }
-  return new Error('无法连接后端服务：未知错误')
+  return new Error('未知错误')
 }

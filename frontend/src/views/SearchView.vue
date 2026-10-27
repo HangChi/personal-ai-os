@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { highlightSegments } from '@/lib/highlight-text'
@@ -14,12 +14,18 @@ import { routeForHit } from '@/lib/search-routes'
 const searchStore = useSearchStore()
 const route = useRoute()
 
-onMounted(() => {
-  const query = typeof route.query.q === 'string' ? route.query.q : ''
-  if (query && query !== searchStore.keyword) {
-    void searchStore.search(query)
-  }
-})
+// 用 watch 而不是 onMounted（审查 P2）：同路由二次搜索（顶栏再回车）时组件实例被复用，
+// onMounted 不再触发，URL 变了但结果不变。immediate 保证首次进入也执行。
+watch(
+  () => route.query.q,
+  (query) => {
+    const q = typeof query === 'string' ? query : ''
+    if (q && q !== searchStore.keyword) {
+      void searchStore.search(q)
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>

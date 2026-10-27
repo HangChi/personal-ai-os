@@ -12,7 +12,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import { PRIORITY_OPTIONS } from '@/lib/task-meta'
 import type { TaskPriority } from '@/types/api'
 
-defineProps<{
+const props = defineProps<{
   /** 已有标签，供下拉选择 */
   tags: string[]
   /** 待办/逾期统计，显示在卡片头部 */
@@ -32,6 +32,11 @@ const dueDate = ref<Date | null>(null)
 const pickedTags = ref<string[]>([])
 
 function submit(): void {
+  // 防连点（审查 P2）：回车与按钮都能触发，提交在途时直接返回，
+  // 否则连按 Enter 会创建多条同名任务
+  if (props.creating) {
+    return
+  }
   const trimmed = title.value.trim()
   if (!trimmed) {
     ElMessage.warning('请先填写任务标题')

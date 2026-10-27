@@ -38,9 +38,11 @@ const form = ref<{
 
 /** 打开新任务时用它的值重置表单（浅拷贝 tags，避免直接改到列表里的数组） */
 watch(
-  () => props.task,
-  (task) => {
-    if (!task) {
+  [() => props.task, () => props.visible],
+  ([task, visible]) => {
+    // 依赖 visible（审查 P2）：只 watch task 引用的话，关掉再编辑**同一个任务**时
+    // 引用没变、watch 不触发，表单会残留上次未保存的修改。加 visible 保证每次打开都重置。
+    if (!task || !visible) {
       return
     }
     form.value = {
