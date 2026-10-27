@@ -62,6 +62,13 @@ public class DataImportService {
 
     private static final Set<String> TASK_STATUS = Set.of("TODO", "DOING", "DONE");
     private static final Set<String> TASK_PRIORITY = Set.of("LOW", "MEDIUM", "HIGH");
+    /**
+     * 「完成前状态」的白名单：只有这两个值有意义。
+     *
+     * <p>刻意不含 {@code DONE} —— 完成前状态是 DONE 属于自相矛盾的数据，
+     * 放进来会让 reopen 把任务退回已完成，用户点「取消完成」后毫无变化。
+     */
+    private static final Set<String> TASK_PREVIOUS_STATUS = Set.of("TODO", "DOING");
     private static final Set<String> RECURRENCE = Set.of("NONE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY");
 
     /** 空库校验覆盖的表；顺序只影响报错文案 */
@@ -224,10 +231,15 @@ public class DataImportService {
             }
             String status = normalize(task.status(), TASK_STATUS, "TODO");
             String priority = normalize(task.priority(), TASK_PRIORITY, "MEDIUM");
+            // previous_status 只在 status=DONE 时才有意义；非 DONE 一律写 null，
+            // 否则会出现「待办任务带着一个完成前状态」这种自相矛盾的数据
+            String previousStatus = "DONE".equals(status)
+                    ? normalize(task.previousStatus(), TASK_PREVIOUS_STATUS, null) : null;
             Instant createdAt = task.createdAt() == null ? Instant.now() : task.createdAt();
             entityManager.createNativeQuery(
                             "insert into task (id, title, description, status, priority, due_at, completed_at, "
-                                    + "created_at, updated_at) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)")
+                                    + "created_at, updated_at, previous_status) "
+                                    + "values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)")
                     .setParameter(1, task.id())
                     .setParameter(2, task.title())
                     .setParameter(3, task.description())
@@ -237,6 +249,7 @@ public class DataImportService {
                     .setParameter(7, ts(task.completedAt()))
                     .setParameter(8, ts(createdAt))
                     .setParameter(9, ts(task.updatedAt() == null ? createdAt : task.updatedAt()))
+                    .setParameter(10, previousStatus)
                     .executeUpdate();
             importTags(task.id(), task.tags());
             imported++;

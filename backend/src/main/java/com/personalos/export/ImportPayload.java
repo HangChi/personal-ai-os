@@ -42,7 +42,9 @@ public record ImportPayload(
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record TaskPayload(UUID id, String title, String description, String status, String priority,
                               List<String> tags, Instant dueAt, Instant completedAt,
-                              Instant createdAt, Instant updatedAt) {
+                              Instant createdAt, Instant updatedAt,
+                              // 旧版导出文件里没有这一列，Jackson 会给 null —— 与「历史数据」语义一致
+                              String previousStatus) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

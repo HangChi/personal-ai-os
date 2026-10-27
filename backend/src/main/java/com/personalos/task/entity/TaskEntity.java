@@ -53,6 +53,20 @@ public class TaskEntity {
     @Column(name = "completed_at")
     private Instant completedAt;
 
+    /**
+     * 进入 {@code DONE} 之前的非完成状态（{@code TODO} 或 {@code DOING}）。
+     *
+     * <p>存在的唯一理由：{@code reopen} 要能区分「原来是待办」与「原来是进行中」。
+     * 没有它的话，把进行中的任务误标完成后取消，任务就永久退回待办 ——
+     * 状态只有三个值，这个信息在别处无处可恢复。
+     *
+     * <p>只在「进入 DONE」时写入，离开 DONE 时清空。历史数据为 {@code null}，
+     * 语义等价于「不知道原来是什么」，按 TODO 处理。
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "previous_status", length = 20)
+    private TaskStatus previousStatus;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -141,11 +155,38 @@ public class TaskEntity {
     }
 
     /**
-     * 状态迁移；同步维护 {@code completedAt} 不变量。
+     * 状态迁移；同步维护 {@code completedAt} 不变量与「完成前状态」。
+     *
+     * <h2>为什么在这里记 previousStatus 而不是在 Service 里</h2>
+     * 进入 DONE 的入口不止一个：REST 的 {@code /complete}、更新请求里直接传
+     * {@code status=DONE}、以及 Agent 工具。记在实体的状态迁移里，三条路径自动一致；
+     * 记在 Service 里就得每处都记得调，漏一处的表现是「重开后状态莫名其妙」。
+     *
+     * <h2>为什么只在进入 DONE 时写、离开时清</h2>
+     * 这个字段只服务于「取消完成」这一个动作。离开 DONE 之后它就没有意义了，
+     * 留着会让「再次完成 → 再次取消」的语义变得难以推理。
+     *
+     * <p>连续两次完成不会覆盖：只有从非 DONE 进入 DONE 才记录。
+     * 否则 {@code DOING → DONE → DONE} 会把 previousStatus 刷成 DONE，reopen 就退不回去了。
      */
     public void setStatus(TaskStatus status, Instant now) {
+        if (status == TaskStatus.DONE && this.status != TaskStatus.DONE) {
+            this.previousStatus = this.status;
+        }
+        if (status != TaskStatus.DONE) {
+            this.previousStatus = null;
+        }
         this.status = status;
         this.completedAt = (status == TaskStatus.DONE) ? now : null;
+    }
+
+    /**
+     * 取消完成时该回到的状态。
+     *
+     * @return 完成前的状态；从未记录过（历史数据或已是非完成态）时返回 {@code TODO}
+     */
+    public TaskStatus reopenTarget() {
+        return previousStatus == null ? TaskStatus.TODO : previousStatus;
     }
 
     /** 返回副本：避免调用方直接改到持久化集合（Hibernate 用原集合跟踪脏检查） */

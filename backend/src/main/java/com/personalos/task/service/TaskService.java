@@ -161,13 +161,22 @@ public class TaskService {
         return toDto(taskRepository.save(task), now);
     }
 
+    /**
+     * 标记完成 / 取消完成。
+     *
+     * <p>取消完成时回到<b>完成前的状态</b>而不是一律 {@code TODO}：
+     * 把进行中的任务误标完成再取消，原实现会静默降级成待办。
+     * 目标状态由 {@link TaskEntity#reopenTarget()} 决定，必须在 {@code setStatus}
+     * <b>之前</b>取 —— 后者会在离开 DONE 时清空 {@code previousStatus}。
+     */
     @Transactional
     public TaskDto setCompleted(UUID id, boolean completed) {
         TaskEntity task = requireTask(id);
         Instant now = Instant.now();
-        task.setStatus(completed ? TaskStatus.DONE : TaskStatus.TODO, now);
+        TaskStatus target = completed ? TaskStatus.DONE : task.reopenTarget();
+        task.setStatus(target, now);
         task.touch(now);
-        log.info("任务完成状态变更 id={} completed={}", id, completed);
+        log.info("任务完成状态变更 id={} completed={} 目标状态={}", id, completed, target);
         return toDto(taskRepository.save(task), now);
     }
 

@@ -341,4 +341,66 @@ class TaskApiIntegrationTest {
         int end = json.indexOf(",\"timestamp\"", index);
         return end < 0 ? json.substring(index) : json.substring(index, end);
     }
+
+    // ---------------------------------------------------- 重开恢复完成前状态（P3）
+
+    @Test
+    @DisplayName("重开：进行中被误标完成后取消，回到进行中而非待办")
+    void reopenRestoresDoingStatus() throws Exception {
+        UUID id = taskService.create(new CreateTaskRequest("写方案", null, null, null, null)).id();
+        // 先切到 DOING
+        taskService.update(id, new UpdateTaskRequest(null, null, null, null, null, TaskStatus.DOING, null));
+
+        taskService.setCompleted(id, true);
+        assertThat(taskRepository.findById(id).orElseThrow().getStatus()).isEqualTo(TaskStatus.DONE);
+
+        HttpTestClient.Response response = http.post("/api/v1/tasks/" + id + "/reopen", "");
+
+        assertThat(response.status()).isEqualTo(200);
+        assertThat(response.body()).contains("\"status\":\"DOING\"");
+        assertThat(taskRepository.findById(id).orElseThrow().getStatus()).isEqualTo(TaskStatus.DOING);
+    }
+
+    @Test
+    @DisplayName("重开：原本是待办的任务仍然回到待办")
+    void reopenTodoStaysTodo() throws Exception {
+        UUID id = taskService.create(new CreateTaskRequest("买牛奶", null, null, null, null)).id();
+        taskService.setCompleted(id, true);
+
+        taskService.setCompleted(id, false);
+
+        assertThat(taskRepository.findById(id).orElseThrow().getStatus()).isEqualTo(TaskStatus.TODO);
+    }
+
+    @Test
+    @DisplayName("重开：重复完成不覆盖完成前状态（DOING → DONE → DONE → 取消仍是 DOING）")
+    void repeatedCompleteDoesNotOverwritePreviousStatus() throws Exception {
+        UUID id = taskService.create(new CreateTaskRequest("写方案", null, null, null, null)).id();
+        taskService.update(id, new UpdateTaskRequest(null, null, null, null, null, TaskStatus.DOING, null));
+
+        taskService.setCompleted(id, true);
+        // 第二次「完成」是幂等操作，不能把 previousStatus 刷成 DONE
+        taskService.setCompleted(id, true);
+        taskService.setCompleted(id, false);
+
+        assertThat(taskRepository.findById(id).orElseThrow().getStatus())
+                .as("重复完成后取消，应回到 DOING；刷成 DONE 会让 reopen 毫无变化")
+                .isEqualTo(TaskStatus.DOING);
+    }
+
+    @Test
+    @DisplayName("重开：取消后再完成，完成前状态重新按当前状态记录")
+    void previousStatusIsRecomputedAfterReopen() throws Exception {
+        UUID id = taskService.create(new CreateTaskRequest("写方案", null, null, null, null)).id();
+        taskService.update(id, new UpdateTaskRequest(null, null, null, null, null, TaskStatus.DOING, null));
+        taskService.setCompleted(id, true);
+        taskService.setCompleted(id, false);   // 回到 DOING
+
+        // 改为 TODO 后再完成，previousStatus 应变成 TODO
+        taskService.update(id, new UpdateTaskRequest(null, null, null, null, null, TaskStatus.TODO, null));
+        taskService.setCompleted(id, true);
+        taskService.setCompleted(id, false);
+
+        assertThat(taskRepository.findById(id).orElseThrow().getStatus()).isEqualTo(TaskStatus.TODO);
+    }
 }
