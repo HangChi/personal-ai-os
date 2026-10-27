@@ -78,6 +78,8 @@ public class ChatCompletionService {
     /** 活跃流数指标：SSE 请求不会快速结束，HTTP 指标看不出「卡住」，只能靠它 */
     private final ChatStreamMetrics metrics;
     private final SseHeartbeatScheduler heartbeatScheduler;
+    /** 把本轮附件转成模型能读的内容（图片多模态 / 文本区块） */
+    private final ChatAttachmentContextBuilder attachmentContextBuilder;
 
     public ChatCompletionService(AiChatClientProvider aiProvider,
                                  ChatSessionService sessionService,
@@ -85,7 +87,8 @@ public class ChatCompletionService {
                                  ObjectProvider<KnowledgeSearchPort> knowledgeSearch,
                                  ChatTurnFinisher finisher,
                                  ChatStreamMetrics metrics,
-                                 SseHeartbeatScheduler heartbeatScheduler) {
+                                 SseHeartbeatScheduler heartbeatScheduler,
+                                 ChatAttachmentContextBuilder attachmentContextBuilder) {
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
         this.promptAssembler = promptAssembler;
@@ -93,6 +96,7 @@ public class ChatCompletionService {
         this.finisher = finisher;
         this.metrics = metrics;
         this.heartbeatScheduler = heartbeatScheduler;
+        this.attachmentContextBuilder = attachmentContextBuilder;
     }
 
     /**
@@ -170,7 +174,11 @@ public class ChatCompletionService {
         Flux<String> contentFlux = Flux.defer(() -> {
             List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter);
             hitsRef.set(hits);
-            String systemPrompt = promptAssembler.assemble(hits, userContent, conversationId);
+            // 附件：图片随 user message 走（多模态协议要求），文本进系统提示（避免存进历史）。
+            // 只影响本轮 —— 见 ChatAttachmentContextBuilder 的类注释。
+            ChatAttachmentContext attachmentContext = attachmentContextBuilder.build(requestAttachments);
+            String systemPrompt = promptAssembler.assemble(hits, userContent, conversationId,
+                    attachmentContext.textBlock());
             // 上下文用量：本轮系统提示 + 本条用户消息 + 窗口内历史（后两项为估算）。
             // 历史由 Advisor 在请求链路里装载，这里拿不到原文，
             // 因此用「窗口条数 × 已存消息的平均长度」逼近并在事件里如实标注为估算值。
@@ -180,7 +188,13 @@ public class ChatCompletionService {
                     // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                     // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
                     .system(systemPrompt)
-                    .user(userContent)
+                    // 图片作为多模态媒体挂在用户消息上；无图片时退化成纯文本（行为与之前一致）
+                    .user(user -> {
+                        user.text(userContent);
+                        if (!attachmentContext.images().isEmpty()) {
+                            user.media(attachmentContext.imageArray());
+                        }
+                    })
                     // 会话标识通过 advisor 参数传入，Advisor 据此装载并回写该会话的上下文
                     .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
                     // 工具调用时需要的上下文：工具方法通过 ToolContext 参数读取

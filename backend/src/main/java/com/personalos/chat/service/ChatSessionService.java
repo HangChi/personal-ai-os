@@ -1,5 +1,6 @@
 package com.personalos.chat.service;
 
+import com.personalos.chat.dto.ChatAttachmentDto;
 import com.personalos.chat.dto.ChatSessionDto;
 import com.personalos.chat.dto.ChatSessionQuery;
 import com.personalos.chat.entity.ChatSessionEntity;
@@ -24,6 +25,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * 会话写路径与查询。
@@ -49,11 +52,14 @@ public class ChatSessionService {
 
     private final ChatSessionRepository sessionRepository;
     private final ChatMessageRepository messageRepository;
+    private final ChatAttachmentService attachmentService;
 
     public ChatSessionService(ChatSessionRepository sessionRepository,
-                              ChatMessageRepository messageRepository) {
+                              ChatMessageRepository messageRepository,
+                              ChatAttachmentService attachmentService) {
         this.sessionRepository = sessionRepository;
         this.messageRepository = messageRepository;
+        this.attachmentService = attachmentService;
     }
 
     /**
@@ -178,16 +184,55 @@ public class ChatSessionService {
     }
 
     /**
-     * 删除会话及其全部消息。
+     * 删除会话及其全部消息，并清理该会话的附件文件。
      */
     @Transactional
     public void delete(String conversationId) {
         ChatSessionEntity session = requireSession(conversationId);
+        // 附件快照必须在删记录之前取：删完就再也找不到这些 id，磁盘文件会永久残留
+        List<ChatAttachmentDto> attachments = parseAttachments(
+                messageRepository.findAttachmentJsonByConversationId(conversationId));
         // 数据库外键是 ON DELETE CASCADE，这里显式删除是为了让持久化上下文与库保持一致，
         // 避免后续查询命中已被级联删除的实体
         messageRepository.deleteByConversationId(conversationId);
         sessionRepository.delete(session);
-        log.info("删除会话 conversationId={}", conversationId);
+        log.info("删除会话 conversationId={} 附件数={}", conversationId, attachments.size());
+
+        // 文件删除放到事务提交之后：先删文件再回滚，会出现「记录还在、文件没了」的
+        // 半损坏状态，比残留文件糟得多
+        deleteFilesAfterCommit(attachments);
+    }
+
+    /** 把库里存的附件快照（JSON 串列表）解析成名片；坏数据按跳过处理 */
+    private List<ChatAttachmentDto> parseAttachments(List<String> jsonList) {
+        if (jsonList == null || jsonList.isEmpty()) {
+            return List.of();
+        }
+        return jsonList.stream()
+                .flatMap(json -> attachmentService.fromJson(json).stream())
+                .toList();
+    }
+
+    /**
+     * 事务提交后再删磁盘文件。
+     *
+     * <p>没有活跃事务时（例如被非事务上下文调用）直接删 —— 此时也不存在「回滚后该恢复」
+     * 的语义。判断放在这里而不是靠调用约定，是为了让这个方法在任何入口下都安全。
+     */
+    private void deleteFilesAfterCommit(List<ChatAttachmentDto> attachments) {
+        if (attachments.isEmpty()) {
+            return;
+        }
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            attachmentService.deleteAll(attachments);
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                attachmentService.deleteAll(attachments);
+            }
+        });
     }
 
     /**

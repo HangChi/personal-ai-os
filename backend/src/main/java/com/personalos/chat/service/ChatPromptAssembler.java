@@ -55,6 +55,21 @@ public class ChatPromptAssembler {
      * @param conversationId 会话标识（摘要按会话取）
      */
     public String assemble(List<KnowledgeHitDto> hits, String userInput, String conversationId) {
+        return assemble(hits, userInput, conversationId, "");
+    }
+
+    /**
+     * 拼装本轮请求的系统提示（含用户上传的附件内容）。
+     *
+     * <p>附件区块排在**知识库之前**：用户本轮显式上传的材料，相关性高于系统自动检索的结果。
+     * 这与「越靠后越具体」的通例相反，是刻意为之 —— 优先级不该只靠位置表达，
+     * 但位置至少要保证「更该被看到的先被看到」。
+     *
+     * @param attachmentBlock 已格式化的附件文本（见 {@code ChatAttachmentContextBuilder}）；
+     *                        空串表示本轮无文本附件
+     */
+    public String assemble(List<KnowledgeHitDto> hits, String userInput, String conversationId,
+                           String attachmentBlock) {
         StringBuilder prompt = new StringBuilder(aiProperties.systemPrompt());
 
         String summary = summaryService.renderForConversation(conversationId);
@@ -69,6 +84,9 @@ public class ChatPromptAssembler {
                 prompt.append("\n\n").append(contribution);
             }
         });
+        if (attachmentBlock != null && !attachmentBlock.isBlank()) {
+            prompt.append("\n\n").append(attachmentBlock);
+        }
         if (hits != null && !hits.isEmpty()) {
             prompt.append("\n\n").append(buildKnowledgeSection(hits));
         }

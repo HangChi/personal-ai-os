@@ -146,6 +146,64 @@ public class ChatAttachmentService {
     }
 
     /**
+     * 读取附件的原始字节。
+     *
+     * <p>与 {@link #load} 的区别：那个返回 {@code Resource} 用于直接作为 HTTP 响应体流出去，
+     * 这个把内容读进内存，供「送进模型」与「文本抽取」使用。
+     * 调用方必须已经知道文件不大（上传期已限 20MB），否则不该用这个。
+     */
+    public byte[] readBytes(String id) {
+        Resource resource = load(id);
+        try (InputStream in = resource.getInputStream()) {
+            return in.readAllBytes();
+        } catch (IOException ex) {
+            throw new BusinessException(com.personalos.common.api.ErrorCode.RESOURCE_NOT_FOUND, "附件读取失败");
+        }
+    }
+
+    /**
+     * 删除一个附件的磁盘文件。
+     *
+     * <p>只删文件、不碰数据库：调用方（删会话 / 删消息）已经在自己的事务里处理了记录。
+     * 文件不存在视为成功 —— 清理是幂等的，不该因为「已经没了」而让删除会话失败。
+     */
+    public void delete(String id) {
+        if (id == null || !id.matches("[0-9a-fA-F-]{36}")) {
+            return;
+        }
+        Path file = uploadDir.resolve(id).normalize();
+        if (!file.startsWith(uploadDir)) {
+            return;
+        }
+        try {
+            if (Files.deleteIfExists(file)) {
+                log.debug("已删除附件文件 id={}", id);
+            }
+        } catch (IOException ex) {
+            // 清理失败只记日志：数据库记录已经删了，为它回滚整次删除不合理；
+            // 残留文件由后续的孤儿巡检兜底（见 ChatAttachmentJanitor）
+            log.warn("附件文件删除失败，将残留 id={}", id, ex);
+        }
+    }
+
+    /** 批量删除附件文件（忽略空值与重复） */
+    public void deleteAll(List<ChatAttachmentDto> attachments) {
+        if (attachments == null || attachments.isEmpty()) {
+            return;
+        }
+        attachments.forEach(attachment -> {
+            if (attachment != null) {
+                delete(attachment.id());
+            }
+        });
+    }
+
+    /** 附件目录（供孤儿巡检使用） */
+    public Path uploadDirectory() {
+        return uploadDir;
+    }
+
+    /**
      * 反序列化附件快照。
      *
      * <p>解析失败返回空列表而不是抛异常：附件是增强信息，

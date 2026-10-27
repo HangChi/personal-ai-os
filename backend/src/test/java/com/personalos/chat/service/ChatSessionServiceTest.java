@@ -27,13 +27,16 @@ class ChatSessionServiceTest {
 
     private ChatSessionRepository sessionRepository;
     private ChatMessageRepository messageRepository;
+    private ChatAttachmentService attachmentService;
     private ChatSessionService service;
 
     @BeforeEach
     void setUp() {
         sessionRepository = mock(ChatSessionRepository.class);
         messageRepository = mock(ChatMessageRepository.class);
-        service = new ChatSessionService(sessionRepository, messageRepository);
+        // 附件服务在 delete() 路径上用于清理磁盘文件；本类不关心它，用 mock 即可
+        attachmentService = mock(ChatAttachmentService.class);
+        service = new ChatSessionService(sessionRepository, messageRepository, attachmentService);
     }
 
     @Test

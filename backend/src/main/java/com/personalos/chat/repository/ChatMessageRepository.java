@@ -79,6 +79,25 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     void deleteByConversationId(String conversationId);
 
     /**
+     * 取某个会话下所有消息的附件快照（JSON 串，只含有附件的那部分消息）。
+     *
+     * <p>用于删除会话时清理磁盘文件：删完记录就再也找不到这些 id 了，
+     * 因此必须在 delete 之前取。只 select 这一个列，不把整条消息读进内存。
+     */
+    @Query("select m.attachments from ChatMessageEntity m "
+            + "where m.conversationId = :conversationId and m.attachments is not null")
+    List<String> findAttachmentJsonByConversationId(@Param("conversationId") String conversationId);
+
+    /**
+     * 全库附件快照（只 select 这一列），供孤儿文件巡检使用。
+     *
+     * <p>单用户量级下没问题：一万条消息每行几十字节，合计几百 KB。
+     * 真要再大就得改成「按批扫描 + 布隆过滤器」，但那是另一个量级的问题。
+     */
+    @Query("select m.attachments from ChatMessageEntity m where m.attachments is not null")
+    List<String> findAllAttachmentJson();
+
+    /**
      * 消息**内容**命中关键词的会话 id（去重），供全局搜索使用（阶段 17）。
      *
      * <p>命中正文时返回的是**会话**而不是单条消息：消息量级比元数据大 1~2 个数量级，
