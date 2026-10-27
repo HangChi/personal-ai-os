@@ -40,14 +40,16 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
         <el-icon :size="14"><ChatLineRound /></el-icon>
       </span>
       <div class="chat-msg__content">
+        <!--
+          工具轨迹放在气泡**上方**（2026-10-27 调整）：它描述的是「为了得出下面这段回复，
+          助手做了些什么」，是过程；气泡是结论。过程在结论之前，读起来才顺。
+          改造前它在气泡下方，读起来像「补充说明」。
+        -->
+        <ChatToolTrail v-if="props.toolTrail.length > 0" :items="props.toolTrail" class="chat-msg__trail" />
+
         <div class="chat-msg__bubble chat-msg__bubble--assistant">
           <MarkdownRenderer :content="message.content" />
         </div>
-        <!--
-          工具轨迹内联在消息内部（阶段 22 末改）：改造前它是消息流末尾的独立一行，
-          读起来像「另一段内容」。内联后它明确归属于这条回复，与引用区同级。
-        -->
-        <ChatToolTrail v-if="props.toolTrail.length > 0" :items="props.toolTrail" class="chat-msg__trail" />
 
         <!-- 引用区（阶段 19） -->
         <div v-if="message.citations.length > 0" class="chat-msg__citations">
@@ -269,10 +271,10 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
   color: var(--el-color-primary);
 }
 
-/* 内联工具轨迹：不再需要左缩进（它已经在消息内容里） */
+/* 工具行在气泡上方：与气泡拉开一点距离，与上一条消息靠近（同属「这一轮」） */
 .chat-msg__trail {
   margin-left: 0;
-  margin-top: var(--os-space-2);
+  margin-bottom: var(--os-space-2);
 }
 
 /* ---- 附件（阶段 22） ---- */

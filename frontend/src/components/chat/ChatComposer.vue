@@ -16,6 +16,8 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { uploadAttachment } from '@/api/chat'
 import { ElMessage } from 'element-plus'
+import type { ContextUsage } from '@/api/chat'
+import ContextMeter from '@/components/chat/ContextMeter.vue'
 import { THINKING_HINTS, THINKING_LABELS, type ThinkingLevel } from '@/lib/settings'
 import type { ChatAttachment } from '@/types/api'
 
@@ -32,6 +34,8 @@ const props = defineProps<{
   thinkingLevel: ThinkingLevel
   /** Enter 是否直接发送（来自设置页偏好） */
   enterSend: boolean
+  /** 上下文用量（token 口径）；budgetTokens 为 0 时不显示仪表盘 */
+  contextUsage: ContextUsage
 }>()
 
 const emit = defineEmits<{
@@ -39,6 +43,7 @@ const emit = defineEmits<{
   (e: 'update:topK', value: number | null): void
   (e: 'update:thinkingLevel', value: ThinkingLevel): void
   (e: 'toggle-knowledge', next: boolean): void
+  (e: 'change-budget', tokens: number): void
   (e: 'send', attachments: ChatAttachment[]): void
   (e: 'stop'): void
 }>()
@@ -170,6 +175,16 @@ onMounted(autosize)
 <template>
   <div class="chat-composer">
     <div class="chat-composer__toolbar">
+      <!--
+        上下文仪表盘放回发送框（2026-10-27）：它回答的是「这一发会带多少上下文」，
+        和附件/知识库同属「发送前的状态」，放在一起才看得懂。
+      -->
+      <ContextMeter
+        v-if="contextUsage.budgetTokens > 0"
+        :usage="contextUsage"
+        @change-budget="(tokens: number) => emit('change-budget', tokens)"
+      />
+
       <!--
         附件按钮**没有**选中态：它是个瞬时动作（打开文件选择器），不是开关。
         曾经误把知识库的 --on 类绑定复制到这里，导致一开知识库附件也变蓝。

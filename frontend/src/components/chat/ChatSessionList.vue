@@ -77,6 +77,29 @@ function cancelEdit(): void {
   editingId.value = null
 }
 
+/**
+ * 行内删除确认状态。
+ *
+ * 用 deletingId 而不是布尔量：同一时刻只应有一行处于待确认状态，
+ * 点开另一行时上一行要自动收回（否则侧栏里同时出现两行「删除？」很混乱）。
+ */
+const deletingId = ref<string | null>(null)
+
+function startDelete(session: ChatSession): void {
+  editingId.value = null
+  editCancelled.value = true
+  deletingId.value = session.conversationId
+}
+
+function cancelDelete(): void {
+  deletingId.value = null
+}
+
+function confirmDelete(session: ChatSession): void {
+  deletingId.value = null
+  emit('remove', session.conversationId)
+}
+
 // 进入编辑态后聚焦并全选，省得用户再手动清空原标题
 watch(editingId, async (id) => {
   if (!id) {
@@ -155,11 +178,28 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
                 </div>
               </div>
               <!--
+                行内删除确认（2026-10-27 取代 ElMessageBox 弹窗）：
+                模态框样式与页面割裂、又重又丑。改成这一行就地展开成
+                「删除？[取消][删除]」—— 上下文就在眼前，不会有「突然弹出个什么东西」的断裂感。
+                仍然保留了「要点两下」这个防误触的核心。
+              -->
+              <div v-if="deletingId === session.conversationId" class="chat-sessions__confirm" @click.stop>
+                <span class="chat-sessions__confirm-text">删除？消息一并清空</span>
+                <button type="button" class="chat-sessions__confirm-btn" @click.stop="cancelDelete">取消</button>
+                <button
+                  type="button"
+                  class="chat-sessions__confirm-btn chat-sessions__confirm-btn--danger"
+                  @click.stop="confirmDelete(session)"
+                >
+                  删除
+                </button>
+              </div>
+              <!--
               图标按钮而不是文字按钮：两个文字按钮（重命名/删除）在 260px 的侧栏里
               既挤占标题宽度，hover 时还会盖在标题上。图标体积固定、语义靠 title 兜底。
               容器常驻占位、只切换透明度 —— 避免 hover 时标题被挤压位移。
             -->
-              <div class="chat-sessions__item-actions">
+              <div v-else class="chat-sessions__item-actions">
                 <el-button
                   link
                   type="primary"
@@ -174,7 +214,7 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
                   size="small"
                   title="删除"
                   :icon="Delete"
-                  @click.stop="emit('remove', session.conversationId)"
+                  @click.stop="startDelete(session)"
                 />
               </div>
             </li>
@@ -301,7 +341,56 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   color: var(--el-color-primary);
 }
 
-.chat-sessions__item--active .chat-sessions__rename {
+.chat-sessions__item--active /* 行内删除确认条：与列表项同底色系，但用边框和红字让它明显区别于普通行 */
+.chat-sessions__confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  padding: 0 var(--os-space-2);
+  border-radius: var(--os-radius-md);
+  background: var(--el-bg-color);
+  font-size: var(--os-font-xs);
+}
+
+.chat-sessions__confirm-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--el-text-color-regular);
+}
+
+.chat-sessions__confirm-btn {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--os-radius-sm);
+  background: var(--el-bg-color);
+  color: var(--el-text-color-regular);
+  font-size: var(--os-font-xs);
+  cursor: pointer;
+}
+
+.chat-sessions__confirm-btn:hover {
+  border-color: var(--el-color-primary-light-5);
+  color: var(--el-color-primary);
+}
+
+.chat-sessions__confirm-btn--danger {
+  border-color: var(--el-color-danger-light-5);
+  color: var(--el-color-danger);
+}
+
+.chat-sessions__confirm-btn--danger:hover {
+  border-color: var(--el-color-danger);
+  background: var(--el-color-danger-light-9);
+  color: var(--el-color-danger);
+}
+
+.chat-sessions__rename {
   width: 100%;
   padding: 1px 4px;
   border: 1px solid var(--el-color-primary);
@@ -367,6 +456,55 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: color var(--os-duration-fast) var(--os-ease);
+}
+
+/* 行内删除确认条：与列表项同底色系，但用边框和红字让它明显区别于普通行 */
+.chat-sessions__confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  padding: 0 var(--os-space-2);
+  border-radius: var(--os-radius-md);
+  background: var(--el-bg-color);
+  font-size: var(--os-font-xs);
+}
+
+.chat-sessions__confirm-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--el-text-color-regular);
+}
+
+.chat-sessions__confirm-btn {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--os-radius-sm);
+  background: var(--el-bg-color);
+  color: var(--el-text-color-regular);
+  font-size: var(--os-font-xs);
+  cursor: pointer;
+}
+
+.chat-sessions__confirm-btn:hover {
+  border-color: var(--el-color-primary-light-5);
+  color: var(--el-color-primary);
+}
+
+.chat-sessions__confirm-btn--danger {
+  border-color: var(--el-color-danger-light-5);
+  color: var(--el-color-danger);
+}
+
+.chat-sessions__confirm-btn--danger:hover {
+  border-color: var(--el-color-danger);
+  background: var(--el-color-danger-light-9);
+  color: var(--el-color-danger);
 }
 
 .chat-sessions__rename {

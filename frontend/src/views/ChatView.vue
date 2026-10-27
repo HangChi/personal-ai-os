@@ -15,7 +15,6 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
-import ContextMeter from '@/components/chat/ContextMeter.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
 import ChatSessionList from '@/components/chat/ChatSessionList.vue'
 import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
@@ -225,25 +224,13 @@ async function handleRename(session: ChatSession, title: string): Promise<void> 
 }
 
 /**
- * 删除会话：二次确认。
+ * 删除会话。
  *
- * 会话连带**全部消息、附件与引用**一起级联删除且不可恢复 ——
- * 侧栏里一个图标按钮点下去就没了，误触成本太高。
- * 这里刻意保留弹窗：破坏性操作本就该打断一下，与「重命名改行内」不矛盾。
+ * 二次确认已由 ChatSessionList 的**行内确认条**完成（点删除 → 该行展开「删除？[取消][删除]」），
+ * 父组件拿到的一定是用户明确确认过的结果，直接删即可。
+ * 改造前这里还有一层 ElMessageBox 弹窗：样式与页面割裂、又重又丑，且与行内确认重复。
  */
 async function handleRemove(conversationId: string): Promise<void> {
-  const target = sessions.value.find((item) => item.conversationId === conversationId)
-  const title = target ? target.title : '该会话'
-  try {
-    await ElMessageBox.confirm(`删除会话「${title}」？其中的全部消息会一起删除，且无法恢复。`, '删除会话', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-      confirmButtonClass: 'el-button--danger',
-    })
-  } catch {
-    return
-  }
   await chatStore.removeSession(conversationId)
 }
 </script>
@@ -277,8 +264,6 @@ async function handleRemove(conversationId: string): Promise<void> {
             <span class="chat__main-meta">
               {{ hasOlderMessages ? `已加载 ${messages.length} 条` : `${messages.length} 条消息` }}
             </span>
-            <!-- 上下文仪表盘：状态读数，与消息数并列在卡片头部（不属于操作工具栏） -->
-            <ContextMeter :usage="contextUsage" @change-budget="chatStore.changeContextBudget" />
           </div>
           <el-tag v-if="streaming" type="warning" size="small" effect="plain">生成中</el-tag>
         </div>
@@ -332,9 +317,11 @@ async function handleRemove(conversationId: string): Promise<void> {
           :top-k="topK"
           :thinking-level="settings.thinkingLevel"
           :enter-send="settings.enterSend"
+          :context-usage="contextUsage"
           @toggle-knowledge="toggleKnowledge"
           @update:top-k="(value: number | null) => (topK = value)"
           @update:thinking-level="(value: ThinkingLevel) => (settings.thinkingLevel = value)"
+          @change-budget="chatStore.changeContextBudget"
           @send="handleSend"
           @stop="chatStore.stopStreaming()"
         />
@@ -354,7 +341,8 @@ async function handleRemove(conversationId: string): Promise<void> {
 .chat {
   display: grid;
   grid-template-columns: 260px 1fr;
-  gap: var(--os-space-4);
+  /* 两栏间距收窄到 10px：原先 16px 在宽屏下像一道沟 */
+  gap: var(--os-space-3);
   /* flex:1 撑满 main 的剩余高度；不写 height:100%（父链上有 auto 高度元素时它不解析） */
   flex: 1;
   min-height: 0;
@@ -420,9 +408,9 @@ async function handleRemove(conversationId: string): Promise<void> {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  /* 气泡自带内边距后，20px 的间距显得过散；收到 16px 并保留底部余量 */
-  gap: var(--os-space-4);
-  padding: var(--os-space-4) var(--os-space-5) var(--os-space-4);
+  /* 消息间距与内边距双双收窄：让内容尽量铺开，减少「周围一圈白」 */
+  gap: var(--os-space-3);
+  padding: var(--os-space-3) var(--os-space-4) var(--os-space-3);
 }
 
 .chat__error {

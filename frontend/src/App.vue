@@ -375,11 +375,17 @@ async function handleLogout(): Promise<void> {
   max-width: var(--os-content-max-width);
   width: 100%;
   margin: 0 auto;
-  padding-top: var(--os-space-4);
+  /* EP 的 el-main 自带 20px 四周内边距；对话页要贴边，这里显式压掉左右与底部 */
+  padding: var(--os-space-2) var(--os-space-3) var(--os-space-2);
 }
 
+/*
+ * 沉浸式页面（对话）：内边距再压一档，让对话区尽量贴住视口边缘。
+ * 原先左右各 20px、上方 16px，宽屏下两边白边很明显。
+ */
 .app-shell__main--wide {
   max-width: none;
+  padding: var(--os-space-2) var(--os-space-2) var(--os-space-2);
 }
 
 .app-shell__footer {
