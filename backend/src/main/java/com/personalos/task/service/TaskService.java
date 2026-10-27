@@ -10,6 +10,7 @@ import com.personalos.task.TaskTags;
 import com.personalos.task.dto.CreateTaskRequest;
 import com.personalos.task.dto.TaskDto;
 import com.personalos.task.dto.TaskQuery;
+import com.personalos.task.dto.TaskStatsDto;
 import com.personalos.task.dto.UpdateTaskRequest;
 import com.personalos.task.entity.TaskEntity;
 import com.personalos.task.entity.TaskPriority;
@@ -314,5 +315,21 @@ public class TaskService {
     @Transactional(readOnly = true)
     public List<String> listTags() {
         return taskRepository.findDistinctTags();
+    }
+
+    /**
+     * 全量统计（审查 #16）：未完成数与逾期数。
+     *
+     * <p>首页统计卡用。与 {@link #search} 的分页结果无关 —— 后者最多返回一页
+     * （默认 20 条），用它派生统计等于给用户看一个「最多 20」的假数字。
+     *
+     * <p>{@code now} 用 {@link Instant#now()} 而非注入 Clock：本服务其余方法的逾期
+     * 判定也直接用 {@code Instant.now()}（见 {@link #toDto}），口径必须一致；
+     * 引入 Clock 只改这一个方法会造成「统计的逾期」与「列表的逾期」用两个时间源。
+     */
+    @Transactional(readOnly = true)
+    public TaskStatsDto stats() {
+        TaskRepository.TaskStatsRow row = taskRepository.countStats(Instant.now());
+        return new TaskStatsDto(row.getPending(), row.getOverdue());
     }
 }

@@ -14,7 +14,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import { useKnowledgeStore } from '@/stores/knowledge'
 
 const knowledgeStore = useKnowledgeStore()
-const { hits, searching } = storeToRefs(knowledgeStore)
+const { hits, searching, searchError, searched } = storeToRefs(knowledgeStore)
 
 const searchQuery = ref('')
 const searchTopK = ref(4)
@@ -46,8 +46,21 @@ async function handleSearch(): Promise<void> {
       <el-button :loading="searching" @click="handleSearch">检索</el-button>
     </div>
 
-    <el-empty v-if="hits.length === 0" description="暂无检索结果" :image-size="60" />
-    <KnowledgeHitList v-else :items="hits" />
+    <!-- 三态（审查 #17）：失败 / 已搜无结果 / 有结果。
+         改造前 `hits.length === 0` 同时表达「还没搜」与「搜了没结果」，
+         失败也被渲染成「暂无检索结果」，把错误静默成空态 -->
+    <el-alert
+      v-if="searchError"
+      class="ks__error"
+      type="error"
+      :closable="false"
+      show-icon
+      title="检索失败"
+      :description="searchError"
+    />
+
+    <el-empty v-else-if="searched && hits.length === 0" description="没有匹配的片段，换个检索词试试" :image-size="60" />
+    <KnowledgeHitList v-else-if="hits.length > 0" :items="hits" />
   </el-card>
 </template>
 
@@ -55,6 +68,10 @@ async function handleSearch(): Promise<void> {
 .ks__query {
   display: flex;
   gap: var(--os-space-2);
+  margin-bottom: var(--os-space-3);
+}
+
+.ks__error {
   margin-bottom: var(--os-space-3);
 }
 

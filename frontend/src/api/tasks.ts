@@ -51,6 +51,11 @@ export function listTasks(filter: TaskListFilter = {}): Promise<PageDto<TaskItem
   return requestData<PageDto<TaskItem>>({ url: '/tasks', method: 'get', params: filter })
 }
 
+/** 全量统计（审查 #16）：未完成数与逾期数，供首页统计卡 */
+export function fetchTaskStats(): Promise<{ pending: number; overdue: number }> {
+  return requestData<{ pending: number; overdue: number }>({ url: '/tasks/stats', method: 'get' })
+}
+
 /** 全部标签（去重有序），用于筛选下拉 */
 export function listTags(): Promise<string[]> {
   return requestData<string[]>({ url: '/tasks/tags', method: 'get' })

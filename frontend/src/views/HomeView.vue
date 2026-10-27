@@ -120,7 +120,9 @@ onMounted(async () => {
   void appStore.loadHealth()
 
   // 五个统计互不依赖，并发加载；各自的失败只把自己那一卡打成 —
-  const tasks = taskStore.load().then(() => {
+  // 任务统计用 loadStats（后端全量聚合），而非 load（分页列表的派生值）——
+  // 后者在待办超过一页时会把「100 条」显示成「20 条」（审查 #16）
+  const tasks = taskStore.loadStats().then(() => {
     setStat('pending', pendingCount.value)
     setStat('overdue', overdueCount.value)
   })

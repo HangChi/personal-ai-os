@@ -31,7 +31,20 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   const replacing = ref(false)
   const searching = ref(false)
   const asking = ref(false)
+  /** 文档列表（上传/替换/删除/加载）的错误 */
   const error = ref<string | null>(null)
+
+  /**
+   * 检索 / 问答各自独立的错误（审查 #17）。
+   *
+   * <p>改造前三者共用同一个 {@code error}：提问失败会把检索 Tab 也标成失败，
+   * 反之亦然 —— 三个互不相干的操作被一条错误串在一起。拆开之后，
+   * 各自的失败只在各自的 Tab 里显示。
+   */
+  const searchError = ref<string | null>(null)
+  const askError = ref<string | null>(null)
+  /** 检索是否真的发过请求（区分「还没搜」与「搜了没结果」） */
+  const searched = ref(false)
 
   /** 当前页的片段总数。注意：分页后这只是**这一页**的规模，不是整个知识库 */
   const totalChunks = computed(() => documents.value.reduce((sum, document) => sum + document.chunkCount, 0))
@@ -126,12 +139,14 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
   async function search(query: string, topK?: number): Promise<void> {
     searching.value = true
-    error.value = null
+    searchError.value = null
     try {
       hits.value = (await searchKnowledge(query, topK)).hits
+      searched.value = true
     } catch (cause) {
       hits.value = []
-      error.value = cause instanceof Error ? cause.message : '检索失败'
+      searched.value = true
+      searchError.value = cause instanceof Error ? cause.message : '检索失败'
     } finally {
       searching.value = false
     }
@@ -139,12 +154,12 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
   async function ask(question: string, topK?: number): Promise<void> {
     asking.value = true
-    error.value = null
+    askError.value = null
     try {
       answer.value = await askKnowledge(question, topK)
     } catch (cause) {
       answer.value = null
-      error.value = cause instanceof Error ? cause.message : '问答失败'
+      askError.value = cause instanceof Error ? cause.message : '问答失败'
     } finally {
       asking.value = false
     }
@@ -163,6 +178,9 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     searching,
     asking,
     error,
+    searchError,
+    askError,
+    searched,
     totalChunks,
     isEmpty,
     loadDocuments,

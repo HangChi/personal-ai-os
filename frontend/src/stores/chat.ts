@@ -111,6 +111,15 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   let abortController: AbortController | null = null
+  /**
+   * 会话切换的请求序号（2026-10-27 审查 #14 竞态防护）。
+   *
+   * <p>连点 A→B 时，A 的 `listMessages` 可能比 B 的**更晚返回**。若在 await 之后
+   * 无条件赋值，就会出现「标题是 B、消息内容是 A」的错位——更糟的是此时
+   * `currentConversationId` 已是 B，用户接着发消息会写进 B 会话，而界面显示的是 A 的内容。
+   * 自增序号 + await 后校验，只有「仍是最新一次请求」的那轮才有资格写回状态。
+   */
+  let sessionReqSeq = 0
 
   async function loadSessions(targetPage: number = sessionsPage.value): Promise<void> {
     loadingSessions.value = true
@@ -154,8 +163,16 @@ export const useChatStore = defineStore('chat', () => {
 
   async function selectSession(conversationId: string): Promise<void> {
     if (streaming.value) {
+      // 流式中禁止切换。改造前这里是静默 return —— 用户以为点击失效而反复点。
+      // 走 error 通道给一句明确提示（ChatView 的 el-alert 会显示），
+      // 让用户知道要「先停止再切换」，而不是猜是不是自己没点中。
+      error.value = '正在生成回复，请先停止再切换会话'
       return
     }
+    // 本轮请求的序号：await 之后据此判断「我还是不是最新一次选择」。
+    // 提前自增并记住，而不是 await 后再比 currentConversationId ——
+    // 那样挡不住「A→B→A」这种绕一圈回来的情况（id 相同但已是不同一轮）。
+    const reqSeq = ++sessionReqSeq
     currentConversationId.value = conversationId
     loadingMessages.value = true
     error.value = null
@@ -164,6 +181,10 @@ export const useChatStore = defineStore('chat', () => {
     retrievalState.value = 'idle'
     try {
       const page = await listMessages(conversationId, { limit: MESSAGE_PAGE_SIZE })
+      // 竞态防护：await 期间用户切走了，这次返回的结果作废，一个字节都不能写回
+      if (reqSeq !== sessionReqSeq) {
+        return
+      }
       messages.value = page
       // 刚好装满一页 ⇒ 很可能还有更早的；不足一页 ⇒ 已经到头
       hasOlderMessages.value = page.length === MESSAGE_PAGE_SIZE
@@ -173,9 +194,15 @@ export const useChatStore = defineStore('chat', () => {
       } catch {
         // 仪表盘是增强信息，查不到就不显示，不该影响会话打开
       }
+      if (reqSeq !== sessionReqSeq) {
+        return
+      }
       await loadConfirmations()
       await loadToolTrail()
     } catch (cause) {
+      if (reqSeq !== sessionReqSeq) {
+        return
+      }
       messages.value = []
       hasOlderMessages.value = false
       pendingConfirmations.value = []
@@ -183,7 +210,11 @@ export const useChatStore = defineStore('chat', () => {
       contextUsage.value = { promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true }
       error.value = cause instanceof Error ? cause.message : '加载消息失败'
     } finally {
-      loadingMessages.value = false
+      // 只有自己这轮仍是「最新」时才复位加载态；否则别动 —— 后一轮还在加载，
+      // 这里无条件复位会把它的 loading 误关掉，界面提前露出旧内容。
+      if (reqSeq === sessionReqSeq) {
+        loadingMessages.value = false
+      }
     }
   }
 
@@ -200,12 +231,17 @@ export const useChatStore = defineStore('chat', () => {
     if (!conversationId || !oldest || !hasOlderMessages.value || loadingOlder.value) {
       return
     }
+    const reqSeq = sessionReqSeq
     loadingOlder.value = true
     try {
       const older = await listMessages(conversationId, {
         limit: MESSAGE_PAGE_SIZE,
         beforeSeq: oldest.sequenceNo,
       })
+      // 竞态防护：翻页期间切走了会话，这批更早消息属于旧会话，不能拼到新会话上
+      if (reqSeq !== sessionReqSeq || conversationId !== currentConversationId.value) {
+        return
+      }
       messages.value = [...older, ...messages.value]
       hasOlderMessages.value = older.length === MESSAGE_PAGE_SIZE
     } catch (cause) {
@@ -222,7 +258,12 @@ export const useChatStore = defineStore('chat', () => {
    * 整体替换会让视图突然跳回最新的一页。
    */
   async function refreshTail(conversationId: string): Promise<void> {
+    const reqSeq = sessionReqSeq
     const tail = await listMessages(conversationId, { limit: MESSAGE_PAGE_SIZE })
+    // 竞态防护：刷新期间切走了会话，这批尾部属于旧会话，不能写回
+    if (reqSeq !== sessionReqSeq || conversationId !== currentConversationId.value) {
+      return
+    }
     const oldestTailSeq = tail.length > 0 ? tail[0].sequenceNo : Number.POSITIVE_INFINITY
     const kept = messages.value.filter((message) => message.sequenceNo < oldestTailSeq)
     messages.value = [...kept, ...tail]

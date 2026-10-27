@@ -45,6 +45,7 @@ const statusOptions: Array<{ label: string; value: TaskStatus | '' }> = [
 onMounted(() => {
   void taskStore.load()
   void taskStore.refreshTags()
+  void taskStore.loadStats()
 })
 
 async function handleCreate(payload: {

@@ -312,6 +312,29 @@ class TaskApiIntegrationTest {
         assertThatThrownBy(() -> taskService.delete(missing)).isInstanceOf(ResourceNotFoundException.class);
     }
 
+    @Test
+    @DisplayName("全量统计：待办/逾期是全库聚合，与分页无关（审查 #16）")
+    void statsAreAggregatedNotPaginated() throws Exception {
+        // 造超过一页（20）的任务，验证统计不按当前页算
+        for (int i = 0; i < 25; i++) {
+            taskService.create(new CreateTaskRequest("任务" + i, null, null, null, null));
+        }
+        // 两个已逾期：截止时间在过去
+        Instant past = Instant.now().minusSeconds(3600);
+        taskService.create(new CreateTaskRequest("逾期A", null, null, past, null));
+        taskService.create(new CreateTaskRequest("逾期B", null, null, past, null));
+        // 一个已完成：不应计入待办，也不应计入逾期
+        UUID doneId = taskService.create(new CreateTaskRequest("已完成", null, null, null, null)).id();
+        taskService.setCompleted(doneId, true);
+
+        HttpTestClient.Response response = http.get("/api/v1/tasks/stats");
+
+        assertThat(response.status()).isEqualTo(200);
+        // 待办 = 27（25 + 2 逾期，不含已完成）
+        assertThat(response.body()).contains("\"pending\":27");
+        assertThat(response.body()).contains("\"overdue\":2");
+    }
+
     private static String extractData(String json) {
         int index = json.indexOf("\"data\":");
         assertThat(index).isGreaterThanOrEqualTo(0);

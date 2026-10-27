@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
 import {
   createTask as createTaskApi,
   deleteTask as deleteTaskApi,
   completeTask as completeTaskApi,
+  fetchTaskStats,
   listTags as listTagsApi,
   listTasks,
   reopenTask as reopenTaskApi,
@@ -31,8 +32,26 @@ export const useTaskStore = defineStore('task', () => {
   /** 已用过的标签（去重有序），供筛选下拉使用 */
   const tags = ref<string[]>([])
 
-  const pendingCount = computed(() => tasks.value.filter((task) => task.status !== 'DONE').length)
-  const overdueCount = computed(() => tasks.value.filter((task) => task.overdue).length)
+  /**
+   * 全量统计（审查 #16）：未完成数与逾期数，来自后端聚合接口。
+   *
+   * <p>改造前这两个值是 {@code tasks} 的**当前页派生**——列表默认 20 条，
+   * 于是「100 条待办」时这里显示 20，与列表「共 100 条」自相矛盾。
+   * 现在是后端一条 SQL 的聚合结果，与分页、筛选条件都无关。
+   */
+  const pendingCount = ref(0)
+  const overdueCount = ref(0)
+
+  /** 拉取全量统计。失败保持旧值：它是总览提示，不该把列表页标成「加载失败」 */
+  async function loadStats(): Promise<void> {
+    try {
+      const stats = await fetchTaskStats()
+      pendingCount.value = stats.pending
+      overdueCount.value = stats.overdue
+    } catch {
+      // 静默：统计是辅助信息
+    }
+  }
 
   async function load(): Promise<void> {
     loading.value = true
@@ -88,6 +107,7 @@ export const useTaskStore = defineStore('task', () => {
       await createTaskApi({ title, priority, dueAt, tags: tagsValue })
       await load()
       await refreshTags()
+      await loadStats()
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '创建任务失败'
     }
@@ -107,6 +127,8 @@ export const useTaskStore = defineStore('task', () => {
       await load()
       // 标签可能被整体替换或清空，下拉清单要跟着变
       await refreshTags()
+      // 状态或截止时间可能变了，逾期/待办计数要跟着刷新
+      await loadStats()
       return true
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '修改任务失败'
@@ -123,6 +145,7 @@ export const useTaskStore = defineStore('task', () => {
         await completeTaskApi(task.id)
       }
       await load()
+      await loadStats()
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '更新任务状态失败'
     }
@@ -135,6 +158,7 @@ export const useTaskStore = defineStore('task', () => {
       await load()
       // 删掉的是某标签的最后一个使用者时，它应从筛选下拉里消失
       await refreshTags()
+      await loadStats()
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '删除任务失败'
     }
@@ -162,6 +186,7 @@ export const useTaskStore = defineStore('task', () => {
       }),
     )
     await load()
+    await loadStats()
     return { succeeded, failed }
   }
 
@@ -181,6 +206,7 @@ export const useTaskStore = defineStore('task', () => {
     )
     await load()
     await refreshTags()
+    await loadStats()
     return { succeeded, failed }
   }
 
@@ -198,6 +224,7 @@ export const useTaskStore = defineStore('task', () => {
     pendingCount,
     overdueCount,
     load,
+    loadStats,
     reload,
     goToPage,
     refreshTags,

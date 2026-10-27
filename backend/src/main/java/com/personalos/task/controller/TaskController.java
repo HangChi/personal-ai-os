@@ -14,6 +14,7 @@ import com.personalos.task.dto.CreateTaskRequest;
 import com.personalos.task.dto.DeletionAck;
 import com.personalos.task.dto.TaskDto;
 import com.personalos.task.dto.TaskQuery;
+import com.personalos.task.dto.TaskStatsDto;
 import com.personalos.task.dto.UpdateTaskRequest;
 import com.personalos.task.entity.TaskStatus;
 import com.personalos.task.service.TaskService;
@@ -102,6 +103,17 @@ public class TaskController {
     @GetMapping("/tags")
     public ApiResponse<List<String>> listTags() {
         return ApiResponse.ok(taskService.listTags());
+    }
+
+    /**
+     * 全量统计（审查 #16）：未完成数与逾期数，供首页统计卡使用。
+     *
+     * <p>与 {@code /tags} 并列放在 {@code /{id}} 之前：同一路由优先级考量。
+     * 这里**不带任何筛选**——首页要的是「全库有多少待办」，不是「当前筛选下有多少」。
+     */
+    @GetMapping("/stats")
+    public ApiResponse<TaskStatsDto> stats() {
+        return ApiResponse.ok(taskService.stats());
     }
 
     /**

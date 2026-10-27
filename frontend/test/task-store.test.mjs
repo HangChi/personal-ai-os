@@ -33,16 +33,21 @@ function page(items, total, page = 0, size = 20) {
       config.params.size,
     ),
   )
+  // 全量统计独立于分页：即便列表只有 1 条、总数 137，待办/逾期也要用聚合接口的数字
+  handlers.set('/tasks/stats', () => Promise.resolve({ pending: 42, overdue: 7 }))
   freshStore()
   const store = useTaskStore()
   await store.load()
+  await store.loadStats()
 
   eq('items 来自分页响应', store.tasks.length, 1)
   eq('total 透传（不再有静默截断）', store.total, 137)
   eq('page 初始为 0', store.page, 0)
   eq('size 默认 20', store.size, 20)
-  eq('待办计数按当前页计算', store.pendingCount, 1)
-  eq('逾期计数按当前页计算', store.overdueCount, 1)
+  // 审查 #16：待办/逾期必须来自后端全量聚合，而非「当前页派生」——
+  // 列表只有 1 条，若还按页算这里会是 1，而真实待办是 42
+  eq('待办计数来自后端全量聚合', store.pendingCount, 42)
+  eq('逾期计数来自后端全量聚合', store.overdueCount, 7)
 }
 
 // ---- 翻页：请求带新页码，状态跟随 ----

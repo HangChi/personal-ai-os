@@ -123,17 +123,63 @@ async function copyMessage(content: string): Promise<void> {
   }
 }
 
-async function scrollToBottom(): Promise<void> {
-  await nextTick()
+/**
+ * 「尾部消息的身份」：最后一条消息的 id + 内容长度。
+ *
+ * <p>用它而不是 `messages.length` 作为滚底触发源（审查 #15）：
+ * 「加载更早」是**前插**，`length` 也会 +50，于是用户刚点「加载更早」就被甩回最底部，
+ * 那个功能实际上不可用。而前插不改变**最后一条**消息，用尾部身份作 key，
+ * 只有「追加 / 切会话 / 删尾部」这些真正把尾部顶走的情况才滚底。
+ */
+const lastMessageKey = computed(() => {
+  const last = messages.value[messages.value.length - 1]
+  return last ? `${last.id}:${last.content.length}` : 'empty'
+})
+
+/** 是否贴近底部（距离底部 80px 内算「在底部」） */
+function isNearBottom(): boolean {
   const element = messageArea.value
-  if (element) {
+  if (!element) {
+    return true
+  }
+  return element.scrollHeight - element.scrollTop - element.clientHeight < 80
+}
+
+/**
+ * 自动滚底：只有「原本就在底部附近」时才滚。
+ *
+ * <p>用户上滑回看历史时，流式每帧都会触发 watch —— 若无条件滚底，用户会被
+ * 一次一次拽回最底部，根本没法读。判断「是否在底部」必须在 DOM 更新**之前**做：
+ * 更新后 scrollHeight 已经变大，`scrollHeight - scrollTop - clientHeight` 会失真。
+ */
+async function autoScrollToBottom(): Promise<void> {
+  const element = messageArea.value
+  const shouldScroll = element ? isNearBottom() : true
+  await nextTick()
+  if (element && shouldScroll) {
     element.scrollTop = element.scrollHeight
   }
 }
 
-watch([() => messages.value.length, streamingContent], () => {
-  void scrollToBottom()
+watch([lastMessageKey, streamingContent], () => {
+  void autoScrollToBottom()
 })
+
+/**
+ * 「加载更早」：前插会改变 scrollHeight，用差值补偿 scrollTop。
+ *
+ * <p>不补偿的话，新消息插到顶部会把用户正在看的那一行顶出视野 ——
+ * 用户会看到内容「突然跳走」，还得自己滚回去找刚才看到哪了。
+ */
+async function handleLoadOlder(): Promise<void> {
+  const element = messageArea.value
+  const prevHeight = element?.scrollHeight ?? 0
+  await chatStore.loadOlderMessages()
+  await nextTick()
+  if (element) {
+    element.scrollTop += element.scrollHeight - prevHeight
+  }
+}
 
 // ---------------------------------------------------------------- 知识库增强（阶段 19）
 
@@ -406,9 +452,7 @@ async function jumpToMatch(step: number): Promise<void> {
 
           <!-- 更早的消息入口（阶段 21）：首屏只取最近一页，向上翻是显式动作 -->
           <div v-if="hasOlderMessages || loadingOlder" class="chat__load-older">
-            <el-button text size="small" :loading="loadingOlder" @click="chatStore.loadOlderMessages()">
-              加载更早的消息
-            </el-button>
+            <el-button text size="small" :loading="loadingOlder" @click="handleLoadOlder"> 加载更早的消息 </el-button>
           </div>
 
           <!-- 消息流：工具轨迹内联在最后一条助手消息里，不单独占一行 -->

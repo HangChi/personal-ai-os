@@ -14,7 +14,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import { useKnowledgeStore } from '@/stores/knowledge'
 
 const knowledgeStore = useKnowledgeStore()
-const { answer, asking } = storeToRefs(knowledgeStore)
+const { answer, asking, askError } = storeToRefs(knowledgeStore)
 
 const question = ref('')
 const askTopK = ref(4)
@@ -46,6 +46,18 @@ async function handleAsk(): Promise<void> {
       <el-button type="primary" :loading="asking" @click="handleAsk">提问</el-button>
     </div>
 
+    <!-- 提问失败必须显式提示（审查 #17）：改造前这里什么都不渲染，转圈结束页面纹丝不动，
+         用户分不清是「失败」还是「没结果」 -->
+    <el-alert
+      v-if="askError"
+      class="ka__error"
+      type="error"
+      :closable="false"
+      show-icon
+      title="问答失败"
+      :description="askError"
+    />
+
     <template v-if="answer">
       <el-alert
         v-if="!answer.answered"
@@ -70,6 +82,10 @@ async function handleAsk(): Promise<void> {
 .ka__query {
   display: flex;
   gap: var(--os-space-2);
+  margin-bottom: var(--os-space-3);
+}
+
+.ka__error {
   margin-bottom: var(--os-space-3);
 }
 
