@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -77,6 +78,29 @@ public class KnowledgeController {
     @GetMapping("/documents")
     public ApiResponse<List<KnowledgeDocumentDto>> listDocuments() {
         return ApiResponse.ok(documentService.list());
+    }
+
+    /**
+     * 用新文件替换已有文档的内容。
+     *
+     * <p>与「删了重传」的区别只在一点，但很关键：**document_id 不变**。
+     * 历史对话里的引用快照存的就是这个 id，换成新 id 会让旧引用全部指向不存在的文档。
+     *
+     * <p>用 PUT 而不是 PATCH：这是一次完整替换（文件本体变了，元数据整组重算），
+     * 不是「改个字段」。
+     */
+    @PutMapping(value = "/documents/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<KnowledgeDocumentDto> update(
+            @PathVariable UUID id,
+            @RequestPart("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, "请选择要上传的文件");
+        }
+        try {
+            return ApiResponse.ok(documentService.update(id, file.getOriginalFilename(), file.getBytes()));
+        } catch (IOException ex) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, "读取上传文件失败，请重试");
+        }
     }
 
     /**

@@ -50,6 +50,25 @@ export function uploadDocument(file: File, title?: string): Promise<KnowledgeDoc
   })
 }
 
+/**
+ * 用新文件替换已有文档的内容。
+ *
+ * <p>与「删了重传」的关键区别：**document_id 不变** —— 历史对话里的引用快照存的就是它，
+ * 换 id 会让旧引用全部指向不存在的文档。
+ *
+ * <p>超时与上传一致：同样要重新解析、切分、向量化。
+ */
+export function updateDocument(id: string, file: File): Promise<KnowledgeDocument> {
+  const form = new FormData()
+  form.append('file', file)
+  return requestData<KnowledgeDocument>({
+    url: `/knowledge/documents/${id}`,
+    method: 'put',
+    data: form,
+    timeout: 120_000,
+  })
+}
+
 export interface DeleteDocumentResult {
   deleted: boolean
   deletedChunks: number

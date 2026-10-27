@@ -210,6 +210,83 @@ public class KnowledgeDocumentService {
         return before;
     }
 
+    /**
+     * 用新文件替换已有文档的内容（「更新」而不是「删了重传」）。
+     *
+     * <h2>为什么 id 不变</h2>
+     * 引用快照里存的是 {@code document_id}。如果做成「删除 + 新建」，历史回答里的引用
+     * 会全部指向一个不存在的文档 —— 内容其实还在，只是断了链。
+     *
+     * <h2>顺序与 delete 一致：先删旧向量、再写新向量</h2>
+     * 新旧内容的分块边界完全不同，两批向量混在一个 document_id 下，检索会返回
+     * **已经不存在于文档里的段落** —— 那种回答看起来有出处，点开却对不上。
+     *
+     * <p>中途失败时最坏情况是「文档记录在、向量为空」，用户可以再更新一次；
+     * 反过来（先写新向量再删旧）会留下两代向量混杂，不可恢复。
+     *
+     * <h2>标题跟着文件名走</h2>
+     * 换了一个文件却还显示旧标题，用户会以为没生效。
+     */
+    @Transactional
+    public KnowledgeDocumentDto update(UUID documentId, String originalFilename, byte[] bytes) {
+        KnowledgeDocumentEntity document = requireDocument(documentId);
+
+        String filename = sanitizeFilename(originalFilename);
+        String extension = extensionOf(filename);
+        if (!properties.isExtensionAllowed(extension)) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, String.format(
+                    "不支持的文件类型「%s」，当前仅支持：%s",
+                    extension.isEmpty() ? "(无扩展名)" : extension,
+                    String.join(" / ", properties.allowedExtensions())));
+        }
+        if (bytes == null || bytes.length == 0) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, "文件内容为空");
+        }
+        if (bytes.length > properties.maxFileSizeBytes()) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, String.format(
+                    "文件过大（%d 字节），上限为 %d 字节", bytes.length, properties.maxFileSizeBytes()));
+        }
+
+        String contentType = contentTypeOf(extension);
+        // 先解析再删旧向量：解析失败（损坏文件、扫描版 PDF）时不该动到现有索引
+        List<Document> parsed = readerFactory
+                .create(extension, contentType, bytes, baseMetadata(document))
+                .get();
+        int parsedChars = parsed.stream().mapToInt(entry -> entry.getText().length()).sum();
+        if (parsedChars < properties.minChunkSizeChars()) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
+                    "解析后内容仅 " + parsedChars + " 字符，少于 "
+                            + properties.minChunkSizeChars() + "，无法形成有效分块");
+        }
+        List<Document> chunks = chunk(parsed, documentId);
+        if (chunks.isEmpty()) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, "解析后没有可索引的内容");
+        }
+
+        vectorStore.delete(new FilterExpressionBuilder()
+                .eq(KnowledgeMetadata.DOCUMENT_ID, documentId.toString())
+                .build());
+        int leftover = inspector.countByDocumentId(documentId);
+        if (leftover != 0) {
+            throw new IllegalStateException(String.format(
+                    "旧向量清理未完全生效：document_id=%s 仍残留 %d 条。已回滚本次更新。",
+                    documentId, leftover));
+        }
+
+        try {
+            vectorStore.add(chunks);
+        } catch (RuntimeException ex) {
+            throw translateVectorFailure(ex);
+        }
+
+        document.replaceContent(stripExtension(filename), filename, contentType, bytes.length,
+                parsedChars, chunks.size(), Instant.now());
+        KnowledgeDocumentEntity saved = repository.save(document);
+        log.info("知识文档已更新 id={} filename={} chars={} chunks={}",
+                documentId, filename, parsedChars, chunks.size());
+        return toDto(saved);
+    }
+
     @Transactional(readOnly = true)
     public KnowledgeDocumentEntity requireDocument(UUID documentId) {
         return repository.findById(documentId)

@@ -121,4 +121,23 @@ public class KnowledgeDocumentEntity {
         this.chunkCount = chunkCount;
         this.updatedAt = now;
     }
+
+    /**
+     * 用新文件替换原内容（「更新文档」）。
+     *
+     * <p>id 与创建时间保持不变 —— 引用快照里存的是 document_id，
+     * 换文件后历史回答的引用仍应指向同一份文档（内容变了，但「这是哪份资料」没变）。
+     *
+     * <p>标题与文件名一起更新：用户换了一个文件，界面上还显示旧名字会让人以为没生效。
+     */
+    public void replaceContent(String title, String filename, String contentType,
+                               long sizeBytes, int charCount, int chunkCount, Instant now) {
+        this.title = title;
+        this.filename = filename;
+        this.contentType = contentType;
+        this.sizeBytes = sizeBytes;
+        this.charCount = charCount;
+        this.chunkCount = chunkCount;
+        this.updatedAt = now;
+    }
 }
