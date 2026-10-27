@@ -2,31 +2,23 @@ package com.personalos.chat.service;
 
 import com.personalos.chat.dto.ChatAttachmentDto;
 import com.personalos.chat.dto.ChatCitationDto;
-import com.personalos.chat.entity.ChatMessageEntity;
-import com.personalos.chat.entity.MessageRole;
 import com.personalos.chat.dto.ChatStreamEvents;
 import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.chat.dto.ThinkingLevel;
+import com.personalos.chat.metrics.ChatStreamMetrics;
+import com.personalos.chat.support.SseHeartbeatScheduler;
 import com.personalos.common.ai.AiChatClientProvider;
 import com.personalos.common.ai.ContextBudgetService;
-import com.personalos.common.ai.AiProperties;
-import com.personalos.common.ai.PromptContributor;
-import com.personalos.common.ai.PostTurnContributor;
 import com.personalos.common.ai.ToolContextKeys;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.web.RequestIdFilter;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
-import com.personalos.chat.metrics.ChatStreamMetrics;
-import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.knowledge.spi.KnowledgeSearchPort;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -48,10 +39,20 @@ import reactor.core.scheduler.Schedulers;
  * 流式对话编排：把模型的 {@code Flux<String>} 桥接为 SSE 事件流。
  *
  * <p>不引入 WebFlux —— 项目已是 Spring Web MVC，为单个端点切双栈违反「简单优先」。
- * `SseEmitter` 是 MVC 下推 SSE 的标准做法，而 {@code Flux} 由 Spring AI 的传递依赖提供。
+ * {@code SseEmitter} 是 MVC 下推 SSE 的标准做法，而 {@code Flux} 由 Spring AI 的传递依赖提供。
  *
  * <p>事件契约见 {@code specs/002-ai-chat/contracts/chat-api.md}：
- * {@code start} → {@code delta}* → {@code done}；失败时 {@code error}。
+ * {@code start} → {@code citations} → {@code delta}* → {@code done}；失败时 {@code error}。
+ *
+ * <h2>职责边界（P2 重构后）</h2>
+ * 本类只做**编排**：校验、建流、转发增量、在四种终止路径上做清理。三块相对独立的能力
+ * 已经拆出去，它们各自有独立的变更原因：
+ * <ul>
+ *   <li>{@link ChatPromptAssembler} —— 送给模型的系统提示长什么样；</li>
+ *   <li>{@link ChatTurnFinisher} —— 流完了往库里写什么、按什么顺序写；</li>
+ *   <li>{@link SseHeartbeatScheduler} —— 怎么让连接不被中间设备判定为空闲。</li>
+ * </ul>
+ * 拆之前这个类 500 多行、11 个构造依赖，每加一个横切关注点（心跳、指标、MDC）都往里堆。
  */
 @Service
 public class ChatCompletionService {
@@ -62,36 +63,6 @@ public class ChatCompletionService {
      *  注意：这是「整个流的存活时间上限」，不是首字节超时。 */
     private static final long SSE_TIMEOUT_MILLIS = 120_000L;
 
-    /**
-     * SSE 心跳间隔（毫秒）。
-     *
-     * <h2>为什么必须有心跳</h2>
-     * 思考型模型在首 token 之前可能静默 60 秒以上，而链路上的每一跳都有自己的
-     * 空闲判定：nginx {@code proxy_read_timeout} 默认 60 秒、部分云负载均衡更短。
-     * 一旦触发，连接被单方面掐断，而**服务端不会收到任何错误** —— 日志显示一切正常，
-     * 实际表现却是「流在某处莫名中断」或「前端一直转圈」。
-     *
-     * <p>心跳把「有没有数据」与「模型有没有产出」解耦：只要连接还在，就一直在写字节。
-     */
-    private static final long HEARTBEAT_INTERVAL_MILLIS = 15_000L;
-
-    /**
-     * 心跳调度器。
-     *
-     * <p>不复用 Reactor 的 {@code boundedElastic}：那是给「算数据」的，线程数有限，
-     * 而心跳要贯穿整个流（最长 120 秒）。占着弹性池的线程只为写一行注释帧，不划算。
-     *
-     * <p>直接用 JDK 的守护线程池：进程退出时无需额外关闭，也不必为一个心跳
-     * 引入 Spring {@code TaskScheduler} 的生命周期管理。单用户场景下同时活跃的流
-     * 通常只有一个，两个线程足以覆盖「上一个流正在收尾」的窗口。
-     */
-    private static final ScheduledExecutorService HEARTBEAT_SCHEDULER =
-            Executors.newScheduledThreadPool(2, runnable -> {
-                Thread thread = new Thread(runnable, "sse-heartbeat");
-                thread.setDaemon(true);
-                return thread;
-            });
-
     private static final String EVENT_START = "start";
     private static final String EVENT_DELTA = "delta";
     private static final String EVENT_DONE = "done";
@@ -100,41 +71,28 @@ public class ChatCompletionService {
 
     private final AiChatClientProvider aiProvider;
     private final ChatSessionService sessionService;
-    private final AiProperties aiProperties;
-    private final ObjectProvider<PromptContributor> promptContributors;
+    private final ChatPromptAssembler promptAssembler;
     /** 知识库检索窄接口（阶段 19）。用 ObjectProvider：knowledge 模块的 bean 不在时降级为普通对话 */
     private final ObjectProvider<KnowledgeSearchPort> knowledgeSearch;
-    private final ChatCitationService citationService;
-    private final ChatMessageRepository messageRepository;
-    private final ChatAttachmentService attachmentService;
-    private final ChatSummaryService summaryService;
-    /** 轮末钩子（记忆自动沉淀等）：通过 SPI 收集，chat 不认识具体业务模块 */
-    private final ObjectProvider<PostTurnContributor> postTurnContributors;
+    private final ChatTurnFinisher finisher;
     /** 活跃流数指标：SSE 请求不会快速结束，HTTP 指标看不出「卡住」，只能靠它 */
     private final ChatStreamMetrics metrics;
+    private final SseHeartbeatScheduler heartbeatScheduler;
 
     public ChatCompletionService(AiChatClientProvider aiProvider,
                                  ChatSessionService sessionService,
-                                 AiProperties aiProperties,
-                                 ObjectProvider<PromptContributor> promptContributors,
+                                 ChatPromptAssembler promptAssembler,
                                  ObjectProvider<KnowledgeSearchPort> knowledgeSearch,
-                                 ChatCitationService citationService,
-                                 ChatSummaryService summaryService,
-                                 ObjectProvider<PostTurnContributor> postTurnContributors,
-                                 ChatMessageRepository messageRepository,
-                                 ChatAttachmentService attachmentService,
-                                 ChatStreamMetrics metrics) {
+                                 ChatTurnFinisher finisher,
+                                 ChatStreamMetrics metrics,
+                                 SseHeartbeatScheduler heartbeatScheduler) {
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
-        this.aiProperties = aiProperties;
-        this.promptContributors = promptContributors;
+        this.promptAssembler = promptAssembler;
         this.knowledgeSearch = knowledgeSearch;
-        this.citationService = citationService;
-        this.summaryService = summaryService;
-        this.postTurnContributors = postTurnContributors;
-        this.messageRepository = messageRepository;
-        this.attachmentService = attachmentService;
+        this.finisher = finisher;
         this.metrics = metrics;
+        this.heartbeatScheduler = heartbeatScheduler;
     }
 
     /**
@@ -207,17 +165,17 @@ public class ChatCompletionService {
         };
         // 心跳紧跟 start：模型的静默期正是从这一刻开始的，
         // 晚一步启动就等于把「首 token 之前」这段最长的空窗暴露给代理的空闲判定。
-        ScheduledFuture<?> heartbeat = startHeartbeat(emitter);
+        ScheduledFuture<?> heartbeat = heartbeatScheduler.start(emitter);
 
         Flux<String> contentFlux = Flux.defer(() -> {
             List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter);
             hitsRef.set(hits);
-            String systemPrompt = systemPromptWithContributions(hits, userContent, conversationId);
-            // 上下文用量：系统提示 + 本条用户消息。
-            // 窗口内的历史由 Advisor 在请求链路里装载，这里拿不到原文，
-            // 因此用「窗口条数 × 已存消息的平均长度」估算并在事件里如实标注为估算值。
-            int historyChars = estimateHistoryChars(conversationId);
-            promptCharsRef.set(systemPrompt.length() + userContent.length() + historyChars);
+            String systemPrompt = promptAssembler.assemble(hits, userContent, conversationId);
+            // 上下文用量：本轮系统提示 + 本条用户消息 + 窗口内历史（后两项为估算）。
+            // 历史由 Advisor 在请求链路里装载，这里拿不到原文，
+            // 因此用「窗口条数 × 已存消息的平均长度」逼近并在事件里如实标注为估算值。
+            promptCharsRef.set(systemPrompt.length() + userContent.length()
+                    + promptAssembler.estimateHistoryChars(conversationId));
             ChatClient.ChatClientRequestSpec request = chatClient.prompt()
                     // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                     // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
@@ -251,7 +209,7 @@ public class ChatCompletionService {
                     if (!terminated.compareAndSet(false, true)) {
                         return;
                     }
-                    stopHeartbeat(heartbeat);
+                    heartbeatScheduler.stop(heartbeat);
                     closeStream.run();
                     log.warn("流式对话失败 conversationId={}", conversationId, error);
                     ErrorCode errorCode = classify(error);
@@ -265,77 +223,41 @@ public class ChatCompletionService {
                     }
                     // 心跳先停：后续的落库与钩子都在同一个线程里串行执行，
                     // 期间继续发注释帧只会让「已经结束了」的连接多撑几秒。
-                    stopHeartbeat(heartbeat);
+                    heartbeatScheduler.stop(heartbeat);
                     closeStream.run();
-                    // 引用挂载必须**先于** done 事件（2026-10-26 调整）。
-                    // 原先顺序是「先发 done，再挂引用」，而两者在同一条回调里顺序执行：
-                    // 客户端一收到 done 就可能认为本轮全部结束并去查库，此时引用还没提交 ——
-                    // 集成测试因此间歇性看到 0 条引用（CI 上先炸，本地时序宽松看不出来）。
-                    // 调整后 done 的语义变成「本轮该落的库都落完了」，对客户端也更强。
-                    List<KnowledgeHitDto> hits = hitsRef.get();
-                    if (hits != null && !hits.isEmpty()) {
-                        try {
-                            citationService.attachToLatestAssistant(conversationId, hits);
-                        } catch (RuntimeException ex) {
-                            log.warn("引用挂载失败（不影响本轮回答） conversationId={}", conversationId, ex);
-                        }
-                    }
 
-                    send(emitter, EVENT_DONE,
-                            new ChatStreamEvents.Done(conversationId, fullContent.toString(),
-                                    ContextBudgetService.toTokens(promptCharsRef.get())));
+                    // 引用挂载必须**先于** done 事件（2026-10-26 调整）：
+                    // 客户端一收到 done 就可能认为本轮全部结束并去查库，
+                    // 此时引用还没提交就会看到 0 条。详见 ChatTurnFinisher 的类注释。
+                    finisher.attachCitations(conversationId, hitsRef.get());
+
+                    String reply = fullContent.toString();
+                    send(emitter, EVENT_DONE, new ChatStreamEvents.Done(conversationId, reply,
+                            ContextBudgetService.toTokens(promptCharsRef.get())));
                     emitter.complete();
 
-                    // 附件挂载（阶段 22）：附件属于用户发的那条消息，而它由 Advisor 落库，
-                    // 因此只能在此刻补写 attachments 列 —— 与引用挂载同一时机、同一些约束。
-                    List<ChatAttachmentDto> attachments = attachmentService.verify(requestAttachments);
-                    if (!attachments.isEmpty()) {
-                        try {
-                            messageRepository
-                                    .findFirstByConversationIdAndMessageTypeOrderBySequenceNoDesc(
-                                            conversationId, MessageRole.USER)
-                                    .ifPresent(message -> {
-                                        message.setAttachments(attachmentService.toJson(attachments));
-                                        messageRepository.save(message);
-                                    });
-                        } catch (RuntimeException ex) {
-                            log.warn("附件挂载失败（不影响本轮回答） conversationId={}", conversationId, ex);
-                        }
-                    }
-
-                    // 轮末动作（阶段 22）：摘要刷新与记忆沉淀都只影响**下一轮**，
-                    // 因此一律异步提交，绝不让它们拖住本轮的收尾。
-                    String reply = fullContent.toString();
-                    summaryService.refreshAsync(conversationId);
-                    postTurnContributors.orderedStream().forEach(contributor -> {
-                        try {
-                            contributor.afterTurn(conversationId, userContent, reply);
-                        } catch (RuntimeException ex) {
-                            // SPI 实现若同步抛错，不能影响已经产生的回答
-                            log.warn("轮末钩子执行失败 contributor={} conversationId={}",
-                                    contributor.getClass().getSimpleName(), conversationId, ex);
-                        }
-                    });
+                    // done 之后：附件补写、摘要刷新、轮末钩子（都只影响下一轮或仅用于展示）
+                    finisher.afterDone(conversationId, userContent, reply, requestAttachments);
                 }));
         subscriptionRef.set(subscription);
 
         emitter.onTimeout(() -> {
             terminated.set(true);
-            stopHeartbeat(heartbeat);
+            heartbeatScheduler.stop(heartbeat);
             closeStream.run();
             disposeQuietly(subscriptionRef.get());
             emitter.complete();
         });
         emitter.onError(throwable -> {
             terminated.set(true);
-            stopHeartbeat(heartbeat);
+            heartbeatScheduler.stop(heartbeat);
             closeStream.run();
             disposeQuietly(subscriptionRef.get());
         });
         emitter.onCompletion(() -> {
             // 只有「客户端提前断连」才会走到这里且 terminated 仍为 false；
             // 此时取消上游订阅，避免继续消耗模型额度
-            stopHeartbeat(heartbeat);
+            heartbeatScheduler.stop(heartbeat);
             closeStream.run();
             if (!terminated.get()) {
                 disposeQuietly(subscriptionRef.get());
@@ -346,46 +268,18 @@ public class ChatCompletionService {
     }
 
     /**
-     * 估算窗口内历史的字符数（供上下文仪表盘）。
-     *
-     * <p>为什么是估算：历史由 {@code MessageChatMemoryAdvisor} 在请求链路里装载，
-     * 这个方法拿不到最终窗口的原文。用「该会话全部消息的总字符 ÷ 消息条数 × 窗口条数」
-     * 逼近，误差来自「窗口只取尾部」与「消息长短不均」。
-     *
-     * <p>仪表盘是给用户看趋势的，不是计费用途 —— 所以估算够用，
-     * 且不值得为它把整条请求链路改成可观测。
-     */
-    /**
      * 估算某个会话下一次请求的上下文字符数（仪表盘用）。
      *
      * <p>与流内计算同源，但独立可调：刷新页面后前端拿不到 done 事件，
-     * 需要单独查一次才能显示仪表盘。
+     * 需要单独查一次才能显示仪表盘。实际拼装规则在 {@link ChatPromptAssembler}。
      */
     public int estimatePromptChars(String conversationId) {
-        // 只含系统提示 + 窗口内历史：窗口里已经包含最新的那些消息，
-        // 再单独加一条「最新消息长度」就是重复计算（2026-10-26 修）。
-        // 下一轮用户要发什么这里不可能知道，所以不计入。
-        String systemPrompt = systemPromptWithContributions(List.of(), "", conversationId);
-        return systemPrompt.length() + estimateHistoryChars(conversationId);
+        return promptAssembler.estimatePromptChars(conversationId);
     }
 
     /** 仪表盘口径：估算 token 数（字符 ÷ 1.6） */
     public int estimatePromptTokens(String conversationId) {
         return ContextBudgetService.toTokens(estimatePromptChars(conversationId));
-    }
-
-    private int estimateHistoryChars(String conversationId) {
-        int limit = aiProperties.memory().maxMessages();
-        // 取窗口条数上限内最新的若干条，直接求字符和 —— 就是窗口内历史的字符数。
-        //
-        // 与「条数窗口」完全一致；只有当**字符预算**把窗口裁得更短时，这里会偏大
-        // （裁掉的是更早的消息，而我们统计的是最新的 limit 条，通常不会正好是被裁的那条）。
-        // 这个偏差方向是「偏大」，对仪表盘是安全的：宁可让用户以为快满了，也不要显示假的宽裕。
-        List<ChatMessageEntity> recent = messageRepository
-                .findRecentByConversationId(conversationId, PageRequest.of(0, limit));
-        return (int) recent.stream()
-                .mapToLong(message -> message.getContent() == null ? 0 : message.getContent().length())
-                .sum();
     }
 
     /**
@@ -422,6 +316,22 @@ public class ChatCompletionService {
         return hits;
     }
 
+    /** 检索命中 → citations 事件共用 DTO（编号从 1 开始） */
+    private List<ChatCitationDto> toCitationDtos(List<KnowledgeHitDto> hits) {
+        List<ChatCitationDto> dtos = new ArrayList<>(hits.size());
+        for (int i = 0; i < hits.size(); i++) {
+            KnowledgeHitDto hit = hits.get(i);
+            dtos.add(new ChatCitationDto(
+                    i + 1,
+                    hit.documentId().toString(),
+                    hit.documentTitle(),
+                    hit.filename(),
+                    hit.chunkIndex(),
+                    hit.content()));
+        }
+        return dtos;
+    }
+
     /** 取消上游订阅；null（订阅尚未建立）与重复取消都视为正常。 */
     private void disposeQuietly(Disposable subscription) {
         if (subscription != null && !subscription.isDisposed()) {
@@ -452,123 +362,6 @@ public class ChatCompletionService {
             action.run();
         } finally {
             MDC.remove(RequestIdFilter.MDC_KEY);
-        }
-    }
-
-    /**
-     * 拼装本轮请求的系统提示：基础人设 + 各模块贡献的上下文 + （可选）知识库检索片段。
-     *
-     * <p>为什么不用 {@code defaultSystem}：它只是**默认值**，请求级 {@code system()} 会替换它。
-     * 若只传贡献内容（如记忆块），阶段 1 定下的人设与行为约束会全部丢失 ——
-     * 这类错误不报错，只会让助手"变了个样"，极难从日志发现。
-     *
-     * <p>贡献者为空或返回空串时**不追加任何内容**（连空行都不加），
-     * 保证「没有任何上下文」时的系统提示与阶段 1 逐字符相同。
-     *
-     * <p>知识库片段（阶段 19）追加在最后：编号从 [1] 开始，与 citations 事件、
-     * 落库快照三处编号一致；附带使用约束（引用编号、无依据明说、不得编造）。
-     */
-    /**
-     * 拼装本轮请求的系统提示。
-     *
-     * <p>顺序即优先级：<b>基础人设 → 早前对话摘要 → 各模块上下文（长期记忆等）→ 知识库片段</b>。
-     * 摘要紧跟人设，是因为它回答「这段对话之前发生了什么」，属于对话本身的一部分；
-     * 记忆与检索则是外部知识，排在后面。
-     *
-     * <p>为什么不用 {@code defaultSystem}：它只是**默认值**，请求级 {@code system()} 会替换它。
-     * 若只传贡献内容（如记忆块），阶段 1 定下的人设与行为约束会全部丢失 ——
-     * 这类错误不报错，只会让助手"变了个样"，极难从日志发现。
-     *
-     * <p>各段为空时**不追加任何内容**（连空行都不加），保证「没有任何上下文」时的系统提示
-     * 与阶段 1 逐字符相同。
-     */
-    private String systemPromptWithContributions(List<KnowledgeHitDto> hits, String userInput,
-                                                 String conversationId) {
-        StringBuilder prompt = new StringBuilder(aiProperties.systemPrompt());
-
-        String summary = summaryService.renderForConversation(conversationId);
-        if (!summary.isBlank()) {
-            prompt.append("\n\n").append(summary);
-        }
-
-        promptContributors.orderedStream().forEach(contributor -> {
-            // 传入本轮问题：贡献者据此做相关性筛选（如长期记忆按相关度而非纯时间排序）
-            String contribution = contributor.contribute(userInput);
-            if (contribution != null && !contribution.isBlank()) {
-                prompt.append("\n\n").append(contribution);
-            }
-        });
-        if (hits != null && !hits.isEmpty()) {
-            prompt.append("\n\n").append(buildKnowledgeSection(hits));
-        }
-        return prompt.toString();
-    }
-
-    /** 知识库检索片段的系统提示区块（格式即契约，见 contracts C-01）。 */
-    private String buildKnowledgeSection(List<KnowledgeHitDto> hits) {
-        StringBuilder section = new StringBuilder();
-        section.append("以下内容来自用户的个人知识库检索结果（本轮实时检索）：");
-        for (int i = 0; i < hits.size(); i++) {
-            KnowledgeHitDto hit = hits.get(i);
-            section.append("\n\n[").append(i + 1).append("] 文档《")
-                    .append(nullToDash(hit.documentTitle())).append("》（")
-                    .append(nullToDash(hit.filename())).append("，第 ")
-                    .append(hit.chunkIndex() + 1).append(" 段）\n")
-                    .append(hit.content());
-        }
-        section.append("\n\n使用约束：\n")
-                .append("- 回答必须基于上述内容，引用处标注对应编号，如 [1]\n")
-                .append("- 上述内容没有答案时，明确说明「知识库中没有找到相关内容」，不得编造\n")
-                .append("- 不要复述整段原文，提炼回答");
-        return section.toString();
-    }
-
-    /** 检索命中 → citations 事件 / 落库共用的 DTO（编号从 1 开始）。 */
-    private List<ChatCitationDto> toCitationDtos(List<KnowledgeHitDto> hits) {
-        List<ChatCitationDto> dtos = new ArrayList<>(hits.size());
-        for (int i = 0; i < hits.size(); i++) {
-            KnowledgeHitDto hit = hits.get(i);
-            dtos.add(new ChatCitationDto(
-                    i + 1,
-                    hit.documentId().toString(),
-                    hit.documentTitle(),
-                    hit.filename(),
-                    hit.chunkIndex(),
-                    hit.content()));
-        }
-        return dtos;
-    }
-
-    private String nullToDash(String value) {
-        return value == null || value.isBlank() ? "未命名" : value;
-    }
-
-    /**
-     * 启动心跳：按固定间隔发送 SSE 注释帧。
-     *
-     * <p>用 {@code comment} 而不是自定义事件：注释帧在 SSE 规范里本来就被客户端
-     * **忽略**，因此前端无需任何改动即保持兼容，也不会混进
-     * {@code start → citations → delta* → done} 的事件序列里。
-     *
-     * <p>发送失败只降级为 debug 日志：客户端断开时写响应必然失败，那是正常结束路径之一，
-     * 不该被当成错误刷 warn。真正的清理在各终止回调里完成。
-     *
-     * @return 可取消的句柄，由各终止路径交给 {@link #stopHeartbeat}
-     */
-    private ScheduledFuture<?> startHeartbeat(SseEmitter emitter) {
-        return HEARTBEAT_SCHEDULER.scheduleAtFixedRate(() -> {
-            try {
-                emitter.send(SseEmitter.event().comment("ping"));
-            } catch (IOException | IllegalStateException ex) {
-                log.debug("SSE 心跳发送失败，客户端可能已断开", ex);
-            }
-        }, HEARTBEAT_INTERVAL_MILLIS, HEARTBEAT_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
-    }
-
-    /** 停止心跳；null 与重复取消都视为正常（多条终止路径可能同时触发）。 */
-    private void stopHeartbeat(ScheduledFuture<?> heartbeat) {
-        if (heartbeat != null) {
-            heartbeat.cancel(false);
         }
     }
 
