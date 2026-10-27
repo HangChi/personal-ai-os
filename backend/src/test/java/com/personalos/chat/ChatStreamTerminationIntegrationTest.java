@@ -1,10 +1,14 @@
 package com.personalos.chat;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.personalos.chat.entity.ChatMessageEntity;
 import com.personalos.chat.entity.MessageRole;
 import com.personalos.chat.repository.ChatMessageRepository;
+import com.personalos.chat.support.SseHeartbeatScheduler;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -31,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -123,6 +128,10 @@ class ChatStreamTerminationIntegrationTest {
     private final StubChatModel stub;
     private final ChatMessageRepository messageRepository;
 
+    /** 只用来验证「收尾时把两个定时任务都停掉」，行为仍是真实的调度器 */
+    @MockitoSpyBean
+    SseHeartbeatScheduler heartbeatScheduler;
+
     @Autowired
     ChatStreamTerminationIntegrationTest(@Value("${local.server.port}") int port,
                                          StubChatModel stub,
@@ -187,6 +196,22 @@ class ChatStreamTerminationIntegrationTest {
         assertThat(messages.get(1).getContent())
                 .isEqualTo(StubChatModel.FIRST_CHUNK + StubChatModel.SECOND_CHUNK)
                 .doesNotContain("中断");
+    }
+
+    @Test
+    @DisplayName("正常完成后看门狗必须被取消：否则每条成功的对话都在超时点刷一条假「超时」告警")
+    void watchdogIsCancelledAfterNormalCompletion() throws Exception {
+        stub.slowTail(false);
+        String conversationId = createSession();
+
+        streamEvents(conversationId, "正常一轮");
+
+        // 一个流会注册两件定时任务：心跳 + 超时看门狗。收尾时**两者都要取消**。
+        // 漏掉看门狗的后果不是数据错（terminated 会挡住后续动作），而是超时时限一到
+        // 就刷一条 `流式对话超时` —— 我在真机日志里就是这么发现它的：
+        // 一个 21:58 就正常结束的会话，在 22:00:45 报了一次 120000ms 超时。
+        // 虚假告警的害处是把真超时淹没掉。
+        verify(heartbeatScheduler, times(2)).stop(any());
     }
 
     // ---------------------------------------------------------------- 工具方法

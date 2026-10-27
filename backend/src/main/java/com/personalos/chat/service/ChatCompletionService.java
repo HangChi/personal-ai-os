@@ -295,6 +295,11 @@ public class ChatCompletionService {
         // 模型「连上了但一个字节也不出」正是需要它的场景。
         // 句柄放原子引用里，好让上面的 stopEverything 能引用到它（声明顺序所限）。
         watchdogRef.set(heartbeatScheduler.scheduleOnce(() -> {
+            // 先看是否已经收过尾：正常结束路径会主动取消本任务，但「取消」与「已到点」
+            // 可能擦肩而过。不判这一下，那条假超时警告仍会偶发出现。
+            if (terminated.get()) {
+                return;
+            }
             log.warn("流式对话超时（{}ms，思考档={}） conversationId={}",
                     streamTimeout, thinkingLevel.code(), conversationId);
             failWith.accept(ErrorCode.AI_TIMEOUT, true);
@@ -363,6 +368,10 @@ public class ChatCompletionService {
                     // 心跳先停：后续的落库与钩子都在同一个线程里串行执行，
                     // 期间继续发注释帧只会让「已经结束了」的连接多撑几秒。
                     heartbeatScheduler.stop(heartbeat);
+                    // 看门狗也必须在这里停。漏了这一句的后果不是数据错，
+                    // 而是**每条正常结束的对话都会在超时时限之后刷一条假的「流式对话超时」警告**
+                    // （2026-10-27 真机日志实测踩到）。虚假告警会让真超时被淹没。
+                    heartbeatScheduler.stop(watchdogRef.get());
                     closeStream.run();
 
                     // 引用挂载必须**先于** done 事件（2026-10-26 调整）：
