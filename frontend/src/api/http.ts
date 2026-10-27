@@ -3,12 +3,18 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import { ApiBusinessError, interpretAxiosError, toBusinessError } from '@/api/envelope'
 import { type ApiResponse } from '@/types/api'
 
-/** 后端 API 基路径；开发期由 Vite 代理转发到 http://localhost:8080 */
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
+/**
+ * 后端 API 基路径；开发期由 Vite 代理转发到 http://localhost:8080。
+ *
+ * <p>导出而不是留作模块私有：流式对话用原生 fetch，也要拼同一个前缀。
+ * 两处各读一次 `import.meta.env` 看似等价，但只要有一处被改动就会静默分叉
+ * （表现为「普通接口正常、对话永远 404」）。
+ */
+export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
 
 /** 全局 Axios 实例：统一 baseURL、超时与响应处理 */
 export const http = axios.create({
-  baseURL,
+  baseURL: apiBaseUrl,
   timeout: 10_000,
   // 刻意**不**在这里写死 Content-Type：
   // axios 会为普通对象自动设置 application/json，而写死它会让 FormData 上传带上错误的
@@ -31,6 +37,21 @@ export function setUnauthorizedHandler(handler: () => void): void {
 }
 
 /**
+ * 通知「会话已失效」，触发清登录态并回登录页。
+ *
+ * <p>供两类调用方使用：
+ * <ul>
+ *   <li>本文件的 Axios 拦截器 —— 普通 JSON 请求；</li>
+ *   <li>{@code api/chat.ts} 的 {@code streamChat} —— 它用原生 {@code fetch} 发 POST+SSE，
+ *       拿不到拦截器。若不在那里显式调用，会话过期时只有对话页不会跳登录，
+ *       用户看到一句「未授权」后停在原地，与其它页面的行为不一致。</li>
+ * </ul>
+ */
+export function notifyUnauthorized(): void {
+  unauthorizedHandler?.()
+}
+
+/**
  * 探测类请求的 401 不应触发跳转。
  *
  * <p>`/auth/login` 的 401 是「密码错」，把它当成「会话过期」会让用户在登录页上
@@ -50,7 +71,7 @@ http.interceptors.response.use(
   (error: unknown) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       if (!isAuthProbe(error.config?.url)) {
-        unauthorizedHandler?.()
+        notifyUnauthorized()
       }
     }
     return Promise.reject(interpretAxiosError(error))

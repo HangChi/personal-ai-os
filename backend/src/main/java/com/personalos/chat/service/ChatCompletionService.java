@@ -21,6 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -54,6 +58,36 @@ public class ChatCompletionService {
     /** SSE 超时（毫秒）。超过即关闭连接，避免连接悬挂。
      *  注意：这是「整个流的存活时间上限」，不是首字节超时。 */
     private static final long SSE_TIMEOUT_MILLIS = 120_000L;
+
+    /**
+     * SSE 心跳间隔（毫秒）。
+     *
+     * <h2>为什么必须有心跳</h2>
+     * 思考型模型在首 token 之前可能静默 60 秒以上，而链路上的每一跳都有自己的
+     * 空闲判定：nginx {@code proxy_read_timeout} 默认 60 秒、部分云负载均衡更短。
+     * 一旦触发，连接被单方面掐断，而**服务端不会收到任何错误** —— 日志显示一切正常，
+     * 实际表现却是「流在某处莫名中断」或「前端一直转圈」。
+     *
+     * <p>心跳把「有没有数据」与「模型有没有产出」解耦：只要连接还在，就一直在写字节。
+     */
+    private static final long HEARTBEAT_INTERVAL_MILLIS = 15_000L;
+
+    /**
+     * 心跳调度器。
+     *
+     * <p>不复用 Reactor 的 {@code boundedElastic}：那是给「算数据」的，线程数有限，
+     * 而心跳要贯穿整个流（最长 120 秒）。占着弹性池的线程只为写一行注释帧，不划算。
+     *
+     * <p>直接用 JDK 的守护线程池：进程退出时无需额外关闭，也不必为一个心跳
+     * 引入 Spring {@code TaskScheduler} 的生命周期管理。单用户场景下同时活跃的流
+     * 通常只有一个，两个线程足以覆盖「上一个流正在收尾」的窗口。
+     */
+    private static final ScheduledExecutorService HEARTBEAT_SCHEDULER =
+            Executors.newScheduledThreadPool(2, runnable -> {
+                Thread thread = new Thread(runnable, "sse-heartbeat");
+                thread.setDaemon(true);
+                return thread;
+            });
 
     private static final String EVENT_START = "start";
     private static final String EVENT_DELTA = "delta";
@@ -150,6 +184,9 @@ public class ChatCompletionService {
         AtomicReference<Disposable> subscriptionRef = new AtomicReference<>();
 
         send(emitter, EVENT_START, new ChatStreamEvents.Start(conversationId));
+        // 心跳紧跟 start：模型的静默期正是从这一刻开始的，
+        // 晚一步启动就等于把「首 token 之前」这段最长的空窗暴露给代理的空闲判定。
+        ScheduledFuture<?> heartbeat = startHeartbeat(emitter);
 
         Flux<String> contentFlux = Flux.defer(() -> {
             List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter);
@@ -193,6 +230,7 @@ public class ChatCompletionService {
                     if (!terminated.compareAndSet(false, true)) {
                         return;
                     }
+                    stopHeartbeat(heartbeat);
                     log.warn("流式对话失败 conversationId={}", conversationId, error);
                     ErrorCode errorCode = classify(error);
                     send(emitter, EVENT_ERROR,
@@ -203,6 +241,9 @@ public class ChatCompletionService {
                     if (!terminated.compareAndSet(false, true)) {
                         return;
                     }
+                    // 心跳先停：后续的落库与钩子都在同一个线程里串行执行，
+                    // 期间继续发注释帧只会让「已经结束了」的连接多撑几秒。
+                    stopHeartbeat(heartbeat);
                     // 引用挂载必须**先于** done 事件（2026-10-26 调整）。
                     // 原先顺序是「先发 done，再挂引用」，而两者在同一条回调里顺序执行：
                     // 客户端一收到 done 就可能认为本轮全部结束并去查库，此时引用还没提交 ——
@@ -257,16 +298,19 @@ public class ChatCompletionService {
 
         emitter.onTimeout(() -> {
             terminated.set(true);
+            stopHeartbeat(heartbeat);
             disposeQuietly(subscriptionRef.get());
             emitter.complete();
         });
         emitter.onError(throwable -> {
             terminated.set(true);
+            stopHeartbeat(heartbeat);
             disposeQuietly(subscriptionRef.get());
         });
         emitter.onCompletion(() -> {
             // 只有「客户端提前断连」才会走到这里且 terminated 仍为 false；
             // 此时取消上游订阅，避免继续消耗模型额度
+            stopHeartbeat(heartbeat);
             if (!terminated.get()) {
                 disposeQuietly(subscriptionRef.get());
             }
@@ -445,6 +489,35 @@ public class ChatCompletionService {
 
     private String nullToDash(String value) {
         return value == null || value.isBlank() ? "未命名" : value;
+    }
+
+    /**
+     * 启动心跳：按固定间隔发送 SSE 注释帧。
+     *
+     * <p>用 {@code comment} 而不是自定义事件：注释帧在 SSE 规范里本来就被客户端
+     * **忽略**，因此前端无需任何改动即保持兼容，也不会混进
+     * {@code start → citations → delta* → done} 的事件序列里。
+     *
+     * <p>发送失败只降级为 debug 日志：客户端断开时写响应必然失败，那是正常结束路径之一，
+     * 不该被当成错误刷 warn。真正的清理在各终止回调里完成。
+     *
+     * @return 可取消的句柄，由各终止路径交给 {@link #stopHeartbeat}
+     */
+    private ScheduledFuture<?> startHeartbeat(SseEmitter emitter) {
+        return HEARTBEAT_SCHEDULER.scheduleAtFixedRate(() -> {
+            try {
+                emitter.send(SseEmitter.event().comment("ping"));
+            } catch (IOException | IllegalStateException ex) {
+                log.debug("SSE 心跳发送失败，客户端可能已断开", ex);
+            }
+        }, HEARTBEAT_INTERVAL_MILLIS, HEARTBEAT_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
+    }
+
+    /** 停止心跳；null 与重复取消都视为正常（多条终止路径可能同时触发）。 */
+    private void stopHeartbeat(ScheduledFuture<?> heartbeat) {
+        if (heartbeat != null) {
+            heartbeat.cancel(false);
+        }
     }
 
     /**

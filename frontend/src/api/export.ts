@@ -31,6 +31,17 @@ export function defaultFilename(now: Date = new Date()): string {
 }
 
 /**
+ * 导出请求的独立超时。
+ *
+ * <p>全局实例的 10 秒是给「交互式查询」定的：用户在等，慢就该报错。
+ * 而导出是打包**全部**业务数据，耗时随数据量线性增长 —— 沿用 10 秒的结果是
+ * 「数据多到正好该备份」的那一刻必然失败，而这恰恰是最不该失败的场景。
+ *
+ * <p>仍给上限而不是 0（永不超时）：请求真的挂死时，界面不该一直转圈。
+ */
+const EXPORT_TIMEOUT_MILLIS = 120_000
+
+/**
  * 请求并触发浏览器下载。
  *
  * 顺序是刻意的：**先等请求成功，再创建 ObjectURL**。
@@ -40,7 +51,10 @@ export function defaultFilename(now: Date = new Date()): string {
  * @returns 实际使用的文件名
  */
 export async function downloadExport(): Promise<string> {
-  const response = await http.get('/export', { responseType: 'blob' })
+  const response = await http.get('/export', {
+    responseType: 'blob',
+    timeout: EXPORT_TIMEOUT_MILLIS,
+  })
   const filename = resolveFilename(response.headers['content-disposition'] as string | undefined, defaultFilename())
 
   const url = URL.createObjectURL(response.data as Blob)

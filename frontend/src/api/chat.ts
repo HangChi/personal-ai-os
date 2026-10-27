@@ -1,4 +1,4 @@
-import { requestData } from '@/api/http'
+import { apiBaseUrl, notifyUnauthorized, requestData } from '@/api/http'
 import type { ApiResponse } from '@/types/api'
 import type { ChatAttachment, ChatCitation, ChatMessage, ChatSession, PageDto } from '@/types/api'
 import { http } from '@/api/http'
@@ -110,12 +110,33 @@ export interface StreamChatOptions {
   thinkingLevel?: ThinkingLevel
   /** 附件名片（阶段 22）：发送前已上传拿到标识，随消息一起持久化 */
   attachments?: ChatAttachment[]
+  /**
+   * 空闲超时（毫秒），缺省 60 秒。
+   *
+   * <p>暴露成参数只为两件事：单测要在毫秒级验证超时分支；部署在空闲判定更严格的
+   * 反向代理后面时可以整体调小。业务调用方不应传它。
+   */
+  idleTimeoutMs?: number
 }
 
 function streamUrl(conversationId: string): string {
-  const base = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
-  return `${base}/chat/sessions/${conversationId}/stream`
+  return `${apiBaseUrl}/chat/sessions/${conversationId}/stream`
 }
+
+/**
+ * 流式响应的空闲上限：连续这么久没收到**任何字节**即判定连接已死。
+ *
+ * <p>为什么必须有这条：`reader.read()` 在「连接被中间设备静默丢弃」时不会 reject ——
+ * 它会一直挂着，因为 TCP 没收到 RST。界面上表现为「永远转圈」，用户除了刷新别无他法。
+ * 服务端每 15 秒发一次注释帧（见 `ChatCompletionService#startHeartbeat`），
+ * 因此正常情况下 60 秒必然有字节到达；超过它只能是链接真的断了。
+ *
+ * <p>取 60 而不是更长：思考型模型的静默期由心跳兜住，这里只需识别「心跳也没了」。
+ */
+const STREAM_IDLE_TIMEOUT_MILLIS = 60_000
+
+/** 空闲超时的统一文案（与后端 error 事件的语气一致） */
+const IDLE_TIMEOUT_MESSAGE = '连接超时：服务器长时间没有响应，请重试'
 
 /**
  * 发起流式对话并手工解析 SSE 帧。
@@ -147,59 +168,117 @@ export async function streamChat(
   if (options?.attachments !== undefined && options.attachments.length > 0) {
     payload.attachments = options.attachments
   }
-  const response = await fetch(streamUrl(conversationId), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-    body: JSON.stringify(payload),
-    signal,
-  })
+  // 内部 controller：既承载空闲超时的中止，也把调用方的 signal 转发进来。
+  // 不直接 abort 外部 signal —— 那是调用方的对象，且我们还需要区分
+  // 「用户主动停止」（静默）与「连接超时」（要给提示）两种中止原因。
+  const idleController = new AbortController()
+  const idleLimit = options?.idleTimeoutMs ?? STREAM_IDLE_TIMEOUT_MILLIS
+  let idleTimedOut = false
+  let idleTimer: ReturnType<typeof setTimeout> | undefined
 
-  if (!response.ok) {
-    handlers.onError(await readErrorMessage(response))
-    return
-  }
-  if (!response.body) {
-    handlers.onError('当前浏览器不支持流式响应')
-    return
-  }
-
-  const reader = response.body.getReader()
-  const decoder = new TextDecoder('utf-8')
-  let buffer = ''
-  let currentEvent = ''
-  const dataLines: string[] = []
-
-  const flush = () => {
-    if (dataLines.length > 0) {
-      dispatchEvent(currentEvent, dataLines.join('\n'), handlers)
-      dataLines.length = 0
+  const clearIdleTimer = (): void => {
+    if (idleTimer !== undefined) {
+      clearTimeout(idleTimer)
+      idleTimer = undefined
     }
-    currentEvent = ''
   }
 
-  for (;;) {
-    const { done, value } = await reader.read()
-    if (done) {
-      break
-    }
-    buffer += decoder.decode(value, { stream: true })
+  /** 重新计时：每收到一批字节就重置，只有「彻底安静」才会触发 */
+  const armIdleTimer = (): void => {
+    clearIdleTimer()
+    idleTimer = setTimeout(() => {
+      idleTimedOut = true
+      idleController.abort()
+    }, idleLimit)
+  }
 
-    let newlineIndex = buffer.indexOf('\n')
-    while (newlineIndex >= 0) {
-      const line = buffer.slice(0, newlineIndex).replace(/\r$/, '')
-      buffer = buffer.slice(newlineIndex + 1)
-      if (line === '') {
-        // 空行 = 事件边界
-        flush()
-      } else if (line.startsWith('event:')) {
-        currentEvent = line.slice('event:'.length).trim()
-      } else if (line.startsWith('data:')) {
-        dataLines.push(line.slice('data:'.length).trim())
+  const forwardAbort = (): void => idleController.abort()
+  if (signal) {
+    if (signal.aborted) {
+      idleController.abort()
+    } else {
+      signal.addEventListener('abort', forwardAbort, { once: true })
+    }
+  }
+
+  // 覆盖「等响应头」阶段：服务端在返回 emitter 之前要做校验，
+  // 这段时间同样可能被中间设备静默掐断，不能只在读流时才计时。
+  armIdleTimer()
+
+  try {
+    const response = await fetch(streamUrl(conversationId), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+      body: JSON.stringify(payload),
+      signal: idleController.signal,
+    })
+
+    if (!response.ok) {
+      // 401 必须走与 Axios 拦截器相同的登出链路：本请求用原生 fetch 发起，
+      // 不经过 http.ts 的拦截器。不在这里通知的话，会话过期时只有对话页停在原地，
+      // 而其它页面都会自动回登录页。
+      if (response.status === 401) {
+        notifyUnauthorized()
       }
-      newlineIndex = buffer.indexOf('\n')
+      handlers.onError(await readErrorMessage(response))
+      return
     }
+    if (!response.body) {
+      handlers.onError('当前浏览器不支持流式响应')
+      return
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+    let buffer = ''
+    let currentEvent = ''
+    const dataLines: string[] = []
+
+    const flush = (): void => {
+      if (dataLines.length > 0) {
+        dispatchEvent(currentEvent, dataLines.join('\n'), handlers)
+        dataLines.length = 0
+      }
+      currentEvent = ''
+    }
+
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+      // 任何字节（含服务端心跳的注释帧）都算「链路还活着」
+      armIdleTimer()
+      buffer += decoder.decode(value, { stream: true })
+
+      let newlineIndex = buffer.indexOf('\n')
+      while (newlineIndex >= 0) {
+        const line = buffer.slice(0, newlineIndex).replace(/\r$/, '')
+        buffer = buffer.slice(newlineIndex + 1)
+        if (line === '') {
+          // 空行 = 事件边界
+          flush()
+        } else if (line.startsWith('event:')) {
+          currentEvent = line.slice('event:'.length).trim()
+        } else if (line.startsWith('data:')) {
+          dataLines.push(line.slice('data:'.length).trim())
+        }
+        // 其余（如心跳的 `: ping` 注释帧）按 SSE 规范忽略
+        newlineIndex = buffer.indexOf('\n')
+      }
+    }
+    flush()
+  } catch (cause) {
+    if (idleTimedOut) {
+      // 是我们自己掐断的：转成可读文案，不把 AbortError 抛给调用方
+      handlers.onError(IDLE_TIMEOUT_MESSAGE)
+      return
+    }
+    throw cause
+  } finally {
+    clearIdleTimer()
+    signal?.removeEventListener('abort', forwardAbort)
   }
-  flush()
 }
 
 function dispatchEvent(eventName: string, payload: string, handlers: StreamHandlers): void {

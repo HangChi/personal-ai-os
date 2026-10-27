@@ -67,6 +67,16 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 PLAIN_CHUNKS = ["这是", "来自", "本地模拟模型", "的流式回复。"]
 FINAL_TEXT = "已完成你的请求。"
 
+# 每个 SSE 帧之间的人为延迟（秒），默认 0 —— 正常联调不该变慢。
+#
+# 设为正值是为了验证**长流**：后端的 SSE 心跳间隔是 15 秒，而模拟模型输出
+# 通常在 1 秒内结束，那样永远看不到心跳帧，也就无法确认它真的被刷出去了。
+#
+#     python3 scripts/dev/mock-openai-server.py --chunk-delay-ms 2000
+#
+# 配合 PLAIN_CHUNKS 的四段内容，整条流会持续约 8 秒以上，足以跨过心跳周期。
+CHUNK_DELAY_SECONDS = 0.0
+
 # 必须与迁移里的 vector(1024) 一致，否则应用启动期的维度守卫会直接失败
 EMBEDDING_DIMENSIONS = 1024
 
@@ -151,6 +161,9 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(payload)
         self.wfile.write(b"\r\n")
         self.wfile.flush()
+        # 放在 flush 之后：先让客户端真的收到这一帧，延迟才代表「模型在思考」
+        if CHUNK_DELAY_SECONDS > 0:
+            time.sleep(CHUNK_DELAY_SECONDS)
 
     def _sse(self, obj) -> None:
         self._write_chunk(("data: %s\n\n" % json.dumps(obj, ensure_ascii=False)).encode("utf-8"))
@@ -340,7 +353,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="最小 OpenAI 兼容流式服务（仅供开发验证）")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=9099)
+    parser.add_argument(
+        "--chunk-delay-ms",
+        type=int,
+        default=0,
+        help="每个 SSE 帧之间人为延迟的毫秒数（验证长流与心跳用，默认 0）",
+    )
     args = parser.parse_args()
+
+    global CHUNK_DELAY_SECONDS
+    CHUNK_DELAY_SECONDS = max(args.chunk_delay_ms, 0) / 1000.0
 
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print("mock OpenAI-compatible server listening on http://%s:%d" % (args.host, args.port))

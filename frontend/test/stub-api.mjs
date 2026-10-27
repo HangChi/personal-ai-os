@@ -18,6 +18,29 @@ export function requestData(config) {
 
 export const http = {}
 
+/** 与真实 http.ts 同名同值：流式对话用它拼 URL */
+export const apiBaseUrl = '/api/v1'
+
+let unauthorizedCount = 0
+
+/**
+ * 401 通知的桩。
+ *
+ * <p>计数而不是空实现：本轮修复的核心就是「流式请求也必须走到这条链路」，
+ * 断言计数是唯一能在没有 DOM 的情况下证明它被调用的方式。
+ */
+export function notifyUnauthorized() {
+  unauthorizedCount += 1
+}
+
+export function unauthorizedCallCount() {
+  return unauthorizedCount
+}
+
+export function resetUnauthorized() {
+  unauthorizedCount = 0
+}
+
 export class ApiBusinessError extends Error {
   constructor(code, message) {
     super(message)
