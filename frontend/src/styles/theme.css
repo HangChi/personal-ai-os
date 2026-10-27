@@ -110,6 +110,29 @@
   --el-text-color-placeholder: #6f7684;
   --el-text-color-disabled: #b9bfc9;
 
+  /*
+   * 主色实底上的前景色（阶段 24）：亮色主色 #4f46e5 很深，白字有 6.4:1，达标。
+   * 暗色下主色会变亮，这个值必须反过来写成深色 —— 见 html.dark 段的同名变量。
+   * 成对定义，供主按钮与用户聊天气泡共用，避免两处各写一个色值。
+   */
+  --os-on-primary: #ffffff;
+
+  /*
+   * 代码块配色（阶段 24）。
+   *
+   * 原先代码块**没有自己的底色**：`.md__body pre code { background: none }`
+   * （0-1-2）把 hljs 主题 `.hljs { background: #fff }`（0-1-0）压掉了，
+   * 于是它一直靠外层白卡片「借」来的白底，看起来正常 —— 直到把它放进
+   * 主色实底的用户气泡，才暴露出「语法高亮直接压在蓝底上」的 1.37:1。
+   *
+   * 现在独立定义：代码块永远是「浅色卡片」（暗色下是深色卡片），
+   * 不跟随气泡反色。这样无论放在什么底色上，语法着色都成立。
+   */
+  --os-code-bg: #ffffff;
+  --os-code-header-bg: #f6f8fa;
+  --os-code-border: #e4e8ee;
+  --os-code-muted: #57606a;
+
   --el-border-color: #d8dce4;
   --el-border-color-light: #e3e7ee;
   --el-border-color-lighter: #eceff4;
@@ -514,6 +537,22 @@ html.dark {
 
   /* 暗色下主按钮用提亮后的主色，白字对比不足 → 改深字 */
   --el-button-text-color: var(--el-text-color-primary);
+
+  /*
+   * 主色实底上的前景色（阶段 24）。
+   *
+   * 亮色主色 #4f46e5 很深，白字有 6.4:1，没问题；
+   * 但暗色主色是**提亮**后的 #818cf8，白字只有 2.98:1 —— 几乎看不清。
+   * 这是「暗色主题下深色语义要反过来」的又一处体现（同主按钮）。
+   * 单独提成变量，供主按钮与用户聊天气泡共用，避免两处各写一个色值。
+   */
+  --os-on-primary: #16182a;
+
+  /* 代码块在暗色下用 highlight.js github-dark 的底与头部色，保持与语法着色同一体系 */
+  --os-code-bg: #0d1117;
+  --os-code-header-bg: #161b22;
+  --os-code-border: #30363d;
+  --os-code-muted: #8b949e;
 }
 
 html.dark .el-button--primary:not(.is-plain):not(.is-text):not(.is-link) {

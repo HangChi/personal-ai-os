@@ -22,11 +22,17 @@
   --os-space-7: 32px;
   --os-space-8: 40px;
 
-  /* ---- 圆角（收敛实测的 6/8/10px 三档；12 给弹窗与大卡）---- */
+  /*
+   * 圆角（收敛实测的 6/8/10px 三档；12 给弹窗与大卡）。
+   * xs / 2xl 是阶段 24 为聊天气泡补的：气泡的「尖角」要小到能读出方向（4px），
+   * 主体要大到显出柔和（16px）——用 sm(6) / lg(10) 组合会两头顶不上。
+   */
+  --os-radius-xs: 4px;
   --os-radius-sm: 6px;
   --os-radius-md: 8px;
   --os-radius-lg: 10px;
   --os-radius-xl: 12px;
+  --os-radius-2xl: 16px;
 
   /*
    * 阴影。EP 的 box-shadow 变量偏向浮层，卡片需要更轻的一档。
@@ -35,6 +41,11 @@
   --os-shadow-card: 0 1px 2px 0 rgb(31 45 61 / 4%), 0 1px 3px 0 rgb(31 45 61 / 6%);
   --os-shadow-card-hover: 0 4px 12px 0 rgb(31 45 61 / 8%), 0 2px 4px 0 rgb(31 45 61 / 6%);
   --os-shadow-popup: 0 8px 24px 0 rgb(31 45 61 / 12%), 0 2px 6px 0 rgb(31 45 61 / 8%);
+  /**
+   * 气泡阴影：比 card 再轻一档。气泡是「贴在同色底上的浮片」，
+   * 只需要一点脱离感；用 card 那档会显脏（实测多层叠加后发灰）。
+   */
+  --os-shadow-bubble: 0 1px 2px 0 rgb(31 45 61 / 5%);
 
   /* ---- 字体节奏（收敛实测 12/13/14 三档；15/16/17/22/26/32 给标题与数字）---- */
   --os-font-xs: 12px;
@@ -75,4 +86,6 @@ html.dark {
   --os-shadow-card: 0 1px 2px 0 rgb(0 0 0 / 20%), 0 1px 3px 0 rgb(0 0 0 / 24%);
   --os-shadow-card-hover: 0 4px 12px 0 rgb(0 0 0 / 32%), 0 2px 4px 0 rgb(0 0 0 / 24%);
   --os-shadow-popup: 0 8px 24px 0 rgb(0 0 0 / 40%), 0 2px 6px 0 rgb(0 0 0 / 28%);
+  /* 暗色下阴影几乎不可见，抬高透明度让它仍能「托起」气泡（否则气泡与底融为一体） */
+  --os-shadow-bubble: 0 1px 3px 0 rgb(0 0 0 / 32%);
 }

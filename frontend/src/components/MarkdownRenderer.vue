@@ -338,12 +338,21 @@ function toggleExpand(): void {
 
 /* ---- 代码块：头部条（语言 + 复制）+ pre（阶段 20，FR-005）---- */
 
+/*
+ * 代码块底色用 --os-code-* 而不是 EP 的 fill 变量（阶段 24）。
+ *
+ * 这里原本没有底色：`.md__body pre code { background: none }`（0-1-2）
+ * 压掉了 hljs 主题的 `.hljs { background: #fff }`（0-1-0），
+ * 于是代码块一直靠外层白卡片「借」来的白 —— 放进主色实底的用户气泡后，
+ * 语法高亮直接压在主色上，实测 1.37:1，几乎看不清。
+ * 改成独立令牌后，代码块无论放在什么底色上都是「一块浅色卡片」。
+ */
 .md__body :deep(.md-code) {
   margin: var(--os-space-2) 0;
-  border: 1px solid var(--el-border-color-lighter);
+  border: 1px solid var(--os-code-border);
   border-radius: var(--os-radius-md);
   overflow: hidden;
-  /* hljs 主题画 pre 的底色，头部条用界面色 —— 两段视觉分开 */
+  background: var(--os-code-bg);
 }
 
 .md__body :deep(.md-code__header) {
@@ -351,22 +360,22 @@ function toggleExpand(): void {
   align-items: center;
   justify-content: space-between;
   padding: 4px 10px;
-  background: var(--el-fill-color-light);
-  border-bottom: 1px solid var(--el-border-color-lighter);
+  background: var(--os-code-header-bg);
+  border-bottom: 1px solid var(--os-code-border);
 }
 
 .md__body :deep(.md-code__lang) {
-  color: var(--el-text-color-secondary);
+  color: var(--os-code-muted);
   font-size: var(--os-font-xs);
   font-family: 'SFMono-Regular', Consolas, monospace;
 }
 
 .md__body :deep(.md-code__copy) {
   padding: 1px 8px;
-  border: 1px solid var(--el-border-color-lighter);
+  border: 1px solid var(--os-code-border);
   border-radius: var(--os-radius-sm);
-  background: var(--el-bg-color);
-  color: var(--el-text-color-secondary);
+  background: var(--os-code-bg);
+  color: var(--os-code-muted);
   font-size: var(--os-font-xs);
   cursor: pointer;
   transition:
@@ -384,7 +393,14 @@ function toggleExpand(): void {
   padding: var(--os-space-2) var(--os-space-3);
   border-radius: 0;
   overflow-x: auto;
+  background: var(--os-code-bg);
   font-size: var(--os-font-xs);
   line-height: 1.6;
+}
+
+/* 代码正文必须吃掉 hljs 主题自带的白底，否则会在上面盖出第二层浅色块 */
+.md__body :deep(.md-code pre code),
+.md__body :deep(.md-code .hljs) {
+  background: transparent;
 }
 </style>

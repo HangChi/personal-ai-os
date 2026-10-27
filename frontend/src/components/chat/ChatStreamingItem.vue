@@ -25,15 +25,23 @@ defineProps<{
       <el-icon :size="14"><ChatLineRound /></el-icon>
     </span>
     <div class="chat-streaming__content">
-      <!-- 首 token 前：三点打字动画（检索中附状态文字） -->
-      <div v-if="!content" class="chat-streaming__typing">
-        <span class="chat-streaming__dot" />
-        <span class="chat-streaming__dot" />
-        <span class="chat-streaming__dot" />
-        <span v-if="hint" class="chat-streaming__hint">{{ hint }}</span>
+      <!--
+        首 token 前：三点打字动画装在同一个气泡里（阶段 24）。
+        改造前它裸露在页面上，与首 token 到达后的助手气泡形态不一致 ——
+        生成开始的一瞬间会「跳」一下。现在两者共用同一套气泡外观。
+      -->
+      <div v-if="!content" class="chat-streaming__bubble">
+        <div class="chat-streaming__typing">
+          <span class="chat-streaming__dot" />
+          <span class="chat-streaming__dot" />
+          <span class="chat-streaming__dot" />
+          <span v-if="hint" class="chat-streaming__hint">{{ hint }}</span>
+        </div>
       </div>
       <template v-else>
-        <MarkdownRenderer :content="content" streaming />
+        <div class="chat-streaming__bubble">
+          <MarkdownRenderer :content="content" streaming />
+        </div>
         <div v-if="hint" class="chat-streaming__hint chat-streaming__hint--below">{{ hint }}</div>
       </template>
     </div>
@@ -52,28 +60,59 @@ defineProps<{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   margin-top: 2px;
   border-radius: 50%;
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
+  box-shadow: inset 0 0 0 1px var(--el-color-primary-light-7);
 }
 
 .chat-streaming__content {
   min-width: 0;
   flex: 1;
-  font-size: var(--os-font-sm);
-  line-height: 1.75;
+  font-size: var(--os-font-md);
+  line-height: 1.72;
+}
+
+/*
+ * 气泡外观必须与 ChatMessageItem 的 .chat-msg__bubble--assistant 完全一致，
+ * 否则首 token 到达时会出现「形态跳变」。
+ * 这两处是同一份视觉契约，改动时请成对修改（无共享组件，刻意的：
+ * 流式态需要一个「打字点也能装进来」的变体，抽公共组件反而要加条件分支）。
+ */
+.chat-streaming__bubble {
+  padding: 0.75em 1em;
+  border-radius: var(--os-radius-2xl);
+  border-bottom-left-radius: var(--os-radius-xs);
+  background: var(--el-bg-color);
+  box-shadow: var(--os-shadow-bubble);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.chat-streaming__bubble :deep(.md__body) {
+  font-size: var(--os-font-md);
+  line-height: 1.72;
+}
+
+.chat-streaming__bubble :deep(.md__body > :first-child) {
+  margin-top: 0;
+}
+
+.chat-streaming__bubble :deep(.md__body > :last-child) {
+  margin-bottom: 0;
 }
 
 /* ---- 流式打字动画（阶段 20，FR-004） ---- */
 
+/* 气泡已给内边距，这里只留一点点上下让三点视觉居中，不再叠 padding */
 .chat-streaming__typing {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: var(--os-space-2) 0;
+  padding: 2px 0;
 }
 
 .chat-streaming__dot {

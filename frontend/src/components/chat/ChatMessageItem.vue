@@ -137,13 +137,17 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
   justify-content: flex-end;
 }
 
+/*
+ * 头像 32px（原 28px）：气泡圆角提到 16px 后，28px 的头像显得头轻脚重。
+ * 32 与气泡内边距（1em≈14px）加起来正好对齐首行文字的中线。
+ */
 .chat-msg__avatar {
   flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   margin-top: 2px;
   border-radius: 50%;
 }
@@ -151,11 +155,15 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 .chat-msg__avatar--assistant {
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
+  /* 一圈同色系细边：白底气泡上，纯浅色圆点会「飘」，加边后成为明确锚点 */
+  box-shadow: inset 0 0 0 1px var(--el-color-primary-light-7);
 }
 
+/* 用户头像与气泡同为实底主色，改用白底主色图标避免「两团同色块糊在一起」 */
 .chat-msg__avatar--user {
-  background: var(--el-color-primary);
-  color: var(--el-color-white);
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+  box-shadow: inset 0 0 0 1px var(--el-color-primary-light-7);
 }
 
 /*
@@ -180,28 +188,97 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 }
 
 .chat-msg__bubble {
-  padding: var(--os-space-3) var(--os-space-4);
-  border-radius: var(--os-radius-lg);
+  /*
+   * 内边距按「行」算，不按固定值：单行消息上下留 10px 就够，多行则需要 14px
+   * 才不显闷。用 em 让它随字号缩放，正文字号调整时不用再改这里。
+   */
+  padding: 0.75em 1em;
+  border-radius: var(--os-radius-2xl);
   /* 气泡内的 Markdown 自带段距，这里不再叠一层 */
   width: fit-content;
   max-width: 100%;
 }
 
 /*
- * 助手气泡：浅填充底，不加边框。
- * 改造前助手消息**没有容器**——文字直接铺在页面白底上，与背景糊成一片，
- * 是「对话页很丑」最主要的一条。给一层 fill 之后，用户/助手、引用、正文的边界才分明。
+ * 助手气泡：白底 + 极轻阴影，不加边框。
+ *
+ * 改造前是「浅灰底 #f6f7fa + 1px 边框 #eceff4」——底色与卡片白只差 1.03:1，
+ * 等于靠一根几乎看不见的线撑边界，读起来是「灰扑扑的一块」。双重弱化不如单点强化：
+ * 白底让内容自己立住，阴影给一层脱离感。暗色下底色由 --el-bg-color 自动换成深色。
  */
 .chat-msg__bubble--assistant {
-  background: var(--el-fill-color-light);
-  border: 1px solid var(--el-border-color-lighter);
+  background: var(--el-bg-color);
+  box-shadow: var(--os-shadow-bubble);
   /* 圆角朝向头像那一侧收窄：气泡的「尖角」暗示说话人方向 */
-  border-bottom-left-radius: var(--os-radius-sm);
+  border-bottom-left-radius: var(--os-radius-xs);
 }
 
+/*
+ * 用户气泡：主色实底 + 高对比前景。
+ *
+ * 改造前是「浅主色底 + 深字」，与助手气泡同属浅色系，两者只靠色相区分——
+ * 一屏里十几轮往返时，视觉上分不出「谁在说话」。改成实底后：
+ * ①方向一眼可辨 ②自己说的话自然成为视觉重点（这是对话里最常回看的内容）。
+ *
+ * 前景色用 --os-on-primary 而不是写死 #fff：暗色主色是**提亮**后的 #818cf8，
+ * 白字只有 2.98:1（实测），必须配深字。这个变量在两套主题下各有一个正确值。
+ */
+.chat-msg__bubble--user {
+  background: var(--el-color-primary);
+  color: var(--os-on-primary);
+  border-bottom-right-radius: var(--os-radius-xs);
+}
+
+/*
+ * 用户气泡内的 Markdown 要整体反色。
+ *
+ * 规则不能只写 color —— MarkdownRenderer 里有 19 处 var(--el-*) 取色
+ * （行内代码底、引用块底、表格边框、链接色……），它们全按「浅底深字」调的。
+ * 直接套实底会出现「深底上的浅灰行内代码」这类几乎看不见的组合，
+ * 因此把这些变量在气泡作用域内就地重绑。
+ *
+ * 半透明白而不是另配一组实色：换主色时自动跟随，不用维护第二套调色板。
+ */
+.chat-msg__bubble--user :deep(.md__body) {
+  color: var(--os-on-primary);
+  --el-text-color-primary: var(--os-on-primary);
+  --el-text-color-regular: rgb(255 255 255 / 92%);
+  --el-text-color-secondary: rgb(255 255 255 / 78%);
+  --el-text-color-placeholder: rgb(255 255 255 / 62%);
+  --el-fill-color: rgb(255 255 255 / 18%);
+  --el-fill-color-light: rgb(255 255 255 / 14%);
+  --el-fill-color-lighter: rgb(255 255 255 / 10%);
+  --el-border-color-lighter: rgb(255 255 255 / 24%);
+  --el-border-color-light: rgb(255 255 255 / 30%);
+  /* 链接与强调：主色在白底上是深蓝，在实底上必须提亮才看得见 */
+  --el-color-primary: var(--os-on-primary);
+  --el-color-primary-light-5: rgb(255 255 255 / 55%);
+}
+
+/*
+ * 暗色例外：主色实底变亮（#818cf8）后，上面那套「半透明白」全部失效 ——
+ * 白字压亮底本来就只有 2.98:1，再半透明更看不见。暗色下改用「半透明黑」。
+ */
+html.dark .chat-msg__bubble--user :deep(.md__body) {
+  --el-text-color-regular: rgb(22 24 42 / 88%);
+  --el-text-color-secondary: rgb(22 24 42 / 72%);
+  --el-text-color-placeholder: rgb(22 24 42 / 56%);
+  --el-fill-color: rgb(22 24 42 / 12%);
+  --el-fill-color-light: rgb(22 24 42 / 10%);
+  --el-fill-color-lighter: rgb(22 24 42 / 6%);
+  --el-border-color-lighter: rgb(22 24 42 / 18%);
+  --el-border-color-light: rgb(22 24 42 / 24%);
+  --el-color-primary-light-5: rgb(22 24 42 / 50%);
+}
+
+/*
+ * 代码块不需要在这里特判：它已改用 --os-code-* 独立令牌（见 MarkdownRenderer），
+ * 永远是「一块浅色卡片」，放在实底气泡上会自动成立。
+ */
+
 .chat-msg__bubble :deep(.md__body) {
-  font-size: var(--os-font-sm);
-  line-height: 1.75;
+  font-size: var(--os-font-md);
+  line-height: 1.72;
 }
 
 .chat-msg__bubble :deep(.md__body > :first-child) {
@@ -210,18 +287,6 @@ const emit = defineEmits<{ (e: 'copy', content: string): void }>()
 
 .chat-msg__bubble :deep(.md__body > :last-child) {
   margin-bottom: 0;
-}
-
-/*
- * 用户气泡：浅主色底 + 主文本色。
- * 改造前是「浅蓝底 + 主色蓝字」，蓝字落在浅蓝底上对比度不足，长句读起来发虚；
- * 换成深色文字后对比度足够，同时保留主色底以区分说话方。
- */
-.chat-msg__bubble--user {
-  background: var(--el-color-primary-light-9);
-  border: 1px solid var(--el-color-primary-light-7);
-  color: var(--el-text-color-primary);
-  border-bottom-right-radius: var(--os-radius-sm);
 }
 
 /* 悬停操作行：默认隐形，不抢版面（FR-003） */
