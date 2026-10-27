@@ -1,5 +1,6 @@
 package com.personalos.calendar.dto;
 
+import com.personalos.calendar.config.CalendarProperties;
 import com.personalos.calendar.entity.RecurrenceType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -45,6 +46,7 @@ public record CreateEventRequest(
         Instant recurrenceUntil,
 
         @Min(value = 0, message = "提前提醒量不能为负")
-        @Max(value = 10080, message = "提前提醒量不能超过 7 天（10080 分钟）")
+        @Max(value = CalendarProperties.MAX_REMINDER_LEAD_MINUTES,
+                message = "提前提醒量不能超过 7 天（10080 分钟）")
         Integer reminderLeadMinutes) {
 }

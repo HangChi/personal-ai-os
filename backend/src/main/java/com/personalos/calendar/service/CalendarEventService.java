@@ -8,6 +8,7 @@ import com.personalos.calendar.dto.UpdateEventRequest;
 import com.personalos.calendar.entity.CalendarEventEntity;
 import com.personalos.calendar.entity.RecurrenceType;
 import com.personalos.calendar.entity.ReminderSource;
+import com.personalos.calendar.entity.ReminderStatus;
 import com.personalos.calendar.recurrence.RecurrenceCalculator;
 import com.personalos.calendar.repository.CalendarEventRepository;
 import com.personalos.calendar.repository.ReminderRepository;
@@ -146,7 +147,18 @@ public class CalendarEventService {
         }
 
         event.touch(now);
-        return toDto(eventRepository.save(event));
+        CalendarEventDto dto = toDto(eventRepository.save(event));
+
+        // 提醒是「标题 + 发生时刻 + 提前量」的快照，来源变了就必须重建，
+        // 否则：改时间照常弹旧时间（还会多弹一条新的）、改标题弹旧标题、
+        // 改提前量则因为 UPSERT 是 DO NOTHING 而完全不生效。
+        // 只删 PENDING：已读记录是「确实提醒过」的历史，删了会让它被重新物化、重复打扰。
+        int cleared = reminderRepository.deleteBySourceAndStatus(
+                ReminderSource.CALENDAR_EVENT, id, ReminderStatus.PENDING);
+        if (cleared > 0) {
+            log.info("日程已更新 id={}，清理待提醒 {} 条，下一轮扫描按新规则重建", id, cleared);
+        }
+        return dto;
     }
 
     /**

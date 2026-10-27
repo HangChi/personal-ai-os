@@ -10,6 +10,7 @@ import com.personalos.common.api.ErrorCode;
 import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
+import com.personalos.common.search.SearchPatterns;
 import com.personalos.common.text.Texts;
 import java.time.Instant;
 import java.util.List;
@@ -146,11 +147,12 @@ public class ChatSessionService {
     @Transactional(readOnly = true)
     public PageDto<ChatSessionDto> search(ChatSessionQuery query) {
         Specification<ChatSessionEntity> spec = (root, criteriaQuery, builder) -> {
-            if (query.keyword() == null) {
+            if (query.keyword() == null || query.keyword().isBlank()) {
                 return builder.conjunction();
             }
-            String pattern = "%" + query.keyword().strip().toLowerCase() + "%";
-            return builder.like(builder.lower(root.get("title")), pattern);
+            // 走 SearchPatterns：小写化 + 通配符转义，与全局搜索口径一致
+            String pattern = SearchPatterns.likePattern(query.keyword());
+            return builder.like(builder.lower(root.get("title")), pattern, SearchPatterns.ESCAPE);
         };
 
         PageRequest pageRequest = PageRequest.of(query.page(), query.size(),

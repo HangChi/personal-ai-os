@@ -28,6 +28,16 @@ public record CalendarProperties(
         int defaultQueryLimit,
         int maxQueryLimit) {
 
+    /**
+     * 提前量的上限（分钟），7 天。**单一来源**：DTO 的 {@code @Max} 与扫描窗口都取这个值。
+     *
+     * <p>为什么必须是常量而不是各写一个数：提前量大于扫描窗口时，提醒会晚到。
+     * 曾经 DTO 写 {@code @Max(10080)}、窗口固定 24h —— 建一个「5 天后、提前 7 天提醒」的
+     * 日程，要等它进入 24h 窗口才被物化，此时 {@code remind_at} 已经过去 6 天，
+     * 提醒既晚到、一出现又是过期态，且没有任何报错。
+     */
+    public static final int MAX_REMINDER_LEAD_MINUTES = 10_080;
+
     private static final long DEFAULT_SCAN_INTERVAL_MS = 60_000L;
     private static final long DEFAULT_SCAN_INITIAL_DELAY_MS = 10_000L;
     private static final Duration DEFAULT_LOOKAHEAD = Duration.ofHours(24);
@@ -62,6 +72,19 @@ public record CalendarProperties(
         if (maxQueryLimit <= 0 || maxQueryLimit > MAX_QUERY_LIMIT) {
             maxQueryLimit = MAX_QUERY_LIMIT;
         }
+    }
+
+    /**
+     * 日程提醒扫描实际使用的前瞻窗口：至少覆盖最长提前量。
+     *
+     * <p>提醒时刻 = 发生时刻 − 提前量。若窗口比提前量短，发生时刻要到「窗口边缘」才被物化，
+     * 那时提醒时刻早已过去 —— 用户收到的是一条晚到数天的提醒。
+     * 因此取 {@code max(scanLookahead, MAX_REMINDER_LEAD_MINUTES)}，让「配置的窗口」与
+     * 「提前量上限」不可能互相矛盾，而不是要求运维去记住两者的大小关系。
+     */
+    public Duration effectiveScanLookahead() {
+        Duration longestLead = Duration.ofMinutes(MAX_REMINDER_LEAD_MINUTES);
+        return scanLookahead.compareTo(longestLead) >= 0 ? scanLookahead : longestLead;
     }
 
     /**

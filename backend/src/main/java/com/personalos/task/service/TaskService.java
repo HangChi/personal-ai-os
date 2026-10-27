@@ -4,6 +4,7 @@ import com.personalos.common.api.ErrorCode;
 import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
+import com.personalos.common.search.SearchPatterns;
 import com.personalos.common.text.Texts;
 import com.personalos.task.TaskTags;
 import com.personalos.task.dto.CreateTaskRequest;
@@ -270,10 +271,13 @@ public class TaskService {
                 predicates.add(builder.equal(root.get("status"), query.status()));
             }
             if (StringUtils.hasText(query.keyword())) {
-                String pattern = "%" + query.keyword().strip().toLowerCase() + "%";
+                // 与全局搜索同一套口径：小写化 + 转义通配符。内联拼接会让搜 "100%"
+                // 命中「100 之后任意字符」、搜 "_" 命中全库。
+                String pattern = SearchPatterns.likePattern(query.keyword());
                 predicates.add(builder.or(
-                        builder.like(builder.lower(root.get("title")), pattern),
-                        builder.like(builder.lower(builder.coalesce(root.get("description"), "")), pattern)));
+                        builder.like(builder.lower(root.get("title")), pattern, SearchPatterns.ESCAPE),
+                        builder.like(builder.lower(builder.coalesce(root.get("description"), "")),
+                                pattern, SearchPatterns.ESCAPE)));
             }
             if (query.tag() != null) {
                 // join 到 element collection：同一任务里同一个标签只会存一条，

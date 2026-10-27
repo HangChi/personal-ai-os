@@ -28,10 +28,67 @@ class ChatAttachmentServiceTest {
 
     private ChatAttachmentService service;
 
+    /** 与 application.yml 的默认值一致（6MB）；上限本身有独立用例 */
+    private static final long DEFAULT_MAX_BYTES = 6L * 1024 * 1024;
+
     @BeforeEach
     void setUp() {
-        service = new ChatAttachmentService(new JsonCodec(JsonMapper.builder().build()),
-                tempDir.toString());
+        service = newService(DEFAULT_MAX_BYTES);
+    }
+
+    private ChatAttachmentService newService(long maxAttachmentBytes) {
+        return new ChatAttachmentService(new JsonCodec(JsonMapper.builder().build()),
+                tempDir.toString(), maxAttachmentBytes);
+    }
+
+    @Test
+    @DisplayName("store(): 上限是 KB 级时，提示也按 KB 说，不会写成「0MB」")
+    void describesKilobyteLimit() {
+        ChatAttachmentService small = newService(1024);
+
+        assertThatThrownBy(() -> small.store(new MockMultipartFile("file", "a.txt", "text/plain",
+                "x".repeat(2000).getBytes())))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("1KB");
+    }
+
+    @Test
+    @DisplayName("store(): 默认 6MB 上限的提示是 6MB（与 application.yml 一致）")
+    void describesMegabyteLimit() {
+        assertThatThrownBy(() -> service.store(new MockMultipartFile("file", "huge.bin",
+                "application/octet-stream", new byte[(int) DEFAULT_MAX_BYTES + 1])))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("6MB");
+    }
+
+    @Test
+    @DisplayName("store(): 超长 / 带换行的文件名不影响落盘（日志里的名字会被清洗限长）")
+    void acceptsHostileFilename() {
+        // 文件名来自客户端：含 \n 可伪造日志整行，超长会把一行日志撑爆。
+        // 落盘用 UUID，所以这里只验证「能存下来且元数据保留原名」。
+        String hostile = "a\nb".repeat(200) + ".txt";
+
+        ChatAttachmentDto dto = service.store(new MockMultipartFile("file", hostile, "text/plain",
+                "内容".getBytes()));
+
+        assertThat(dto.filename()).isEqualTo(hostile);
+        assertThat(Files.exists(tempDir.resolve(dto.id()))).isTrue();
+    }
+
+    @Test
+    @DisplayName("store(): 超过配置的上限即拒绝，提示里的数字来自配置而不是写死的 20MB")
+    void rejectsFileLargerThanConfiguredLimit() {
+        // 上限 8 字节：让「应用层先于容器拦下」这件事在单元测试里可验证。
+        // 曾经应用层写死 20MB、容器只放 6MB，7~20MB 的文件在进控制器前就被拒，
+        // 用户按提示压缩到 10MB 仍然失败 —— 因为真实门槛是 6MB。
+        ChatAttachmentService small = newService(8);
+
+        MockMultipartFile file = new MockMultipartFile("file", "big.txt",
+                "text/plain", "0123456789".getBytes());
+
+        assertThatThrownBy(() -> small.store(file))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("8 字节");
     }
 
     @Test

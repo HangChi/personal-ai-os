@@ -39,16 +39,25 @@ public class ChatAttachmentService {
 
     private static final Logger log = LoggerFactory.getLogger(ChatAttachmentService.class);
 
-    /** 单文件大小上限：20MB。再大就更像「文件管理」而不是聊天附件 */
-    private static final long MAX_SIZE = 20L * 1024 * 1024;
+    /**
+     * 单文件大小上限：由 {@code app.chat.max-attachment-bytes} 驱动，默认 6MB。
+     *
+     * <p><b>为什么不再写死 20MB</b>：容器层的 {@code spring.servlet.multipart.max-file-size}
+     * 是真正的第一道闸门。两处各写一个数时它们会漂移——之前应用层写 20MB、容器写 6MB，
+     * 7~20MB 的文件在进控制器之前就被容器拒掉，用户按"20MB"的提示压缩到 10MB 仍然失败。
+     * 现在容器留出余量（见 application.yml），应用层永远是先判的那一个。
+     */
+    private final long maxAttachmentBytes;
 
     private final Path uploadDir;
     private final JsonCodec jsonCodec;
 
     public ChatAttachmentService(JsonCodec jsonCodec,
-                                 @Value("${app.chat.upload-dir:data/uploads}") String uploadDir) {
+                                 @Value("${app.chat.upload-dir:data/uploads}") String uploadDir,
+                                 @Value("${app.chat.max-attachment-bytes:6291456}") long maxAttachmentBytes) {
         this.jsonCodec = jsonCodec;
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
+        this.maxAttachmentBytes = maxAttachmentBytes;
     }
 
     /**
@@ -61,9 +70,9 @@ public class ChatAttachmentService {
         if (file == null || file.isEmpty()) {
             throw new BusinessException(com.personalos.common.api.ErrorCode.VALIDATION_FAILED, "文件为空");
         }
-        if (file.getSize() > MAX_SIZE) {
+        if (file.getSize() > maxAttachmentBytes) {
             throw new BusinessException(com.personalos.common.api.ErrorCode.VALIDATION_FAILED,
-                    "文件不能超过 20MB");
+                    "文件不能超过 " + describeLimit(maxAttachmentBytes));
         }
         String id = UUID.randomUUID().toString();
         String filename = file.getOriginalFilename() == null ? id : file.getOriginalFilename();
@@ -79,7 +88,9 @@ public class ChatAttachmentService {
         String contentType = file.getContentType() == null
                 ? "application/octet-stream"
                 : file.getContentType();
-        log.info("附件已保存 id={} 文件名={} 大小={}", id, filename, file.getSize());
+        // 文件名来自客户端，含 \r\n 时能在日志里伪造出整行（例如伪装成一条"登录成功"）。
+        // 只做控制字符替换，不改写真实名字。
+        log.info("附件已保存 id={} 文件名={} 大小={}", id, sanitizeForLog(filename), file.getSize());
         return new ChatAttachmentDto(id, filename, contentType, file.getSize());
     }
 
@@ -220,5 +231,25 @@ public class ChatAttachmentService {
             log.warn("附件快照解析失败，按无附件处理：{}", ex.getMessage());
             return List.of();
         }
+    }
+
+    /** 把上限写成人能读的单位；不是整 MB/KB 时回落成字节数，避免出现「不能超过 0MB」 */
+    private static String describeLimit(long bytes) {
+        if (bytes >= 1024 * 1024 && bytes % (1024 * 1024) == 0) {
+            return (bytes / 1024 / 1024) + "MB";
+        }
+        if (bytes >= 1024 && bytes % 1024 == 0) {
+            return (bytes / 1024) + "KB";
+        }
+        return bytes + " 字节";
+    }
+
+    /** 把日志里的控制字符替换掉；同时限长，避免超长文件名把一行日志撑爆 */
+    private static String sanitizeForLog(String value) {
+        if (value == null) {
+            return "";
+        }
+        String cleaned = value.replaceAll("[\\r\\n\\t]", "_");
+        return cleaned.length() <= 200 ? cleaned : cleaned.substring(0, 200) + "…";
     }
 }

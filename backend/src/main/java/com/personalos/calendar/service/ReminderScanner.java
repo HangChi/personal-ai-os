@@ -30,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
  * <h2>窗口为什么两端都要外扩</h2>
  * <ul>
  *   <li><b>向前看（lookahead）</b>：提醒时刻 = 发生时刻 − 提前量。若提前量大于窗口长度，
- *       那么「已经该提醒、但发生时刻还在窗口外」的日程会被漏掉。窗口必须覆盖提前量。</li>
+ *       那么「已经该提醒、但发生时刻还在窗口外」的日程会被漏掉。窗口必须覆盖提前量 ——
+ *       所以日程用的是 {@code effectiveScanLookahead()}（= max(lookahead, 最长提前量)），
+ *       而不是配置里的 lookahead 本身。</li>
  *   <li><b>向后看（lookback）</b>：应用停机期间到点的提醒，重启后仍要补上。
  *       回看窗口决定了能弥补多久的停机 —— 默认 24 小时，足以覆盖日常重启；
  *       刻意不设成一周：补发一周前的提醒只会制造噪音，而不是「更不丢数据」。</li>
@@ -73,6 +75,11 @@ public class ReminderScanner {
     public ReminderScanResult scan(Instant now) {
         Instant windowStart = now.minus(properties.scanLookback());
         Instant windowEnd = now.plus(properties.scanLookahead());
+        // 日程用「至少覆盖最长提前量」的窗口（见 CalendarProperties#effectiveScanLookahead）。
+        // 任务仍用常规窗口：任务的提前量只有 defaultReminderLead（十几分钟），
+        // 而把任务窗口也拉到 7 天会凭空物化一批远期提醒，让「接下来会提醒什么」的列表
+        // 塞满下周才到期的东西。
+        Instant eventWindowEnd = now.plus(properties.effectiveScanLookahead());
 
         int created = 0;
         int skipped = 0;
@@ -86,11 +93,11 @@ public class ReminderScanner {
 
         // ① 日程：窗口内每一次发生都物化（含尚未到点的，便于用户提前看到「接下来会提醒什么」）
         List<CalendarEventEntity> events =
-                eventRepository.findCandidates(windowStart, windowEnd, RecurrenceType.NONE);
+                eventRepository.findCandidates(windowStart, eventWindowEnd, RecurrenceType.NONE);
         for (CalendarEventEntity event : events) {
             long leadSeconds = event.getReminderLeadMinutes() * 60L;
             List<Instant> occurrences = calculator.occurrences(event.getRecurrenceType(),
-                    event.getStartsAt(), event.getRecurrenceUntil(), windowStart, windowEnd);
+                    event.getStartsAt(), event.getRecurrenceUntil(), windowStart, eventWindowEnd);
             for (Instant occurrence : occurrences) {
                 Instant remindAt = occurrence.minusSeconds(leadSeconds);
                 int inserted = reminderRepository.insertIfAbsent(
@@ -120,8 +127,9 @@ public class ReminderScanner {
         }
 
         if (created > 0) {
-            log.info("提醒扫描完成 window=[{}, {}] 新增={} 已存在={} events={} tasks={}",
-                    windowStart, windowEnd, created, skipped, events.size(), dueTasks.size());
+            log.info("提醒扫描完成 window=[{}, {}] eventWindow=[{}, {}] 新增={} 已存在={} events={} tasks={}",
+                    windowStart, windowEnd, windowStart, eventWindowEnd,
+                    created, skipped, events.size(), dueTasks.size());
         } else {
             log.debug("提醒扫描完成 window=[{}, {}] 新增=0 已存在={}", windowStart, windowEnd, skipped);
         }

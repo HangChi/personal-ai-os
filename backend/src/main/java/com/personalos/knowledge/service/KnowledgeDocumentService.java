@@ -4,6 +4,7 @@ import com.personalos.common.api.ErrorCode;
 import com.personalos.common.api.PageDto;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
+import com.personalos.common.search.SearchPatterns;
 import com.personalos.knowledge.KnowledgeMetadata;
 import com.personalos.knowledge.config.KnowledgeProperties;
 import com.personalos.knowledge.dto.KnowledgeDocumentDto;
@@ -44,6 +45,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class KnowledgeDocumentService {
 
     private static final Logger log = LoggerFactory.getLogger(KnowledgeDocumentService.class);
+
+    /** 与 {@code knowledge_document.title} 的 length 一致；超长截断而不是让插入炸成 500 */
+    private static final int TITLE_MAX_LENGTH = 300;
+
+    /** 与 {@code knowledge_document.filename} 的 length 一致 */
+    private static final int FILENAME_MAX_LENGTH = 300;
 
     private final KnowledgeDocumentRepository repository;
     private final VectorStore vectorStore;
@@ -92,9 +99,7 @@ public class KnowledgeDocumentService {
         Instant now = Instant.now();
         String contentType = contentTypeOf(extension);
         String documentTitle = (title == null || title.isBlank()) ? stripExtension(filename) : title.strip();
-        if (documentTitle.length() > 300) {
-            documentTitle = documentTitle.substring(0, 300);
-        }
+        documentTitle = truncateTitle(documentTitle);
 
         // 先落文档记录以取得 id —— 向量元数据需要它，而元数据必须在写入向量前就准备好
         KnowledgeDocumentEntity document = repository.save(new KnowledgeDocumentEntity(
@@ -158,13 +163,15 @@ public class KnowledgeDocumentService {
     @Transactional(readOnly = true)
     public PageDto<KnowledgeDocumentDto> search(KnowledgeDocumentQuery query) {
         Specification<KnowledgeDocumentEntity> spec = (root, criteriaQuery, builder) -> {
-            if (query.keyword() == null) {
+            if (query.keyword() == null || query.keyword().isBlank()) {
                 return builder.conjunction();
             }
-            String pattern = "%" + query.keyword().strip().toLowerCase(Locale.ROOT) + "%";
+            // 走 SearchPatterns：它负责小写化与 % _ \ 的转义。
+            // 之前这里自己拼 "%" + keyword + "%"，搜 "100%" 会命中「100 之后任意字符」。
+            String pattern = SearchPatterns.likePattern(query.keyword());
             return builder.or(
-                    builder.like(builder.lower(root.get("title")), pattern),
-                    builder.like(builder.lower(root.get("filename")), pattern));
+                    builder.like(builder.lower(root.get("title")), pattern, SearchPatterns.ESCAPE),
+                    builder.like(builder.lower(root.get("filename")), pattern, SearchPatterns.ESCAPE));
         };
 
         PageRequest pageRequest = PageRequest.of(query.page(), query.size(),
@@ -248,9 +255,15 @@ public class KnowledgeDocumentService {
         }
 
         String contentType = contentTypeOf(extension);
+        // 标题与文件名必须**先算出新值**再构造向量元数据。
+        // 这里曾经直接用 baseMetadata(document)：那时 document 还是更新前的实体，
+        // 于是写进向量的是旧标题/旧文件名，检索引用和 ask 的来源名永远显示旧名字，
+        // 而且没有任何入口能修正（除非再传一次同名文件）。
+        String newTitle = truncateTitle(stripExtension(filename));
+        Map<String, Object> metadata = metadataFor(documentId, newTitle, filename);
         // 先解析再删旧向量：解析失败（损坏文件、扫描版 PDF）时不该动到现有索引
         List<Document> parsed = readerFactory
-                .create(extension, contentType, bytes, baseMetadata(document))
+                .create(extension, contentType, bytes, metadata)
                 .get();
         int parsedChars = parsed.stream().mapToInt(entry -> entry.getText().length()).sum();
         if (parsedChars < properties.minChunkSizeChars()) {
@@ -279,7 +292,9 @@ public class KnowledgeDocumentService {
             throw translateVectorFailure(ex);
         }
 
-        document.replaceContent(stripExtension(filename), filename, contentType, bytes.length,
+        // 用同一个 newTitle 落库：向量元数据与实体标题必须是同一个值，
+        // 否则「引用显示的名字」与「文档列表里的名字」会对不上
+        document.replaceContent(newTitle, filename, contentType, bytes.length,
                 parsedChars, chunks.size(), Instant.now());
         KnowledgeDocumentEntity saved = repository.save(document);
         log.info("知识文档已更新 id={} filename={} chars={} chunks={}",
@@ -296,10 +311,20 @@ public class KnowledgeDocumentService {
     // ------------------------------------------------------------------ 内部
 
     private Map<String, Object> baseMetadata(KnowledgeDocumentEntity document) {
+        return metadataFor(document.getId(), document.getTitle(), document.getFilename());
+    }
+
+    /**
+     * 显式给定标题与文件名的元数据构造。
+     *
+     * <p>文档替换必须用这个重载：调用时实体还没更新，从实体取值只能拿到旧名字，
+     * 而元数据会被固化进向量，检索引用就永远显示旧标题。
+     */
+    private Map<String, Object> metadataFor(UUID documentId, String title, String filename) {
         Map<String, Object> metadata = new LinkedHashMap<>();
-        metadata.put(KnowledgeMetadata.DOCUMENT_ID, document.getId().toString());
-        metadata.put(KnowledgeMetadata.DOCUMENT_TITLE, document.getTitle());
-        metadata.put(KnowledgeMetadata.FILENAME, document.getFilename());
+        metadata.put(KnowledgeMetadata.DOCUMENT_ID, documentId.toString());
+        metadata.put(KnowledgeMetadata.DOCUMENT_TITLE, title);
+        metadata.put(KnowledgeMetadata.FILENAME, filename);
         return metadata;
     }
 
@@ -383,7 +408,24 @@ public class KnowledgeDocumentService {
         String normalized = originalFilename.replace('\\', '/');
         int slash = normalized.lastIndexOf('/');
         String filename = slash >= 0 ? normalized.substring(slash + 1) : normalized;
-        return filename.isBlank() ? "untitled.txt" : filename;
+        if (filename.isBlank()) {
+            return "untitled.txt";
+        }
+        // 列宽 300（见 V4）。超长文件名不截断的话，插入时抛 DataIntegrityViolation，
+        // 用户看到的是「服务器内部错误」——而真正的信息是「名字太长」。
+        // 截断时保住扩展名：它决定后续用哪个解析器。
+        if (filename.length() > FILENAME_MAX_LENGTH) {
+            int dot = filename.lastIndexOf('.');
+            String extension = dot > 0 && filename.length() - dot <= 10 ? filename.substring(dot) : "";
+            int keep = Math.max(1, FILENAME_MAX_LENGTH - extension.length());
+            filename = filename.substring(0, keep) + extension;
+        }
+        return filename;
+    }
+
+    /** 标题列宽（见 {@code knowledge_document.title} 的 length） */
+    private static String truncateTitle(String title) {
+        return title.length() <= TITLE_MAX_LENGTH ? title : title.substring(0, TITLE_MAX_LENGTH);
     }
 
     /**

@@ -32,10 +32,17 @@ public record PageDto<T>(List<T> items, int page, int size, long total) {
     public static <T> PageDto<T> of(List<T> all, int page, int size) {
         int effectivePage = Math.max(page, 0);
         int effectiveSize = Math.max(size, 1);
-        int from = effectivePage * effectiveSize;
-        List<T> items = from >= all.size()
-                ? List.of()
-                : List.copyOf(all.subList(from, Math.min(from + effectiveSize, all.size())));
-        return new PageDto<>(items, effectivePage, effectiveSize, all.size());
+        // 用 long 计算起点：`page * size` 以 int 相乘时，page=21474837、size=100
+        // 会溢出成负数，`from >= all.size()` 判不出来，subList 收到负下标直接抛
+        // IndexOutOfBoundsException —— 一条构造出来的查询参数就能稳定打出 500。
+        long from = (long) effectivePage * effectiveSize;
+        if (from >= all.size()) {
+            // 越界页返回空列表，而不是报错：翻到太后面是正常的用户行为
+            return new PageDto<>(List.of(), effectivePage, effectiveSize, all.size());
+        }
+        // 此处 from < all.size()，必然落在 int 范围内，转换安全
+        int start = (int) from;
+        int end = (int) Math.min(from + effectiveSize, all.size());
+        return new PageDto<>(List.copyOf(all.subList(start, end)), effectivePage, effectiveSize, all.size());
     }
 }

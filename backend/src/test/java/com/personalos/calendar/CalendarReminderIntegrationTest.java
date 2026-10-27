@@ -9,6 +9,7 @@ import com.personalos.calendar.dto.CalendarOccurrenceDto;
 import com.personalos.calendar.dto.CreateEventRequest;
 import com.personalos.calendar.dto.ReminderDto;
 import com.personalos.calendar.dto.ReminderScanResult;
+import com.personalos.calendar.dto.UpdateEventRequest;
 import com.personalos.calendar.entity.RecurrenceType;
 import com.personalos.calendar.entity.ReminderSource;
 import com.personalos.calendar.recurrence.RecurrenceCalculator;
@@ -380,6 +381,76 @@ class CalendarReminderIntegrationTest {
     }
 
     // ------------------------------------------------------------------ SC-007：删除清理
+
+    @Test
+    @DisplayName("修改日程后 PENDING 提醒被清理并按新规则重建：不会同时收到旧时间与新时间两条")
+    void updatingEventRebuildsPendingReminders() {
+        Instant now = Instant.now();
+        UUID eventId = createEvent("周会", now.minus(1, ChronoUnit.MINUTES),
+                now.plus(30, ChronoUnit.MINUTES), 15);
+        scanner.scan(now);
+        assertThat(reminderRepository.countBySourceTypeAndSourceId(ReminderSource.CALENDAR_EVENT, eventId))
+                .isEqualTo(1);
+
+        Instant moved = now.plus(3, ChronoUnit.HOURS);
+        eventService.update(eventId, new UpdateEventRequest(
+                "周会（改期）", null, null, false,
+                moved, moved.plus(30, ChronoUnit.MINUTES),
+                null, null, null, 15));
+
+        // 提醒是快照：不清掉旧的，下一轮扫描会再插一条新的，
+        // 用户会同时收到「旧时间」与「新时间」两条提醒，而且旧标题也会照旧弹出
+        assertThat(reminderRepository.countBySourceTypeAndSourceId(ReminderSource.CALENDAR_EVENT, eventId))
+                .as("修改后旧提醒应被清理，等下一轮扫描重建")
+                .isZero();
+
+        scanner.scan(now);
+
+        List<ReminderDto> all = reminderService.list(null, false, null).stream()
+                .filter(reminder -> eventId.equals(reminder.sourceId()))
+                .toList();
+        assertThat(all).as("重建后只应有一条").hasSize(1);
+        assertThat(all.get(0).title()).isEqualTo("周会（改期）");
+        assertThat(Instants.sameAtStoragePrecision(all.get(0).occurrenceAt(), moved)).isTrue();
+    }
+
+    @Test
+    @DisplayName("已读的提醒不会因为改日程被删掉重发")
+    void updatingEventKeepsReadReminders() {
+        Instant now = Instant.now();
+        UUID eventId = createEvent("已读过的会", now.minus(1, ChronoUnit.MINUTES),
+                now.plus(30, ChronoUnit.MINUTES), 15);
+        scanner.scan(now);
+        UUID reminderId = reminderService.list(null, true, null).get(0).id();
+        reminderService.markRead(reminderId);
+
+        eventService.update(eventId, new UpdateEventRequest(
+                "已读过的会", null, null, false, null, null, null, null, null, 30));
+
+        // 已读记录是「确实提醒过」的历史事实；删掉它会让同一发生时刻被重新物化，
+        // 用户会再收到一条本该已经读过的提醒
+        assertThat(reminderRepository.findById(reminderId))
+                .as("已读提醒必须保留")
+                .isPresent();
+    }
+
+    @Test
+    @DisplayName("提前 7 天的提醒立刻物化：扫描窗口必须覆盖最大提前量，否则会晚到数天")
+    void longLeadReminderIsMaterializedImmediately() {
+        Instant now = Instant.now();
+        Instant startsAt = now.plus(5, ChronoUnit.DAYS);
+        createEvent("五天后的会", startsAt, startsAt.plus(1, ChronoUnit.HOURS),
+                CalendarProperties.MAX_REMINDER_LEAD_MINUTES);
+
+        ReminderScanResult result = scanner.scan(now);
+
+        assertThat(result.created()).as("窗口内应物化出该日程的提醒").isEqualTo(1);
+        // 提醒时刻 = 5 天后 − 7 天 = 2 天前，所以它**现在就该是到点的**。
+        // 若扫描窗口仍是 24h，这条要等到事件前一天才出现，且一出现就已过期 —— 晚 6 天。
+        assertThat(reminderService.list(null, true, null))
+                .as("提前量大于扫描窗口时，提醒不该晚到")
+                .anyMatch(reminder -> reminder.title().equals("五天后的会"));
+    }
 
     @Test
     @DisplayName("删除日程时它的提醒一并删除，条数为 0（SC-007）")

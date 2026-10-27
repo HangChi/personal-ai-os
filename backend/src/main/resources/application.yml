@@ -18,12 +18,18 @@ spring:
         # 权衡与残余风险见 SecurityConfig 类注释与 README。
         same-site: lax
         http-only: true
+        # 会话 cookie 只在 HTTPS 上回传。默认 false 是为了本地 http://localhost 能登录；
+        # **开启认证并对公网提供服务时必须设为 true**（反代强制 HTTPS 时同样要开），
+        # 否则 JSESSIONID 会随明文请求发出，而 CSRF 又是关闭的 —— 拿到会话即拿到全部权限。
+        # 启动期会在 app.auth.enabled=true 且此处为 false 时打一条 WARN（见 SecurityConfig）。
+        secure: ${SESSION_COOKIE_SECURE:false}
     multipart:
-      # 必须大于应用层的 5 MiB 上限，否则超限文件会在进入控制器之前
-      # 被容器以 500 拒绝，用户看到的是"服务器错误"而不是"文件过大"。
-      # 应用层校验负责给出可读提示，容器层只做最后一道兜底。
-      max-file-size: 6MB
-      max-request-size: 8MB
+      # 容器层上限必须**大于**应用层的上限，否则超限文件在进入控制器之前就被拒，
+      # 用户看到的是容器层文案，应用层那句更可读的提示永远走不到。
+      # 当前应用层上限：知识库 5MB（app.knowledge.max-file-size-bytes）、
+      # 聊天附件 6MB（app.chat.max-attachment-bytes）。这里留 2MB 余量。
+      max-file-size: 8MB
+      max-request-size: 10MB
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:55432}/${POSTGRES_DB:personal_ai_os}
@@ -138,6 +144,12 @@ app:
   name: personal-ai-os
   # 由 Maven 资源过滤在构建时替换为 pom 中的 version
   version: @project.version@
+  chat:
+    # 聊天附件的落盘位置（相对路径按工作目录解析，即 backend/data/uploads）
+    upload-dir: ${AI_CHAT_UPLOAD_DIR:data/uploads}
+    # 单个附件的大小上限。**与 spring.servlet.multipart.max-file-size 成对调整**：
+    # 容器必须比这里更大，否则应用层的可读提示永远走不到（见下方 multipart 注释）。
+    max-attachment-bytes: ${AI_CHAT_MAX_ATTACHMENT_BYTES:6291456}
   auth:
     # 访问控制（阶段 15）。默认关闭：本地单用户开箱即用，现有测试也依赖这一点。
     # 对公网开放前务必设为 true 并配置密码 —— 开启后 /api/v1/** 全部需要登录。

@@ -4,6 +4,9 @@ import com.personalos.common.api.ApiResponse;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.json.JsonCodec;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -43,6 +46,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+
     /**
      * 始终放行的路径。
      *
@@ -62,9 +67,17 @@ public class SecurityConfig {
     private final AuthProperties properties;
     private final JsonCodec jsonCodec;
 
-    public SecurityConfig(AuthProperties properties, JsonCodec jsonCodec) {
+    public SecurityConfig(AuthProperties properties, JsonCodec jsonCodec,
+                          @Value("${server.servlet.session.cookie.secure:false}") boolean cookieSecure) {
         this.properties = properties;
         this.jsonCodec = jsonCodec;
+        if (properties.enabled() && !cookieSecure) {
+            // 不拦启动（本地 http://localhost 也要能登录），但必须在日志里说清楚：
+            // 这是「开了认证却仍可能被旁路」的唯一配置组合
+            log.warn("已开启访问控制，但会话 Cookie 未设置 Secure（SESSION_COOKIE_SECURE=false）。"
+                    + "若通过明文 HTTP 访问，JSESSIONID 会随之发出；对公网提供服务时"
+                    + "请置于 HTTPS 反代之后并设置 SESSION_COOKIE_SECURE=true。");
+        }
     }
 
     @Bean

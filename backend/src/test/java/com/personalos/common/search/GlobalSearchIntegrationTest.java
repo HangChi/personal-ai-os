@@ -205,6 +205,18 @@ class GlobalSearchIntegrationTest {
     }
 
     @Test
+    @DisplayName("关键词大小写不敏感：含大写字母的关键词也必须命中")
+    void shouldIgnoreKeywordCase() throws Exception {
+        assertThat(http.post("/api/v1/tasks", "{\"title\":\"整理 API 文档\"}").status()).isEqualTo(201);
+
+        // 曾经只小写化了「列」而没有小写化「模式」，于是搜大写/混合大小写恒 0 结果，
+        // 搜小写却正常 —— 这种「时灵时不灵」最难归因到大小写。
+        assertThat(search("API", "").path("totalHits").asInt()).as("全大写").isEqualTo(1);
+        assertThat(search("api", "").path("totalHits").asInt()).as("全小写").isEqualTo(1);
+        assertThat(search("Api", "").path("totalHits").asInt()).as("混合大小写").isEqualTo(1);
+    }
+
+    @Test
     @DisplayName("空关键词 400；超长关键词 400")
     void shouldRejectBadKeyword() throws Exception {
         assertThat(http.get("/api/v1/search?keyword=").status()).isEqualTo(400);

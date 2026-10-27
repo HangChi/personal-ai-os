@@ -56,6 +56,26 @@ public interface ReminderRepository extends JpaRepository<ReminderEntity, UUID> 
                        @Param("remindAt") OffsetDateTime remindAt);
 
     /**
+     * 删除某个来源的**待提醒**记录（保留已读/已取消的历史）。
+     *
+     * <p>为什么要有它：提醒是「标题 + 发生时刻 + 提前量」的快照。来源被修改后，
+     * 旧快照不会自己变 —— 改了时间会照常弹旧时间，改了标题会弹旧标题，
+     * 改了提前量则因为 UPSERT 是 {@code DO NOTHING} 而完全不生效。
+     * 修改路径调用本方法清掉 PENDING，下一轮扫描就会按新规则重建。
+     *
+     * <p><b>刻意只删 PENDING</b>：已读记录是「确实提醒过」的历史事实。连它一起删掉，
+     * 同一发生时刻会被重新物化 again，用户会收到一条本该已经读过的提醒。
+     *
+     * @return 删除的行数
+     */
+    @Modifying(flushAutomatically = true)
+    @Query("delete from ReminderEntity r where r.sourceType = :sourceType"
+            + " and r.sourceId = :sourceId and r.status = :status")
+    int deleteBySourceAndStatus(@Param("sourceType") ReminderSource sourceType,
+                                @Param("sourceId") UUID sourceId,
+                                @Param("status") ReminderStatus status);
+
+    /**
      * 删除某个来源的全部提醒。
      *
      * <p><b>为什么是删除而不是标记取消</b>：提醒唯一的作用就是指向它的来源。

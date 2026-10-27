@@ -123,4 +123,42 @@ class KnowledgeDocumentUpdateIntegrationTest {
                 .anyMatch(hit -> hit.documentId().equals(original.id()));
         assertThat(freshVisible).as("新版内容应当可检索").isTrue();
     }
+
+    @Test
+    @DisplayName("向量里的标题与文件名跟着新文件走：否则引用永远显示旧名字")
+    void refreshesVectorMetadata() {
+        KnowledgeDocumentDto original = documentService.ingest(
+                "schedule.md", "排课说明", ORIGINAL.getBytes(StandardCharsets.UTF_8));
+        documentService.update(original.id(), "schedule-v2.md", REPLACED.getBytes(StandardCharsets.UTF_8));
+
+        // 元数据是在解析前固化的：曾经用「更新前的实体」构造，
+        // 于是向量里留着旧标题，检索引用和 ask 的来源名永远显示旧名 ——
+        // 而且没有任何入口能修正（除非再传一次同名文件）。
+        assertThat(jdbc.queryForObject(
+                "select distinct metadata->>'document_title' from vector_store", String.class))
+                .as("向量元数据里的标题必须是新标题")
+                .isEqualTo("schedule-v2");
+        assertThat(jdbc.queryForObject(
+                "select distinct metadata->>'filename' from vector_store", String.class))
+                .as("向量元数据里的文件名必须是新文件名")
+                .isEqualTo("schedule-v2.md");
+    }
+
+    @Test
+    @DisplayName("超长文件名不会把更新打成 500：列宽内截断并保住扩展名")
+    void truncatesOverlongFilename() {
+        KnowledgeDocumentDto original = documentService.ingest(
+                "schedule.md", "排课说明", ORIGINAL.getBytes(StandardCharsets.UTF_8));
+
+        // 列宽 300。不截断时插入抛 DataIntegrityViolation，
+        // 用户看到的是「服务器内部错误」——而真实原因只是名字太长。
+        String longName = "很长的名字".repeat(80) + ".md"; // 400 + 3 字符
+
+        KnowledgeDocumentDto updated = documentService.update(
+                original.id(), longName, REPLACED.getBytes(StandardCharsets.UTF_8));
+
+        assertThat(updated.filename().length()).isLessThanOrEqualTo(300);
+        assertThat(updated.filename()).as("扩展名必须保住，它决定用哪个解析器").endsWith(".md");
+        assertThat(updated.title().length()).isLessThanOrEqualTo(300);
+    }
 }
