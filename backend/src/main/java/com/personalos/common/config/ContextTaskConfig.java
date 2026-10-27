@@ -1,5 +1,6 @@
 package com.personalos.common.config;
 
+import com.personalos.common.web.MdcPropagatingExecutor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -46,6 +47,9 @@ public class ContextTaskConfig {
                 // 队列满：丢弃并继续 —— 少一次摘要不会有人察觉，OOM 会
                 new ThreadPoolExecutor.DiscardPolicy());
         executor.allowCoreThreadTimeOut(true);
-        return executor;
+        // 包一层 MDC 传递：轮末任务的日志必须能关联回触发它的那次请求。
+        // 注意包装要在 allowCoreThreadTimeOut 之后 —— 那些是底层池的配置，
+        // 代理只负责转发提交与关闭。
+        return new MdcPropagatingExecutor(executor);
     }
 }
