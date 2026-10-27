@@ -39,8 +39,16 @@ import org.springframework.stereotype.Component;
 public class RecurrenceCalculator {
 
     /**
-     * 迭代上限：防的是「规则写错导致死循环」这类问题把请求线程卡死。
-     * 个人日程的量级远低于此值（每天一次 × 50 年 ≈ 1.8 万次）。
+     * 单次查询内允许产出的迭代上限。
+     *
+     * <p><b>这个数现在约束的是「区间内的发生次数」，不再是「距起点的天数」</b>
+     * （2026-10-27 改）。原先循环从 {@code startsAt} 一路推进到 {@code to}，
+     * 于是上限等价于「起点距今多久」：起点早于约 54 年（每天一次 × 2 万次）时
+     * 循环耗尽、<b>静默返回空</b> —— 症状是「有日程但永远不提醒，也不报错」。
+     *
+     * <p>改成先快进到查询区间再迭代后，同一个上限对应的语义变成
+     * 「这个区间里最多算多少次」，2 万次足以覆盖任何现实的月视图/提醒窗口
+     * （每天一次也要 54 年才能撑满一个区间）。
      */
     private static final int MAX_ITERATIONS = 20_000;
 
@@ -94,7 +102,7 @@ public class RecurrenceCalculator {
 
     private void collectStepped(ZonedDateTime start, int step, ChronoUnit unit, Instant until,
                                 Instant from, Instant to, List<Instant> sink) {
-        ZonedDateTime cursor = start;
+        ZonedDateTime cursor = fastForward(start, step, unit, from);
         for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
             Instant instant = cursor.toInstant();
             if (instant.isAfter(to) || (until != null && instant.isAfter(until))) {
@@ -107,9 +115,37 @@ public class RecurrenceCalculator {
         }
     }
 
+    /**
+     * 把游标一次性推到 {@code from} 附近，避免从原始起点空转几万次。
+     *
+     * <p>这是「静默截断」的根治处：原先循环必须从 {@code startsAt} 走到 {@code to}，
+     * 每日重复的事件只要起点足够早，2 万次迭代就会被耗尽，函数返回空列表而
+     * <b>没有任何报错</b> —— 表现为「有日程，但永远不提醒」。
+     *
+     * <p>用除法估算目标步数再回退一格：估算可能因闰年/边界差一天，
+     * 多退一格由主循环的 {@code instant.isBefore(from)} 判断兜住，
+     * 不会漏掉 {@code from} 当天的发生。
+     */
+    private ZonedDateTime fastForward(ZonedDateTime start, int step, ChronoUnit unit, Instant from) {
+        ZonedDateTime fromZone = from.atZone(zone);
+        long distance;
+        if (unit == ChronoUnit.WEEKS) {
+            distance = java.time.temporal.ChronoUnit.DAYS.between(start, fromZone) / (7L * step);
+        } else {
+            distance = java.time.temporal.ChronoUnit.DAYS.between(start, fromZone) / step;
+        }
+        if (distance <= 1) {
+            return start;
+        }
+        // 回退一格：距离用日期差估算，跨 DST/闰年时可能偏大，退一格保证不漏
+        long steps = distance - 1;
+        return unit == ChronoUnit.WEEKS ? start.plusWeeks(steps * step) : start.plusDays(steps * step);
+    }
+
     private void collectWeekdays(ZonedDateTime start, Instant until, Instant from, Instant to,
                                  List<Instant> sink) {
-        ZonedDateTime cursor = start;
+        // 同样先快进：每天一次的规则最容易撞上限
+        ZonedDateTime cursor = fastForward(start, 1, ChronoUnit.DAYS, from);
         for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
             Instant instant = cursor.toInstant();
             if (instant.isAfter(to) || (until != null && instant.isAfter(until))) {
@@ -124,8 +160,11 @@ public class RecurrenceCalculator {
 
     private void collectMonthly(ZonedDateTime start, Instant until, Instant from, Instant to,
                                 List<Instant> sink) {
-        // 从原始起点按月份序号计算，而不是迭代累加（见类注释）
-        for (int monthOffset = 0; monthOffset < MAX_ITERATIONS; monthOffset++) {
+        // 从原始起点按月份序号计算，而不是迭代累加（见类注释）。
+        // 序号可以直接算出来，所以这里天然没有「空转」问题 ——
+        // 但为一致起见仍从估算的起始序号开始，避免为了找 from 而遍历几万个月。
+        long monthOffset = Math.max(0, java.time.temporal.ChronoUnit.MONTHS.between(start, from.atZone(zone)) - 1);
+        for (int guard = 0; guard < MAX_ITERATIONS; guard++, monthOffset++) {
             Instant instant = start.plusMonths(monthOffset).toInstant();
             if (instant.isAfter(to) || (until != null && instant.isAfter(until))) {
                 break;

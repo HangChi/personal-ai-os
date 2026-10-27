@@ -238,4 +238,78 @@ class RecurrenceCalculatorTest {
                 .allSatisfy(instant -> assertThat(instant.atZone(newYork).toLocalTime())
                         .isEqualTo(LocalTime.of(9, 0)));
     }
+
+    // -------------------------------------------------------- 远期起点不截断
+
+    @Test
+    @DisplayName("起点在 60 年前的每日重复：查询 2026 年某天仍能算出结果")
+    void veryOldDailyStartStillProducesOccurrences() {
+        // 这是「静默截断」的回归用例。原实现从 startsAt 一路迭代到 to，
+        // MAX_ITERATIONS=20000 在每日重复下只够走约 54 年 ——
+        // 起点早于约 54 年时循环耗尽、返回空列表，且**没有任何报错**，
+        // 表现为「有日程，但永远不提醒」。修复方式是先快进到查询区间。
+        Instant startsAt = utc("1966-01-01T09:00:00Z");
+        Instant from = utc("2026-10-01T00:00:00Z");
+        Instant to = utc("2026-10-03T23:59:59Z");
+
+        List<Instant> occurrences = calculator.occurrences(RecurrenceType.DAILY, startsAt, null, from, to);
+
+        assertThat(occurrences)
+                .as("起点在 60 年前，修复前这里返回空列表")
+                .hasSize(3);
+        assertThat(occurrences.get(0)).isEqualTo(utc("2026-10-01T09:00:00Z"));
+    }
+
+    @Test
+    @DisplayName("起点在 60 年前的工作日重复：同样能算出结果")
+    void veryOldWeekdaysStartStillProducesOccurrences() {
+        Instant startsAt = utc("1966-01-03T09:00:00Z");   // 周一
+        List<Instant> occurrences = calculator.occurrences(RecurrenceType.WEEKDAYS, startsAt, null,
+                utc("2026-10-01T00:00:00Z"), utc("2026-10-07T23:59:59Z"));
+
+        // 2026-10-01 是周四，10-02 周五，10-05~10-07 周一二三 → 5 个工作日
+        assertThat(occurrences).as("修复前这里返回空列表").hasSize(5);
+    }
+
+    @Test
+    @DisplayName("起点在 200 年前的每月重复：仍能算出结果")
+    void veryOldMonthlyStartStillProducesOccurrences() {
+        Instant startsAt = utc("1826-01-15T09:00:00Z");
+        List<Instant> occurrences = calculator.occurrences(RecurrenceType.MONTHLY, startsAt, null,
+                utc("2026-01-01T00:00:00Z"), utc("2026-03-31T23:59:59Z"));
+
+        assertThat(occurrences).hasSize(3);
+        assertThat(occurrences.get(0)).isEqualTo(utc("2026-01-15T09:00:00Z"));
+    }
+
+    @Test
+    @DisplayName("快进不改变边界：from 恰为发生时刻时包含它，早一秒则不含前一次")
+    void fastForwardKeepsBoundaryExact() {
+        Instant startsAt = utc("1970-01-01T09:00:00Z");
+        Instant occurrence = utc("2026-10-01T09:00:00Z");
+
+        // from 正好等于发生时刻 → 应包含
+        assertThat(calculator.occurrences(RecurrenceType.DAILY, startsAt, null,
+                occurrence, occurrence.plusSeconds(3600)))
+                .containsExactly(occurrence);
+
+        // from 比发生时刻晚一秒 → 不包含这一次（结果为空，区间内没有下一次）
+        assertThat(calculator.occurrences(RecurrenceType.DAILY, startsAt, null,
+                occurrence.plusSeconds(1), occurrence.plusSeconds(1800)))
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("快进后仍尊重重复截止时间 until")
+    void fastForwardStillRespectsUntil() {
+        Instant startsAt = utc("1966-01-01T09:00:00Z");
+        Instant until = utc("2026-10-01T09:00:00Z");
+
+        List<Instant> occurrences = calculator.occurrences(RecurrenceType.DAILY, startsAt, until,
+                utc("2026-09-30T00:00:00Z"), utc("2026-10-05T23:59:59Z"));
+
+        // 只有 09-30 与 10-01 两次（until 含端点）
+        assertThat(occurrences).hasSize(2);
+        assertThat(occurrences.get(1)).isEqualTo(until);
+    }
 }
