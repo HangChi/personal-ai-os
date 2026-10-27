@@ -323,10 +323,7 @@ function dispatchEvent(eventName: string, payload: string, handlers: StreamHandl
  *
  * <p>只删除、不发流：调用方随后用 `streamChat` 重发，复用的仍是同一条链路。
  */
-export function rewindMessages(
-  conversationId: string,
-  fromSequenceNo: number,
-): Promise<{ deleted: number }> {
+export function rewindMessages(conversationId: string, fromSequenceNo: number): Promise<{ deleted: number }> {
   return requestData<{ deleted: number }>({
     url: `/chat/sessions/${conversationId}/rewind`,
     method: 'post',

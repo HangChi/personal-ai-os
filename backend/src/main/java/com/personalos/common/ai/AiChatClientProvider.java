@@ -132,13 +132,23 @@ public class AiChatClientProvider {
     }
 
     /**
-     * 把「思考程度」应用到请求上，返回应用后的请求（不支持时原样返回）。
+     * 把「思考程度」与「流式用量上报」应用到请求上，返回应用后的请求（不支持时原样返回）。
      *
      * <h2>为什么必须基于模型默认选项合并</h2>
      * {@code ChatClient} 请求级 {@code options()} 会**整体替换**模型的默认选项。
      * 直接 {@code OpenAiChatOptions.builder()...build()} 会把 model / temperature 等配置
      * 全部丢掉，症状是「换了个模型」而不是报错。因此这里走 {@code mutate()}：
-     * 先拿到模型当前的默认选项，只改 extraBody。
+     * 先拿到模型当前的默认选项，只改需要改的字段。
+     *
+     * <h2>为什么把「用量上报」也放在这里（清单第 7 项）</h2>
+     * 不打开 {@code stream_options.include_usage} 时，流式响应里**根本不带 usage**，
+     * 于是用量统计只能全程靠字符估算。这个开关必须与思考参数一起塞进同一次
+     * {@code options()} 调用 —— 调两次后一次会覆盖前一次的 mutate 结果。
+     *
+     * <p>注意「思考程度」为 0 时**不能提前返回**：那样会连流式用量一起关掉，
+     * 而用量开关与思考无关。改造前这里是 {@code thinkingBudget <= 0} 就 return，
+     * 直接搬过来会让「不开思考的对话完全没有真实用量」——一个不报错、
+     * 只在统计页表现为「全是估算值」的静默失效。
      *
      * <h2>为什么把这段逻辑放在本类而不是调用方</h2>
      * {@code OpenAiChatOptions} 是 provider 专有类型。放在这里，{@code chat} 模块
@@ -147,23 +157,26 @@ public class AiChatClientProvider {
      * 静态类型写成 {@code Builder<?>} 会因捕获转换无法匹配，只能在这里用具体类型调用。
      *
      * @param request        当前请求
-     * @param thinkingBudget 思考预算（token）；≤0 表示不思考，原样返回
-     * @return 应用了思考参数的请求；模型非 OpenAI 系时原样返回
+     * @param thinkingBudget 思考预算（token）；≤0 表示不思考，但仍会打开流式用量上报
+     * @return 应用了上述参数的请求；模型非 OpenAI 系时原样返回
      */
     public ChatClient.ChatClientRequestSpec applyThinkingOptions(ChatClient.ChatClientRequestSpec request,
                                                                  int thinkingBudget) {
-        if (thinkingBudget <= 0 || chatModel == null) {
+        if (chatModel == null) {
             return request;
         }
         ChatOptions base = chatModel.getOptions();
         if (!(base instanceof OpenAiChatOptions openAiOptions)) {
-            log.debug("当前模型选项类型不支持按请求设置思考程度：{}",
+            log.debug("当前模型选项类型不支持按请求设置思考程度与流式用量：{}",
                     base == null ? "null" : base.getClass().getSimpleName());
             return request;
         }
+        OpenAiChatOptions.Builder mutated = openAiOptions.mutate().streamUsage(true);
+        if (thinkingBudget <= 0) {
+            return request.options(mutated);
+        }
         // DashScope 兼容模式的思考参数：enable_thinking + thinking_budget
-        return request.options(openAiOptions.mutate()
-                .extraBody(Map.of("enable_thinking", true, "thinking_budget", thinkingBudget)));
+        return request.options(mutated.extraBody(Map.of("enable_thinking", true, "thinking_budget", thinkingBudget)));
     }
 
     /**

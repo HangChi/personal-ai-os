@@ -1,7 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-import { createSession as createSessionApi, deleteSession as deleteSessionApi, fetchContextUsage, setContextBudget, listMessages, listSessions, renameSession as renameSessionApi, streamChat, rewindMessages } from '@/api/chat'
+import {
+  createSession as createSessionApi,
+  deleteSession as deleteSessionApi,
+  fetchContextUsage,
+  setContextBudget,
+  listMessages,
+  listSessions,
+  renameSession as renameSessionApi,
+  streamChat,
+  rewindMessages,
+} from '@/api/chat'
 import { listToolInvocations } from '@/api/activity'
 import { cancelOperation, confirmOperation, listConfirmations } from '@/api/confirmations'
 import type { ContextUsage } from '@/api/chat'

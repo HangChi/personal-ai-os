@@ -29,7 +29,8 @@ function attachmentUrl(item: ChatAttachment): string {
   return `${base}/chat/uploads/${item.id}/content`
 }
 
-const emit = defineEmits<{ (e: 'copy', content: string): void   /** 仅助手消息：重跑最后一条回答 */
+const emit = defineEmits<{
+  (e: 'copy', content: string): void /** 仅助手消息：重跑最后一条回答 */
   (e: 'regenerate'): void
   /** 仅用户消息：编辑后重发 */
   (e: 'edit', message: ChatMessage): void

@@ -6,7 +6,9 @@ import com.personalos.chat.dto.ChatStreamEvents;
 import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.chat.dto.ThinkingLevel;
 import com.personalos.chat.metrics.ChatStreamMetrics;
+import com.personalos.chat.support.ChatResponseInspection;
 import com.personalos.chat.support.SseHeartbeatScheduler;
+import com.personalos.chat.support.StreamUsage;
 import com.personalos.common.ai.AiChatClientProvider;
 import com.personalos.common.ai.ContextBudgetService;
 import com.personalos.common.ai.ToolContextKeys;
@@ -29,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -86,6 +89,8 @@ public class ChatCompletionService {
     private final SseHeartbeatScheduler heartbeatScheduler;
     /** 把本轮附件转成模型能读的内容（图片多模态 / 文本区块） */
     private final ChatAttachmentContextBuilder attachmentContextBuilder;
+    /** 用量记账（清单第 7 项）：异步写，失败不影响回答 */
+    private final TokenUsageRecorder usageRecorder;
 
     public ChatCompletionService(AiChatClientProvider aiProvider,
                                  ChatSessionService sessionService,
@@ -95,7 +100,8 @@ public class ChatCompletionService {
                                  ChatStreamMetrics metrics,
                                  SseHeartbeatScheduler heartbeatScheduler,
                                  ChatAttachmentContextBuilder attachmentContextBuilder,
-                                 @Value("${app.chat.stream-timeout:120s}") Duration baseStreamTimeout) {
+                                 @Value("${app.chat.stream-timeout:120s}") Duration baseStreamTimeout,
+                                 TokenUsageRecorder usageRecorder) {
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
         this.promptAssembler = promptAssembler;
@@ -105,6 +111,7 @@ public class ChatCompletionService {
         this.heartbeatScheduler = heartbeatScheduler;
         this.attachmentContextBuilder = attachmentContextBuilder;
         this.baseStreamTimeout = baseStreamTimeout;
+        this.usageRecorder = usageRecorder;
     }
 
     /**
@@ -176,6 +183,10 @@ public class ChatCompletionService {
         AtomicReference<List<KnowledgeHitDto>> hitsRef = new AtomicReference<>(List.of());
         // 本轮上下文字符数（仪表盘用）：在 defer 里算，终帧回调里读
         AtomicInteger promptCharsRef = new AtomicInteger(0);
+        // 系统提示单独留一份：估算用量时「提示」与「补全」要分开算 ——
+        // 系统提示+历史+用户消息属于 prompt，模型生成的部分属于 completion。
+        // 合成一个总数会让统计页的「输入/输出」两列失去意义。
+        AtomicInteger systemPromptCharsRef = new AtomicInteger(0);
         // 订阅可能先于赋值完成（切了线程池之后尤其如此），回调里必须能容忍 null
         AtomicReference<Disposable> subscriptionRef = new AtomicReference<>();
         // 超时看门狗的句柄（见下面 stopEverything 与 scheduleOnce 处）
@@ -197,7 +208,7 @@ public class ChatCompletionService {
         // 晚一步启动就等于把「首 token 之前」这段最长的空窗暴露给代理的空闲判定。
         ScheduledFuture<?> heartbeat = heartbeatScheduler.start(emitter);
 
-        Flux<String> contentFlux = Flux.defer(() -> {
+        Flux<ChatResponse> contentFlux = Flux.defer(() -> {
             List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter);
             hitsRef.set(hits);
             // 附件：图片随 user message 走（多模态协议要求），文本进系统提示（避免存进历史）。
@@ -208,6 +219,7 @@ public class ChatCompletionService {
             // 上下文用量：本轮系统提示 + 本条用户消息 + 窗口内历史（后两项为估算）。
             // 历史由 Advisor 在请求链路里装载，这里拿不到原文，
             // 因此用「窗口条数 × 已存消息的平均长度」逼近并在事件里如实标注为估算值。
+            systemPromptCharsRef.set(systemPrompt.length());
             promptCharsRef.set(systemPrompt.length() + userContent.length()
                     + promptAssembler.estimateHistoryChars(conversationId));
             ChatClient.ChatClientRequestSpec request = chatClient.prompt()
@@ -232,10 +244,17 @@ public class ChatCompletionService {
             // 非 OpenAI 系模型时原样返回，此处无需判断 provider 类型。
             request = aiProvider.applyThinkingOptions(request, thinkingLevel.budget());
 
+            // 用 chatResponse() 而不是 content()：后者内部是
+            // "map(取正文) → filter(非空)"，正文之外的元数据（含 usage）在这一步被丢掉。
+            // 改成自己映射才能在同一路流上同时拿到正文与用量，不必为统计多发一次请求。
             return request
                     .stream()
-                    .content();
+                    .chatResponse();
         }).subscribeOn(Schedulers.boundedElastic());
+
+        // 本轮用量：只有流的最后一个块带 usage（OpenAI 协议的 choices 为空块），
+        // 因此每块都尝试覆盖，最后那个有效值胜出
+        AtomicReference<StreamUsage> usageRef = new AtomicReference<>();
 
         // ------------------------------------------------------------------ 终止收口
         // 四条终止路径（正常完成 / 上游错误 / 超时 / 客户端断连）此前各写了一段清理，
@@ -307,8 +326,15 @@ public class ChatCompletionService {
         });
 
         Disposable subscription = contentFlux.subscribe(
-                chunk -> {
-                    if (terminated.get() || chunk == null || chunk.isEmpty()) {
+                response -> {
+                    // 用量块（choices 为空）没有正文，但必须在这里被采集 ——
+                    // 提前 return 会把它一起跳过，症状是「永远只有估算值」
+                    StreamUsage usage = ChatResponseInspection.usageOf(response);
+                    if (usage != null) {
+                        usageRef.set(usage);
+                    }
+                    String chunk = ChatResponseInspection.textOf(response);
+                    if (terminated.get() || chunk.isEmpty()) {
                         return;
                     }
                     fullContent.append(chunk);
@@ -345,9 +371,17 @@ public class ChatCompletionService {
                     finisher.attachCitations(conversationId, hitsRef.get());
 
                     String reply = fullContent.toString();
+                    // 用量事件的下发与记录（清单第 7 项）。
+                    // 有真实 usage 时以它为准，否则退回估算值 —— 但要标出来源，
+                    // 不能让前端把估算值当计费口径展示给用户。
+                    StreamUsage usage = resolveUsage(usageRef.get(),
+                            promptCharsRef.get(), systemPromptCharsRef.get(), reply.length());
                     send(emitter, EVENT_DONE, new ChatStreamEvents.Done(conversationId, reply,
-                            ContextBudgetService.toTokens(promptCharsRef.get())));
+                            usage.promptTokens()));
                     emitter.complete();
+
+                    // 记账放在 complete 之后：统计失败或慢都不该影响「回答已结束」这个事实
+                    usageRecorder.record(conversationId, usage);
 
                     // done 之后：附件补写、摘要刷新、轮末钩子（都只影响下一轮或仅用于展示）
                     finisher.afterDone(conversationId, userContent, reply, requestAttachments);
@@ -374,6 +408,49 @@ public class ChatCompletionService {
             log.debug("流式对话中止：{}", reason);
             stopEverything.run();
         }
+    }
+
+    /**
+     * 决定本轮用哪组用量数字。
+     *
+     * <h2>为什么优先真实值</h2>
+     * 估算值是「字符 ÷ 1.6」的折算，而模型计费按真实 token（含思考 token，
+     * 那部分在正文里根本看不到）。有真实值却展示估算，等于给用户一个无法对账的数字。
+     *
+     * <h2>为什么真实值会比「字符估算」大好几倍（实测）</h2>
+     * 本地实测一轮短对话：系统提示只有几百字符，但上游返回
+     * {@code prompt_tokens = 3071}。差值来自**工具定义**——15 个内置工具的
+     * JSON Schema 连同 MCP 工具一起被序列化进请求，这几千 token 在字符估算里
+     * 完全不存在。因此：
+     * <ul>
+     *   <li>有真实值时，仪表盘分母一下子「看起来涨了」是正常的，不是回归；</li>
+     *   <li>估算值注定偏低，只能当趋势参考，不能当账单。</li>
+     * </ul>
+     * 这也说明为什么两者必须标来源 —— 混在一起会让用户以为数字突然错乱。
+     *
+     * <h2>什么时候只能估算</h2>
+     * provider 不返回 usage（ollama 原生接口、联调 mock）或忽略
+     * {@code include_usage}。这时按 promptChars / 回复字符数折算，并把来源标成
+     * {@link com.personalos.chat.entity.TokenUsageSource#ESTIMATED}。
+     * 注意 promptChars 里已经包含系统提示（附件与知识库都在其中），
+     * 所以这里不能再单独加 systemPromptChars —— prompts 与 completion 的边界是
+     * 「送进去的」与「生成出来的」，不是「系统提示」与「其余」。
+     *
+     * @param actual           流里采集到的真实用量；可能为 null
+     * @param promptChars      本轮送入模型的字符数
+     * @param systemPromptChars 系统提示字符数（仅用于日志排查，不参与折算）
+     * @param replyChars       模型生成的字符数
+     * @return 供事件下发与落库使用的用量
+     */
+    private StreamUsage resolveUsage(StreamUsage actual, int promptChars, int systemPromptChars, int replyChars) {
+        if (actual != null) {
+            return actual;
+        }
+        // 模型名拿不到（provider 未上报）时留空，不编造一个假名字
+        StreamUsage estimated = StreamUsage.estimated(null, promptChars, replyChars);
+        log.debug("上游未返回用量，本轮按字符估算 promptTokens={} completionTokens={}（系统提示 {} 字符）",
+                estimated.promptTokens(), estimated.completionTokens(), systemPromptChars);
+        return estimated;
     }
 
     /**

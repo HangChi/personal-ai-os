@@ -24,6 +24,7 @@ import {
   Setting,
   SwitchButton,
   Tickets,
+  TrendCharts,
   User,
 } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
@@ -77,6 +78,7 @@ const navGroups = [
     items: [
       { index: '/memory', label: '记忆', icon: Memo },
       { index: '/activity', label: '活动', icon: DataLine },
+      { index: '/usage', label: '用量', icon: TrendCharts },
       { index: '/settings', label: '设置', icon: Setting },
     ],
   },

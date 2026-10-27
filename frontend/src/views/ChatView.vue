@@ -251,16 +251,12 @@ async function handleRemove(conversationId: string): Promise<void> {
  */
 async function handleEditMessage(message: ChatMessage): Promise<void> {
   try {
-    const result = await ElMessageBox.prompt(
-      '修改后将从这条消息重新开始，其后的对话会被删除。',
-      '编辑并重发',
-      {
-        inputValue: message.content,
-        inputType: 'textarea',
-        confirmButtonText: '重发',
-        cancelButtonText: '取消',
-      },
-    )
+    const result = await ElMessageBox.prompt('修改后将从这条消息重新开始，其后的对话会被删除。', '编辑并重发', {
+      inputValue: message.content,
+      inputType: 'textarea',
+      confirmButtonText: '重发',
+      cancelButtonText: '取消',
+    })
     await chatStore.editAndResend(message, result.value ?? '')
   } catch {
     // 取消编辑不是错误
