@@ -305,6 +305,21 @@ public class CalendarEventService {
      * 因此若客户端给的结束时间落在开始当天或更早（常见写法：结束 = 当天 23:59），
      * 就补成次日 00:00 —— 否则会出现「全天事件只有一天却横跨两天」这种半天的怪状态。
      * 多天的全天事件（结束日在开始日之后）则保持原样。
+     *
+     * <h2>已知限制：这里按「24 小时」而不是「次日 00:00」推进</h2>
+     * {@code startOfDay.plus(1, ChronoUnit.DAYS)} 加在 {@code Instant} 上，
+     * 是固定的 86400 秒。在有夏令时的时区里，跨越切换日会偏一小时：
+     * 例如 America/New_York 的 3 月 8 日只有 23 小时，全天事件会结束在本地 01:00。
+     *
+     * <p><b>为什么没改</b>：项目的时区是 {@code Asia/Shanghai}（配置项
+     * {@code app.calendar.zone}），中国自 1991 年起不实行夏令时，偏差恒为 0。
+     * 要正确支持需要把整个区间计算改为在 {@code ZonedDateTime} 上做
+     * {@code LocalDate.plusDays(1).atStartOfDay(zone)}，会牵动
+     * {@link #startOfDay} 与 {@link #normalizeAllDayEnd} 同时承担的两条语义
+     * （单日补全 / 多日保持原样），为一个当前不会发生的场景引入行为变更风险。
+     *
+     * <p>若将来把默认时区换成有 DST 的地区，这里是第一个要改的地方 ——
+     * 判断依据不是「看起来对不对」，而是 {@code zone.getRules().isFixedOffset()}。
      */
     private Instant normalizeAllDayEnd(Instant startOfDay, Instant rawEnd) {
         Instant endDayStart = startOfDay(rawEnd);

@@ -153,8 +153,11 @@ public class VectorStoreInspector {
         String sql = "SELECT id::text, content, metadata::text"
                 + " FROM " + qualifiedTable()
                 + " WHERE content ILIKE ? ESCAPE '\\'"
-                // 子串匹配没有相关性分数，用片段长度兜底：同等条件下短片段信息密度更高
-                + " ORDER BY length(content) ASC"
+                // 子串匹配没有相关性分数，用片段长度兜底：同等条件下短片段信息密度更高。
+                // 但 length 大量并列（同一篇文档的分块长度相近），此时返回哪几行由
+                // PostgreSQL 自行决定 —— 评测因此不可复现：同一份语料两次跑出不同 R@1。
+                // 补 id 兜底保证确定性；它没有语义含义，纯粹把「并列」变成一个全序。
+                + " ORDER BY length(content) ASC, id ASC"
                 + " LIMIT ?";
 
         List<KeywordChunk> result = new ArrayList<>();
