@@ -1,4 +1,4 @@
-import { http } from '@/api/http'
+import { http, requestData } from '@/api/http'
 
 /**
  * 数据导出（阶段 12）。
@@ -69,4 +69,39 @@ export async function downloadExport(): Promise<string> {
     URL.revokeObjectURL(url)
   }
   return filename
+}
+
+/** 导入结果：各模块实际写入了多少条 */
+export interface ImportResult {
+  sessions: number
+  messages: number
+  tasks: number
+  calendarEvents: number
+  memories: number
+  documents: number
+  vectors: number
+  /** 服务端给出的注意事项（如「原始文件不在导出里，需要重新上传」） */
+  notes: string[]
+}
+
+/**
+ * 导入导出文件。
+ *
+ * <p>请求体就是文件原文：服务端接的是 JSON 文本而不是 multipart ——
+ * 导出的就是一个 .json，多包一层表单没有意义。
+ *
+ * <p>超时给到 5 分钟：知识库要按分块**重建向量**，几十篇文档会调几十次嵌入模型，
+ * 沿用全局的 10 秒必然失败。这是唯一需要这么长超时的接口。
+ *
+ * <p>只支持空库：目标库已有数据时服务端会拒绝并返回明确原因，前端不做额外探测
+ * （探测与写入之间的竞态反而会让提示失真）。
+ */
+export async function importData(rawJson: string): Promise<ImportResult> {
+  return requestData<ImportResult>({
+    url: '/import',
+    method: 'post',
+    data: rawJson,
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 300_000,
+  })
 }

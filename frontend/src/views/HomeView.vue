@@ -19,12 +19,12 @@ import {
   Tickets,
   WarningFilled,
 } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { downloadExport } from '@/api/export'
+import { downloadExport, importData } from '@/api/export'
 import { listOccurrences } from '@/api/calendar'
 import { useAppStore } from '@/stores/app'
 import { useKnowledgeStore } from '@/stores/knowledge'
@@ -152,6 +152,55 @@ function componentTagType(value: string): 'success' | 'info' | 'danger' {
 /** 导出是页面级的一次性动作，不进 store（没有任何其它页面需要它） */
 const exporting = ref(false)
 const exportError = ref<string | null>(null)
+
+/** 导入同理：一次性动作，且只在空库上有意义 */
+const importing = ref(false)
+const importInput = ref<HTMLInputElement | null>(null)
+
+/**
+ * 导入：选文件 → 二次确认 → 提交。
+ *
+ * <p>确认弹窗里必须写明「只支持空库」：这是用户最容易误解的一步 ——
+ * 他们看到「导入」会以为可以合并，而服务端会直接拒绝。与其等提交后报错，
+ * 不如在点下去之前就说清楚。
+ */
+async function handleImportFile(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  // 立刻清空，否则连续两次选同一个文件不会触发 change
+  input.value = ''
+  if (!file) {
+    return
+  }
+  try {
+    await ElMessageBox.confirm(
+      `将把「${file.name}」里的数据写入当前数据库。\n\n` + '导入只支持空库：库里已有数据时会被拒绝，不会覆盖或合并。',
+      '确认导入',
+      { type: 'warning', confirmButtonText: '开始导入', cancelButtonText: '取消' },
+    )
+  } catch {
+    return
+  }
+
+  importing.value = true
+  try {
+    const result = await importData(await file.text())
+    ElMessage.success(
+      `导入完成：${result.sessions} 会话 / ${result.messages} 消息 / ` +
+        `${result.tasks} 任务 / ${result.calendarEvents} 日程 / ` +
+        `${result.memories} 记忆 / ${result.documents} 文档`,
+    )
+    for (const note of result.notes ?? []) {
+      ElMessage.info(note)
+    }
+    // 导入后各页的缓存全是旧的，直接重载最省事也最不易错
+    window.location.reload()
+  } catch (cause) {
+    ElMessage.error(cause instanceof Error ? cause.message : '导入失败，请稍后重试')
+  } finally {
+    importing.value = false
+  }
+}
 
 async function handleExport(): Promise<void> {
   exporting.value = true
@@ -353,12 +402,26 @@ const overviewLine = computed(() => {
       <template #header>
         <PageHeader title="数据备份">
           <el-button type="primary" :loading="exporting" @click="handleExport">导出数据</el-button>
+          <el-button :loading="importing" @click="importInput?.click()">导入数据</el-button>
+          <!-- 隐藏的文件选择器：不用 el-upload，它自带的行为（自动上传、列表）在这里都是负担 -->
+          <input
+            ref="importInput"
+            type="file"
+            accept=".json,application/json"
+            class="home__file-input"
+            @change="handleImportFile"
+          />
         </PageHeader>
       </template>
 
       <p class="home__hint home__hint--top">
         把全部任务、日程、记忆、知识库与对话历史导出为一个 JSON 文件。
         这是一次性快照，不包含向量索引（可由分块文本重建）。
+      </p>
+
+      <p class="home__hint">
+        导入用于「换机器」或「从备份恢复」：<strong>只支持空库</strong>， 目标库已有数据时会被拒绝（不做覆盖或合并 ——
+        合并策略做错就是静默的数据损坏）。 知识库会按分块文本重建向量，原始文件需要重新上传。
       </p>
 
       <el-alert
@@ -634,5 +697,9 @@ const overviewLine = computed(() => {
   .home__stats {
     grid-template-columns: 1fr;
   }
+}
+/* 隐藏的文件选择器：只由「导入数据」按钮 click() 触发，不占版面 */
+.home__file-input {
+  display: none;
 }
 </style>
