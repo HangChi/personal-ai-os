@@ -78,6 +78,48 @@ async function handleUpload(): Promise<void> {
   }
 }
 
+/** 待替换的文档 id（文件选择器是共享的，选完要记住这一行） */
+const replaceTargetId = ref<string | null>(null)
+const replaceInput = ref<HTMLInputElement | null>(null)
+
+function pickReplaceFile(id: string): void {
+  replaceTargetId.value = id
+  replaceInput.value?.click()
+}
+
+/**
+ * 用新文件替换内容。
+ *
+ * <p>不弹「删除」那种措辞：替换不删文档，id 与历史引用都保留，
+ * 只是分块与向量整组重算。确认框里写清这一点，用户才敢点。
+ */
+async function onReplaceFileChange(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  // 清空以便连续两次选同一个文件
+  input.value = ''
+  const id = replaceTargetId.value
+  replaceTargetId.value = null
+  if (!file || !id) {
+    return
+  }
+  try {
+    await ElMessageBox.confirm(
+      `用「${file.name}」替换该文档的内容？\n\n` +
+        '文档本身与历史对话里的引用都会保留；旧的分块与向量会被整组替换，' +
+        '替换后需要重新建立索引（耗时取决于文件大小）。',
+      '替换文档内容',
+      { type: 'warning', confirmButtonText: '开始替换', cancelButtonText: '取消' },
+    )
+  } catch {
+    return
+  }
+  const ok = await knowledgeStore.replace(id, file)
+  if (ok) {
+    ElMessage.success('已替换文档内容，向量已重建')
+  }
+}
+
 async function handleDelete(id: string, title: string): Promise<void> {
   try {
     await ElMessageBox.confirm(`删除「${title}」会同时清理它的全部向量，之后将无法再被检索到。`, '删除知识文档', {
@@ -235,12 +277,16 @@ function onDrop(event: DragEvent): void {
         <el-table-column label="上传时间" width="180">
           <template #default="{ row }">{{ formatDateTime(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="90" fixed="right">
+        <el-table-column label="操作" width="130" fixed="right">
           <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="pickReplaceFile(row.id)">替换</el-button>
             <el-button link type="danger" size="small" @click="handleDelete(row.id, row.title)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 替换用的文件选择器：整个表格共用一个，点「替换」时记住目标行 -->
+      <input ref="replaceInput" class="kd__file-input" type="file" :accept="ACCEPT" @change="onReplaceFileChange" />
 
       <AppPagination
         :total="total"

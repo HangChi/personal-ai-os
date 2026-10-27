@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { askKnowledge, deleteDocument, listDocuments, searchKnowledge, uploadDocument } from '@/api/knowledge'
+import {
+  askKnowledge,
+  deleteDocument,
+  listDocuments,
+  searchKnowledge,
+  updateDocument,
+  uploadDocument,
+} from '@/api/knowledge'
 import type { KnowledgeAskResponse, KnowledgeDocument, KnowledgeHit } from '@/types/api'
 
 /** 知识库状态 */
@@ -20,6 +27,8 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
   const loadingDocuments = ref(false)
   const uploading = ref(false)
+  /** 替换是「针对某一行」的长操作，与上传互不影响，单独一个 loading */
+  const replacing = ref(false)
   const searching = ref(false)
   const asking = ref(false)
   const error = ref<string | null>(null)
@@ -73,6 +82,30 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       return false
     } finally {
       uploading.value = false
+    }
+  }
+
+  /**
+   * 用新文件替换文档内容。
+   *
+   * <p>与「删了重传」的区别是 id 不变，因此历史对话里的引用仍然指向这份文档。
+   * 替换后要重载列表：标题、片段数、字符数都会变。
+   */
+  async function replace(id: string, file: File): Promise<boolean> {
+    replacing.value = true
+    error.value = null
+    try {
+      await updateDocument(id, file)
+      await loadDocuments()
+      // 内容变了，上一轮的检索/问答结果已经过时
+      hits.value = []
+      answer.value = null
+      return true
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '替换失败'
+      return false
+    } finally {
+      replacing.value = false
     }
   }
 
@@ -136,6 +169,8 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     searchDocuments,
     goToPage,
     upload,
+    replace,
+    replacing,
     remove,
     search,
     ask,
