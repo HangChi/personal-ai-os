@@ -4,7 +4,8 @@
 
 用自然语言和个人 AI 助手交互，让它帮你管理任务、检索自己的知识库、安排日程与提醒——全部跑在你自己的机器上。
 
-> **当前状态**：阶段 17（跨模块全局搜索）实现完成，接下来按新功能逐个开阶段。
+> **当前状态**：功能开发到阶段 26（侧栏拖拽调宽），之后做了一轮工程质量加固
+> （P0 缺陷修复、可观测性、可维护性重构、无障碍、部署产物）。
 > 五个内置模块可用：对话、任务、知识库、日程与提醒、长期记忆；助手内置 15 个工具，
 > 并可经 MCP 接入外部工具 server（只读直行 / 变更类需人工确认）。
 > 「活动」页可查助手调用过哪些工具、以及每个 MCP server 当前是否连上。
@@ -120,11 +121,23 @@ npm run dev            # http://localhost:5173
 
 ```bash
 # 后端：单元测试 + Testcontainers 集成测试（需 Docker 运行）
-cd backend && ./mvnw -B verify
+# 覆盖率门禁 83% 行 / 65% 分支，绑在 test 阶段（CI 跑的就是这个）
+cd backend && ./mvnw -B test
 
-# 前端：类型检查 + 生产构建
-cd frontend && npm run type-check && npm run build
+# 前端：与 CI 完全一致的五步
+cd frontend && npm run lint && npm run format:check && npm run type-check \
+  && npm run test:logic && npm run test:component
 ```
+
+前端的测试是**两条独立链路**，日常按需选：
+
+| 命令 | 覆盖什么 | 耗时 |
+|---|---|---|
+| `npm run test:logic` | 纯函数与 store（Node 原生 ESM，零依赖） | 一秒内 |
+| `npm run test:component` | `.vue` 渲染与交互（vitest + happy-dom） | 十几秒 |
+
+改纯逻辑时跑前者即可；动模板、样式或事件时务必跑后者 —— 模板类缺陷（层叠、
+属性拼错、按键语义）纯函数测试按定义抓不到。
 
 ## 阶段路线图
 
@@ -150,6 +163,14 @@ cd frontend && npm run type-check && npm run build
 | 18 | 全站 UI 优化（设计令牌 + 深色模式 + 公共组件 + 逐页重构 + 左侧导航栏） | ✅ |
 | 19 | 对话知识库增强（自动 RAG + [n] 引用落库）与设置页（前端偏好层） | ✅ |
 | 20 | 对话页 UI 重设计（全高对话列 / 去气泡消息 / 代码块头部条 / 打字动画 / 工具行） | ✅ |
+| 21 | 消息分页（首屏只取最近一页，向前翻是显式动作） | ✅ |
+| 22 | 上下文治理（滚动摘要 / token 预算仪表盘 / 思考档位 / 消息附件） | ✅ |
+| 23 | 全站视觉重构（Element Plus 主题层 + 设计令牌梳理） | ✅ |
+| 24 | 聊天气泡重做（助手浅底+边框、用户浅主色，靠色相区分说话人） | ✅ |
+| 25 | 气泡纠错（补「元素底 vs 容器底」与视觉重量的审计口径） | ✅ |
+| 26 | 侧栏拖拽调宽（指针 + 键盘双通道，宽度按视口二次收敛） | ✅ |
+
+> 阶段 21 起是体验优化轮次，`specs/` 目录只有 001–020；21 以后的改动以提交历史为准。
 
 > 编号 5 空置：原定的「Docker 部署与开源发布」不在当前规划内，暂不实施。
 > 阶段 6 保留既有编号，避免重编号导致 `specs/` 目录、迁移与提交历史错位。
@@ -318,6 +339,18 @@ AUTH_PASSWORD=<你的密码>      # 开启时必填
 对应端点 `GET /api/v1/export`，响应**直接是文件**（带 `Content-Disposition`），
 不包统一响应信封 —— 失败时才返回 `{code, message}`。
 
+### 数据库级备份（与上面的 JSON 导出互补）
+
+界面上的一键导出是**逻辑备份**：可读、可迁移、不含向量，但恢复要点「导入功能」——
+而导入还没做。真要「整库回到某个时间点」，用 `pg_dump`：
+
+```bash
+./scripts/dev/backup-db.sh        # 输出到 ./backups，默认保留最近 14 份
+```
+
+两者的分工：JSON 导出用于**看**和**带走**，`pg_dump` 用于**恢复**。
+恢复步骤、迁移回滚策略、故障排查见 [docs/operations.md](docs/operations.md)。
+
 ## 开发约定
 
 本项目使用 [Spec Kit](https://github.com/github/spec-kit) 做规格驱动开发，**项目宪法是全仓库最高约束**：
@@ -338,6 +371,7 @@ AUTH_PASSWORD=<你的密码>      # 开启时必填
 
 - [架构说明](docs/architecture.md)
 - [本地开发指南](docs/development.md)
+- [运维手册](docs/operations.md)（部署 / 备份恢复 / 迁移回滚 / 故障排查）
 - [阶段 0 规格](specs/001-project-skeleton/spec.md) ｜ [实现计划](specs/001-project-skeleton/plan.md) ｜ [版本决策与踩坑](specs/001-project-skeleton/research.md)
 
 ## 许可证

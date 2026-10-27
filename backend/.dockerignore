@@ -1,0 +1,11 @@
+# 构建上下文里不需要的东西。
+#
+# target/ 尤其重要：里面有上一次构建的 jar 与解包产物（几十 MB），
+# 传进上下文既慢，又可能让 `COPY --from=build /build/target/*.jar` 匹配到旧包。
+
+target/
+.git/
+.gitignore
+*.md
+.env
+.env.*

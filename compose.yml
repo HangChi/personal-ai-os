@@ -1,5 +1,21 @@
 # ============================================================
-# Personal AI OS — 本地基础设施
+# Personal AI OS — 本地基础设施 + 可选的整机部署
+#
+# 两种用法，默认行为**没有变**：
+#
+#   1) 只起数据库（日常开发，本机跑前后端）
+#        cp .env.example .env
+#        docker compose up -d
+#
+#   2) 整机跑起来（换一台机器 / 给家人用）
+#        docker compose --profile app up -d --build
+#        前端 http://localhost:8088 ，后端 http://localhost:8080
+#
+# 用 profiles 而不是把应用塞进默认服务：默认行为一旦改变，
+# 「我只想开个数据库」就会变成「莫名其妙编译了十分钟镜像」。
+#
+# ⚠️ 本项目定位是**本地单用户自托管**。AUTH_ENABLED 默认 false，
+#    直接暴露到公网等于任何人可读写你的任务与知识库。开放前必读 README。
 #
 # 用法：
 #   cp .env.example .env
@@ -33,6 +49,59 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  # ---------------- 以下两个服务仅在 --profile app 时启动 ----------------
+  backend:
+    profiles: ["app"]
+    build:
+      context: ./backend
+    image: personal-ai-os-backend:local
+    container_name: personal-ai-os-backend
+    restart: unless-stopped
+    # 从 .env 取模型密钥等；下面的 environment 会覆盖其中的数据库指向。
+    # required: false —— 没有 .env 时不该因此起不来（默认值够跑 mock 或纯本地任务）
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # 容器内走 compose 网络，端口是 5432（不是宿主机的 55432）。
+      # environment 优先级高于 env_file —— 否则 .env 里的 localhost 会带进来，
+      # 表现为「数据库明明起来了，后端一直在重连超时」。
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-personal_ai_os}
+      POSTGRES_USER: ${POSTGRES_USER:-personalos}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-personalos}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # 镜像里没有 curl（只装了 JRE）；用 bash 的 /dev/tcp 做连通性探测，
+      # 语义足够：能连上 8080 就说明 Tomcat 已经在听
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/127.0.0.1/8080' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      # 首次启动要跑 Flyway 迁移，给足 60 秒
+      start_period: 60s
+
+  frontend:
+    profiles: ["app"]
+    build:
+      context: ./frontend
+    image: personal-ai-os-frontend:local
+    container_name: personal-ai-os-frontend
+    restart: unless-stopped
+    ports:
+      # 8088 而不是 80：80 在多数机器上已被占用，且与后端 8080 相邻好记
+      - "8088:80"
+    depends_on:
+      # 用 service_started 而不是 healthy：nginx 只在启动时解析一次 backend
+      # 这个主机名（容器一创建 DNS 就存在），应用没起来时它返回 502，
+      # 后端就绪后自动恢复 —— 不值得为此阻塞前端启动
+      - backend
 
 volumes:
   postgres-data:

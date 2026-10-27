@@ -67,6 +67,11 @@ tmp/
 # 注意 /data/ 只匹配仓库根目录，backend/data/ 必须单独写一条。
 /backend/data/
 
+# ---- 数据库备份（P3）----
+# 备份里是全部个人数据（任务、日程、对话、知识库原文），比 .env 更敏感，
+# 绝不能进版本库。默认输出目录见 scripts/dev/backup-db.sh
+/backups/
+
 # ---- Python 缓存（scripts/dev 下的开发脚本）----
 __pycache__/
 *.pyc
