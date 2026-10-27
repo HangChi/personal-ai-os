@@ -221,4 +221,99 @@ class MarkdownStructureTextSplitterTest {
         }
         return count;
     }
+
+    // ---------------------------------------------------------------- 代码围栏
+
+    @Test
+    @DisplayName("代码块里的 # 注释不算标题：不应制造出新的章节路径")
+    void hashInsideFenceIsNotHeading() {
+        String markdown = """
+                # 部署说明
+
+                下面是启动脚本，注意注释里也有井号。
+
+                ```bash
+                # 这一行是 shell 注释，不是标题
+                export PORT=8080
+                ## 这一行更不是二级标题
+                java -jar app.jar
+                ```
+
+                脚本执行完就结束了，这里再补一些正文让这一节足够长以单独成块。
+                """;
+
+        List<String> blocks = split(splitter(1200, 50, 0), markdown);
+        String joined = String.join("\n", blocks);
+
+        // 关键断言：代码块内的注释文本不得出现在章节路径里
+        assertThat(blocks)
+                .as("代码块内的 # 注释被当成了标题，块内容=%s", blocks)
+                .noneMatch(block -> block.contains("【章节：部署说明 > 这一行是 shell 注释，不是标题】"));
+        assertThat(joined).as("代码块的正文内容不应丢失").contains("export PORT=8080");
+        assertThat(joined).as("代码块的正文内容不应丢失").contains("java -jar app.jar");
+    }
+
+    @Test
+    @DisplayName("代码块跨多个 # 行仍整体留在同一节内")
+    void fenceKeepsFollowingHeadingIntact() {
+        String markdown = """
+                # 一
+
+                ```text
+                # A
+                # B
+                # C
+                ```
+
+                ## 二
+
+                第二节的正文，长度足够单独成块，这里多补一些字凑够最小长度要求。
+                """;
+
+        List<String> blocks = split(splitter(1200, 20, 0), markdown);
+
+        // 围栏内的 A/B/C 不该各成一节；真实的两个标题（一、二）应各出现一次
+        assertThat(blocks).anyMatch(block -> block.contains("【章节：一 > 二】"));
+        assertThat(blocks).noneMatch(block -> block.contains("【章节：一 > A】"));
+    }
+
+    @Test
+    @DisplayName("波浪号围栏同样被识别")
+    void tildeFenceIsRecognized() {
+        String markdown = """
+                # 标题
+
+                ~~~python
+                # 这是 python 注释
+                print(1)
+                ~~~
+
+                正文补足长度，让这一节的内容足够单独成块而不被合并掉。
+                """;
+
+        List<String> blocks = split(splitter(1200, 20, 0), markdown);
+        assertThat(blocks).noneMatch(block -> block.contains("【章节：标题 > 这是 python 注释】"));
+        assertThat(String.join("\n", blocks)).contains("print(1)");
+    }
+
+    @Test
+    @DisplayName("围栏闭合后的标题重新生效")
+    void headingAfterFenceStillWorks() {
+        String markdown = """
+                # 开头
+
+                ```
+                code line
+                ```
+
+                ## 围栏之后
+
+                这一段是围栏闭合后的真实章节，应当带自己的路径，内容补足长度。
+                """;
+
+        List<String> blocks = split(splitter(1200, 20, 0), markdown);
+        assertThat(blocks)
+                .as("围栏闭合后的标题必须重新被识别，块=%s", blocks)
+                .anyMatch(block -> block.contains("【章节：开头 > 围栏之后】"));
+    }
 }

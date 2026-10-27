@@ -38,6 +38,14 @@ public class MarkdownStructureTextSplitter extends TextSplitter {
 
     private static final Pattern HEADING = Pattern.compile("^(#{1,6})\\s+(.+?)\\s*#*$");
 
+    /**
+     * 代码围栏行：行首（strip 后）至少三个反引号或波浪号，允许后跟语言标注。
+     *
+     * <p>只匹配行首的连续标记，避免把行内的 `` `code` `` 当成围栏 ——
+     * 行内代码永远不会单独成行且以三个反引号开头。
+     */
+    private static final Pattern FENCE = Pattern.compile("^(`{3,}|~{3,})");
+
     /** 标题路径前缀的最大长度，避免前缀比正文还长 */
     private static final int MAX_PREFIX_LENGTH = 120;
 
@@ -96,10 +104,22 @@ public class MarkdownStructureTextSplitter extends TextSplitter {
         String[] stack = new String[6];
         StringBuilder body = new StringBuilder();
         List<String> currentPath = List.of();
+        // 代码围栏状态：围栏内的 `# 注释` 不是标题
+        boolean inFence = false;
 
         for (String line : text.split("\n")) {
-            Matcher matcher = HEADING.matcher(line.strip());
-            if (matcher.matches()) {
+            // 围栏行本身必须原样进正文，且要先于标题匹配处理 ——
+            // 反引号开头的行不会被 HEADING 命中，但顺序写反会让 ``` 被 strip 掉后误判
+            if (isFenceLine(line)) {
+                inFence = !inFence;
+                body.append(line).append('\n');
+                continue;
+            }
+            // 围栏内的任何行都不参与标题识别：此前代码直接把每行喂给 HEADING，
+            // 于是代码块里的 `# 注释`、`## 小标题` 被当成真标题，
+            // 切点落在代码中间，片段语义随之破碎（评测里表现为同一条代码被切散）。
+            Matcher matcher = inFence ? null : HEADING.matcher(line.strip());
+            if (matcher != null && matcher.matches()) {
                 // 新标题：先把上一节收尾
                 if (body.toString().isBlank() == false || !currentPath.isEmpty()) {
                     sections.add(new Section(currentPath, body.toString()));
@@ -132,6 +152,19 @@ public class MarkdownStructureTextSplitter extends TextSplitter {
             }
         }
         return path;
+    }
+
+    /**
+     * 是否是代码围栏行（{@code ```} 或 {@code ~~~}，允许前置空白与语言标注）。
+     *
+     * <p>只认「行首（可含 ≤3 空格缩进）+ 至少三个同类标记」：Markdown 规范里
+     * 四空格缩进是代码块但由缩进表达、不靠围栏，这里不处理 —— 缩进代码块里的
+     * {@code #} 同样会被误判为标题，但那种写法在本项目的语料里不存在，且修正它
+     * 需要完整的缩进层级跟踪，收益不抵风险。
+     */
+    private static boolean isFenceLine(String line) {
+        String trimmed = line.strip();
+        return FENCE.matcher(trimmed).find();
     }
 
     // ------------------------------------------------------------------ 切节
