@@ -101,42 +101,62 @@ public class ModelConfigService {
     @Transactional(readOnly = true)
     public ResolvedConfig resolve() {
         AiModelConfigEntity entity = repository.findSingleton().orElse(null);
-        return merge(entity);
+        return resolveFromLegacy(entity);
     }
 
     /**
-     * 把数据库行与环境变量合并成生效配置。
+     * 把一套**新表**（V21 多配置）里的配置与环境变量合并成生效配置。
      *
-     * <p>逐字段回落：数据库列非 null 优先，否则用环境变量，最后用内置默认。
+     * @param profile 某一套配置；{@code null} 等价于「没有任何配置」
+     * @return 生效配置（密钥为明文，接口层必须掩码）
      */
-    private ResolvedConfig merge(AiModelConfigEntity entity) {
-        String baseUrl = firstNonBlank(
-                entity == null ? null : entity.getBaseUrl(), envBaseUrl, DEFAULT_BASE_URL);
-        String apiKey = firstNonBlank(entity == null ? null : entity.getApiKey(), envApiKey, "");
-        String chatModel = firstNonBlank(
-                entity == null ? null : entity.getChatModel(), envChatModel, DEFAULT_CHAT_MODEL);
+    public ResolvedConfig resolveFrom(AiModelProfileEntity profile) {
+        return merge(profile == null ? Values.EMPTY : Values.fromProfile(profile));
+    }
+
+    /**
+     * 把**旧单行表**（V20）里的配置与环境变量合并成生效配置。
+     *
+     * <p>保留这条路径是为了兼容：V21 迁移会把旧行搬进新表，但万一搬迁
+     * 因故没执行（例如在已被手工改过的库上升级），用户的配置不该凭空消失。
+     *
+     * @param entity 旧表的单行；{@code null} 表示从未保存过
+     */
+    public ResolvedConfig resolveFromLegacy(AiModelConfigEntity entity) {
+        return merge(entity == null ? Values.EMPTY : Values.fromLegacy(entity));
+    }
+
+    /**
+     * 把配置值与环境变量合并成生效配置。
+     *
+     * <p>逐字段回落：配置里的列非 null 优先，否则用环境变量，最后用内置默认。
+     *
+     * <p>入参是 {@link Values} 而不是某个实体：V20 单行表与 V21 多行表
+     * 字段完全一样，只是身份不同（单行 vs 多行）。为它们各写一份 merge
+     * 会让「三层回落」这套核心规则出现两份可能走偏的实现 ——
+     * 抽成值对象后只有一份。
+     */
+    private ResolvedConfig merge(Values values) {
+        String baseUrl = firstNonBlank(values.baseUrl(), envBaseUrl, DEFAULT_BASE_URL);
+        String apiKey = firstNonBlank(values.apiKey(), envApiKey, "");
+        String chatModel = firstNonBlank(values.chatModel(), envChatModel, DEFAULT_CHAT_MODEL);
         String embeddingModel = firstNonBlank(
-                entity == null ? null : entity.getEmbeddingModel(), envEmbeddingModel, DEFAULT_EMBEDDING_MODEL);
-        Double temperature = entity != null && entity.getTemperature() != null
-                ? entity.getTemperature()
-                : envTemperature;
+                values.embeddingModel(), envEmbeddingModel, DEFAULT_EMBEDDING_MODEL);
+        Double temperature = values.temperature() != null ? values.temperature() : envTemperature;
 
         // 每一项都记下「来源」，前端据此显示「来自环境变量」还是「设置页覆盖」。
         // 没有这个信息，用户改了 .env 发现不生效时无从判断是被覆盖了。
         Map<String, ConfigSource> sources = new LinkedHashMap<>();
-        sources.put("baseUrl", sourceOf(entity == null ? null : entity.getBaseUrl(), envBaseUrl));
-        sources.put("apiKey", sourceOf(entity == null ? null : entity.getApiKey(), envApiKey));
-        sources.put("chatModel", sourceOf(entity == null ? null : entity.getChatModel(), envChatModel));
-        sources.put("embeddingModel",
-                sourceOf(entity == null ? null : entity.getEmbeddingModel(), envEmbeddingModel));
-        sources.put("temperature", entity != null && entity.getTemperature() != null
+        sources.put("baseUrl", sourceOf(values.baseUrl(), envBaseUrl));
+        sources.put("apiKey", sourceOf(values.apiKey(), envApiKey));
+        sources.put("chatModel", sourceOf(values.chatModel(), envChatModel));
+        sources.put("embeddingModel", sourceOf(values.embeddingModel(), envEmbeddingModel));
+        sources.put("temperature", values.temperature() != null
                 ? ConfigSource.DATABASE
                 : (envTemperature != null ? ConfigSource.ENVIRONMENT : ConfigSource.DEFAULT));
 
         return new ResolvedConfig(baseUrl, apiKey, chatModel, temperature, embeddingModel,
-                entity == null ? null : entity.getRevision(),
-                entity == null ? null : entity.getUpdatedAt(),
-                sources);
+                values.revision(), values.updatedAt(), sources);
     }
 
     // ------------------------------------------------------------------ 写入
@@ -184,7 +204,7 @@ public class ModelConfigService {
                 now);
         repository.save(entity);
 
-        ResolvedConfig resolved = merge(entity);
+        ResolvedConfig resolved = merge(Values.fromLegacy(entity));
         log.info("模型配置已保存：revision={}, baseUrl={}, chatModel={}, 密钥{}",
                 entity.getRevision(), resolved.baseUrl(), resolved.chatModel(),
                 resolved.hasApiKey() ? "已设置" : "为空");
@@ -192,7 +212,7 @@ public class ModelConfigService {
     }
 
     /**
-     * 按当前生效配置重建聊天模型；失败时抛出可读的业务异常。
+     * 按生效配置重建聊天模型；失败时抛出可读的业务异常。
      *
      * <p>不吞异常：调用方需要知道「配置存下来了，但这套参数连不上」。
      *
@@ -200,6 +220,17 @@ public class ModelConfigService {
      * 会让事务整体回滚，连带把已经落库的配置一起撤销 —— 见 {@link #save} 的说明。
      */
     public void applyToRuntime(ResolvedConfig resolved) {
+        applyResolved(resolved);
+    }
+
+    /**
+     * 与 {@link #applyToRuntime} 同义。
+     *
+     * <p>多配置那边（{@link ModelProfileService#applyCurrent}）用的名字。
+     * 保留两个别名而不是重命名：{@code applyToRuntime} 已被既有测试与
+     * 控制器调用，改名会制造一次无意义的改动面。
+     */
+    public void applyResolved(ResolvedConfig resolved) {
         if (resolved.apiKey().isBlank()) {
             // 没有密钥时不去构造模型 —— 构造本身不校验密钥，但任何请求都会失败。
             // 保持现有模型不动（若环境变量那套仍可用，就不该因为设置页留空而失能）。
@@ -307,6 +338,55 @@ public class ModelConfigService {
     }
 
     // ------------------------------------------------------------------ 类型
+
+    /**
+     * 一份配置的**值**（不含身份）。
+     *
+     * <p>V20 单行表与 V21 多行表的配置字段完全一致，差的只是「一行还是多行」。
+     * 三层回落是同一套规则，不该为两种实体各写一份 —— 那样改一处漏一处时
+     * 只会在某条路径上静默用错默认值。这里抽成最小值对象，
+     * {@link #merge} 只看它。
+     *
+     * @param baseUrl        端点地址；null 表示未覆盖
+     * @param apiKey         密钥明文；null 表示未覆盖
+     * @param chatModel      对话模型名；null 表示未覆盖
+     * @param temperature    温度；null 表示未覆盖
+     * @param embeddingModel 嵌入模型名；null 表示未覆盖
+     * @param revision       配置版本；null 表示「从未保存过」
+     * @param updatedAt      最后保存时间；null 表示「从未保存过」
+     */
+    record Values(String baseUrl,
+                  String apiKey,
+                  String chatModel,
+                  Double temperature,
+                  String embeddingModel,
+                  Integer revision,
+                  Instant updatedAt) {
+
+        /** 「没有任何配置」—— 全部回落到环境变量与内置默认 */
+        static final Values EMPTY = new Values(null, null, null, null, null, null, null);
+
+        /**
+         * 从 V20 单行表实体取值。
+         *
+         * <p>两个实体各一个**具名**工厂，而不是同名 {@code of} 重载：
+         * 调用点的 `entity == null ? EMPTY : of(entity)` 里 {@code null} 在
+         * 两个重载间是二义的，编译直接失败。具名方法没有这个问题，
+         * 而且读起来就写明「这份值来自哪张表」。
+         */
+        static Values fromLegacy(AiModelConfigEntity entity) {
+            return new Values(entity.getBaseUrl(), entity.getApiKey(), entity.getChatModel(),
+                    entity.getTemperature(), entity.getEmbeddingModel(),
+                    entity.getRevision(), entity.getUpdatedAt());
+        }
+
+        /** 从 V21 多配置实体取值 */
+        static Values fromProfile(AiModelProfileEntity entity) {
+            return new Values(entity.getBaseUrl(), entity.getApiKey(), entity.getChatModel(),
+                    entity.getTemperature(), entity.getEmbeddingModel(),
+                    entity.getRevision(), entity.getUpdatedAt());
+        }
+    }
 
     /** 配置项的来源，用于前端区分「设置页覆盖」与「环境变量兜底」 */
     public enum ConfigSource {

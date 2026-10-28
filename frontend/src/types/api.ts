@@ -352,3 +352,61 @@ export interface ModelConnectionTestResult {
   /** 失败原因（已由后端翻成中文可操作说明）；成功时为 null */
   error: string | null
 }
+
+/**
+ * 一套模型配置（后端 `ModelProfileDto`，V21 多配置表）。
+ *
+ * **不含明文密钥**：`apiKeyMasked` 形如 `****8f3a`。卡片上的「编辑」表单
+ * 密钥框永远以空值 + placeholder 呈现，用户不填就表示「不改动」。
+ *
+ * `baseUrl` / `chatModel` 等是**生效值**（已合并环境变量兜底），
+ * 而 `sources` 说明每一项到底来自哪里 ——
+ * 没有它，用户会以为卡片上显示的值都是这张卡自己填的。
+ */
+export interface ModelProfile {
+  id: string
+  name: string
+  /** 预设标识；null 表示自定义配置 */
+  presetId: string | null
+  baseUrl: string
+  apiKeyMasked: string
+  hasApiKey: boolean
+  chatModel: string
+  temperature: number | null
+  embeddingModel: string
+  /** 是否当前生效 */
+  active: boolean
+  sortOrder: number
+  /** 配置内容被保存过几次；0 表示还没保存过内容 */
+  revision: number
+  updatedAt: string
+  sources: Record<'baseUrl' | 'apiKey' | 'chatModel' | 'embeddingModel' | 'temperature', ModelConfigSource>
+}
+
+/**
+ * 配置列表 + 当前生效者（后端 `ModelProfileListDto`）。
+ *
+ * `activeId` 单独给出而不让前端从数组里 find：让前端推断会出现
+ * 「两行都是 active」或「零行 active」两种不一致结果，
+ * 而后端明确给出唯一答案。
+ */
+export interface ModelProfileList {
+  profiles: ModelProfile[]
+  /** 当前生效的配置 id；null 表示没有任何配置生效（回落到环境变量） */
+  activeId: string | null
+}
+
+/**
+ * 新建 / 更新一套模型配置的请求体。
+ *
+ * `apiKey` 三态：`undefined` / `null` = 不改动，`""` = 清空回落，非空 = 覆盖。
+ */
+export interface SaveModelProfilePayload {
+  name: string
+  presetId?: string | null
+  baseUrl?: string | null
+  apiKey?: string | null
+  chatModel?: string | null
+  temperature?: number | null
+  embeddingModel?: string | null
+}

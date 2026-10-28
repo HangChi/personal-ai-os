@@ -222,6 +222,72 @@ class ModelConfigServiceTest {
         assertThat(service.resolve().apiKey()).isEqualTo("sk-two");
     }
 
+    // ------------------------------------------------------------------ 多配置表解析
+
+    /**
+     * V21 多配置表与 V20 单行表走**同一个** merge。
+     *
+     * <p>这条断言的价值在于防「为两种实体各写一份回落逻辑」：两份实现迟早会
+     * 走偏，而且症状是在某条路径上静默用了错的默认值 —— 没有任何异常可抓。
+     */
+    @Test
+    @DisplayName("resolveFrom(profile) 与旧表走同一套三层回落")
+    void resolveFromProfileUsesSameFallback() {
+        ModelConfigService service = service(
+                "https://env.example.com", "sk-env", "env-model", "env-embed", "0.3");
+        AiModelProfileEntity profile = new AiModelProfileEntity(
+                "测试配置", "dashscope", 0, NOW);
+        profile.overwrite("测试配置", "dashscope", "https://db.example.com", null,
+                "db-model", null, null, NOW);
+
+        ResolvedConfig resolved = service.resolveFrom(profile);
+
+        assertThat(resolved.baseUrl()).isEqualTo("https://db.example.com");
+        assertThat(resolved.apiKey()).as("profile 没填密钥，应回落环境变量").isEqualTo("sk-env");
+        assertThat(resolved.chatModel()).isEqualTo("db-model");
+        assertThat(resolved.embeddingModel()).isEqualTo("env-embed");
+        assertThat(resolved.temperature()).isEqualTo(0.3);
+        assertThat(resolved.sources())
+                .containsEntry("baseUrl", ConfigSource.DATABASE)
+                .containsEntry("apiKey", ConfigSource.ENVIRONMENT)
+                .containsEntry("chatModel", ConfigSource.DATABASE);
+    }
+
+    @Test
+    @DisplayName("resolveFrom(null) 等价于「没有任何配置」，全部回落到环境变量")
+    void resolveFromNullProfileFallsBackToEnvironment() {
+        ModelConfigService service = service(
+                "https://env.example.com", "sk-env", "env-model", "", "");
+
+        ResolvedConfig resolved = service.resolveFrom(null);
+
+        assertThat(resolved.baseUrl()).isEqualTo("https://env.example.com");
+        assertThat(resolved.apiKey()).isEqualTo("sk-env");
+        assertThat(resolved.chatModel()).isEqualTo("env-model");
+        assertThat(resolved.revision()).isNull();
+    }
+
+    @Test
+    @DisplayName("resolveFromLegacy(null) 等价于没有旧配置行")
+    void resolveFromNullLegacyFallsBackToDefaults() {
+        ModelConfigService service = service("", "", "", "", "");
+
+        ResolvedConfig resolved = service.resolveFromLegacy(null);
+
+        assertThat(resolved.baseUrl()).isEqualTo(ModelConfigService.DEFAULT_BASE_URL);
+        assertThat(resolved.chatModel()).isEqualTo(ModelConfigService.DEFAULT_CHAT_MODEL);
+    }
+
+    @Test
+    @DisplayName("applyResolved 与 applyToRuntime 同义")
+    void applyResolvedIsAliasOfApplyToRuntime() {
+        ModelConfigService service = service("https://env.example.com", "sk-env", "env-model", "", "");
+
+        service.applyResolved(service.resolve());
+
+        verify(factory).create("https://env.example.com", "sk-env", "env-model", null, java.util.Map.of());
+    }
+
     // ------------------------------------------------------------------ 掩码
 
     @Test
