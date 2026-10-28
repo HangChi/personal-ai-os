@@ -17,10 +17,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -52,14 +54,19 @@ import reactor.core.publisher.Flux;
  * 这是单测里 mock 掉 emitter 之后唯一证明不了的事。
  *
  * <h2>为什么单独一个类</h2>
- * 超时路径需要把 {@code app.chat.stream-timeout} 压到几百毫秒。放进大类的共享上下文里，
+ * 超时路径需要把 {@code app.chat.stream-timeout} 压到秒级以下。放进大类的共享上下文里，
  * 所有正常用例也会被这个上限约束（时紧时松，在 CI 上会变成间歇性失败）。
  * 单独一个上下文，代价是多起一个容器，换来的是确定性。
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.ai.model.chat=none",
-        // 压到 400ms：正常流（两段立即到达）仍在窗口内完成，慢流必超时
-        "app.chat.stream-timeout=400ms",
+        // 1500ms：要同时满足两件相反的事 ——
+        //   ① 慢尾 3 秒必须超时（1500 < 3000，留了一倍余量）
+        //   ② 互斥用例在「模型已进入」之后发第二条请求，此时第一条流必须还活着。
+        // 原先是 400ms，而互斥用例 sleep(400) 等锁，两者零余量对齐，实测只剩 68ms，
+        // 换线程模型就翻车。放宽到 1500ms 后，从模型进入到超时还有约 1.4 秒可用，
+        // 发一个本地请求绰绰有余。
+        "app.chat.stream-timeout=1500ms",
         // 关掉异步摘要，避免它再调一次桩模型干扰断言
         "app.context.summary.min-messages=100000"
 })
@@ -74,7 +81,7 @@ class ChatStreamTerminationIntegrationTest {
      * 可编排的桩模型。
      *
      * <p>{@code slowTail=true} 时：第一段立即返回，第二段延迟 3 秒 ——
-     * 于是超时（400ms）必然发生在「已有半截内容」之后。这比「一个字节都没出」更接近真实：
+     * 于是超时必然发生在「已有半截内容」之后。这比「一个字节都没出」更接近真实：
      * 用户看到的是一条说到一半就断掉的回答。
      */
     static class StubChatModel implements ChatModel {
@@ -85,6 +92,20 @@ class ChatStreamTerminationIntegrationTest {
         private final List<List<Message>> receivedInstructions = new CopyOnWriteArrayList<>();
         private volatile boolean slowTail;
 
+        /**
+         * 「模型已被调用」的信号，供会话互斥用例做确定性同步。
+         *
+         * <p>为什么可以拿它当「锁已持有」的证据：{@code ChatCompletionService.stream()} 里
+         * {@code activeStreams.putIfAbsent} 是同步执行的，而真正的模型调用发生在
+         * {@code Flux.defer} 的订阅阶段，即 putIfAbsent **之后**。所以只要看到这个方法被
+         * 调用，会话锁必然已经拿到。
+         *
+         * <p>用一个可重新布防的 latch 而不是一次性 latch：桩是单例、被同类所有用例共享，
+         * 而 JUnit 不保证用例顺序，必须由每个用例自己 arm。
+         */
+        private final AtomicReference<CountDownLatch> streamEntered =
+                new AtomicReference<>(new CountDownLatch(1));
+
         @Override
         public ChatResponse call(Prompt prompt) {
             receivedInstructions.add(List.copyOf(prompt.getInstructions()));
@@ -94,12 +115,23 @@ class ChatStreamTerminationIntegrationTest {
         @Override
         public Flux<ChatResponse> stream(Prompt prompt) {
             receivedInstructions.add(List.copyOf(prompt.getInstructions()));
+            streamEntered.get().countDown();
             ChatResponse first = response(FIRST_CHUNK);
             ChatResponse second = response(SECOND_CHUNK);
             if (!slowTail) {
                 return Flux.just(first, second);
             }
             return Flux.concat(Flux.just(first), Flux.just(second).delayElements(Duration.ofSeconds(3)));
+        }
+
+        /** 重新布防 {@link #streamEntered}，下一个用例才能等到属于它自己的那次调用 */
+        void armStreamEntry() {
+            streamEntered.set(new CountDownLatch(1));
+        }
+
+        /** 等模型被调用；返回 false 表示在超时内没等到（说明第一流根本没跑起来） */
+        boolean awaitStreamEntry(long timeout, TimeUnit unit) throws InterruptedException {
+            return streamEntered.get().await(timeout, unit);
         }
 
         @Override
@@ -223,13 +255,25 @@ class ChatStreamTerminationIntegrationTest {
     void concurrentStreamToSameSessionIsRejected() throws Exception {
         // 第一条流持续约 3 秒，保证第二条到达时它仍持有会话锁
         stub.slowTail(true);
+        stub.armStreamEntry();
         String conversationId = createSession();
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
             Future<List<SseEvent>> first = executor.submit(() -> streamEvents(conversationId, "第一条流"));
-            // 等第一条流建立连接并抢占会话锁（它在 start 事件之后、生成期间持续持锁）
-            Thread.sleep(400);
+            // 等模型真的被调用，而不是 sleep 一个猜出来的时长。
+            //
+            // 原先这里是 Thread.sleep(400)，而本类的 stream-timeout 恰好也是 400ms ——
+            // 「持锁 400ms」和「等 400ms」零余量对齐，谁先到全看调度。实测曾在
+            // 409 与超时之间只剩 68ms（50.520 / 50.588）。心跳线程模型一改，调度时序
+            // 偏移，这个用例就翻到另一侧（拿到 200 而不是 409）。那不是产品回归，
+            // 是测试把「锁还活着」赌在了超时窗口的缝隙上。
+            //
+            // 现在改成等桩模型的真实调用信号：putIfAbsent 在订阅之前同步完成，
+            // 所以模型被调用的那一刻，锁必然已被持有 —— 与超时设置彻底解耦。
+            assertThat(stub.awaitStreamEntry(5, TimeUnit.SECONDS))
+                    .as("第一条流未在 5 秒内进入模型调用，锁可能根本没被抢占")
+                    .isTrue();
 
             HttpResponse<String> second = streamRaw(conversationId, "第二条流");
             assertThat(second.statusCode())
@@ -237,9 +281,9 @@ class ChatStreamTerminationIntegrationTest {
                     .isEqualTo(409);
             assertThat(second.body()).contains("40900");
 
-            // 第一条流最终会收尾（本测试超时仅 400ms、慢尾 3 秒，故它必然超时 → error 而非 done），
+            // 第一条流最终会收尾（慢尾 3 秒必触发超时 → error 而非 done），
             // 关键是它正常结束并释放了锁 —— 断言「能等到结果」而不是具体是哪种结束
-            assertThat(first.get(10, TimeUnit.SECONDS)).isNotNull();
+            assertThat(first.get(15, TimeUnit.SECONDS)).isNotNull();
         } finally {
             executor.shutdownNow();
         }
