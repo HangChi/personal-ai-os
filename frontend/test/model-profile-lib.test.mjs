@@ -493,10 +493,26 @@ const PROFILE = {
   // 其它用途：不该出现在对话下拉里，但也不该被算成嵌入
   eq('语音模型判为 AUDIO', classifyModel('qwen3-tts-flash'), 'AUDIO')
   eq('ASR 判为 AUDIO', classifyModel('fun-asr-flash-2026-06-15'), 'AUDIO')
-  eq('实时语音判为 AUDIO', classifyModel('qwen3.5-omni-plus-realtime'), 'AUDIO')
   eq('图像模型判为 IMAGE', classifyModel('qwen-image-3.0-pro'), 'IMAGE')
   eq('z-image 判为 IMAGE', classifyModel('z-image-turbo'), 'IMAGE')
   eq('重排模型判为 RERANK', classifyModel('qwen3.7-text-rerank'), 'RERANK')
+
+  /*
+   * omni 是全模态，**能当对话模型**（这一组是回归用例）。
+   *
+   * 修正前的规则用 `realtime` 关键词一刀切，把 6 个 omni 变体全划成了 AUDIO，
+   * 于是它们从对话下拉里消失 —— 用户看到的是「183 个模型里只有 145 个对话模型」，
+   * 而实际应为 151 个。官方文档：输入 Text/Image/Video/Audio，输出 Text/Audio。
+   */
+  eq('omni 实时模型能当对话模型', classifyModel('qwen3.5-omni-plus-realtime'), 'CHAT')
+  eq('omni 非 realtime 变体判为对话', classifyModel('qwen3.5-omni-plus'), 'CHAT')
+  eq('omni-flash 判为对话', classifyModel('qwen3-omni-flash'), 'CHAT')
+  eq('omni 全模态带视频后缀仍判为对话', classifyModel('qwen3-omni-video-plus'), 'CHAT')
+  // 例外：omni 系列里明确只做语音合成/识别的，仍归 AUDIO
+  eq('omni-tts 只做语音合成，判为 AUDIO', classifyModel('qwen3-omni-tts'), 'AUDIO')
+  eq('omni-asr 只做语音识别，判为 AUDIO', classifyModel('qwen3-omni-asr'), 'AUDIO')
+  // 非 omni 的 realtime 仍是语音（没有全模态能力声明就不要放宽）
+  eq('普通 realtime 模型判为 AUDIO', classifyModel('gpt-4o-realtime-preview'), 'AUDIO')
 
   // 空值兜底：不抛异常，且归到安全侧
   eq('空串归为 CHAT', classifyModel(''), 'CHAT')

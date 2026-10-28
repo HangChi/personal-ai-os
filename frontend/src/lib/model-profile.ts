@@ -508,9 +508,9 @@ export function probeBlockedReason(
  *
  * <p>厂商的 `/v1/models` 是一个**扁平的、不带类型字段**的字符串数组：
  * 对话、嵌入、语音、图像、重排全混在里面（实测百炼一个端点返回 183 个，
- * 其中 145 个对话、23 个语音、12 个图像、2 个嵌入、1 个重排）。
+ * 其中 151 个对话、17 个语音、12 个图像、2 个嵌入、1 个重排）。
  * 所以「嵌入模型」下拉框如果直接复用这份原始列表，用户要在 183 项里
- * 翻找那 2 个真正能用的 —— 而 145 个对话模型全是选了会报错的死选项。
+ * 翻找那 2 个真正能用的 —— 151 个对话模型全是选了会报错的死选项。
  */
 export type ModelKind = 'CHAT' | 'EMBEDDING' | 'AUDIO' | 'IMAGE' | 'RERANK'
 
@@ -540,6 +540,25 @@ export function classifyModel(name: string): ModelKind {
   }
   if (/rerank/.test(n)) {
     return 'RERANK'
+  }
+  /*
+   * 全模态（omni）先于语音规则判定 —— 这是修正一处真实误判。
+   *
+   * `qwen3.5-omni-plus-realtime` 这类名字里带 `realtime`，曾被下面的语音规则
+   * 一刀切成 AUDIO，于是百炼 183 个模型里有 6 个 omni 变体从对话下拉里消失。
+   * 官方文档写明 omni 的输入为 Text/Image/Video/Audio、输出为 Text/Audio，
+   * 也就是**它能当普通对话模型用**，只是另外还支持实时语音。
+   *
+   * 例外：名字里同时带 tts / asr 的（如 `omni-tts`）确实只做语音合成/识别，
+   * 不能当对话模型，继续走 AUDIO。
+   *
+   * 注意这里只解决「分类」，「能不能用」是另一回事：部分 omni 模型只提供
+   * WebSocket 实时接口，走 OpenAI 兼容的 /chat/completions 可能失败 ——
+   * 所以它出现在下拉里是必要的（否则用户根本找不到），但失败时得有一句
+   * 能解释原因的提示，这由聊天页的错误透传负责。
+   */
+  if (/(^|[-_/])omni/.test(n) && !/(^|[-_/])tts|(^|[-_/])asr/.test(n)) {
+    return 'CHAT'
   }
   // 语音：asr / tts / speech / audio / realtime / whisper / paraformer / voice
   if (
