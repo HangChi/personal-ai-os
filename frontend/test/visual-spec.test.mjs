@@ -292,10 +292,21 @@ check('发送框：附件按钮有 aria-label（收字后仍可读）', /aria-la
 check('发送框：第一行是 meta-row（模型 + 字数）', /class="chat-composer__meta-row"/.test(composer))
 check('发送框：第二行是 tool-row（工具 + 动作组）', /class="chat-composer__tool-row"/.test(composer))
 
-// 推右：第一行归 count，第二行归 action-group —— 两行各有一个，且都只有一个
+/*
+ * 推右：第一行归 readouts（字数 + 上下文），第二行归 action-group。
+ *
+ * <h3>2026-10-29 为什么从 `.chat-composer__count` 改到 `.chat-composer__readouts`</h3>
+ * 字数与上下文合并成一个读数组后，`margin-left: auto` 必须挂在**容器**上。
+ * 挂在两个子元素上会触发 flex 的 auto margin **平摊**规则 —— 两者各分到
+ * 一半剩余空间，中间凭空出现一段等宽空隙，读起来是两个孤立的数字。
+ */
 check(
-  '发送框：字数统计在第一行推右（margin-left: auto）',
-  /\.chat-composer__count\s*\{[^}]*margin-left:\s*auto/.test(composer),
+  '发送框：读数组（字数 + 上下文）在第一行推右（margin-left: auto）',
+  /\.chat-composer__readouts\s*\{[^}]*margin-left:\s*auto/.test(composer),
+)
+check(
+  '发送框：字数自己不带 margin-left: auto（否则与容器叠加成两段空隙）',
+  !/\.chat-composer__count\s*\{[^}]*margin-left:\s*auto/.test(composer),
 )
 const motionGroupLeft = composer.match(/\.chat-composer__action-group\s*\{[^}]*margin-left:\s*([^;]+);/)
 check(

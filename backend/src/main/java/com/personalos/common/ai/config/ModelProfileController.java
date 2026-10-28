@@ -257,6 +257,7 @@ public class ModelProfileController {
                 namesOf(models, AiModelProfileModelEntity.Kind.CHAT),
                 namesOf(models, AiModelProfileModelEntity.Kind.EMBEDDING),
                 namesOf(models, AiModelProfileModelEntity.Kind.AUDIO),
+                contextWindowsOf(models),
                 // 用生效值而非 entity.getAudioModel()：前者带「清单第一项」语义，
                 // 后者是写入时的快照，两者在「清单为空但单值列还有残留」时会不一致
                 resolved.audioModel() == null ? "" : resolved.audioModel(),
@@ -265,6 +266,27 @@ public class ModelProfileController {
                 entity.getRevision(),
                 entity.getUpdatedAt(),
                 resolved.sources());
+    }
+
+    /**
+     * 清单里**已知**的模型窗口。
+     *
+     * <p>窗口未知的模型不出现在返回的映射里，而不是给一个 0 或默认值 ——
+     * 前端据此就能区分「这个模型的窗口是 32K」与「不知道它多长」。
+     * 后者应当提示用户可手填，而 0 会被当成一个合法读数拿去算占比。
+     */
+    private static Map<String, Integer> contextWindowsOf(List<AiModelProfileModelEntity> models) {
+        if (models == null || models.isEmpty()) {
+            return Map.of();
+        }
+        Map<String, Integer> out = new java.util.LinkedHashMap<>();
+        for (AiModelProfileModelEntity model : models) {
+            Integer window = model.getContextWindow();
+            if (window != null && model.kindEnum() == AiModelProfileModelEntity.Kind.CHAT) {
+                out.put(model.getModelName(), window);
+            }
+        }
+        return out;
     }
 
     /** 从清单里挑出某一类的模型名，保持库里的顺序 */
@@ -291,7 +313,8 @@ public class ModelProfileController {
                 request.embeddingModel(),
                 request.chatModels(),
                 request.embeddingModels(),
-                request.audioModels());
+                request.audioModels(),
+                request.contextWindows());
     }
 
     /**

@@ -17,7 +17,9 @@ import { uploadAttachment } from '@/api/chat'
 import { ElMessage } from 'element-plus'
 import ChatModelPicker from '@/components/chat/ChatModelPicker.vue'
 import ChatVoiceInput from '@/components/chat/ChatVoiceInput.vue'
+import ContextMeter from '@/components/chat/ContextMeter.vue'
 import { THINKING_HINTS, THINKING_LABELS, type ThinkingLevel } from '@/lib/settings'
+import type { ContextUsage } from '@/api/chat'
 import type { ChatAttachment } from '@/types/api'
 
 const props = defineProps<{
@@ -39,6 +41,8 @@ const props = defineProps<{
   chatModels: string[]
   /** 生效配置的默认模型名（供「跟随配置」提示） */
   defaultModel: string
+  /** 上下文用量（会话级读数，与字数并排） */
+  contextUsage: ContextUsage
 }>()
 
 const emit = defineEmits<{
@@ -49,7 +53,12 @@ const emit = defineEmits<{
   (e: 'toggle-knowledge', next: boolean): void
   (e: 'send', attachments: ChatAttachment[]): void
   (e: 'stop'): void
+  /** 改上下文预算（转发给 ContextMeter 的父级处理） */
+  (e: 'change-budget', tokens: number): void
 }>()
+
+/** 字数上限，与输入框的 `maxlength` 同源，避免两处硬编码漂移 */
+const MAX_LENGTH = 4000
 
 /**
  * 待发送的附件（阶段 22）。
@@ -300,11 +309,32 @@ onMounted(autosize)
         />
 
         <!--
-          右上段：字数统计。`0 / 4000` 是「这条还能打多少」，属于读数。
-          它不参与「工具」那一行，因为那一行要塞 4 个控件、窄屏要折行，
-          读数跟着折会把「数字」折到一个孤立的位置。
+          ============ 右侧读数组：字数 · 上下文 ============
+
+          <h3>为什么三者收进同一行（2026-10-29）</h3>
+          改造前这一行是「模型下拉（32px 表单框、16px 字）+ 字数（15px 高、
+          12px 字）」混排，而上下文仪表盘在消息卡片的头部 —— **同一个语义族
+          的读数被拆成两处、三种规格**。用户的原话：
+          「模型和 0/4000 还有上下文消耗样式还是太丑了」。
+
+          现在的规则只有一条：**这一行的一切都是 12px 的读数**，没有控件。
+          模型选择器改成裸文字按钮（24px 热区）后，它读起来也是「当前模型：xxx」
+          这条信息，而不是一个要填的表单框。三者等高、同字号、同一灰阶，
+          右侧用一条竖线把「本轮的生成参数」与「用量」分开。
+
+          <h3>为什么把仪表盘从卡片头部挪回来</h3>
+          它当年被挪走是因为**工具栏**放不下（160px 会挤走知识库条数）。
+          但这一行现在只有模型 + 两个短读数，1440px 下行宽 852、
+          960px 下 372 —— 实测三者合计 330px，一行绰绰有余，不再有挤走的理由。
+          留在头部则意味着一份数据画两遍，而两处的样式必然漂移。
         -->
-        <span class="chat-composer__count">{{ modelValue.length }} / 4000</span>
+        <div class="chat-composer__readouts">
+          <span class="chat-composer__count">{{ modelValue.length }} / {{ MAX_LENGTH }}</span>
+          <template v-if="contextUsage.budgetTokens > 0">
+            <span class="chat-composer__readout-sep" aria-hidden="true" />
+            <ContextMeter :usage="contextUsage" @change-budget="(tokens: number) => emit('change-budget', tokens)" />
+          </template>
+        </div>
       </div>
 
       <!--
@@ -521,19 +551,47 @@ onMounted(autosize)
 }
 
 /*
- * 右上段的字数统计：`margin-left: auto` 推右。
+ * 右上段的字数组：字数 · 上下文。
  *
- * <p>它与第一行的模型下拉构成「左边选谁答 / 右边还能打多少」的双端结构，
- * 而第二行（工具行）的动作组同样靠右 —— 两行的右边界因此都贴容器右内边。
+ * <h3>为什么包一层 div 而不是让两个 span 各自 `margin-left: auto`</h3>
+ * 两个都用 auto 会**平分**剩余空间（flex 的 auto margin 是平摊的），
+ * 于是字数与上下文之间凭空出现一段等宽的空隙 —— 读起来是两个孤立的数字。
+ * 包成一个整体后 `margin-left: auto` 只作用一次，内部由 `gap` 定间距，
+ * 两者成为一条连续的读数。
+ *
+ * <p>`align-items: center` 且高度一致（都是 24px 热区）：竖线分隔符
+ * 需要一个确定的上下界 —— 高度不齐时它会看起来是「斜着」的。
+ */
+.chat-composer__readouts {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--os-space-2);
+  margin-left: auto;
+}
+
+/*
+ * 字数统计：`0 / 4000`。
+ *
+ * <p>字号、颜色与上下文读数完全一致（12px / placeholder 灰）——
+ * 它们是同一族的读数，任何差异都会被读成「这两个数字重要性不同」，
+ * 而实际上用户对两者的关心程度只取决于内容，不取决于画面。
  */
 .chat-composer__count {
-  margin-left: auto;
+  flex: none;
   color: var(--el-text-color-placeholder);
   font-size: var(--os-font-xs);
   font-variant-numeric: tabular-nums;
   /* 「0 / 4000」在窄屏被压成「0 /」+「4000」两行（实测 h=30、w=32） */
-  flex: none;
   white-space: nowrap;
+}
+
+/* 读数之间的分隔线：1px、12px 高，比 gap 更能说明「这是两组读数」 */
+.chat-composer__readout-sep {
+  flex: none;
+  width: 1px;
+  height: 12px;
+  background: var(--el-border-color);
 }
 
 /*

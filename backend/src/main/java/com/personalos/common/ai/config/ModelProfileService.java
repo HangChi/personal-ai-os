@@ -137,7 +137,7 @@ public class ModelProfileService {
                 now);
         AiModelProfileEntity saved = repository.save(entity);
         replaceModels(saved.getId(), command.chatModels(), command.embeddingModels(),
-                command.audioModels());
+                command.audioModels(), command.contextWindows());
         log.info("已新建模型配置：id={}, name={}, 对话模型数={}, 嵌入模型数={}, 语音模型数={}",
                 saved.getId(), saved.getName(),
                 countOf(command.chatModels()), countOf(command.embeddingModels()),
@@ -172,7 +172,8 @@ public class ModelProfileService {
                 command.protocol(),
                 clock.instant());
         AiModelProfileEntity saved = repository.save(entity);
-        replaceModels(id, command.chatModels(), command.embeddingModels(), command.audioModels());
+        replaceModels(id, command.chatModels(), command.embeddingModels(), command.audioModels(),
+                command.contextWindows());
         log.info("已更新模型配置：id={}, name={}, revision={}, 对话模型数={}, 嵌入模型数={}, 语音模型数={}",
                 saved.getId(), saved.getName(), saved.getRevision(),
                 countOf(command.chatModels()), countOf(command.embeddingModels()),
@@ -433,19 +434,33 @@ public class ModelProfileService {
      * @param chatModels     对话模型名清单（按用户排序，可含空串，会被丢弃）
      * @param embeddingModels 嵌入模型名清单
      * @param audioModels    语音模型名清单（V24）
+     * @param contextWindows 模型名 → 上下文窗口（V25）；null 表示全都不指定
      */
     @Transactional
     public void replaceModels(UUID profileId, List<String> chatModels, List<String> embeddingModels,
                               List<String> audioModels) {
+        replaceModels(profileId, chatModels, embeddingModels, audioModels, null);
+    }
+
+    /**
+     * 整体替换模型清单（带上下文窗口，V25）。
+     *
+     * <p>窗口按模型名匹配而不是按位置：前端提交的是「名字 → 窗口」的映射，
+     * 与清单顺序无关。清单里没有的名字会被忽略 —— 那只说明用户删掉了那个模型，
+     * 它的窗口没有保留价值。
+     */
+    @Transactional
+    public void replaceModels(UUID profileId, List<String> chatModels, List<String> embeddingModels,
+                              List<String> audioModels, java.util.Map<String, Integer> contextWindows) {
         modelRepository.deleteByProfileId(profileId);
         // 必须立刻落库：紧接着的插入若是与旧行同名，会撞唯一约束
         modelRepository.flush();
 
         Instant now = clock.instant();
         List<AiModelProfileModelEntity> toSave = new ArrayList<>();
-        appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.CHAT, chatModels, now);
-        appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.EMBEDDING, embeddingModels, now);
-        appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.AUDIO, audioModels, now);
+        appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.CHAT, chatModels, now, contextWindows);
+        appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.EMBEDDING, embeddingModels, now, null);
+        appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.AUDIO, audioModels, now, null);
         if (!toSave.isEmpty()) {
             modelRepository.saveAll(toSave);
         }
@@ -479,6 +494,19 @@ public class ModelProfileService {
     private static void appendModels(List<AiModelProfileModelEntity> target, UUID profileId,
                                      AiModelProfileModelEntity.Kind kind,
                                      List<String> modelNames, Instant now) {
+        appendModels(target, profileId, kind, modelNames, now, null);
+    }
+
+    /**
+     * 把一组模型名转成实体并追加到目标列表；跳过空串与重复项。
+     *
+     * @param contextWindows 模型名 → 窗口；为 null 或该名字不在表里时，
+     *                       实体窗口留空（= 未知，运行期回落全局默认）
+     */
+    private static void appendModels(List<AiModelProfileModelEntity> target, UUID profileId,
+                                     AiModelProfileModelEntity.Kind kind,
+                                     List<String> modelNames, Instant now,
+                                     java.util.Map<String, Integer> contextWindows) {
         if (modelNames == null) {
             return;
         }
@@ -493,7 +521,13 @@ public class ModelProfileService {
             if (name.isEmpty() || !seen.add(name)) {
                 continue;
             }
-            target.add(new AiModelProfileModelEntity(profileId, kind, name, seen.size() - 1, now));
+            Integer window = contextWindows == null ? null : contextWindows.get(name);
+            // 用户没填时用内置对照表补一个合理的起点 —— 这是「比猜准一点」的默认值，
+            // 界面上可改。顺序：用户显式提交 > 内置表 > 未知
+            if (window == null) {
+                window = com.personalos.common.ai.ModelContextWindows.lookup(name);
+            }
+            target.add(new AiModelProfileModelEntity(profileId, kind, name, seen.size() - 1, window, now));
         }
     }
 
@@ -583,6 +617,8 @@ public class ModelProfileService {
      * @param chatModels      对话模型清单（V23）。**第一项即默认模型**，可为 null
      * @param embeddingModels 嵌入模型清单（V23）。第一项即默认，可为 null
      * @param audioModels     语音模型清单（V24）。第一项即默认，可为 null
+     * @param contextWindows  模型名 → 上下文窗口（V25）。缺省表示「未知」，
+     *                        运行期回落到全局配置
      */
     public record SaveProfileCommand(String name,
                                      String presetId,
@@ -594,7 +630,24 @@ public class ModelProfileService {
                                      String embeddingModel,
                                      List<String> chatModels,
                                      List<String> embeddingModels,
-                                     List<String> audioModels) {
+                                     List<String> audioModels,
+                                     java.util.Map<String, Integer> contextWindows) {
+
+        /** 兼容构造器：不带上下文窗口（V24 及以前的调用方与测试） */
+        public SaveProfileCommand(String name,
+                                  String presetId,
+                                  String baseUrl,
+                                  String protocol,
+                                  String apiKey,
+                                  String chatModel,
+                                  Double temperature,
+                                  String embeddingModel,
+                                  List<String> chatModels,
+                                  List<String> embeddingModels,
+                                  List<String> audioModels) {
+            this(name, presetId, baseUrl, protocol, apiKey, chatModel, temperature, embeddingModel,
+                    chatModels, embeddingModels, audioModels, null);
+        }
 
         /** 兼容构造器：不带语音模型（V23 及以前的调用方与测试） */
         public SaveProfileCommand(String name,
@@ -608,7 +661,7 @@ public class ModelProfileService {
                                   List<String> chatModels,
                                   List<String> embeddingModels) {
             this(name, presetId, baseUrl, protocol, apiKey, chatModel, temperature, embeddingModel,
-                    chatModels, embeddingModels, null);
+                    chatModels, embeddingModels, null, null);
         }
 
         /** 兼容构造器：只给单个模型名（V22 及以前的调用方与测试） */
@@ -616,7 +669,7 @@ public class ModelProfileService {
                                   String apiKey, String chatModel, Double temperature,
                                   String embeddingModel) {
             this(name, presetId, baseUrl, protocol, apiKey, chatModel, temperature, embeddingModel,
-                    null, null, null);
+                    null, null, null, null);
         }
     }
 }

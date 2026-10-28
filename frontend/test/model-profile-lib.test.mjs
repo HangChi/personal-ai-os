@@ -14,12 +14,16 @@ const {
   defaultChatModel,
   deleteBlockedReason,
   emptyForm,
+  formatContextWindow,
   hasChatModel,
   keySummary,
+  mergeProbedWindows,
   modelSummary,
   moveItem,
   moveModel,
   normalizeModelList,
+  parseContextWindow,
+  pickContextWindows,
   probeAlertType,
   probeBlockedReason,
   probeResultHint,
@@ -637,4 +641,106 @@ const PROFILE = {
   eq('端点完全没有嵌入模型时为空', modelCandidatesFor(['qwen-max'], 'EMBEDDING').length, 0)
   eq('对话候选计数不受已选影响', modelCandidatesFor(probed, 'CHAT').join(','), 'qwen-max')
   eq('null 入参不抛异常', modelCandidatesFor(null, 'EMBEDDING').length, 0)
+}
+
+// ---------------------------------------------------------------- 上下文窗口解析（V25）
+
+/*
+ * 这一组的口径：**用户能填进去的东西必须能算对，算不对的必须说清是无效**。
+ * 写错了不会报错，只会让仪表盘分母变成全局默认 —— 屏幕上是「/ 128K」，
+ * 而端点那边其实只有 32K，请求被 400 拒绝时用户完全联想不到是这里填的。
+ */
+
+{
+  // 纯数字是最常见的输入，直接照抄模型文档
+  eq('纯数字原样通过', parseContextWindow('32768'), 32768)
+  eq('数值入参同样通过', parseContextWindow(131072), 131072)
+
+  // 模型文档普遍写「32K context」，用户会照抄
+  eq('k 后缀按 1024 换算', parseContextWindow('32k'), 32768)
+  eq('大写 K 也认', parseContextWindow('32K'), 32768)
+  eq('m 后缀按 1024² 换算', parseContextWindow('1m'), 1048576)
+  eq('小数后缀可算', parseContextWindow('1.5m'), 1572864)
+
+  // 从文档里复制常带千分位
+  eq('半角逗号千分位', parseContextWindow('128,000'), 128000)
+  eq('全角逗号也认', parseContextWindow('128，000'), 128000)
+  eq('前后空格忽略', parseContextWindow('  32768  '), 32768)
+
+  // 非法输入一律 null，由服务端兜底 —— 绝不能返回 0
+  eq('空串是未知', parseContextWindow(''), null)
+  eq('纯空格是未知', parseContextWindow('   '), null)
+  eq('null 是未知', parseContextWindow(null), null)
+  eq('undefined 是未知', parseContextWindow(undefined), null)
+  eq('非数字是无效', parseContextWindow('很多'), null)
+  eq('小于下限是无效', parseContextWindow('512'), null)
+  eq('负数无效', parseContextWindow(-1), null)
+  eq('NaN 无效', parseContextWindow(Number.NaN), null)
+
+  /*
+   * 下限 1024 与后端 CHECK 一致。这条最容易被人「顺手放宽」——
+   * 把 1024 改成 1 会让仪表盘出现「/ 1」，用户看到 0% 用量的假象。
+   */
+  eq('恰好 1024 合法（边界含）', parseContextWindow('1024'), 1024)
+  eq('1023 不合法', parseContextWindow('1023'), null)
+}
+
+// ---------------------------------------------------------------- 窗口可读短写
+
+{
+  eq('32K 短写', formatContextWindow(32768), '32K')
+  eq('1M 短写', formatContextWindow(1048576), '1M')
+  eq('非整数 M 保留一位', formatContextWindow(1572864), '1.5M')
+  eq('非整数 K 保留一位', formatContextWindow(131072), '128K')
+  eq('小于 1024 原样', formatContextWindow(800), '800')
+  eq('未知返回空串', formatContextWindow(null), '')
+  eq('0 返回空串', formatContextWindow(0), '')
+}
+
+// ---------------------------------------------------------------- 提交时过滤窗口
+
+{
+  /*
+   * 核心不变量：**只有清单里还活着的模型才提交**。
+   * 前端保留已删模型的窗口是为了「删了又加回来不丢配置」，但那条数据
+   * 一旦进到后端就是无用行；更糟的是它会让人觉得「我删了它怎么还在」。
+   */
+  eq(
+    '已删模型的窗口不进请求体',
+    Object.keys(pickContextWindows(['qwen-max'], { 'qwen-max': 32768, 'qwen-long': 1048576 })).join(','),
+    'qwen-max',
+  )
+  eq('合法值保留', pickContextWindows(['a'], { a: 32768 }).a, 32768)
+  eq('非法值剔除', Object.keys(pickContextWindows(['a'], { a: 512 })).length, 0)
+  eq('空串剔除', Object.keys(pickContextWindows(['a'], { a: '' })).length, 0)
+  eq('undefined 映射不抛异常', Object.keys(pickContextWindows(['a'], undefined)).length, 0)
+  // 表单里存的是原文（用户可能填 `32k`），提交前必须换算成 token 数
+  eq('字符串 `32k` 提交成 32768', pickContextWindows(['a'], { a: '32k' }).a, 32768)
+}
+
+// ---------------------------------------------------------------- 探测结果合并（不覆盖用户输入）
+
+{
+  /*
+   * 探测可以重复点。**整体替换会把用户按文档手填的窗口冲成端点的值或空**，
+   * 而用户点这个按钮的本意是「看看有什么模型」，不是「重置窗口设置」。
+   */
+  const merged = mergeProbedWindows({ 'qwen-max': '200000' }, { 'qwen-max': 32768, 'qwen-long': 1048576 }, [
+    'qwen-max',
+    'qwen-long',
+  ])
+  eq('用户填过的值不被覆盖', merged['qwen-max'], '200000')
+  eq('空缺项用探测值补上', merged['qwen-long'], 1048576)
+
+  // 没探测到的模型保留空串（输入框需要可绑的值，undefined 会让它变成非受控）
+  const blank = mergeProbedWindows({}, undefined, ['qwen-max'])
+  eq('探测无结果时填空串', blank['qwen-max'], '')
+
+  // 清单里没有的模型不进结果：否则表单会变成「端点模型台账」
+  const scoped = mergeProbedWindows({}, { zzz: 32768 }, ['qwen-max'])
+  check('结果只含清单内的模型', !('zzz' in scoped))
+
+  // 探测值非法时不用它（端点可能把字符数当 token 报）
+  const bad = mergeProbedWindows({}, { 'qwen-max': 100 }, ['qwen-max'])
+  eq('探测到的非法窗口被忽略', bad['qwen-max'], '')
 }

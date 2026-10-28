@@ -392,6 +392,24 @@ export const useChatStore = defineStore('chat', () => {
     try {
       const updated = await setSessionModelApi(conversationId, model)
       sessions.value = sessions.value.map((item) => (item.conversationId === conversationId ? updated : item))
+      /*
+       * 重拉一次用量。
+       *
+       * <h3>为什么换模型必须重拉（V25 之后新增）</h3>
+       * V25 起上下文窗口是**模型**的属性：`qwen-max` 是 32K、`deepseek-v4-pro`
+       * 是 1M，同一个会话换一次模型，仪表盘的分母与历史裁剪阈值都会变。
+       * 不重拉的话界面会一直显示旧模型的分母 —— 用 1M 模型时显示「/ 32K」
+       * （白白浪费 97% 能力），或反过来在小模型上显示「/ 1M」，
+       * 用户以为还有余量而请求早已被端点拒绝。
+       *
+       * <p>失败不抛：用量是增强信息，查不到就不更新，不该让「切换模型」
+       * 这个动作显示为失败（模型其实已经切成功了）。
+       */
+      try {
+        contextUsage.value = await fetchContextUsage(conversationId)
+      } catch {
+        // 静默：保留旧读数，下一轮对话结束后会自然刷新
+      }
       return true
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '切换模型失败'

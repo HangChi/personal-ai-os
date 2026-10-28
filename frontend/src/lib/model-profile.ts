@@ -130,6 +130,22 @@ export interface ModelProfileForm {
    * 清单为空表示不配 —— 此时语音输入回落到浏览器自带的 Web Speech API。
    */
   audioModels: string[]
+  /**
+   * 模型名 → 上下文窗口（token，V25）。
+   *
+   * 为什么挂在表单而不是每个模型一个对象：清单本身是 `string[]`，
+   * 把它的元素改成对象会波及后端契约、排序函数、下拉选项等一大片；
+   * 而窗口只是「模型的一个可选注解」，用旁挂的映射表达最省改动。
+   *
+   * <p>**值是字符串而不是数字**：这一格直接绑到输入框上，用户会经历
+   * 「输入 1 → 输入 12 → 输入 128」的中间态。若存数字、显示格式化后的短写，
+   * 中间的 `128`（< 1024）会被判定非法而回滚成空串 —— 用户永远打不完一个数。
+   * 存原文、提交时才解析，输入过程就不会被自己的校验打断。
+   *
+   * <p>空串/`null`/非法文本都表示「未知」；`pickContextWindows` 提交时
+   * 会把它们剔除，由服务端的探测/内置表/全局默认依次兜底。
+   */
+  contextWindows: Record<string, number | string | null>
 }
 
 /** 空表单（新建时用） */
@@ -144,6 +160,7 @@ export function emptyForm(presetId: string | null = null): ModelProfileForm {
     temperature: null,
     embeddingModels: [],
     audioModels: [],
+    contextWindows: {},
   }
 }
 
@@ -175,6 +192,12 @@ export function toForm(profile: ModelProfile): ModelProfileForm {
      * `audioModel` 单值字段曾经是主数据来源。
      */
     audioModels: nonEmpty(profile.audioModels) ?? [],
+    /*
+     * 窗口映射直接照搬：后端只返回已知的那些，未知的模型压根不在表里。
+     * 这里不做 `?? {}` 之外的加工 —— 表单需要保留原样，
+     * 才能让用户看到「这个模型没有窗口数据」而不是被补一个 0。
+     */
+    contextWindows: { ...(profile.contextWindows ?? {}) },
   }
 }
 
@@ -212,6 +235,7 @@ export function buildProfilePayload(
   chatModels: string[]
   embeddingModels: string[]
   audioModels: string[]
+  contextWindows: Record<string, number>
 } {
   const trimmedKey = form.apiKey.trim()
   let apiKey: string | undefined
@@ -242,7 +266,140 @@ export function buildProfilePayload(
     chatModels,
     embeddingModels,
     audioModels,
+    // 只提交清单里还存在的模型的窗口：用户把某个模型删掉后，
+    // 它的窗口没有保留价值，留着只会让库里的映射越来越脏
+    contextWindows: pickContextWindows(chatModels, form.contextWindows),
   }
+}
+
+/**
+ * 从「模型名 → 窗口」里挑出清单还需要的那些，并丢掉非法值。
+ *
+ * <p>为什么在这里过滤而不是直接提交整张表：
+ * <ol>
+ *   <li>前端可能保留了已删除模型的历史窗口（为了「撤销删除」时不丢配置），
+ *       直接提交会让后端把无用数据写进库；</li>
+ *   <li>窗口值是用户手填的，可能是 0、负数或空串解析出的 NaN ——
+ *       任何一个进到后端都会变成「/ 0」这种无法解释的读数。</li>
+ * </ol>
+ */
+export function pickContextWindows(
+  models: string[],
+  windows: Record<string, number | string | null | undefined> | undefined,
+): Record<string, number> {
+  const out: Record<string, number> = {}
+  if (!windows) {
+    return out
+  }
+  for (const name of models) {
+    const parsed = parseContextWindow(windows[name])
+    if (parsed !== null) {
+      out[name] = parsed
+    }
+  }
+  return out
+}
+
+/** 窗口下限，与后端 `ck_ai_model_profile_model_ctx_window` 的 CHECK 一致 */
+export const CONTEXT_WINDOW_MIN = 1024
+
+/**
+ * 解析用户输入 / 后端值 → 合法的窗口 token 数；非法或未知返回 `null`。
+ *
+ * <h3>为什么要接受 `32k` 这种写法</h3>
+ * 用户看到模型文档写「32K context」时，最自然的输入就是 `32k`，而不是
+ * `32768`。不认这个写法，用户会以为输入框坏了（它看起来能打字，但一提交
+ * 就变回空）。`k`/`m` 后缀是 token 计数的通用简写，认得它们不需要额外成本。
+ *
+ * <h3>为什么容忍前后空格与千分位逗号</h3>
+ * 从文档里复制 `128,000` 是很常见的动作。这两个字符不影响数值语义，
+ * 拒绝它们只会让用户困惑于「为什么这个数字不行」。
+ */
+export function parseContextWindow(raw: number | string | null | undefined): number | null {
+  if (raw === null || raw === undefined) {
+    return null
+  }
+  if (typeof raw === 'number') {
+    return Number.isFinite(raw) && raw >= CONTEXT_WINDOW_MIN ? Math.round(raw) : null
+  }
+  const text = raw
+    .trim()
+    .toLowerCase()
+    .replace(/[,，\s]/g, '')
+  if (text.length === 0) {
+    return null
+  }
+  const match = /^(\d+(?:\.\d+)?)([km])?$/.exec(text)
+  if (!match) {
+    return null
+  }
+  const base = Number(match[1])
+  if (!Number.isFinite(base)) {
+    return null
+  }
+  const scale = match[2] === 'm' ? 1024 * 1024 : match[2] === 'k' ? 1024 : 1
+  const tokens = Math.round(base * scale)
+  return tokens >= CONTEXT_WINDOW_MIN ? tokens : null
+}
+
+/**
+ * 窗口的可读短写（`32768` → `32K`），作输入框右侧的换算提示。
+ *
+ * <p>只说 `32K` 不说 `32768` 是刻意的：用户填进去的是 token 数，但脑子里
+ * 记的是「32K 模型」。两个写法同时出现在一个 88px 的行里太挤，
+ * 而输入框本身已经显示原文，旁边只需要「这是多大」这一条信息。
+ */
+export function formatContextWindow(tokens: number | null | undefined): string {
+  if (tokens === null || tokens === undefined || !Number.isFinite(tokens) || tokens <= 0) {
+    return ''
+  }
+  if (tokens >= 1024 * 1024) {
+    const m = tokens / (1024 * 1024)
+    return `${Number.isInteger(m) ? m : m.toFixed(1)}M`
+  }
+  if (tokens >= 1024) {
+    const k = tokens / 1024
+    return `${Number.isInteger(k) ? k : k.toFixed(1)}K`
+  }
+  return String(tokens)
+}
+
+/**
+ * 把探测回来的窗口合并进表单，**不覆盖用户已填的值**。
+ *
+ * <h3>为什么不整体替换</h3>
+ * 探测是「再获取一次列表」这种可以重复点的动作。整体替换会把用户手填的
+ * 窗口（比如端点报错、他自己按文档填的 1M）冲成端点的值或空 —— 而用户
+ * 点这个按钮的本意是「看看有什么模型」，不是「重置我的窗口设置」。
+ * 只补空缺，用户填过的地方一律保持不动。
+ *
+ * <h3>为什么同时清掉「清单里已不存在」的键</h3>
+ * 探测成功后模型清单可能已被用户改过（删了几个）。残留的键不影响提交
+ * （`pickContextWindows` 会按清单过滤），但会让「撤销删除」之外的场景
+ * 里留着一堆看不见的数据，后续排查时难以解释。
+ */
+export function mergeProbedWindows(
+  current: Record<string, number | string | null>,
+  probed: Record<string, number> | undefined,
+  models: string[],
+): Record<string, number | string | null> {
+  const next: Record<string, number | string | null> = {}
+  for (const name of models) {
+    const existing = current[name]
+    if (existing !== undefined && existing !== null && String(existing).trim().length > 0) {
+      next[name] = existing
+      continue
+    }
+    const detected = probed?.[name]
+    if (typeof detected === 'number' && Number.isFinite(detected) && detected >= CONTEXT_WINDOW_MIN) {
+      next[name] = detected
+      continue
+    }
+    // 保留空串而不是删键：输入框需要有个可绑的值，undefined 会让
+    // 输入框变成非受控，打字后 Vue 与 DOM 会分叉。
+    next[name] = ''
+  }
+  return next
 }
 
 /**

@@ -31,6 +31,9 @@ import java.util.UUID;
  * @param chatModels      保存的对话模型清单（V23）。第一项即默认，可直接用于下拉
  * @param embeddingModels 保存的嵌入模型清单（V23）
  * @param audioModels     保存的语音模型清单（V24）。第一项即默认
+ * @param contextWindows  模型名 → 上下文窗口（V25）。**只含已知的**：
+ *                        未出现在此表的模型表示「窗口未知」，前端应提示可手填，
+ *                        运行期回落到全局配置
  * @param audioModel      生效的**默认**语音模型名（= 清单第一项）；空串表示没配，
  *                        此时聊天页的语音输入回落到浏览器自带识别
  * @param active          是否当前生效
@@ -52,10 +55,31 @@ public record ModelProfileDto(UUID id,
                               List<String> chatModels,
                               List<String> embeddingModels,
                               List<String> audioModels,
+                              Map<String, Integer> contextWindows,
                               String audioModel,
                               boolean active,
                               int sortOrder,
                               int revision,
                               Instant updatedAt,
                               Map<String, ConfigSource> sources) {
+
+    /** 紧凑构造器：空映射默认成空表，前端不必判两种「没有」 */
+    public ModelProfileDto {
+        contextWindows = contextWindows == null ? Map.of() : Map.copyOf(contextWindows);
+    }
+
+    /**
+     * 兼容构造器：不带上下文窗口（V24 及以前的调用方与测试）。
+     */
+    public ModelProfileDto(UUID id, String name, String presetId, String baseUrl, String protocol,
+                           String apiKeyMasked, boolean hasApiKey, String chatModel,
+                           Double temperature, String embeddingModel,
+                           List<String> chatModels, List<String> embeddingModels,
+                           List<String> audioModels, String audioModel, boolean active,
+                           int sortOrder, int revision, Instant updatedAt,
+                           Map<String, ConfigSource> sources) {
+        this(id, name, presetId, baseUrl, protocol, apiKeyMasked, hasApiKey, chatModel,
+                temperature, embeddingModel, chatModels, embeddingModels, audioModels,
+                null, audioModel, active, sortOrder, revision, updatedAt, sources);
+    }
 }

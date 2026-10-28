@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
@@ -428,5 +429,97 @@ class ModelListProbeServiceHttpTest {
         assertThat(result.ok()).isTrue();
         assertThat(receivedPaths).containsExactly("/compatible-mode/v1/models");
         assertThat(result.models()).containsExactly("qwen");
+    }
+
+    // ------------------------------------------------------------------ 上下文窗口（V25）
+
+    /*
+     * 为什么要在这里测窗口解析，而不是只测「字段名列表」：
+     * 五种字段名各写一次单测很容易「都绿但真实响应解析不出来」——
+     * 真正要保证的是「服务端返回的这段 JSON 能被翻译成映射」，
+     * 而这段 JSON 的形状只能由真实响应体来代表。
+     */
+
+    @Test
+    @DisplayName("OpenAI 兼容端点自报 context_length 时被带回")
+    void parsesContextLengthFromOpenAiCompatible() {
+        respond("/v1/models", 200, """
+                {"data":[
+                  {"id":"qwen-max","context_length":32768},
+                  {"id":"qwen-long","context_length":1000000}
+                ]}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        assertThat(result.ok()).isTrue();
+        assertThat(result.contextWindows())
+                .containsEntry("qwen-max", 32768)
+                .containsEntry("qwen-long", 1000000);
+    }
+
+    @Test
+    @DisplayName("vLLM 的 max_model_len 与聚合网关的 context_window 都能认")
+    void parsesAlternateWindowFieldNames() {
+        respond("/v1/models", 200, """
+                {"data":[
+                  {"id":"vllm-model","max_model_len":131072},
+                  {"id":"gateway-model","context_window":65536},
+                  {"id":"another","max_context_length":8192}
+                ]}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        assertThat(result.contextWindows())
+                .containsEntry("vllm-model", 131072)
+                .containsEntry("gateway-model", 65536)
+                .containsEntry("another", 8192);
+    }
+
+    @Test
+    @DisplayName("Ollama 把窗口塞在 model_info 的 *.context_length 里也能认")
+    void parsesNestedOllamaModelInfo() {
+        respond("/api/tags", 200, """
+                {"models":[
+                  {"name":"llama3:8b","model_info":{"llama.context_length":8192}}
+                ]}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OLLAMA, baseUrl, null);
+
+        assertThat(result.ok()).isTrue();
+        assertThat(result.contextWindows()).containsEntry("llama3:8b", 8192);
+    }
+
+    @Test
+    @DisplayName("原生 OpenAI 不返回窗口字段时，映射为空而不是乱填")
+    void absentWindowFieldsYieldEmptyMap() {
+        respond("/v1/models", 200, "{\"data\":[{\"id\":\"gpt-4o\"}]}");
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        assertThat(result.ok()).isTrue();
+        // 关键：不是「有 key 但值为 0」，而是**完全不含**这个模型 ——
+        // 前端据此区分「32K」与「不知道多长」
+        assertThat(result.contextWindows()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("明显不合理的窗口值被丢弃（把字符数当 token 报的端点）")
+    void rejectsImplausibleWindowValues() {
+        respond("/v1/models", 200, """
+                {"data":[
+                  {"id":"too-small","context_length":512},
+                  {"id":"too-large","context_length":100000000},
+                  {"id":"zero","context_length":0},
+                  {"id":"good","context_length":32768}
+                ]}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        assertThat(result.contextWindows())
+                .containsOnly(Map.entry("good", 32768));
     }
 }

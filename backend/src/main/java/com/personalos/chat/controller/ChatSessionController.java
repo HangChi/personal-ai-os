@@ -148,14 +148,19 @@ public class ChatSessionController {
      *
      * <p>单独端点而不是塞进消息列表：消息列表是高频读路径，
      * 而仪表盘数据只在选中会话时需要一次，且计算要扫消息表。
+     *
+     * <p>V25 起窗口与预算都按**该会话所用模型**给：仪表盘的分母必须是
+     * 「这个模型能吃多长」，而不是「配置里某个全局默认值」。否则用 32K 窗口的
+     * 模型时界面显示「/ 128K」，用户以为还有余量、实际请求已被端点拒绝。
      */
     @GetMapping("/sessions/{conversationId}/context")
     public ApiResponse<ChatContextUsageDto> contextUsage(@PathVariable String conversationId) {
-        sessionService.requireSession(conversationId);
+        var session = sessionService.requireSession(conversationId);
+        String model = session.getChatModel();
         return ApiResponse.ok(new ChatContextUsageDto(
                 completionService.estimatePromptTokens(conversationId),
-                contextBudget.budgetTokens(),
-                contextBudget.contextWindowTokens(),
+                contextBudget.budgetTokensFor(model),
+                contextBudget.contextWindowTokens(model),
                 true));
     }
 

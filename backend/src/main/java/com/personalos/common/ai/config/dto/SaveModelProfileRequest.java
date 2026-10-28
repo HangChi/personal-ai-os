@@ -1,6 +1,7 @@
 package com.personalos.common.ai.config.dto;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 新建 / 更新一套模型配置的请求体。
@@ -35,6 +36,9 @@ import java.util.List;
  * @param chatModels      对话模型清单；**第一项即默认模型**，null/空表示没有模型
  * @param embeddingModels 嵌入模型清单；第一项即默认，null/空表示没有模型
  * @param audioModels     语音模型清单（V24）；第一项即默认，null/空表示不配语音模型
+ * @param contextWindows  模型名 → 上下文窗口（V25）。**不传表示「不由前端指定」**，
+ *                        服务端会用内置对照表补；传了则以它为准。窗口为 null 的项
+ *                        等价于「用户清空了这个模型的窗口 = 未知」
  */
 public record SaveModelProfileRequest(String name,
                                       String presetId,
@@ -46,7 +50,17 @@ public record SaveModelProfileRequest(String name,
                                       String embeddingModel,
                                       List<String> chatModels,
                                       List<String> embeddingModels,
-                                      List<String> audioModels) {
+                                      List<String> audioModels,
+                                      Map<String, Integer> contextWindows) {
+
+    /** 兼容构造器：不带上下文窗口（V24 及以前的调用方） */
+    public SaveModelProfileRequest(String name, String presetId, String baseUrl, String protocol,
+                                   String apiKey, String chatModel, Double temperature,
+                                   String embeddingModel, List<String> chatModels,
+                                   List<String> embeddingModels, List<String> audioModels) {
+        this(name, presetId, baseUrl, protocol, apiKey, chatModel, temperature, embeddingModel,
+                chatModels, embeddingModels, audioModels, null);
+    }
 
     /**
      * 兼容构造器：只给单个模型名（V22 及以前的调用方与测试）。
@@ -58,6 +72,6 @@ public record SaveModelProfileRequest(String name,
                                    String apiKey, String chatModel, Double temperature,
                                    String embeddingModel) {
         this(name, presetId, baseUrl, protocol, apiKey, chatModel, temperature, embeddingModel,
-                null, null, null);
+                null, null, null, null);
     }
 }

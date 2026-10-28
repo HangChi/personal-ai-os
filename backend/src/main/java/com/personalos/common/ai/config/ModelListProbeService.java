@@ -10,9 +10,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -243,20 +247,30 @@ public class ModelListProbeService {
 
         // OpenAI / Anthropic 都用 data[].id；Ollama 用 models[].name
         List<String> ids = new ArrayList<>();
+        JsonNode array;
+        String nameField;
         if (protocol == ModelProtocol.OLLAMA) {
-            collectIds(root.path("models"), "name", ids);
+            array = root.path("models");
+            nameField = "name";
+            collectIds(array, nameField, ids);
             // 兜底：某些版本/反代在 /api/tags 也吐 OpenAI 形状
             if (ids.isEmpty()) {
-                collectIds(root.path("data"), "id", ids);
+                array = root.path("data");
+                nameField = "id";
+                collectIds(array, nameField, ids);
             }
         } else {
-            collectIds(root.path("data"), "id", ids);
+            array = root.path("data");
+            nameField = "id";
+            collectIds(array, nameField, ids);
             if (ids.isEmpty()) {
                 // 少数中转站直接返回数组，或把列表放在 models 下
                 if (root.isArray()) {
-                    collectIds(root, "id", ids);
+                    array = root;
+                    collectIds(array, nameField, ids);
                 } else {
-                    collectIds(root.path("models"), "id", ids);
+                    array = root.path("models");
+                    collectIds(array, nameField, ids);
                 }
             }
         }
@@ -272,8 +286,94 @@ public class ModelListProbeService {
                 .sorted(Comparator.comparing(String::toLowerCase, String.CASE_INSENSITIVE_ORDER))
                 .limit(MAX_MODELS)
                 .toList();
-        log.info("模型列表探测成功：{} {} → {} 个模型，耗时 {}ms", protocol, uri, sorted.size(), latencyMs);
-        return new ModelListResult(true, sorted, latencyMs, null);
+        Map<String, Integer> windows = collectContextWindows(array, nameField, sorted);
+        log.info("模型列表探测成功：{} {} → {} 个模型（其中 {} 个自报上下文窗口），耗时 {}ms",
+                protocol, uri, sorted.size(), windows.size(), latencyMs);
+        return new ModelListResult(true, sorted, latencyMs, null, null, windows);
+    }
+
+    /**
+     * 从模型列表里提取自报的上下文窗口（V25）。
+     *
+     * <h3>为什么字段名要试这么多个</h3>
+     * 没有标准。各家各写各的，实测与文档里见过的至少有五种：
+     * <ul>
+     *   <li>{@code context_length} —— OpenAI 兼容中转、部分 vLLM 部署</li>
+     *   <li>{@code context_window} —— 部分聚合网关</li>
+     *   <li>{@code max_model_len} —— vLLM 原生</li>
+     *   <li>{@code max_context_length} / {@code max_input_tokens} —— 少数中转站</li>
+     *   <li>Ollama 的 {@code model_info.*.context_length} —— 嵌套在元信息里</li>
+     * </ul>
+     * 原生 OpenAI 与 Anthropic 的 {@code /models} **都不返回**这个字段，
+     * 所以「一个都没解析到」是常态，不是异常 —— 此时返回空表，
+     * 由内置对照表与用户手填兜底。
+     *
+     * <p>只收录通过下限校验的值：把 0、负数、明显是字符数（如 100000000）
+     * 之类的东西写进界面，比留空更糟 —— 用户会照着它去调预算。
+     */
+    private static Map<String, Integer> collectContextWindows(JsonNode array, String nameField,
+                                                              List<String> wanted) {
+        if (array == null || !array.isArray() || wanted.isEmpty()) {
+            return Map.of();
+        }
+        Set<String> keep = new HashSet<>(wanted);
+        Map<String, Integer> out = new HashMap<>();
+        for (JsonNode node : array) {
+            JsonNode nameNode = node.path(nameField);
+            if (!nameNode.isString()) {
+                continue;
+            }
+            String name = nameNode.asString();
+            if (!keep.contains(name)) {
+                continue;
+            }
+            Integer window = readWindow(node);
+            if (window != null) {
+                out.put(name, window);
+            }
+        }
+        return out;
+    }
+
+    /** 按上述多种字段名依次尝试读一个合理的窗口值；都不像就返回 null */
+    private static Integer readWindow(JsonNode node) {
+        for (String field : new String[] {
+                "context_length", "context_window", "max_model_len",
+                "max_context_length", "max_input_tokens"}) {
+            JsonNode value = node.path(field);
+            if (value.isNumber()) {
+                int window = value.asInt();
+                if (isPlausibleWindow(window)) {
+                    return window;
+                }
+            }
+        }
+        // Ollama /api/tags 把它塞在 model_info 下，键名形如 "llama.context_length"
+        JsonNode info = node.path("model_info");
+        if (info.isObject()) {
+            java.util.Iterator<Map.Entry<String, JsonNode>> it = info.properties().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, JsonNode> entry = it.next();
+                if (entry.getKey().endsWith(".context_length") && entry.getValue().isNumber()) {
+                    int window = entry.getValue().asInt();
+                    if (isPlausibleWindow(window)) {
+                        return window;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 窗口是否像真的：1024 ~ 32M。
+     *
+     * <p>下限 1024 因为再小的窗口连系统提示都放不下，不可能是「上下文窗口」；
+     * 上限 32M 用来挡掉把**字符数**当 token 报的端点（1M token ≈ 160 万汉字，
+     * 报成 1.6 亿就明显是字符口径）。超出范围的宁可当「未知」。
+     */
+    private static boolean isPlausibleWindow(int window) {
+        return window >= 1024 && window <= 32 * 1024 * 1024;
     }
 
     /** 从数组节点的每个元素里取指定字段；缺失或非文本字段直接跳过 */

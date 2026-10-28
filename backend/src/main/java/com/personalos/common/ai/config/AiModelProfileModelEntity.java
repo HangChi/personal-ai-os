@@ -69,6 +69,22 @@ public class AiModelProfileModelEntity {
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
+    /**
+     * 该模型支持的上下文窗口（token）。NULL = 未知，回落到全局配置（V25）。
+     *
+     * <h3>为什么挂在模型行上而不是配置行上</h3>
+     * 一套配置下可以同时有 {@code qwen-max}（32K）与 {@code qwen-long}（1M），
+     * 窗口差 30 倍。挂在配置上就只能填一个值，必然对其中一个模型是错的。
+     *
+     * <h3>为什么允许 NULL 而不是给个默认值</h3>
+     * NULL 的语义是「不知道」。此时回落到 {@code app.ai.memory.context-window-tokens}
+     * —— 这是**已有数据的行为**，本次迁移不改变任何存量模型的运行表现。
+     * 若填一个猜的默认值，界面上会显示一个看起来精确、实际可能错的数，
+     * 用户没有理由怀疑它，反而更危险。
+     */
+    @Column(name = "context_window")
+    private Integer contextWindow;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -87,10 +103,27 @@ public class AiModelProfileModelEntity {
      */
     public AiModelProfileModelEntity(UUID profileId, Kind kind, String modelName,
                                      int sortOrder, Instant now) {
+        this(profileId, kind, modelName, sortOrder, null, now);
+    }
+
+    /**
+     * 新建一条清单项（带上下文窗口，V25）。
+     *
+     * @param profileId     所属配置
+     * @param kind          用途
+     * @param modelName     模型名（调用方负责去空白与非空）
+     * @param sortOrder     清单内顺序
+     * @param contextWindow 上下文窗口（token）；null 或非法值表示未知，
+     *                      运行期回落到全局配置
+     * @param now           当前时间
+     */
+    public AiModelProfileModelEntity(UUID profileId, Kind kind, String modelName,
+                                     int sortOrder, Integer contextWindow, Instant now) {
         this.profileId = profileId;
         this.kind = kind.name();
         this.modelName = modelName;
         this.sortOrder = sortOrder;
+        setContextWindow(contextWindow);
         this.createdAt = now;
     }
 
@@ -128,6 +161,22 @@ public class AiModelProfileModelEntity {
 
     public int getSortOrder() {
         return sortOrder;
+    }
+
+    /** 该模型的上下文窗口（token）；null 表示未知，调用方应回落到全局配置 */
+    public Integer getContextWindow() {
+        return contextWindow;
+    }
+
+    /**
+     * 设置上下文窗口。
+     *
+     * <p>低于 1024 一律当「未知」处理成 null，而不是抛异常：这个值可能来自
+     * 端点探测的外来数据（字段单位可能是 K 或字符数），把一个明显不合理的数
+     * 落库会让仪表盘显示「/ 1」这种无法解释的状态。库层也有同样的 CHECK 兜底。
+     */
+    public void setContextWindow(Integer contextWindow) {
+        this.contextWindow = contextWindow == null || contextWindow < 1024 ? null : contextWindow;
     }
 
     public Instant getCreatedAt() {

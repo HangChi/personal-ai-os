@@ -159,8 +159,12 @@ public class JpaChatMemory implements ChatMemory {
     private List<ChatMessageEntity> selectWindow(String conversationId) {
         int limit = aiProperties.memory().maxMessages();
         // 字符预算来自「用户选择的 token 预算」折算，而不是配置里的写死阈值 ——
-        // 这样仪表盘显示的分母与实际裁剪阈值永远是同一个数
-        int charBudget = contextBudget.effectiveCharBudget();
+        // 这样仪表盘显示的分母与实际裁剪阈值永远是同一个数。
+        //
+        // V25 起按**该会话所用模型**的窗口收敛：用户在 1M 模型下选了 300K 预算，
+        // 切到 32K 窗口的模型后必须按 32K 裁，否则请求会被端点拒
+        // （400 context length exceeded），而界面上还显示「才用了 30%」。
+        int charBudget = contextBudget.effectiveCharBudgetFor(resolveSessionModel(conversationId));
 
         // 仓储按 sequenceNo 倒序取出「最后 N 条」（最新在前）
         List<ChatMessageEntity> recent = messageRepository
@@ -179,6 +183,33 @@ public class JpaChatMemory implements ChatMemory {
         // 上面按「新 → 旧」挑，这里转回正序
         Collections.reverse(picked);
         return picked;
+    }
+
+    /**
+     * 该会话实际使用的模型名；没显式选过时回落到生效配置的默认模型。
+     *
+     * <p>查会话表是一次主键查询，与窗口裁剪同样在「送模型之前」这条路径上 ——
+     * 相比一次模型调用的耗时可以忽略，不值得为它加缓存（缓存反而要在
+     * 「用户切模型」时失效，容易漏）。
+     *
+     * <p>读失败不能让聊天挂掉：返回 null，{@link ContextBudgetService#contextWindowTokens(String)}
+     * 会回落到内置表或全局默认。宁可窗口估得保守，也不能因为读不到一个可选的
+     * 优化项而拒绝服务。
+     */
+    private String resolveSessionModel(String conversationId) {
+        try {
+            return sessionRepository.findById(conversationId)
+                    .map(entity -> entity.getChatModel() == null || entity.getChatModel().isBlank()
+                            ? null
+                            : entity.getChatModel())
+                    // 会话没选模型 → null 表示「跟随生效配置」，由预算服务回落到默认窗口。
+                    // 这里不主动去查配置的默认模型名：那样会引入对 ModelProfileService
+                    // 的依赖，而预算服务本来就能用全局默认值兜住这一档。
+                    .orElse(null);
+        } catch (RuntimeException ex) {
+            log.warn("读取会话 {} 的模型失败，窗口按默认处理：{}", conversationId, ex.toString());
+            return null;
+        }
     }
 
     /**

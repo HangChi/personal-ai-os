@@ -23,6 +23,8 @@ package com.personalos.common.ai;
 @org.springframework.stereotype.Component
 public class ContextBudgetService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ContextBudgetService.class);
+
     /**
      * 字符 / token 折算比（中文口径）。
      *
@@ -40,6 +42,19 @@ public class ContextBudgetService {
 
     private final AiProperties aiProperties;
 
+    /**
+     * 按模型名查窗口的钩子（V25）。
+     *
+     * <p>用函数式依赖而不是直接注入 {@code ModelProfileService}：后者在构造期
+     * 依赖 {@code ModelConfigService}，而 Config 服务又可能回头要本类 —— 直接注入
+     * 会形成循环。用 {@code Supplier} 形式的查询器把依赖方向掰直：
+     * 谁拥有模型清单谁注册进来，且可以晚于本类构造。
+     *
+     * <p>刻意**不做**成 Spring 事件或静态字段：一个 setter 注册即可，
+     * 多一层间接只会让「谁在什么时候被注册」变难追。
+     */
+    private volatile java.util.function.Function<String, Integer> windowLookup = name -> null;
+
     /** 用户选择的预算（token）。volatile：可能被设置接口并发修改 */
     private volatile int budgetTokens;
 
@@ -52,9 +67,56 @@ public class ContextBudgetService {
         this.budgetTokens = Math.min(DEFAULT_BUDGET_TOKENS, window);
     }
 
-    /** 模型支持的上下文窗口（token） */
+    /**
+     * 注册「按模型名查窗口」的查询器。
+     *
+     * @param lookup 输入模型名，返回该模型的窗口；未知返回 null。
+     *               必须是幂等、无副作用的读操作 —— 它会在每次取窗口时被调用。
+     */
+    public void registerWindowLookup(java.util.function.Function<String, Integer> lookup) {
+        this.windowLookup = lookup == null ? name -> null : lookup;
+    }
+
+    /** 模型支持的上下文窗口（token）—— 全局默认值，不看具体模型 */
     public int contextWindowTokens() {
         return aiProperties.memory().contextWindowTokens();
+    }
+
+    /**
+     * 某个模型支持的上下文窗口（token）。
+     *
+     * <p>三级回落，顺序不能颠倒：
+     * <ol>
+     *   <li><b>配置里该模型的窗口</b>：用户在设置页填的，或探测/内置表带出来的；</li>
+     *   <li><b>内置对照表</b>：配置里没填但模型名能认出来（{@code qwen-max} → 32K）；</li>
+     *   <li><b>全局默认</b>：都不认识时用 {@code app.ai.memory.context-window-tokens}。</li>
+     * </ol>
+     *
+     * <p>这里查内置表是**有必要**的重复：配置可能在 V25 之前就建好了
+     * （那时没有窗口列，值为 NULL），而模型名本身是可识别的。
+     * 不查表就会让存量配置一律回落到 128K，等于本次改造对老用户无效。
+     *
+     * @param modelName 模型名；null/空 表示「没有具体模型」，直接返回全局默认
+     */
+    public int contextWindowTokens(String modelName) {
+        if (modelName == null || modelName.isBlank()) {
+            return contextWindowTokens();
+        }
+        String name = modelName.strip();
+        try {
+            Integer fromConfig = windowLookup.apply(name);
+            if (fromConfig != null && fromConfig >= 1024) {
+                return fromConfig;
+            }
+        } catch (RuntimeException ex) {
+            // 查询器读数据库失败不能让整个聊天挂掉：回落到默认值，记一笔即可
+            log.warn("查询模型 {} 的上下文窗口失败，回落到内置表/全局默认：{}", name, ex.toString());
+        }
+        Integer known = ModelContextWindows.lookup(name);
+        if (known != null) {
+            return known;
+        }
+        return contextWindowTokens();
     }
 
     /** 用户当前选择的预算（token） */
@@ -63,19 +125,61 @@ public class ContextBudgetService {
     }
 
     /**
+     * 在指定模型窗口下生效的预算（token）。
+     *
+     * <p>为什么要「收敛」而不是直接用 {@code budgetTokens}：预算是用户在某个
+     * 模型下选的，换到窗口更小的模型后那个数可能超出模型能力。此时必须按
+     * **模型的**窗口截断，否则请求会被端点拒绝（400 context length exceeded）。
+     * 注意这里**不写回** {@code budgetTokens}：换回大窗口模型时用户原来的
+     * 预算应当还在，被一次小模型访问永久改小是意外损失。
+     *
+     * @param modelName 当前会话使用的模型
+     */
+    public int budgetTokensFor(String modelName) {
+        int window = contextWindowTokens(modelName);
+        return Math.min(budgetTokens, window);
+    }
+
+    /**
      * 设置预算（token）。
      *
      * <p>收敛到 {@code [1, 模型窗口]}：超过模型窗口的预算没有意义
      * （模型根本吃不下），小于 1 会让窗口永远为空。
+     *
+     * <p>上界取**全局最大窗口**而不是某个模型的窗口：设置接口不知道用户
+     * 之后会切到哪个模型，用某个具体模型的窗口当上界会让「给 1M 模型选 300K」
+     * 在那一刻被错误地压到 32K。
      */
     public void setBudgetTokens(int tokens) {
-        int window = contextWindowTokens();
-        this.budgetTokens = Math.min(Math.max(tokens, 1), window);
+        this.budgetTokens = Math.min(Math.max(tokens, 1), maxKnownWindow());
+    }
+
+    /**
+     * 系统知道的**最大**窗口：全局默认与 1M 取大者。
+     *
+     * <p>用它做预算上界，比用「当前模型的窗口」宽松 —— 用户可以在 32K 模型下
+     * 先选好 300K 的预算，切到 1M 模型时立即生效，不必再改一次。
+     * 真正保护模型的是 {@link #budgetTokensFor(String)} 的截断。
+     */
+    private int maxKnownWindow() {
+        return Math.max(contextWindowTokens(), 1_048_576);
     }
 
     /** 折算成字符预算 —— 窗口裁剪用的就是这个数 */
     public int effectiveCharBudget() {
         return (int) Math.round(budgetTokens * CHARS_PER_TOKEN);
+    }
+
+    /**
+     * 在指定模型窗口下折算的字符预算（V25）。
+     *
+     * <p>这是窗口裁剪**真正**该用的值：换到窗口小的模型后，字符预算也要跟着降，
+     * 否则「仪表盘显示占满了」而「实际还在往里塞」，请求直接被端点拒绝。
+     *
+     * @param modelName 当前会话使用的模型名
+     */
+    public int effectiveCharBudgetFor(String modelName) {
+        return (int) Math.round(budgetTokensFor(modelName) * CHARS_PER_TOKEN);
     }
 
     /**

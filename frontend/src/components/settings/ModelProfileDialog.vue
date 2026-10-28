@@ -27,9 +27,12 @@ import {
   TEMPERATURE_MIN,
   buildProfilePayload,
   emptyForm,
+  formatContextWindow,
+  mergeProbedWindows,
   moveModel,
   modelCandidatesFor,
   modelOptionsFor,
+  parseContextWindow,
   probeAlertType,
   probeBlockedReason,
   probeResultHint,
@@ -194,6 +197,19 @@ async function handleProbe(): Promise<void> {
       apiKey: form.apiKey.trim().length > 0 ? form.apiKey : undefined,
       profileId: props.profile?.id ?? null,
     })
+    /*
+     * 把探测到的窗口补进表单。
+     *
+     * <p>**只补空缺、不覆盖用户手填的值**：探测可以重复点，整体替换会把
+     * 用户按文档手填的窗口冲掉 —— 而点这个按钮的本意是「看看有什么模型」。
+     * 详见 `mergeProbedWindows`。
+     *
+     * <p>只对已在本配置清单里的模型生效：探测结果里往往有一百多个模型，
+     * 全写进表单会让「表单」变成「端点模型台账」，提交时还得再过滤一遍。
+     */
+    if (probeResult.value.ok) {
+      form.contextWindows = mergeProbedWindows(form.contextWindows, probeResult.value.contextWindows, form.chatModels)
+    }
   } catch (cause) {
     probeResult.value = {
       ok: false,
@@ -271,7 +287,14 @@ const canAddEmbeddingModel = computed(() => embeddingModelDraft.value.trim().len
 const canAddAudioModel = computed(() => audioModelDraft.value.trim().length > 0)
 
 function handleAddChatModel(): void {
+  const before = form.chatModels
   form.chatModels = appendModel(form.chatModels, chatModelDraft.value)
+  // 真加进去了才补窗口（appendModel 遇到重复项会返回原数组）。
+  // 用探测值预填：用户在「获取模型列表」之后加模型，窗口大概率已经在
+  // probeResult 里了，让他再手抄一遍纯属多余。
+  if (form.chatModels !== before) {
+    form.contextWindows = mergeProbedWindows(form.contextWindows, probeResult.value?.contextWindows, form.chatModels)
+  }
   chatModelDraft.value = ''
 }
 
@@ -315,6 +338,43 @@ function removeModel(kind: 'chat' | 'embedding' | 'audio', index: number): void 
 /** 提交结束后由父组件调用，关闭对话框（失败时父组件不关） */
 function finish(): void {
   submitting.value = false
+}
+
+/**
+ * 某一行的窗口输入提示。
+ *
+ * <p>分三种语气，与输入框的三种状态一一对应：
+ * <ul>
+ *   <li>空 → 说清「留空会怎样」（回落内置表/全局默认），这是最常见的状态；</li>
+ *   <li>合法 → 只报换算结果，不啰嗦；</li>
+ *   <li>非法 → 指出为什么不行（下限 1024），并说明提交时会怎样。</li>
+ * </ul>
+ */
+function windowHint(name: string): string {
+  const raw = form.contextWindows[name]
+  if (raw === undefined || raw === null || String(raw).trim().length === 0) {
+    return '留空表示未知，按内置模型对照表或全局默认窗口处理'
+  }
+  const parsed = parseContextWindow(raw)
+  if (parsed === null) {
+    return '认不出这个值。可以填 32768、32k、1m 这类写法，最小 1024'
+  }
+  return `${parsed} token。这个会话用它时，仪表盘的分母与历史裁剪阈值都按它算`
+}
+
+/** 输入框右侧的换算短写；非法时给出警示文案 */
+function windowNote(name: string): { text: string; bad: boolean; hint: string } {
+  const raw = form.contextWindows[name]
+  if (raw === undefined || raw === null || String(raw).trim().length === 0) {
+    // 空着不显示「自动」两个字：那个词会让人以为这里有个开关在生效。
+    // 真要知道兜底逻辑，输入框的 title 里有完整说明。
+    return { text: '', bad: false, hint: '' }
+  }
+  const parsed = parseContextWindow(raw)
+  if (parsed === null) {
+    return { text: '无效', bad: true, hint: windowHint(name) }
+  }
+  return { text: `= ${formatContextWindow(parsed)}`, bad: false, hint: windowHint(name) }
 }
 
 defineExpose({ finish })
@@ -504,9 +564,49 @@ defineExpose({ finish })
         -->
         <div v-if="form.chatModels.length > 0" class="profile-form__models">
           <div v-for="(name, index) in form.chatModels" :key="`chat-${index}-${name}`" class="profile-form__model-row">
-            <span class="profile-form__model-name">{{ name }}</span>
+            <span class="profile-form__model-name" :title="name">{{ name }}</span>
             <!--
-              第一行放「默认」徽章、不放「设为默认」按钮：
+              ============ 上下文窗口（V25） ============
+
+              <h3>为什么必须让用户能填</h3>
+              `qwen-max` 是 32K、`qwen-long` 是 1M，同一套配置里差 30 倍。
+              端点若不返回窗口字段（原生 OpenAI / Anthropic 都不返回），
+              内置对照表又没收录这个模型，就只能挂到全局默认上 ——
+              用 32K 模型时仪表盘显示「/ 128K」，用户会以为还有余量，
+              实际请求早已被端点以 400 拒绝。
+
+              <h3>为什么是文本框而不是数字框</h3>
+              `el-input-number` 会把 `32k` 直接吞成空（它只认纯数字），
+              而这正是用户从模型文档里抄下来的写法。这里接受 `32k` / `1m` /
+              `128,000`，解析在 `parseContextWindow` 里做（有单测）。
+              留空 = 未知，由服务端按「内置表 → 全局默认」兜底。
+            -->
+            <span class="profile-form__model-window">
+              <el-input
+                :model-value="form.contextWindows[name] ?? ''"
+                size="small"
+                clearable
+                :maxlength="12"
+                placeholder="上下文窗口"
+                :title="windowHint(name)"
+                :aria-label="`${name} 的上下文窗口（token）`"
+                @update:model-value="(value: string) => (form.contextWindows[name] = value)"
+              />
+              <!--
+                换算提示：用户填 `32768`，右边告诉他「= 32K」。
+                解析不出来时显示红点提示而不是静默清空 —— 静默清空会让人
+                以为「输入被吃了」，而实际只是提交时会被剔除。
+              -->
+              <span
+                class="profile-form__model-window-note"
+                :class="{ 'profile-form__model-window-note--bad': windowNote(name).bad }"
+                :title="windowNote(name).hint"
+              >
+                {{ windowNote(name).text }}
+              </span>
+            </span>
+            <!--
+              这一列放「默认」徽章、不放「设为默认」按钮：
               已经是默认了还显示「设为默认」，既是冗余也是死操作。
               两者放在同一个**定宽**容器里，逐行切换内容而容器宽度不变 ——
               否则「移除」这一列会随行左右跳动（实测首行徽章在 x=927、
@@ -1079,6 +1179,57 @@ html .profile-dialog {
   align-items: center;
   justify-content: flex-end;
   width: 56px;
+}
+
+/*
+ * 窗口输入格：定宽 152px = 输入框 96 + 间距 6 + 换算提示 50。
+ *
+ * <h3>为什么定宽而不是让输入框 flex</h3>
+ * 宽度随内容变的话，同一张清单里「`qwen-max` 长名 + 32K」与
+ * 「`qwen3.8-flash` 短名 + 1M」两种行会让窗口框左右边缘各不相同 ——
+ * 而这一列在视觉上是一个**表格列**，边缘必须对齐（与「移除」同理，
+ * 见 `.profile-form__model-pick` 的注释）。定宽让所有行严格对齐。
+ *
+ * <p>152 是量出来的：对话框内容宽 592（640 − 左右各 24），
+ * 减去名称（flex，最少 180）+ 徽章 56 + 移除 40 + 三个 gap 24 = 300，
+ * 还剩 292 给窗口；取 152 让名称列拿到 140 的富余，长模型名不至于
+ * 一进来就被省略成「qwen3.8-…」。
+ */
+.profile-form__model-window {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  width: 152px;
+}
+
+.profile-form__model-window :deep(.el-input) {
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ * 换算提示：`= 32K`。
+ *
+ * <p>固定 50px：`= 1.5M` 是 6 个字符里最宽的一种（约 38px），留 12px 余量。
+ * 不定宽的话「32K」与「= 1.5M」两种行会让输入框右边缘差 8px ——
+ * 同一列里输入框长短不一，看起来像是每行各自贴了块补丁。
+ *
+ * <p>`text-align: left` 而不是 right：它紧跟在输入框右侧，右对齐会让
+ * 短文本「32K」离输入框远、长文本贴着，读起来是两段不相干的东西。
+ */
+.profile-form__model-window-note {
+  flex: none;
+  width: 50px;
+  color: var(--el-text-color-placeholder);
+  font-size: var(--os-font-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+/* 解析不出来时用危险色：这是「你填的东西不会生效」的唯一信号 */
+.profile-form__model-window-note--bad {
+  color: var(--el-color-danger);
 }
 
 /* 加入行：输入/下拉占满剩余宽度，按钮固定靠右 */

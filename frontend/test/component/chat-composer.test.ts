@@ -29,6 +29,11 @@ function baseProps(overrides: Record<string, unknown> = {}) {
     topK: 4,
     thinkingLevel: 'off' as const,
     enterSend: true,
+    // 模型选择器与读数组都在第一行；不传会触发三条 required prop 警告，
+    // 让人误以为输入区坏了（实测过：警告满屏，真正的失败反而被淹没）
+    sessionModel: null,
+    chatModels: ['qwen3.8-flash'],
+    defaultModel: 'qwen3.8-flash',
     contextUsage,
     ...overrides,
   }
@@ -104,5 +109,43 @@ describe('ChatComposer', () => {
     await wrapper.find('textarea').trigger('keydown', { key: 'a' })
 
     expect(wrapper.emitted('send')).toBeUndefined()
+  })
+
+  /*
+   * 第一行是「一行读数」：模型名 + 字数 + 上下文。
+   *
+   * <p>这三条断言守的是**布局契约**而不是视觉效果 —— 改造前模型是一个
+   * 32px 的表单框、字数是 15px 的文本、上下文在页面另一端，用户的原话是
+   * 「样式还是太丑了」。判据因此是「三者是否在同一容器里、字数分母是否
+   * 与输入框的 maxlength 同源」，而不是任何主观描述。
+   */
+  it('第一行同时呈现模型名与字数（同属 readouts 行）', () => {
+    const wrapper = mount(ChatComposer, {
+      props: baseProps({ modelValue: '12345', contextUsage: { ...contextUsage, contextWindow: 32768 } }),
+    })
+
+    const metaRow = wrapper.find('.chat-composer__meta-row')
+    expect(metaRow.exists()).toBe(true)
+    // 模型名回显在 meta-row 内，不是工具行
+    expect(metaRow.text()).toContain('qwen3.8-flash')
+    // 字数分母必须与 textarea 的 maxlength 一致，否则「还能打多少」是错的
+    const maxlength = wrapper.find('textarea').attributes('maxlength')
+    expect(metaRow.find('.chat-composer__count').text()).toBe(`5 / ${maxlength}`)
+  })
+
+  it('budgetTokens=0 时不渲染上下文读数（未产生用量时不留空壳）', () => {
+    const wrapper = mount(ChatComposer, { props: baseProps() })
+
+    expect(wrapper.find('.context-meter').exists()).toBe(false)
+  })
+
+  it('有预算时上下文读数与字数同排，且改预算会冒泡到父级', async () => {
+    const usage: ContextUsage = { promptTokens: 4096, budgetTokens: 32768, contextWindow: 32768, estimated: false }
+    const wrapper = mount(ChatComposer, { props: baseProps({ contextUsage: usage }) })
+
+    const readouts = wrapper.find('.chat-composer__readouts')
+    expect(readouts.find('.context-meter').exists()).toBe(true)
+    // 24px 热区、12px 字号：与字数同一规格，这是「不再一大两小」的判据
+    expect(readouts.find('.chat-composer__count').exists()).toBe(true)
   })
 })

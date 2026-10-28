@@ -1,6 +1,7 @@
 package com.personalos.common.ai.config.dto;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 模型列表探测结果。
@@ -16,18 +17,27 @@ import java.util.List;
  * 对用户的意义完全相反：前者不用管，后者必须处理。仅靠文案在前端做关键字匹配
  * 太脆（改一句话就失效），所以由服务端直接给出语义分类，前端据此选提示样式。
  *
- * @param ok        是否成功拿到模型列表
- * @param models    模型名（已去重、按字母序排好）；失败时为空列表
- * @param latencyMs 往返耗时（毫秒）
- * @param error     失败原因（面向用户的可读文案）；成功时为 null
- * @param kind      失败分类；成功时为 null
+ * <h2>为什么还要带 {@code contextWindows}（V25）</h2>
+ * 上下文窗口是**模型**的属性，而不同端点对同一个模型的窗口说法不一致。
+ * 探测时顺手把响应里自报的窗口带回来，用户「获取模型列表」时就自动拿到了，
+ * 不必再去翻文档手填。覆盖不到的位置由内置对照表补（见 {@code ModelContextWindows}），
+ * 两者都没有的仍可由用户手改 —— 三种来源按可靠性排序，互不覆盖。
+ *
+ * @param ok             是否成功拿到模型列表
+ * @param models         模型名（已去重、按字母序排好）；失败时为空列表
+ * @param latencyMs      往返耗时（毫秒）
+ * @param error          失败原因（面向用户的可读文案）；成功时为 null
+ * @param kind           失败分类；成功时为 null
+ * @param contextWindows 模型名 → 自报上下文窗口（token）。未自报的模型**不在**此表里
  */
 public record ModelListResult(
-        boolean ok, List<String> models, long latencyMs, String error, ProbeFailureKind kind) {
+        boolean ok, List<String> models, long latencyMs, String error, ProbeFailureKind kind,
+        Map<String, Integer> contextWindows) {
 
     /** 紧凑构造器：防空列表进 null，前端无需判两种「空」 */
     public ModelListResult {
         models = models == null ? List.of() : List.copyOf(models);
+        contextWindows = contextWindows == null ? Map.of() : Map.copyOf(contextWindows);
     }
 
     /**
@@ -37,17 +47,23 @@ public record ModelListResult(
      * 加一个必填参数会让所有调用点都得写一个无意义的 {@code null}。
      */
     public ModelListResult(boolean ok, List<String> models, long latencyMs, String error) {
-        this(ok, models, latencyMs, error, ok ? null : ProbeFailureKind.ERROR);
+        this(ok, models, latencyMs, error, ok ? null : ProbeFailureKind.ERROR, null);
+    }
+
+    /** 兼容构造器：带分类但不带窗口（V24 及以前的调用方） */
+    public ModelListResult(boolean ok, List<String> models, long latencyMs, String error,
+                           ProbeFailureKind kind) {
+        this(ok, models, latencyMs, error, kind, null);
     }
 
     /** 端点不提供模型列表：属于正常情况，无需用户处理 */
     public static ModelListResult unsupported(String error) {
-        return new ModelListResult(false, List.of(), 0, error, ProbeFailureKind.UNSUPPORTED);
+        return new ModelListResult(false, List.of(), 0, error, ProbeFailureKind.UNSUPPORTED, null);
     }
 
     /** 需要用户处理：认证失败、网络不通、前置条件缺失等 */
     public static ModelListResult failed(String error) {
-        return new ModelListResult(false, List.of(), 0, error, ProbeFailureKind.ERROR);
+        return new ModelListResult(false, List.of(), 0, error, ProbeFailureKind.ERROR, null);
     }
 
     /**

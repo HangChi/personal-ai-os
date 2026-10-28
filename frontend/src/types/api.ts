@@ -433,6 +433,13 @@ export interface ModelProfile {
    */
   audioModels: string[]
   /**
+   * 模型名 → 上下文窗口（token，V25）。**只含已知的**。
+   *
+   * 不在表里的模型表示「窗口未知」—— 运行期会回落到全局默认值，
+   * 界面上应提示用户可以手填。刻意不用 0 表示未知：0 会被拿去当分母。
+   */
+  contextWindows: Record<string, number>
+  /**
    * 生效的默认语音模型名（= `audioModels` 第一项）；空串表示没配。
    *
    * 没配时聊天页的语音输入回落到浏览器自带的 Web Speech API ——
@@ -494,6 +501,13 @@ export interface SaveModelProfilePayload {
    * 自带识别。不传（undefined）与传空数组在本接口里等价。
    */
   audioModels?: string[] | null
+  /**
+   * 模型名 → 上下文窗口（token，V25）。
+   *
+   * 不传（undefined）= 由服务端用内置对照表补；传了则以它为准，
+   * 其中值为 null 的项表示「用户清空了这个模型的窗口 = 未知」。
+   */
+  contextWindows?: Record<string, number | null> | null
 }
 
 /**
@@ -530,6 +544,13 @@ export interface ModelListResult {
    * - `null`：成功。
    */
   kind: ProbeFailureKind | null
+  /**
+   * 探测到的模型上下文窗口（token），键为模型名。
+   *
+   * 原生 OpenAI 与 Anthropic 的 `/models` 都不返回此字段，所以这里**经常是空对象**，
+   * 空不代表出错 —— 前端只把它当作「预填建议」，用户仍可手改或留空。
+   */
+  contextWindows?: Record<string, number>
 }
 
 export type ProbeFailureKind = 'UNSUPPORTED' | 'ERROR'
