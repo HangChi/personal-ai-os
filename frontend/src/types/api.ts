@@ -369,6 +369,8 @@ export interface ModelProfile {
   /** 预设标识；null 表示自定义配置 */
   presetId: string | null
   baseUrl: string
+  /** 协议类型，只影响「获取模型列表」时打哪个接口；聊天始终走 OpenAI 兼容 */
+  protocol: ModelProtocol
   apiKeyMasked: string
   hasApiKey: boolean
   chatModel: string
@@ -405,8 +407,47 @@ export interface SaveModelProfilePayload {
   name: string
   presetId?: string | null
   baseUrl?: string | null
+  protocol?: ModelProtocol | null
   apiKey?: string | null
   chatModel?: string | null
   temperature?: number | null
   embeddingModel?: string | null
 }
+
+/**
+ * 模型端点协议。
+ *
+ * **只管「怎么问出模型列表」，不管「怎么聊天」。** 聊天链路统一走
+ * OpenAI 兼容协议（DashScope / DeepSeek / Moonshot / 智谱 / OpenRouter /
+ * Ollama 的 /v1 都支持）。这个字段只决定探测时打哪个 URL、带什么鉴权头：
+ *
+ * - `OPENAI`    → `GET {base}/models`，`Authorization: Bearer`
+ * - `ANTHROPIC` → `GET {base}/v1/models`，`x-api-key` + `anthropic-version`
+ * - `OLLAMA`    → `GET {origin}/api/tags`，无需密钥
+ */
+export type ModelProtocol = 'OPENAI' | 'ANTHROPIC' | 'OLLAMA'
+
+/**
+ * 「获取模型列表」的结果（后端 `ModelListResult`）。
+ *
+ * `ok=false` 不是接口错误：大量自建与中转端点根本没有 `/models`，
+ * 但它们能正常聊天。此时照常手打模型名即可。
+ */
+export interface ModelListResult {
+  ok: boolean
+  /** 模型名（已去重、字母序）；失败时为空数组 */
+  models: string[]
+  latencyMs: number
+  /** 失败原因；成功时为 null */
+  error: string | null
+  /**
+   * 失败分类，决定提示语气：
+   * - `UNSUPPORTED`：该端点没实现模型列表接口。**正常情况**，不影响聊天，
+   *   手填模型名即可 —— 用中性提示，不该吓用户。
+   * - `ERROR`：认证失败 / 网络不通 / 前置条件缺失。需要用户处理 —— 用警示色。
+   * - `null`：成功。
+   */
+  kind: ProbeFailureKind | null
+}
+
+export type ProbeFailureKind = 'UNSUPPORTED' | 'ERROR'

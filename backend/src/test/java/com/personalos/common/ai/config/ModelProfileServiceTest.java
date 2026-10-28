@@ -215,10 +215,10 @@ class ModelProfileServiceTest {
     @DisplayName("更新时 apiKey 传 null 保留原密钥")
     void updateNullApiKeyKeepsExisting() {
         AiModelProfileEntity created = service.create(
-                new SaveProfileCommand("配置", null, "https://a.example.com", "sk-original",
+                new SaveProfileCommand("配置", null, "https://a.example.com", null, "sk-original",
                         "model-a", null, null));
         service.update(created.getId(), new SaveProfileCommand(
-                "配置", null, "https://a.example.com", null, "model-b", null, null));
+                "配置", null, "https://a.example.com", null, null, "model-b", null, null));
 
         AiModelProfileEntity reloaded = service.require(created.getId());
         assertThat(reloaded.getApiKey()).isEqualTo("sk-original");
@@ -229,9 +229,9 @@ class ModelProfileServiceTest {
     @DisplayName("更新时 apiKey 传空串清空，回落到环境变量")
     void updateBlankApiKeyClears() {
         AiModelProfileEntity created = service.create(
-                new SaveProfileCommand("配置", null, null, "sk-original", "m", null, null));
+                new SaveProfileCommand("配置", null, null, null, "sk-original", "m", null, null));
         service.update(created.getId(), new SaveProfileCommand(
-                "配置", null, null, "   ", "m", null, null));
+                "配置", null, null, null, "   ", "m", null, null));
 
         assertThat(service.require(created.getId()).getApiKey()).isNull();
     }
@@ -368,7 +368,7 @@ class ModelProfileServiceTest {
     // ------------------------------------------------------------------ 替身
 
     private static SaveProfileCommand command(String name, String presetId) {
-        return new SaveProfileCommand(name, presetId, "https://api.example.com", "sk-test",
+        return new SaveProfileCommand(name, presetId, "https://api.example.com", null, "sk-test",
                 "test-model", null, null);
     }
 

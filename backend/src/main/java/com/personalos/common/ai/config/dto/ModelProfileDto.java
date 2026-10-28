@@ -21,6 +21,7 @@ import java.util.UUID;
  * @param name            展示名
  * @param presetId        预设标识；null 表示自定义配置
  * @param baseUrl         生效的端点地址
+ * @param protocol        协议类型（OPENAI / ANTHROPIC / OLLAMA），只影响「获取模型列表」
  * @param apiKeyMasked    密钥掩码（形如 {@code ****8f3a}）；未配置时为空串
  * @param hasApiKey       是否已配置密钥
  * @param chatModel       生效的对话模型名
@@ -36,6 +37,7 @@ public record ModelProfileDto(UUID id,
                               String name,
                               String presetId,
                               String baseUrl,
+                              String protocol,
                               String apiKeyMasked,
                               boolean hasApiKey,
                               String chatModel,

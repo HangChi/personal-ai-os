@@ -16,6 +16,10 @@ const {
   keySummary,
   modelSummary,
   moveItem,
+  probeAlertType,
+  probeBlockedReason,
+  probeResultHint,
+  probeResultSummary,
   reorderBefore,
   sourceHint,
   testResultSummary,
@@ -23,6 +27,9 @@ const {
   validateProfileForm,
   MODEL_NAME_MAX,
   PROFILE_NAME_MAX,
+  PROTOCOL_HINTS,
+  PROTOCOL_LABELS,
+  PROTOCOL_OPTIONS,
   SOURCE_LABELS,
   TEMPERATURE_MAX,
 } = await import('@/lib/model-profile')
@@ -182,4 +189,115 @@ const PROFILE = {
 
   const noReason = testResultSummary({ ok: false, latencyMs: 0, replyPreview: null, error: null })
   eq('没有原因时也有可读文案', noReason, '测试失败')
+}
+
+// ---------------------------------------------------------------- 协议
+
+{
+  eq('默认协议是 OpenAI 兼容：绝大多数端点都属于这一类', emptyForm().protocol, 'OPENAI')
+  eq('toForm 带出协议', toForm({ ...PROFILE, protocol: 'ANTHROPIC' }).protocol, 'ANTHROPIC')
+
+  // 老数据没有 protocol 字段时不能变成 undefined 而让下拉框空白
+  eq('toForm 在 protocol 缺失时回落 OpenAI', toForm({ ...PROFILE, protocol: undefined }).protocol, 'OPENAI')
+
+  const payload = buildProfilePayload({ ...toForm(PROFILE), protocol: 'OLLAMA' })
+  eq('payload 带上协议', payload.protocol, 'OLLAMA')
+  eq('协议不影响密钥三态', payload.apiKey, undefined)
+
+  eq('三个协议都有中文标签', Object.keys(PROTOCOL_LABELS).length, 3)
+  eq('OpenAI 兼容的标签写清楚是「兼容」', PROTOCOL_LABELS.OPENAI, 'OpenAI 兼容')
+  check('Anthropic 说明提到 x-api-key（用 Bearer 会 401）', PROTOCOL_HINTS.ANTHROPIC.includes('x-api-key'))
+  check('Ollama 说明提到 /api/tags', PROTOCOL_HINTS.OLLAMA.includes('/api/tags'))
+  eq('协议下拉有三项且顺序为 OpenAI 优先', PROTOCOL_OPTIONS.map((o) => o.value).join(','), 'OPENAI,ANTHROPIC,OLLAMA')
+}
+
+// ---------------------------------------------------------------- 探测前置条件
+
+{
+  eq('端点为空时不可探测', probeBlockedReason('OPENAI', '  ', 'sk-x', false), '请先填写端点地址')
+
+  // 非 Ollama 且无密钥、也没有已保存的密钥 → 拦住
+  const noKey = probeBlockedReason('OPENAI', 'https://x.example.com', '', false)
+  check('缺密钥时提示补密钥或先保存', noKey !== null && noKey.includes('API Key'))
+
+  // 编辑态：密钥框空着，但这套配置已保存过密钥 → 允许（后端回落到已存密钥）
+  eq('编辑态有已存密钥时允许探测', probeBlockedReason('OPENAI', 'https://x.example.com', '', true), null)
+
+  // Ollama 本地不需要密钥
+  eq('Ollama 不需要密钥', probeBlockedReason('OLLAMA', 'http://localhost:11434', '', false), null)
+
+  eq('条件齐备时放行', probeBlockedReason('OPENAI', 'https://x.example.com', 'sk-x', false), null)
+}
+
+// ---------------------------------------------------------------- 探测结果摘要
+
+{
+  const ok = probeResultSummary({ ok: true, models: ['a', 'b', 'c'], latencyMs: 210, error: null, kind: null })
+  check('成功摘要报出数量', ok.includes('3 个模型'))
+  check('成功摘要含耗时', ok.includes('210 毫秒'))
+
+  const slow = probeResultSummary({ ok: true, models: ['a'], latencyMs: 2400, error: null, kind: null })
+  check('超过一秒改用秒', slow.includes('2.4 秒'))
+
+  const failed = probeResultSummary({
+    ok: false,
+    models: [],
+    latencyMs: 0,
+    error: '接口不存在（404）',
+    kind: 'UNSUPPORTED',
+  })
+  eq('失败时原样给出后端原因', failed, '接口不存在（404）')
+
+  const noReason = probeResultSummary({ ok: false, models: [], latencyMs: 0, error: null, kind: 'ERROR' })
+  eq('没有原因时也有可读文案', noReason, '获取模型列表失败')
+}
+
+// ---------------------------------------------------------------- 探测结果语气
+
+{
+  // 成功
+  eq('成功用 success', probeAlertType({ ok: true, models: ['a'], latencyMs: 1, error: null, kind: null }), 'success')
+
+  // 端点不支持列表 —— 正常情况，中性提示
+  eq(
+    '端点不支持时用 info 而非警示色',
+    probeAlertType({ ok: false, models: [], latencyMs: 0, error: '404', kind: 'UNSUPPORTED' }),
+    'info',
+  )
+
+  // 真错误 —— 必须警示
+  eq(
+    '认证失败等真错误用 warning',
+    probeAlertType({ ok: false, models: [], latencyMs: 0, error: '401', kind: 'ERROR' }),
+    'warning',
+  )
+
+  // kind 缺失（旧后端）按错误处理：宁可多提示一句，也别漏掉真错误
+  eq(
+    'kind 缺失时保守按真错误处理',
+    probeAlertType({ ok: false, models: [], latencyMs: 0, error: 'x', kind: null }),
+    'warning',
+  )
+}
+
+// ---------------------------------------------------------------- 探测结果补充说明
+
+{
+  const okHint = probeResultHint({ ok: true, models: ['a'], latencyMs: 1, error: null, kind: null })
+  check('成功说明指向下拉挑选', okHint.includes('挑选'))
+
+  const unsupportedHint = probeResultHint({
+    ok: false,
+    models: [],
+    latencyMs: 0,
+    error: '404',
+    kind: 'UNSUPPORTED',
+  })
+  check('端点不支持时明确说不影响使用', unsupportedHint.includes('不影响使用'))
+  check('端点不支持时指引手动填写', unsupportedHint.includes('手动填写'))
+
+  // 关键：密钥错了绝不能说不影响使用 —— 那是误导
+  const errorHint = probeResultHint({ ok: false, models: [], latencyMs: 0, error: '401', kind: 'ERROR' })
+  check('真错误不出现「不影响使用」', !errorHint.includes('不影响使用'))
+  check('真错误提示可重试或手填', errorHint.includes('再试') || errorHint.includes('手动填写'))
 }

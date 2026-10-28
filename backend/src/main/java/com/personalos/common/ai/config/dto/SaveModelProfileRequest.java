@@ -16,6 +16,7 @@ package com.personalos.common.ai.config.dto;
  * @param name           展示名（必填）
  * @param presetId       预设标识；null 表示自定义配置
  * @param baseUrl        端点地址；空表示回落到环境变量
+ * @param protocol       协议类型；null/无法识别时按 OPENAI 处理（只影响「获取模型列表」）
  * @param apiKey         密钥；null=不改动，空串=清空，非空=覆盖
  * @param chatModel      对话模型名；空表示回落到环境变量
  * @param temperature    温度 0~2；null 表示沿用服务端默认
@@ -24,6 +25,7 @@ package com.personalos.common.ai.config.dto;
 public record SaveModelProfileRequest(String name,
                                       String presetId,
                                       String baseUrl,
+                                      String protocol,
                                       String apiKey,
                                       String chatModel,
                                       Double temperature,

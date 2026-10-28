@@ -20,6 +20,8 @@
  * 填错也不会静默出错——保存后的「测试连通性」会明确报出 404 / 模型不存在。
  */
 
+import type { ModelProtocol } from '@/types/api'
+
 /** 一个供应商预设 */
 export interface ProviderPreset {
   /** 稳定标识，存进 `ai_model_profile.preset_id` */
@@ -30,6 +32,14 @@ export interface ProviderPreset {
   vendor: string
   /** OpenAI 兼容端点根地址（不含 /chat/completions） */
   baseUrl: string
+  /**
+   * 协议类型，决定「获取模型列表」时打哪个接口。
+   *
+   * <p>绝大多数预设是 `OPENAI`（含所有国内厂商与中转站）。
+   * 只有 Anthropic 官方是 `ANTHROPIC`、Ollama 是 `OLLAMA` ——
+   * 它们的模型列表接口路径与鉴权方式都不同。
+   */
+  protocol: ModelProtocol
   /** 建议的对话模型名 */
   chatModel: string
   /** 建议的嵌入模型名；留空表示该供应商不提供嵌入 */
@@ -52,6 +62,7 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
     name: '阿里云百炼',
     vendor: 'DashScope',
     baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    protocol: 'OPENAI',
     chatModel: 'qwen3.8-flash',
     embeddingModel: 'qwen3.7-text-embedding-flash',
     requiresKey: true,
@@ -62,6 +73,7 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'DeepSeek',
     vendor: 'DeepSeek',
     baseUrl: 'https://api.deepseek.com/v1',
+    protocol: 'OPENAI',
     chatModel: 'deepseek-chat',
     embeddingModel: '',
     requiresKey: true,
@@ -72,6 +84,7 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'Moonshot 月之暗面',
     vendor: 'Moonshot',
     baseUrl: 'https://api.moonshot.cn/v1',
+    protocol: 'OPENAI',
     chatModel: 'moonshot-v1-8k',
     embeddingModel: '',
     requiresKey: true,
@@ -82,6 +95,7 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
     name: '智谱 GLM',
     vendor: 'Zhipu',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    protocol: 'OPENAI',
     chatModel: 'glm-4-flash',
     embeddingModel: 'embedding-3',
     requiresKey: true,
@@ -92,6 +106,7 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'OpenAI 官方',
     vendor: 'OpenAI',
     baseUrl: 'https://api.openai.com/v1',
+    protocol: 'OPENAI',
     chatModel: 'gpt-4o-mini',
     embeddingModel: 'text-embedding-3-small',
     requiresKey: true,
@@ -102,16 +117,29 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'OpenRouter',
     vendor: 'OpenRouter',
     baseUrl: 'https://openrouter.ai/api/v1',
+    protocol: 'OPENAI',
     chatModel: 'openai/gpt-4o-mini',
     embeddingModel: '',
     requiresKey: true,
     note: '需外网；一个密钥聚合多家模型',
   },
   {
+    id: 'anthropic',
+    name: 'Anthropic 官方',
+    vendor: 'Anthropic',
+    baseUrl: 'https://api.anthropic.com',
+    protocol: 'ANTHROPIC',
+    chatModel: 'claude-sonnet-4-5',
+    embeddingModel: '',
+    requiresKey: true,
+    note: '需外网；鉴权用 x-api-key。Anthropic 无嵌入模型，知识库仍走 OpenAI 兼容',
+  },
+  {
     id: 'ollama',
     name: '本地 Ollama',
     vendor: 'Local',
     baseUrl: 'http://localhost:11434/v1',
+    protocol: 'OLLAMA',
     chatModel: 'qwen2.5:7b',
     embeddingModel: 'bge-m3',
     requiresKey: false,
@@ -122,6 +150,7 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
     name: '自定义 / 中转站',
     vendor: 'Custom',
     baseUrl: '',
+    protocol: 'OPENAI',
     chatModel: '',
     embeddingModel: '',
     requiresKey: true,

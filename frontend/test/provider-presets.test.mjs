@@ -77,3 +77,28 @@ const { PROVIDER_PRESETS, defaultProfileName, findPreset, searchPresets } = awai
   const dashscope = findPreset('dashscope')
   eq('默认名取预设名，不加序号', defaultProfileName(dashscope), dashscope.name)
 }
+
+// ---------------------------------------------------------------- 协议归属
+
+{
+  // 每个预设都必须声明协议：漏了会让「获取模型列表」打错接口
+  const missing = PROVIDER_PRESETS.filter((p) => !p.protocol)
+  eq('每个预设都声明了协议', missing.length, 0)
+
+  const valid = new Set(['OPENAI', 'ANTHROPIC', 'OLLAMA'])
+  const invalid = PROVIDER_PRESETS.filter((p) => !valid.has(p.protocol))
+  eq('协议取值都在合法集合内', invalid.length, 0)
+
+  // 只有 Ollama 是 OLLAMA 协议，只有 Anthropic 是 ANTHROPIC —— 其余全是 OpenAI 兼容
+  const ollama = PROVIDER_PRESETS.filter((p) => p.protocol === 'OLLAMA').map((p) => p.id)
+  eq('Ollama 预设用 OLLAMA 协议', ollama.join(','), 'ollama')
+
+  const anthropic = PROVIDER_PRESETS.filter((p) => p.protocol === 'ANTHROPIC').map((p) => p.id)
+  eq('Anthropic 预设用 ANTHROPIC 协议', anthropic.join(','), 'anthropic')
+
+  // Anthropic 没有嵌入模型，预设里不能瞎填一个（会让知识库入库失败）
+  eq('Anthropic 预设不填嵌入模型', findPreset('anthropic').embeddingModel, '')
+  // Anthropic 端点不带 /v1（探测时会补），带了两者都行但不能重复
+  eq('Anthropic 端点是官方根地址', findPreset('anthropic').baseUrl, 'https://api.anthropic.com')
+  check('Anthropic 预设需要密钥', findPreset('anthropic').requiresKey)
+}

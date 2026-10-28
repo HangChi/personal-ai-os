@@ -5,15 +5,48 @@
  * 这些函数全部无副作用、不 import 组件库，因此测试里能直接调用。
  */
 
-import type { ModelConfigSource, ModelProfile } from '@/types/api'
+import type { ModelConfigSource, ModelListResult, ModelProfile, ModelProtocol } from '@/types/api'
 
 /** 温度允许范围（与后端 ModelProfileController 常量一致） */
 export const TEMPERATURE_MIN = 0
 export const TEMPERATURE_MAX = 2
 
-/** 字段长度上限（与 V21 列宽一致） */
+/** 字段长度上限（与 V21/V22 列宽一致） */
 export const MODEL_NAME_MAX = 120
 export const PROFILE_NAME_MAX = 60
+
+/**
+ * 协议的中文标签。
+ *
+ * <p>界面上必须把「协议」讲成「获取模型列表用的协议」，而不是
+ * 「聊天用的协议」—— 后者会让用户以为选了 Anthropic 就用 Anthropic 原生
+ * API 聊天。实际聊天链路始终走 OpenAI 兼容（Ollama 也用它的 /v1 兼容端点）。
+ */
+export const PROTOCOL_LABELS: Record<ModelProtocol, string> = {
+  OPENAI: 'OpenAI 兼容',
+  ANTHROPIC: 'Anthropic',
+  OLLAMA: 'Ollama',
+}
+
+/**
+ * 各协议的模型列表接口说明，作为下拉项的描述与悬浮提示。
+ *
+ * <p>把路径直接写出来是有意为之：用户遇到「获取列表失败」时，
+ * 第一个要确认的就是「它到底请求了哪个地址」。这段文字是唯一的线索来源。
+ */
+export const PROTOCOL_HINTS: Record<ModelProtocol, string> = {
+  OPENAI: 'GET {端点}/v1/models，用 Bearer 鉴权。绝大多数厂商与中转站都属这一类',
+  ANTHROPIC: 'GET {端点}/v1/models，用 x-api-key 鉴权（不是 Bearer）。Anthropic 没有嵌入模型',
+  OLLAMA: 'GET {主机}/api/tags，本地默认无需密钥。填了 /v1 会自动剥掉',
+}
+
+/** 协议下拉的可选项（顺序即推荐顺序） */
+export const PROTOCOL_OPTIONS: Array<{ value: ModelProtocol; label: string; hint: string }> = (
+  ['OPENAI', 'ANTHROPIC', 'OLLAMA'] as ModelProtocol[]
+).map((value) => ({ value, label: PROTOCOL_LABELS[value], hint: PROTOCOL_HINTS[value] }))
+
+/** 协议默认值：绝大多数端点都是 OpenAI 兼容 */
+export const DEFAULT_PROTOCOL: ModelProtocol = 'OPENAI'
 
 /**
  * 来源的中文标签。
@@ -57,6 +90,8 @@ export interface ModelProfileForm {
   name: string
   presetId: string | null
   baseUrl: string
+  /** 协议：只影响「获取模型列表」打哪个接口，不影响聊天 */
+  protocol: ModelProtocol
   apiKey: string
   chatModel: string
   temperature: number | null
@@ -69,6 +104,7 @@ export function emptyForm(presetId: string | null = null): ModelProfileForm {
     name: '',
     presetId,
     baseUrl: '',
+    protocol: DEFAULT_PROTOCOL,
     apiKey: '',
     chatModel: '',
     temperature: null,
@@ -89,6 +125,7 @@ export function toForm(profile: ModelProfile): ModelProfileForm {
     name: profile.name,
     presetId: profile.presetId,
     baseUrl: profile.baseUrl ?? '',
+    protocol: profile.protocol ?? DEFAULT_PROTOCOL,
     apiKey: '',
     chatModel: profile.chatModel ?? '',
     temperature: profile.temperature,
@@ -113,6 +150,7 @@ export function buildProfilePayload(
   name: string
   presetId: string | null
   baseUrl: string | null
+  protocol: ModelProtocol
   apiKey?: string
   chatModel: string | null
   temperature: number | null
@@ -132,6 +170,7 @@ export function buildProfilePayload(
     name: form.name.trim(),
     presetId: form.presetId,
     baseUrl: blankToNull(form.baseUrl),
+    protocol: form.protocol,
     apiKey,
     chatModel: blankToNull(form.chatModel),
     temperature: form.temperature,
@@ -262,6 +301,84 @@ export function reorderBefore(ids: string[], dragId: string, targetId: string): 
     return [...ids]
   }
   return moveItem(ids, from, to)
+}
+
+/**
+ * 「获取模型列表」结果的一句话摘要。
+ *
+ * <p>成功时**必须报出数量**：只显示「获取成功」会让用户以为拿到了完整列表，
+ * 而某些中转站只返回一小部分模型。
+ */
+export function probeResultSummary(result: ModelListResult): string {
+  if (!result.ok) {
+    return result.error ?? '获取模型列表失败'
+  }
+  const count = result.models.length
+  const latency = result.latencyMs >= 1000 ? `${(result.latencyMs / 1000).toFixed(1)} 秒` : `${result.latencyMs} 毫秒`
+  return `获取到 ${count} 个模型（${latency}）`
+}
+
+/**
+ * 探测结果该用哪种提示语气。
+ *
+ * <p>同样是「没拿到列表」，「这端点压根没这个接口」与「你密钥错了」
+ * 对用户的意义相反：前者什么都不用做，后者必须改。都用中性灰会让真正的
+ * 错误被当成普通提示划过；都用红色又会把正常情况报成故障。
+ *
+ * `kind` 缺失时（旧后端）按 `ERROR` 处理：宁可多提示一句，也别漏掉真错误。
+ */
+export function probeAlertType(result: ModelListResult): 'success' | 'info' | 'warning' {
+  if (result.ok) {
+    return 'success'
+  }
+  return result.kind === 'UNSUPPORTED' ? 'info' : 'warning'
+}
+
+/**
+ * 失败提示条下方的补充说明。
+ *
+ * 只有「端点不支持」这一种才该说「不影响使用」—— 密钥错了说这句是误导。
+ */
+export function probeResultHint(result: ModelListResult): string | null {
+  if (result.ok) {
+    return '下方的「对话模型 / 嵌入模型」已可从这些模型里挑选，也可以直接手打。'
+  }
+  if (result.kind === 'UNSUPPORTED') {
+    return '该端点可能不提供模型列表接口，这不影响使用 —— 直接手动填写模型名即可。'
+  }
+  return '修正上面的问题后可以再试一次，也可以直接手动填写模型名。'
+}
+
+/**
+ * 判断「获取模型列表」按钮此刻能不能点，返回不能点的原因。
+ *
+ * <p>与后端 `ModelListProbeService.blockedReason` 同一套判断，
+ * 前端提前拦是为了让用户不必点一次才发现「忘了填密钥」。
+ *
+ * <h3>为什么 Ollama 不要求密钥</h3>
+ * 本地 Ollama 默认无鉴权。要求填密钥会让这条最常见的本地用法卡住，
+ * 而填错密钥的后果只是探测失败 —— 一个可恢复的错误。
+ *
+ * @param protocol 协议
+ * @param baseUrl  表单里的端点（**不是**生效值：用户点了编辑但没保存时，
+ *                 生效值仍是旧的，探测应当针对他眼前的这个端点）
+ * @param apiKey   表单里的密钥；编辑态可能为空
+ * @param hasStoredKey 这套配置是否已保存过密钥（编辑态可回落到它）
+ * @returns 不能探测的原因；可以探测时返回 null
+ */
+export function probeBlockedReason(
+  protocol: ModelProtocol,
+  baseUrl: string,
+  apiKey: string,
+  hasStoredKey: boolean,
+): string | null {
+  if (baseUrl.trim().length === 0) {
+    return '请先填写端点地址'
+  }
+  if (protocol !== 'OLLAMA' && apiKey.trim().length === 0 && !hasStoredKey) {
+    return '请先填写 API Key（或先保存一次配置）'
+  }
+  return null
 }
 
 /** 连通性测试结果的一句话摘要 */

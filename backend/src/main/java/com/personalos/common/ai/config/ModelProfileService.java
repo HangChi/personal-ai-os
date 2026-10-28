@@ -128,6 +128,7 @@ public class ModelProfileService {
                 blankToNull(command.chatModel()),
                 command.temperature(),
                 blankToNull(command.embeddingModel()),
+                command.protocol(),
                 now);
         AiModelProfileEntity saved = repository.save(entity);
         log.info("已新建模型配置：id={}, name={}", saved.getId(), saved.getName());
@@ -157,6 +158,7 @@ public class ModelProfileService {
                 blankToNull(command.chatModel()),
                 command.temperature(),
                 blankToNull(command.embeddingModel()),
+                command.protocol(),
                 clock.instant());
         AiModelProfileEntity saved = repository.save(entity);
         log.info("已更新模型配置：id={}, name={}, revision={}",
@@ -358,6 +360,7 @@ public class ModelProfileService {
     public record SaveProfileCommand(String name,
                                      String presetId,
                                      String baseUrl,
+                                     String protocol,
                                      String apiKey,
                                      String chatModel,
                                      Double temperature,

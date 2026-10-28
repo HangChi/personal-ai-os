@@ -4,13 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.personalos.common.ai.config.dto.ModelListResult;
 import com.personalos.common.ai.config.dto.ModelProfileDto;
 import com.personalos.common.ai.config.dto.ModelProfileListDto;
+import com.personalos.common.ai.config.dto.ProbeModelsRequest;
 import com.personalos.common.ai.config.dto.ReorderModelProfilesRequest;
 import com.personalos.common.ai.config.dto.SaveModelProfileRequest;
 import com.personalos.common.api.ApiResponse;
@@ -43,6 +46,7 @@ class ModelProfileControllerTest {
     private ModelProfileService profileService;
     private ModelConfigService configService;
     private ModelConnectionTestService connectionTestService;
+    private ModelListProbeService modelListProbeService;
     private ModelProfileController controller;
 
     @BeforeEach
@@ -50,7 +54,9 @@ class ModelProfileControllerTest {
         profileService = mock(ModelProfileService.class);
         configService = mock(ModelConfigService.class);
         connectionTestService = mock(ModelConnectionTestService.class);
-        controller = new ModelProfileController(profileService, configService, connectionTestService);
+        modelListProbeService = mock(ModelListProbeService.class);
+        controller = new ModelProfileController(
+                profileService, configService, connectionTestService, modelListProbeService);
 
         // 默认：任何实体都解析成一份带明文密钥的生效配置，
         // 以便验证 toDto() 真的做了掩码。
@@ -122,7 +128,7 @@ class ModelProfileControllerTest {
 
         ApiResponse<ModelProfileDto> response = controller.create(
                 new SaveModelProfileRequest("新配置", "dashscope", "https://api.example.com",
-                        "sk-new", "qwen3.8-flash", 0.7, null));
+                        null, "sk-new", "qwen3.8-flash", 0.7, null));
 
         assertThat(response.isSuccess()).isTrue();
         assertThat(response.data().name()).isEqualTo("新配置");
@@ -134,7 +140,7 @@ class ModelProfileControllerTest {
     @DisplayName("create(): 端点不以 http(s) 开头时拒绝")
     void createRejectsBadBaseUrl() {
         assertThatThrownBy(() -> controller.create(
-                new SaveModelProfileRequest("配置", null, "ftp://x.example.com", null, "m", null, null)))
+                new SaveModelProfileRequest("配置", null, "ftp://x.example.com", null, null, "m", null, null)))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("http");
     }
@@ -143,7 +149,7 @@ class ModelProfileControllerTest {
     @DisplayName("create(): 温度越界时拒绝")
     void createRejectsOutOfRangeTemperature() {
         assertThatThrownBy(() -> controller.create(
-                new SaveModelProfileRequest("配置", null, null, null, "m", 2.5, null)))
+                new SaveModelProfileRequest("配置", null, null, null, null, "m", 2.5, null)))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("温度");
     }
@@ -153,7 +159,7 @@ class ModelProfileControllerTest {
     void createRejectsTooLongModelName() {
         String tooLong = "m".repeat(121);
         assertThatThrownBy(() -> controller.create(
-                new SaveModelProfileRequest("配置", null, null, null, tooLong, null, null)))
+                new SaveModelProfileRequest("配置", null, null, null, null, tooLong, null, null)))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("不能超过");
     }
@@ -175,7 +181,7 @@ class ModelProfileControllerTest {
         when(profileService.require(ID)).thenReturn(profile("生效中", true, 0));
 
         controller.update(ID, new SaveModelProfileRequest(
-                "生效中", null, null, null, "m", null, null));
+                "生效中", null, null, null, null, "m", null, null));
 
         verify(profileService).applyCurrent();
     }
@@ -187,9 +193,116 @@ class ModelProfileControllerTest {
         when(profileService.require(ID)).thenReturn(profile("备用", false, 1));
 
         controller.update(ID, new SaveModelProfileRequest(
-                "备用", null, null, null, "m", null, null));
+                "备用", null, null, null, null, "m", null, null));
 
         verify(profileService, never()).applyCurrent();
+    }
+
+    // ------------------------------------------------------------------ 探测模型列表
+
+    @Test
+    @DisplayName("probeModels(): 用表单里的端点与密钥直接探测")
+    void probeModelsUsesFormValues() {
+        when(modelListProbeService.probe(any(), any(), any()))
+                .thenReturn(new ModelListResult(true, List.of("gpt-4o", "gpt-4o-mini"), 120, null));
+
+        ApiResponse<ModelListResult> response = controller.probeModels(
+                new ProbeModelsRequest("OPENAI", "https://api.example.com/v1", "sk-form-key", null));
+
+        assertThat(response.data().ok()).isTrue();
+        assertThat(response.data().models()).containsExactly("gpt-4o", "gpt-4o-mini");
+        // 新建配置时没有 profileId，必须用表单里的值，不能去查库
+        verify(modelListProbeService).probe(
+                eq(ModelProtocol.OPENAI), eq("https://api.example.com/v1"), eq("sk-form-key"));
+        verify(profileService, never()).require(any());
+    }
+
+    @Test
+    @DisplayName("probeModels(): 密钥留空但给了 profileId 时用库里那套的密钥")
+    void probeModelsFallsBackToStoredKey() {
+        when(profileService.require(ID)).thenReturn(profile("已有配置", false, 0));
+        when(configService.resolveFrom(any())).thenReturn(resolved("sk-stored-key"));
+        when(modelListProbeService.probe(any(), any(), any()))
+                .thenReturn(new ModelListResult(true, List.of("qwen-max"), 80, null));
+
+        controller.probeModels(new ProbeModelsRequest(null, "https://api.example.com", "  ", ID));
+
+        // 编辑态密钥框按约定永不回填 → 必须能用已保存的密钥探测
+        verify(modelListProbeService).probe(
+                eq(ModelProtocol.OPENAI), eq("https://api.example.com"), eq("sk-stored-key"));
+    }
+
+    @Test
+    @DisplayName("probeModels(): 端点与密钥都留空时一并回落到库里那套")
+    void probeModelsFallsBackToStoredEndpointToo() {
+        when(profileService.require(ID)).thenReturn(profile("已有配置", false, 0));
+        when(configService.resolveFrom(any())).thenReturn(resolved("sk-stored-key"));
+        when(modelListProbeService.probe(any(), any(), any()))
+                .thenReturn(new ModelListResult(true, List.of("m"), 10, null));
+
+        controller.probeModels(new ProbeModelsRequest("OLLAMA", null, null, ID));
+
+        verify(modelListProbeService).probe(
+                eq(ModelProtocol.OLLAMA), eq("https://api.example.com"), eq("sk-stored-key"));
+    }
+
+    @Test
+    @DisplayName("probeModels(): 没有 profileId 且密钥为空时不查库，直接交给探测服务报错")
+    void probeModelsWithoutProfileIdDoesNotQueryDatabase() {
+        // 关键：不能拿环境变量里的密钥去探一个不相干的端点
+        when(modelListProbeService.probe(any(), any(), any()))
+                .thenReturn(ModelListResult.failed("请先填写 API Key"));
+
+        ApiResponse<ModelListResult> response = controller.probeModels(
+                new ProbeModelsRequest("OPENAI", "https://api.example.com", null, null));
+
+        assertThat(response.data().ok()).isFalse();
+        verify(profileService, never()).require(any());
+        verify(modelListProbeService).probe(eq(ModelProtocol.OPENAI), eq("https://api.example.com"), isNull());
+    }
+
+    @Test
+    @DisplayName("probeModels(): 协议参数原样传给探测服务")
+    void probeModelsPassesProtocol() {
+        when(modelListProbeService.probe(any(), any(), any()))
+                .thenReturn(new ModelListResult(true, List.of("llama3:8b"), 5, null));
+
+        controller.probeModels(new ProbeModelsRequest("ollama", "http://localhost:11434", null, null));
+
+        verify(modelListProbeService).probe(eq(ModelProtocol.OLLAMA), any(), any());
+    }
+
+    @Test
+    @DisplayName("probeModels(): 请求体为 null 时给出可读提示")
+    void probeModelsRejectsNullBody() {
+        assertThatThrownBy(() -> controller.probeModels(null))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("请求体");
+    }
+
+    @Test
+    @DisplayName("probeModels(): 端点超长时拒绝")
+    void probeModelsRejectsTooLongBaseUrl() {
+        assertThatThrownBy(() -> controller.probeModels(
+                new ProbeModelsRequest("OPENAI", "https://x.example.com/" + "a".repeat(600), "sk", null)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("不能超过");
+    }
+
+    @Test
+    @DisplayName("probeModels(): 探测失败仍返回 200，由 ok=false 表达（不是接口错误）")
+    void probeModelsReturnsOkFalseOnFailure() {
+        when(modelListProbeService.probe(any(), any(), any()))
+                .thenReturn(ModelListResult.failed("接口不存在（404）"));
+
+        ApiResponse<ModelListResult> response = controller.probeModels(
+                new ProbeModelsRequest("OPENAI", "https://api.example.com", "sk", null));
+
+        // 大量端点没有 /models，但它们能正常聊天 —— 这不是错误
+        assertThat(response.isSuccess()).isTrue();
+        assertThat(response.data().ok()).isFalse();
+        assertThat(response.data().models()).isEmpty();
+        assertThat(response.data().error()).contains("404");
     }
 
     // ------------------------------------------------------------------ 启用

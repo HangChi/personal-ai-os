@@ -1,5 +1,11 @@
 import { requestData } from '@/api/http'
-import type { ModelProfile, ModelProfileList, SaveModelProfilePayload } from '@/types/api'
+import type {
+  ModelListResult,
+  ModelProfile,
+  ModelProfileList,
+  ModelProtocol,
+  SaveModelProfilePayload,
+} from '@/types/api'
 
 /**
  * 多套模型配置接口客户端（设置页 → 模型配置）。
@@ -88,4 +94,37 @@ export function reorderModelProfiles(ids: string[]): Promise<ModelProfileList> {
 /** 用当前生效配置发一次最小请求（可能计费，故用 POST 不被缓存） */
 export function testModelProfileConnection(): Promise<import('@/types/api').ModelConnectionTestResult> {
   return requestData({ url: '/settings/model/profiles/test', method: 'post', timeout: 30_000 })
+}
+
+/**
+ * 探测某个端点支持哪些模型（cc-switch 的「获取模型列表」）。
+ *
+ * <h2>为什么可以传「还没保存的草稿」</h2>
+ * 用户通常是在填表过程中点这个按钮：先填端点与密钥，看看这个端点有什么模型，
+ * 再从里面挑。若必须先保存才能探测，「新建一套」就变成「先瞎填一个模型名保存
+ * → 再回来探测 → 再改」，而瞎填模型名正是要避免的事。
+ *
+ * <h2>为什么 {@code profileId} 要一起传</h2>
+ * 编辑已有配置时密钥框按安全约定永不回填（前端拿到空串）。传 {@code profileId}
+ * 让后端用该配置已保存的密钥探测，用户不必重新输一遍 key。
+ *
+ * <p>返回 {@code ok=false} 属正常情况：很多端点没有 {@code /models} 接口，
+ * 但能正常聊天。此时照常手打模型名即可。
+ *
+ * @param payload 协议 / 端点 / 密钥 / 编辑中的配置 id
+ */
+export function probeModelList(payload: {
+  protocol?: ModelProtocol | null
+  baseUrl?: string | null
+  apiKey?: string | null
+  profileId?: string | null
+}): Promise<ModelListResult> {
+  return requestData<ModelListResult>({
+    url: '/settings/model/profiles/probe-models',
+    method: 'post',
+    data: payload,
+    // 后端硬卡 10 秒，这里放宽到 15 秒：留足网络与序列化开销，
+    // 又比后端的 10 秒长，确保超时由后端报出可读原因而不是前端 AbortError
+    timeout: 15_000,
+  })
 }

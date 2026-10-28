@@ -60,6 +60,16 @@ public class AiModelProfileEntity {
     @Column(name = "base_url", length = 500)
     private String baseUrl;
 
+    /**
+     * 协议类型，决定「获取模型列表」时调哪个接口（V22）。
+     *
+     * <p><b>只影响探测，不影响聊天。</b>聊天链路统一走 OpenAI 兼容协议。
+     * 详见 {@link ModelProtocol} 的类注释 —— 把两者混为一谈会误以为
+     * 选了 ANTHROPIC 就用 Anthropic 的 Messages API 聊天，实际不会。
+     */
+    @Column(name = "protocol", length = 20, nullable = false)
+    private String protocol;
+
     /** API 密钥明文；null 表示沿用环境变量。接口层必须掩码后再返回 */
     @Column(name = "api_key", length = 500)
     private String apiKey;
@@ -116,6 +126,8 @@ public class AiModelProfileEntity {
         this.sortOrder = sortOrder;
         this.revision = 0;
         this.active = false;
+        // 默认 OPENAI：新建配置的绝大多数情形都是 OpenAI 兼容端点
+        this.protocol = ModelProtocol.OPENAI.name();
         this.createdAt = now;
         this.updatedAt = now;
     }
@@ -142,6 +154,20 @@ public class AiModelProfileEntity {
         this.embeddingModel = embeddingModel;
         this.revision = this.revision + 1;
         this.updatedAt = now;
+    }
+
+    /**
+     * 整体覆盖（含协议）。协议单独一个重载是因为它既有默认值、
+     * 又常被「探测模型列表」的场景单独改动，让调用方总要多传一个
+     * 它并不关心的参数会让签名变噪音。
+     *
+     * @param now 当前时间
+     */
+    public void overwrite(String name, String presetId, String baseUrl, String apiKey,
+                          String chatModel, Double temperature, String embeddingModel,
+                          String protocol, Instant now) {
+        overwrite(name, presetId, baseUrl, apiKey, chatModel, temperature, embeddingModel, now);
+        this.protocol = ModelProtocol.parse(protocol).name();
     }
 
     /**
@@ -187,6 +213,16 @@ public class AiModelProfileEntity {
 
     public String getBaseUrl() {
         return baseUrl;
+    }
+
+    /** 协议名（永远非 null，V22 迁移给了默认值且构造器与 overwrite 都会兜底） */
+    public String getProtocol() {
+        return protocol == null ? ModelProtocol.OPENAI.name() : protocol;
+    }
+
+    /** 解析后的协议枚举，供探测服务直接使用 */
+    public ModelProtocol protocolEnum() {
+        return ModelProtocol.parse(protocol);
     }
 
     public String getApiKey() {

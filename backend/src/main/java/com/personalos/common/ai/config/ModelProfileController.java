@@ -1,7 +1,9 @@
 package com.personalos.common.ai.config;
 
+import com.personalos.common.ai.config.dto.ModelListResult;
 import com.personalos.common.ai.config.dto.ModelProfileDto;
 import com.personalos.common.ai.config.dto.ModelProfileListDto;
+import com.personalos.common.ai.config.dto.ProbeModelsRequest;
 import com.personalos.common.ai.config.dto.ReorderModelProfilesRequest;
 import com.personalos.common.ai.config.dto.SaveModelProfileRequest;
 import com.personalos.common.api.ApiResponse;
@@ -53,22 +55,26 @@ public class ModelProfileController {
     private static final double TEMPERATURE_MIN = 0.0;
     private static final double TEMPERATURE_MAX = 2.0;
 
-    /** 字段长度上限，与 V21 列宽一致 */
+    /** 字段长度上限，与 V21/V22 列宽一致 */
     private static final int BASE_URL_MAX = 500;
     private static final int API_KEY_MAX = 500;
     private static final int MODEL_NAME_MAX = 120;
     private static final int PRESET_ID_MAX = 60;
+    private static final int PROTOCOL_MAX = 20;
 
     private final ModelProfileService profileService;
     private final ModelConfigService configService;
     private final ModelConnectionTestService connectionTestService;
+    private final ModelListProbeService modelListProbeService;
 
     public ModelProfileController(ModelProfileService profileService,
                                   ModelConfigService configService,
-                                  ModelConnectionTestService connectionTestService) {
+                                  ModelConnectionTestService connectionTestService,
+                                  ModelListProbeService modelListProbeService) {
         this.profileService = profileService;
         this.configService = configService;
         this.connectionTestService = connectionTestService;
+        this.modelListProbeService = modelListProbeService;
     }
 
     // ------------------------------------------------------------------ 读取
@@ -168,6 +174,47 @@ public class ModelProfileController {
         return ApiResponse.ok(connectionTestService.test());
     }
 
+    /**
+     * 探测某个端点支持哪些模型（cc-switch 的「获取模型列表」）。
+     *
+     * <h2>为什么收的是「草稿」而不是已保存配置的 id</h2>
+     * 用户通常是在**填表的过程中**点这个按钮 —— 先填端点与密钥，看看
+     * 这个端点有什么模型，再从里面挑一个填进去。若必须先把配置保存下来
+     * 才能探测，「新建一套」就变成「先瞎填一个模型名保存 → 再回来探测 →
+     * 再改」，而瞎填的模型名正是我们要帮他避免的。
+     *
+     * <h2>密钥留空时怎么处理</h2>
+     * 传了 {@code profileId} 就用那套配置已保存的密钥来探测。这样编辑一套
+     * 已有配置时（密钥框按约定永不回填）也能直接点探测，不必重新输一遍 key。
+     * 没传 {@code profileId} 且密钥为空 → 明确报「请先填写 API Key」，
+     * 而不是拿环境变量里的密钥去探一个不相干的端点。
+     *
+     * <p>返回 200 且 {@code ok=false} 表示「探测没成功」，不是接口错误 ——
+     * 大量端点根本不提供模型列表，但它们能正常聊天。
+     */
+    @PostMapping("/probe-models")
+    public ApiResponse<ModelListResult> probeModels(@RequestBody ProbeModelsRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "请求体不能为空");
+        }
+        checkLength(request.baseUrl(), BASE_URL_MAX, "端点地址");
+        ModelProtocol protocol = ModelProtocol.parse(request.protocol());
+        String baseUrl = request.baseUrl();
+        String apiKey = request.apiKey();
+
+        // 表单没填密钥但指明了配置 → 用库里那套的密钥
+        if ((apiKey == null || apiKey.isBlank()) && request.profileId() != null) {
+            AiModelProfileEntity existing = profileService.require(request.profileId());
+            ModelConfigService.ResolvedConfig resolved = configService.resolveFrom(existing);
+            apiKey = resolved.apiKey();
+            // 端点也留空时同样回落到那套配置的生效值，否则无从探测
+            if (baseUrl == null || baseUrl.isBlank()) {
+                baseUrl = resolved.baseUrl();
+            }
+        }
+        return ApiResponse.ok(modelListProbeService.probe(protocol, baseUrl, apiKey));
+    }
+
     // ------------------------------------------------------------------ 内部
 
     private ModelConfigService.ResolvedConfig resolveFor(AiModelProfileEntity entity) {
@@ -187,6 +234,7 @@ public class ModelProfileController {
                 entity.getName(),
                 entity.getPresetId(),
                 resolved.baseUrl(),
+                entity.getProtocol(),
                 ModelConfigService.mask(resolved.apiKey()),
                 resolved.hasApiKey(),
                 resolved.chatModel(),
@@ -204,6 +252,7 @@ public class ModelProfileController {
                 request.name(),
                 request.presetId(),
                 request.baseUrl(),
+                request.protocol(),
                 request.apiKey(),
                 request.chatModel(),
                 request.temperature(),
@@ -226,6 +275,7 @@ public class ModelProfileController {
         checkLength(request.chatModel(), MODEL_NAME_MAX, "对话模型名");
         checkLength(request.embeddingModel(), MODEL_NAME_MAX, "嵌入模型名");
         checkLength(request.presetId(), PRESET_ID_MAX, "预设标识");
+        checkLength(request.protocol(), PROTOCOL_MAX, "协议类型");
 
         Double temperature = request.temperature();
         if (temperature != null && (temperature < TEMPERATURE_MIN || temperature > TEMPERATURE_MAX)) {
