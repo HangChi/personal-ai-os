@@ -438,6 +438,28 @@ html.dark .el-pagination.is-background .el-pager li.is-active {
   border-radius: var(--os-radius-xl);
 }
 
+/*
+ * 弹窗宽度兜底：窄屏上不能溢出。
+ *
+ * 各处调用写的是固定像素（520px / 560px），来自「这一版在桌面上量出来的合适宽度」。
+ * 但在手机（375px）上宽 560px 的弹窗会横向溢出，右侧内容被裁掉，用户既看不到也
+ * 拖不动 —— 那是彻底不可用，不是「挤一点」。
+ *
+ * 为什么不直接把调用处的 width 改掉：EP 把 width 写成元素**内联样式**里的
+ * `--el-dialog-width`（use-dialog.mjs 里 style[`${varPrefix}-width`] = width），
+ * 内联变量会盖掉 CSS 类里的同名变量，所以改 CSS 变量没用。而 max-width 不是
+ * 覆盖同一个变量，是额外的上界约束 —— 有效且不必逐个改调用点。
+ *
+ * 用 calc(100vw - 32px) 留出两侧呼吸位，避免贴边。
+ *
+ * 特意加 `html` 前缀而不是裸写 `.el-dialog`：EP 的 per-component 样式由 unplugin
+ * 在使用该组件的 SFC 内注入，路由懒加载会让它**运行时晚于** theme.css 落地。
+ * 同特异性下后落地者胜，裸 `.el-dialog` 会被吃掉（本项目已在这条上栽过一次）。
+ */
+html .el-dialog {
+  max-width: calc(100vw - 32px);
+}
+
 .el-dialog__header {
   padding-bottom: var(--os-space-3);
   margin-right: 0;
