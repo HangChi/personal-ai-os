@@ -97,6 +97,19 @@ async function handleRemove(memory: Memory): Promise<void> {
   }
 }
 
+/**
+ * 置顶 / 取消置顶（V26）。
+ *
+ * 不弹确认：它可逆、不删数据、影响面是「排序」而不是「内容」。
+ * 与删除的心智负担完全不同，弹确认只会让常用操作变重。
+ */
+async function handleTogglePin(memory: Memory): Promise<void> {
+  const next = !memory.pinned
+  if (await store.setPinned(memory.id, next)) {
+    ElMessage.success(next ? '已设为常驻，之后每次对话都会带上它' : '已取消常驻')
+  }
+}
+
 function formatTime(value: string): string {
   /*
    * 走 lib/format 的统一入口，不再本地 new Date().toLocaleString()：
@@ -113,7 +126,7 @@ function formatTime(value: string): string {
     <PageHeader
       size="page"
       title="长期记忆"
-      description="这里的内容会注入每一次对话（最多 30 条，越靠前越先生效）。一条错的记忆会污染全部回答，改动前请确认。"
+      description="这里的内容会注入每一次对话（最多 30 条）。设为常驻的条目无条件注入且优先占预算，其余按与本轮问题的相关度排序后依次填入。"
     >
       <el-button type="primary" @click="openCreate">
         <el-icon><Plus /></el-icon>
@@ -151,18 +164,33 @@ function formatTime(value: string): string {
         </el-empty>
 
         <ul v-else class="memory__list">
-          <li v-for="(memory, index) in filteredMemories" :key="memory.id" class="memory__item">
+          <li
+            v-for="(memory, index) in filteredMemories"
+            :key="memory.id"
+            class="memory__item"
+            :class="{ 'memory__item--superseded': memory.supersededBy }"
+          >
             <span class="memory__index">{{ index + 1 }}</span>
             <div class="memory__body">
               <div class="memory__text">{{ memory.content }}</div>
               <div class="memory__meta">
-                <el-tag v-if="memory.source === 'AUTO'" size="small" type="info" effect="plain" class="memory__source">
+                <el-tag v-if="memory.pinned" size="small" type="success" effect="plain" class="memory__badge">
+                  常驻
+                </el-tag>
+                <el-tag v-if="memory.supersededBy" size="small" type="info" effect="plain" class="memory__badge">
+                  已被更新条目取代
+                </el-tag>
+                <el-tag v-if="memory.source === 'AUTO'" size="small" type="info" effect="plain" class="memory__badge">
                   自动沉淀
                 </el-tag>
                 <span>最近更新 {{ formatTime(memory.updatedAt) }}</span>
+                <span v-if="memory.hitCount > 0" class="memory__hits">注入 {{ memory.hitCount }} 次</span>
               </div>
             </div>
             <div class="memory__actions">
+              <el-button link type="primary" size="small" @click="handleTogglePin(memory)">
+                {{ memory.pinned ? '取消常驻' : '设为常驻' }}
+              </el-button>
               <el-button link type="primary" size="small" @click="openEdit(memory)">编辑</el-button>
               <el-button link type="danger" size="small" @click="handleRemove(memory)">删除</el-button>
             </div>
@@ -311,8 +339,25 @@ function formatTime(value: string): string {
   color: var(--el-text-color-secondary);
 }
 
-.memory__source {
+.memory__badge {
   font-size: var(--os-font-xs);
+}
+
+.memory__hits {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 已被取代的条目：整条降透明度，但不隐藏。
+ * 用户需要看到「这条被谁取代了」——自动去重最危险的不是合并本身，
+ * 而是合并之后没人知道它做过什么。
+ */
+.memory__item--superseded {
+  opacity: 0.6;
+}
+
+.memory__item--superseded:hover {
+  opacity: 1;
 }
 
 .memory__actions {

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-import { createMemory, listMemories, removeMemory, updateMemory } from '@/api/memory'
+import { createMemory, listMemories, pinMemory, removeMemory, updateMemory } from '@/api/memory'
 import type { Memory } from '@/types/api'
 
 /**
@@ -62,6 +62,26 @@ export const useMemoryStore = defineStore('memory', () => {
     }
   }
 
+  /**
+   * 置顶 / 取消置顶。
+   *
+   * 走**重拉**而不是就地替换：置顶会改变列表排序（常驻优先），
+   * 就地替换会让页面顺序与后端不一致，而顺序本身是有语义的信息。
+   *
+   * @returns 是否成功
+   */
+  async function setPinned(id: string, pinned: boolean): Promise<boolean> {
+    error.value = null
+    try {
+      await pinMemory(id, pinned)
+      await load()
+      return true
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '修改常驻状态失败'
+      return false
+    }
+  }
+
   /** @returns 是否成功；成功才从列表移除 */
   async function remove(id: string): Promise<boolean> {
     error.value = null
@@ -75,5 +95,5 @@ export const useMemoryStore = defineStore('memory', () => {
     }
   }
 
-  return { memories, loading, saving, error, load, create, update, remove }
+  return { memories, loading, saving, error, load, create, update, remove, setPinned }
 })

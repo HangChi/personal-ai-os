@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.model.ToolContext;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,9 +33,19 @@ public class ToolExecutor {
     private final IdempotencyService idempotencyService;
     private final JsonCodec jsonCodec;
 
-    public ToolExecutor(IdempotencyService idempotencyService, JsonCodec jsonCodec) {
+    /**
+     * 旁路记录器（可为空）：计划模块用它把工具结果归集到「正在执行的步骤」。
+     *
+     * <p>用 {@link ObjectProvider} 而不是直接注入接口：没有实现方时（绝大多数部署、
+     * 以及所有单元测试）这条旁路必须是零成本的，不该要求容器里存在一个空实现。
+     */
+    private final ObjectProvider<ToolCallRecorder> recorders;
+
+    public ToolExecutor(IdempotencyService idempotencyService, JsonCodec jsonCodec,
+                        ObjectProvider<ToolCallRecorder> recorders) {
         this.idempotencyService = idempotencyService;
         this.jsonCodec = jsonCodec;
+        this.recorders = recorders;
     }
 
     /**
@@ -80,10 +91,16 @@ public class ToolExecutor {
                 } catch (BusinessException ex) {
                     // 业务校验失败：作为 REJECTED 返回给模型，而不是抛异常打断工具循环。
                     // 这样审计记录里的状态也是 REJECTED（说明"没执行"），而不是 FAILED。
-                    execution = ToolExecutionResult.rejected(ex.getMessage());
+                    execution = ToolExecutionResult.rejected(appendFailureHint(conversationId, toolName, ex.getMessage()));
                 } catch (RuntimeException ex) {
                     log.error("工具执行异常 tool={}", toolName, ex);
-                    execution = ToolExecutionResult.error("工具执行失败，请稍后重试");
+                    execution = ToolExecutionResult.error(
+                            appendFailureHint(conversationId, toolName, "工具执行失败，请稍后重试"));
+                }
+                // 只有真正产生了结果才通知旁路：DUPLICATE 是回放，重复归集会把同一次调用记两遍
+                if (ToolExecutionResult.ToolStatus.OK.name().equals(execution.status())
+                        || ToolExecutionResult.ToolStatus.REQUIRES_CONFIRMATION.name().equals(execution.status())) {
+                    notifySuccess(conversationId, toolName, execution.message());
                 }
                 return IdempotentResult.of(jsonCodec.toJson(execution), toOutcome(execution));
             });
@@ -149,6 +166,47 @@ public class ToolExecutor {
             case "REJECTED" -> IdempotencyOutcome.REJECTED;
             default -> IdempotencyOutcome.FAILED;
         };
+    }
+
+    /**
+     * 通知旁路「工具成功了」。
+     *
+     * <p>吞掉异常：旁路（例如计划步骤归集）失败不该让一次已经成功的写操作
+     * 变成「工具执行失败」—— 用户会看到「保存失败」但数据其实已经存进去了。
+     */
+    private void notifySuccess(String conversationId, String toolName, String message) {
+        if (recorders == null) {
+            return;
+        }
+        try {
+            recorders.ifAvailable(recorder -> recorder.onToolSuccess(conversationId, toolName, message));
+        } catch (RuntimeException ex) {
+            log.debug("工具成功旁路记录失败 tool={}：{}", toolName, ex.toString());
+        }
+    }
+
+    /**
+     * 通知旁路「工具失败」，并把返回的提示拼到给模型的说明末尾。
+     *
+     * <p>提示是给**模型**的下一步指令（「重试这一步」或「换一条路线」），
+     * 不改变工具结果的状态码 —— 状态仍由 {@link ToolExecutionResult} 决定。
+     */
+    private String appendFailureHint(String conversationId, String toolName, String message) {
+        if (recorders == null) {
+            return message;
+        }
+        try {
+            String hint = recorders.getIfAvailable() == null
+                    ? null
+                    : recorders.getIfAvailable().onToolFailure(conversationId, toolName, message);
+            if (hint == null || hint.isBlank()) {
+                return message;
+            }
+            return message + "\n\n" + hint;
+        } catch (RuntimeException ex) {
+            log.debug("工具失败旁路记录失败 tool={}：{}", toolName, ex.toString());
+            return message;
+        }
     }
 
     /**

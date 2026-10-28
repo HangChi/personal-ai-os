@@ -1,8 +1,11 @@
 package com.personalos.memory.controller;
 
 import com.personalos.common.api.ApiResponse;
+import com.personalos.common.api.ErrorCode;
+import com.personalos.common.exception.BusinessException;
 import com.personalos.memory.dto.CreateMemoryRequest;
 import com.personalos.memory.dto.MemoryDto;
+import com.personalos.memory.dto.PinMemoryRequest;
 import com.personalos.memory.dto.UpdateMemoryRequest;
 import com.personalos.memory.service.MemoryService;
 import java.util.List;
@@ -53,6 +56,21 @@ public class MemoryController {
     public ApiResponse<MemoryDto> update(@PathVariable String id,
                                          @RequestBody(required = false) UpdateMemoryRequest request) {
         return ApiResponse.ok(memoryService.update(id, request == null ? null : request.content()));
+    }
+
+    /**
+     * 置顶 / 取消置顶（V26）。
+     *
+     * <p>常驻条目无条件注入、优先占预算 —— 这是「记忆必须始终生效」的表达方式，
+     * 替代了「按相似度召回」（见 specs/008 research R-03）。
+     */
+    @PatchMapping("/{id}/pin")
+    public ApiResponse<MemoryDto> pin(@PathVariable String id,
+                                      @RequestBody(required = false) PinMemoryRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "pinned 不能为空");
+        }
+        return ApiResponse.ok(memoryService.setPinned(id, request.pinned()));
     }
 
     /** 删除记忆。 */

@@ -71,6 +71,46 @@ export interface Memory {
   source: MemorySource
   createdAt: string
   updatedAt: string
+  /** 常驻（V26）：无条件注入、优先占预算 */
+  pinned: boolean
+  /** 被哪条更新的记忆取代；非空即不再注入，但条目本身保留 */
+  supersededBy: string | null
+  /** 累计被注入到对话上下文的次数 */
+  hitCount: number
+  /** 最近一次被注入的时间；null 表示从未被注入 */
+  lastUsedAt: string | null
+}
+
+/** 计划整体状态（阶段 22） */
+export type PlanStatus = 'ACTIVE' | 'COMPLETED' | 'ABORTED'
+
+/** 计划步骤状态 */
+export type PlanStepStatus = 'PENDING' | 'RUNNING' | 'DONE' | 'FAILED' | 'SKIPPED'
+
+/** 计划中的一步 */
+export interface PlanStep {
+  seq: number
+  title: string
+  status: PlanStepStatus
+  /** 验收说明（模型写的「这一步算做完的标准」） */
+  detail: string | null
+  /** 实际调用到的工具名；由后端执行外壳回填，不是模型自报 */
+  toolName: string | null
+  toolResult: string | null
+  error: string | null
+  startedAt: string | null
+  finishedAt: string | null
+}
+
+/** Agent 执行计划 */
+export interface AgentPlan {
+  id: string
+  conversationId: string
+  goal: string
+  status: PlanStatus
+  steps: PlanStep[]
+  createdAt: string
+  updatedAt: string
 }
 
 /** 聊天附件名片（阶段 22）。文件本体经 url 取，这里只是展示元数据 */
