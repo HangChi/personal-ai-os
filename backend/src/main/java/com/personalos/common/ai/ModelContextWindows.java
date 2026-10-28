@@ -124,14 +124,41 @@ public final class ModelContextWindows {
         if (normalized.isEmpty()) {
             return null;
         }
-        // 前缀匹配，且**优先更长的键**：qwen-max 与 qwen-max-latest 只能有一个命中答案，
-        // 让更具体的那个先中。Map.ofEntries 的迭代顺序不保证，所以这里显式排序。
+        // 第一档：前缀匹配，且**优先更长的键**：qwen-max 与 qwen-max-latest 只能有一个
+        // 命中答案，让更具体的那个先中。Map.ofEntries 的迭代顺序不保证，所以这里显式排序。
+        Integer byPrefix = longest(normalized, true);
+        if (byPrefix != null) {
+            return byPrefix;
+        }
+        // 第二档：包含匹配（2026-10-29）。端点的模型名常带**厂商或中转前缀**，
+        // 例如 DashScope 的 `cmaas-qwen3.8-flash`、聚合网关的 `azure/gpt-4o`。
+        // 这类名字前缀匹配永远不中，于是内置表对它形同不存在 ——
+        // 用户看到的正是「明明表里有这个模型，窗口还是 126K」。
+        //
+        // 只对长度 ≥ 5 的键启用：`o1`、`kimi` 这类短键做包含匹配会大量误伤
+        // （`proto1` 里就含 `o1`），而误给的窗口比没有窗口更糟。
+        return longest(normalized, false);
+    }
+
+    /**
+     * 找命中的键里最长的一个。
+     *
+     * @param normalized 归一后的模型名
+     * @param prefixOnly true 只认前缀匹配；false 认包含匹配
+     */
+    private static Integer longest(String normalized, boolean prefixOnly) {
         return KNOWN.entrySet().stream()
-                .filter(entry -> normalized.startsWith(entry.getKey()))
+                .filter(entry -> entry.getKey().length() >= (prefixOnly ? 1 : MIN_CONTAINS_KEY_LENGTH))
+                .filter(entry -> prefixOnly
+                        ? normalized.startsWith(entry.getKey())
+                        : normalized.contains(entry.getKey()))
                 .min((a, b) -> Integer.compare(b.getKey().length(), a.getKey().length()))
                 .map(Map.Entry::getValue)
                 .orElse(null);
     }
+
+    /** 包含匹配的键长下限：短键（o1 / kimi）做包含匹配会误伤无辜模型名 */
+    private static final int MIN_CONTAINS_KEY_LENGTH = 5;
 
     /**
      * 归一化模型名：小写、下划线转连字符。
