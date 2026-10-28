@@ -2,6 +2,7 @@ package com.personalos.common.exception;
 
 import com.personalos.common.api.ApiResponse;
 import com.personalos.common.api.ErrorCode;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -170,10 +171,19 @@ public class GlobalExceptionHandler {
 
     /**
      * 请求方法不被支持（如对只收 POST 的端点发 GET）。
+     *
+     * <p><b>为什么必须记下请求路径</b>（2026-10-29）：原先只记
+     * {@code method} 与 {@code supported}，结果线上出现每 5 秒一次的 405，
+     * 而 {@code supported=[DELETE, PUT]} 这个组合在项目里能对上好几处
+     * （`/model/profiles/{id}`、`/calendar/events/{id}` 等都是 PUT+DELETE），
+     * **无法定位到底是哪个 URL**，只能靠人肉猜。端点路径是定位这类问题的唯一抓手，
+     * 且不含敏感信息（查询串不记）。
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-        log.warn("请求方法不被支持: method={}, supported={}", ex.getMethod(), ex.getSupportedHttpMethods());
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        log.warn("请求方法不被支持: method={}, uri={}, supported={}",
+                ex.getMethod(), request.getRequestURI(), ex.getSupportedHttpMethods());
         return ResponseEntity.status(ErrorCode.METHOD_NOT_ALLOWED.getHttpStatus())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.METHOD_NOT_ALLOWED,
