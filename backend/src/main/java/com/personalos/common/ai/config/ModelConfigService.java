@@ -73,6 +73,36 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
     private final Double envTemperature;
 
     /**
+     * 用于判断「某个值到底是不是真的来自环境变量」。
+     *
+     * <h3>为什么仅凭 {@code @Value} 的值判断不出来</h3>
+     * {@code application.yml} 里写的是 {@code base-url: ${OPENAI_BASE_URL:https://api.openai.com}}。
+     * 于是即便 {@code OPENAI_BASE_URL} 根本没设置，{@code @Value} 注入到的也是一个
+     * 非空的 {@code https://api.openai.com} —— 与「用户真的设了这个变量」在
+     * Java 侧完全无法区分。
+     *
+     * <p>后果是界面上的来源徽章把「内置默认」标成「环境变量」：用户去改
+     * {@code .env} 发现没反应，而界面正告诉他「这项来自环境变量」——
+     * 这个徽章存在的唯一意义就是解释「为什么我改的不生效」，标错就等于反向误导。
+     *
+     * <p>用 {@link Environment} 按**原始变量名**查一次，就能区分：占位符
+     * {@code ${OPENAI_BASE_URL}} 的解析结果不会在属性源里留下
+     * {@code OPENAI_BASE_URL} 这个键，只有真正定义了该变量的属性源
+     * （系统环境变量、或 {@code .env}）才会命中。
+     *
+     * <p>测试用构造器传 {@code null}，此时退回「值非空即 ENVIRONMENT」的旧行为，
+     * 保持既有断言语义不变。
+     */
+    private final org.springframework.core.env.Environment environment;
+
+    /** 与 {@code application.yml} 中占位符同名的原始变量名 */
+    private static final String KEY_BASE_URL = "OPENAI_BASE_URL";
+    private static final String KEY_API_KEY = "OPENAI_API_KEY";
+    private static final String KEY_CHAT_MODEL = "OPENAI_CHAT_MODEL";
+    private static final String KEY_EMBEDDING_MODEL = "OPENAI_EMBEDDING_MODEL";
+
+
+    /**
      * 密钥掩码时保留的尾字符数。
      *
      * <p>保留 4 位是为了让用户能确认「这就是我上次填的那把」——
@@ -94,6 +124,7 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
                               Clock clock,
                               org.springframework.beans.factory.ObjectProvider<ModelProfileService>
                                       profileServiceProvider,
+                              org.springframework.core.env.Environment environment,
                               @Value("${spring.ai.openai.base-url:}") String envBaseUrl,
                               @Value("${spring.ai.openai.api-key:}") String envApiKey,
                               @Value("${spring.ai.openai.chat.model:}") String envChatModel,
@@ -104,11 +135,33 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
         this.provider = provider;
         this.clock = clock;
         this.profileServiceProvider = profileServiceProvider;
+        this.environment = environment;
         this.envBaseUrl = blankToNull(envBaseUrl);
         this.envApiKey = blankToNull(envApiKey);
         this.envChatModel = blankToNull(envChatModel);
         this.envEmbeddingModel = blankToNull(envEmbeddingModel);
         this.envTemperature = parseTemperature(envTemperature);
+    }
+
+    /**
+     * 兼容构造器：不传 {@link Environment}（子类桩、以及只关心生效值的测试用）。
+     *
+     * <p>此时来源判定退回「值非空即 ENVIRONMENT」的旧语义 —— 因为无法查证
+     * 某个变量名是否真的被定义过。生产路径永远走上面那个带 Environment 的构造器。
+     */
+    public ModelConfigService(AiModelConfigRepository repository,
+                              OpenAiChatModelFactory modelFactory,
+                              AiChatClientProvider provider,
+                              Clock clock,
+                              org.springframework.beans.factory.ObjectProvider<ModelProfileService>
+                                      profileServiceProvider,
+                              String envBaseUrl,
+                              String envApiKey,
+                              String envChatModel,
+                              String envEmbeddingModel,
+                              String envTemperature) {
+        this(repository, modelFactory, provider, clock, profileServiceProvider, null,
+                envBaseUrl, envApiKey, envChatModel, envEmbeddingModel, envTemperature);
     }
 
     /**
@@ -127,7 +180,7 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
                               String envChatModel,
                               String envEmbeddingModel,
                               String envTemperature) {
-        this(repository, modelFactory, provider, clock, null,
+        this(repository, modelFactory, provider, clock, null, null,
                 envBaseUrl, envApiKey, envChatModel, envEmbeddingModel, envTemperature);
     }
 
@@ -191,10 +244,11 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
         // 每一项都记下「来源」，前端据此显示「来自环境变量」还是「设置页覆盖」。
         // 没有这个信息，用户改了 .env 发现不生效时无从判断是被覆盖了。
         Map<String, ConfigSource> sources = new LinkedHashMap<>();
-        sources.put("baseUrl", sourceOf(values.baseUrl(), envBaseUrl));
-        sources.put("apiKey", sourceOf(values.apiKey(), envApiKey));
-        sources.put("chatModel", sourceOf(values.chatModel(), envChatModel));
-        sources.put("embeddingModel", sourceOf(values.embeddingModel(), envEmbeddingModel));
+        sources.put("baseUrl", sourceOf(values.baseUrl(), envBaseUrl, KEY_BASE_URL));
+        sources.put("apiKey", sourceOf(values.apiKey(), envApiKey, KEY_API_KEY));
+        sources.put("chatModel", sourceOf(values.chatModel(), envChatModel, KEY_CHAT_MODEL));
+        sources.put("embeddingModel",
+                sourceOf(values.embeddingModel(), envEmbeddingModel, KEY_EMBEDDING_MODEL));
         sources.put("audioModel", audioModel == null ? ConfigSource.DEFAULT : ConfigSource.DATABASE);
         sources.put("temperature", values.temperature() != null
                 ? ConfigSource.DATABASE
@@ -438,6 +492,45 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
             return ConfigSource.DATABASE;
         }
         return envValue != null ? ConfigSource.ENVIRONMENT : ConfigSource.DEFAULT;
+    }
+
+    /**
+     * 带「真实环境变量名」的版本：能区分「yml 占位符的默认值」与「用户真的设了变量」。
+     *
+     * <p>见 {@link #environment} 字段的说明。判断顺序：
+     * <ol>
+     *   <li>库里有值 → {@code DATABASE}（设置页覆盖，优先级最高）；</li>
+     *   <li>变量名在属性源里真实存在 → {@code ENVIRONMENT}；</li>
+     *   <li>否则 {@code DEFAULT} —— 此时那个值只可能是 yml 里的兜底默认。</li>
+     * </ol>
+     *
+     * @param dbValue 库里存的值
+     * @param resolvedValue Spring 展开占位符后的生效值
+     * @param envKey   与 yml 占位符同名的原始变量名
+     */
+    private ConfigSource sourceOf(String dbValue, String resolvedValue, String envKey) {
+        if (dbValue != null && !dbValue.isBlank()) {
+            return ConfigSource.DATABASE;
+        }
+        if (environment == null) {
+            // 测试用构造器：没有 Environment 可查，退回旧语义（值非空即环境变量）
+            return resolvedValue != null ? ConfigSource.ENVIRONMENT : ConfigSource.DEFAULT;
+        }
+        return isEnvDefined(envKey) ? ConfigSource.ENVIRONMENT : ConfigSource.DEFAULT;
+    }
+
+    /**
+     * 该变量名是否真的被定义过（系统环境变量 / .env / 命令行 -D 都算）。
+     *
+     * <p><b>不看值是否为空</b>：用户写了 {@code OPENAI_API_KEY=} 是一个明确的
+     * 「我就是要它为空」的表达，来源仍是环境变量，不该标成内置默认。
+     */
+    private boolean isEnvDefined(String key) {
+        if (environment == null) {
+            return false;
+        }
+        String raw = environment.getProperty(key);
+        return raw != null && !raw.isBlank();
     }
 
     private static String firstNonBlank(String first, String second, String fallback) {

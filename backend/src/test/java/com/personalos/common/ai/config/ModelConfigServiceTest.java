@@ -425,6 +425,90 @@ class ModelConfigServiceTest {
                 baseUrl, apiKey, chatModel, embeddingModel, temperature);
     }
 
+    // -------------------------------------------- 来源判定：默认值 vs 真环境变量
+
+    /**
+     * 带 {@link org.springframework.core.env.Environment} 的构造：
+     * 「值非空」不再等于「来自环境变量」。
+     *
+     * <p><b>不能用 {@code StandardEnvironment.getSystemProperties().put(...)}</b>：
+     * 那个 map 就是真实的 {@code System.getProperties()}，写入会跨测试类泄漏 ——
+     * 表现为「单独跑绿、全量跑红」的幽灵失败。这里改用只读的
+     * {@link org.springframework.mock.env.MockEnvironment}，互不干扰。
+     *
+     * @param envVars 真实定义过的变量名集合
+     */
+    private ModelConfigService serviceWithEnv(java.util.Set<String> envVars,
+                                              String baseUrl, String apiKey,
+                                              String chatModel, String embeddingModel,
+                                              String temperature) {
+        org.springframework.mock.env.MockEnvironment environment =
+                new org.springframework.mock.env.MockEnvironment();
+        envVars.forEach((key) -> environment.withProperty(key, "defined"));
+        return new ModelConfigService(repository, factory, provider, CLOCK, null,
+                environment, baseUrl, apiKey, chatModel, embeddingModel, temperature);
+    }
+
+    /**
+     * 这是本轮修的那个 bug 的回归测试。
+     *
+     * <p>{@code application.yml} 写的是 {@code base-url: ${OPENAI_BASE_URL:https://api.openai.com}}，
+     * 所以即便用户完全没设 {@code OPENAI_BASE_URL}，注入进来的值也非空。
+     * 修之前这里会被标成 {@code ENVIRONMENT}，去设置页看到「端点来自环境变量」，
+     * 而去改 {@code .env} 又没反应 —— 徽章在反向误导。
+     */
+    @Test
+    @DisplayName("值非空但变量未真实定义时，来源标 DEFAULT 而不是 ENVIRONMENT")
+    void nonBlankValueWithoutDefinedVariableIsDefault() {
+        // 模拟「yml 兜底值被展开」：传进来的值非空，但环境里没有这个变量名
+        ResolvedConfig resolved = serviceWithEnv(java.util.Set.of(),
+                "https://api.openai.com", "", "gpt-4o-mini", "text-embedding-3-small", "")
+                .resolve();
+
+        assertThat(resolved.baseUrl()).isEqualTo("https://api.openai.com");
+        assertThat(resolved.sources())
+                .containsEntry("baseUrl", ConfigSource.DEFAULT)
+                .containsEntry("chatModel", ConfigSource.DEFAULT)
+                .containsEntry("embeddingModel", ConfigSource.DEFAULT)
+                .containsEntry("apiKey", ConfigSource.DEFAULT);
+    }
+
+    @Test
+    @DisplayName("变量真实定义时来源标 ENVIRONMENT")
+    void definedVariableIsEnvironment() {
+        ResolvedConfig resolved = serviceWithEnv(
+                java.util.Set.of("OPENAI_BASE_URL", "OPENAI_API_KEY", "OPENAI_CHAT_MODEL"),
+                "https://dashscope.aliyuncs.com/compatible-mode/v1", "sk-real",
+                "qwen3.8-flash", "text-embedding-3-small", "")
+                .resolve();
+
+        assertThat(resolved.sources())
+                .containsEntry("baseUrl", ConfigSource.ENVIRONMENT)
+                .containsEntry("apiKey", ConfigSource.ENVIRONMENT)
+                .containsEntry("chatModel", ConfigSource.ENVIRONMENT)
+                // 这一项没定义，仍应是 DEFAULT —— 逐字段判定，不搞「有一个就全标」
+                .containsEntry("embeddingModel", ConfigSource.DEFAULT);
+    }
+
+    @Test
+    @DisplayName("库里有值时永远标 DATABASE，与环境变量是否存在无关")
+    void databaseWinsOverEnvironmentForSource() {
+        AiModelConfigEntity entity = new AiModelConfigEntity(CLOCK.instant());
+        entity.overwrite("https://db.example.com", "sk-db", "db-model", 0.5,
+                "db-embed", CLOCK.instant());
+        org.mockito.Mockito.when(repository.findSingleton())
+                .thenReturn(java.util.Optional.of(entity));
+
+        ModelConfigService withEnv = serviceWithEnv(
+                java.util.Set.of("OPENAI_BASE_URL", "OPENAI_API_KEY"),
+                "https://env.example.com", "sk-env", "env-model", "env-embed", "0.3");
+        ResolvedConfig resolved = withEnv.resolve();
+
+        assertThat(resolved.sources())
+                .containsEntry("baseUrl", ConfigSource.DATABASE)
+                .containsEntry("apiKey", ConfigSource.DATABASE);
+    }
+
     /** 永远是「没有这个 Bean」的 ObjectProvider，等价于 AI_CHAT_PROVIDER=none */
     @SuppressWarnings("unchecked")
     private static <T> ObjectProvider<T> emptyProvider() {

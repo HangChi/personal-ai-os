@@ -1,0 +1,2 @@
+org.springframework.boot.EnvironmentPostProcessor=\
+com.personalos.common.config.DotEnvEnvironmentPostProcessor
