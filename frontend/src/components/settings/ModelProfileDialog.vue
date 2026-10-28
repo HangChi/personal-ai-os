@@ -28,6 +28,8 @@ import {
   buildProfilePayload,
   emptyForm,
   moveModel,
+  modelCandidatesFor,
+  modelOptionsFor,
   probeAlertType,
   probeBlockedReason,
   probeResultHint,
@@ -205,21 +207,42 @@ async function handleProbe(): Promise<void> {
 }
 
 /**
- * 下拉候选：去掉已经在清单里的。
+ * 下拉候选：按用途过滤，再去掉已经在清单里的。
  *
- * <p>不去掉的话，加完 `qwen-max` 之后下拉里还留着它，用户很容易再选一次
- * 然后疑惑「为什么没反应」。
+ * <p>厂商的 `/v1/models` 是不带类型字段的扁平数组（实测百炼一个端点
+ * 返回 183 个模型，其中只有 2 个是嵌入模型），两个下拉若共用同一份，
+ * 「嵌入模型」里会混进 145 个对话大模型 —— 全是选了必报错的死选项。
+ * 分类规则见 `classifyModel`。
+ *
+ * <p>过滤后为空不是死路：模板会切回普通输入框，用户仍可手打模型名。
  */
-const chatModelOptions = computed<string[]>(() => remainingModels(availableModels.value, form.chatModels))
-const embeddingModelOptions = computed<string[]>(() => remainingModels(availableModels.value, form.embeddingModels))
+const chatModelOptions = computed<string[]>(() => modelOptionsFor(availableModels.value, form.chatModels, 'CHAT'))
+const embeddingModelOptions = computed<string[]>(() =>
+  modelOptionsFor(availableModels.value, form.embeddingModels, 'EMBEDDING'),
+)
 
-function remainingModels(candidates: string[], picked: string[]): string[] {
-  if (candidates.length === 0) {
-    return []
-  }
-  const taken = new Set(picked)
-  return candidates.filter((name) => !taken.has(name))
-}
+/**
+ * 端点实际提供了几个嵌入模型（**不剔除已选项**）。
+ *
+ * <p>只用于「这端点没有嵌入模型」那句提示的判据。拿
+ * {@link embeddingModelOptions} 判断会漏掉「用户已把它加进清单」的情况，
+ * 于是提示与清单里那一行自相矛盾（实测确实能触发）。
+ */
+const embeddingCandidates = computed<string[]>(() => modelCandidatesFor(availableModels.value, 'EMBEDDING'))
+
+/**
+ * 该不该说「这端点没有嵌入模型」。
+ *
+ * <p>判据用 {@link embeddingCandidates}（未剔除已选项）而不是
+ * {@link embeddingModelOptions}（已剔除）：用户把端点里唯一的嵌入模型加进
+ * 清单后候选会变空，但「端点有嵌入模型」这个事实没变 —— 用后者会说出一句
+ * 与清单里那一行自相矛盾的话（实测确实如此）。
+ *
+ * <p>同时要求清单里没有——已经配好了再说「没有嵌入模型」没有意义。
+ */
+const showNoEmbeddingHint = computed(
+  () => probeResult.value?.ok === true && embeddingCandidates.value.length === 0 && form.embeddingModels.length === 0,
+)
 
 /**
  * 「加入」按钮的可用状态。
@@ -430,7 +453,16 @@ defineExpose({ finish })
           </el-tooltip>
         </div>
 
-        <!-- 探测结果：成功给数量，失败给原因并按语义选语气 -->
+        <!--
+          探测结果：成功只报数量，失败给原因 + 怎么修。
+
+          成功时**不显示 hint 那一行**：原来标题「获取到 183 个模型」下面还有
+          一句「下方的对话模型/嵌入模型已可从这些模型里挑选」，而下拉框的
+          placeholder 本来就写着「从列表里选，或直接输入模型名」—— 同一件事
+          说了两遍，代价是这条提示从 34px 变成 62px。
+          实测这 28px 刚好把「嵌入模型」整块挤到可视区外（body 769px、
+          内容 860px），用户点完「获取模型列表」就看丢了一个字段。
+        -->
         <el-alert
           v-if="probeResult"
           class="profile-form__probe"
@@ -439,7 +471,7 @@ defineExpose({ finish })
           show-icon
           :title="probeResultSummary(probeResult)"
         >
-          <span class="profile-form__probe-hint">{{ probeResultHint(probeResult) }}</span>
+          <span v-if="!probeResult.ok" class="profile-form__probe-hint">{{ probeResultHint(probeResult) }}</span>
         </el-alert>
 
         <!--
@@ -477,13 +509,15 @@ defineExpose({ finish })
           </div>
         </div>
         <!--
-          有探测结果时用「可输入的下拉」加入清单，没有时用普通输入框。
+          有**本类的**候选时用「可输入的下拉」，没有时用普通输入框。
+          判据是 `chatModelOptions` 而不是 `availableModels`：后者是端点返回的
+          全部模型（含嵌入/语音/图像），非空不代表这里有对话模型可用。
           不做成纯下拉：很多端点拿不到列表，纯下拉会让这些用户完全无法配置。
           两条路径都只是填草稿，点「加入」才真正进清单。
         -->
         <div class="profile-form__model-add">
           <el-select
-            v-if="availableModels.length > 0"
+            v-if="chatModelOptions.length > 0"
             v-model="chatModelDraft"
             class="profile-form__model-select"
             filterable
@@ -577,9 +611,15 @@ defineExpose({ finish })
             </span>
           </div>
         </div>
+        <!--
+          判据是 `embeddingModelOptions`（已按用途过滤），不是 `availableModels`。
+          百炼端点返回 183 个模型、其中只有 2 个嵌入模型，用原始列表判断
+          「有候选」会得到一个塞满对话模型的下拉；而某些端点只提供对话模型，
+          过滤后为空就该切回手输，而不是给一个空下拉。
+        -->
         <div class="profile-form__model-add">
           <el-select
-            v-if="availableModels.length > 0"
+            v-if="embeddingModelOptions.length > 0"
             v-model="embeddingModelDraft"
             class="profile-form__model-select"
             filterable
@@ -587,7 +627,7 @@ defineExpose({ finish })
             default-first-option
             clearable
             :reserve-keyword="false"
-            placeholder="从列表里选，或直接输入模型名"
+            placeholder="从这些嵌入模型里选，或直接输入模型名"
           >
             <el-option v-for="name in embeddingModelOptions" :key="name" :value="name" :label="name" />
           </el-select>
@@ -602,17 +642,19 @@ defineExpose({ finish })
           <el-button :disabled="!canAddEmbeddingModel" @click="handleAddEmbeddingModel">加入</el-button>
         </div>
         <!--
-          「换模型会让已有向量失效」这条警告不再做成标签挂在标题行：
-          它是一段需要解释的后果，塞进一行短标签只能写下结论、写不下原因，
-          而原因（维度变化 → 必须重建索引）恰恰是用户判断「我现在能不能换」的依据。
-          放在说明文字里，标题行只留必需的信息。
+          「换模型会让已有向量失效」这条警告不做成标签挂在标题行：它是一段
+          需要解释的后果，一行短标签只能写下结论、写不下原因，而原因
+          （维度变化 → 必须重建索引）恰恰是用户判断「我现在能不能换」的依据。
 
-          两行压成一行：原句 60 字，在 608px 宽里折成两行（36px），
-          而上下两行 4 个字的信息量其实是一句 —— 把「注意：」这类引导词去掉、
-          「已有向量全部失效（维度可能变化）」合并成「向量失效（维度可能变）」，
-          仍保留 44 字，一行放得下。
+          **这里始终只占一行**，两种文案二选一而不是两条并列：
+          探测到该端点没有嵌入模型时，说「没有嵌入模型」比说「换模型需重建索引」
+          有用得多（后者对一个压根配不上嵌入模型的端点毫无意义）；
+          而两条都显示会占 36px，实测正是这 18px 让整个字段被挤出可视区。
         -->
-        <span class="profile-form__help">
+        <span v-if="showNoEmbeddingHint" class="profile-form__help profile-form__help--muted">
+          获取到的 {{ availableModels.length }} 个模型里没有嵌入模型（对话模型不能用于向量化），确实需要就手动输入。
+        </span>
+        <span v-else class="profile-form__help">
           知识库向量化用，可留空。换嵌入模型会让向量失效（维度可能变），需重建索引。
         </span>
       </div>
@@ -659,12 +701,17 @@ defineExpose({ finish })
 }
 
 /*
- * 上边距比 EP 默认的 15vh 收紧到 8vh。
+ * 上边距比 EP 默认的 15vh 收紧到 7vh。
  *
  * 15vh 是给「一行标题 + 一点内容」的轻量弹窗设计的；这张表单有 7 个字段，
- * 84vh 的上限再叠 15vh 边距已经 99vh，等于把弹窗顶到屏幕底边、
- * 底部按钮贴着状态栏。收紧边距把省下的 7vh 还给内容区。
- * 与 `max-height: 86vh` 相加 94vh，1000px 与 800px 高的屏都留得住余量。
+ * 上限再叠 15vh 边距就顶到屏幕底边、底部按钮贴着状态栏。
+ * 收紧边距把省下的 7vh 还给内容区。
+ *
+ * 上限 91vh：与 7vh 边距相加 98vh，1000px 与 640px 高的屏都留得住余量
+ * （实测 800/700/640 视口下 footer 底边 752/656/598，均 ≤ 视口）。
+ * 为什么不再往上抬：探测成功后多出一条 40px 的结果提示条，内容会比
+ * 无提示时高 —— 抬到 91vh 后仍有约 23px 滚动，但滚动条常显，
+ * 且被滚到的只是最底部那段说明，不影响「点哪儿加模型」。
  *
  * 加 `html` 前缀：EP 的 `.el-dialog` 是 0-1-0，本规则若也是 0-1-0
  * 就要靠样式注入顺序决胜（unplugin 注入晚于 theme.css，但早于/晚于
@@ -672,7 +719,7 @@ defineExpose({ finish })
  */
 html .profile-dialog {
   margin-top: 7vh;
-  max-height: 89vh;
+  max-height: 91vh;
 }
 
 .profile-dialog .el-dialog__body {
@@ -755,6 +802,11 @@ html .profile-dialog {
   font-size: var(--os-font-xs);
   line-height: 1.5;
   color: var(--el-text-color-secondary);
+}
+
+/* 比常规说明更弱一档：它是「补充解释」，不是必须读的操作指引 */
+.profile-form__help--muted {
+  color: var(--el-text-color-placeholder);
 }
 
 .profile-form__key-row {

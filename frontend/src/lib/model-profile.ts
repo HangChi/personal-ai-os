@@ -504,7 +504,102 @@ export function probeBlockedReason(
 }
 
 /**
- * 聊天页模型选择器的候选清单。
+ * 模型用途分类。
+ *
+ * <p>厂商的 `/v1/models` 是一个**扁平的、不带类型字段**的字符串数组：
+ * 对话、嵌入、语音、图像、重排全混在里面（实测百炼一个端点返回 183 个，
+ * 其中 145 个对话、23 个语音、12 个图像、2 个嵌入、1 个重排）。
+ * 所以「嵌入模型」下拉框如果直接复用这份原始列表，用户要在 183 项里
+ * 翻找那 2 个真正能用的 —— 而 145 个对话模型全是选了会报错的死选项。
+ */
+export type ModelKind = 'CHAT' | 'EMBEDDING' | 'AUDIO' | 'IMAGE' | 'RERANK'
+
+/**
+ * 按模型名判断用途。
+ *
+ * <p>**只能靠名字**：`/v1/models` 的单项通常只有 `id` / `object` /
+ * `owned_by`，没有任何能力声明。想拿到权威分类得挨个查 `/models/{id}`
+ * 或者打一次真实请求，前者不是所有端点都支持、后者会真的产生计费。
+ *
+ * <p>规则按「越具体越先匹配」排序，且**嵌入/重排优先于语音图像**：
+ * `text-embedding` 里没有 audio/image 字样，但 `qwen-image` 与
+ * `qwen-image-edit` 这种命名若先被宽的规则吃掉会分错。
+ *
+ * <p>匹配不到的一律归 `CHAT`：这是**安全侧**选择 —— 漏判一个嵌入模型
+ * 的后果是它不出现在嵌入下拉里（用户还能手打），而误把对话模型标成
+ * 嵌入会让用户配出一个必然失败的配置。
+ */
+export function classifyModel(name: string): ModelKind {
+  const n = (name ?? '').toLowerCase()
+  if (n.length === 0) {
+    return 'CHAT'
+  }
+  // 嵌入：embedding / embed / bge / text2vec / m3e / gte / minilm
+  if (/(^|[-_/])embed|embedding|(^|[-_/])bge|text2vec|(^|[-_/])m3e|(^|[-_/])gte[-_]|minilm/.test(n)) {
+    return 'EMBEDDING'
+  }
+  if (/rerank/.test(n)) {
+    return 'RERANK'
+  }
+  // 语音：asr / tts / speech / audio / realtime / whisper / paraformer / voice
+  if (
+    /audio|speech|(^|[-_/])asr|(^|[-_/])tts|realtime|whisper|paraformer|cosyvoice|sensevoice|(^|[-_/])voice/.test(n)
+  ) {
+    return 'AUDIO'
+  }
+  // 图像：image / dall-e / stable-diffusion / sdxl / flux / wanx / cogview / seedream / kolors
+  if (
+    /image|dall-?e|stable-diffusion|sdxl|(^|[-_/])flux|(^|[-_/])wanx|cogview|seedream|kolors|midjourney|(^|[-_/])z-image/.test(
+      n,
+    )
+  ) {
+    return 'IMAGE'
+  }
+  return 'CHAT'
+}
+
+/**
+ * 某个用途的**全部**候选（不剔除已选项）。
+ *
+ * <p>与 {@link modelOptionsFor} 的区别只有在「判断端点到底有没有这类模型」时
+ * 才重要：用户把端点里唯一的嵌入模型加进清单后，`modelOptionsFor` 会返回空，
+ * 但事实是「端点有嵌入模型」—— 对着空数组说「这端点没有嵌入模型」
+ * 就与清单里那一行自相矛盾了。
+ *
+ * <p>空值统一返回空数组，调用方不必判 null。
+ */
+export function modelCandidatesFor(candidates: string[] | null | undefined, kind: ModelKind): string[] {
+  return (candidates ?? []).filter((name) => classifyModel(name) === kind)
+}
+
+/**
+ * 某个用途的下拉候选。
+ *
+ * <p>两类过滤叠加：
+ * <ol>
+ *   <li>**只留该用途的** —— 这是本函数存在的理由，见 {@link classifyModel}；</li>
+ *   <li>**去掉已经在清单里的** —— 加完 `qwen-max` 之后下拉里还留着它，
+ *       用户很容易再选一次然后疑惑「为什么没反应」。</li>
+ * </ol>
+ *
+ * <p>`kind` 为 `EMBEDDING` 时，即便厂商没把模型名起得能被识别出来，
+ * 用户仍然可以手输 —— 所以这里返回空数组不是死路，
+ * 前端据此切回普通输入框而不是一个空下拉。
+ */
+export function modelOptionsFor(
+  candidates: string[] | null | undefined,
+  picked: string[] | null | undefined,
+  kind: ModelKind,
+): string[] {
+  const list = modelCandidatesFor(candidates, kind)
+  if (list.length === 0) {
+    return []
+  }
+  const taken = new Set(normalizeModelList(picked ?? []))
+  return list.filter((name) => !taken.has(name))
+}
+
+/** 聊天页模型选择器的候选清单。
  *
  * <p>入参是**生效配置**的对话模型清单 —— 只有生效那一套的密钥与端点
  * 是真正在用的，选另一套里的模型名必然会打到一个不认它的端点。

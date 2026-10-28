@@ -26,6 +26,9 @@ const {
   probeResultSummary,
   reorderBefore,
   sessionModelOptions,
+  classifyModel,
+  modelCandidatesFor,
+  modelOptionsFor,
   shouldShowSource,
   sourceHint,
   testResultSummary,
@@ -450,4 +453,103 @@ const PROFILE = {
   const errorHint = probeResultHint({ ok: false, models: [], latencyMs: 0, error: '401', kind: 'ERROR' })
   check('真错误不出现「不影响使用」', !errorHint.includes('不影响使用'))
   check('真错误提示可重试或手填', errorHint.includes('再试') || errorHint.includes('手动填写'))
+}
+
+// ---------------------------------------------------------------- 模型用途分类
+
+/*
+ * 分类的验收口径：**不能把对话模型判成嵌入模型**。
+ * 反过来（漏判某个嵌入模型）只是它不出现在下拉里，用户还能手打；
+ * 而误判会让用户配出一套必然报错的配置，且完全看不出原因。
+ *
+ * 样本全部取自百炼端点实测返回的 183 个真实模型名（不是编的）。
+ */
+{
+  // 嵌入：应该被识别出来
+  eq('text-embedding 判为嵌入', classifyModel('qwen3.7-text-embedding'), 'EMBEDDING')
+  eq('带 -flash 后缀的嵌入模型仍识别', classifyModel('qwen3.7-text-embedding-flash'), 'EMBEDDING')
+  eq('BGE 系列判为嵌入', classifyModel('bge-large-zh-v1.5'), 'EMBEDDING')
+  eq('text2vec 判为嵌入', classifyModel('text2vec-large-chinese'), 'EMBEDDING')
+  eq('gte 判为嵌入', classifyModel('gte-large'), 'EMBEDDING')
+  eq('大小写不敏感', classifyModel('Qwen3.7-Text-Embedding'), 'EMBEDDING')
+
+  // 对话模型：一个都不能被误判成嵌入
+  for (const name of [
+    'qwen-max',
+    'qwen3.8-flash',
+    'deepseek-v4.1-flash-1017',
+    'glm-5.3',
+    'kimi-k3',
+    'MiniMax-M3',
+    'qwen-long',
+    'qwen-coder-plus-1106',
+    'qwen-vl-ocr',
+    'qwen3-vl-plus',
+    'qwen-deep-research-2025-12-15',
+  ]) {
+    eq(`对话模型「${name}」不能判成嵌入`, classifyModel(name), 'CHAT')
+  }
+
+  // 其它用途：不该出现在对话下拉里，但也不该被算成嵌入
+  eq('语音模型判为 AUDIO', classifyModel('qwen3-tts-flash'), 'AUDIO')
+  eq('ASR 判为 AUDIO', classifyModel('fun-asr-flash-2026-06-15'), 'AUDIO')
+  eq('实时语音判为 AUDIO', classifyModel('qwen3.5-omni-plus-realtime'), 'AUDIO')
+  eq('图像模型判为 IMAGE', classifyModel('qwen-image-3.0-pro'), 'IMAGE')
+  eq('z-image 判为 IMAGE', classifyModel('z-image-turbo'), 'IMAGE')
+  eq('重排模型判为 RERANK', classifyModel('qwen3.7-text-rerank'), 'RERANK')
+
+  // 空值兜底：不抛异常，且归到安全侧
+  eq('空串归为 CHAT', classifyModel(''), 'CHAT')
+  eq('null 归为 CHAT 不抛异常', classifyModel(null), 'CHAT')
+}
+
+// ---------------------------------------------------------------- 按用途取候选
+
+{
+  const probed = [
+    'qwen3.8-flash',
+    'qwen-max',
+    'qwen3.7-text-embedding',
+    'qwen3.7-text-embedding-flash',
+    'qwen3-tts-flash',
+    'qwen-image-3.0',
+    'qwen3.7-text-rerank',
+  ]
+
+  // 核心：嵌入下拉里绝不能出现对话/语音/图像模型
+  eq(
+    '嵌入下拉只留嵌入模型',
+    modelOptionsFor(probed, [], 'EMBEDDING').join(','),
+    'qwen3.7-text-embedding,qwen3.7-text-embedding-flash',
+  )
+  eq('对话下拉不含嵌入模型', modelOptionsFor(probed, [], 'CHAT').includes('qwen3.7-text-embedding'), false)
+  eq('对话下拉不含语音模型', modelOptionsFor(probed, [], 'CHAT').includes('qwen3-tts-flash'), false)
+  eq('对话下拉不含图像模型', modelOptionsFor(probed, [], 'CHAT').includes('qwen-image-3.0'), false)
+
+  // 已在清单里的要去掉（否则用户再点一次会疑惑「为什么没反应」）
+  eq('已加入的不再出现在候选里', modelOptionsFor(probed, ['qwen-max'], 'CHAT').includes('qwen-max'), false)
+  eq('剔除时按 trim 后的值比对', modelOptionsFor(['qwen-max'], [' qwen-max '], 'CHAT').length, 0)
+
+  // 过滤后为空 = 该端点没有这类模型 → 前端切回手输，不是死路
+  eq('端点无嵌入模型时返回空数组', modelOptionsFor(['qwen-max'], [], 'EMBEDDING').length, 0)
+  eq('没有探测结果时返回空数组', modelOptionsFor([], [], 'EMBEDDING').length, 0)
+  eq('null 入参不抛异常', modelOptionsFor(null, null, 'EMBEDDING').length, 0)
+
+  // 顺序必须保持厂商返回的原顺序：用户按自己的认知找模型，重排会让人找不到
+  eq('保持原始顺序', modelOptionsFor(probed, [], 'CHAT').join(','), 'qwen3.8-flash,qwen-max')
+}
+
+// ---------------------------------------------------------------- 端点是否有某类模型（不剔除已选）
+
+{
+  const probed = ['qwen-max', 'qwen3.7-text-embedding']
+
+  // 核心：用户已把唯一的嵌入模型加进清单，候选会变空，
+  // 但「端点有嵌入模型」这个事实没变 —— 提示语必须据此判断，否则自相矛盾。
+  eq('候选为空但端点确实有一个嵌入模型', modelOptionsFor(probed, ['qwen3.7-text-embedding'], 'EMBEDDING').length, 0)
+  eq('同一个端点，不剔除已选时仍能数出 1 个', modelCandidatesFor(probed, 'EMBEDDING').length, 1)
+
+  eq('端点完全没有嵌入模型时为空', modelCandidatesFor(['qwen-max'], 'EMBEDDING').length, 0)
+  eq('对话候选计数不受已选影响', modelCandidatesFor(probed, 'CHAT').join(','), 'qwen-max')
+  eq('null 入参不抛异常', modelCandidatesFor(null, 'EMBEDDING').length, 0)
 }
