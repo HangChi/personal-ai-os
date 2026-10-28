@@ -475,6 +475,26 @@ html.dark .el-button--danger.is-plain:not(.is-disabled):focus {
   border-radius: var(--os-radius-md);
 }
 
+/*
+ * 下拉框高度对齐输入框。
+ *
+ * EP 把 `.el-select__wrapper` 的高度**硬编码成 32px**（不是
+ * `var(--el-component-size)`），而 `.el-input__wrapper` 读的是
+ * `--el-component-size`（本项目 34px）。于是同一行里「输入框 + 下拉框」
+ * 永远差 2px —— 实测模型配置弹窗里「配置名称」输入框 34px、
+ * 紧邻的「协议」下拉 32px，顶边还对齐，看起来就是下拉「短了一截」。
+ *
+ * 这不是某个页面的事，任何把 input 与 select 并排的地方都会中招
+ * （搜索栏、筛选行、表单里的「城市 + 日期」组合）。所以在全局修。
+ *
+ * 优先级说明：EP 的 `.el-select__wrapper` 是 0-1-0，本规则 0-1-0 打平，
+ * 靠加载顺序取胜不可靠 —— 加 `html` 前缀抬到 0-1-1，稳定压过。
+ * small / large 两档 EP 有更特异的选择器（0-2-0），不去动它们。
+ */
+html .el-select__wrapper {
+  min-height: var(--el-component-size);
+}
+
 /* ---- 标签 ---- */
 
 /*

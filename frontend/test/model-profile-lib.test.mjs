@@ -26,6 +26,7 @@ const {
   probeResultSummary,
   reorderBefore,
   sessionModelOptions,
+  shouldShowSource,
   sourceHint,
   testResultSummary,
   toForm,
@@ -315,6 +316,13 @@ const PROFILE = {
   check('来源说明都提到卡片', sourceHint('DATABASE').includes('卡片'))
   check('环境变量说明提到 .env', sourceHint('ENVIRONMENT').includes('.env'))
   check('默认来源说明提到内置', sourceHint('DEFAULT').includes('内置'))
+
+  // 标签上的来源徽章只在「不是本配置」时才显示。
+  // 全显示的话一次弹窗里会出现 6 个重复的「本配置」，把真正需要注意的
+  // 「环境变量」「内置默认」两类提示淹没掉（实测正是如此）。
+  eq('本配置不挂徽章（默认预期，说了等于没说）', shouldShowSource('DATABASE'), false)
+  eq('环境变量要挂徽章（用户没意识到的信息）', shouldShowSource('ENVIRONMENT'), true)
+  eq('内置默认要挂徽章', shouldShowSource('DEFAULT'), true)
 }
 
 // ---------------------------------------------------------------- 测试结果摘要

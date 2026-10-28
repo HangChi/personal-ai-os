@@ -83,6 +83,21 @@ export function sourceHint(source: ModelConfigSource): string {
 }
 
 /**
+ * 编辑弹窗的字段标签上要不要显示来源徽章。
+ *
+ * <p>只在**来源不是本配置**时显示。理由：打开编辑框时「值来自这张卡片自己」
+ * 是默认预期，逐项挂一个「本配置」徽章等于把「一切正常」说六遍 ——
+ * 实测一次弹窗里出现 6 个重复徽章，把真正需要注意的
+ * 「环境变量」「内置默认」两类提示淹没了。
+ *
+ * <p>反过来说，「这项其实来自环境变量」是**用户没意识到的信息**
+ * （他改的是卡片，但没保存前生效值仍是环境变量），必须留着。
+ */
+export function shouldShowSource(source: ModelConfigSource): boolean {
+  return source !== 'DATABASE'
+}
+
+/**
  * 新建/编辑配置的表单模型。
  *
  * <p>密钥恒以空串呈现 —— 不是「密钥为空」，而是「没有回填」。
