@@ -8,15 +8,48 @@
  * 位置变化是刻意的：它不该继续占据首屏的视觉焦点。
  */
 import { ChatLineRound } from '@element-plus/icons-vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
+import { createThrottle } from '@/lib/throttle'
 
-defineProps<{
+const props = defineProps<{
   /** 已收到的增量内容；空串表示尚未收到首 token */
   content: string
   /** 检索状态提示；null 表示没有提示可显示 */
   hint: string | null
 }>()
+
+/**
+ * 实际送去渲染的内容。
+ *
+ * <p>不直接把 `props.content` 交给 MarkdownRenderer：每个 SSE delta 都会让它变，
+ * 而每次渲染要跑一遍 `marked.parse` + `DOMPurify.sanitize` + 整块 v-html 重写。
+ * 模型连发几十个 delta 时，这就是几十次全量重解析，长回答下会明显卡顿 ——
+ * 而人眼分辨不出「每 16ms 变」和「每 80ms 变」。
+ *
+ * <p>节流只限制**渲染频率**，不丢数据：窗口内保留最新值，流结束时 flush 一次
+ * 把尾巴补上。这一步必须做，否则最后一帧可能停在定时器里，屏幕看起来像「回答被截断」。
+ */
+const renderedContent = ref(props.content)
+// 显式给泛型：否则 createThrottle() 推断为 unknown，回调里的 value 拿不到 string 类型
+const throttle = createThrottle<string>()
+
+watch(
+  () => props.content,
+  (next) => {
+    throttle.push(next, (value: string) => {
+      renderedContent.value = value
+    })
+  },
+)
+
+onBeforeUnmount(() => {
+  // 卸载前先冲刷一次：会话切换时最后几帧也要落到 DOM 上（虽然随即就卸载了，
+  // 但 flush 后再 cancel 的语义是明确的，不依赖「反正要卸载」）
+  throttle.flush()
+  throttle.cancel()
+})
 </script>
 
 <template>
