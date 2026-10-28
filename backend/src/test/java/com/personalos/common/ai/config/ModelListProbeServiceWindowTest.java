@@ -55,7 +55,7 @@ class ModelListProbeServiceWindowTest {
         }
     }
 
-    /** 按模型名决定响应：ok / 429 / 404 / 无窗口字段 */
+    /** 按模型名决定响应：派生值 / 真实值 / 429 / 404 / 无窗口字段 */
     private void handle(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         receivedPaths.add(path);
@@ -73,9 +73,21 @@ class ModelListProbeServiceWindowTest {
             respond(exchange, 200, "{\"id\":\"" + name + "\",\"object\":\"model\"}");
             return;
         }
-        // DashScope 详情接口的真实形状
+        if (name.contains("realwindow")) {
+            // 与 max_tokens 不满足 -2048 关系 → 视为真实的独立数值
+            respond(exchange, 200, """
+                    {"id":"%s","extra_info":{"default_envs":{"max_tokens":131072,"max_input_tokens":200000}}}
+                    """.formatted(name));
+            return;
+        }
+        if (name.contains("toplevel")) {
+            respond(exchange, 200, "{\"id\":\"" + name + "\",\"context_length\":32768}");
+            return;
+        }
+        // DashScope 的真实形状：三件套，且 max_input_tokens = max_tokens - 2048
         respond(exchange, 200, """
-                {"id":"%s","extra_info":{"default_envs":{"max_input_tokens":129024}}}
+                {"id":"%s","extra_info":{"default_envs":{
+                  "max_tokens":131072,"max_input_tokens":129024,"max_output_tokens":8192}}}
                 """.formatted(name));
     }
 
@@ -89,15 +101,37 @@ class ModelListProbeServiceWindowTest {
     }
 
     @Test
-    @DisplayName("取到窗口：解析 extra_info.default_envs.max_input_tokens")
-    void shouldReadNestedWindow() {
+    @DisplayName("派生值被忽略：max_input_tokens = max_tokens - 2048 时不当能力（否则每个模型都是 126K）")
+    void shouldIgnoreDerivedWindow() {
         ModelListProbeService.WindowProbeResult result =
                 service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "deepseek-v4.1-flash");
 
-        assertThat(result.ok()).isTrue();
-        assertThat(result.window()).isEqualTo(129_024);
-        assertThat(result.kind()).isNull();
+        assertThat(result.ok())
+                .as("DashScope 对几乎所有模型都回 129024，连文档 1M 的 qwen-long 也是 —— 这是派生值")
+                .isFalse();
+        assertThat(result.window()).isNull();
+        assertThat(result.kind()).isEqualTo("UNSUPPORTED");
         assertThat(receivedPaths).containsExactly("/v1/models/deepseek-v4.1-flash");
+    }
+
+    @Test
+    @DisplayName("与 max_tokens 不构成派生关系时，照常采信端点的独立数值")
+    void shouldAcceptIndependentWindow() {
+        ModelListProbeService.WindowProbeResult result =
+                service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "realwindow-model");
+
+        assertThat(result.ok()).isTrue();
+        assertThat(result.window()).isEqualTo(200_000);
+    }
+
+    @Test
+    @DisplayName("顶层 context_length 优先于嵌套容器")
+    void shouldReadTopLevelField() {
+        ModelListProbeService.WindowProbeResult result =
+                service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "toplevel-model");
+
+        assertThat(result.ok()).isTrue();
+        assertThat(result.window()).isEqualTo(32_768);
     }
 
     @Test

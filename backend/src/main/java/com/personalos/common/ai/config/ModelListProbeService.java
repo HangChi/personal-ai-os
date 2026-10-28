@@ -771,6 +771,27 @@ public class ModelListProbeService {
         for (String container : new String[] {"extra_info", "data", "model_info", "meta", "metadata"}) {
             JsonNode child = node.path(container);
             if (child.isObject()) {
+                /*
+                 * DashScope 的 default_envs 是一套**通用默认调用参数模板**，
+                 * 不是模型能力描述。2026-10-29 实测同一端点七个模型：
+                 *
+                 *   qwen-max               max_tokens=32768   max_input_tokens=30720
+                 *   qwen-plus              max_tokens=131072  max_input_tokens=129024
+                 *   qwen-long（文档 1M）    max_tokens=131072  max_input_tokens=129024
+                 *   deepseek-v4.1-flash    max_tokens=131072  max_input_tokens=129024
+                 *
+                 * max_input_tokens **恒等于 max_tokens - 2048** —— 它是从
+                 * 「默认最大生成长度」推算出来的派生值。而默认 max_tokens
+                 * 大部分模型都配成 131072，于是所有模型都读成 126K，
+                 * 连文档写着 1M 的 qwen-long 也不例外。
+                 *
+                 * 这种值比「没有值」更糟：它看起来像个准确数字，会盖住内置表。
+                 * 所以识别出派生关系就跳过整个容器，让调用方回落到内置表。
+                 */
+                if ("extra_info".equals(container) && isDerivedFromDefaultMaxTokens(child)) {
+                    log.debug("跳过 extra_info.default_envs：max_input_tokens 是由默认 max_tokens 推算的派生值");
+                    continue;
+                }
                 Integer found = findWindowInObject(child, 0);
                 if (found != null) {
                     return found;
@@ -778,6 +799,32 @@ public class ModelListProbeService {
             }
         }
         return null;
+    }
+
+    /** 派生关系的固定差值：DashScope 的 max_input_tokens = max_tokens - 2048 */
+    private static final int DEFAULT_ENV_OUTPUT_RESERVE = 2048;
+
+    /**
+     * 判断 {@code extra_info.default_envs} 里的窗口是否只是派生值。
+     *
+     * <p>判据是算术关系而不是模型名：只要 {@code max_input_tokens == max_tokens - 2048}
+     * 成立，它就是从默认生成长度推算的，不代表模型能力（实测 qwen-max 的 30720、
+     * qwen-long 的 129024 都满足这个关系，而后者文档是 1M）。
+     *
+     * <p>缺任一字段时返回 {@code false}（不判定）：拿不到证据就不否定，
+     * 让调用方继续用它 —— 少数端点确实只在 default_envs 里放真实窗口。
+     */
+    static boolean isDerivedFromDefaultMaxTokens(JsonNode extraInfo) {
+        JsonNode envs = extraInfo.path("default_envs");
+        if (!envs.isObject()) {
+            return false;
+        }
+        JsonNode maxTokens = envs.path("max_tokens");
+        JsonNode maxInput = envs.path("max_input_tokens");
+        if (!maxTokens.isNumber() || !maxInput.isNumber()) {
+            return false;
+        }
+        return maxInput.asInt() == maxTokens.asInt() - DEFAULT_ENV_OUTPUT_RESERVE;
     }
 
     /**
