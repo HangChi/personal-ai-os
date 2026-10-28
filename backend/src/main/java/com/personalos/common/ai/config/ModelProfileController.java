@@ -256,6 +256,10 @@ public class ModelProfileController {
                 resolved.embeddingModel(),
                 namesOf(models, AiModelProfileModelEntity.Kind.CHAT),
                 namesOf(models, AiModelProfileModelEntity.Kind.EMBEDDING),
+                namesOf(models, AiModelProfileModelEntity.Kind.AUDIO),
+                // 用生效值而非 entity.getAudioModel()：前者带「清单第一项」语义，
+                // 后者是写入时的快照，两者在「清单为空但单值列还有残留」时会不一致
+                resolved.audioModel() == null ? "" : resolved.audioModel(),
                 entity.isActive(),
                 entity.getSortOrder(),
                 entity.getRevision(),
@@ -286,7 +290,8 @@ public class ModelProfileController {
                 request.temperature(),
                 request.embeddingModel(),
                 request.chatModels(),
-                request.embeddingModels());
+                request.embeddingModels(),
+                request.audioModels());
     }
 
     /**
@@ -308,6 +313,7 @@ public class ModelProfileController {
         checkLength(request.protocol(), PROTOCOL_MAX, "协议类型");
         checkModelList(request.chatModels(), MODEL_NAME_MAX, "对话模型");
         checkModelList(request.embeddingModels(), MODEL_NAME_MAX, "嵌入模型");
+        checkModelList(request.audioModels(), MODEL_NAME_MAX, "语音模型");
 
         Double temperature = request.temperature();
         if (temperature != null && (temperature < TEMPERATURE_MIN || temperature > TEMPERATURE_MAX)) {

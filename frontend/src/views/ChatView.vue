@@ -22,6 +22,7 @@ import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
 import ChatSessionList from '@/components/chat/ChatSessionList.vue'
 import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
 import ChatWelcome from '@/components/chat/ChatWelcome.vue'
+import ContextMeter from '@/components/chat/ContextMeter.vue'
 import { useChatStore } from '@/stores/chat'
 import { clampTopK, conversationKnowledgeKey, type ThinkingLevel } from '@/lib/settings'
 import { defaultChatModel } from '@/lib/model-profile'
@@ -419,11 +420,24 @@ async function jumpToMatch(step: number): Promise<void> {
               {{ hasOlderMessages ? `已加载 ${messages.length} 条` : `${messages.length} 条消息` }}
             </span>
             <!--
-              会话级模型选择已移到输入区工具栏（见 ChatComposer）。
-              顶栏这一行留给「会话级操作」：标题、消息数、搜索、导出。
-              模型是「这一发怎么发」的开关，与知识库/思考程度同层，
-              混进顶栏会让人以为它改的是会话属性而不是发送参数。
+              上下文仪表盘放在这里：它是**会话级读数**（这个会话攒了多少上下文、
+              超了会裁剪），与「N 条消息」并列语义一致。
+
+              它曾在输入区工具栏（2026-10-28 撤回）。撤回的实测原因是它 160px
+              会让工具栏右半段涨到 376px，1280px 下 toolbar 可用 692px、左侧
+              标签组+模型下拉已占 338px，加 168 后必然折行，且折后第一行右侧
+              空出 354px（比改造前更难看的「左密右空」）。
+              放到这里后工具栏右半段只剩 200px，1280px 回到一行。
+
+              会话级模型选择仍在输入区（见 ChatComposer）—— 那是「这一发怎么发」，
+              与知识库/思考程度同层，两者层级不同。
             -->
+            <ContextMeter
+              v-if="contextUsage.budgetTokens > 0"
+              class="chat__meter"
+              :usage="contextUsage"
+              @change-budget="chatStore.changeContextBudget"
+            />
           </div>
           <div class="chat__header-actions">
             <div class="chat__search">
@@ -529,7 +543,6 @@ async function jumpToMatch(step: number): Promise<void> {
           :top-k="topK"
           :thinking-level="settings.thinkingLevel"
           :enter-send="settings.enterSend"
-          :context-usage="contextUsage"
           :session-model="sessionModel"
           :chat-models="availableChatModels"
           :default-model="activeDefaultModel"
@@ -537,7 +550,6 @@ async function jumpToMatch(step: number): Promise<void> {
           @update:top-k="(value: number | null) => (topK = value)"
           @update:thinking-level="(value: ThinkingLevel) => (settings.thinkingLevel = value)"
           @update:session-model="handleModelChange"
-          @change-budget="chatStore.changeContextBudget"
           @send="handleSend"
           @stop="chatStore.stopStreaming()"
         />
@@ -607,6 +619,53 @@ async function jumpToMatch(step: number): Promise<void> {
   flex: none;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
+}
+
+/*
+ * 头部右侧的上下文仪表盘：与会话标题、消息数同排。
+ *
+ * <p>它自带左右 padding（`ContextMeter` 内部 `padding: 0 2px` + gap），
+ * 与标题之间不需要额外间距 —— 但 `chat__main-heading` 是
+ * `align-items: baseline`，而仪表盘是 24px 高的 flex 盒（无文字基线），
+ * 靠 baseline 对齐会把它推到与标题**下沿**齐平，看起来下沉 4px。
+ * 显式 `align-self: center` 回到行中心。
+ */
+.chat__meter {
+  align-self: center;
+  flex: none;
+}
+
+/*
+ * 窄屏隐藏上下文仪表盘。
+ *
+ * <h3>为什么不惜丢信息</h3>
+ * 实测头部可用宽度（含「标题 + 消息数 + 仪表盘」的左侧组，右侧是固定 200px
+ * 的会话内搜索框）：
+ *
+ *   | 视口 | 左侧组可用 | 需求（69+47+160+24） |
+ *   |---|---|---|
+ *   | 1440 | 666  | 300 → 宽裕 |
+ *   | 1180 | 393  | 300 → 够 |
+ *   | 1024 | 250  | 300 → 不够 |
+ *   | 960  | 186  | 300 → 差 114 |
+ *
+ * <p>1024px 下会话标题被压到 **19px**（只露半个字），960px 下压到 **0** ——
+ * 标题彻底消失。标题是导航信息（当前在哪个会话），比「攒了多少 token 的进度条」
+ * 重要得多，所以这里让仪表盘先让位。
+ *
+ * <h3>为什么不在 1024 再留「只显示进度条」的简化版</h3>
+ * 去掉「上下文」标签与数值后仍占约 60px，左侧组需求 69+47+60+16 = 192，
+ * 在 960px（可用 186）下还是差 6px —— 要么再砍一次，要么标题又变 0 宽。
+ * 两次降级不如一次让位：**能干净退出的地方就干净退出**。
+ *
+ * <p>`display: none` 不留幽灵节点（flex 的 gap 只作用于可见项），
+ * 所以不需要任何「谁来接管间距」的补丁。上下文预算仍可在
+ * 设置页与外层卡片上查到。
+ */
+@media (max-width: 1100px) {
+  .chat__meter {
+    display: none;
+  }
 }
 
 .chat__body {

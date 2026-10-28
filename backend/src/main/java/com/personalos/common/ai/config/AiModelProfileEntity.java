@@ -90,6 +90,19 @@ public class AiModelProfileEntity {
     @Column(name = "embedding_model", length = 120)
     private String embeddingModel;
 
+    /**
+     * 默认语音模型名（V24）；{@code null} = 没配语音模型。
+     *
+     * <p>与 {@link #chatModel} 一样只是「清单第一项」的快照，完整清单在
+     * {@code ai_model_profile_model} 的 AUDIO 行里。
+     *
+     * <p>没配时的行为是**回落浏览器自带的识别能力**，不是报错 ——
+     * 语音输入在自托管场景里首先是「省一次 API 调用」的便利功能，
+     * 不该因为没配模型就整体不可用。
+     */
+    @Column(name = "audio_model", length = 120)
+    private String audioModel;
+
     /** 是否当前生效。全表至多一行为 true（部分唯一索引强制） */
     @Column(name = "active", nullable = false)
     private boolean active;
@@ -161,6 +174,11 @@ public class AiModelProfileEntity {
      * 又常被「探测模型列表」的场景单独改动，让调用方总要多传一个
      * 它并不关心的参数会让签名变噪音。
      *
+     * <p><b>不传语音模型即「不改动」</b>：语音模型是 V24 才有的字段，
+     * 让 V24 之前的调用方（以及既有测试）继续用这个重载时把语音模型
+     * 静默清空是不可接受的 —— 那会让「改个名字顺便把语音配置弄丢」。
+     * 需要显式写入或清空时用下面那个带 {@code audioModel} 的重载。
+     *
      * @param now 当前时间
      */
     public void overwrite(String name, String presetId, String baseUrl, String apiKey,
@@ -168,6 +186,20 @@ public class AiModelProfileEntity {
                           String protocol, Instant now) {
         overwrite(name, presetId, baseUrl, apiKey, chatModel, temperature, embeddingModel, now);
         this.protocol = ModelProtocol.parse(protocol).name();
+    }
+
+    /**
+     * 整体覆盖（含协议与默认语音模型）。这是设置页保存时走的那个。
+     *
+     * @param audioModel 默认语音模型名；空白表示「这套配置不配语音模型」
+     * @param now        当前时间
+     */
+    public void overwrite(String name, String presetId, String baseUrl, String apiKey,
+                          String chatModel, Double temperature, String embeddingModel,
+                          String audioModel, String protocol, Instant now) {
+        overwrite(name, presetId, baseUrl, apiKey, chatModel, temperature, embeddingModel,
+                protocol, now);
+        this.audioModel = audioModel == null || audioModel.isBlank() ? null : audioModel.strip();
     }
 
     /**
@@ -239,6 +271,11 @@ public class AiModelProfileEntity {
 
     public String getEmbeddingModel() {
         return embeddingModel;
+    }
+
+    /** 默认语音模型名（V24）；null 表示没配，语音输入回落到浏览器自带识别 */
+    public String getAudioModel() {
+        return audioModel;
     }
 
     public boolean isActive() {

@@ -132,13 +132,16 @@ public class ModelProfileService {
                 effectiveChatModel(command),
                 command.temperature(),
                 effectiveEmbeddingModel(command),
+                effectiveAudioModel(command),
                 command.protocol(),
                 now);
         AiModelProfileEntity saved = repository.save(entity);
-        replaceModels(saved.getId(), command.chatModels(), command.embeddingModels());
-        log.info("已新建模型配置：id={}, name={}, 对话模型数={}, 嵌入模型数={}",
+        replaceModels(saved.getId(), command.chatModels(), command.embeddingModels(),
+                command.audioModels());
+        log.info("已新建模型配置：id={}, name={}, 对话模型数={}, 嵌入模型数={}, 语音模型数={}",
                 saved.getId(), saved.getName(),
-                countOf(command.chatModels()), countOf(command.embeddingModels()));
+                countOf(command.chatModels()), countOf(command.embeddingModels()),
+                countOf(command.audioModels()));
         return saved;
     }
 
@@ -165,13 +168,15 @@ public class ModelProfileService {
                 effectiveChatModel(command),
                 command.temperature(),
                 effectiveEmbeddingModel(command),
+                effectiveAudioModel(command),
                 command.protocol(),
                 clock.instant());
         AiModelProfileEntity saved = repository.save(entity);
-        replaceModels(id, command.chatModels(), command.embeddingModels());
-        log.info("已更新模型配置：id={}, name={}, revision={}, 对话模型数={}, 嵌入模型数={}",
+        replaceModels(id, command.chatModels(), command.embeddingModels(), command.audioModels());
+        log.info("已更新模型配置：id={}, name={}, revision={}, 对话模型数={}, 嵌入模型数={}, 语音模型数={}",
                 saved.getId(), saved.getName(), saved.getRevision(),
-                countOf(command.chatModels()), countOf(command.embeddingModels()));
+                countOf(command.chatModels()), countOf(command.embeddingModels()),
+                countOf(command.audioModels()));
         return saved;
     }
 
@@ -199,6 +204,21 @@ public class ModelProfileService {
     private static String effectiveEmbeddingModel(SaveProfileCommand command) {
         String fromList = firstOf(command.embeddingModels());
         return fromList != null ? fromList : blankToNull(command.embeddingModel());
+    }
+
+    /**
+     * 默认语音模型的取值（V24）。
+     *
+     * <p><b>没有单值列可以回落</b>：语音模型是 V24 才有的概念，
+     * V23 及以前不存在 {@code audioModel} 单值字段。因此这里唯一来源就是清单
+     * 第一项；清单为空即为 null（= 不配语音模型，转写回落到浏览器自带识别）。
+     *
+     * <p>注意与另外两个 {@code effectiveXxx} 的差异：它们有「老客户端传了单值列」
+     * 这条兼容路径，这里**刻意没有** —— 语音模型从来没有过单值形态，
+     * 给一个不存在的历史字段留兼容位只会让人以为它存在过。
+     */
+    private static String effectiveAudioModel(SaveProfileCommand command) {
+        return firstOf(command.audioModels());
     }
 
     /** 列表里第一个非空白项；没有时返回 null */
@@ -412,9 +432,11 @@ public class ModelProfileService {
      * @param profileId 配置 id
      * @param chatModels     对话模型名清单（按用户排序，可含空串，会被丢弃）
      * @param embeddingModels 嵌入模型名清单
+     * @param audioModels    语音模型名清单（V24）
      */
     @Transactional
-    public void replaceModels(UUID profileId, List<String> chatModels, List<String> embeddingModels) {
+    public void replaceModels(UUID profileId, List<String> chatModels, List<String> embeddingModels,
+                              List<String> audioModels) {
         modelRepository.deleteByProfileId(profileId);
         // 必须立刻落库：紧接着的插入若是与旧行同名，会撞唯一约束
         modelRepository.flush();
@@ -423,9 +445,34 @@ public class ModelProfileService {
         List<AiModelProfileModelEntity> toSave = new ArrayList<>();
         appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.CHAT, chatModels, now);
         appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.EMBEDDING, embeddingModels, now);
+        appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.AUDIO, audioModels, now);
         if (!toSave.isEmpty()) {
             modelRepository.saveAll(toSave);
         }
+    }
+
+    /**
+     * 只替换对话与嵌入清单，保留语音清单不变（V23 及以前的调用方）。
+     *
+     * <p>为什么不是「语音清单一并清空」：这个重载的存在意义就是「老代码不认识
+     * 语音模型」。让它在保存时把用户配好的语音模型删掉，属于「升级后丢配置」。
+     *
+     * @param profileId       配置 id
+     * @param chatModels      对话模型名清单
+     * @param embeddingModels 嵌入模型名清单
+     */
+    @Transactional
+    public void replaceModels(UUID profileId, List<String> chatModels, List<String> embeddingModels) {
+        replaceModels(profileId, chatModels, embeddingModels,
+                namesOf(profileId, AiModelProfileModelEntity.Kind.AUDIO));
+    }
+
+    /** 某套配置下某一类的模型名，保持库里的顺序 */
+    private List<String> namesOf(UUID profileId, AiModelProfileModelEntity.Kind kind) {
+        return modelRepository.findByProfileIdOrderByKindAscSortOrderAscIdAsc(profileId).stream()
+                .filter(model -> model.kindEnum() == kind)
+                .map(AiModelProfileModelEntity::getModelName)
+                .toList();
     }
 
     /** 把一组模型名转成实体并追加到目标列表；跳过空串与重复项 */
@@ -535,6 +582,7 @@ public class ModelProfileService {
      * @param embeddingModel  单个嵌入模型名（同上，兼容旧客户端）
      * @param chatModels      对话模型清单（V23）。**第一项即默认模型**，可为 null
      * @param embeddingModels 嵌入模型清单（V23）。第一项即默认，可为 null
+     * @param audioModels     语音模型清单（V24）。第一项即默认，可为 null
      */
     public record SaveProfileCommand(String name,
                                      String presetId,
@@ -545,14 +593,30 @@ public class ModelProfileService {
                                      Double temperature,
                                      String embeddingModel,
                                      List<String> chatModels,
-                                     List<String> embeddingModels) {
+                                     List<String> embeddingModels,
+                                     List<String> audioModels) {
+
+        /** 兼容构造器：不带语音模型（V23 及以前的调用方与测试） */
+        public SaveProfileCommand(String name,
+                                  String presetId,
+                                  String baseUrl,
+                                  String protocol,
+                                  String apiKey,
+                                  String chatModel,
+                                  Double temperature,
+                                  String embeddingModel,
+                                  List<String> chatModels,
+                                  List<String> embeddingModels) {
+            this(name, presetId, baseUrl, protocol, apiKey, chatModel, temperature, embeddingModel,
+                    chatModels, embeddingModels, null);
+        }
 
         /** 兼容构造器：只给单个模型名（V22 及以前的调用方与测试） */
         public SaveProfileCommand(String name, String presetId, String baseUrl, String protocol,
                                   String apiKey, String chatModel, Double temperature,
                                   String embeddingModel) {
             this(name, presetId, baseUrl, protocol, apiKey, chatModel, temperature, embeddingModel,
-                    null, null);
+                    null, null, null);
         }
     }
 }

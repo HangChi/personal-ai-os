@@ -85,6 +85,7 @@ const probeResult = ref<ModelListResult | null>(null)
  */
 const chatModelDraft = ref('')
 const embeddingModelDraft = ref('')
+const audioModelDraft = ref('')
 
 const isEdit = computed(() => props.profile !== null)
 
@@ -116,6 +117,7 @@ watch(
     // 草稿必须一起清：上次关框时留了半截输入，下次打开会直接看到它
     chatModelDraft.value = ''
     embeddingModelDraft.value = ''
+    audioModelDraft.value = ''
     // 每次打开都清掉上次的探测结果：它属于「上一次填的端点」，
     // 留着会让用户以为当前端点的模型就是这些
     probeResult.value = null
@@ -220,6 +222,15 @@ const chatModelOptions = computed<string[]>(() => modelOptionsFor(availableModel
 const embeddingModelOptions = computed<string[]>(() =>
   modelOptionsFor(availableModels.value, form.embeddingModels, 'EMBEDDING'),
 )
+/**
+ * 语音模型下拉候选（V24）。
+ *
+ * <p>分类见 `classifyModel` 的 AUDIO 分支。注意 omni 那批已被归为 CHAT：
+ * 它们能当对话模型用，只是另外支持实时语音，放进语音栏会让用户以为
+ * 「选了它就能转写」—— 而 omni 的实时语音走的是 WebSocket 协议，
+ * 与这里的 `/v1/audio/transcriptions` 不是一回事。
+ */
+const audioModelOptions = computed<string[]>(() => modelOptionsFor(availableModels.value, form.audioModels, 'AUDIO'))
 
 /**
  * 端点实际提供了几个嵌入模型（**不剔除已选项**）。
@@ -257,6 +268,7 @@ const showNoEmbeddingHint = computed(
  */
 const canAddChatModel = computed(() => chatModelDraft.value.trim().length > 0)
 const canAddEmbeddingModel = computed(() => embeddingModelDraft.value.trim().length > 0)
+const canAddAudioModel = computed(() => audioModelDraft.value.trim().length > 0)
 
 function handleAddChatModel(): void {
   form.chatModels = appendModel(form.chatModels, chatModelDraft.value)
@@ -266,6 +278,11 @@ function handleAddChatModel(): void {
 function handleAddEmbeddingModel(): void {
   form.embeddingModels = appendModel(form.embeddingModels, embeddingModelDraft.value)
   embeddingModelDraft.value = ''
+}
+
+function handleAddAudioModel(): void {
+  form.audioModels = appendModel(form.audioModels, audioModelDraft.value)
+  audioModelDraft.value = ''
 }
 
 /**
@@ -283,9 +300,13 @@ function appendModel(picked: string[], value: string | null | undefined): string
 }
 
 /** 移除清单里的一项。默认模型（第一项）移除后由原来的第二项顶上，符合「第一个即默认」 */
-function removeModel(kind: 'chat' | 'embedding', index: number): void {
+function removeModel(kind: 'chat' | 'embedding' | 'audio', index: number): void {
   if (kind === 'chat') {
     form.chatModels = form.chatModels.filter((_, i) => i !== index)
+    return
+  }
+  if (kind === 'audio') {
+    form.audioModels = form.audioModels.filter((_, i) => i !== index)
     return
   }
   form.embeddingModels = form.embeddingModels.filter((_, i) => i !== index)
@@ -656,6 +677,84 @@ defineExpose({ finish })
         </span>
         <span v-else class="profile-form__help">
           知识库向量化用，可留空。换嵌入模型会让向量失效（维度可能变），需重建索引。
+        </span>
+      </div>
+
+      <!--
+        语音模型清单（V24）
+
+        放在最末尾而不是插在对话与嵌入之间：它是这套配置里唯一「不做也没关系」
+        的一项（留空就回落到浏览器自带识别），按使用频率排在最后最合理，
+        也不会把两个常用的清单挤得更远。
+      -->
+      <div class="profile-form__field">
+        <span class="profile-form__label">
+          语音模型
+          <template v-if="current">
+            <el-tag
+              v-if="shouldShowSource(current.sources.audioModel)"
+              size="small"
+              :type="SOURCE_TAG_TYPES[current.sources.audioModel]"
+            >
+              {{ SOURCE_LABELS[current.sources.audioModel] }}
+            </el-tag>
+          </template>
+        </span>
+        <div v-if="form.audioModels.length > 0" class="profile-form__models">
+          <div
+            v-for="(name, index) in form.audioModels"
+            :key="`audio-${index}-${name}`"
+            class="profile-form__model-row"
+          >
+            <span class="profile-form__model-name">{{ name }}</span>
+            <span class="profile-form__model-pick">
+              <el-tag v-if="index === 0" size="small" type="success">默认</el-tag>
+              <el-button
+                v-else
+                link
+                size="small"
+                title="设为默认（挪到第一位）"
+                @click="form.audioModels = moveModel(form.audioModels, index, 0)"
+              >
+                设为默认
+              </el-button>
+            </span>
+            <span class="profile-form__model-actions">
+              <el-button link size="small" type="danger" @click="removeModel('audio', index)">移除</el-button>
+            </span>
+          </div>
+        </div>
+        <div class="profile-form__model-add">
+          <el-select
+            v-if="audioModelOptions.length > 0"
+            v-model="audioModelDraft"
+            class="profile-form__model-select"
+            filterable
+            allow-create
+            default-first-option
+            clearable
+            :reserve-keyword="false"
+            placeholder="从这些语音模型里选，或直接输入模型名"
+          >
+            <el-option v-for="name in audioModelOptions" :key="name" :value="name" :label="name" />
+          </el-select>
+          <el-input
+            v-else
+            v-model="audioModelDraft"
+            placeholder="paraformer-v2"
+            clearable
+            :maxlength="MODEL_NAME_MAX"
+            @keyup.enter="handleAddAudioModel"
+          />
+          <el-button :disabled="!canAddAudioModel" @click="handleAddAudioModel">加入</el-button>
+        </div>
+        <!--
+          这里的说明必须同时回答两件事：留空会怎样、填了会怎样。
+          只说「可留空」会让用户不知道留空的代价（录音要发给外部服务），
+          只说「用于语音输入」又会让不想配的人以为配不上就用不了。
+        -->
+        <span class="profile-form__help">
+          聊天页麦克风用，可留空。留空时语音输入走浏览器自带识别（录音会送往浏览器厂商）；填写后录音改由这套配置转写。
         </span>
       </div>
     </div>

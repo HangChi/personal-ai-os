@@ -17,6 +17,11 @@ import java.util.UUID;
  * 把它们塞进 {@code ai_model_profile} 的逗号分隔字符串会让「按模型查配置」
  * 「去重」「排序」全部退化成字符串处理；而一张子表让这些都变成 SQL。
  *
+ * <h2>三类用途（V24 增加 AUDIO）</h2>
+ * CHAT / EMBEDDING / AUDIO 对应界面上三栏。分开的理由不只是展示：
+ * 换嵌入模型会让已有向量失效、语音模型只服务转写接口、
+ * 对话模型才会出现在聊天页的下拉里 —— 三者的语义与后果完全不同。
+ *
  * <h2>为什么用自增 id 而不是 (profile_id, kind, model_name) 联合主键</h2>
  * 联合主键在 JPA 里需要一个 {@code @IdClass}/{@code @EmbeddedId}，
  * 而这个实体没有任何按主键单条读写的场景（永远整组替换）。自增 id 让
@@ -35,7 +40,15 @@ public class AiModelProfileModelEntity {
         /** 对话类（含视觉等聊天模型） */
         CHAT,
         /** 嵌入类。换它会改变向量维度，已有向量需重建 */
-        EMBEDDING
+        EMBEDDING,
+        /**
+         * 语音类（V24）：语音识别（ASR）与语音合成（TTS）。
+         *
+         * <p>它不在聊天链路里，只被 {@code AudioTranscriptionService} 按名取用。
+         * 与 CHAT 分开放的理由与 EMBEDDING 相同：界面上分栏，
+         * 且「选了对话模型」与「选了语音模型」是两种完全不同的用法。
+         */
+        AUDIO
     }
 
     @Id
@@ -93,9 +106,20 @@ public class AiModelProfileModelEntity {
         return kind;
     }
 
-    /** 解析后的用途；脏数据（不可能出现，库层有 CHECK）回落到 CHAT */
+    /**
+     * 解析后的用途；脏数据（不可能出现，库层有 CHECK）回落到 CHAT。
+     *
+     * <p>用逐值比较而不是 {@code Kind.valueOf}：库里若有 V24 之后新增但本代码
+     * 尚未认识的取值，{@code valueOf} 会抛 {@code IllegalArgumentException}
+     * 让整张列表 500，而回落到 CHAT 至少能把它显示出来。
+     */
     public Kind kindEnum() {
-        return Kind.EMBEDDING.name().equals(kind) ? Kind.EMBEDDING : Kind.CHAT;
+        for (Kind candidate : Kind.values()) {
+            if (candidate.name().equals(kind)) {
+                return candidate;
+            }
+        }
+        return Kind.CHAT;
     }
 
     public String getModelName() {

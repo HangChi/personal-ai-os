@@ -147,7 +147,7 @@ class ModelConfigServiceTest {
     }
 
     @Test
-    @DisplayName("数据库覆盖全部字段时，来源全部标 DATABASE")
+    @DisplayName("数据库覆盖全部字段时，来源全部标 DATABASE（语音模型除外，见下）")
     void databaseOverridesEverything() {
         ModelConfigService service = service(
                 "https://env.example.com", "sk-env", "env-model", "env-embed", "0.3");
@@ -159,8 +159,46 @@ class ModelConfigServiceTest {
         assertThat(resolved.apiKey()).isEqualTo("sk-db");
         assertThat(resolved.chatModel()).isEqualTo("db-model");
         assertThat(resolved.temperature()).isEqualTo(1.2);
-        assertThat(resolved.sources().values()).containsOnly(ConfigSource.DATABASE);
         assertThat(resolved.revision()).isEqualTo(1);
+        // 语音模型（V24）不在 V20 单行表里，也没有环境变量兜底，
+        // 所以它的来源必然是 DEFAULT。用 containsOnly 会把这条差异误判成失败，
+        // 这里逐项断言「其余全部 DATABASE」，并单独钉住语音模型那一项。
+        assertThat(resolved.sources())
+                .containsEntry("baseUrl", ConfigSource.DATABASE)
+                .containsEntry("apiKey", ConfigSource.DATABASE)
+                .containsEntry("chatModel", ConfigSource.DATABASE)
+                .containsEntry("embeddingModel", ConfigSource.DATABASE)
+                .containsEntry("temperature", ConfigSource.DATABASE)
+                .containsEntry("audioModel", ConfigSource.DEFAULT);
+    }
+
+    @Test
+    @DisplayName("语音模型没有内置默认：未配置时为 null 且来源为 DEFAULT")
+    void audioModelHasNoBuiltInDefault() {
+        ModelConfigService service = service("https://env.example.com", "sk-env", "m", "e", "");
+
+        ResolvedConfig resolved = service.resolve();
+
+        // 内置一个语音模型名等于替用户决定「用谁的额度上传录音」，这是不可接受的
+        assertThat(resolved.audioModel()).isNull();
+        assertThat(resolved.hasAudioModel()).isFalse();
+        assertThat(resolved.sources()).containsEntry("audioModel", ConfigSource.DEFAULT);
+    }
+
+    @Test
+    @DisplayName("多配置表里配了语音模型时，它出现在生效配置里")
+    void audioModelFromProfile() {
+        ModelConfigService service = service("https://env.example.com", "sk-env", "m", "e", "");
+        AiModelProfileEntity profile = new AiModelProfileEntity(
+                "主力", null, 0, java.time.Instant.now());
+        profile.overwrite("主力", null, "https://db.example.com", "sk-db", "db-model",
+                null, "db-embed", "paraformer-v2", "OPENAI", java.time.Instant.now());
+
+        ResolvedConfig resolved = service.resolveFrom(profile);
+
+        assertThat(resolved.audioModel()).isEqualTo("paraformer-v2");
+        assertThat(resolved.hasAudioModel()).isTrue();
+        assertThat(resolved.sources()).containsEntry("audioModel", ConfigSource.DATABASE);
     }
 
     // ------------------------------------------------------------------ revision

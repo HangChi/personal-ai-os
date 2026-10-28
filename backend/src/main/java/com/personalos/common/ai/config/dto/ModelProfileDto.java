@@ -30,6 +30,9 @@ import java.util.UUID;
  * @param embeddingModel  生效的**默认**嵌入模型名
  * @param chatModels      保存的对话模型清单（V23）。第一项即默认，可直接用于下拉
  * @param embeddingModels 保存的嵌入模型清单（V23）
+ * @param audioModels     保存的语音模型清单（V24）。第一项即默认
+ * @param audioModel      生效的**默认**语音模型名（= 清单第一项）；空串表示没配，
+ *                        此时聊天页的语音输入回落到浏览器自带识别
  * @param active          是否当前生效
  * @param sortOrder       排序位
  * @param revision        配置版本；0 表示从未保存过内容
@@ -48,6 +51,8 @@ public record ModelProfileDto(UUID id,
                               String embeddingModel,
                               List<String> chatModels,
                               List<String> embeddingModels,
+                              List<String> audioModels,
+                              String audioModel,
                               boolean active,
                               int sortOrder,
                               int revision,

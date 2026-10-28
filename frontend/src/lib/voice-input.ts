@@ -1,17 +1,26 @@
 /**
- * 语音输入的纯函数：浏览器能力判定、文本拼接、错误翻译。
+ * 语音输入的纯函数：浏览器能力判定、文本拼接、错误翻译、录音格式选择。
  *
  * <p>按项目约定，能被单测覆盖的判定逻辑一律放在 `src/lib/`，
  * 组件里只剩「拿到结果 → 调这里 → 写回 v-model」的编排。
  *
- * <h2>为什么用 Web Speech API 而不是服务端转写</h2>
- * 本项目已有模型配置能力，理论上可以把录音发给 ASR 模型转写。但那条路要先解决
- * 录音编码（MediaRecorder → 文件）、上传、轮询结果三件事，且每次说话都要花一次
- * 模型调用。Web Speech API 是浏览器内置的，零成本、有实时中间结果，
- * 对「说一句话转成文字塞进输入框」这个场景完全够用。
+ * <h2>两条路，优先走后端</h2>
+ * 语音输入有两条完全不同的实现，按「设置页有没有配语音模型」二选一：
  *
- * <p>代价是**只有 Chromium 系与 Safari 支持**，Firefox 至今没有实现。
- * 所以能力检测必须诚实：不支持就不显示按钮，而不是显示一个点了没反应的按钮。
+ * <ol>
+ *   <li><b>后端转写</b>（配了语音模型时）：{@code MediaRecorder} 录音 →
+ *       上传到 {@code /api/v1/chat/transcribe} → 自己的 ASR 模型转文字。
+ *       音频只到自己的端点，且识别质量由用户选的模型决定。</li>
+ *   <li><b>浏览器识别</b>（没配时）：Web Speech API。零配置、有实时中间结果，
+ *       但 Chrome 上音频由 Google 的云端转写 —— 自托管场景下这点值得知道。</li>
+ * </ol>
+ *
+ * <p>为什么优先后端：这是「配了就该生效」的问题。改造前设置页能识别出
+ * 语音模型分类，却没有任何调用路径 —— 用户配了它，然后发现没任何变化。
+ *
+ * <p>回落不是降级体验而是兜底：{@code MediaRecorder} 在 Firefox 上可用，
+ * 而 {@code SpeechRecognition} 在 Firefox 上至今没有实现 ——
+ * 所以对 Firefox 用户，接上后端 ASR 反而**从不能用变成能用**。
  */
 
 /** 浏览器给的最小化 SpeechRecognition 类型（DOM lib 里没有标准定义） */
@@ -218,4 +227,140 @@ export function collectInterim(event: SpeechResultEventLike | null | undefined):
     }
   }
   return pieces.join('')
+}
+
+// ------------------------------------------------------------------ MediaRecorder 录音
+
+/**
+ * 录音可用的 MIME 类型，按优先级排列。
+ *
+ * <h2>为什么是一个候选列表而不是写死一个</h2>
+ * 没有任何一种格式是「所有浏览器 + 所有 ASR 端点」都认的：
+ * <ul>
+ *   <li>{@code audio/webm;codecs=opus} —— Chromium/Firefox 首选，体积最小；
+ *       Safari 不支持（macOS 14 前的 Safari 完全不支持 MediaRecorder）。</li>
+ *   <li>{@code audio/mp4} —— Safari 唯一支持的一种。OpenAI 与 DashScope 都认
+ *       {@code .m4a}，而它只接受 {@code .webm} 以外的少数几种。</li>
+ *   <li>{@code audio/ogg;codecs=opus} —— Firefox 也提供，作为第二选择。</li>
+ * </ul>
+ * 逐个试探 `MediaRecorder.isTypeSupported`，取第一个支持的。
+ *
+ * <h2>为什么不写 {@code audio/wav}</h2>
+ * 浏览器不提供 WAV 编码（要自己做 PCM 打包），而 WAV 体积是 opus 的 15 倍左右
+ * —— 8MB 上限下只能录 40 秒。
+ */
+export const RECORDER_MIME_CANDIDATES: readonly string[] = [
+  'audio/webm;codecs=opus',
+  'audio/webm',
+  'audio/ogg;codecs=opus',
+  'audio/mp4',
+]
+
+/** MIME → 上传时用的文件名后缀。很多端点靠扩展名判断格式，写错就 400 */
+const MIME_EXTENSIONS: Record<string, string> = {
+  'audio/webm;codecs=opus': 'webm',
+  'audio/webm': 'webm',
+  'audio/ogg;codecs=opus': 'ogg',
+  'audio/ogg': 'ogg',
+  'audio/mp4': 'm4a',
+  'audio/mpeg': 'mp3',
+  'audio/wav': 'wav',
+}
+
+/**
+ * 选一个当前浏览器支持的录音格式。
+ *
+ * @param isTypeSupported 通常传 `MediaRecorder.isTypeSupported`；
+ *                        测试里塞一个假函数。为 null 时（无 MediaRecorder）返回空串
+ * @returns 可用的 MIME；一个都不支持时返回空串
+ */
+export function pickRecorderMime(isTypeSupported: ((mime: string) => boolean) | null | undefined): string {
+  if (typeof isTypeSupported !== 'function') {
+    return ''
+  }
+  for (const mime of RECORDER_MIME_CANDIDATES) {
+    try {
+      if (isTypeSupported(mime)) {
+        return mime
+      }
+    } catch {
+      // 某些实现对非法类型直接抛异常，而不是返回 false
+    }
+  }
+  return ''
+}
+
+/**
+ * MIME → 文件名后缀。
+ *
+ * <p>为什么要单独一个函数而不是在上传处 `split('/')[1]`：
+ * `audio/webm;codecs=opus` 会切出 `webm;codecs=opus`，带着分号与参数名，
+ * 而文件名里出现分号会让部分端点的 multipart 解析器直接把请求判为非法。
+ *
+ * @param mime 录音的 MIME
+ * @returns 后缀（不含点）；未知时返回 `webm`（最常见的默认）
+ */
+export function mimeToExtension(mime: string | null | undefined): string {
+  const normalized = (mime ?? '').trim().toLowerCase()
+  if (normalized.length === 0) {
+    return 'webm'
+  }
+  const exact = MIME_EXTENSIONS[normalized]
+  if (exact) {
+    return exact
+  }
+  // 去掉参数后再试一次（`audio/ogg; codecs=vorbis`）
+  const base = normalized.split(';')[0].trim()
+  return MIME_EXTENSIONS[base] ?? 'webm'
+}
+
+/**
+ * 录音时长的可读描述，用于「已录 3 秒」这类提示。
+ *
+ * @param milliseconds 毫秒
+ */
+export function formatDuration(milliseconds: number): string {
+  const seconds = Math.max(0, Math.floor((milliseconds || 0) / 1000))
+  if (seconds < 60) {
+    return `${seconds} 秒`
+  }
+  const minutes = Math.floor(seconds / 60)
+  return `${minutes} 分 ${seconds % 60} 秒`
+}
+
+/**
+ * 转写失败时的提示语。
+ *
+ * <p>与 {@link speechErrorMessage} 同一原则：逐类翻译，因为这几种情况的
+ * 下一步动作完全不同 —— 没配模型要去设置页，超时要检查网络，
+ * 限流要等一会儿。混成一句「转写失败」会让用户反复点麦克风。
+ *
+ * @param unavailable 后端是否报告「没配语音模型」
+ * @param error       后端给的原始原因（已含 401/404 等分类）
+ * @returns 中文提示；null 表示不该报错（比如用户主动取消）
+ */
+export function transcribeErrorMessage(unavailable: boolean, error: string | null | undefined): string {
+  if (unavailable) {
+    // 走到这里说明前端原本以为配了、后端说没有（多半是刚切了配置）。
+    // 不是故障：提示用户去哪儿配即可，不要说「失败」
+    return '没有可用的语音模型，可在设置 → 模型配置里添加「语音模型」'
+  }
+  const raw = (error ?? '').trim()
+  if (raw.length === 0) {
+    return '语音转写失败，请重试或改用键盘输入'
+  }
+  if (raw.includes('401') || raw.includes('403')) {
+    return '语音模型鉴权失败，请检查设置里的 API Key 是否有效'
+  }
+  if (raw.includes('404')) {
+    return '这个端点不支持 OpenAI 兼容的转写接口，可在设置里换一个语音模型'
+  }
+  if (raw.includes('429')) {
+    return '语音转写被限流，请稍后再试'
+  }
+  if (raw.includes('超时')) {
+    return '语音转写超时，请检查网络或端点地址后重试'
+  }
+  // 其余情况透出后端给的说明：它已经把技术原因翻成中文，比前端再猜一遍准
+  return raw
 }

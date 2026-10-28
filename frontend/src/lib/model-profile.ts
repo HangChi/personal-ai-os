@@ -123,6 +123,13 @@ export interface ModelProfileForm {
   temperature: number | null
   /** 嵌入模型清单（V23）。第一项即默认 */
   embeddingModels: string[]
+  /**
+   * 语音模型清单（V24）。第一项即默认。
+   *
+   * 语音模型不在聊天下拉里出现，只服务聊天页的语音输入（录音转文字）。
+   * 清单为空表示不配 —— 此时语音输入回落到浏览器自带的 Web Speech API。
+   */
+  audioModels: string[]
 }
 
 /** 空表单（新建时用） */
@@ -136,6 +143,7 @@ export function emptyForm(presetId: string | null = null): ModelProfileForm {
     chatModels: [],
     temperature: null,
     embeddingModels: [],
+    audioModels: [],
   }
 }
 
@@ -159,6 +167,14 @@ export function toForm(profile: ModelProfile): ModelProfileForm {
     chatModels: nonEmpty(profile.chatModels) ?? (profile.chatModel ? [profile.chatModel] : []),
     temperature: profile.temperature,
     embeddingModels: nonEmpty(profile.embeddingModels) ?? (profile.embeddingModel ? [profile.embeddingModel] : []),
+    /*
+     * 语音模型没有单值列兜底。
+     *
+     * 对话与嵌入都有「老后端只返回单值」这条历史包袱，语音模型（V24）出生时
+     * 就是清单形态 —— 给它造一条不存在的兼容路径，只会让后续维护者以为
+     * `audioModel` 单值字段曾经是主数据来源。
+     */
+    audioModels: nonEmpty(profile.audioModels) ?? [],
   }
 }
 
@@ -195,6 +211,7 @@ export function buildProfilePayload(
   embeddingModel: string | null
   chatModels: string[]
   embeddingModels: string[]
+  audioModels: string[]
 } {
   const trimmedKey = form.apiKey.trim()
   let apiKey: string | undefined
@@ -208,6 +225,7 @@ export function buildProfilePayload(
 
   const chatModels = normalizeModelList(form.chatModels)
   const embeddingModels = normalizeModelList(form.embeddingModels)
+  const audioModels = normalizeModelList(form.audioModels)
 
   return {
     name: form.name.trim(),
@@ -223,6 +241,7 @@ export function buildProfilePayload(
     embeddingModel: embeddingModels.length > 0 ? embeddingModels[0] : null,
     chatModels,
     embeddingModels,
+    audioModels,
   }
 }
 
@@ -297,11 +316,15 @@ export function validateProfileForm(form: ModelProfileForm): string | null {
   }
   const chatModels = normalizeModelList(form.chatModels)
   const embeddingModels = normalizeModelList(form.embeddingModels)
+  const audioModels = normalizeModelList(form.audioModels)
   if (chatModels.length > MODEL_LIST_MAX) {
     return `对话模型最多保存 ${MODEL_LIST_MAX} 个`
   }
   if (embeddingModels.length > MODEL_LIST_MAX) {
     return `嵌入模型最多保存 ${MODEL_LIST_MAX} 个`
+  }
+  if (audioModels.length > MODEL_LIST_MAX) {
+    return `语音模型最多保存 ${MODEL_LIST_MAX} 个`
   }
   for (const name of chatModels) {
     if (name.length > MODEL_NAME_MAX) {
@@ -311,6 +334,11 @@ export function validateProfileForm(form: ModelProfileForm): string | null {
   for (const name of embeddingModels) {
     if (name.length > MODEL_NAME_MAX) {
       return `嵌入模型名「${name.slice(0, 20)}…」长度不能超过 ${MODEL_NAME_MAX} 个字符`
+    }
+  }
+  for (const name of audioModels) {
+    if (name.length > MODEL_NAME_MAX) {
+      return `语音模型名「${name.slice(0, 20)}…」长度不能超过 ${MODEL_NAME_MAX} 个字符`
     }
   }
   if (form.temperature != null) {
@@ -650,6 +678,43 @@ export function defaultChatModel(profile: ModelProfile | null): string {
     return list[0]
   }
   return (profile.chatModel ?? '').trim()
+}
+
+/**
+ * 这一发**实际会调用**的模型名 —— 选择器展示它，而不是展示「跟随配置」。
+ *
+ * <h3>为什么不再显示「跟随配置」四个字</h3>
+ * 用户的原话是「模型不要显示跟随配置，显示当前用的模型」。从实现看，
+ * 会话不选模型时确实在用生效配置的默认模型；但把这个内部表示暴露到界面上，
+ * 等于让用户去读一个**间接概念**：他真正想知道的是「现在是谁在答」。
+ * 主流 agent（ChatGPT / Claude / Cursor / WorkBuddy）的模型选择器都直接
+ * 显示模型名，跟随逻辑是后台行为，不占标签。
+ *
+ * <p>三级回落，每一级都有真实场景：
+ * <ol>
+ *   <li>会话自己选了 → 就是它；</li>
+ *   <li>没选 → 生效配置的默认模型（`defaultChatModel`）；</li>
+ *   <li>配置里一个对话模型都没有 → 清单第一项；再没有就是空串
+ *       （此时选择器整体禁用并给出「去设置页加一个」的提示）。</li>
+ * </ol>
+ *
+ * <p>第 3 级为什么还要试清单：`defaultChatModel` 在「清单非空但单值列为空」
+ * 时已经返回清单首项，这条只为兜住 Profile 对象缺失（未加载完）的瞬时状态。
+ */
+export function effectiveChatModel(
+  models: string[] | null | undefined,
+  sessionModel: string | null | undefined,
+  defaultModel: string | null | undefined,
+): string {
+  const picked = (sessionModel ?? '').trim()
+  if (picked.length > 0) {
+    return picked
+  }
+  const fallback = (defaultModel ?? '').trim()
+  if (fallback.length > 0) {
+    return fallback
+  }
+  return normalizeModelList(models ?? [])[0] ?? ''
 }
 
 /** 连通性测试结果的一句话摘要 */ export function testResultSummary(result: {

@@ -58,6 +58,9 @@ const PROFILE = {
   // V23：清单第一项恒等于上面的单值列
   chatModels: ['qwen3.8-flash'],
   embeddingModels: ['qwen3.7-text-embedding-flash'],
+  // V24：语音模型清单与它的默认值（= 第一项）
+  audioModels: ['paraformer-v2'],
+  audioModel: 'paraformer-v2',
   active: true,
   sortOrder: 0,
   revision: 3,
@@ -67,6 +70,7 @@ const PROFILE = {
     apiKey: 'DATABASE',
     chatModel: 'DATABASE',
     embeddingModel: 'ENVIRONMENT',
+    audioModel: 'DATABASE',
     temperature: 'DATABASE',
   },
 }
@@ -79,6 +83,21 @@ const PROFILE = {
   eq('toForm 的密钥恒为空：填掩码会把真实密钥覆盖成那七个字符', form.apiKey, '')
   eq('toForm 带出温度', form.temperature, 0.7)
   eq('toForm 带出预设标识', form.presetId, 'dashscope')
+  // V24：语音模型清单要带出来，否则用户编辑时看到「没有语音模型」而实际有
+  eq('toForm 带出语音模型清单', form.audioModels.join(','), 'paraformer-v2')
+}
+
+{
+  // 语音模型**没有单值列兜底**：它出生时就是清单形态，
+  // 造一条不存在的兼容路径会让后来的维护者误以为 audioModel 曾是主数据来源
+  const form = toForm({ ...PROFILE, audioModels: [] })
+  eq('语音清单为空时就是空数组', form.audioModels.length, 0)
+  eq('不会从 audioModel 单值兜底出清单', form.audioModels.join(','), '')
+}
+
+{
+  const form = toForm({ ...PROFILE, audioModels: [' a ', '', 'b '] })
+  eq('语音清单去空白与空串', form.audioModels.join(','), 'a,b')
 }
 
 {
@@ -86,6 +105,7 @@ const PROFILE = {
   eq('emptyForm 记住预设标识', form.presetId, 'openai')
   eq('emptyForm 密钥为空', form.apiKey, '')
   eq('emptyForm 温度未设置', form.temperature, null)
+  eq('emptyForm 语音清单为空数组', form.audioModels.length, 0)
 }
 
 // ---------------------------------------------------------------- 密钥三态
@@ -115,6 +135,32 @@ const PROFILE = {
   eq('只有空白的密钥框视为未填', payload.apiKey, undefined)
 }
 
+{
+  // V24：语音清单要随 payload 提交，否则用户加了语音模型保存后它就消失了
+  const payload = buildProfilePayload({ ...toForm(PROFILE), audioModels: ['paraformer-v2', 'sensevoice-v1'] })
+  eq('语音清单进 payload', payload.audioModels.join(','), 'paraformer-v2,sensevoice-v1')
+}
+
+{
+  // 顺序即语义：第一项是默认语音模型，不能被排序打乱
+  const payload = buildProfilePayload({ ...toForm(PROFILE), audioModels: ['b-model', 'a-model'] })
+  eq('语音清单保持用户顺序（第一项即默认）', payload.audioModels[0], 'b-model')
+}
+
+{
+  // 清空语音清单 = 「不配语音模型」→ 语音输入回落浏览器识别。
+  // 必须真的提交空数组：不传（undefined）在 JSON 里字段消失，
+  // 后端收不到就无法区分「没动」与「清空」，用户删掉最后一项会失效。
+  const payload = buildProfilePayload({ ...toForm(PROFILE), audioModels: [] })
+  eq('清空语音清单时提交空数组', Array.isArray(payload.audioModels), true)
+  eq('空数组长度为 0', payload.audioModels.length, 0)
+}
+
+{
+  const payload = buildProfilePayload({ ...toForm(PROFILE), audioModels: ['  x  ', 'x', ''] })
+  eq('语音清单去空白并去重', payload.audioModels.join(','), 'x')
+}
+
 // ---------------------------------------------------------------- 表单校验
 
 {
@@ -139,6 +185,29 @@ const PROFILE = {
   eq('温度为 null 合法', validateProfileForm({ ...emptyForm(), name: 'n', temperature: null }), null)
   // 温度 0 合法，且不能因为「falsy」被当成未设置
   eq('温度 0 合法', validateProfileForm({ ...emptyForm(), name: 'n', temperature: 0 }), null)
+}
+
+{
+  // V24：语音清单走同一套长度与条数校验。
+  // 前端漏检会让后端返回一个 500 级别的校验错误，用户完全看不出哪一项超长。
+  const badAudio = validateProfileForm({
+    ...emptyForm(),
+    name: 'n',
+    audioModels: ['m'.repeat(MODEL_NAME_MAX + 1)],
+  })
+  check('语音模型名超长被拒', badAudio !== null && badAudio.includes('语音模型名'))
+
+  const tooManyAudio = validateProfileForm({
+    ...emptyForm(),
+    name: 'n',
+    audioModels: Array.from({ length: MODEL_LIST_MAX + 1 }, (_, i) => `m${i}`),
+  })
+  check('语音模型过多被拒', tooManyAudio !== null && tooManyAudio.includes('语音模型最多'))
+
+  // 空清单合法：这是「不配语音模型」的正常状态
+  eq('语音清单为空合法', validateProfileForm({ ...emptyForm(), name: 'n', audioModels: [] }), null)
+  // 只有一个合法模型名也合法
+  eq('单个语音模型合法', validateProfileForm({ ...emptyForm(), name: 'n', audioModels: ['paraformer-v2'] }), null)
 }
 
 // ---------------------------------------------------------------- 删除保护

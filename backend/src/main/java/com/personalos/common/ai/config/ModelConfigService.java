@@ -184,6 +184,10 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
                 values.embeddingModel(), envEmbeddingModel, DEFAULT_EMBEDDING_MODEL);
         Double temperature = values.temperature() != null ? values.temperature() : envTemperature;
 
+        // 语音模型**没有内置默认**：内置一个语音模型名等于替用户决定「用谁的额度
+        // 上传你的录音」。没有配置就是 null，调用方据此回落到浏览器自带识别。
+        String audioModel = blankToNull(values.audioModel());
+
         // 每一项都记下「来源」，前端据此显示「来自环境变量」还是「设置页覆盖」。
         // 没有这个信息，用户改了 .env 发现不生效时无从判断是被覆盖了。
         Map<String, ConfigSource> sources = new LinkedHashMap<>();
@@ -191,12 +195,13 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
         sources.put("apiKey", sourceOf(values.apiKey(), envApiKey));
         sources.put("chatModel", sourceOf(values.chatModel(), envChatModel));
         sources.put("embeddingModel", sourceOf(values.embeddingModel(), envEmbeddingModel));
+        sources.put("audioModel", audioModel == null ? ConfigSource.DEFAULT : ConfigSource.DATABASE);
         sources.put("temperature", values.temperature() != null
                 ? ConfigSource.DATABASE
                 : (envTemperature != null ? ConfigSource.ENVIRONMENT : ConfigSource.DEFAULT));
 
         return new ResolvedConfig(baseUrl, apiKey, chatModel, temperature, embeddingModel,
-                values.revision(), values.updatedAt(), sources);
+                audioModel, values.revision(), values.updatedAt(), sources);
     }
 
     // ------------------------------------------------------------------ 写入
@@ -319,6 +324,21 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
     }
 
     // ------------------------------------------------------------------ 按模型名构造（V23）
+
+    /**
+     * 取当前生效配置。**给非聊天链路的调用方用**（如语音转写）。
+     *
+     * <p>与 {@link #resolve()} 的区别：那个只看 V20 单行表，本方法优先读
+     * V21 多配置表里生效的那行（没有才回落）。设置页保存的是多配置表，
+     * 所以凡是要「用户当前真正在用的那套」，必须走这里。
+     *
+     * <p>{@link #resolve(String)} / {@link #defaultChatModel()} 内部用的也是
+     * 同一套逻辑，只是那两处是 {@link com.personalos.common.ai.RuntimeChatModelResolver}
+     * 的契约，签名不能改。
+     */
+    public ResolvedConfig current() {
+        return currentResolved();
+    }
 
     /**
      * 按模型名造一个模型实例，复用**当前生效配置**的端点、密钥与温度。
@@ -476,11 +496,12 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
                   String chatModel,
                   Double temperature,
                   String embeddingModel,
+                  String audioModel,
                   Integer revision,
                   Instant updatedAt) {
 
         /** 「没有任何配置」—— 全部回落到环境变量与内置默认 */
-        static final Values EMPTY = new Values(null, null, null, null, null, null, null);
+        static final Values EMPTY = new Values(null, null, null, null, null, null, null, null);
 
         /**
          * 从 V20 单行表实体取值。
@@ -491,15 +512,18 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
          * 而且读起来就写明「这份值来自哪张表」。
          */
         static Values fromLegacy(AiModelConfigEntity entity) {
+            // V20 单行表没有 audio_model 列（语音模型是 V24 才有的），
+            // 传 null 表示「这张表不提供该项」—— 与「用户清空了该项」在
+            // merge 里都落到同一个结果，所以无需区分。
             return new Values(entity.getBaseUrl(), entity.getApiKey(), entity.getChatModel(),
-                    entity.getTemperature(), entity.getEmbeddingModel(),
+                    entity.getTemperature(), entity.getEmbeddingModel(), null,
                     entity.getRevision(), entity.getUpdatedAt());
         }
 
         /** 从 V21 多配置实体取值 */
         static Values fromProfile(AiModelProfileEntity entity) {
             return new Values(entity.getBaseUrl(), entity.getApiKey(), entity.getChatModel(),
-                    entity.getTemperature(), entity.getEmbeddingModel(),
+                    entity.getTemperature(), entity.getEmbeddingModel(), entity.getAudioModel(),
                     entity.getRevision(), entity.getUpdatedAt());
         }
     }
@@ -522,6 +546,7 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
      * @param chatModel      对话模型名
      * @param temperature    采样温度；null 表示沿用服务端默认
      * @param embeddingModel 嵌入模型名（改动需重启）
+     * @param audioModel     语音模型名（V24）；null 表示没配，转写回落到浏览器自带识别
      * @param revision       数据库配置版本；null 表示数据库里没有配置行
      * @param updatedAt      最后一次保存时间
      * @param sources        各字段的来源
@@ -531,6 +556,7 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
                                  String chatModel,
                                  Double temperature,
                                  String embeddingModel,
+                                 String audioModel,
                                  Integer revision,
                                  Instant updatedAt,
                                  Map<String, ConfigSource> sources) {
@@ -538,6 +564,19 @@ public class ModelConfigService implements com.personalos.common.ai.RuntimeChatM
         /** 当前是否配了密钥（不暴露密钥本身） */
         public boolean hasApiKey() {
             return apiKey != null && !apiKey.isBlank();
+        }
+
+        /** 是否配了语音模型（决定转写走后端还是回落浏览器识别） */
+        public boolean hasAudioModel() {
+            return audioModel != null && !audioModel.isBlank();
+        }
+
+        /** 兼容构造器：不带语音模型（V23 及以前的调用方与测试） */
+        public ResolvedConfig(String baseUrl, String apiKey, String chatModel, Double temperature,
+                              String embeddingModel, Integer revision, Instant updatedAt,
+                              Map<String, ConfigSource> sources) {
+            this(baseUrl, apiKey, chatModel, temperature, embeddingModel, null,
+                    revision, updatedAt, sources);
         }
     }
 

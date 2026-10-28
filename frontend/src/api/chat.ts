@@ -1,7 +1,15 @@
 import { apiBaseUrl, notifyUnauthorized, requestData } from '@/api/http'
 import { resolveFilename, triggerBlobDownload } from '@/api/export'
 import type { ApiResponse } from '@/types/api'
-import type { ChatAttachment, ChatCitation, ChatMessage, ChatSession, PageDto } from '@/types/api'
+import type {
+  ChatAttachment,
+  ChatCitation,
+  ChatMessage,
+  ChatSession,
+  PageDto,
+  TranscriptionResult,
+  TranscriptionStatus,
+} from '@/types/api'
 import { http } from '@/api/http'
 import type { ThinkingLevel } from '@/lib/settings'
 
@@ -395,6 +403,42 @@ export async function uploadAttachment(file: File): Promise<ChatAttachment> {
   const body = response.data
   if (body.code !== 0 || !body.data) {
     throw new Error(body.message || '附件上传失败')
+  }
+  return body.data
+}
+
+/**
+ * 查询语音转写能力（走自己的语音模型，还是回落浏览器识别）。
+ *
+ * <p>前端在**按麦克风之前**问一次：若不可用就直接走 Web Speech API，
+ * 用户不必先说一句话、等一次往返，才被告知「没配模型」。
+ */
+export function fetchTranscriptionStatus(): Promise<TranscriptionStatus> {
+  return requestData<TranscriptionStatus>({
+    url: '/chat/transcribe/status',
+    method: 'get',
+  })
+}
+
+/**
+ * 上传一段录音，拿回转写文本。
+ *
+ * <p>超时给到 60 秒：后端硬卡 30 秒，前端留一倍余量，确保超时由后端
+ * 报出可读原因（「转写超时，请检查端点地址与网络」），而不是前端的
+ * AbortError —— 后者对用户毫无信息量。
+ *
+ * <p>返回值里 {@code unavailable=true} 不是错误：它表示后端没配语音模型，
+ * 调用方应回落到浏览器识别。不要在这个函数里 throw。
+ */
+export async function transcribeAudio(file: File): Promise<TranscriptionResult> {
+  const form = new FormData()
+  form.append('file', file)
+  const response = await http.post<ApiResponse<TranscriptionResult>>('/chat/transcribe', form, {
+    timeout: 60_000,
+  })
+  const body = response.data
+  if (body.code !== 0 || !body.data) {
+    throw new Error(body.message || '语音转写失败')
   }
   return body.data
 }

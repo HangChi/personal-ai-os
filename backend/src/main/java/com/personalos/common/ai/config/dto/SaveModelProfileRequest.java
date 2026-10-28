@@ -34,6 +34,7 @@ import java.util.List;
  * @param embeddingModel  单个嵌入模型名（同上）
  * @param chatModels      对话模型清单；**第一项即默认模型**，null/空表示没有模型
  * @param embeddingModels 嵌入模型清单；第一项即默认，null/空表示没有模型
+ * @param audioModels     语音模型清单（V24）；第一项即默认，null/空表示不配语音模型
  */
 public record SaveModelProfileRequest(String name,
                                       String presetId,
@@ -44,7 +45,8 @@ public record SaveModelProfileRequest(String name,
                                       Double temperature,
                                       String embeddingModel,
                                       List<String> chatModels,
-                                      List<String> embeddingModels) {
+                                      List<String> embeddingModels,
+                                      List<String> audioModels) {
 
     /**
      * 兼容构造器：只给单个模型名（V22 及以前的调用方与测试）。
@@ -56,6 +58,6 @@ public record SaveModelProfileRequest(String name,
                                    String apiKey, String chatModel, Double temperature,
                                    String embeddingModel) {
         this(name, presetId, baseUrl, protocol, apiKey, chatModel, temperature, embeddingModel,
-                null, null);
+                null, null, null);
     }
 }

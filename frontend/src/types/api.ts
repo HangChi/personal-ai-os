@@ -362,6 +362,37 @@ export interface ModelConnectionTestResult {
 }
 
 /**
+ * 语音转写结果（后端 `TranscriptionResult`）。
+ *
+ * `ok=false` 有两种完全不同的含义，靠 `unavailable` 区分：
+ * - `unavailable=true` → **不是错误**，是「没配语音模型」。前端应回落到
+ *   浏览器自带的 Web Speech API，而不是弹红色报错。
+ * - `unavailable=false` → 真失败，`error` 里有可操作的原因。
+ *
+ * 另有一种容易漏掉的状态：`ok=true` 但 `text` 为空串 —— 用户按了停止
+ * 但一句话没说。此时该提示「没听清」而不是「转写失败」，
+ * 因为后者会让人以为功能坏了去改配置。
+ */
+export interface TranscriptionResult {
+  ok: boolean
+  /** 转写文本；失败或没听清时为空串 */
+  text: string
+  /** 上游耗时（毫秒）；不可用时为 0 */
+  latencyMs: number
+  /** 失败原因；成功或不可用时为 null */
+  error: string | null
+  /** 是否因「没配语音模型」而无法转写（应回落浏览器识别） */
+  unavailable: boolean
+}
+
+/** 语音转写能力的状态（后端 `AudioTranscriptionController.StatusDto`） */
+export interface TranscriptionStatus {
+  available: boolean
+  /** 不可用的原因；可用时为 null */
+  reason: string | null
+}
+
+/**
  * 一套模型配置（后端 `ModelProfileDto`，V21 多配置表）。
  *
  * **不含明文密钥**：`apiKeyMasked` 形如 `****8f3a`。卡片上的「编辑」表单
@@ -395,13 +426,29 @@ export interface ModelProfile {
   chatModels: string[]
   /** 保存的嵌入模型清单（V23）。第一项即默认 */
   embeddingModels: string[]
+  /**
+   * 保存的语音模型清单（V24）。第一项即默认。
+   *
+   * 语音模型只服务聊天页的语音输入（转写），不在聊天模型下拉里出现。
+   */
+  audioModels: string[]
+  /**
+   * 生效的默认语音模型名（= `audioModels` 第一项）；空串表示没配。
+   *
+   * 没配时聊天页的语音输入回落到浏览器自带的 Web Speech API ——
+   * 那条路不需要任何配置，也不消耗 API 额度。
+   */
+  audioModel: string
   /** 是否当前生效 */
   active: boolean
   sortOrder: number
   /** 配置内容被保存过几次；0 表示还没保存过内容 */
   revision: number
   updatedAt: string
-  sources: Record<'baseUrl' | 'apiKey' | 'chatModel' | 'embeddingModel' | 'temperature', ModelConfigSource>
+  sources: Record<
+    'baseUrl' | 'apiKey' | 'chatModel' | 'embeddingModel' | 'audioModel' | 'temperature',
+    ModelConfigSource
+  >
 }
 
 /**
@@ -440,6 +487,13 @@ export interface SaveModelProfilePayload {
   chatModels?: string[] | null
   /** 嵌入模型清单（V23）。第一项即默认 */
   embeddingModels?: string[] | null
+  /**
+   * 语音模型清单（V24）。第一项即默认，会被后端写进 `audio_model` 单值列。
+   *
+   * 传空数组表示「这套配置不配语音模型」—— 此时语音输入回落到浏览器
+   * 自带识别。不传（undefined）与传空数组在本接口里等价。
+   */
+  audioModels?: string[] | null
 }
 
 /**

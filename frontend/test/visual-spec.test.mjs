@@ -197,3 +197,125 @@ for (const [name, src] of [
 
 // 知识库表必须保留弹性列（标题是长文本，需要吃掉富余）
 check('知识库表标题列用 min-width（长文本列吸收富余）', /prop="title"[^>]*min-width=/.test(knowledgeTab))
+
+// ---- 发送框：两行工具栏的尺寸契约（2026-10-28 第四次重排） ----
+
+/*
+ * 这一组针对发送框第四次重排，拦的都是「改完 build 绿、单测全绿、
+ * 界面就是歪了」的类别。全部在真实浏览器里量过：
+ *
+ * ① **一行之内不许出现两种控件高度。**
+ *    再上一版分两行，第一行 chip 28px、第二行按钮 32px。32 是
+ *    `theme.css` 里 `html .el-button--small:not(.is-link) { min-height: 32px }`
+ *    （0-2-1）定的全站规格，压不回 28 —— 于是两行并存**必然**一矮一高。
+ *    现在两行全部取 32（`--os-button-height`），包括胶囊内的条数分段。
+ *
+ * ② **「两行」必须按语义切，不能按左右切。**
+ *    上一版是「每行各有左右两段」，于是两条中缝一高一矮、彼此错位，
+ *    看上去像折行没折好。现在是「第一行只有 模型+字数」「第二行只有 工具+动作组」，
+ *    每行最多两个元素、右段天然对齐，不存在第二条中缝。
+ *
+ * ③ **条数不许再占独立宽度。**
+ *    第三次重排把它做成 78px 的独立 `el-select` + 8px gap = 86px 常驻宽度，
+ *    实测把折行阈值从 1150px 抬到 1280px、960px 下从 2 行变 3 行、盒高 173px。
+ *    现在它是胶囊内部的第二分段（`.chat-composer__chip-sep` 分隔），
+ *    开知识库只让胶囊自身变宽，**不新增 flex 项、不再额外吃掉 gap**。
+ */
+const composer = read('src/components/chat/ChatComposer.vue')
+
+check(
+  '发送框：chip 高度取常规按钮档（--os-button-height，不是 inline 档）',
+  /\.chat-composer__chip\s*\{[^}]*height:\s*var\(--os-button-height\)/.test(composer),
+)
+/*
+ * 条数下拉：**不再自己定 32px 高**，而是内嵌成胶囊的透明分段。
+ *
+ * <p>它现在住在 `.chat-composer__chip` 内部，胶囊本身已经是 32px；
+ * 里面再撑一个 32px 只会把胶囊顶到更高（26 是 EP 的默认行高档，
+ * 恰好落在 32 的胶囊里居中）。所以这一条断言的是「它放弃了自己的框」——
+ * 无边框、无底色、无背景，只有文字和箭头。
+ */
+check(
+  '发送框：条数内嵌为胶囊分段（透明、无边框、无独立高度档）',
+  /\.chat-composer__topk\s+:deep\(\.el-select__wrapper\)\s*\{[^}]*background:\s*transparent/.test(composer) &&
+    /\.chat-composer__topk\s+:deep\(\.el-select__wrapper\)\s*\{[^}]*box-shadow:\s*none/.test(composer) &&
+    !/\.chat-composer__topk\s+:deep\(\.el-select__wrapper\)\s*\{[^}]*min-height:\s*var\(--os-button-height\)/.test(
+      composer,
+    ),
+)
+
+// 条数必须是胶囊内的分段，不能是独立控件
+check(
+  '发送框：知识库开关与条数同处一个胶囊容器（.chat-composer__chip-group）',
+  /class="chat-composer__chip-group"/.test(composer),
+)
+check(
+  '发送框：胶囊容器是唯一的 flex 项（flex: none，自身不参与伸缩）',
+  /\.chat-composer__chip-group\s*\{[^}]*flex:\s*none/.test(composer),
+)
+check(
+  '发送框：条数不再是独立 flex 项（.chat-composer__topk 不得写死 width）',
+  !/\.chat-composer__topk\s*\{[^}]*\bwidth:/.test(composer),
+)
+check('发送框：条数分段与开关之间有竖线分隔（同一个胶囊内）', /\.chat-composer__chip-sep\s*\{/.test(composer))
+
+/*
+ * el-select 必须显式定宽。
+ *
+ * <p>不定宽时它在 inline-flex 里被 shrink 到 min-content：
+ * `el-select__wrapper` 的占位层是 `position: absolute`、不参与 min-content
+ * 计算，实测压到 18.3px、「6 条」一个字都看不见。
+ */
+check(
+  '发送框：条数下拉显式定宽（否则被 flex 压成 18px、文字消失）',
+  /\.chat-composer__topk\s+:deep\(\.el-select\)\s*\{[^}]*width:\s*\d+px/.test(composer),
+)
+
+/*
+ * 窄屏必须收成纯图标。
+ *
+ * <p>960px 下行宽 372，开知识库时需求 393 —— 差 21px 会折行、盒高从 133 变 173。
+ * 靠压 padding 补不稳（换字体就变），只能靠收起文字。
+ * 两个胶囊各自保留 `title` + `aria-label`，收字后仍有可读标签。
+ */
+check(
+  '发送框：两个胶囊的文字都有独立 label 包裹（供窄屏隐藏）',
+  (composer.match(/chat-composer__chip-label/g) || []).length >= 2,
+)
+check(
+  '发送框：窄屏（1080px 以下）收起胶囊文字',
+  /@media\s*\(max-width:\s*1080px\)\s*\{[^}]*\.chat-composer__chip-label\s*\{[^}]*display:\s*none/.test(composer),
+)
+check('发送框：附件按钮有 aria-label（收字后仍可读）', /aria-label="添加附件"/.test(composer))
+
+// 两行结构：meta-row（模型+字数）/ tool-row（工具+动作组）
+check('发送框：第一行是 meta-row（模型 + 字数）', /class="chat-composer__meta-row"/.test(composer))
+check('发送框：第二行是 tool-row（工具 + 动作组）', /class="chat-composer__tool-row"/.test(composer))
+
+// 推右：第一行归 count，第二行归 action-group —— 两行各有一个，且都只有一个
+check(
+  '发送框：字数统计在第一行推右（margin-left: auto）',
+  /\.chat-composer__count\s*\{[^}]*margin-left:\s*auto/.test(composer),
+)
+const motionGroupLeft = composer.match(/\.chat-composer__action-group\s*\{[^}]*margin-left:\s*([^;]+);/)
+check(
+  '发送框：动作组在第二行推右（margin-left: auto，不是固定 4px）',
+  Boolean(motionGroupLeft) && motionGroupLeft[1].trim() === 'auto',
+)
+
+// 动作组不许折行：内部一折行就回到「多行多分界」
+check(
+  '发送框：动作组禁止内部折行（flex: none 整体搬家）',
+  /\.chat-composer__action-group\s*\{[^}]*flex:\s*none/.test(composer),
+)
+
+// 输入框单行起步：两行预留会在空态留下整行空白（实测 54px 盒里文字只占 31px）
+check('发送框：输入框单行起步（rows="1"）', /:rows="1"/.test(composer))
+check(
+  '发送框：输入框最小高度按一行行高 + 上下 padding 取 31px',
+  /\.chat-composer__textarea\s+:deep\(\.el-textarea__inner\)\s*\{[^}]*min-height:\s*31px/.test(composer),
+)
+
+// 盒内上下 padding 必须不等：底部要大于顶部（行内控件的下边缘读作「内容结束」）
+const boxPad = composer.match(/\.chat-composer__box\s*\{[^}]*padding:\s*([^;]+);/)
+check('发送框：盒内 padding 三值写法（顶 < 底）', Boolean(boxPad) && boxPad[1].trim().split(/\s+/).length === 3)

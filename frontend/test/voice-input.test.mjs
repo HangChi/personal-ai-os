@@ -9,8 +9,19 @@ import { check, eq } from './assert.mjs'
  * ③ 错误翻译 —— 机器码直接透出等于什么都没说，混成一句又会让人反复重试。
  */
 
-const { appendTranscript, collectFinal, collectInterim, getSpeechRecognitionCtor, pickSpeechLang, speechErrorMessage } =
-  await import('@/lib/voice-input')
+const {
+  appendTranscript,
+  collectFinal,
+  collectInterim,
+  formatDuration,
+  getSpeechRecognitionCtor,
+  mimeToExtension,
+  pickRecorderMime,
+  pickSpeechLang,
+  RECORDER_MIME_CANDIDATES,
+  speechErrorMessage,
+  transcribeErrorMessage,
+} = await import('@/lib/voice-input')
 
 // ---------------------------------------------------------------- 能力检测
 
@@ -166,4 +177,113 @@ const { appendTranscript, collectFinal, collectInterim, getSpeechRecognitionCtor
   let draft3 = 'explain'
   draft3 = appendTranscript(draft3, 'the concept')
   eq('英文连续拼接保持单空格', draft3, 'explain the concept')
+}
+
+// ---------------------------------------------------------------- 录音格式选择（后端转写）
+
+{
+  // 全支持时取列表里第一个：opus/webm 体积最小，Chromium/Firefox 都认
+  eq(
+    '全支持时取第一个候选',
+    pickRecorderMime(() => true),
+    'audio/webm;codecs=opus',
+  )
+
+  // Safari：只认 mp4。选错格式会让 MediaRecorder 构造抛异常，
+  // 症状是「点了麦克风什么也没发生」—— 必须真的按能力选
+  eq(
+    '只有 mp4 时选 mp4（Safari）',
+    pickRecorderMime((m) => m === 'audio/mp4'),
+    'audio/mp4',
+  )
+
+  // 只有 ogg 的浏览器（部分 Firefox 构建）
+  eq(
+    '只有 ogg 时选 ogg',
+    pickRecorderMime((m) => m === 'audio/ogg;codecs=opus'),
+    'audio/ogg;codecs=opus',
+  )
+
+  // 一个都不支持 → 空串，调用方据此判定「不能录音」
+  eq(
+    '都不支持时返回空串',
+    pickRecorderMime(() => false),
+    '',
+  )
+
+  // 没有 MediaRecorder 时传 null，不能抛异常
+  eq('null 判定函数不抛异常', pickRecorderMime(null), '')
+
+  // 某些实现对非法类型直接抛异常而不是返回 false
+  eq(
+    '判定函数抛异常时跳过该项继续试',
+    pickRecorderMime((m) => {
+      if (m === 'audio/webm;codecs=opus') {
+        throw new Error('not supported')
+      }
+      return m === 'audio/webm'
+    }),
+    'audio/webm',
+  )
+
+  // 候选顺序就是优先级：改动顺序会改变实际录音格式
+  eq('候选列表首项是 webm/opus', RECORDER_MIME_CANDIDATES[0], 'audio/webm;codecs=opus')
+  check('候选列表含 Safari 的 mp4', RECORDER_MIME_CANDIDATES.includes('audio/mp4'))
+}
+
+{
+  // 带参数的 MIME 必须去掉参数：文件名里出现分号会让部分端点的
+  // multipart 解析器直接判请求非法
+  eq('webm+opus 取 webm', mimeToExtension('audio/webm;codecs=opus'), 'webm')
+  eq('mp4 取 m4a（OpenAI 只认这个后缀）', mimeToExtension('audio/mp4'), 'm4a')
+  eq('ogg+opus 取 ogg', mimeToExtension('audio/ogg;codecs=opus'), 'ogg')
+  eq('纯 mp3 取 mp3', mimeToExtension('audio/mpeg'), 'mp3')
+  eq('大小写不敏感', mimeToExtension('AUDIO/MP4'), 'm4a')
+  eq('未知类型回落 webm', mimeToExtension('audio/x-unknown'), 'webm')
+  eq('空值回落 webm 而不是崩溃', mimeToExtension(''), 'webm')
+  eq('null 回落 webm', mimeToExtension(null), 'webm')
+  // 分号后带空格也要能剥掉
+  eq('分号后有空格也能剥', mimeToExtension('audio/ogg; codecs=vorbis'), 'ogg')
+}
+
+// ---------------------------------------------------------------- 时长显示
+
+{
+  eq('0 毫秒显示 0 秒', formatDuration(0), '0 秒')
+  eq('不足 1 秒显示 0 秒', formatDuration(999), '0 秒')
+  eq('3.4 秒向下取整', formatDuration(3400), '3 秒')
+  eq('59 秒不进化到分钟', formatDuration(59_000), '59 秒')
+  eq('60 秒进化到 1 分 0 秒', formatDuration(60_000), '1 分 0 秒')
+  eq('95 秒显示 1 分 35 秒', formatDuration(95_000), '1 分 35 秒')
+  // 负数不该出现，但不该显示「-1 秒」
+  eq('负数被夹到 0', formatDuration(-500), '0 秒')
+}
+
+// ---------------------------------------------------------------- 转写错误翻译
+
+{
+  // 没配语音模型不是错误：要指出去哪儿配，而不是说「失败」
+  const unavailable = transcribeErrorMessage(true, '当前生效的模型配置没有语音模型')
+  check('不可用时提示去设置页配', unavailable.includes('设置'))
+  check('不可用时不说「失败」', !unavailable.includes('失败'))
+
+  // 401/403 → 密钥问题，这是用户唯一能自己修的一类
+  check('401 指向 API Key', transcribeErrorMessage(false, '认证失败（401）：API Key 无效').includes('API Key'))
+  check('403 也指向 API Key', transcribeErrorMessage(false, '无权限（403）').includes('API Key'))
+
+  // 404 → 该端点没有兼容接口，换模型是唯一出路
+  check(
+    '404 建议换语音模型',
+    transcribeErrorMessage(false, '接口不存在（404）：/v1/audio/transcriptions').includes('转写接口'),
+  )
+
+  check('429 建议稍后重试', transcribeErrorMessage(false, '被限流（429）').includes('稍后'))
+  check('超时提示检查网络', transcribeErrorMessage(false, '转写超时（超过 30 秒）').includes('网络'))
+
+  // 其它原因透出后端说明：它已经把技术原因翻成中文，前端再猜一遍只会更差
+  eq('未知原因透出后端说明', transcribeErrorMessage(false, '录音超过 8MB，请缩短后重试'), '录音超过 8MB，请缩短后重试')
+
+  // 空原因也要有一句能看的话，不能显示空白
+  check('空原因给出兜底文案', transcribeErrorMessage(false, '').includes('转写'))
+  check('null 原因给出兜底文案', transcribeErrorMessage(false, null).includes('转写'))
 }

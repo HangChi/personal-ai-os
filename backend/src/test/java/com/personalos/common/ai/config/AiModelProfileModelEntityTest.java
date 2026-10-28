@@ -73,12 +73,24 @@ class AiModelProfileModelEntityTest {
     }
 
     @Test
-    @DisplayName("Kind 枚举恰好两个值：视觉等类别接入运行期前不应提前进约束")
-    void kindHasOnlyTwoValues() {
+    @DisplayName("Kind 枚举恰好三个值（V24 加入 AUDIO）")
+    void kindHasExactlyThreeValues() {
         assertThat(AiModelProfileModelEntity.Kind.values())
-                .as("增加取值必须同时改 V23 的 CHECK 约束，否则写入会被库拒绝")
+                .as("增加取值必须同时改 ai_model_profile_model 的 CHECK 约束"
+                        + "（V23 建表时只有 CHAT/EMBEDDING，V24 才放开到 AUDIO），"
+                        + "否则写入会被库层拒绝 —— 表现为一个看不出原因的 500")
                 .containsExactly(AiModelProfileModelEntity.Kind.CHAT,
-                        AiModelProfileModelEntity.Kind.EMBEDDING);
+                        AiModelProfileModelEntity.Kind.EMBEDDING,
+                        AiModelProfileModelEntity.Kind.AUDIO);
+    }
+
+    @Test
+    @DisplayName("AUDIO 能被 kindEnum 正确识别（不是被回落成 CHAT）")
+    void kindEnumRecognizesAudio() {
+        AiModelProfileModelEntity entity = model(AiModelProfileModelEntity.Kind.AUDIO,
+                "paraformer-v2", 0);
+
+        assertThat(entity.kindEnum()).isEqualTo(AiModelProfileModelEntity.Kind.AUDIO);
     }
 
     /** 反射改 kind：实体没有 setter（清单不可变），只有构造器能写 */
