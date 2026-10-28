@@ -288,25 +288,50 @@ check(
 )
 check('发送框：附件按钮有 aria-label（收字后仍可读）', /aria-label="添加附件"/.test(composer))
 
-// 两行结构：meta-row（模型+字数）/ tool-row（工具+动作组）
-check('发送框：第一行是 meta-row（模型 + 字数）', /class="chat-composer__meta-row"/.test(composer))
+// 两行结构：meta-row（读数：上下文 + 字数）/ tool-row（工具 + 动作组）
+check('发送框：第一行是 meta-row（读数行）', /class="chat-composer__meta-row"/.test(composer))
 check('发送框：第二行是 tool-row（工具 + 动作组）', /class="chat-composer__tool-row"/.test(composer))
 
 /*
- * 推右：第一行归 readouts（字数 + 上下文），第二行归 action-group。
+ * 第一行的分布：`justify-content: space-between`（上下文贴左、字数贴右）。
  *
- * <h3>2026-10-29 为什么从 `.chat-composer__count` 改到 `.chat-composer__readouts`</h3>
- * 字数与上下文合并成一个读数组后，`margin-left: auto` 必须挂在**容器**上。
- * 挂在两个子元素上会触发 flex 的 auto margin **平摊**规则 —— 两者各分到
- * 一半剩余空间，中间凭空出现一段等宽空隙，读起来是两个孤立的数字。
+ * <h3>2026-10-28 第三次调整：为什么不再是 `margin-left: auto`</h3>
+ * 那一版是「模型 + 读数组」，右簇要推右所以用 auto。现在模型搬去了动作组，
+ * 第一行两端各只有一个读数（左上下文、右字数），这是 `space-between` 的形状。
+ * 若继续用 auto，两个元素会一起挤到右侧、左边空出 700px ——
+ * 读起来像「漏了一半内容」。
+ *
+ * <p>同时加一条反向断言：字数**不能**带 auto margin。它现在靠容器的
+ * space-between 定位，自己再带 auto 会与容器规则叠加，在窄屏挤出多余空隙。
  */
 check(
-  '发送框：读数组（字数 + 上下文）在第一行推右（margin-left: auto）',
-  /\.chat-composer__readouts\s*\{[^}]*margin-left:\s*auto/.test(composer),
+  '发送框：第一行两端对齐（justify-content: space-between）',
+  /\.chat-composer__meta-row\s*\{[^}]*justify-content:\s*space-between/.test(composer),
 )
 check(
-  '发送框：字数自己不带 margin-left: auto（否则与容器叠加成两段空隙）',
+  '发送框：字数自己不带 margin-left: auto（定位交给容器 space-between）',
   !/\.chat-composer__count\s*\{[^}]*margin-left:\s*auto/.test(composer),
+)
+check('发送框：已删掉的 readouts 容器不再残留样式', !/\.chat-composer__readouts\s*\{/.test(composer))
+check(
+  '发送框：上下文读数在第一行、且在字数之前（左上下文 / 右字数）',
+  composer.indexOf('ContextMeter') < composer.indexOf('chat-composer__count'),
+)
+/*
+ * 模型选择器的位置：必须在 tool-row 之内、meta-row 之外。
+ *
+ * <p>按「标签出现顺序」判断，不用「action-group 后面 900 字内有 ChatModelPicker」——
+ * 后者依赖模板与样式段的相对位置，加一段注释就会假绿。
+ * 这里取三个锚点在模板里的下标：meta-row < tool-row < action-group，
+ * 而 ChatModelPicker 必须落在 tool-row 与 action-group 之间。
+ */
+const idxMeta = composer.indexOf('class="chat-composer__meta-row"')
+const idxTool = composer.indexOf('class="chat-composer__tool-row"')
+const idxAction = composer.indexOf('class="chat-composer__action-group"')
+const idxModel = composer.indexOf('<ChatModelPicker')
+check(
+  '发送框：模型选择器在动作组内（tool-row 与 action-group 之间）',
+  idxModel > idxTool && idxModel > idxAction && idxAction > idxTool && idxTool > idxMeta,
 )
 const motionGroupLeft = composer.match(/\.chat-composer__action-group\s*\{[^}]*margin-left:\s*([^;]+);/)
 check(

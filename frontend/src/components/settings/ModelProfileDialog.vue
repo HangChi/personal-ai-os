@@ -196,6 +196,14 @@ async function handleProbe(): Promise<void> {
       // 密钥框空着时传 undefined，让后端回落到该配置已保存的密钥
       apiKey: form.apiKey.trim().length > 0 ? form.apiKey : undefined,
       profileId: props.profile?.id ?? null,
+      /*
+       * 带上当前清单：后端据此优先给这些模型补查窗口。
+       *
+       * <p>不传的后果是「窗口识别时灵时不灵」——后端只能按字母序取前 40 个
+       * 去问详情，而 DashScope 的 qwen3.8-flash 排第 148 位、qwen-max 排第 65 位，
+       * 正好都在截断之外。传上去之后，用户关心的这 2~6 个模型必定被问到。
+       */
+      models: [...form.chatModels, ...form.embeddingModels, ...form.audioModels],
     })
     /*
      * 把探测到的窗口补进表单。

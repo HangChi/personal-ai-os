@@ -119,7 +119,8 @@ class ModelListProbeServiceHttpTest {
         assertThat(result.error()).isNull();
         // 按小写排序：gpt-4o 排在 gpt-4o-mini 前
         assertThat(result.models()).containsExactly("gpt-4o", "gpt-4o-mini");
-        assertThat(lastPath.get()).isEqualTo("/v1/models");
+        // 列表请求确实打过（之后还会有补查详情的请求，见 lookupDetailWindows）
+        assertThat(receivedPaths).contains("/v1/models");
         assertThat(header("Authorization")).isEqualTo("Bearer sk-test");
         assertThat(header("Accept")).contains("application/json");
         assertThat(result.latencyMs()).isGreaterThanOrEqualTo(0);
@@ -136,7 +137,7 @@ class ModelListProbeServiceHttpTest {
 
         assertThat(result.ok()).isTrue();
         assertThat(result.models()).containsExactly("claude-sonnet-4-5");
-        assertThat(lastPath.get()).isEqualTo("/v1/models");
+        assertThat(receivedPaths).contains("/v1/models");
         assertThat(header("x-api-key")).isEqualTo("sk-ant-test");
         assertThat(header("anthropic-version")).isEqualTo("2023-06-01");
         // 端到端再确认一次：Authorization 头根本不存在（不是空串）
@@ -427,7 +428,9 @@ class ModelListProbeServiceHttpTest {
         ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl + "/compatible-mode/v1///", "sk");
 
         assertThat(result.ok()).isTrue();
-        assertThat(receivedPaths).containsExactly("/compatible-mode/v1/models");
+        // 列表接口打对了。之后还会对 `qwen` 补查详情（桩按前缀匹配，
+        // 详情路径也会命中同一个 context），所以断言「包含」而不是「恰好等于」
+        assertThat(receivedPaths).contains("/compatible-mode/v1/models");
         assertThat(result.models()).containsExactly("qwen");
     }
 
@@ -521,5 +524,296 @@ class ModelListProbeServiceHttpTest {
 
         assertThat(result.contextWindows())
                 .containsOnly(Map.entry("good", 32768));
+    }
+
+    // ------------------------------------------------------------------ 补查详情（V26）
+
+    /*
+     * 为什么这一组测试必须存在：
+     *
+     * 「拿不到模型真实窗口」是一个**静默失效**——探测返回 ok=true、模型列表
+     * 完整、界面上一切正常，只有窗口那一栏是空的，用户以为功能没做。
+     * 而根因藏在「列表接口不返回，详情接口才返回」这个层次差异里，
+     * 只测列表解析的实现照样能全绿。所以这里用真桩把详情请求也跑一遍。
+     *
+     * 真实形状（2026-10-28 DashScope 实测）：
+     *   GET /compatible-mode/v1/models      → 183 个模型，0 个带窗口
+     *   GET /compatible-mode/v1/models/qwen-max
+     *     → {"id":"qwen-max","extra_info":{"default_envs":{"max_input_tokens":30720}}}
+     */
+
+    @Test
+    @DisplayName("列表不带窗口时，逐个查详情并从 extra_info 里取到窗口")
+    void fallsBackToDetailEndpointForWindows() {
+        // 列表：不返回任何窗口字段
+        respond("/v1/models", 200, """
+                {"data":[{"id":"qwen-max"},{"id":"qwen3.8-flash"}]}
+                """);
+        // 详情：DashScope 形状，窗口在 extra_info.default_envs.max_input_tokens
+        respond("/v1/models/qwen-max", 200, """
+                {"id":"qwen-max","extra_info":{"default_envs":{"max_input_tokens":30720}}}
+                """);
+        respond("/v1/models/qwen3.8-flash", 200, """
+                {"id":"qwen3.8-flash","extra_info":{"default_envs":{"max_input_tokens":129024}}}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        assertThat(result.ok()).isTrue();
+        assertThat(result.contextWindows())
+                .containsOnly(Map.entry("qwen-max", 30720), Map.entry("qwen3.8-flash", 129024));
+        // 详情请求真的发出了，且路径正确
+        assertThat(receivedPaths).contains("/v1/models/qwen-max", "/v1/models/qwen3.8-flash");
+    }
+
+    @Test
+    @DisplayName("模型名含斜杠时逐段编码，斜杠本身保留不被编成 %2F")
+    void encodesModelNameSegmentsButKeepsSlash() {
+        respond("/v1/models", 200, "{\"data\":[{\"id\":\"kimi/kimi-k3.1-pro\"}]}");
+        respond("/v1/models/kimi/kimi-k3.1-pro", 200, """
+                {"id":"kimi/kimi-k3.1-pro","extra_info":{"default_envs":{"max_input_tokens":131072}}}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        // 关键：路径是 /v1/models/kimi/kimi-k3.1-pro，而不是 .../kimi%2Fkimi-k3.1-pro
+        assertThat(receivedPaths).contains("/v1/models/kimi/kimi-k3.1-pro");
+        assertThat(result.contextWindows()).containsEntry("kimi/kimi-k3.1-pro", 131072);
+    }
+
+    @Test
+    @DisplayName("列表里已经自报窗口时不再补查，省掉 N 次往返")
+    void skipsDetailLookupWhenListHasWindows() {
+        respond("/v1/models", 200, """
+                {"data":[{"id":"a","context_length":32768},{"id":"b","context_length":131072}]}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        assertThat(result.contextWindows()).containsOnly(Map.entry("a", 32768), Map.entry("b", 131072));
+        // 一次额外请求都不该发：receivedPaths 里只有列表那一条
+        assertThat(receivedPaths).containsExactly("/v1/models");
+    }
+
+    @Test
+    @DisplayName("详情接口失败（404/500）时静默跳过，不影响已拿到的模型列表")
+    void detailFailureDoesNotBreakProbe() {
+        respond("/v1/models", 200, "{\"data\":[{\"id\":\"m1\"},{\"id\":\"m2\"}]}");
+        respond("/v1/models/m1", 404, "{\"error\":\"no such endpoint\"}");
+        respond("/v1/models/m2", 500, "{\"error\":\"boom\"}");
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        assertThat(result.ok()).isTrue();
+        assertThat(result.models()).containsExactly("m1", "m2");
+        assertThat(result.contextWindows()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Ollama 不补查详情：它的窗口已在 /api/tags 的 model_info 里")
+    void ollamaDoesNotProbeDetails() {
+        receivedPaths.clear();
+        respond("/api/tags", 200, """
+                {"models":[{"name":"llama3.2:3b",
+                            "model_info":{"llama.context_length":131072}}]}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OLLAMA, baseUrl, null);
+
+        assertThat(result.contextWindows()).containsEntry("llama3.2:3b", 131072);
+        assertThat(receivedPaths).containsExactly("/api/tags");
+    }
+
+    @Test
+    @DisplayName("深度嵌套的窗口也能取到（广度优先，限深 4 层）")
+    void findsDeeplyNestedWindow() {
+        respond("/v1/models", 200, "{\"data\":[{\"id\":\"deep\"}]}");
+        respond("/v1/models/deep", 200, """
+                {"id":"deep","extra_info":{"default_envs":{"max_tokens":8192,"max_input_tokens":65536}}}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        // 取 max_input_tokens 而不是 max_tokens：前者是「能塞多少输入」，
+        // 后者是「最多输出多少」，用错会让预算差一个数量级
+        assertThat(result.contextWindows()).containsEntry("deep", 65536);
+    }
+
+    @Test
+    @DisplayName("详情里的窗口值同样要过合理性校验")
+    void detailWindowStillValidated() {
+        respond("/v1/models", 200, "{\"data\":[{\"id\":\"bad\"}]}");
+        respond("/v1/models/bad", 200, """
+                {"id":"bad","extra_info":{"default_envs":{"max_input_tokens":100000000}}}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        assertThat(result.contextWindows()).isEmpty();
+    }
+
+    // ------------------------------------------------------------------ 补查的优先级（V26 修复）
+
+    /*
+     * 这一组守的是本轮真正的 bug：补查名额按**字母序**截断。
+     *
+     * 现场证据（2026-10-28，DashScope 183 个模型，按小写字母序）：
+     *   qwen3.8-flash             第 148 位  ← 用户实际在用的主模型，被截掉
+     *   qwen-max                  第  65 位  ← 用户实际在用的备用，也被截掉
+     *   deepseek-v4.1-flash-1017  第   9 位  ← 恰好挤进 40 内
+     *
+     * 于是症状是「有的模型能自动识别窗口、有的恒为空」，用户读成「功能没做完」，
+     * 而它的成因是**模型名首字母**。只测「能取到窗口」的实现对此完全无感 ——
+     * 因为取到的那 40 个里确实有几个带窗口的，测试照样绿。
+     */
+
+    @Test
+    @DisplayName("优先补查清单里的模型：哪怕它排在字母序很靠后也能取到窗口")
+    void preferredModelsAreLookedUpEvenWhenFarDownAlphabeticalOrder() {
+        // 造一个「用户要的模型排在很后面」的列表：a00..a49 全是填充，
+        // 共 50 个，远超 12 个补查名额
+        StringBuilder filler = new StringBuilder();
+        for (int i = 0; i < 50; i++) {
+            filler.append("{\"id\":\"a").append(String.format("%02d", i)).append("\"},");
+        }
+        respond("/v1/models", 200, "{\"data\":[" + filler + "{\"id\":\"qwen3.8-flash\"}]}");
+        respond("/v1/models/qwen3.8-flash", 200, """
+                {"id":"qwen3.8-flash","extra_info":{"default_envs":{"max_input_tokens":129024}}}
+                """);
+
+        // 不传优先清单：字母序截断会把它漏掉
+        ModelListResult withoutHint = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+        assertThat(withoutHint.contextWindows())
+                .as("不传优先清单时，第 51 位的模型必然被字母序截断漏掉")
+                .doesNotContainKey("qwen3.8-flash");
+
+        // 传上优先清单：它必定被补查到
+        ModelListResult withHint =
+                service.probe(ModelProtocol.OPENAI, baseUrl, "sk", List.of("qwen3.8-flash"));
+        assertThat(withHint.contextWindows()).containsEntry("qwen3.8-flash", 129024);
+        assertThat(receivedPaths).contains("/v1/models/qwen3.8-flash");
+    }
+
+    @Test
+    @DisplayName("优先清单里该端点没有的模型不发请求（白耗预算）")
+    void preferredModelsMissingFromEndpointAreNotRequested() {
+        respond("/v1/models", 200, "{\"data\":[{\"id\":\"real-model\"}]}");
+        respond("/v1/models/real-model", 200, """
+                {"id":"real-model","extra_info":{"default_envs":{"max_input_tokens":32768}}}
+                """);
+
+        ModelListResult result = service.probe(
+                ModelProtocol.OPENAI, baseUrl, "sk", List.of("ghost-model", "real-model"));
+
+        assertThat(result.contextWindows()).containsEntry("real-model", 32768);
+        // 关键：不存在的模型名一次请求都不该发
+        assertThat(receivedPaths).doesNotContain("/v1/models/ghost-model");
+    }
+
+    @Test
+    @DisplayName("优先清单为空时行为不变：仍按字母序兜底补查")
+    void emptyPreferredListFallsBackToAlphabetical() {
+        respond("/v1/models", 200, "{\"data\":[{\"id\":\"b-model\"},{\"id\":\"a-model\"}]}");
+        respond("/v1/models/a-model", 200, """
+                {"id":"a-model","extra_info":{"default_envs":{"max_input_tokens":8192}}}
+                """);
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk", List.of());
+
+        assertThat(result.contextWindows()).containsEntry("a-model", 8192);
+    }
+
+    // ------------------------------------------------------------------ 补查顺序（纯函数）
+
+    /*
+     * 顺序本身要独立可测：上面那几条端到端测试证明「偏好生效了」，
+     * 但说不清「名额怎么分」。而名额分配是最容易写错的一环 ——
+     * 稍不注意就会变成「优先清单里的 20 个 + 字母序前 40 个 = 60 个请求」，
+     * 直接打爆预算。
+     */
+
+    @Test
+    @DisplayName("补查顺序：优先名单在前、其余按原序补满，总数不超 12")
+    void orderedTargetsPutsPreferredFirstWithoutExceedingLimit() {
+        List<String> all = new java.util.ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            all.add("m" + String.format("%03d", i));
+        }
+
+        List<String> ordered =
+                ModelListProbeService.orderedDetailTargets(all, List.of("m099", "m050"));
+
+        // 优先的两个排最前，且顺序照用户的清单（不被重排）
+        assertThat(ordered).startsWith("m099", "m050");
+        // 总数硬卡 12：名额本身按优先级分配，多查只会白撞限流
+        assertThat(ordered).hasSize(12);
+        // 不重复：优先项不会在兜底段再出现一次
+        assertThat(ordered).doesNotHaveDuplicates();
+        // 兜底段仍按原序（m000 起），证明没把剩余名额打乱
+        assertThat(ordered.get(2)).isEqualTo("m000");
+    }
+
+    @Test
+    @DisplayName("补查顺序：优先名单超出 12 个时只取前 12 个")
+    void orderedTargetsCapsPreferredAtLimit() {
+        List<String> all = new java.util.ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            all.add("m" + String.format("%03d", i));
+        }
+        List<String> hugePreferred = new java.util.ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            hugePreferred.add("m" + String.format("%03d", i + 50));
+        }
+
+        List<String> ordered = ModelListProbeService.orderedDetailTargets(all, hugePreferred);
+
+        // 12 个名额全部被优先名单占掉（m050~m061），一个兜底名额都不剩 ——
+        // 这是刻意的：优先名单就是用户真正关心的，它该吃满所有名额
+        assertThat(ordered).containsExactlyElementsOf(hugePreferred.subList(0, 12));
+    }
+
+    @Test
+    @DisplayName("补查顺序：空列表与 null 都返回空，不抛异常")
+    void orderedTargetsHandlesEmptyInputs() {
+        assertThat(ModelListProbeService.orderedDetailTargets(List.of(), List.of("x"))).isEmpty();
+        assertThat(ModelListProbeService.orderedDetailTargets(null, List.of("x"))).isEmpty();
+        assertThat(ModelListProbeService.orderedDetailTargets(List.of("a"), null))
+                .containsExactly("a");
+    }
+
+    @Test
+    @DisplayName("详情接口返回 429 时立刻收手：不再对后续模型发请求")
+    void rateLimitStopsFurtherDetailLookups() {
+        // 列表里放 12 个模型（正好吃满名额）
+        StringBuilder list = new StringBuilder();
+        for (int i = 0; i < 11; i++) {
+            list.append("{\"id\":\"r").append(i).append("\"},");
+        }
+        list.append("{\"id\":\"r11\"}");
+        respond("/v1/models", 200, "{\"data\":[" + list + "]}");
+        /*
+         * 详情请求统一 429。
+         *
+         * <p>桩按**精确路径**注册 context，`/v1/models/r` 不会匹配
+         * `/v1/models/r0`，所以这里必须逐个注册 —— 或者用 `/` 兜底。
+         * 用 `/` 会把列表请求也吃掉，所以逐个注册更清楚。
+         */
+        for (int i = 0; i < 12; i++) {
+            respond("/v1/models/r" + i, 429, "{\"error\":{\"code\":\"limit_requests\"}}");
+        }
+
+        ModelListResult result = service.probe(ModelProtocol.OPENAI, baseUrl, "sk");
+
+        assertThat(result.ok()).isTrue();
+        assertThat(result.contextWindows()).isEmpty();
+        /*
+         * 关键断言：被限流后不该把 12 个请求全发完。
+         *
+         * 并发度 4 且共享 cursor + throttled 标志，最坏情况下初始那 4 个
+         * 都已发出，但它们一看标志就退。这里断言「明显少于 12」而不是精确值
+         * —— 并发时序不定，精确断言会变成 flaky 测试。
+         */
+        long detailCalls = receivedPaths.stream().filter(p -> p.startsWith("/v1/models/r")).count();
+        assertThat(detailCalls).isLessThan(12L);
     }
 }

@@ -28,7 +28,7 @@ class ContextBudgetServiceTest {
     @DisplayName("配置里填了窗口：优先用它，压过内置表")
     void configWinsOverBuiltInTable() {
         ContextBudgetService service = new ContextBudgetService(props(131_072));
-        // 内置表里 qwen-max 是 32K；配置里改成 64K 后应以配置为准
+        // 内置表里 qwen-max 是 30720（30K 输入）；配置里改成 64K 后应以配置为准
         service.registerWindowLookup(name -> "qwen-max".equals(name) ? 65_536 : null);
 
         assertThat(service.contextWindowTokens("qwen-max")).isEqualTo(65_536);
@@ -41,8 +41,10 @@ class ContextBudgetServiceTest {
         service.registerWindowLookup(name -> null);
 
         // 这三个值都来自 ModelContextWindows，与全局默认 128K 不同，
-        // 能证明「真的查了表」而不是碰巧回落到默认值
-        assertThat(service.contextWindowTokens("qwen-max")).isEqualTo(32_768);
+        // 能证明「真的查了表」而不是碰巧回落到默认值。
+        // qwen-max 是 30720 而非 32768：后者是「上下文总长」，其中 2048
+        // 留给输出，预算分母要的是「最多能塞多少输入」（见 ModelContextWindows）
+        assertThat(service.contextWindowTokens("qwen-max")).isEqualTo(30_720);
         assertThat(service.contextWindowTokens("gpt-4o")).isEqualTo(128_000);
         assertThat(service.contextWindowTokens("qwen-long")).isEqualTo(1_000_000);
     }
@@ -73,8 +75,8 @@ class ContextBudgetServiceTest {
             throw new IllegalStateException("数据库抖了一下");
         });
 
-        // 关键：不抛出去。qwen-max 在内置表里，应当拿到 32K
-        assertThat(service.contextWindowTokens("qwen-max")).isEqualTo(32_768);
+        // 关键：不抛出去。qwen-max 在内置表里，应当拿到 30K
+        assertThat(service.contextWindowTokens("qwen-max")).isEqualTo(30_720);
         // 完全不认识的模型才回落到全局默认
         assertThat(service.contextWindowTokens("unknown-model")).isEqualTo(131_072);
     }
@@ -85,7 +87,7 @@ class ContextBudgetServiceTest {
         ContextBudgetService service = new ContextBudgetService(props(131_072));
         service.registerWindowLookup(name -> 100);
 
-        assertThat(service.contextWindowTokens("qwen-max")).isEqualTo(32_768);
+        assertThat(service.contextWindowTokens("qwen-max")).isEqualTo(30_720);
     }
 
     // ------------------------------------------------------------------ 预算收敛
@@ -96,8 +98,8 @@ class ContextBudgetServiceTest {
         ContextBudgetService service = new ContextBudgetService(props(131_072));
         service.setBudgetTokens(300_000);
 
-        // 32K 窗口的模型下，300K 预算必须被压到 32K
-        assertThat(service.budgetTokensFor("qwen-max")).isEqualTo(32_768);
+        // 30K 窗口的模型下，300K 预算必须被压到 30K
+        assertThat(service.budgetTokensFor("qwen-max")).isEqualTo(30_720);
         // 同一个预算在 1M 窗口的模型下不被压
         assertThat(service.budgetTokensFor("qwen-long")).isEqualTo(300_000);
     }
@@ -149,7 +151,7 @@ class ContextBudgetServiceTest {
 
         assertThat(small).isLessThan(large);
         // 逆运算能还原回去，证明两条路径用的是同一个折算比
-        assertThat((int) Math.round(small / ContextBudgetService.CHARS_PER_TOKEN)).isEqualTo(32_768);
+        assertThat((int) Math.round(small / ContextBudgetService.CHARS_PER_TOKEN)).isEqualTo(30_720);
     }
 
     // ------------------------------------------------------------------ 内置对照表
@@ -157,18 +159,18 @@ class ContextBudgetServiceTest {
     @Test
     @DisplayName("内置对照表按前缀匹配，且更长的键优先")
     void lookupPrefersLongerPrefix() {
-        // qwen-max（32K）是 qwen3-max（262K）的前缀之外的另一条；
+        // qwen-max（30720）与 qwen3-max（262144）是各自独立的键；
         // 这里真正要防的是 qwen-long 被 qwen-* 之类更短的键抢先命中
         assertThat(ModelContextWindows.lookup("qwen-long")).isEqualTo(1_000_000);
-        assertThat(ModelContextWindows.lookup("qwen-max")).isEqualTo(32_768);
-        assertThat(ModelContextWindows.lookup("qwen-max-latest")).isEqualTo(32_768);
+        assertThat(ModelContextWindows.lookup("qwen-max")).isEqualTo(30_720);
+        assertThat(ModelContextWindows.lookup("qwen-max-latest")).isEqualTo(30_720);
     }
 
     @Test
     @DisplayName("模型名大小写与下划线写法不同也能认")
     void lookupNormalizesName() {
         assertThat(ModelContextWindows.lookup("GPT-4o")).isEqualTo(128_000);
-        assertThat(ModelContextWindows.lookup("qwen_max")).isEqualTo(32_768);
+        assertThat(ModelContextWindows.lookup("qwen_max")).isEqualTo(30_720);
     }
 
     @Test

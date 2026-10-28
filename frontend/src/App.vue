@@ -286,7 +286,12 @@ async function handleLogout(): Promise<void> {
         @dblclick="resetResize"
         @keydown="onResizeKeydown"
       />
-      <router-link to="/" class="app-shell__brand" title="返回总览">
+      <router-link
+        to="/"
+        class="app-shell__brand"
+        :class="{ 'app-shell__brand--collapsed': navCollapsed }"
+        title="返回总览"
+      >
         <span class="app-shell__logo">AI</span>
         <span v-show="!navCollapsed" class="app-shell__title">Personal AI OS</span>
       </router-link>
@@ -552,6 +557,18 @@ html.os-resizing .app-shell__aside {
 }
 
 /*
+ * 折叠态的 logo 必须居中：`padding: 0 16` 是为「logo + 文字」留的左边距，
+ * 折叠后文字消失，16px 左内边距就把 30px 的 logo 推到 16~46 之间，
+ * 中心落在 31 而不是侧栏中心 32 —— 与菜单图标（修好后正好 32）
+ * 差 1px。1px 单独看不明显，但**与下方一排图标并排**时会被读成
+ * 「上面的 logo 比下面的图标偏左一点」，正是用户说的「图标有点偏右」。
+ */
+.app-shell__brand--collapsed {
+  justify-content: center;
+  padding: 0;
+}
+
+/*
  * Logo：主色渐变 + 内高光。纯色方块在浅色侧栏上略显扁平，
  * 一层 135° 渐变足以让它看起来像个「应用图标」而不是「一个蓝色 div」。
  */
@@ -623,10 +640,62 @@ html.os-resizing .app-shell__aside {
   font-weight: 500;
 }
 
-/* 折叠态：图标居中、去掉左右外边距（64px 里只剩图标） */
-.app-shell__nav :deep(.el-menu--collapse .el-menu-item) {
+/*
+ * 折叠态：图标必须落在侧栏的几何中心。
+ *
+ * <h3>为什么光去外边距不够（原有实现漏了 padding）</h3>
+ * EP 的 `.el-menu-item` 在非折叠态带 `padding: 0 20px`（给「图标 + 文字」
+ * 留出左内边距）。折叠时文字消失了，但**这条 padding 仍然生效** ——
+ * 于是图标的盒子从 20px 处开始，图标中心落在
+ *
+ *   8(margin) + 20(padding) + 12(图标半径) = 40
+ *
+ * 而 64px 侧栏的几何中心是 32，**偏右 8px**。用户截图里的表现正是
+ * 「图标贴着右边、左边空一大块」。
+ *
+ * <p>折叠态必须把左右 padding 显式归零，只留 8px 外边距 + 48px 宽的项，
+ * 图标 24px 居中后中心正好 32。这一点不能靠 `align-items` 或 `text-align`
+ * 修正：偏的是**盒子的位置**，不是盒内内容的对齐。
+ *
+ * <h3>真正的偏移源是 EP 的 tooltip 包装层，不是 `<li>`</h3>
+ * 折叠态下 EP 会把内容再包一层 `<div class="el-menu-tooltip__trigger">`
+ * —— 它 `position: absolute; width: 48px; padding: 0 20px`，**自己就带
+ * 20px 内边距**。所以只给 `<li>` 清 padding 完全没用：图标被这个绝对定位的
+ * 包装层推到 20px 处，实测 cx 仍是 40（侧栏中心 32，偏右 8px）。
+ *
+ * <p>必须同时把这个包装层的 padding 归零，并让它撑满 `<li>`（`left/right: 0`）
+ * 后按 `justify-content: center` 居中图标。
+ *
+ * <h3>选择器为什么是 `.app-shell__nav.el-menu--collapse`（同一元素）</h3>
+ * EP 在 `:collapse="true"` 时把 `el-menu--collapse` 加在**菜单根元素**上，
+ * 而根元素正是我们自己的 `.app-shell__nav` —— 两者是同一个 `<ul>`。
+ * 写成 `.app-shell__nav :deep(.el-menu--collapse .el-menu-item)`（带空格）
+ * 等于要求「一个后代元素同时是 .el-menu--collapse」，永远不匹配。
+ * 这正好解释了改造前那条 margin 规则为什么从未生效（当时被
+ * `.app-shell__nav :deep(.el-menu-item)` 的 `2px 8px` 遮过去了，看不出问题）。
+ */
+.app-shell__nav.el-menu--collapse :deep(.el-menu-item) {
   margin-left: var(--os-space-2);
   margin-right: var(--os-space-2);
+  padding-left: 0;
+  padding-right: 0;
+  justify-content: center;
+}
+
+/* 折叠态的真实容器：归零它自带的 20px 内边距，并撑满整项 */
+.app-shell__nav.el-menu--collapse :deep(.el-menu-tooltip__trigger) {
+  /*
+   * 右边界要减 1px：`el-aside` 的 64px 是 border-box，其中 1px 是右边框，
+   * 内容区实际只有 63px。直接 `right: 0` 会让图标落在 32（相对 64 居中），
+   * 而侧栏**可见内容**的中心是 31.5 —— 与 logo、底部折叠图标（都是 31.5）
+   * 差 0.5px。单看 0.5px 无意义，但九个图标与上下两个元素并排成一条竖轴时，
+   * 这一列会被读成「比 logo 略偏右」。
+   */
+  left: 0;
+  right: 1px;
+  width: auto;
+  padding: 0;
+  justify-content: center;
 }
 
 .app-shell__aside-footer {

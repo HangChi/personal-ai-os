@@ -68,6 +68,66 @@ public class ModelListProbeService {
     /** 单个端点最多保留的模型数：防止某个端点返回上万条把界面拖死 */
     private static final int MAX_MODELS = 500;
 
+    /**
+     * 补查单模型详情的最多请求数。
+     *
+     * <p>列表接口不返回窗口时必须逐个问 {@code /models/{name}}，但一个端点
+     * 可能列出 183 个模型（DashScope 实测 183），逐个问就是 183 次往返。
+     *
+     * <p><b>取 12 个而不是 40 个</b>：实测 DashScope 有严格的 QPS 限制 ——
+     * 8 个并发请求里有 3 个立刻返回 429（「You have exceeded your current
+     * request limit」）。名额越多，被拒的比例越高，而名额本身就是
+     * <b>按优先级</b>分配的（见 {@code orderedDetailTargets}），
+     * 排在后面的本来就是用户不关心的模型，多查只是白撞限流。
+     *
+     * <p>12 个覆盖「用户当前清单里的几个模型 + 少量兜底」绰绰有余：
+     * 用户清单通常 2~6 个，加 6~10 个兜底已经够用。
+     */
+    private static final int MAX_DETAIL_LOOKUPS = 12;
+
+    /**
+     * 优先补查名单里最多看几个（V26）。
+     *
+     * <p>用户当前配置清单通常只有 2~6 个模型，给
+     * {@value #MAX_DETAIL_LOOKUPS} 个名额已完全够用；上限与总名额相同，
+     * 因为「优先名单」本就该优先吃满所有名额 —— 它才是用户真正关心的。
+     */
+    private static final int MAX_PREFERRED_LOOKUPS = MAX_DETAIL_LOOKUPS;
+
+    /**
+     * 补查详情的总时间预算（毫秒）。
+     *
+     * <p>前端超时 15 秒、本服务定时 10 秒。补查是**尽力而为**的增强步骤：
+     * 用完预算就带着已有结果返回，绝不让整个探测失败。
+     * 取 6000ms 留足余量给最后的序列化与网络抖动。
+     *
+     * <p>12 个模型 × 单次 ~600ms ÷ 4 路并发 ≈ 1.8 秒，预算非常充裕；
+     * 留这么大余量是为了容忍个别慢请求，而不是为了塞更多名额。
+     */
+    private static final long DETAIL_BUDGET_MS = 6_000;
+
+    /** 单个详情请求的超时：拿不到就算了，不能占着预算空等 */
+    private static final long DETAIL_TIMEOUT_MS = 2_500;
+
+    /**
+     * 补查详情的并发度。
+     *
+     * <h3>为什么是 4 而不是 8（实测下调）</h3>
+     * 2026-10-28 对 DashScope 直接压测 8 个并发详情请求：
+     * <pre>
+     *   deepseek-v4.1-flash-1017 → 429
+     *   deepseek-v4-pro          → 429
+     *   cmaas-qwen3.8-flash      → 429
+     *   （其余 5 个 → 200）
+     * </pre>
+     * 8 路并发下 3/8 被限流。而**最坏的后果不是慢，是「用户最想查的模型
+     * 恰好被拒」** —— 排在最前的优先名单撞上第一波请求，最容易吃 429。
+     *
+     * <p>并发 4 时实测无 429，12 个模型 3 轮往返约 1.8 秒，完全在预算内。
+     * 压低并发换来的「每个请求都真的成功」远比「发出更多请求」有价值。
+     */
+    private static final int DETAIL_PARALLELISM = 4;
+
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
@@ -90,6 +150,20 @@ public class ModelListProbeService {
      * @return 探测结果；失败时 {@code ok=false} 且带可读原因
      */
     public ModelListResult probe(ModelProtocol protocol, String baseUrl, String apiKey) {
+        return probe(protocol, baseUrl, apiKey, List.of());
+    }
+
+    /**
+     * 探测模型列表，并优先给指定模型补查上下文窗口。
+     *
+     * <p>{@code preferredModels} 是用户当前配置里已选中的模型名。它们排在
+     * 补查队列最前面 —— 大端点上按字母序截断会把真正在用的模型全部漏掉
+     * （DashScope：{@code qwen3.8-flash} 第 148 位）。
+     *
+     * @param preferredModels 优先补查的模型名；可空
+     */
+    public ModelListResult probe(ModelProtocol protocol, String baseUrl, String apiKey,
+                                 List<String> preferredModels) {
         long startNanos = System.nanoTime();
 
         if (baseUrl == null || baseUrl.isBlank()) {
@@ -123,7 +197,7 @@ public class ModelListProbeService {
         try {
             HttpResponse<String> response = task.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             long latencyMs = (System.nanoTime() - startNanos) / 1_000_000;
-            return interpret(effective, uri, response, latencyMs);
+            return interpret(effective, normalized, uri, request, response, latencyMs, preferredModels);
         } catch (TimeoutException ex) {
             task.cancel(true);
             log.warn("模型列表探测超时：{} {}s", uri, TIMEOUT_SECONDS);
@@ -211,8 +285,9 @@ public class ModelListProbeService {
      * <p>非 2xx 时优先给出状态码对应的可操作提示，而不是把整坨响应体
      * 丢给用户 —— 但会附上截断后的响应体片段，方便排查自建端点。
      */
-    private ModelListResult interpret(ModelProtocol protocol, URI uri,
-                                      HttpResponse<String> response, long latencyMs) {
+    private ModelListResult interpret(ModelProtocol protocol, String baseUrl, URI uri,
+                                      HttpRequest listRequest, HttpResponse<String> response,
+                                      long latencyMs, List<String> preferredModels) {
         int status = response.statusCode();
         if (status < 200 || status >= 300) {
             String reason = switch (status) {
@@ -287,9 +362,236 @@ public class ModelListProbeService {
                 .limit(MAX_MODELS)
                 .toList();
         Map<String, Integer> windows = collectContextWindows(array, nameField, sorted);
+        // 列表里一个窗口都没自报 → 逐个问详情。这是绝大多数端点的真实情况：
+        // 原生 OpenAI / Anthropic 的列表完全不返回窗口，DashScope 则把它藏在
+        // /models/{name} 的 extra_info 里（实测 183 个模型全部如此）。
+        if (windows.isEmpty() && protocol != ModelProtocol.OLLAMA) {
+            windows = lookupDetailWindows(protocol, baseUrl, listRequest, sorted, preferredModels);
+        }
         log.info("模型列表探测成功：{} {} → {} 个模型（其中 {} 个自报上下文窗口），耗时 {}ms",
                 protocol, uri, sorted.size(), windows.size(), latencyMs);
         return new ModelListResult(true, sorted, latencyMs, null, null, windows);
+    }
+
+    /**
+     * 逐个请求 {@code /models/{name}} 补出上下文窗口（V26）。
+     *
+     * <h2>为什么必须做这一步</h2>
+     * 列表接口基本不返回窗口，而被用户当成「拿不到窗口」的那些端点里，
+     * 至少有一类（DashScope）把真实值放在单模型详情的
+     * {@code extra_info.default_envs.max_input_tokens} 上。实测：
+     *
+     * <pre>
+     *   GET /compatible-mode/v1/models            → 183 个模型，0 个带窗口
+     *   GET /compatible-mode/v1/models/qwen-max   → extra_info.default_envs.max_input_tokens = 30720
+     * </pre>
+     *
+     * <p>不补这一步，「自动识别窗口」对这类端点**完全无效**，用户只能手填。
+     *
+     * <h2>为什么必须并发、且必须截断</h2>
+     * 实测（2026-10-28，DashScope 183 个模型全量）：
+     * <pre>
+     *   并发  8：13.87s，取到 49 个
+     *   并发 16：14.50s，取到 39 个
+     *   并发 32： 7.88s，取到 24 个
+     * </pre>
+     * 并发越高反而**取到越少** —— 这是限流（429）的确凿证据，不是网络抖动。
+     * 所以并发度压到 {@value #DETAIL_PARALLELISM}，名额硬卡
+     * {@value #MAX_DETAIL_LOOKUPS}，总预算 {@value #DETAIL_BUDGET_MS}ms。
+     *
+     * <h2>为什么名额必须由「优先名单」先占（V26 修的关键 bug）</h2>
+     * 原实现直接 {@code models.stream().limit(40)} —— 而 {@code models}
+     * 是**按字母序**排好的。DashScope 的 183 个模型里：
+     * <pre>
+     *   qwen3.8-flash            第 148 位  ← 用户实际在用的主模型
+     *   qwen-max                 第  65 位  ← 用户实际在用的备用
+     *   deepseek-v4.1-flash-1017 第   9 位  ← 恰好挤进 40 内，所以看起来"有时能用"
+     * </pre>
+     * 于是「有时能识别、有时不能」—— 这不是概率，而是模型名首字母决定的。
+     * 现在改成：用户清单里的模型先查，剩下的名额才按字母序兜底。
+     *
+     * <h2>为什么撞到 429 要立刻收手</h2>
+     * 名额再少也可能踩到限流。**继续发只会让剩余请求全部被拒**，
+     * 而每个被拒的请求仍占一次额度、白白烧掉时间预算。所以一旦观察到
+     * 限流，就让所有 worker 停下 —— 已有的结果照样返回。
+     *
+     * <h2>为什么失败全部静默</h2>
+     * 补查是「锦上添花」：拿不到就回落到内置表与用户手填，不影响探测本身
+     * 已经成功这个事实。任何单个模型的失败都不该让整次探测变成报错。
+     *
+     * @param listRequest     原列表请求：直接复用它证明过的鉴权头与协议细节，
+     *                        避免为三种协议再写一遍构造逻辑（也避免两边走偏）
+     * @param preferredModels 用户已选中的模型：优先补查，排在队列最前
+     */
+    private Map<String, Integer> lookupDetailWindows(ModelProtocol protocol, String baseUrl,
+                                                     HttpRequest listRequest, List<String> models,
+                                                     List<String> preferredModels) {
+        List<String> targets = orderedDetailTargets(models, preferredModels);
+        if (targets.isEmpty()) {
+            return Map.of();
+        }
+        String root = stripTrailingSlash(baseUrl.trim());
+        // 两种协议的详情路径都是 /v1/models/{name}；写成常量而不是三元，
+        // 免得后来人误以为两家路径不同（列表接口是一样的：/v1/models）
+        String path = "/v1/models/";
+        // 用户填的 baseUrl 已含 /v1 时不能再补一次
+        String base = root.endsWith("/v1") ? root.substring(0, root.length() - 3) : root;
+
+        Map<String, Integer> found = new java.util.concurrent.ConcurrentHashMap<>();
+        long deadline = System.nanoTime() + Duration.ofMillis(DETAIL_BUDGET_MS).toNanos();
+        // 一旦任一线程撞上限流就置位，所有线程见到它就收手
+        java.util.concurrent.atomic.AtomicBoolean throttled = new java.util.concurrent.atomic.AtomicBoolean();
+
+        java.util.concurrent.atomic.AtomicInteger cursor = new java.util.concurrent.atomic.AtomicInteger();
+        List<Thread> workers = new ArrayList<>();
+        for (int i = 0; i < Math.min(DETAIL_PARALLELISM, targets.size()); i++) {
+            Thread worker = Thread.ofVirtual().name("model-detail-" + i).unstarted(() -> {
+                while (true) {
+                    int index = cursor.getAndIncrement();
+                    if (index >= targets.size() || System.nanoTime() > deadline || throttled.get()) {
+                        return;
+                    }
+                    String name = targets.get(index);
+                    DetailOutcome outcome = fetchDetailWindow(base, path, name, listRequest);
+                    if (outcome.window() != null) {
+                        found.put(name, outcome.window());
+                    } else if (outcome.rateLimited()) {
+                        // 只在本轮确实收到过 429 时才停：普通 404/500 仍可继续
+                        throttled.set(true);
+                        log.warn("补查详情被限流（429），已停止后续请求，仅保留已拿到的 {} 个窗口", found.size());
+                        return;
+                    }
+                }
+            });
+            workers.add(worker);
+            worker.start();
+        }
+        for (Thread worker : workers) {
+            try {
+                worker.join(Math.max(1, Duration.ofNanos(Math.max(0, deadline - System.nanoTime())).toMillis()));
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        if (!found.isEmpty()) {
+            log.info("补查单模型详情拿到 {} 个上下文窗口（共尝试 {} 个模型）", found.size(), targets.size());
+        }
+        return found;
+    }
+
+    /**
+     * 决定补查顺序：优先名单在前，其余按列表原序兜底，总长不超上限。
+     *
+     * <p>抽成静态包级方法是为了**能单测** —— 这是本轮 bug 的所在，
+     * 光测「能取到窗口」无法区分「取到的是用户要的」还是「取到的是字母序前几个」。
+     *
+     * <p>三条规则：
+     * <ol>
+     *   <li>优先名单里<b>且确实存在于该端点列表</b>的才算 —— 否则会拿一个
+     *       该端点根本没有的模型名去发请求，白耗预算；</li>
+     *   <li>优先名单最多取 {@value #MAX_PREFERRED_LOOKUPS} 个，防畸形请求；</li>
+     *   <li>余下名额按<b>列表原序</b>补满，保证「用户还没选模型时」仍有兜底。</li>
+     * </ol>
+     */
+    static List<String> orderedDetailTargets(List<String> models, List<String> preferredModels) {
+        if (models == null || models.isEmpty()) {
+            return List.of();
+        }
+        Set<String> available = new HashSet<>(models);
+        List<String> ordered = new ArrayList<>();
+
+        if (preferredModels != null) {
+            preferredModels.stream()
+                    .filter(name -> name != null && available.contains(name))
+                    .distinct()
+                    .limit(MAX_PREFERRED_LOOKUPS)
+                    .forEach(ordered::add);
+        }
+        for (String name : models) {
+            if (ordered.size() >= MAX_DETAIL_LOOKUPS) {
+                break;
+            }
+            if (!ordered.contains(name)) {
+                ordered.add(name);
+            }
+        }
+        return ordered.size() > MAX_DETAIL_LOOKUPS ? ordered.subList(0, MAX_DETAIL_LOOKUPS) : ordered;
+    }
+
+    /**
+     * 单个详情请求的结果。
+     *
+     * <p>把「限流」从「普通失败」里分出来，是因为两者的正确应对**完全相反**：
+     * 普通失败（404/500）说明这个模型没有详情接口，继续查下一个就好；
+     * 而 429 说明整条链路已经在被拒，继续发只会让后面的请求全部失败，
+     * 必须立刻收手保住已有结果。
+     *
+     * @param window      取到的窗口；没取到为 null
+     * @param rateLimited 本轮是否被限流（429）
+     */
+    private record DetailOutcome(Integer window, boolean rateLimited) {
+
+        static DetailOutcome found(int window) {
+            return new DetailOutcome(window, false);
+        }
+
+        static DetailOutcome missing() {
+            return new DetailOutcome(null, false);
+        }
+
+        static DetailOutcome throttled() {
+            return new DetailOutcome(null, true);
+        }
+    }
+
+    /**
+     * 问一个模型的详情，取出它自报的窗口。
+     *
+     * <p>模型名可能带路径分隔符（{@code kimi/kimi-k3.1-pro}），逐段编码但
+     * **保留斜杠**：整段 {@code URLEncoder.encode} 会把 {@code /} 编成
+     * {@code %2F}，多数网关不认，直接 404。
+     */
+    private DetailOutcome fetchDetailWindow(String base, String path, String modelName,
+                                            HttpRequest listRequest) {
+        try {
+            String encoded = java.util.Arrays.stream(modelName.split("/"))
+                    .map(part -> java.net.URLEncoder.encode(part, StandardCharsets.UTF_8))
+                    .reduce((a, b) -> a + "/" + b)
+                    .orElse("");
+            URI detailUri = URI.create(base + path + encoded);
+            // 复用列表请求的头：鉴权方式（Bearer / x-api-key）与版本头都已验证可用
+            HttpRequest detailRequest = HttpRequest.newBuilder(detailUri)
+                    .GET()
+                    .timeout(Duration.ofMillis(DETAIL_TIMEOUT_MS))
+                    .headers(listRequest.headers().map().entrySet().stream()
+                            .filter(e -> !e.getKey().equalsIgnoreCase("host")
+                                    && !e.getKey().equalsIgnoreCase("content-length"))
+                            .flatMap(e -> e.getValue().stream().flatMap(v -> java.util.stream.Stream.of(e.getKey(), v)))
+                            .toArray(String[]::new))
+                    .build();
+            HttpResponse<String> response = httpClient.send(detailRequest,
+                    HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (response.statusCode() == 429) {
+                return DetailOutcome.throttled();
+            }
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                return DetailOutcome.missing();
+            }
+            JsonNode root = objectMapper.readTree(response.body());
+            if (root == null || root.isNull()) {
+                return DetailOutcome.missing();
+            }
+            Integer window = readWindow(root);
+            return window == null ? DetailOutcome.missing() : DetailOutcome.found(window);
+        } catch (IOException | RuntimeException ex) {
+            // 单模型的失败不值得记日志：多数模型并不支持详情接口，
+            // 全记下来会把日志刷满，反而盖住真正的问题
+            return DetailOutcome.missing();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return DetailOutcome.missing();
+        }
     }
 
     /**
@@ -358,6 +660,89 @@ public class ModelListProbeService {
                     int window = entry.getValue().asInt();
                     if (isPlausibleWindow(window)) {
                         return window;
+                    }
+                }
+            }
+        }
+        Integer nested = readNestedWindow(node);
+        if (nested != null) {
+            return nested;
+        }
+        return null;
+    }
+
+    /**
+     * 在嵌套容器里找窗口（V26）。
+     *
+     * <h2>为什么必须递归找</h2>
+     * DashScope 的单模型详情把它放在
+     * {@code extra_info.default_envs.max_input_tokens} —— 两层嵌套，且
+     * <b>三个已知的窗口字段名都出现在这里</b>。只查顶层字段的实现
+     * 对这类端点恒返回 null，于是「自动识别」看起来完全失效。
+     *
+     * <pre>
+     *   GET /compatible-mode/v1/models/qwen-max
+     *   { "id": "qwen-max",
+     *     "extra_info": { "default_envs": { "max_input_tokens": 30720 } } }
+     * </pre>
+     *
+     * <p>深度限制 4 层：真实响应不会更深，而无限递归会在
+     * 异常端点上把栈打爆。只往 object 与 array 里走，标量不递归。
+     *
+     * <p>先查 {@code extra_info} 再查 {@code data}：前者是详情接口的形状，
+     * 后者是少数聚合网关把详情又包一层的形状。
+     */
+    private static Integer readNestedWindow(JsonNode node) {
+        for (String container : new String[] {"extra_info", "data", "model_info", "meta", "metadata"}) {
+            JsonNode child = node.path(container);
+            if (child.isObject()) {
+                Integer found = findWindowInObject(child, 0);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 在 object 内部广度优先找窗口字段。
+     *
+     * <p>用显式队列而不是递归：深度与节点数都不可控时，队列天然有上限，
+     * 且能让「先浅后深」的顺序成立 —— 越靠近顶层越可能是真正的窗口声明，
+     * 深处的同名键更可能是别的含义（如某个 tokenizer 配置里的长度）。
+     */
+    private static Integer findWindowInObject(JsonNode root, int startDepth) {
+        Set<String> fields = Set.of("max_input_tokens", "context_length", "context_window",
+                "max_model_len", "max_context_length");
+        java.util.ArrayDeque<Map.Entry<JsonNode, Integer>> queue = new java.util.ArrayDeque<>();
+        queue.add(Map.entry(root, startDepth));
+        while (!queue.isEmpty()) {
+            Map.Entry<JsonNode, Integer> current = queue.poll();
+            JsonNode node = current.getKey();
+            int depth = current.getValue();
+            if (depth > 4) {
+                continue;
+            }
+            if (node.isObject()) {
+                java.util.Iterator<Map.Entry<String, JsonNode>> it = node.properties().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<String, JsonNode> entry = it.next();
+                    JsonNode value = entry.getValue();
+                    if (fields.contains(entry.getKey()) && value.isNumber()) {
+                        int window = value.asInt();
+                        if (isPlausibleWindow(window)) {
+                            return window;
+                        }
+                    }
+                    if (value.isObject() || value.isArray()) {
+                        queue.add(Map.entry(value, depth + 1));
+                    }
+                }
+            } else if (node.isArray()) {
+                for (JsonNode item : node) {
+                    if (item.isObject() || item.isArray()) {
+                        queue.add(Map.entry(item, depth + 1));
                     }
                 }
             }

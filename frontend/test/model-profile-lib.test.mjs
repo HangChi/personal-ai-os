@@ -1,4 +1,11 @@
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { check, eq } from './assert.mjs'
+
+/** 读源码用于「跨端契约」断言（探测必须带模型清单，见文件末尾） */
+const here = dirname(fileURLToPath(import.meta.url))
 
 /**
  * 多套模型配置页纯函数。
@@ -743,4 +750,33 @@ const PROFILE = {
   // 探测值非法时不用它（端点可能把字符数当 token 报）
   const bad = mergeProbedWindows({}, { 'qwen-max': 100 }, ['qwen-max'])
   eq('探测到的非法窗口被忽略', bad['qwen-max'], '')
+}
+
+{
+  /*
+   * 探测请求必须把「当前配置里的模型」一起发给后端（V26）。
+   *
+   * <h3>为什么这条值得单独守</h3>
+   * 后端要靠这份清单决定「优先给哪几个模型补查上下文窗口」。不传的话
+   * 它只能按字母序取前 12 个 —— 而 DashScope 的 qwen3.8-flash 排第 148 位、
+   * qwen-max 排第 65 位，全部落在名额之外。症状是「有些模型的窗口能自动
+   * 识别、有些恒为空」，用户读成「功能没做完」，而根因只是模型名首字母。
+   *
+   * <p>这是**跨端契约**：前端漏传不会报错、也不会红测试，只会让后端
+   * 静默退化成字母序。所以在这里断言源码里确实拼了三个清单。
+   */
+  const dialog = readFileSync(resolve(here, '..', 'src/components/settings/ModelProfileDialog.vue'), 'utf8')
+  const probeCall = dialog.match(/probeModelList\(\{[\s\S]*?\}\)/)
+  check('探测调用存在', Boolean(probeCall))
+  check(
+    '探测请求带上三类模型清单（chat/embedding/audio）',
+    Boolean(probeCall) &&
+      /models:\s*\[[^\]]*form\.chatModels/.test(probeCall[0]) &&
+      /models:\s*\[[^\]]*form\.embeddingModels/.test(probeCall[0]) &&
+      /models:\s*\[[^\]]*form\.audioModels/.test(probeCall[0]),
+  )
+
+  // API 层必须把这个字段声明出来，否则 TS 会悄悄忽略它
+  const api = readFileSync(resolve(here, '..', 'src/api/model-profile.ts'), 'utf8')
+  check('API 类型里声明了 models 字段', /probeModelList\(payload:\s*\{[\s\S]*?models\?:\s*string\[\]/.test(api))
 }

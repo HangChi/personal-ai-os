@@ -60,14 +60,20 @@ public final class ModelContextWindows {
             Map.entry("claude-opus-4", 200_000),
 
             // ---- 阿里通义（DashScope）----
+            // qwen-max 写 30720 而不是文档口径的 32768：32768 是「上下文总长」，
+            // 其中 2048 留给输出。预算分母要的是「最多能塞多少输入」，
+            // 用 32768 会把预算放到端点上必然 400 的位置。
+            // 实测（2026-10-28，DashScope 兼容模式）：超长时报
+            // 「Range of input length should be [1, 30720]」，与
+            // GET /models/qwen-max 的 extra_info.default_envs.max_input_tokens 一致。
             Map.entry("qwen-long", 1_000_000),
             Map.entry("qwen3-max", 262_144),
-            Map.entry("qwen-max", 32_768),
+            Map.entry("qwen-max", 30_720),
             Map.entry("qwen-plus", 131_072),
             Map.entry("qwen-turbo", 131_072),
             Map.entry("qwen3", 131_072),
             Map.entry("qwen2.5", 131_072),
-            Map.entry("qwen-vl-max", 32_768),
+            Map.entry("qwen-vl-max", 30_720),
 
             // ---- DeepSeek ----
             Map.entry("deepseek-v3", 65_536),

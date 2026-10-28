@@ -203,7 +203,7 @@ class ModelProfileControllerTest {
     @Test
     @DisplayName("probeModels(): 用表单里的端点与密钥直接探测")
     void probeModelsUsesFormValues() {
-        when(modelListProbeService.probe(any(), any(), any()))
+        when(modelListProbeService.probe(any(), any(), any(), any()))
                 .thenReturn(new ModelListResult(true, List.of("gpt-4o", "gpt-4o-mini"), 120, null));
 
         ApiResponse<ModelListResult> response = controller.probeModels(
@@ -213,7 +213,7 @@ class ModelProfileControllerTest {
         assertThat(response.data().models()).containsExactly("gpt-4o", "gpt-4o-mini");
         // 新建配置时没有 profileId，必须用表单里的值，不能去查库
         verify(modelListProbeService).probe(
-                eq(ModelProtocol.OPENAI), eq("https://api.example.com/v1"), eq("sk-form-key"));
+                eq(ModelProtocol.OPENAI), eq("https://api.example.com/v1"), eq("sk-form-key"), eq(List.of()));
         verify(profileService, never()).require(any());
     }
 
@@ -222,14 +222,14 @@ class ModelProfileControllerTest {
     void probeModelsFallsBackToStoredKey() {
         when(profileService.require(ID)).thenReturn(profile("已有配置", false, 0));
         when(configService.resolveFrom(any())).thenReturn(resolved("sk-stored-key"));
-        when(modelListProbeService.probe(any(), any(), any()))
+        when(modelListProbeService.probe(any(), any(), any(), any()))
                 .thenReturn(new ModelListResult(true, List.of("qwen-max"), 80, null));
 
         controller.probeModels(new ProbeModelsRequest(null, "https://api.example.com", "  ", ID));
 
         // 编辑态密钥框按约定永不回填 → 必须能用已保存的密钥探测
         verify(modelListProbeService).probe(
-                eq(ModelProtocol.OPENAI), eq("https://api.example.com"), eq("sk-stored-key"));
+                eq(ModelProtocol.OPENAI), eq("https://api.example.com"), eq("sk-stored-key"), eq(List.of()));
     }
 
     @Test
@@ -237,20 +237,20 @@ class ModelProfileControllerTest {
     void probeModelsFallsBackToStoredEndpointToo() {
         when(profileService.require(ID)).thenReturn(profile("已有配置", false, 0));
         when(configService.resolveFrom(any())).thenReturn(resolved("sk-stored-key"));
-        when(modelListProbeService.probe(any(), any(), any()))
+        when(modelListProbeService.probe(any(), any(), any(), any()))
                 .thenReturn(new ModelListResult(true, List.of("m"), 10, null));
 
         controller.probeModels(new ProbeModelsRequest("OLLAMA", null, null, ID));
 
         verify(modelListProbeService).probe(
-                eq(ModelProtocol.OLLAMA), eq("https://api.example.com"), eq("sk-stored-key"));
+                eq(ModelProtocol.OLLAMA), eq("https://api.example.com"), eq("sk-stored-key"), eq(List.of()));
     }
 
     @Test
     @DisplayName("probeModels(): 没有 profileId 且密钥为空时不查库，直接交给探测服务报错")
     void probeModelsWithoutProfileIdDoesNotQueryDatabase() {
         // 关键：不能拿环境变量里的密钥去探一个不相干的端点
-        when(modelListProbeService.probe(any(), any(), any()))
+        when(modelListProbeService.probe(any(), any(), any(), any()))
                 .thenReturn(ModelListResult.failed("请先填写 API Key"));
 
         ApiResponse<ModelListResult> response = controller.probeModels(
@@ -258,18 +258,47 @@ class ModelProfileControllerTest {
 
         assertThat(response.data().ok()).isFalse();
         verify(profileService, never()).require(any());
-        verify(modelListProbeService).probe(eq(ModelProtocol.OPENAI), eq("https://api.example.com"), isNull());
+        verify(modelListProbeService).probe(
+                eq(ModelProtocol.OPENAI), eq("https://api.example.com"), isNull(), eq(List.of()));
     }
 
     @Test
     @DisplayName("probeModels(): 协议参数原样传给探测服务")
     void probeModelsPassesProtocol() {
-        when(modelListProbeService.probe(any(), any(), any()))
+        when(modelListProbeService.probe(any(), any(), any(), any()))
                 .thenReturn(new ModelListResult(true, List.of("llama3:8b"), 5, null));
 
         controller.probeModels(new ProbeModelsRequest("ollama", "http://localhost:11434", null, null));
 
-        verify(modelListProbeService).probe(eq(ModelProtocol.OLLAMA), any(), any());
+        verify(modelListProbeService).probe(eq(ModelProtocol.OLLAMA), any(), any(), eq(List.of()));
+    }
+
+    @Test
+    @DisplayName("probeModels(): 请求体里的模型清单透传给探测服务（决定优先补查谁）")
+    void probeModelsPassesPreferredModels() {
+        when(modelListProbeService.probe(any(), any(), any(), any()))
+                .thenReturn(new ModelListResult(true, List.of("qwen3.8-flash"), 5, null));
+
+        controller.probeModels(new ProbeModelsRequest(
+                "OPENAI",
+                "https://api.example.com",
+                "sk",
+                null,
+                // 带空白与空串：必须被清理后再传，否则会拿 " " 去发请求
+                List.of("qwen3.8-flash", "  ", "qwen-max")));
+
+        /*
+         * 这条断言守的是 V26 的核心修复：探测服务需要知道用户在用哪几个模型。
+         *
+         * 不透传的话后端只能按字母序取前 12 个补查详情，而 DashScope 的
+         * qwen3.8-flash 排第 148 位 —— 用户最常用的模型窗口恒为空。
+         * 空白项在 Controller 层就被 preferredModels() 过滤掉。
+         */
+        verify(modelListProbeService).probe(
+                eq(ModelProtocol.OPENAI),
+                eq("https://api.example.com"),
+                eq("sk"),
+                eq(List.of("qwen3.8-flash", "qwen-max")));
     }
 
     @Test
@@ -292,7 +321,7 @@ class ModelProfileControllerTest {
     @Test
     @DisplayName("probeModels(): 探测失败仍返回 200，由 ok=false 表达（不是接口错误）")
     void probeModelsReturnsOkFalseOnFailure() {
-        when(modelListProbeService.probe(any(), any(), any()))
+        when(modelListProbeService.probe(any(), any(), any(), any()))
                 .thenReturn(ModelListResult.failed("接口不存在（404）"));
 
         ApiResponse<ModelListResult> response = controller.probeModels(

@@ -271,70 +271,41 @@ onMounted(autosize)
       />
 
       <!--
-        ============ 工具栏：两行 ============
+        ============ 第一行：纯读数（上下文 · 字数） ============
 
-        <h3>为什么又回到两行（第二次改回，这次理由不同）</h3>
-        单行版实测（1440px、行宽 852px）只有一个问题，但是硬伤：
-        **中间空出 40%~50%**。1440 下左半段 338px、右半段 208px，
-        中间 300px 无内容 —— 这一行读起来是「左边一簇 + 右边一簇」。
+        <h3>为什么这一行现在只有读数（2026-10-28 第三次调整）</h3>
+        用户的原话是「模型移动到思考程度旁边，上下文长度放到其他合适的位置」。
+        前两版都把模型留在这一行，结果这一行永远是「一个控件 + 两个读数」的混排 ——
+        控件要 32px 热区、读数只要 24px，怎么调都有一高一低。
 
-        更关键的是窄屏：单行版 960px 下知识库开启时**折成三行**（盒高 173px），
-        因为一行的需求宽度是 63+99+78+160+208 + 5×8 = 648px > 372px。
-
-        <p>所以拆回两行，但**结构跟上一版的两行不同**：
+        <p>现在按**性质**分行，规则只有一条：
         <ul>
-          <li>上一版：第一行「输入增强」，第二行「生成发送」—— 两行各有左右两段，
-              于是产生两条不平行的中缝（这是「交叉错位」的来源）；</li>
-          <li>这一版：<b>第一行只有模型（左）+ 读数（右）</b>，
-              第二行只有输入增强（左）+ 动作组（右）。两行都是「左一簇 / 右一簇」，
-              且每行只有 1~2 个元素，不存在「中缝对齐」问题 ——
-              第一行右段是动作组的**起点**，第二行右段也是，两者天然对齐。</li>
+          <li>第一行 = 只读的用量读数（上下文预算 · 字数），两个都是 12px 读数；</li>
+          <li>第二行 = 能点的控件（附件、知识库、模型、思考、语音、发送）。</li>
         </ul>
+        模型是控件（点开会变），所以它归第二行；上下文与字数是读数，留在第一行。
+        这样每一行内部规格统一，不再需要「让控件假装成读数」这种折中。
 
-        <h3>为什么模型单独占第一行</h3>
-        它是这一行最长的文字控件（160px），且与「谁来回」「用多大上下文」
-        同属「这一发的生成参数」。附件/知识库是「喂什么进去」，
-        属于输入侧。两组语义不同，分两行正好。
+        <h3>为什么上下文在左、字数在右</h3>
+        上下文是**预算**（分母随模型变，会持续增长，快满时要收尾），字数是
+        **当前草稿长度**（上限 4000，绝大多数时候只有几十）。前者需要进度条
+        给出「还剩多少」的相对量，后者只是一串数字。把有图形的那个放在行的
+        起点、纯数字放在收尾，两个重心各自贴边，中间自然留白 ——
+        比挤在右端一小团更像一条状态行。
+
+        <h3>为什么这一行不推右、而是两端对齐</h3>
+        只有「左一簇 + 右一簇」才需要 `margin-left: auto` 把右簇推到尽头。
+        现在两端各有一个元素，`justify-content: space-between` 就是它该有的
+        分布：上下文贴左、字数贴右。若仍用 auto 推右，两个元素会一起挤在右侧、
+        左边空出 700px，读起来像「漏了一半内容」。
       -->
       <div class="chat-composer__meta-row">
-        <!--
-          模型下拉在最左。回显永远是具体模型名（见 ChatModelPicker）。
-        -->
-        <ChatModelPicker
-          :model-value="sessionModel"
-          :models="chatModels"
-          :default-model="defaultModel"
-          :disabled="streaming"
-          @update:model-value="(value: string | null) => emit('update:sessionModel', value)"
+        <ContextMeter
+          v-if="contextUsage.budgetTokens > 0"
+          :usage="contextUsage"
+          @change-budget="(tokens: number) => emit('change-budget', tokens)"
         />
-
-        <!--
-          ============ 右侧读数组：字数 · 上下文 ============
-
-          <h3>为什么三者收进同一行（2026-10-29）</h3>
-          改造前这一行是「模型下拉（32px 表单框、16px 字）+ 字数（15px 高、
-          12px 字）」混排，而上下文仪表盘在消息卡片的头部 —— **同一个语义族
-          的读数被拆成两处、三种规格**。用户的原话：
-          「模型和 0/4000 还有上下文消耗样式还是太丑了」。
-
-          现在的规则只有一条：**这一行的一切都是 12px 的读数**，没有控件。
-          模型选择器改成裸文字按钮（24px 热区）后，它读起来也是「当前模型：xxx」
-          这条信息，而不是一个要填的表单框。三者等高、同字号、同一灰阶，
-          右侧用一条竖线把「本轮的生成参数」与「用量」分开。
-
-          <h3>为什么把仪表盘从卡片头部挪回来</h3>
-          它当年被挪走是因为**工具栏**放不下（160px 会挤走知识库条数）。
-          但这一行现在只有模型 + 两个短读数，1440px 下行宽 852、
-          960px 下 372 —— 实测三者合计 330px，一行绰绰有余，不再有挤走的理由。
-          留在头部则意味着一份数据画两遍，而两处的样式必然漂移。
-        -->
-        <div class="chat-composer__readouts">
-          <span class="chat-composer__count">{{ modelValue.length }} / {{ MAX_LENGTH }}</span>
-          <template v-if="contextUsage.budgetTokens > 0">
-            <span class="chat-composer__readout-sep" aria-hidden="true" />
-            <ContextMeter :usage="contextUsage" @change-budget="(tokens: number) => emit('change-budget', tokens)" />
-          </template>
-        </div>
+        <span class="chat-composer__count">{{ modelValue.length }} / {{ MAX_LENGTH }}</span>
       </div>
 
       <!--
@@ -417,6 +388,32 @@ onMounted(autosize)
           再分的项，折行时整体搬家。
         -->
         <span class="chat-composer__action-group">
+          <!--
+            ============ 模型选择 ============
+
+            <h3>为什么模型在动作组里、且紧挨思考程度（2026-10-28 用户要求）</h3>
+            用户的原话是「模型移动到思考程度旁边」。这不只是位置偏好 ——
+            两者性质完全相同：都决定**这一发怎么生成**（谁来回、想多深），
+            都在点发送的那一刻被读到，都有下拉菜单。放在一起之后，
+            动作组的读法是「生成参数 → 填内容 → 发送」，一条因果链。
+
+            <p>而它与左侧的附件/知识库是两类东西：那两个决定**喂什么进去**，
+            这一簇决定**怎么生成**。动作组的 4px 紧凑间距正好画出这个边界。
+
+            <h3>为什么它在思考的左边（而不是右边）</h3>
+            越靠近发送按钮的越「按下即生效」：发送是终点，思考与其紧邻
+            （2026-10-28 已按此调整过语音与思考的顺序）。模型是同一个层级里
+            更「宏观」的设置（改它影响的是整段对话而不只是这一条），
+            放最外侧符合「从粗到细」的阅读顺序。
+          -->
+          <ChatModelPicker
+            :model-value="sessionModel"
+            :models="chatModels"
+            :default-model="defaultModel"
+            :disabled="streaming"
+            @update:model-value="(value: string | null) => emit('update:sessionModel', value)"
+          />
+
           <!--
             ============ 思考程度 ============
 
@@ -542,6 +539,16 @@ onMounted(autosize)
 
 .chat-composer__meta-row {
   margin-top: var(--os-space-2);
+  /*
+   * 两端对齐：上下文读数贴左、字数贴右。
+   *
+   * <p>用 `space-between` 而不是给字数加 `margin-left: auto` —— 后者在
+   * 只有两个元素时效果一样，但一旦将来在这一行中间插入第三个元素
+   * （例如「草稿已保存」提示），auto margin 会把中间那个一起贴到右侧，
+   * 而 space-between 天然把它放到中间。语义也比 auto 直白：
+   * 「两端各一个」。
+   */
+  justify-content: space-between;
 }
 
 .chat-composer__tool-row {
@@ -551,31 +558,14 @@ onMounted(autosize)
 }
 
 /*
- * 右上段的字数组：字数 · 上下文。
- *
- * <h3>为什么包一层 div 而不是让两个 span 各自 `margin-left: auto`</h3>
- * 两个都用 auto 会**平分**剩余空间（flex 的 auto margin 是平摊的），
- * 于是字数与上下文之间凭空出现一段等宽的空隙 —— 读起来是两个孤立的数字。
- * 包成一个整体后 `margin-left: auto` 只作用一次，内部由 `gap` 定间距，
- * 两者成为一条连续的读数。
- *
- * <p>`align-items: center` 且高度一致（都是 24px 热区）：竖线分隔符
- * 需要一个确定的上下界 —— 高度不齐时它会看起来是「斜着」的。
- */
-.chat-composer__readouts {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: var(--os-space-2);
-  margin-left: auto;
-}
-
-/*
  * 字数统计：`0 / 4000`。
  *
  * <p>字号、颜色与上下文读数完全一致（12px / placeholder 灰）——
  * 它们是同一族的读数，任何差异都会被读成「这两个数字重要性不同」，
  * 而实际上用户对两者的关心程度只取决于内容，不取决于画面。
+ *
+ * <p>它现在单独占第一行右端（上下文在左），不再需要分隔竖线 ——
+ * 那根线是为了把「挤在一起的两组读数」分开，两端分开后它反而成了噪音。
  */
 .chat-composer__count {
   flex: none;
@@ -584,14 +574,6 @@ onMounted(autosize)
   font-variant-numeric: tabular-nums;
   /* 「0 / 4000」在窄屏被压成「0 /」+「4000」两行（实测 h=30、w=32） */
   white-space: nowrap;
-}
-
-/* 读数之间的分隔线：1px、12px 高，比 gap 更能说明「这是两组读数」 */
-.chat-composer__readout-sep {
-  flex: none;
-  width: 1px;
-  height: 12px;
-  background: var(--el-border-color);
 }
 
 /*

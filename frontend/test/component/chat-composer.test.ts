@@ -112,25 +112,44 @@ describe('ChatComposer', () => {
   })
 
   /*
-   * 第一行是「一行读数」：模型名 + 字数 + 上下文。
+   * 分行契约（2026-10-28 第三次调整）：
    *
-   * <p>这三条断言守的是**布局契约**而不是视觉效果 —— 改造前模型是一个
-   * 32px 的表单框、字数是 15px 的文本、上下文在页面另一端，用户的原话是
-   * 「样式还是太丑了」。判据因此是「三者是否在同一容器里、字数分母是否
-   * 与输入框的 maxlength 同源」，而不是任何主观描述。
+   *   第一行 `.chat-composer__meta-row` = 纯读数（上下文 · 字数）
+   *   第二行 `.chat-composer__tool-row` = 控件（附件/知识库/模型/思考/语音/发送）
+   *
+   * <p>这几条断言守的是**布局契约**而不是视觉效果。用户的原话是
+   * 「模型移动到思考程度旁边，上下文长度放到其他合适的位置」——
+   * 判据因此是「模型在不在动作组里」「上下文与字数是不是同一行的两端」，
+   * 而不是任何主观描述。
    */
-  it('第一行同时呈现模型名与字数（同属 readouts 行）', () => {
+  it('第一行是纯读数：上下文在前、字数在后，都不含模型选择器', () => {
     const wrapper = mount(ChatComposer, {
-      props: baseProps({ modelValue: '12345', contextUsage: { ...contextUsage, contextWindow: 32768 } }),
+      // budgetTokens 必须一起给：ContextMeter 在 budgetTokens=0 时整块不渲染，
+      // 只覆盖 contextWindow 会得到「读数组不存在」的假红
+      props: baseProps({
+        modelValue: '12345',
+        contextUsage: { ...contextUsage, promptTokens: 1024, budgetTokens: 32768, contextWindow: 32768 },
+      }),
     })
 
     const metaRow = wrapper.find('.chat-composer__meta-row')
     expect(metaRow.exists()).toBe(true)
-    // 模型名回显在 meta-row 内，不是工具行
-    expect(metaRow.text()).toContain('qwen3.8-flash')
+    // 上下文读数在第一行
+    expect(metaRow.find('.context-meter').exists()).toBe(true)
     // 字数分母必须与 textarea 的 maxlength 一致，否则「还能打多少」是错的
     const maxlength = wrapper.find('textarea').attributes('maxlength')
     expect(metaRow.find('.chat-composer__count').text()).toBe(`5 / ${maxlength}`)
+    // 模型选择器**不在**第一行 —— 它已移入动作组
+    expect(metaRow.find('.model-picker').exists()).toBe(false)
+  })
+
+  it('模型选择器在第二行的动作组内（与思考 / 语音 / 发送同排）', () => {
+    const wrapper = mount(ChatComposer, { props: baseProps() })
+
+    const toolRow = wrapper.find('.chat-composer__tool-row')
+    const actionGroup = toolRow.find('.chat-composer__action-group')
+    expect(actionGroup.exists()).toBe(true)
+    expect(actionGroup.find('.model-picker').exists()).toBe(true)
   })
 
   it('budgetTokens=0 时不渲染上下文读数（未产生用量时不留空壳）', () => {
@@ -139,13 +158,12 @@ describe('ChatComposer', () => {
     expect(wrapper.find('.context-meter').exists()).toBe(false)
   })
 
-  it('有预算时上下文读数与字数同排，且改预算会冒泡到父级', async () => {
+  it('有预算时上下文读数渲染在第一行，且改预算会冒泡到父级', async () => {
     const usage: ContextUsage = { promptTokens: 4096, budgetTokens: 32768, contextWindow: 32768, estimated: false }
     const wrapper = mount(ChatComposer, { props: baseProps({ contextUsage: usage }) })
 
-    const readouts = wrapper.find('.chat-composer__readouts')
-    expect(readouts.find('.context-meter').exists()).toBe(true)
-    // 24px 热区、12px 字号：与字数同一规格，这是「不再一大两小」的判据
-    expect(readouts.find('.chat-composer__count').exists()).toBe(true)
+    const metaRow = wrapper.find('.chat-composer__meta-row')
+    expect(metaRow.find('.context-meter').exists()).toBe(true)
+    expect(metaRow.find('.chat-composer__count').exists()).toBe(true)
   })
 })

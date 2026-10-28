@@ -118,6 +118,15 @@ export function probeModelList(payload: {
   baseUrl?: string | null
   apiKey?: string | null
   profileId?: string | null
+  /**
+   * 当前配置已选中的模型名。
+   *
+   * <p>后端要用它决定「优先给哪几个模型补查上下文窗口」。不传的话后端只能
+   * 按字母序取前 40 个，而大端点上真正在用的模型常排在一百名开外
+   * （DashScope 实测：qwen3.8-flash 第 148 位，qwen-max 第 65 位）——
+   * 表现为「有些模型的窗口能自动识别、有些恒为空」。
+   */
+  models?: string[]
 }): Promise<ModelListResult> {
   return requestData<ModelListResult>({
     url: '/settings/model/profiles/probe-models',

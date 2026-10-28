@@ -220,7 +220,8 @@ public class ModelProfileController {
                 baseUrl = resolved.baseUrl();
             }
         }
-        return ApiResponse.ok(modelListProbeService.probe(protocol, baseUrl, apiKey));
+        return ApiResponse.ok(
+                modelListProbeService.probe(protocol, baseUrl, apiKey, request.preferredModels()));
     }
 
     // ------------------------------------------------------------------ 内部
