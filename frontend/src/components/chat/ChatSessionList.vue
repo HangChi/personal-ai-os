@@ -533,22 +533,16 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
   color: var(--el-text-color-secondary);
 }
 
-.chat-sessions__pagination {
-  /* 钉在卡片底部：flex: none + 自身内边距，不随列表滚动 */
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--os-space-2);
-  padding: var(--os-space-3);
-  border-top: 1px solid var(--el-border-color-lighter);
-}
-
-.chat-sessions__total {
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
-}
+/*
+ * 原先这里还有 `.chat-sessions__pagination` / `.chat-sessions__total` 两段样式，
+ * 是手写分页时代的残留 —— 2026-10-29 收敛到 `AppPagination` 之后，
+ * 模板里已不再有这两个类，样式成了死代码。
+ *
+ * <p>留着它有个实际危害：它写的 `padding: var(--os-space-3)` 看起来像
+ * 「分页本来就有内边距」，于是后来发现分页贴边（2026-10-28）时，
+ * 在 ChatSessionList 里遍寻不着原因 —— 真正的分页在 AppPagination 里、
+ * 且那边只有 `margin-top`。**同一个 UI 元素只能有一处尺寸声明。**
+ */
 
 /* 窄屏：列表改为横向可滚动的固定高度区块，不与对话区争高度 */
 @media (max-width: 900px) {

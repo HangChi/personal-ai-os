@@ -355,3 +355,81 @@ check(
 // 盒内上下 padding 必须不等：底部要大于顶部（行内控件的下边缘读作「内容结束」）
 const boxPad = composer.match(/\.chat-composer__box\s*\{[^}]*padding:\s*([^;]+);/)
 check('发送框：盒内 padding 三值写法（顶 < 底）', Boolean(boxPad) && boxPad[1].trim().split(/\s+/).length === 3)
+
+// ---------------------------------------------------------------- 分页的落脚处
+
+/*
+ * 会话侧栏的分页一度**紧贴卡片底边**（实测 `gapToCardBottom = 1`，
+ * 且那 1px 还是卡片自身的边框）。根因是两个叠加：
+ *   ① `AppPagination--compact` 只有 `margin-top`，**底边距一直是 0**；
+ *   ② 它的宿主 `.el-card__body` 被 `ChatSessionList` 设了 `padding: 0`。
+ * 于是列表四周有 12px，唯独分页没有任何留白 —— 看起来被「压在底线上」。
+ *
+ * 更麻烦的是排查方向：`ChatSessionList` 里曾留着一段**已失效**的
+ * `.chat-sessions__pagination { padding: 12px }`（手写分页时代的残留），
+ * 它会让人以为「内边距本来是有的」。所以下面两条一起断言。
+ */
+const pagination = read('src/components/AppPagination.vue')
+
+const compactRule = pagination.match(/\.app-pagination--compact\s*\{[^}]*\}/)
+check('分页：紧凑变体的规则存在', Boolean(compactRule))
+
+/*
+ * 断言按**语义**而不是字面量：这里要守的是「底边确实有一圈留白」，
+ * 至于写成 `padding: 0 0 var(--os-space-3)` 还是分开的 `padding-bottom`，
+ * 属于实现自由 —— 写死字面量会在任何一次格式化后假红。
+ * 取 `padding` / `padding-bottom` 两者中实际生效的那个。
+ */
+const compactBody = compactRule ? compactRule[0] : ''
+const compactPadding = compactBody.match(/padding:\s*([^;]+);/)
+const compactPaddingBottom = compactBody.match(/padding-bottom:\s*([^;]+);/)
+
+/** 把 `padding: 0 0 var(--os-space-3)` 这类简写还原出底边值 */
+function paddingBottomOf(shorthand, explicit) {
+  if (explicit) return explicit[1].trim()
+  if (!shorthand) return null
+  const parts = shorthand[1].trim().split(/\s+/)
+  // 1 值=四边；2 值=上下/左右；3 值=上/左右/下；4 值=上/右/下/左
+  return parts.length === 1 ? parts[0] : parts.length === 3 ? parts[2] : parts.length === 4 ? parts[2] : null
+}
+
+const bottomValue = paddingBottomOf(compactPadding, compactPaddingBottom)
+check(
+  '分页：紧凑变体底边有留白（不能为 0，否则紧贴卡片底边）',
+  bottomValue !== null && bottomValue !== '0' && bottomValue !== '0px',
+)
+
+/*
+ * 顶边必须显式归零：基类给了 `margin-top: 12px`，而分页上方紧邻的滚动容器
+ * 自己已有 12px 内边距 —— 不归零就是 24px vs 12px，分页明显偏上（实测过）。
+ */
+check('分页：紧凑变体顶边归零（避免与上方容器的 padding 叠加成 24px）', /margin-top:\s*0(px)?\s*;/.test(compactBody))
+
+/*
+ * 死样式守卫：`ChatSessionList` 不能声明分页容器的尺寸。
+ *
+ * <p>分页已收敛到 `AppPagination`，同一个 UI 元素的尺寸只能有一处声明：
+ * 否则会出现「在这里改 padding 完全不生效」的空转，以及上面那种
+ * 「明明看到有 padding 却还是贴边」的误判。
+ */
+const sessionList = read('src/components/chat/ChatSessionList.vue')
+check(
+  '会话列表：不再残留手写分页样式（尺寸归 AppPagination 一处）',
+  !/\.chat-sessions__pagination\s*\{/.test(sessionList) && !/\.chat-sessions__total\s*\{/.test(sessionList),
+)
+/*
+ * 模板块里也不能再出现这两个类名。
+ *
+ * <p>只看 `<template>` 与 `<style>` 之间的区段，不看整份文件：上面那段
+ * 注释**必须**提到这两个类名（它要解释残留的来历），拿全文做断言会误伤。
+ */
+const templateStart = sessionList.indexOf('<template>')
+const templateEnd = sessionList.indexOf('</template>')
+const sessionTemplate = sessionList.slice(templateStart, templateEnd)
+check(
+  '会话列表：模板里不再使用已删除的类名',
+  templateStart > 0 &&
+    templateEnd > templateStart &&
+    !sessionTemplate.includes('chat-sessions__pagination') &&
+    !sessionTemplate.includes('chat-sessions__total'),
+)

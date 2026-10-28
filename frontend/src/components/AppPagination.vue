@@ -85,11 +85,31 @@ function handleCurrentChange(next: number): void {
 }
 
 /*
- * 紧凑变体：居中，并取消容器外边距的上半部分 —— 侧栏底部空间本就紧张，
- * 默认那 12px 会在列表与分页之间留出一条无效空白。
+ * 紧凑变体：居中。
+ *
+ * <p><b>为什么会「贴边」</b>（2026-10-28 修）：分页外层所在的 `.el-card__body`
+ * 被设了 `padding: 0`，而这里只有 `margin-top`、**底边距一直是 0** ——
+ * 于是页码块下沿紧贴卡片描边（实测 `gapToCardBottom = 1`，那 1px 还是
+ * 卡片自身的边框）。视觉上就是「分页被压在卡片底线上」，
+ * 而同一张卡片的列表四周都有 12px，唯独分页没有落脚处。
+ *
+ * <p>修法：底边补 12px，<b>顶边归零</b>。要理解为什么顶边是 0，得看两侧是谁：
+ * <ul>
+ *   <li>分页上方紧邻的 `.chat-sessions__scroll` 自己带 `padding: 12px`，
+ *       所以「列表最后一项」到分页已经有 12px 了 —— 再给上内边距会变成 24px；</li>
+ *   <li>分页下方是卡片底边，原本完全没有留白，必须由这里补。</li>
+ * </ul>
+ * 于是上下各 12px 正好对称。另外要把基类的 `margin-top` 显式归零：
+ * 基类是给「分页浮在表格下方」的常规场景留的 12px，在这里会与
+ * 上面说的 12px 叠加 —— 实测不归零时上下是 24px vs 12px，分页明显偏上。
+ *
+ * <p>左右不加内边距：页码块居中且宽 168px，远小于侧栏 258px，左右天然
+ * 各有 45px 空白；再加 padding 只会让窄屏更早折行。
  */
 .app-pagination--compact {
   justify-content: center;
-  margin-top: var(--os-space-2);
+  /* 归零基类的 margin-top：顶边的间距由上方滚动容器的 padding 提供 */
+  margin-top: 0;
+  padding: 0 0 var(--os-space-3);
 }
 </style>
