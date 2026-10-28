@@ -19,7 +19,6 @@ import { confirmDanger } from '@/lib/confirm-box'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
-import ChatModelPicker from '@/components/chat/ChatModelPicker.vue'
 import ChatSessionList from '@/components/chat/ChatSessionList.vue'
 import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
 import ChatWelcome from '@/components/chat/ChatWelcome.vue'
@@ -420,17 +419,11 @@ async function jumpToMatch(step: number): Promise<void> {
               {{ hasOlderMessages ? `已加载 ${messages.length} 条` : `${messages.length} 条消息` }}
             </span>
             <!--
-              会话级模型选择（V23）。只在新会话存在时显示：
-              没有会话就没有「这个会话用哪个模型」可言。
+              会话级模型选择已移到输入区工具栏（见 ChatComposer）。
+              顶栏这一行留给「会话级操作」：标题、消息数、搜索、导出。
+              模型是「这一发怎么发」的开关，与知识库/思考程度同层，
+              混进顶栏会让人以为它改的是会话属性而不是发送参数。
             -->
-            <ChatModelPicker
-              v-if="currentConversationId"
-              :model-value="sessionModel"
-              :models="availableChatModels"
-              :default-model="activeDefaultModel"
-              :disabled="streaming"
-              @update:model-value="handleModelChange"
-            />
           </div>
           <div class="chat__header-actions">
             <div class="chat__search">
@@ -537,9 +530,13 @@ async function jumpToMatch(step: number): Promise<void> {
           :thinking-level="settings.thinkingLevel"
           :enter-send="settings.enterSend"
           :context-usage="contextUsage"
+          :session-model="sessionModel"
+          :chat-models="availableChatModels"
+          :default-model="activeDefaultModel"
           @toggle-knowledge="toggleKnowledge"
           @update:top-k="(value: number | null) => (topK = value)"
           @update:thinking-level="(value: ThinkingLevel) => (settings.thinkingLevel = value)"
+          @update:session-model="handleModelChange"
           @change-budget="chatStore.changeContextBudget"
           @send="handleSend"
           @stop="chatStore.stopStreaming()"

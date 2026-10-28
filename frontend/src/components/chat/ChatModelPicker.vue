@@ -96,9 +96,13 @@ const hint = computed(() =>
 /*
  * 宽度上限而不是固定宽度：`qwen3.8-flash` 与 `qwen3.8-text-embedding-flash`
  * 长度差一倍，固定宽度会把长的截断、短的留一片空白。
+ *
+ * 上限从 180 收到 160：它会与「附件」「知识库增强」并排出现在输入区工具栏，
+ * 180 会让工具栏在窄屏（<1100px）提前折行，而折行后 chip 与下拉分处两行、
+ * 高度不齐，比截断几个字符更难看。
  */
 .model-picker {
-  width: 180px;
+  width: 160px;
   max-width: 100%;
 }
 

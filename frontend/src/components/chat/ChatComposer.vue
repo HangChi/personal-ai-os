@@ -2,7 +2,7 @@
 /**
  * 对话输入区（从 ChatView 拆出，2026-10-26；阶段 22 增加思考程度）。
  *
- * <p>包含：知识库增强开关（含条数）、思考程度、输入框、发送/停止。
+ * <p>包含：知识库增强开关（含条数）、思考程度、语音输入、输入框、发送/停止。
  * 键盘行为在这里实现而不是父组件，因为它完全由「输入框聚焦时的按键」触发：
  *
  * <ul>
@@ -17,6 +17,8 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { uploadAttachment } from '@/api/chat'
 import { ElMessage } from 'element-plus'
 import type { ContextUsage } from '@/api/chat'
+import ChatModelPicker from '@/components/chat/ChatModelPicker.vue'
+import ChatVoiceInput from '@/components/chat/ChatVoiceInput.vue'
 import ContextMeter from '@/components/chat/ContextMeter.vue'
 import { THINKING_HINTS, THINKING_LABELS, type ThinkingLevel } from '@/lib/settings'
 import type { ChatAttachment } from '@/types/api'
@@ -36,12 +38,19 @@ const props = defineProps<{
   enterSend: boolean
   /** 上下文用量（token 口径）；budgetTokens 为 0 时不显示仪表盘 */
   contextUsage: ContextUsage
+  /** 本会话选中的模型；null = 跟随生效配置 */
+  sessionModel: string | null
+  /** 可选模型（生效配置的对话模型清单） */
+  chatModels: string[]
+  /** 生效配置的默认模型名（供「跟随配置」提示） */
+  defaultModel: string
 }>()
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
   (e: 'update:topK', value: number | null): void
   (e: 'update:thinkingLevel', value: ThinkingLevel): void
+  (e: 'update:sessionModel', value: string | null): void
   (e: 'toggle-knowledge', next: boolean): void
   (e: 'change-budget', tokens: number): void
   (e: 'send', attachments: ChatAttachment[]): void
@@ -228,21 +237,22 @@ onMounted(autosize)
         两侧按钮把数字挤成一条缝。下拉一次点选，宽度也固定。
       -->
       <!--
-        槽位宽度固定：知识库一开，条数下拉凭空出现会把左边的「附件」等图标推走。
-        常驻占位、只切换可见性，工具栏几何形态就始终不变。
+        这里**不再**用固定宽度的常驻占位。
+        原来为了「开关知识库时工具栏不跳动」给了一个 78px 的空槽，实测知识库
+        关闭时它仍然占地（w=78, h=0），使「知识库增强」与紧随其后的模型下拉之间
+        凭空多出 94px 空洞（8+78+8）。开关知识库时后面的元素会跟着挪一下 ——
+        用户刚点了那个开关，挪动是符合预期的因果；而恒定空洞是永远看不懂的留白。
       -->
-      <span class="chat-composer__topk-slot">
-        <el-select
-          v-if="knowledgeOn"
-          class="chat-composer__topk"
-          :model-value="topK"
-          size="small"
-          title="检索条数"
-          @change="(value: number) => emit('update:topK', value)"
-        >
-          <el-option v-for="option in TOP_K_OPTIONS" :key="option" :label="`${option} 条`" :value="option" />
-        </el-select>
-      </span>
+      <el-select
+        v-if="knowledgeOn"
+        class="chat-composer__topk"
+        :model-value="topK"
+        size="small"
+        title="检索条数"
+        @change="(value: number) => emit('update:topK', value)"
+      >
+        <el-option v-for="option in TOP_K_OPTIONS" :key="option" :label="`${option} 条`" :value="option" />
+      </el-select>
     </div>
 
     <!-- 附件条：只在有附件时出现，避免常驻占位 -->
@@ -297,7 +307,36 @@ onMounted(autosize)
         <span class="chat-composer__hint">
           {{ enterSend ? 'Enter 发送 · Shift+Enter 换行' : 'Ctrl+Enter 发送 · Enter 换行' }}
         </span>
+
+        <!--
+          会话级模型选择（V23）最终落在 footer 而不是工具栏。
+          两次实测把位置钉死在这里：
+          ① 推到工具栏最右 → chip 组结束 x=953、下拉起于 x=1227，中间 274px 空洞；
+          ② 紧跟 chip → 1440px 下没问题，但 1024px 视口下工具栏可用宽仅 462px、
+             元素总需求 592px，必然折行，第二行只剩一个下拉框，高低不齐更难看。
+          footer 有 400px 以上富余，且模型与「思考程度」同属「怎么生成」，
+          与左边的字数、右边的发送按钮并列是合理的。
+        -->
+        <ChatModelPicker
+          :model-value="sessionModel"
+          :models="chatModels"
+          :default-model="defaultModel"
+          :disabled="streaming"
+          @update:model-value="(value: string | null) => emit('update:sessionModel', value)"
+        />
+
         <span class="chat-composer__count">{{ modelValue.length }} / 4000</span>
+
+        <!--
+          语音输入：放在 footer 里紧邻发送按钮。
+          它产出的是「输入框内容」，与发送是同一件事的两个环节，
+          放在工具栏（附件/知识库那一排）会让人以为它影响的是检索范围。
+        -->
+        <ChatVoiceInput
+          :draft="modelValue"
+          :disabled="streaming"
+          @update:draft="(value: string) => emit('update:modelValue', value)"
+        />
 
         <!--
           思考程度从工具栏搬到 footer，并改成下拉触发。
@@ -484,13 +523,6 @@ onMounted(autosize)
   color: var(--el-color-primary);
 }
 
-/* topK 槽位：常驻占位，宽度与下拉一致 */
-.chat-composer__topk-slot {
-  flex: none;
-  display: inline-block;
-  width: 78px;
-}
-
 /*
  * 下拉菜单是 EP teleport 到 body 的，**scoped 样式够不到它** ——
  * 必须用 :deep()，且选择器要能匹配到「带本组件 scope id 的菜单根元素」。
@@ -615,11 +647,35 @@ onMounted(autosize)
   margin-right: auto;
   color: var(--el-text-color-placeholder);
   font-size: var(--os-font-xs);
+  /*
+   * 窄屏直接隐藏，而不是截断成省略号。
+   *
+   * 实测 1024px 视口下 footer 只剩 ~436px，装不下完整提示，截断后显示成
+   * 「Enter 发送 · Shi...」—— 一句被腰斩的快捷键说明比没有更糟：用户会以为
+   * 界面上还有别的内容没加载出来。提示本身在设置页里也有，隐藏不丢信息。
+   *
+   * 760px 这个断点是量出来的：1440px 下整行需 ~700px 才放得下所有元素，
+   * 再窄下去就必须先牺牲这段说明。
+   */
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1180px) {
+  .chat-composer__footer .chat-composer__hint {
+    display: none;
+  }
 }
 
 .chat-composer__count {
   color: var(--el-text-color-placeholder);
   font-size: var(--os-font-xs);
   font-variant-numeric: tabular-nums;
+  /* 「0 / 4000」在窄屏被压成「0 /」+「4000」两行（实测 h=30、w=32） */
+  flex: none;
+  white-space: nowrap;
 }
 </style>
