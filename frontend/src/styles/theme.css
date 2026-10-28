@@ -370,31 +370,191 @@ html .el-tag.is-plain.el-tag--info {
 
 /* ---- 表格 ---- */
 
-/* EP 表格的斑马纹与边框偏重；去掉斑马，靠行高与 hover 区分 */
+/*
+ * 表格规格统一（阶段 26）。
+ *
+ * 改造前有三种规格并存，根因是有的页面写了 `size="small"`、有的没写：
+ *   任务   内边距 14px / 字号 14px / 行高 42px
+ *   知识库 内边距 12px / 字号 14px / 行高 42px
+ *   用量·活动 内边距 8px / 字号 12px / 行高 32px   ← size="small"
+ *
+ * 同一份数据换个 Tab 就从 42px 行高变成 32px、14px 字变成 12px，
+ * 是「界面像拼起来的」最直接的来源。这里统一到舒展规格（见 tokens.css）。
+ *
+ * 覆盖策略：不只改默认态，**连 .el-table--small 一起改**。
+ * 只改默认态的话，那两个写了 size="small" 的页面会继续用 EP 的小号变量覆盖回来
+ * —— 这也是为什么必须写成 `html .el-table.el-table--small`：EP 的
+ * `.el-table--small .el-table__cell` 已是 0-2-0，同特异性下谁赢取决于注入顺序。
+ */
 .el-table {
   --el-table-border-color: var(--el-border-color-lighter);
   --el-table-header-bg-color: var(--el-fill-color-lighter);
   --el-table-header-text-color: var(--el-text-color-regular);
   --el-table-row-hover-bg-color: var(--el-color-primary-light-9);
-  font-size: var(--os-font-md);
+  --el-table-font-size: var(--os-table-font-size);
+  font-size: var(--os-table-font-size);
 }
 
+/* 表头：稍矮于数据行，但同样用 14px 字（改造前 small 版表头只有 12px） */
 .el-table th.el-table__cell {
+  height: var(--os-table-header-height);
+  padding: 0;
+  font-size: var(--os-table-font-size);
   font-weight: 500;
 }
 
 /*
- * link 款按钮实测只有 32×19px（阶段 23 审计），低于 24px 最小可点尺寸。
+ * 单元格内边距。
+ *
+ * 只写 padding 在 th/td 上不够 —— EP 的实际留白来自内层 `.cell` 的
+ * padding-left/right（默认 12px），而 td 自身的 padding 是 8px 0。
+ * 两处都要接管，否则会得到「上下 8 + 左右 12」的默认组合。
+ */
+.el-table td.el-table__cell {
+  height: var(--os-table-row-height);
+  padding: var(--os-table-cell-padding-y) 0;
+}
+
+.el-table .el-table__cell > .cell {
+  padding-left: var(--os-table-cell-padding-x);
+  padding-right: var(--os-table-cell-padding-x);
+  line-height: 1.5;
+}
+
+/*
+ * 把 size="small" 拉回同一规格。
+ *
+ * `html` 前缀 + 双类：EP 的 `.el-table--small` 系列是 0-1-0 / 0-2-0，
+ * 这里抬到 0-2-1 稳赢，且不依赖打包顺序（本项目在 EP 主题层栽过一次）。
+ */
+html .el-table.el-table--small {
+  --el-table-font-size: var(--os-table-font-size);
+  font-size: var(--os-table-font-size);
+}
+
+html .el-table.el-table--small th.el-table__cell,
+html .el-table.el-table--small td.el-table__cell {
+  font-size: var(--os-table-font-size);
+}
+
+html .el-table.el-table--small .el-table__cell > .cell {
+  padding-left: var(--os-table-cell-padding-x);
+  padding-right: var(--os-table-cell-padding-x);
+}
+
+/*
+ * 长文本单元格：单行截断 + 悬停看全文。
+ *
+ * 任务描述原先整段铺开，一条 354 字的记录把行高撑到 273px —— 表格里出现
+ * 一行高过十行，纵向节奏彻底断掉，而且它把其他任务全挤出首屏。
+ *
+ * 这里给一个可复用的类而不是改 EP 的 show-overflow-tooltip：那个要靠
+ * 列定义里的 prop 走纯文本渲染，而任务列是插槽（标题 + 标签 + 描述），
+ * EP 不会接管插槽内容的截断。
+ */
+.os-cell-clamp {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * link 款按钮实测只有 32×19px，低于 24px 最小可点尺寸。
  * 表格行内与卡片列表里的行内按钮（编辑/删除/完成）是列表页最常点的东西，
- * 加一点纵向内边距把它撑到 24px。
+ * 统一抬到 28px 高（见 tokens.css 的 --os-button-height-inline）。
  *
  * 加 `html` 前缀是必须的：EP 的 `.el-button--primary.is-link` 已是 0-2-0，
  * 与不带前缀的写法同特异性，谁赢取决于注入顺序 —— 实测 EP 胜出、高度仍是 19px。
  * 抬到 0-2-1 才稳赢，且不依赖打包顺序。
  */
 html .el-button.is-link {
-  min-height: 24px;
+  min-height: var(--os-button-height-inline);
   padding: 2px 0;
+  font-size: var(--os-font-sm);
+}
+
+/*
+ * 相邻按钮间距：EP 默认 margin-left 12px，与工具条里 gap: 8px 的组合不一致。
+ * 统一成 8px，让「同一行里的按钮」看起来属于同一组。
+ */
+.el-button + .el-button {
+  margin-left: var(--os-button-gap);
+}
+
+/*
+ * 小号按钮（size="small"）在改造前的实际高度是 24px，而默认按钮是 32px。
+ * 「刷新」按钮因此在用量/活动页比其他页矮一截 —— 同一个动作，两种大小。
+ * 这里把小号抬到常规高度；字色字号仍沿用 EP 的小号设定（13px），
+ * 因为小号按钮多出现在工具条与表格行内，字号小一点更紧凑。
+ */
+html .el-button--small:not(.is-link) {
+  min-height: var(--os-button-height);
+}
+
+/* 尺寸一致性：小号按钮的圆角与内边距跟常规按钮对齐，避免"矮胖/瘦高"混杂 */
+html .el-button--small:not(.is-link):not(.is-circle) {
+  padding-left: var(--os-space-3);
+  padding-right: var(--os-space-3);
+}
+
+/*
+ * 方形图标按钮（主题切换等）保持 32×32。
+ *
+ * 它不在 `:not(.is-circle)` 覆盖范围内是刻意的：图标按钮没有文字，
+ * 靠宽度撑开，把 padding 改成横向值会让它变成矩形。这里显式给宽高，
+ * 让它与常规按钮同高、同宽，形成正方形。
+ */
+html .el-button.is-circle {
+  width: var(--os-button-size-icon);
+  height: var(--os-button-size-icon);
+  padding: 0;
+}
+
+/*
+ * 排序箭头：EP 默认的两个小三角是 --el-text-color-placeholder（很淡），
+ * 表头本身只有 14px 字，箭头几乎看不见 —— 用户不知道这一列能点。
+ * 提到 tertiary，并在 hover 表头时用主色暗示「可点」。
+ */
+.el-table .caret-wrapper .sort-caret.ascending {
+  border-bottom-color: var(--el-text-color-placeholder);
+}
+
+.el-table .caret-wrapper .sort-caret.descending {
+  border-top-color: var(--el-text-color-placeholder);
+}
+
+.el-table th.el-table__cell.is-sortable:hover {
+  color: var(--el-color-primary);
+}
+
+.el-table th.el-table__cell.is-sortable:hover .sort-caret.ascending {
+  border-bottom-color: var(--el-color-primary);
+}
+
+.el-table th.el-table__cell.is-sortable:hover .sort-caret.descending {
+  border-top-color: var(--el-color-primary);
+}
+
+/* 已排序列的箭头要比未排序的明显，否则看不出当前按哪列排 */
+.el-table th.el-table__cell.ascending .sort-caret.ascending {
+  border-bottom-color: var(--el-color-primary);
+}
+
+.el-table th.el-table__cell.descending .sort-caret.descending {
+  border-top-color: var(--el-color-primary);
+}
+
+/*
+ * 表格底部的横向滚动条：EP 默认常驻一条 6px 的灰条，即使内容没有溢出
+ * 也会留一条，看起来像「加载到一半」。有溢出时才显形。
+ */
+.el-table .el-scrollbar__bar.is-horizontal {
+  opacity: 0;
+  transition: opacity var(--os-duration-fast) var(--os-ease);
+}
+
+.el-table:hover .el-scrollbar__bar.is-horizontal {
+  opacity: 1;
 }
 
 /* ---- 折叠面板 ---- */

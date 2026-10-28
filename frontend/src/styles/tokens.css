@@ -102,7 +102,58 @@
   --os-sidebar-width-collapsed: 64px;
   /** 外壳顶栏高度：侧栏品牌区必须与它同高，否则接缝错位（改造前 56 vs 60，差 4px） */
   --os-header-height: 60px;
+
+  /* ---- 表格规格（阶段 26）----
+
+     * 改造前同一套系统里表格有三种规格，全因两个页面写了 `size="small"`、
+     * 其余没写，而 EP 的 size 会改掉内边距与字号：
+     *   任务 14px 内边距 / 14px 字 / 42px 行高
+     *   知识库 12px / 14px / 42px
+     *   用量·活动 8px / 12px / 32px（size="small"）
+     * 同一份数据换个 Tab 就变大小，是"拼起来的"观感的主要来源。
+     *
+     * 统一到**舒展规格**（用户选定）：14px 字、12px 横向内边距、44px 行高。
+     * 行高比原来的 42 略加 2px —— 任务标题与描述、标签叠在一起时，
+     * 42px 会让两行内容贴着边框，44px 才有呼吸位。
+     */
+  --os-table-font-size: var(--os-font-md);
+  --os-table-cell-padding-x: var(--os-space-3);
+  --os-table-cell-padding-y: var(--os-space-2);
+  /** 单行数据行高：44 = 14px 字 × 1.5 行高 + 上下各 11px */
+  --os-table-row-height: 44px;
+  /** 表头高度：与数据行同高，避免"头窄身宽" */
+  --os-table-header-height: 40px;
+
+  /* ---- 按钮规格（阶段 26）----
+
+     * 实测改造前：主按钮 32px、行内 link 按钮 24px、图标按钮 32px，
+     * 而"刷新"按钮在用量/活动页是 24px（size="small"）、其他页 32px——
+     * 同一个动作在不同页面大小不同。
+     *
+     * 分三档，各有明确职责：
+     */
+  /** 常规按钮（主按钮、工具条按钮） */
+  --os-button-height: 32px;
+  /**
+   * 表格行内与卡片列表里的 link 按钮。
+   *
+   * 24px 是可达性下限（WCAG 2.5.8 最小目标 24×24），但作为**热区**偏小：
+   * 一行里「编辑 / 完成 / 删除」紧挨着，24px 高度下手指容易点错。
+   * 抬到 28px，同时靠间距把它们分开，误点概率明显下降。
+   */
+  --os-button-height-inline: 28px;
+  /** 图标按钮（方形，与常规按钮同高） */
+  --os-button-size-icon: var(--os-button-height);
+  /**
+   * 相邻按钮间距。
+   *
+   * 改造前是 EP 默认的 margin-left: 12px，视觉上比同行的 gap 更松，
+   * 又和工具条里 gap: 8px 的组合不一致。统一 8px：同一行内所有
+   * 按钮（含相邻的 el-button）看起来属于同一组。
+   */
+  --os-button-gap: var(--os-space-2);
 }
+
 
 /*
  * 深色主题下的阴影修正：亮色阴影是「深色投影」，暗底下几乎不可见，
