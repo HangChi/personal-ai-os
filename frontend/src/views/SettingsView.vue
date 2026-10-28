@@ -2,13 +2,18 @@
 /**
  * 设置页（阶段 19，User Story 3 / FR-011）。
  *
- * 只做**前端偏好层**：全部存 localStorage（os.settings.* + 复用 os.theme /
- * os.nav.collapsed），零后端配置接口——本地单用户应用，设置是「这台设备上
- * 我的习惯」（spec Assumptions）。后端运行时配置（模型 / 相似度阈值）明确不在
- * 本阶段范围（Out of Scope）。
+ * 分两类设置，界面上刻意分成两块卡片：
  *
- * 分组：外观 / 对话 / 日程 / 数据 / 关于。每组的控件直接绑定对应 store，
- * 持久化由 store 内 watch 负责——这里不写任何 localStorage。
+ * <ol>
+ *   <li><b>本机偏好</b>：全部存 localStorage（os.settings.* + 复用 os.theme /
+ *       os.nav.collapsed），换设备不同步。这是本页原有内容。</li>
+ *   <li><b>服务端配置</b>：大模型 API（端点 / 密钥 / 模型 / 温度）。存在数据库里、
+ *       跨设备一致、保存即热切换。见 {@link ModelConfigSection}。</li>
+ * </ol>
+ *
+ * 之所以要分开呈现：两类设置的「作用范围」和「失效方式」完全不同。
+ * 偏好清掉浏览器数据就回默认；服务端配置存在库里，清浏览器没用。
+ * 混在一张卡片里，用户会以为清缓存能恢复模型配置。
  */
 import { Download, RefreshLeft } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -19,6 +24,7 @@ import { downloadExport } from '@/api/export'
 import { useAppStore } from '@/stores/app'
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
+import { THINKING_HINTS, THINKING_LABELS } from '@/lib/settings'
 import type { ThemePreference } from '@/lib/theme'
 
 const settingsStore = useSettingsStore()
@@ -33,6 +39,9 @@ const themeOptions: Array<{ label: string; value: ThemePreference }> = [
   { label: '深色', value: 'dark' },
   { label: '跟随系统', value: 'system' },
 ]
+
+/** 思考档位顺序：关闭 → 标准 → 深度（与界面从左到右一致） */
+const thinkingLevels = ['off', 'standard', 'deep'] as const
 
 onMounted(() => {
   void appStore.loadHealth()
@@ -78,8 +87,15 @@ async function handleReset(): Promise<void> {
   <div class="settings">
     <header class="settings__head">
       <h1 class="settings__title">设置</h1>
-      <p class="settings__subtitle">这些偏好只保存在此浏览器（localStorage），不写入后端，换设备不会同步。</p>
+      <p class="settings__subtitle">
+        服务端配置（大模型 API）存在数据库里、跨设备一致；其余偏好只保存在此浏览器（localStorage）， 换设备不会同步。
+      </p>
     </header>
+
+    <!-- 服务端配置：与本地偏好分开卡片，避免「清缓存能恢复模型配置」的误解 -->
+    <el-card shadow="never">
+      <ModelConfigSection />
+    </el-card>
 
     <el-card shadow="never">
       <!-- 外观 -->
@@ -128,6 +144,17 @@ async function handleReset(): Promise<void> {
             <span class="settings__row-hint">关闭后 Enter 换行、Ctrl + Enter 发送</span>
           </div>
           <el-switch v-model="settings.enterSend" />
+        </div>
+        <div class="settings__row">
+          <div class="settings__row-text">
+            <span class="settings__row-label">默认思考程度</span>
+            <span class="settings__row-hint">{{ THINKING_HINTS[settings.thinkingLevel] }}；输入框上可随时临时切换</span>
+          </div>
+          <el-radio-group v-model="settings.thinkingLevel">
+            <el-radio-button v-for="level in thinkingLevels" :key="level" :value="level">
+              {{ THINKING_LABELS[level] }}
+            </el-radio-button>
+          </el-radio-group>
         </div>
       </section>
 

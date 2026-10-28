@@ -295,3 +295,60 @@ export interface McpStatus {
   enabled: boolean
   servers: McpServerStatus[]
 }
+
+/**
+ * 配置项的来源（与后端 `ModelConfigService.ConfigSource` 对齐）。
+ *
+ * `DATABASE` = 设置页保存的值；`ENVIRONMENT` = .env / application.yml；
+ * `DEFAULT` = 代码内置默认。界面据此标注「这一项从哪来」——
+ * 没有这个标识，用户改了 .env 却不生效时完全无从判断是被设置页覆盖了。
+ */
+export type ModelConfigSource = 'DATABASE' | 'ENVIRONMENT' | 'DEFAULT'
+
+/**
+ * 当前生效的模型配置（后端 `ModelConfigDto`）。
+ *
+ * **不含明文密钥**：`apiKeyMasked` 形如 `****8f3a`，只保留末 4 位供用户确认
+ * 「这就是我上次填的那把」。所以表单的密钥输入框永远以空值 + placeholder 呈现，
+ * 用户不填就表示「不改动」。
+ */
+export interface ModelConfig {
+  baseUrl: string
+  apiKeyMasked: string
+  hasApiKey: boolean
+  chatModel: string
+  temperature: number | null
+  embeddingModel: string
+  /** 数据库配置版本；null 表示数据库里没有配置行（全用环境变量） */
+  revision: number | null
+  updatedAt: string | null
+  sources: Record<'baseUrl' | 'apiKey' | 'chatModel' | 'embeddingModel' | 'temperature', ModelConfigSource>
+  /** 聊天模型能否热切换（本项目恒为 true） */
+  hotReloadable: boolean
+  /** 嵌入模型能否热切换。恒为 false：向量维度由 DDL 固定，换了会让写入失败 */
+  embeddingHotReloadable: boolean
+}
+
+/**
+ * 保存模型配置的请求体。
+ *
+ * `apiKey` 的三态约定见后端 `SaveModelConfigRequest`：
+ * `null` / 不传 = 不改动，`""` = 清空并回落到环境变量，非空 = 覆盖。
+ */
+export interface SaveModelConfigPayload {
+  baseUrl?: string | null
+  apiKey?: string | null
+  chatModel?: string | null
+  temperature?: number | null
+  embeddingModel?: string | null
+}
+
+/** 连通性测试结果（后端 `ModelConnectionTestResult`） */
+export interface ModelConnectionTestResult {
+  ok: boolean
+  latencyMs: number
+  model: string | null
+  replyPreview: string | null
+  /** 失败原因（已由后端翻成中文可操作说明）；成功时为 null */
+  error: string | null
+}
