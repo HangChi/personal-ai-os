@@ -24,6 +24,15 @@ import org.springframework.ai.document.DocumentReader;
  * <h2>为什么加密单独区分</h2>
  * 「PDF 已加密」和「PDF 损坏」对用户是两条完全不同的出路（前者去掉密码，后者重新导出）。
  * 归一成一句「解析失败」等于让用户去猜。
+ *
+ * <h2>关于超时</h2>
+ * PDFBox 的 {@code getText} 是<b>同步且不可中断</b>的，没有超时参数
+ * （{@code MemoryUsageSetting} 只管内存与磁盘的分配，不限制耗时）。
+ * 这里用「页数上限 + 内存上限」两道闸门代替超时：500 页 + 16MB 堆内
+ * 已经把单次解析的输入量约束住，而真正拖垮请求的是<b>超大输入</b>而不是
+ * 「同样输入跑得特别慢」。给一个外层线程池超时并不能真正终止解析
+ * （中断不生效，线程会继续跑到结束），只会让调用方先返回、后台继续烧 CPU，
+ * 反而掩盖问题。
  */
 public class PdfDocumentReader implements DocumentReader {
 
