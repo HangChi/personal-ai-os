@@ -153,11 +153,24 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
         <section v-for="group in groups" :key="group.key" class="chat-sessions__group">
           <div class="chat-sessions__group-label">{{ group.label }}</div>
           <ul class="chat-sessions__list">
+            <!--
+              可点击的会话项必须是键盘可达的。
+              原来只有 @click：<li> 不在 tab 序列里，键盘用户 Tab 到这里会直接跳过，
+              会话切换（本页最核心的操作）对他们完全不存在 —— 这不是「体验稍差」，
+              而是功能不可用。
+              补三件事：tabindex 让它能聚焦、role=button 让读屏知道它可操作、
+              Enter/Space 触发（Space 要 preventDefault，否则页面会同时下滚）。
+            -->
             <li
               v-for="session in group.items"
               :key="session.conversationId"
               :class="['chat-sessions__item', { 'chat-sessions__item--active': session.conversationId === currentId }]"
+              tabindex="0"
+              role="button"
+              :aria-current="session.conversationId === currentId ? 'true' : undefined"
               @click="emit('select', session.conversationId)"
+              @keydown.enter.prevent="emit('select', session.conversationId)"
+              @keydown.space.prevent="emit('select', session.conversationId)"
             >
               <div class="chat-sessions__body" @dblclick="startEdit(session)">
                 <input
@@ -342,6 +355,20 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 }
 
 .chat-sessions__item:hover {
+  background: var(--el-fill-color);
+}
+
+/*
+ * 键盘焦点环。
+ *
+ * 会话项现在可 Tab 聚焦（tabindex="0"），但浏览器默认焦点环在这个元素上几乎看不见
+ * ——而「看不见焦点」等于键盘用户不知道自己在哪，可达性只做了一半。
+ * 用 :focus-visible 而不是 :focus：鼠标点击不该留下一个环（那会让界面显得脏），
+ * 只有键盘导航才显示。
+ */
+.chat-sessions__item:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: -2px;
   background: var(--el-fill-color);
 }
 

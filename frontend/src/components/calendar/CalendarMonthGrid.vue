@@ -64,12 +64,17 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
           </el-button>
         </div>
 
+        <!-- 日程条目同样是可点击的，必须键盘可达：月视图里用户主要的操作就是点开一条改它 -->
         <div
           v-for="(item, index) in itemsOf(itemsByDay, cell.key).slice(0, CELL_VISIBLE_LIMIT)"
           :key="`${item.eventId}-${index}`"
           class="cal-month__cell-item"
           :title="item.title"
+          tabindex="0"
+          role="button"
           @click="emit('open-edit', item)"
+          @keydown.enter.prevent="emit('open-edit', item)"
+          @keydown.space.prevent="emit('open-edit', item)"
         >
           <span class="cal-month__cell-dot" :class="{ 'cal-month__cell-dot--recurring': item.recurring }" />
           <span class="cal-month__cell-time">{{ item.allDay ? '全天' : shortTime(item.startsAt) }}</span>
@@ -240,6 +245,13 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 }
 
 .cal-month__cell-item:hover {
+  background: var(--el-color-primary-light-8);
+}
+
+/* 键盘焦点环：条目可 Tab 聚焦，但不能只靠浏览器默认样式（在密集网格里几乎看不见） */
+.cal-month__cell-item:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: -1px;
   background: var(--el-color-primary-light-8);
 }
 
