@@ -9,7 +9,7 @@
  *
  * <p>具体渲染在 `components/task/`：新建表单、表格、看板、编辑弹窗各一个组件。
  */
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 
@@ -21,6 +21,7 @@ import TaskCreateForm from '@/components/task/TaskCreateForm.vue'
 import TaskEditDialog from '@/components/task/TaskEditDialog.vue'
 import TaskTablePanel from '@/components/task/TaskTablePanel.vue'
 import { sortByDueAsc } from '@/lib/board'
+import { confirmDanger } from '@/lib/confirm-box'
 import { useTaskStore } from '@/stores/task'
 import { useUiStore } from '@/stores/ui'
 import type { UpdateTaskPayload } from '@/api/tasks'
@@ -108,13 +109,12 @@ async function handleToggle(task: TaskItem): Promise<void> {
 
 async function handleDelete(task: TaskItem): Promise<void> {
   // 人工直连删除无需服务端确认流程 —— 这里的二次确认就是「人做出的决定」
-  try {
-    await ElMessageBox.confirm(`确定删除任务「${task.title}」？`, '删除确认', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-    })
-  } catch {
+  const ok = await confirmDanger({
+    title: '删除任务',
+    message: `确定删除任务「${task.title}」？删除后不可恢复。`,
+    confirmText: '删除',
+  })
+  if (!ok) {
     return
   }
   await taskStore.remove(task.id)
@@ -154,13 +154,13 @@ async function batchDelete(): Promise<void> {
   if (selection.value.length === 0) {
     return
   }
-  try {
-    await ElMessageBox.confirm(`确定删除选中的 ${selection.value.length} 条任务？`, '批量删除确认', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-    })
-  } catch {
+  // 批量删除的后果比单条重得多，文案要给出条数，并说明「不可恢复」
+  const ok = await confirmDanger({
+    title: '批量删除任务',
+    message: `确定删除选中的 ${selection.value.length} 条任务？删除后不可恢复。`,
+    confirmText: '删除',
+  })
+  if (!ok) {
     return
   }
   batchWorking.value = true
@@ -191,12 +191,11 @@ function switchView(next: 'table' | 'board'): void {
 
 <template>
   <div class="tasks">
-    <header class="tasks__head">
-      <div>
-        <h1 class="tasks__title">任务</h1>
-        <p class="tasks__subtitle">表格与看板两种视图，数据同一份；也可以在对话里用自然语言增删改。</p>
-      </div>
-    </header>
+    <PageHeader
+      size="page"
+      title="任务"
+      description="表格与看板两种视图，数据同一份；也可以在对话里用自然语言增删改。"
+    />
 
     <TaskCreateForm
       ref="createForm"
@@ -253,13 +252,19 @@ function switchView(next: 'table' | 'board'): void {
 
       <el-alert v-if="error" class="tasks__error" type="error" :closable="false" show-icon :title="error" />
 
-      <!-- 批量操作栏：有选中才出现 -->
+      <!--
+        批量操作栏：有选中才出现。
+        三颗按钮去掉 size="small" —— 它们与页头「刷新」同为页面级动作，
+        此前它们 24px、刷新 32px，同一块区域里两种高度。
+        link 那颗保留小号：link 款有自己的行内高度（--os-button-height-inline），
+        与实心按钮本就不同档，混排时视觉重量才平衡。
+      -->
       <div v-if="selection.length > 0" class="tasks__batch">
         <span class="tasks__batch-count">已选 {{ selection.length }} 条</span>
         <div class="tasks__batch-actions">
-          <el-button size="small" :loading="batchWorking" @click="batchComplete">批量完成</el-button>
-          <el-button size="small" type="danger" :loading="batchWorking" @click="batchDelete">批量删除</el-button>
-          <el-button size="small" link @click="clearSelection">取消选择</el-button>
+          <el-button :loading="batchWorking" @click="batchComplete">批量完成</el-button>
+          <el-button type="danger" :loading="batchWorking" @click="batchDelete">批量删除</el-button>
+          <el-button link @click="clearSelection">取消选择</el-button>
         </div>
       </div>
 
@@ -312,27 +317,10 @@ function switchView(next: 'table' | 'board'): void {
   gap: var(--os-space-5);
 }
 
-/* ---- 页头 ---- */
-
-.tasks__head {
-  min-width: 0;
-}
-
-.tasks__title {
-  margin: 0;
-  font-size: var(--os-font-2xl);
-  font-weight: 650;
-  letter-spacing: -0.2px;
-  line-height: 1.3;
-}
-
-.tasks__subtitle {
-  margin: var(--os-space-2) 0 0;
-  max-width: 68ch;
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-sm);
-  line-height: 1.65;
-}
+/*
+ * 页头由 PageHeader 统一渲染（size="page"），原先这里的
+ * `.tasks__head / __title / __subtitle` 三条规则已删除。
+ */
 
 .tasks__view-switch {
   display: flex;

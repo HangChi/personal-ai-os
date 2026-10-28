@@ -49,6 +49,24 @@ function rememberTruncation(event: MouseEvent): void {
     empty-text="还没有任务"
     @selection-change="(rows: TaskItem[]) => emit('selection-change', rows)"
   >
+    <!--
+      列宽（2026-10-29 按实测重算）：只在「任务」列留弹性，其余压到内容需要的最小值。
+
+      改造前 优先级 90 / 状态 90 / 截止时间 170 / 操作 168，实测各自的内容只需
+      66 / 76 / 164 / 168 —— 前两列空出 24、14px，加上固定列合计偏大，让
+      「任务」列虽然拿到了 438px 却仍不足以显示完整标题（内容实测需 3145px，
+      必然截断）。这里的思路不是「让任务列不截断」（长标题永远会截断，有 tooltip 兜底），
+      而是**把每一列不必要的富余收回来统一交给任务列**：固定列越紧，
+      任务列越宽，能直接读到的标题信息越多，也越不需要悬停。
+
+      收窄后：优先级 72、状态 80、截止时间 164、操作 160 合计 476（原 518），
+      任务列的可用宽度因此多出 42px。
+
+      操作列 168→160：实测「编辑 取消完成 删除」三按钮合计 110px，
+      加左右内边距 24 = 134，可用区 136 —— 恰好不换行但只剩 2px。
+      取 160（可用 136 + 4 余量）是为了不把「刚好卡住」写进布局：
+      字体或语言包一变就会折行，而折行会让该行行高从 46 跳到 58。
+    -->
     <el-table-column type="selection" width="42" />
     <el-table-column label="任务" min-width="220">
       <template #default="{ row }">
@@ -91,25 +109,25 @@ function rememberTruncation(event: MouseEvent): void {
       </template>
     </el-table-column>
 
-    <el-table-column label="优先级" width="90">
+    <el-table-column label="优先级" width="72">
       <template #default="{ row }">
         <StatusTag :status="row.priority" :map="PRIORITY_MAP" />
       </template>
     </el-table-column>
 
-    <el-table-column label="截止时间" width="170" sortable>
+    <el-table-column label="截止时间" width="164" sortable>
       <template #default="{ row }">{{ formatTaskDateTime(row.dueAt) }}</template>
     </el-table-column>
 
-    <el-table-column label="状态" width="90">
+    <el-table-column label="状态" width="80">
       <template #default="{ row }">
         <StatusTag :status="row.status" :map="STATUS_MAP" />
       </template>
     </el-table-column>
 
-    <el-table-column label="操作" width="168" fixed="right">
+    <el-table-column label="操作" width="160" fixed="right">
       <template #default="{ row }">
-        <div class="task-table__actions">
+        <div class="os-table-actions">
           <el-button link type="primary" size="small" @click="emit('edit', row)">编辑</el-button>
           <el-button link type="primary" size="small" @click="emit('toggle', row)">
             {{ isDone(row) ? '取消完成' : '完成' }}
@@ -166,22 +184,10 @@ function rememberTruncation(event: MouseEvent): void {
 }
 
 /*
- * 操作列：三个 link 按钮横向排布。
- *
- * 用 flex + gap 而不是依赖 EP 的 `margin-left: 12px`：
- * 后者让「编辑 完成 删除」看起来间隔比同页其他按钮组更松，
- * 而三者在语义上是同一组操作，应当更紧。
+ * 操作列样式见 theme.css 的 `.os-table-actions`（全局，与知识文档表格共用）。
+ * 原先这里还有一份 `.task-table__actions` + `.el-button + .el-button` 的局部复制，
+ * 两份内容完全一致 —— 收敛后只留一个来源。
  */
-.task-table__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--os-button-gap);
-}
-
-/* 整行内不再让 EP 叠加额外左边距（否则第一个按钮会凭空缩进） */
-.task-table__actions .el-button + .el-button {
-  margin-left: 0;
-}
 
 /*
  * 描述提示的浮层。

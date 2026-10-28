@@ -8,9 +8,16 @@
  * <p>引用区（阶段 19）随消息走：引用是这条回答的一部分，
  * 拆成独立组件反而要在父层再拼一次编号。
  */
-import { ChatLineRound, CopyDocument, User } from '@element-plus/icons-vue'
-
-import { Document } from '@element-plus/icons-vue'
+/*
+ * 图标必须逐个显式 import。
+ *
+ * unplugin-vue-components 只自动解析 EP 的 `El*` 组件，**不解析 @element-plus/icons-vue
+ * 的图标**；未导入的图标名会被 Vue 当成「未知组件」渲染成空，`vue-tsc` 也不报错
+ * （未知标签回落到 any）。改造前 `RefreshRight` 与 `EditPen` 就漏在这里 ——
+ * 「重新生成」「编辑」两按钮只剩文字、图标位空一格，因为这个坑不报错，
+ * 一直没人发现。合并成一条 import 也顺带修掉原先分散的两处 Document 导入。
+ */
+import { ChatLineRound, CopyDocument, Document, EditPen, RefreshRight, User } from '@element-plus/icons-vue'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { relativeTime } from '@/lib/relative-time'

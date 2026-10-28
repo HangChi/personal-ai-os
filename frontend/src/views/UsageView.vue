@@ -275,21 +275,50 @@ function labelX(index: number): number {
               按天明细
             </span>
           </template>
+          <!--
+            列宽（2026-10-29 按 Element Plus 源码重算）。
+
+            **EP 的 fit 只在「存在无 width 的列」时才生效**。见
+            `element-plus/es/components/table/src/table-layout.mjs:102`：
+
+                if (flexColumns.length > 0 && fit) { ...摊剩余... }
+                else { bodyWidth.value = bodyMinWidth }   // ← 全部固定宽度
+
+            `flexColumns` = 所有 `!isNumber(column.width)` 的列，也就是
+            **只给了 min-width 或什么都没给的列**。一旦每列都写死 `width`，
+            flexColumns 为空 → 直接走 else → 表格内容宽 = 列宽之和
+            → 容器有余量时**右侧整片空白**，表头分隔线也只画到内容右端
+            （实测这张表 innerW 578 / wrapW 998，右侧空掉 420px，像没画完）。
+
+            反过来，只要**存在** flex 列，第 109~120 行会把 `bodyWidth - 各列基准宽之和`
+            按 `minWidth` 比例分摊：多个 flex 列时**每列都按比例变宽**（不是全给一列）。
+            所以正确做法是**所有列都写 min-width**——既给了内容下限，
+            又让富余元素均摊，不会出现「一列吃掉 400px」的巨缝。
+
+            数值列 96：内容是「1,223,745」这类 9 字符数字，实测 62px
+            + 左右各 12px 内边距 = 86，96 留余量给更长的值。
+
+            但「按比例分摊」有个副作用：**minWidth 虚高会多分富余**。
+            日期列原给 130（日期文字实测仅 78px），分到 228px；而右邻「输入」
+            是 `align="center"`、数字贴着列右边缘 → 日期文字到输入数字之间被拉出
+            227px 空洞，是全表最刺眼的一处。日期收到 96 后与其余五列基准值接近，
+            富余均摊，间隙都落在同一量级。
+          -->
           <el-table :data="[...stats.daily].reverse()" max-height="360">
-            <el-table-column prop="date" label="日期" width="130" />
-            <el-table-column label="输入" width="110" align="right">
+            <el-table-column prop="date" label="日期" min-width="166" align="center" />
+            <el-table-column label="输入" min-width="166" align="center">
               <template #default="{ row }">{{ row.promptTokens.toLocaleString('zh-CN') }}</template>
             </el-table-column>
-            <el-table-column label="输出" width="110" align="right">
+            <el-table-column label="输出" min-width="166" align="center">
               <template #default="{ row }">{{ row.completionTokens.toLocaleString('zh-CN') }}</template>
             </el-table-column>
-            <el-table-column label="合计" width="110" align="right">
+            <el-table-column label="合计" min-width="166" align="center">
               <template #default="{ row }">
                 <strong>{{ row.totalTokens.toLocaleString('zh-CN') }}</strong>
               </template>
             </el-table-column>
-            <el-table-column prop="turns" label="轮次" width="80" align="right" />
-            <el-table-column label="口径" min-width="100">
+            <el-table-column prop="turns" label="轮次" min-width="166" align="center" />
+            <el-table-column label="口径" min-width="166" align="center">
               <template #default="{ row }">
                 <el-tag v-if="row.estimated" size="small" type="warning" effect="plain">估算</el-tag>
                 <el-tag v-else size="small" type="success" effect="plain">真实</el-tag>

@@ -293,6 +293,173 @@ html.dark .el-button--primary:not(.is-plain):not(.is-text):not(.is-link).is-disa
   box-shadow: none;
 }
 
+/*
+ * 危险按钮（2026-10-29 实测补，三类问题同源）。
+ *
+ * 前两处与上面「禁用主按钮」是**同一类**：EP 的语义色在暗色主题里被提亮，
+ * 而 danger 按钮的字色被写死为 `--el-color-white`，于是「越亮越读不出」。
+ *
+ * ① 实底态：暗色下 `--el-color-danger` 提亮成 #f87171，白字压上去只有 **2.77:1**
+ *    （浅色 #dc2626 配白字是 4.83:1，合格）。这与主按钮完全同一个病根 ——
+ *    暗色主色是亮紫，白字 2.98:1，当时的解法是「浅底深字」。这里照做：
+ *    深字 #16182a 压在 #f87171 上是 **6.34:1**；hover 用的 dark-2 是 #f78989，
+ *    深字 7.42:1，方向一致、越悬停越清楚。
+ *
+ * ② 禁用态：EP 用 `--el-color-danger-light-5` 当底。浅色是 #ee9393 配白字 **2.28:1**
+ *    —— 一个「不可点击」的按钮比旁边可点的文字还难读，且它仍是饱和度不低的粉红块，
+ *    在灰白页面里相当扎眼；暗色是 #8a4040 配白字 7.27:1，反而**最亮**。
+ *    两边的方向都错，所以禁用态一律「退到背景里」，与主按钮同策略：
+ *      - 浅色 #f8d4d4 底 + #a35c5c 字 → 3.62:1，底仅比白卡深 1.37:1（与主按钮
+ *        禁用态的 1.37:1 完全同档，两个禁用按钮的「灰掉」程度一致）；
+ *      - 暗色 #4c2525 底 + #b88383 字 → 4.14:1，底仅比卡片亮 1.28:1。
+ *    浅色没有拉到 4.5:1：那需要 #7d3f3f 这类更深的字，禁用按钮会重新显得像
+ *    可点的危险按钮。WCAG 1.4.3 豁免禁用控件，此处按主按钮既定取舍处理。
+ *
+ * ③ **link 款危险按钮悬停时反而变淡**（这条最隐蔽）。EP 给
+ *    `.el-button--danger.is-link` 的 hover 字色是 `--el-color-danger-light-5`，
+ *    即浅色 #ee9393 / 暗色 #8a4040：从 4.83:1 掉到 **2.28:1**、从 6.09:1 掉到
+ *    **2.32:1**，而行内的「删除」正是**只在悬停时才被注意到**的控件 ——
+ *    鼠标一移上去它就开始消失。primary 的 hover 走 dark-2（#3f38b7，8.53:1），
+ *    方向是对的，只有 danger 用了 light-5。这里改成同样「越悬停越深」：
+ *    浅色用 #b91c1c（6.47:1），暗色用 light-3 反向提亮 #fba3a3（8.72:1）。
+ *
+ * ⚠️ 三条都必须带 `html` / `html.dark` 前缀并**复刻 `:not()` 链**：
+ *    正常态 `html.dark .el-button--danger:not(.is-plain):not(.is-text):not(.is-link)`
+ *    是 0-5-0，只写 `.el-button--danger.is-disabled`（0-3-0）会出现
+ *    「背景改对了、color 被正常态抢回」的半生效假象（主按钮上已实测过）。
+ *
+ * ⚠️ 顺序：浅色基线在前、暗色覆盖在后 —— 同特异性只靠顺序决胜。
+ */
+
+/* ① 实底危险按钮：暗色下改深字（浅色下白字本就合格，不动） */
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link) {
+  box-shadow: 0 1px 2px 0 rgb(220 38 38 / 22%);
+}
+
+html.dark .el-button--danger:not(.is-plain):not(.is-text):not(.is-link) {
+  color: #16182a;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 40%);
+}
+
+/*
+ * ①b 悬停/按下：EP 的 hover 底色是 `light-3`，方向对「实底按钮」是反的 ——
+ * 它把底色**变淡**，于是文字对比反而下降。实测（探针取的 computedStyle 现算）：
+ *   - 浅色 hover 白字 on #e76060 = **3.37:1**（静息 4.83:1，悬停掉了一档）；
+ *   - 暗色 hover 深字 on #b85454 = **3.70:1**（静息 6.34:1）。
+ * 「鼠标移上去更看不清」是纯粹的负收益：hover 的本意是**确认**目标，
+ * 不是削弱它。改成与 primary 一致的方向 —— 悬停/按下让底色更重，
+ * 对比随之上升：浅色用 dark-2 #b01e1e（白字 **6.88:1**）、
+ * 暗色用 light-3 的反面 #f78989（深字 **7.42:1**）。
+ */
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link):hover,
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link):focus {
+  color: #ffffff;
+  background-color: #b01e1e;
+  border-color: #b01e1e;
+}
+
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link):active {
+  color: #ffffff;
+  background-color: #971919;
+  border-color: #971919;
+}
+
+html.dark .el-button--danger:not(.is-plain):not(.is-text):not(.is-link):hover,
+html.dark .el-button--danger:not(.is-plain):not(.is-text):not(.is-link):focus {
+  color: #16182a;
+  background-color: #f78989;
+  border-color: #f78989;
+}
+
+html.dark .el-button--danger:not(.is-plain):not(.is-text):not(.is-link):active {
+  color: #16182a;
+  background-color: #fca5a5;
+  border-color: #fca5a5;
+}
+
+html.dark .el-button--danger:not(.is-plain):not(.is-text):not(.is-link):hover {
+  color: #16182a;
+  box-shadow: 0 2px 6px 0 rgb(0 0 0 / 50%);
+}
+
+/* ② 禁用态：两组都退到背景里 */
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link).is-disabled,
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link).is-disabled:hover,
+html .el-button--danger:not(.is-plain):not(.is-text):not(.is-link).is-disabled:focus {
+  color: #a35c5c;
+  background-color: #f8d4d4;
+  border-color: #f3c3c3;
+  box-shadow: none;
+}
+
+html.dark .el-button--danger:not(.is-plain):not(.is-text):not(.is-link).is-disabled,
+html.dark .el-button--danger:not(.is-plain):not(.is-text):not(.is-link).is-disabled:hover,
+html.dark .el-button--danger:not(.is-plain):not(.is-text):not(.is-link).is-disabled:focus {
+  color: #b88383;
+  background-color: #4c2525;
+  border-color: #5a2c2c;
+  box-shadow: none;
+}
+
+/*
+ * ③ link 款危险按钮的 hover：EP 让它变淡（light-5），这里让它变深。
+ *    plain / text 同理 —— 三者共用同一段 hover 变量，一起改掉才不会有
+ *    「同一个删除按钮换个形态就悬停变淡」的不一致。
+ */
+html .el-button--danger.is-link:not(.is-disabled):hover,
+html .el-button--danger.is-link:not(.is-disabled):focus,
+html .el-button--danger.is-text:not(.is-disabled):hover,
+html .el-button--danger.is-text:not(.is-disabled):focus {
+  color: #b91c1c;
+}
+
+html.dark .el-button--danger.is-link:not(.is-disabled):hover,
+html.dark .el-button--danger.is-link:not(.is-disabled):focus,
+html.dark .el-button--danger.is-text:not(.is-disabled):hover,
+html.dark .el-button--danger.is-text:not(.is-disabled):focus {
+  color: #fba3a3;
+}
+
+/* link 款禁用态：EP 用 disabled-text-color，暗色下太淡，抬一档到可辨认 */
+html.dark .el-button--danger.is-link.is-disabled,
+html.dark .el-button--danger.is-text.is-disabled {
+  color: #8a6060;
+}
+
+/*
+ * ④ plain 款危险按钮。
+ *
+ * 静息态：EP 的字色是 `--el-color-danger`，压在 `light-9` 淡红底上
+ * 浅色只有 **4.13:1** —— 低于 WCAG 1.4.3 普通字号的 4.5:1，而这不是
+ * 禁用控件（设置页的「重置」随时可点），豁免条款不适用，属实测出来的缺口。
+ * 加深字色到 #b91c1c 后是 **5.54:1**；选它而不是更浅的 #c81e1e（4.91:1），
+ * 是为了和 ③ 里 link 款 hover 用**同一个红**，四个形态的危险色收敛到
+ * 两个色值（#b91c1c 供浅色、#fba3a3 供暗色），换形态时颜色不再跳。
+ * 暗色原本 6.07:1，已合格 —— 但要注意「浅色基线抬特异性后会反过来压过暗色」：
+ * 上面那条 `html .el-button--danger.is-plain` 是 0-4-0，而 EP 暗色字色来自
+ * `html.dark` 下的变量重定义，实测会被它盖掉、暗色一齐掉到 2.59:1。
+ * 所以暗色必须**显式**再声明一次字色，而不是靠「暗色本来就对」。
+ */
+html .el-button--danger.is-plain:not(.is-disabled) {
+  color: #b91c1c;
+}
+
+html.dark .el-button--danger.is-plain:not(.is-disabled) {
+  color: #f87171;
+}
+
+html.dark .el-button--danger.is-plain:not(.is-disabled):hover,
+html.dark .el-button--danger.is-plain:not(.is-disabled):focus {
+  color: #16182a;
+}
+
+/*
+ * ③b 实底危险按钮悬停时，上面的 ①b 已把底色定死；但 plain 款的悬停
+ * 会改用 `--el-color-danger` 当底（#dc2626/#f87171），与实底款的静息色一致，
+ * 对比由 ① 的深字规则覆盖 —— 无需额外处理，此处只记录这条依赖关系，
+ * 避免以后有人只改 ① 的字体色却以为 plain 不受影响。
+ */
+
 /* ---- 输入 / 选择 ---- */
 
 /*
@@ -428,8 +595,18 @@ html .el-tag.is-plain.el-tag--info {
  * 只改默认态的话，那两个写了 size="small" 的页面会继续用 EP 的小号变量覆盖回来
  * —— 这也是为什么必须写成 `html .el-table.el-table--small`：EP 的
  * `.el-table--small .el-table__cell` 已是 0-2-0，同特异性下谁赢取决于注入顺序。
+ *
+ * **变量也要 `html` 前缀（2026-10-29 实测修复）**：下面这组变量原本写在
+ * 裸 `.el-table` 上，而 EP 的 theme-chalk 里也有 `.el-table{--el-table-*:...}`
+ * —— 两者特异性都是 0-1-0。路由懒加载让 EP 的 table 样式在本页运行时才注入、
+ * 晚于 theme.css，于是 EP 赢，`--el-table-header-bg-color` 被解析成
+ * `var(--el-fill-color-blank)`（#ffffff）。
+ * 后果非常隐蔽：表头背景是纯白、数据行透明（透出白卡片），**两者同色 ⇒
+ * 表头没有底色**，只剩一条 1px 分隔线，扫读时表头「浮」在数据上方。
+ * 视觉模型报「表头区分偏弱」是对的，只是原因不是配色而是这处被覆盖。
+ * 加 `html` 前缀抬到 0-1-1 后生效（实测 headerBg=#fafbfc）。
  */
-.el-table {
+html .el-table {
   --el-table-border-color: var(--el-border-color-lighter);
   --el-table-header-bg-color: var(--el-fill-color-lighter);
   --el-table-header-text-color: var(--el-text-color-regular);
@@ -499,6 +676,29 @@ html .el-table.el-table--small .el-table__cell > .cell {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/*
+ * 表格操作列（2026-10-29 收敛）。
+ *
+ * 改造前任务表格与知识文档表格各自写了一份一模一样的规则：
+ *   flex + gap: 8px + `.el-button + .el-button { margin-left: 0 }`
+ * 后者是必须的 —— 加了 flex+gap 之后 EP 的 `margin-left: 12px` 仍在生效，
+ * 每个按钮的左侧间距等于「gap 8 + margin 12 = 20px」，而第一个按钮会凭空缩进 12px。
+ * 两份重复意味着只在其中一处补了 gap 的页面会看起来更松，且很难看出为什么。
+ *
+ * 收敛成一个类，表格里写 `<div class="os-table-actions">` 即可。
+ * 不加 `html` 前缀：EP 没有针对「操作列容器」的样式，这是纯新增的类，
+ * 不存在与 EP 同特异性的竞争。
+ */
+.os-table-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--os-button-gap);
+}
+
+.os-table-actions .el-button + .el-button {
+  margin-left: 0;
 }
 
 /*
@@ -608,10 +808,34 @@ html .el-button.is-circle {
   font-size: var(--os-font-sm);
 }
 
-/* ---- 单选按钮组 / 分页 ---- */
-
-/* 选中态是「主色底 + 白字」，两种尺寸下都要保证字够大 */
-.el-radio-button__inner {
+/*
+ * ---- 单选按钮组 ----
+ *
+ * 两个问题都是「写了但不生效 / 用了但不对」：
+ *
+ * ① **字号规则从未生效**。原先只写 `.el-radio-button__inner { font-size: 13px }`
+ *    （0-1-0），而 EP 对 small 版是 `.el-radio-button--small .el-radio-button__inner`
+ *    （0-2-0），同特异性比较里后者直接胜出 → 实测仍是 12px。
+ *    必须把 `--small`（以及 `--large`，避免将来用到时又漏）的修饰符
+ *    一并写进选择器才压得住。
+ *
+ * ② **高度 22px，低于 WCAG 2.5.8 的最小点击目标 24×24**。
+ *    这几个组的实际用途都是「切换视图」（任务表格/看板、活动表格/时间线、
+ *    日程列表/月、用量近 7/30/90 天），是最常点的控件之一，22px 尤其容易点偏；
+ *    而且同一行右侧的「刷新」是 32px，一高一矮摆在一起也不整齐。
+ *    这里用 min-height 抬到常规按钮高度的同一档 —— 用 min-height 而不是
+ *    height，是因为 EP 的高度靠上下 padding 撑出来（5px + 12px 行高），
+ *    写死 height 会让文字在盒子里偏上。
+ */
+html .el-radio-button--small .el-radio-button__inner,
+html .el-radio-button--large .el-radio-button__inner,
+html .el-radio-button__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--os-button-height);
+  padding-top: 0;
+  padding-bottom: 0;
   font-size: var(--os-font-sm);
 }
 
@@ -671,6 +895,92 @@ html .el-dialog {
 
 .el-dialog__body {
   padding-top: var(--os-space-4);
+}
+
+/*
+ * 确认弹窗的整体规格（2026-10-29 二次实测补）。
+ *
+ * 前提：`el-message-box.css` 一度**根本没被加载**（命令式组件不会被
+ * unplugin 按需注入样式，见 main.ts 的说明），于是弹窗退回浏览器默认外观：
+ * 宽度铺满视口、padding 0、无圆角无阴影、正文 16px 纯黑。补上样式文件后
+ * 骨架正常，但仍有一批 EP 默认值与本项目的规格不合，逐条对齐：
+ *
+ * ① 圆角：EP 默认 4px，而本项目的卡片/按钮是 `--os-radius-lg`(12) / `md`(8)。
+ *    弹窗作为浮层应该比卡片更「轻」一点，用 md(8) 与按钮同档，避免弹窗
+ *    四角比里面的按钮还方。
+ *
+ * ② 按钮区右对齐：EP 的 `.el-message-box__btns` 是 `text-align: left`，
+ *    按钮挤在左边，与「主行动在右」的通行约定相反（弹窗 420px 宽、按钮只有
+ *    60px，左对齐时右侧空出 300px，看起来像漏了东西）。
+ *
+ * ③ 关闭按钮：EP 默认 40×40 且 `top: 0; right: 0`，直接压在标题行的右上角
+ *    （实测其 40px 高度超出 header 的 36px，与 18px 的标题视觉上不对齐）。
+ *    这里收成 32×32 并对齐到 header 内边距，热区仍 ≥ WCAG 2.5.8 的 24px。
+ *
+ * ④ 正文里 `\n\n` 的段落间距：`pre-wrap` 下 `\n\n` 会渲染成一个**完整空行**
+ *    （23.1px 行高 → 实测段间空白 23px），读起来像两块互不相关的内容。
+ *    改用 `line-height: 1.6` 配合调用方只写单个 `\n`? 不行 —— 多处文案
+ *    已经写了 `\n\n`，改文案会漏。这里保留 pre-wrap（语义上 `\n\n` 就是
+ *    分段），只把行高压到 1.6 让空行不至于过大，并给段落一个明确的行距。
+ *
+ * 加 `html` 前缀：unplugin 在使用该组件的 SFC 内注入，路由懒加载使其运行时
+ * 晚于本文件落地，同特异性下 EP 胜出。
+ */
+html .os-confirm {
+  border-radius: var(--os-radius-md);
+}
+
+html .os-confirm .el-message-box__btns {
+  text-align: right;
+}
+
+html .os-confirm .el-message-box__headerbtn {
+  top: var(--os-space-3);
+  right: var(--os-space-3);
+  width: var(--os-button-height);
+  height: var(--os-button-height);
+}
+
+/* 关闭图标本身很小（16px），颜色提到 secondary 才看得出可点 */
+html .os-confirm .el-message-box__headerbtn .el-message-box__close {
+  color: var(--el-text-color-secondary);
+}
+
+/*
+ * 正文换行与行距（2026-10-29 实测补）。
+ *
+ * EP 把 message 写进 `<p>` 的 textContent，而 `.el-message-box__message p`
+ * 没有 `white-space: pre-wrap` —— 正文里的 `\n` 与连续空格全被折叠成**一个空格**。
+ * 改造前多处文案用 `\n\n` 分隔「结论」与「后果」，实际渲染成一整段长句，
+ * 读者要自己在那句话里找哪部分是警告。这个坑不报错、只是文案排版失效，
+ * 已静默存在很久（七处调用里四处写了 `\n`）。
+ *
+ * 类名由 lib/confirm.ts 的 CONFIRM_CUSTOM_CLASS 挂到弹窗根节点上，
+ * 只影响走统一入口的弹窗，不改变其他 ElMessageBox 调用的默认表现。
+ */
+html .os-confirm .el-message-box__message p {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+/*
+ * 确认弹窗里的「危险确认键」：EP 的 danger 按钮是实底红，
+ * 在弹窗这种小面积里一整块饱和红显得过重，且与弹窗的克制风格不搭。
+ * 这里不给它换色（危险就是危险），只统一圆角与字重，让它与页面里的
+ * 其他按钮是同一个体系，而不是「弹窗里另一套按钮」。
+ */
+html .os-confirm .el-message-box__btns .el-button {
+  border-radius: var(--os-radius-md);
+  font-weight: 500;
+}
+
+/*
+ * 弹窗按钮顺序：EP 默认渲染成「取消 | 确认」，确认在最右 —— 这符合
+ * 「主行动在右」的通行约定，保持不变。但按钮之间的间距要用统一 token，
+ * 否则与页面里按钮组 8px 的节奏对不上（EP 默认是 `margin-left: 12px`）。
+ */
+html .os-confirm .el-message-box__btns .el-button + .el-button {
+  margin-left: var(--os-button-gap);
 }
 
 .el-message {
@@ -824,7 +1134,10 @@ html.dark .el-card {
  *   文字（12:1+），边框只承担辅助轮廓，故此取舍。归属「已知取舍」，
  *   不是漏改。
  */
-html .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(.is-info) {
+html
+  .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(
+    .is-info
+  ) {
   border-color: #a3acbc;
 }
 
@@ -832,11 +1145,17 @@ html .el-slider__runway {
   background-color: #8892a5;
 }
 
-html.dark .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(.is-info) {
+html.dark
+  .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(
+    .is-info
+  ) {
   border-color: #666d80;
 }
 
-html.dark .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(.is-info):hover {
+html.dark
+  .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(
+    .is-info
+  ):hover {
   border-color: var(--el-color-primary-light-3);
 }
 

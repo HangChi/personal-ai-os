@@ -13,6 +13,25 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 // highlight.js 亮色主题（github）；暗色覆盖见 styles/hljs-dark.css（R-02）
 import 'highlight.js/styles/github.css'
 import './styles/hljs-dark.css'
+/*
+ * 纯命令式组件的样式必须手动引入。
+ *
+ * unplugin-vue-components 的按需样式注入**只认模板里出现的组件标签**：
+ * 它在编译期把 `import { ElButton } from 'element-plus'` 改写成
+ * `... + element-plus/es/components/button/style/css`。而 `ElMessageBox`
+ * 与 `ElNotification` 从不作为标签出现（只被 `ElMessageBox.confirm(...)`
+ * 这类函数调用），编译器看不见它们 → 样式一份都不会被注入。
+ *
+ * 后果不是「有点不对」，而是**弹窗完全没有样式**：实测 `.el-message-box`
+ * 的基础规则一条都没有，元素退回浏览器默认（width 铺满视口 1440、padding 0、
+ * 无圆角无阴影、正文 16px 纯黑且比 16px 的标题还显眼、段落被 pre-wrap 撑成巨幅空白）。
+ * 这类缺陷在「量一下 customClass 有没有挂上」级别的验证里看不出来，
+ * 只有量 width / padding / font-size 才会暴露。
+ *
+ * 必须在 theme.css **之前**导入：我们那几条 `.os-confirm ...` 规则要覆盖它。
+ */
+import 'element-plus/theme-chalk/el-message-box.css'
+import 'element-plus/theme-chalk/el-notification.css'
 // theme.css 必须在 EP 两份样式之后：它覆盖 EP 的主色/圆角/字体变量与组件内部 px
 // 实现，放在前面会被 EP 自身规则盖掉（阶段 23）
 import './styles/theme.css'

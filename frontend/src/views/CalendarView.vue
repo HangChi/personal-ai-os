@@ -6,7 +6,7 @@
  * 滚动过去」这条跨组件链路。具体的通知条、到点提醒、新建表单、月网格、列表、编辑弹窗
  * 各自成组件（`components/calendar/`）。
  */
-import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
@@ -16,7 +16,9 @@ import CalendarDueReminders from '@/components/calendar/CalendarDueReminders.vue
 import CalendarEditDialog from '@/components/calendar/CalendarEditDialog.vue'
 import CalendarMonthGrid from '@/components/calendar/CalendarMonthGrid.vue'
 import CalendarNotifyBanner from '@/components/calendar/CalendarNotifyBanner.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { buildMonthCells, groupByLocalDay, monthRange, shiftMonth } from '@/lib/calendar-dates'
+import { confirmDanger } from '@/lib/confirm-box'
 import { useCalendarStore } from '@/stores/calendar'
 import { useSettingsStore } from '@/stores/settings'
 import type { CreateEventPayload, UpdateEventPayload } from '@/api/calendar'
@@ -216,13 +218,12 @@ async function submitEdit(payload: UpdateEventPayload): Promise<void> {
 }
 
 async function handleDelete(eventId: string, eventTitle: string): Promise<void> {
-  try {
-    await ElMessageBox.confirm(
-      `删除「${eventTitle}」会删除整条日程（含全部重复发生）并同时删除它的提醒。`,
-      '删除日程',
-      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
-    )
-  } catch {
+  const ok = await confirmDanger({
+    title: '删除日程',
+    message: `删除「${eventTitle}」会删除整条日程（含全部重复发生）并同时删除它的提醒。此操作不可恢复。`,
+    confirmText: '删除',
+  })
+  if (!ok) {
     return
   }
   const deletedReminders = await calendarStore.remove(eventId)
@@ -260,10 +261,7 @@ async function acknowledgeAll(): Promise<void> {
 
 <template>
   <div class="calendar">
-    <header class="calendar__head">
-      <h1 class="calendar__title">日程</h1>
-      <p class="calendar__subtitle">支持重复规则与到点提醒；月视图里点格子空白处可快速新建。</p>
-    </header>
+    <PageHeader size="page" title="日程" description="支持重复规则与到点提醒；月视图里点格子空白处可快速新建。" />
 
     <CalendarNotifyBanner
       :permission="notificationPermission"
@@ -298,12 +296,12 @@ async function acknowledgeAll(): Promise<void> {
               <el-radio-button value="month">月</el-radio-button>
             </el-radio-group>
           </div>
-          <el-button
-            v-if="viewMode === 'list'"
-            size="small"
-            :loading="loadingOccurrences"
-            @click="calendarStore.loadOccurrences()"
-          >
+          <!--
+            去掉 size="small"：同一个「刷新」动作在任务、知识库、活动、首页
+            都是 32px 常规按钮，此前只有这里与设置页用了 24px 小号。
+            同一个动作在不同页面两种大小，是「界面像拼起来的」最直接的来源之一。
+          -->
+          <el-button v-if="viewMode === 'list'" :loading="loadingOccurrences" @click="calendarStore.loadOccurrences()">
             刷新
           </el-button>
         </div>
@@ -350,27 +348,7 @@ async function acknowledgeAll(): Promise<void> {
   gap: var(--os-space-5);
 }
 
-/* ---- 页头 ---- */
-
-.calendar__head {
-  min-width: 0;
-}
-
-.calendar__title {
-  margin: 0;
-  font-size: var(--os-font-2xl);
-  font-weight: 650;
-  letter-spacing: -0.2px;
-  line-height: 1.3;
-}
-
-.calendar__subtitle {
-  margin: var(--os-space-2) 0 0;
-  max-width: 68ch;
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-sm);
-  line-height: 1.65;
-}
+/* 页头由 PageHeader（size="page"）承担，本文件不再自带 __head/__title/__subtitle */
 
 .calendar__header {
   display: flex;

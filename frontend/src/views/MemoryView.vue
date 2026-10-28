@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { Plus, Search } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
+import PageHeader from '@/components/PageHeader.vue'
+import { formatDateTime } from '@/lib/format'
+import { confirmDanger } from '@/lib/confirm-box'
 import { useMemoryStore } from '@/stores/memory'
 import type { Memory } from '@/types/api'
 
@@ -75,13 +78,18 @@ async function handleSave(): Promise<void> {
 }
 
 async function handleRemove(memory: Memory): Promise<void> {
-  try {
-    await ElMessageBox.confirm(`确认删除这条记忆？删除后它不再参与任何对话。\n\n${memory.content}`, '删除记忆', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-    })
-  } catch {
+  /*
+   * 只带一段**摘要**而不是全文：改造前把整条记忆塞进弹窗正文，
+   * 一条 2000 字的记忆会把弹窗撑到超出视口，确认按钮被推到屏幕外，
+   * 用户反而要滚动才能点「删除」—— 确认弹窗成了阻碍而不是保护。
+   */
+  const preview = memory.content.length > 120 ? `${memory.content.slice(0, 120)}…` : memory.content
+  const ok = await confirmDanger({
+    title: '删除记忆',
+    message: `删除后它不再参与任何对话，且不可恢复。\n\n${preview}`,
+    confirmText: '删除',
+  })
+  if (!ok) {
     return
   }
   if (await store.remove(memory.id)) {
@@ -90,24 +98,28 @@ async function handleRemove(memory: Memory): Promise<void> {
 }
 
 function formatTime(value: string): string {
-  return new Date(value).toLocaleString('zh-CN', { hour12: false })
+  /*
+   * 走 lib/format 的统一入口，不再本地 new Date().toLocaleString()：
+   * 本地的版本对非法时间会显示 "Invalid Date"，而统一版显示破折号。
+   * 记忆是会被模型读回去的内容，一个 Invalid Date 出现在「最近更新」里
+   * 比空白更容易被误当成数据异常。
+   */
+  return formatDateTime(value)
 }
 </script>
 
 <template>
   <div class="memory-page">
-    <header class="memory-page__head">
-      <div>
-        <h1 class="memory-page__title">长期记忆</h1>
-        <p class="memory-page__subtitle">
-          这里的内容会注入每一次对话（最多 30 条，越靠前越先生效）。一条错的记忆会污染全部回答，改动前请确认。
-        </p>
-      </div>
+    <PageHeader
+      size="page"
+      title="长期记忆"
+      description="这里的内容会注入每一次对话（最多 30 条，越靠前越先生效）。一条错的记忆会污染全部回答，改动前请确认。"
+    >
       <el-button type="primary" @click="openCreate">
         <el-icon><Plus /></el-icon>
         新增记忆
       </el-button>
-    </header>
+    </PageHeader>
 
     <el-card class="memory" shadow="never">
       <template #header>
@@ -187,31 +199,7 @@ function formatTime(value: string): string {
   width: 100%;
 }
 
-/* ---- 页面头（与其他页面统一：标题 22px + 一句说明 + 右侧主操作） ---- */
-
-.memory-page__head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--os-space-4);
-  flex-wrap: wrap;
-}
-
-.memory-page__title {
-  margin: 0;
-  font-size: var(--os-font-2xl);
-  font-weight: 650;
-  letter-spacing: -0.2px;
-  line-height: 1.3;
-}
-
-.memory-page__subtitle {
-  margin: var(--os-space-2) 0 0;
-  max-width: 62ch;
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-sm);
-  line-height: 1.65;
-}
+/* 页头由 PageHeader（size="page"）承担，本文件不再自带 __head/__title/__subtitle */
 
 .memory {
   width: 100%;

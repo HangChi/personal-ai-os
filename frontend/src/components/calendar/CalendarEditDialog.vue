@@ -100,8 +100,13 @@ function submit(): void {
     width="560px"
     @update:model-value="(value: boolean) => emit('update:visible', value)"
   >
+    <!--
+      这里的强调必须用 <strong>：它渲染在模板里而不是 Markdown 里，写 `**整条日程**`
+      会原样显示成一对星号（模板插值不做 Markdown 解析）。
+    -->
     <p class="cal-edit__note">
-      编辑作用于**整条日程**（含全部重复发生）：改时间后每一次发生都会用新时间。 目前不支持「只改/只删某一次发生」。
+      编辑作用于<strong>整条日程</strong>（含全部重复发生）：改时间后每一次发生都会用新时间。
+      目前不支持「只改/只删某一次发生」。
     </p>
     <el-form label-width="90px">
       <el-form-item label="标题" required>
@@ -161,14 +166,21 @@ function submit(): void {
 .cal-edit__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--os-space-2);
   align-items: center;
 }
 
 .cal-edit__note {
-  margin: 0 0 12px;
+  margin: 0 0 var(--os-space-3);
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
+  line-height: 1.6;
+}
+
+/* 正文里的 <strong> 是本组文字里唯一的强调，给一点色差，避免只剩字重 */
+.cal-edit__note strong {
+  color: var(--el-text-color-regular);
+  font-weight: 600;
 }
 
 .cal-edit__label {

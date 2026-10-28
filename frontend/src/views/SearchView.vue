@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
+import PageHeader from '@/components/PageHeader.vue'
 import { highlightSegments } from '@/lib/highlight-text'
 import { useSearchStore } from '@/stores/search'
 import { routeForHit } from '@/lib/search-routes'
@@ -13,6 +14,16 @@ import { routeForHit } from '@/lib/search-routes'
  */
 const searchStore = useSearchStore()
 const route = useRoute()
+
+/** 标题：有词时带上关键词，否则是页面名 */
+const pageTitle = computed(() => (searchStore.keyword ? `「${searchStore.keyword}」` : '全局搜索'))
+
+/** 描述：有词时报命中数，无词时给操作引导 */
+const pageDescription = computed(() =>
+  searchStore.keyword
+    ? `在任务、对话、日程、记忆与知识库中找到 ${searchStore.totalHits} 条`
+    : '在顶部搜索框输入关键词，或按 ⌘ K / Ctrl K 唤起。',
+)
 
 // 用 watch 而不是 onMounted（审查 P2）：同路由二次搜索（顶栏再回车）时组件实例被复用，
 // onMounted 不再触发，URL 变了但结果不变。immediate 保证首次进入也执行。
@@ -30,16 +41,7 @@ watch(
 
 <template>
   <div class="search-page">
-    <header class="search-page__head">
-      <h1 class="search-page__title">
-        <template v-if="searchStore.keyword">「{{ searchStore.keyword }}」</template>
-        <template v-else>全局搜索</template>
-      </h1>
-      <p v-if="searchStore.keyword" class="search-page__count">
-        在任务、对话、日程、记忆与知识库中找到 {{ searchStore.totalHits }} 条
-      </p>
-      <p v-else class="search-page__count">在顶部搜索框输入关键词，或按 ⌘ K / Ctrl K 唤起。</p>
-    </header>
+    <PageHeader size="page" :title="pageTitle" :description="pageDescription" />
 
     <el-card shadow="never">
       <p class="search-page__hint">每类最多显示 5 条 —— 全局搜索用来定位到哪个模块，更细的筛选请去对应页面。</p>
@@ -98,27 +100,12 @@ watch(
   gap: var(--os-space-5);
 }
 
-/* ---- 页头 ---- */
-
-.search-page__head {
-  min-width: 0;
-}
-
-.search-page__title {
-  margin: 0;
-  font-size: var(--os-font-2xl);
-  font-weight: 650;
-  letter-spacing: -0.2px;
-  line-height: 1.3;
-  /* 关键词可能很长，长到换行也不要撑破内容区 */
-  word-break: break-word;
-}
-
-.search-page__count {
-  margin: var(--os-space-2) 0 0;
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-sm);
-}
+/*
+ * 页头由 PageHeader 统一渲染（size="page"）。原先这里手写了
+ * `.search-page__head / __title / __count` 三条规则 —— 其中「关键词可能很长，
+ * 长到换行也不要撑破内容区」这条不能丢，已上移到 PageHeader 的标题上
+ * （对所有页面的长标题都成立，不只是搜索页）。
+ */
 
 .search-page__hint {
   margin: 0 0 var(--os-space-4);

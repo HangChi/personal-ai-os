@@ -19,13 +19,14 @@ import {
   Tickets,
   WarningFilled,
 } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { downloadExport, importData } from '@/api/export'
 import { listOccurrences } from '@/api/calendar'
+import { confirmAction } from '@/lib/confirm-box'
 import { useAppStore } from '@/stores/app'
 import { useKnowledgeStore } from '@/stores/knowledge'
 import { useMemoryStore } from '@/stores/memory'
@@ -174,13 +175,14 @@ async function handleImportFile(event: Event): Promise<void> {
   if (!file) {
     return
   }
-  try {
-    await ElMessageBox.confirm(
-      `将把「${file.name}」里的数据写入当前数据库。\n\n` + '导入只支持空库：库里已有数据时会被拒绝，不会覆盖或合并。',
-      '确认导入',
-      { type: 'warning', confirmButtonText: '开始导入', cancelButtonText: '取消' },
-    )
-  } catch {
+  // 导入不是删除，确认键不该用危险色 —— 满屏红色确认键会让真正的删除失去分量，
+  // 所以走 confirmAction（同骨架、主色键）而不是 confirmDanger。
+  const ok = await confirmAction({
+    title: '确认导入',
+    message: `将把「${file.name}」里的数据写入当前数据库。\n\n导入只支持空库：库里已有数据时会被拒绝，不会覆盖或合并。`,
+    confirmText: '开始导入',
+  })
+  if (!ok) {
     return
   }
 
@@ -385,15 +387,16 @@ const overviewLine = computed(() => {
         <el-descriptions-item label="版本">{{ health.version }}</el-descriptions-item>
         <el-descriptions-item label="服务端时间">{{ health.timestamp }}</el-descriptions-item>
         <el-descriptions-item v-if="health.components" label="依赖">
-          <el-tag
-            v-for="(value, key) in health.components"
-            :key="key"
-            :type="componentTagType(value)"
-            size="small"
-            style="margin-right: 6px"
-          >
-            {{ key }}: {{ value }}
-          </el-tag>
+          <!--
+            用容器 gap 而不是每个 tag 的 `style="margin-right: 6px"`：
+            内联裸值既不能随主题/密度调整，也会在最后一个 tag 右边留一段
+            无主的空隙（与单元格内边距叠加后右边界不齐）。
+          -->
+          <div class="home__health-tags">
+            <el-tag v-for="(value, key) in health.components" :key="key" :type="componentTagType(value)" size="small">
+              {{ key }}: {{ value }}
+            </el-tag>
+          </div>
         </el-descriptions-item>
       </el-descriptions>
 
@@ -588,6 +591,19 @@ const overviewLine = computed(() => {
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-sm);
   font-weight: 500;
+}
+
+/* ---- 后端依赖标签 ---- */
+
+/*
+ * 依赖状态标签：一行放不下时换行，间距交给 gap。
+ * 改造前是给每个 tag 内联 `margin-right: 6px`，最后一个 tag 右边会多出
+ * 一段与内边距叠加的空隙，右侧边界看着不齐；裸值也不受 token 管理。
+ */
+.home__health-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--os-space-1);
 }
 
 /* ---- 能力卡片网格 ---- */

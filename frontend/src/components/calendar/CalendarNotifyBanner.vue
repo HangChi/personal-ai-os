@@ -45,13 +45,13 @@ const emit = defineEmits<{ (e: 'enable'): void }>()
 
 <style scoped>
 .cal-notify {
-  margin-bottom: 12px;
+  margin-bottom: var(--os-space-3);
 }
 
 .cal-notify__row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--os-space-2);
   flex-wrap: wrap;
   font-size: var(--os-font-xs);
   line-height: 1.6;

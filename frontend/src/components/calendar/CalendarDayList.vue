@@ -5,6 +5,7 @@
  * <p>按天分组，每条显示时间段、标题、重复标记与地点。
  * 分页只在列表视图出现（月视图一次拉整月，没有页码概念）。
  */
+import AppPagination from '@/components/AppPagination.vue'
 import { RECURRENCE_OPTIONS, formatDayLabel, formatRange } from '@/lib/calendar-format'
 import type { CalendarOccurrence } from '@/types/api'
 
@@ -64,17 +65,18 @@ function recurrenceLabel(type: string): string {
       </div>
     </div>
 
-    <div v-if="total > 0" class="cal-list__pagination">
-      <span class="cal-list__total">区间内共 {{ total }} 次发生</span>
-      <el-pagination
-        layout="prev, pager, next"
-        :total="total"
-        :current-page="page + 1"
-        :page-size="size"
-        background
-        @current-change="(next: number) => emit('page-change', next - 1)"
-      />
-    </div>
+    <!--
+      分页统一走 AppPagination：文案用 totalLabel 传，量词是「次发生」而不是「条」
+      —— 日程的分页单位是「重复发生的次数」，不是日程条数（一条每周的日程在这里
+      会贡献几十次）。改造前这里手写了一遍分页容器，与另外三处同名不同样。
+    -->
+    <AppPagination
+      :total="total"
+      :page="page"
+      :size="size"
+      total-label="区间内共 {n} 次发生"
+      @change="(next: number) => emit('page-change', next)"
+    />
   </div>
 </template>
 
@@ -82,24 +84,11 @@ function recurrenceLabel(type: string): string {
 .cal-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-
-.cal-list__pagination {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 16px;
-  margin-top: 14px;
-}
-
-.cal-list__total {
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-sm);
+  gap: var(--os-space-3);
 }
 
 .cal-list__day-label {
-  margin-bottom: 6px;
+  margin-bottom: var(--os-space-1);
   font-size: var(--os-font-sm);
   font-weight: 600;
   color: var(--el-text-color-regular);
@@ -108,8 +97,8 @@ function recurrenceLabel(type: string): string {
 .cal-list__item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 0 6px 12px;
+  gap: var(--os-space-2);
+  padding: var(--os-space-1) 0 var(--os-space-1) var(--os-space-3);
   border-left: 3px solid var(--el-color-primary-light-5);
 }
 
@@ -121,7 +110,7 @@ function recurrenceLabel(type: string): string {
 }
 
 .cal-list__item-title {
-  font-size: 14px;
+  font-size: var(--os-font-md);
 }
 
 .cal-list__item-location {
@@ -129,10 +118,15 @@ function recurrenceLabel(type: string): string {
   font-size: var(--os-font-xs);
 }
 
+/* 操作按钮推到行尾，与时间、标题、标签拉开层次 */
 .cal-list__item-action {
   margin-left: auto;
 }
 
+/*
+ * 清除 EP 给相邻按钮的 12px 左边距：编辑与删除是同一组操作，
+ * 间距由行内的 gap 统一控制（8px）。
+ */
 .cal-list__item-delete {
   margin-left: 0;
 }

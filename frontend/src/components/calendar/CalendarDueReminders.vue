@@ -56,13 +56,13 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--os-space-3);
 }
 
 .cal-reminders__actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--os-space-3);
 }
 
 .cal-reminders__stat {
@@ -74,8 +74,8 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
+  gap: var(--os-space-3);
+  padding: var(--os-space-2) 0;
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
@@ -86,12 +86,12 @@ const emit = defineEmits<{
 .cal-reminders__body {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--os-space-2);
   min-width: 0;
 }
 
 .cal-reminders__title {
-  font-size: 14px;
+  font-size: var(--os-font-md);
   font-weight: 600;
 }
 

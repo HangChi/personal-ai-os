@@ -12,6 +12,7 @@ import { storeToRefs } from 'pinia'
 import KnowledgeAskTab from '@/components/knowledge/KnowledgeAskTab.vue'
 import KnowledgeDocumentsTab from '@/components/knowledge/KnowledgeDocumentsTab.vue'
 import KnowledgeSearchTab from '@/components/knowledge/KnowledgeSearchTab.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { useUiStore } from '@/stores/ui'
 
 const uiStore = useUiStore()
@@ -20,10 +21,11 @@ const { knowledgeTab } = storeToRefs(uiStore)
 
 <template>
   <div class="knowledge">
-    <header class="knowledge__head">
-      <h1 class="knowledge__title">知识库</h1>
-      <p class="knowledge__subtitle">上传文档建立向量索引；检索与问答都基于同一批分块，回答会标注引用来源。</p>
-    </header>
+    <PageHeader
+      size="page"
+      title="知识库"
+      description="上传文档建立向量索引；检索与问答都基于同一批分块，回答会标注引用来源。"
+    />
 
     <el-tabs v-model="knowledgeTab" class="knowledge__tabs">
       <el-tab-pane label="文档" name="documents">
@@ -46,27 +48,7 @@ const { knowledgeTab } = storeToRefs(uiStore)
   gap: var(--os-space-5);
 }
 
-/* ---- 页头 ---- */
-
-.knowledge__head {
-  min-width: 0;
-}
-
-.knowledge__title {
-  margin: 0;
-  font-size: var(--os-font-2xl);
-  font-weight: 650;
-  letter-spacing: -0.2px;
-  line-height: 1.3;
-}
-
-.knowledge__subtitle {
-  margin: var(--os-space-2) 0 0;
-  max-width: 68ch;
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-sm);
-  line-height: 1.65;
-}
+/* 页头由 PageHeader 统一渲染（size="page"） */
 
 /*
  * Tab 条与内容之间拉开距离：EP 默认 tab 内容紧贴下划线（间距 16px），

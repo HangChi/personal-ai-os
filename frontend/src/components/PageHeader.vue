@@ -55,6 +55,14 @@ withDefaults(
   font-size: var(--os-font-lg);
   font-weight: 600;
   line-height: 1.4;
+  /*
+   * 长标题（如全局搜索页把用户的整条关键词放进标题）必须能换行。
+   * 原先只有搜索页单独写了这条 —— 那是个通用性质，不该由调用方各写一遍：
+   * 任务标题、记忆摘要、文档名都可能很长。`break-word` 而不是 `break-all`，
+   * 英文单词仍按词断开，只是超长单词才强制拆。
+   */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .page-header__description {
@@ -62,6 +70,7 @@ withDefaults(
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-sm);
   line-height: 1.6;
+  overflow-wrap: break-word;
 }
 
 .page-header__actions {

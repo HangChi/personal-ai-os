@@ -15,6 +15,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { downloadSessionMarkdown } from '@/api/chat'
 import { matchMessageIds, nextMatchCursor } from '@/lib/chat-search'
+import { confirmDanger } from '@/lib/confirm-box'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
@@ -91,13 +92,14 @@ const suggestions = [
  */
 async function handleConfirmation(confirmation: TaskConfirmation, approve: boolean): Promise<void> {
   if (approve && confirmation.action === 'DELETE_TASK') {
-    try {
-      await ElMessageBox.confirm(`确认执行「${confirmation.summary}」？该操作不可撤销。`, '高风险操作确认', {
-        type: 'warning',
-        confirmButtonText: '确认执行',
-        cancelButtonText: '再想想',
-      })
-    } catch {
+    // 删除类走危险确认；「再想想」比「取消」更能表达「这不是拒绝执行，只是先别动」
+    const ok = await confirmDanger({
+      title: '高风险操作确认',
+      message: `确认执行「${confirmation.summary}」？该操作不可撤销。`,
+      confirmText: '确认执行',
+      cancelText: '再想想',
+    })
+    if (!ok) {
       return
     }
   }

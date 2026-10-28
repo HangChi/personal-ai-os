@@ -2,6 +2,9 @@
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 
+import AppPagination from '@/components/AppPagination.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import { formatDateTime } from '@/lib/format'
 import { useActivityStore } from '@/stores/activity'
 import type { ToolInvocationOutcome } from '@/types/api'
 
@@ -51,10 +54,15 @@ function outcomeMeta(value: ToolInvocationOutcome) {
   return OUTCOME_META[value] ?? { label: value, type: 'info' as const }
 }
 
-/** 后端返回 ISO 时间；解析失败时原样显示，而不是显示 "Invalid Date" */
+/**
+ * 时间：走 lib/format 的统一入口。
+ *
+ * <p>本地版本对非法时间会原样返回 ISO 串（避免 "Invalid Date"），
+ * 但那样一来同一列里可能混着「2026/10/29 10:00:00」与「2026-10-29T02:00:00Z」
+ * 两种格式，扫读时无法比较。统一版一律给破折号，格式不混。
+ */
 function formatTime(iso: string): string {
-  const date = new Date(iso)
-  return Number.isNaN(date.getTime()) ? iso : date.toLocaleString('zh-CN', { hour12: false })
+  return formatDateTime(iso)
 }
 
 /** null 表示「没有真正执行」（如待确认），与 0ms 区分开 */
@@ -70,8 +78,7 @@ function shortConversationId(id: string | null): string {
 /** 视图模式：表格 / 时间线（阶段 18，T036） */
 const viewMode = ref<'table' | 'timeline'>('table')
 
-/** 时间线按天分组（当天日期作键，组内保持接口顺序） */
-const timelineGroups = computed(() => {
+/** 时间线按天分组（当天日期作键，组内保持接口顺序） */ const timelineGroups = computed(() => {
   const groups = new Map<string, typeof invocations.value>()
   for (const item of invocations.value) {
     const date = new Date(item.createdAt)
@@ -93,19 +100,15 @@ function handleOutcome(value: string): void {
   // 用一个显式取值能保证「全部结果」是一个真正的选项，而不是靠占位文案暗示。
   void store.setOutcome(value === 'ALL' ? null : (value as ToolInvocationOutcome))
 }
-
-/** el-pagination 从 1 开始，后端从 0 开始 */
-function handlePage(target: number): void {
-  void store.setPage(target - 1)
-}
 </script>
 
 <template>
   <div class="activity">
-    <header class="activity__head">
-      <h1 class="activity__title">活动</h1>
-      <p class="activity__subtitle">助手调用过哪些工具、每个 MCP server 当前是否连上 —— 审计与接入状态都在这一页。</p>
-    </header>
+    <PageHeader
+      size="page"
+      title="活动"
+      description="助手调用过哪些工具、每个 MCP server 当前是否连上 —— 审计与接入状态都在这一页。"
+    />
 
     <el-card class="activity__card" shadow="never">
       <template #header>
@@ -146,16 +149,22 @@ function handlePage(target: number): void {
         />
 
         <el-table v-else :data="mcp.servers">
+          <!--
+            列宽：只让「说明」吸收剩余空间。
+            「只读直行」原先也是 min-width，与「说明」平分富余 —— 但它装的是
+            一小组标签，宽度再多也只是把标签之间的空白拉大；而「说明」装的是
+            失败原因这类长文本，多给它的每一像素都能减少截断。
+          -->
           <el-table-column prop="name" label="Server" width="150" show-overflow-tooltip />
-          <el-table-column label="状态" width="88">
+          <el-table-column label="状态" width="80">
             <template #default="{ row }">
               <el-tag :type="row.available ? 'success' : 'danger'" size="small">
                 {{ row.available ? '可用' : '不可用' }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="toolCount" label="工具数" width="80" align="right" />
-          <el-table-column label="只读直行" min-width="200">
+          <el-table-column prop="toolCount" label="工具数" width="76" align="right" />
+          <el-table-column label="只读直行" width="240">
             <template #default="{ row }">
               <div v-if="row.autoTools.length === 0" class="activity__muted">无（全部需确认）</div>
               <div v-else class="activity__tool-tags">
@@ -216,21 +225,38 @@ function handlePage(target: number): void {
 
       <template v-else>
         <el-table v-if="viewMode === 'table'" v-loading="loading" :data="invocations" :empty-text="emptyText">
-          <el-table-column label="时间" width="170">
+          <!--
+            列宽（2026-10-29 按 EP 源码重算）。
+
+            这张表 5 列内容实测只需 562px，容器 998px —— 富余 436px 无法消除，
+            只能决定「怎么分」。EP 的分配规则在 `table-layout.mjs:102`：
+
+                if (flexColumns.length > 0 && fit) { 摊剩余 }
+                else { bodyWidth.value = bodyMinWidth }   // 右侧整片空白
+
+            `flexColumns` = 没有 `width` 的列。所以：
+            · 全部写死 `width` → 不摊，innerW 停在 692，右侧空 306px、表头线画一半
+            · 只留一个 `min-width` → 富余全堆那一列（实测间距 436px）
+            · **多个 `min-width`** → 按 minWidth 比例**每列都变宽**，间距均匀
+
+            故一律用 `min-width`。minWidth 的比例即分配比例，例如工具列给
+            260 而结果列 88，工具列会拿到约 3 倍的富余，符合「内容长的列更该宽」。
+          -->
+          <el-table-column label="时间" min-width="190">
             <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
           </el-table-column>
-          <el-table-column prop="operation" label="工具" min-width="200" show-overflow-tooltip />
-          <el-table-column label="结果" width="96">
+          <el-table-column prop="operation" label="工具" min-width="190" show-overflow-tooltip />
+          <el-table-column label="结果" min-width="150" align="center">
             <template #default="{ row }">
               <el-tag :type="outcomeMeta(row.outcome).type" size="small">
                 {{ outcomeMeta(row.outcome).label }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="耗时" width="88" align="right">
+          <el-table-column label="耗时" min-width="150" align="right">
             <template #default="{ row }">{{ formatDuration(row.durationMs) }}</template>
           </el-table-column>
-          <el-table-column label="会话" min-width="150" show-overflow-tooltip>
+          <el-table-column label="会话" min-width="190" show-overflow-tooltip>
             <template #default="{ row }">
               <el-tooltip v-if="row.conversationId" :content="row.conversationId" placement="top">
                 <span class="activity__muted">{{ shortConversationId(row.conversationId) }}</span>
@@ -265,15 +291,7 @@ function handlePage(target: number): void {
           </section>
         </div>
 
-        <div v-if="total > 0" class="activity__pagination">
-          <el-pagination
-            layout="total, prev, pager, next"
-            :total="total"
-            :page-size="size"
-            :current-page="page + 1"
-            @current-change="handlePage"
-          />
-        </div>
+        <AppPagination :total="total" :page="page" :size="size" @change="(next: number) => store.setPage(next)" />
       </template>
     </el-card>
   </div>
@@ -291,25 +309,12 @@ function handlePage(target: number): void {
 
 /* ---- 页头 ---- */
 
-.activity__head {
-  min-width: 0;
-}
-
-.activity__title {
-  margin: 0;
-  font-size: var(--os-font-2xl);
-  font-weight: 650;
-  letter-spacing: -0.2px;
-  line-height: 1.3;
-}
-
-.activity__subtitle {
-  margin: var(--os-space-2) 0 0;
-  max-width: 68ch;
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-sm);
-  line-height: 1.65;
-}
+/*
+ * 页头由 PageHeader 统一渲染（size="page"），原先这里的
+ * `.activity__head / __title / __subtitle` 三条规则已删除 —— 它们与
+ * 另外六个页面各自写了一份，字号/字重/行高逐页微调过，
+ * 于是「同一层级的标题」在不同页面并不一样。
+ */
 
 .activity__card-header {
   display: flex;
@@ -430,11 +435,5 @@ function handlePage(target: number): void {
   color: var(--el-color-danger);
   font-size: var(--os-font-xs);
   word-break: break-all;
-}
-
-.activity__pagination {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: var(--os-space-3);
 }
 </style>

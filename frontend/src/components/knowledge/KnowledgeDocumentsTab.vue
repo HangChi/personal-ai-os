@@ -6,12 +6,13 @@
  * 点击选择、拖拽投放、以及两者的公共校验。校验刻意只写一份 ——
  * 拖拽与点击走同一个 `selectFile`，避免「拖进来能传、点进来不能传」这类不一致。
  */
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { onMounted, ref } from 'vue'
 
 import AppPagination from '@/components/AppPagination.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import { confirmDanger } from '@/lib/confirm-box'
 import { formatBytes, formatDateTime } from '@/lib/format'
 import { useKnowledgeStore } from '@/stores/knowledge'
 
@@ -103,31 +104,31 @@ async function onReplaceFileChange(event: Event): Promise<void> {
   if (!file || !id) {
     return
   }
-  try {
-    await ElMessageBox.confirm(
+  // 替换同样是「一步做错就回不去」的动作（旧分块与向量整组丢弃），走危险确认
+  const ok = await confirmDanger({
+    title: '替换文档内容',
+    message:
       `用「${file.name}」替换该文档的内容？\n\n` +
-        '文档本身与历史对话里的引用都会保留；旧的分块与向量会被整组替换，' +
-        '替换后需要重新建立索引（耗时取决于文件大小）。',
-      '替换文档内容',
-      { type: 'warning', confirmButtonText: '开始替换', cancelButtonText: '取消' },
-    )
-  } catch {
+      '文档本身与历史对话里的引用都会保留；旧的分块与向量会被整组替换，' +
+      '替换后需要重新建立索引（耗时取决于文件大小）。',
+    confirmText: '开始替换',
+  })
+  if (!ok) {
     return
   }
-  const ok = await knowledgeStore.replace(id, file)
-  if (ok) {
+  const replaced = await knowledgeStore.replace(id, file)
+  if (replaced) {
     ElMessage.success('已替换文档内容，向量已重建')
   }
 }
 
 async function handleDelete(id: string, title: string): Promise<void> {
-  try {
-    await ElMessageBox.confirm(`删除「${title}」会同时清理它的全部向量，之后将无法再被检索到。`, '删除知识文档', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-    })
-  } catch {
+  const ok = await confirmDanger({
+    title: '删除知识文档',
+    message: `删除「${title}」会同时清理它的全部向量，之后将无法再被检索到。此操作不可恢复。`,
+    confirmText: '删除',
+  })
+  if (!ok) {
     return
   }
   const deletedChunks = await knowledgeStore.remove(id)
@@ -245,23 +246,34 @@ function onDrop(event: DragEvent): void {
         :image-size="70"
       />
       <el-table v-else v-loading="loadingDocuments" :data="documents">
-        <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
         <!--
-          文件名这类写入标识符（juejin-7672711130193936424.md）按宽度截断没有意义 ——
-          截到哪都是乱码一样的前缀，看不出区别。给它一个能显示到扩展名的宽度。
+          列宽分配（2026-10-29 按实测重算，表宽 998）。
 
-          列宽分配（总 974，与 1440 宽下的内容区精确贴合，不产生横向滚动条）：
-            文件名 236 + 大小 80 + 片段数 78 + 字符数 82 + 上传时间 168 + 操作 112 = 756
-            剩下的 218 给标题（min-width 200）。
-          数字列压到 80 左右是够的：「1.9 KB」约 45px、「12,345」约 50px，
-          加上左右内边距 24px 仍有富余；而这几个值最多 6~7 个字符，再加宽纯属浪费。
-          把省下来的空间给标题 —— 标题才是这一列里唯一需要读的内容。
+          改造前：六列全写死 width，只有标题列 min-width。EP 把剩下的空间
+          全塞给标题，但那时固定列合计 756，标题只拿到 242px —— 而标题的
+          **内容**实测需要 341px，于是「列宽看着富裕、标题却被截断」，同时
+          数字列 80px 里只放「1.9 KB」（内容 51px）。相邻列文字间距最大 84px。
+
+          现在的原则：**只在唯一一列上留弹性**，其余列按实测内容压到刚好。
+          - 标题 = min-width（唯一弹性列，吃掉全部剩余；实测拿到 346px，
+            已略大于内容所需的 341px，长标题不再截断）；
+          - 文件名 150：够显示 juejin-7672711130193936424 这类写入标识符，
+            更长的走 `show-overflow-tooltip`；
+          - 数字列 80（表头 53 + 内边距 24 = 77，留 3 余量）；
+          - 上传时间 166（内容 139 + 24）、操作 96（两个 link 按钮实测 88）。
+
+          固定列合计 150+80+80+80+166+96 = 652，余下 346 全给标题。
+
+          **不要把这些列改成 min-width**：试过全部改 min-width，EP 会按
+          minWidth 比例**给每列都分富余**，标题反而从 346 掉到 238 ——
+          长文本列必须独占弹性，「均摊」在这里是反效果。
         -->
-        <el-table-column prop="filename" label="文件名" width="236" show-overflow-tooltip />
+        <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="filename" label="文件名" width="150" show-overflow-tooltip />
         <el-table-column label="大小" width="80" align="right">
           <template #default="{ row }">{{ formatBytes(row.sizeBytes) }}</template>
         </el-table-column>
-        <el-table-column label="片段数" width="78" align="right">
+        <el-table-column label="片段数" width="80" align="right">
           <template #header>
             <el-tooltip content="解析后切分的文本块数量，检索以片段为单位" placement="top">
               <span class="kd__column-hint">片段数 ?</span>
@@ -274,7 +286,7 @@ function onDrop(event: DragEvent): void {
           扫描版 PDF 体积很大但字符数接近 0，一眼能看出「这篇没解析出什么内容」。
           该字段阶段 3 起后端一直没写入（恒为 0），阶段 10 才修复；展示出来也让回归能被肉眼发现。
         -->
-        <el-table-column label="字符数" width="82" align="right">
+        <el-table-column label="字符数" width="80" align="right">
           <template #header>
             <el-tooltip
               content="解析出的文本字符数（分块前）；扫描版 PDF 体积大但字符数接近 0，说明没解析出内容"
@@ -287,14 +299,14 @@ function onDrop(event: DragEvent): void {
         </el-table-column>
         <!--
           152px 是「刚好」放下 2026/10/26 02:04:54 的宽度，结果每行都折成两行、
-          把行高撑到 59px。给到 168px 留出余量（字体回退、locale 差异都吃得下）。
+          把行高撑到 59px。给到 164px 留出余量（字体回退、locale 差异都吃得下）。
         -->
-        <el-table-column label="上传时间" width="168">
+        <el-table-column label="上传时间" width="166">
           <template #default="{ row }">{{ formatDateTime(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="112" fixed="right">
+        <el-table-column label="操作" width="96" fixed="right">
           <template #default="{ row }">
-            <div class="kd__actions">
+            <div class="os-table-actions">
               <el-button link type="primary" size="small" @click="pickReplaceFile(row.id)">替换</el-button>
               <el-button link type="danger" size="small" @click="handleDelete(row.id, row.title)">删除</el-button>
             </div>
@@ -379,14 +391,5 @@ function onDrop(event: DragEvent): void {
   border-bottom: 1px dashed var(--el-text-color-placeholder);
 }
 
-/* 操作列：两个 link 按钮同组，用 gap 控制间距（不叠 EP 的 margin-left） */
-.kd__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--os-button-gap);
-}
-
-.kd__actions .el-button + .el-button {
-  margin-left: 0;
-}
+/* 操作列样式见 theme.css 的 `.os-table-actions`（与任务表格共用同一份） */
 </style>

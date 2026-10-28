@@ -12,6 +12,7 @@
 import { Delete, Download, EditPen } from '@element-plus/icons-vue'
 import { computed, nextTick, ref, watch } from 'vue'
 
+import AppPagination from '@/components/AppPagination.vue'
 import { groupSessionsByDay } from '@/lib/session-group'
 import { relativeTime } from '@/lib/relative-time'
 import type { ChatSession } from '@/types/api'
@@ -102,15 +103,28 @@ function confirmDelete(session: ChatSession): void {
   emit('remove', session.conversationId)
 }
 
+/**
+ * 重命名输入框的引用。
+ *
+ * 改造前是 `document.querySelector('.chat-sessions__rename')` —— 用全局选择器
+ * 找一个属于本组件的元素。平时能用，但它有两个真问题：
+ * 1. 组件被渲染两次（如将来的分栏视图）时拿到的是**第一个**输入框，
+ *    焦点会跳到一个用户没在编辑的会话上；
+ * 2. 查询时机依赖 `nextTick` 恰好晚于 DOM 更新，任何把输入框放进
+ *    `v-if` 之外的地方（如改为 `v-show`）都会静默拿到 null。
+ * 用 ref 后范围天然限定在本组件内，且 ref 绑定与 DOM 更新同步。
+ */
+const renameInput = ref<HTMLInputElement | null>(null)
+
 // 进入编辑态后聚焦并全选，省得用户再手动清空原标题
 watch(editingId, async (id) => {
   if (!id) {
     return
   }
   await nextTick()
-  const input = document.querySelector<HTMLInputElement>('.chat-sessions__rename')
-  input?.focus()
-  input?.select()
+  // 再用可选链兜底：重命名态可能在 nextTick 之前就被取消（快速双击）
+  renameInput.value?.focus()
+  renameInput.value?.select()
 })
 
 const groups = computed(() => groupSessionsByDay(props.sessions))
@@ -175,6 +189,7 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
               <div class="chat-sessions__body" @dblclick="startEdit(session)">
                 <input
                   v-if="editingId === session.conversationId"
+                  ref="renameInput"
                   :value="editingValue"
                   class="chat-sessions__rename"
                   maxlength="200"
@@ -254,21 +269,18 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
       </div>
     </div>
 
-    <div v-if="total > 0" class="chat-sessions__pagination">
-      <span class="chat-sessions__total">共 {{ total }} 个</span>
-      <!--
-        去掉 background：实心蓝底的页码块在 260px 侧栏里过重，且与列表选中态的
-        浅主色底撞色。居中排列，左右不再一边空一边挤。
-      -->
-      <el-pagination
-        layout="prev, pager, next"
-        small
-        :total="total"
-        :current-page="page + 1"
-        :page-size="size"
-        @current-change="(next: number) => emit('page-change', next - 1)"
-      />
-    </div>
+    <!--
+      紧凑分页：会话论「个」不谈「条」，量词由 totalLabel 传进去。
+      改造前这里手写了一遍容器 + 一句「共 N 个」，与另外三处分页写法不同。
+    -->
+    <AppPagination
+      :total="total"
+      :page="page"
+      :size="size"
+      total-label="共 {n} 个"
+      compact
+      @change="(next: number) => emit('page-change', next)"
+    />
   </el-card>
 </template>
 
@@ -408,15 +420,20 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
 }
 
 /*
- * 图标按钮的可点区从 22×22 扩到 26×26（阶段 23）。
- * 22px 低于 24px 的最小可点尺寸——悬停浮现的小图标本来就难命中，
- * 鼠标稍微偏一格就点不到。padding 从 4px 抬到 6px，图标本身不变。
+ * 图标按钮的可点区：统一到主题层的 28×28（`--os-button-height-inline`）。
+ *
+ * 这一段原先写的是 min-width/min-height 26px + padding 6px，是阶段 23
+ * 「22px 太小、抬到 26px」时的临时值；后来主题层把**所有** link 款按钮
+ * 统一抬到 28px，两处叠加的结果是 min-height 26px 加上 padding 撑出的
+ * 27px —— 三档规格（28 行内 / 32 常规）里没有 27 这个数，实测比同一列表里
+ * 的其它行内按钮矮 1px。这里只保留尺寸约束、不再自带高度档，
+ * 让它跟着主题层走，以后调整只改一个地方。
  */
 .chat-sessions__item-actions :deep(.el-button) {
-  min-width: 26px;
-  min-height: 26px;
+  min-width: var(--os-button-height-inline);
+  min-height: var(--os-button-height-inline);
   margin-left: 0;
-  padding: 6px;
+  padding: 0;
 }
 
 .chat-sessions__item:hover .chat-sessions__item-actions,

@@ -153,17 +153,17 @@ defineExpose({ fillSlot, reset })
 </template>
 
 <style scoped>
-/* 新建表单：三组纵排，组内横排（T031） */
+/* 新建表单：三组纵排，组内横排（T031）。间距一律走 token，禁止裸值（宪法 V） */
 .cal-create {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--os-space-3);
 }
 
 .cal-create__group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--os-space-1);
 }
 
 .cal-create__group-label {
@@ -176,7 +176,7 @@ defineExpose({ fillSlot, reset })
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--os-space-2);
 }
 
 .cal-create__actions {
@@ -184,6 +184,11 @@ defineExpose({ fillSlot, reset })
   justify-content: flex-end;
 }
 
+/*
+ * 输入框定宽：这些宽度是「内容刚好放得下」的实测值（标题 220、时间段 360、
+ * 地点 160、重复 110、截止 160），属于控件自身的尺寸契约，
+ * 不是可收敛的间距节奏，因此保留像素值。
+ */
 .cal-create__title {
   width: 220px;
 }
@@ -207,7 +212,7 @@ defineExpose({ fillSlot, reset })
 .cal-create__lead {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--os-space-1);
 }
 
 .cal-create__lead-label {
@@ -216,7 +221,7 @@ defineExpose({ fillSlot, reset })
 }
 
 .cal-create__hint {
-  margin: 12px 0 0;
+  margin: var(--os-space-3) 0 0;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
 }
