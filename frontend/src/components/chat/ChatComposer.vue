@@ -199,62 +199,6 @@ onMounted(autosize)
 
 <template>
   <div class="chat-composer">
-    <div class="chat-composer__toolbar">
-      <!--
-        上下文仪表盘放回发送框（2026-10-27）：它回答的是「这一发会带多少上下文」，
-        和附件/知识库同属「发送前的状态」，放在一起才看得懂。
-      -->
-      <ContextMeter
-        v-if="contextUsage.budgetTokens > 0"
-        :usage="contextUsage"
-        @change-budget="(tokens: number) => emit('change-budget', tokens)"
-      />
-
-      <!--
-        附件按钮**没有**选中态：它是个瞬时动作（打开文件选择器），不是开关。
-        曾经误把知识库的 --on 类绑定复制到这里，导致一开知识库附件也变蓝。
-      -->
-      <button type="button" class="chat-composer__chip" title="添加附件" @click="fileInput?.click()">
-        <el-icon :size="12"><Paperclip /></el-icon>
-        附件
-        <span v-if="uploading">…</span>
-      </button>
-
-      <button
-        type="button"
-        class="chat-composer__chip"
-        :class="{ 'chat-composer__chip--on': knowledgeOn }"
-        :title="knowledgeOn ? '点击关闭知识库增强' : '开启后每条消息先检索知识库再回答'"
-        :aria-pressed="knowledgeOn"
-        @click="emit('toggle-knowledge', !knowledgeOn)"
-      >
-        <el-icon :size="12"><Reading /></el-icon>
-        知识库增强
-      </button>
-
-      <!--
-        条数改成下拉而不是数字步进器：步进器为了选 20 要点十下，且在窄工具栏里
-        两侧按钮把数字挤成一条缝。下拉一次点选，宽度也固定。
-      -->
-      <!--
-        这里**不再**用固定宽度的常驻占位。
-        原来为了「开关知识库时工具栏不跳动」给了一个 78px 的空槽，实测知识库
-        关闭时它仍然占地（w=78, h=0），使「知识库增强」与紧随其后的模型下拉之间
-        凭空多出 94px 空洞（8+78+8）。开关知识库时后面的元素会跟着挪一下 ——
-        用户刚点了那个开关，挪动是符合预期的因果；而恒定空洞是永远看不懂的留白。
-      -->
-      <el-select
-        v-if="knowledgeOn"
-        class="chat-composer__topk"
-        :model-value="topK"
-        size="small"
-        title="检索条数"
-        @change="(value: number) => emit('update:topK', value)"
-      >
-        <el-option v-for="option in TOP_K_OPTIONS" :key="option" :label="`${option} 条`" :value="option" />
-      </el-select>
-    </div>
-
     <!-- 附件条：只在有附件时出现，避免常驻占位 -->
     <div v-if="attachments.length > 0" class="chat-composer__attachments">
       <div v-for="item in attachments" :key="item.id" class="chat-composer__attachment">
@@ -298,25 +242,91 @@ onMounted(autosize)
         @update:model-value="(value: string) => emit('update:modelValue', value)"
         @keydown="handleKeydown"
       />
+
       <!--
-        操作行进框内：改造前是「裸 textarea + 下方一排控件」，三块各占一行、
-        互相没有归属感。合成一个带边界的输入框后，聚焦高亮、字数、按钮都收在里面，
-        与主流聊天工具的结构一致。
+        ============ 第一行：输入增强 ============
+
+        <h3>为什么全部收进边框内</h3>
+        改造前这一行在**边框外面**、发送行在**边框里面** —— 同一类「发送前设置」
+        被一个边框劈成两个视觉层级，看上去像是两组无关的东西浮在上方。
+        收进来之后：边框 = 「这一条消息的全部设置」，内部按两行分组。
+
+        <h3>为什么分两行而不是挤成一行</h3>
+        八个控件挤一行有两个必然结果：① 1440px 下右侧空出 540px（实测），
+        左侧密、右侧空，行被拉断；② 1024px 下必折行，且折行位置随机。
+        按语义分两行后，每行各自「左侧控件 + 右侧状态」，视觉重量均衡。
       -->
-      <div class="chat-composer__footer">
-        <span class="chat-composer__hint">
-          {{ enterSend ? 'Enter 发送 · Shift+Enter 换行' : 'Ctrl+Enter 发送 · Enter 换行' }}
-        </span>
+      <div class="chat-composer__row chat-composer__row--tools">
+        <!--
+          附件按钮**没有**选中态：它是个瞬时动作（打开文件选择器），不是开关。
+          曾经误把知识库的 --on 类绑定复制到这里，导致一开知识库附件也变蓝。
+        -->
+        <button type="button" class="chat-composer__chip" title="添加附件" @click="fileInput?.click()">
+          <el-icon :size="12"><Paperclip /></el-icon>
+          附件
+          <span v-if="uploading">…</span>
+        </button>
+
+        <button
+          type="button"
+          class="chat-composer__chip"
+          :class="{ 'chat-composer__chip--on': knowledgeOn }"
+          :title="knowledgeOn ? '点击关闭知识库增强' : '开启后每条消息先检索知识库再回答'"
+          :aria-pressed="knowledgeOn"
+          @click="emit('toggle-knowledge', !knowledgeOn)"
+        >
+          <el-icon :size="12"><Reading /></el-icon>
+          知识库增强
+        </button>
 
         <!--
-          会话级模型选择（V23）最终落在 footer 而不是工具栏。
-          两次实测把位置钉死在这里：
-          ① 推到工具栏最右 → chip 组结束 x=953、下拉起于 x=1227，中间 274px 空洞；
-          ② 紧跟 chip → 1440px 下没问题，但 1024px 视口下工具栏可用宽仅 462px、
-             元素总需求 592px，必然折行，第二行只剩一个下拉框，高低不齐更难看。
-          footer 有 400px 以上富余，且模型与「思考程度」同属「怎么生成」，
-          与左边的字数、右边的发送按钮并列是合理的。
+          条数改成下拉而不是数字步进器：步进器为了选 20 要点十下，且在窄工具栏里
+          两侧按钮把数字挤成一条缝。下拉一次点选，宽度也固定。
+
+          这里**不再**用固定宽度的常驻占位。原来为了「开关知识库时工具栏不跳动」
+          给了一个 78px 的空槽，实测知识库关闭时它仍然占地（w=78, h=0），
+          使「知识库增强」与后面的元素之间凭空多出 94px 空洞。开关知识库时
+          后面的元素跟着挪动是符合预期的因果；恒定空洞是永远看不懂的留白。
         -->
+        <el-select
+          v-if="knowledgeOn"
+          class="chat-composer__topk"
+          :model-value="topK"
+          size="small"
+          title="检索条数"
+          @change="(value: number) => emit('update:topK', value)"
+        >
+          <el-option v-for="option in TOP_K_OPTIONS" :key="option" :label="`${option} 条`" :value="option" />
+        </el-select>
+
+        <!--
+          上下文仪表盘靠右：它是**只读状态**（这一发会带多少上下文），
+          与左边的可点控件不同类。推到行尾既能利用右侧空白，又形成
+          「左边操作 / 右边读数」的稳定结构 —— 与第二行完全一致。
+        -->
+        <ContextMeter
+          v-if="contextUsage.budgetTokens > 0"
+          class="chat-composer__meter-slot"
+          :usage="contextUsage"
+          @change-budget="(tokens: number) => emit('change-budget', tokens)"
+        />
+      </div>
+
+      <!--
+        ============ 第二行：生成与发送 ============
+
+        <h3>模型为什么在最左</h3>
+        这是 ChatGPT / Claude / Cursor 一致的惯例：模型名挨着发送按钮，
+        回答的是「这条消息要谁来答」。它同时是这一行里唯一带文字的控件，
+        放左侧自然形成视觉起点，右侧留给纯图标与主按钮。
+
+        <h3>位置试错记录（三次实测）</h3>
+        ① 卡片顶栏 → 与「重命名/导出」等会话操作混在一起，语义不同；
+        ② 工具栏最右（margin-left:auto）→ chip 结束 x=953、下拉起于 x=1227，
+           中间 274px 空洞，整行被拉成左重右轻两半；
+        ③ 工具栏紧跟 chip → 1024px 下工具栏可用 462px、需求 592px，必折行。
+      -->
+      <div class="chat-composer__row chat-composer__row--actions">
         <ChatModelPicker
           :model-value="sessionModel"
           :models="chatModels"
@@ -325,83 +335,98 @@ onMounted(autosize)
           @update:model-value="(value: string | null) => emit('update:sessionModel', value)"
         />
 
+        <!--
+          快捷键提示：靠右且紧跟字数统计（都是「关于这段文字」的读数）。
+          窄屏由 CSS 整块隐藏而不是截断成「Enter 发送 · Shi...」。
+        -->
+        <span class="chat-composer__hint">
+          {{ enterSend ? 'Enter 发送 · Shift+Enter 换行' : 'Ctrl+Enter 发送 · Enter 换行' }}
+        </span>
+
         <span class="chat-composer__count">{{ modelValue.length }} / 4000</span>
 
         <!--
-          语音输入：放在 footer 里紧邻发送按钮。
-          它产出的是「输入框内容」，与发送是同一件事的两个环节，
-          放在工具栏（附件/知识库那一排）会让人以为它影响的是检索范围。
+          图标按钮组：语音、思考、发送。
+          三者之间只隔 4px、与左侧读数组隔 12px —— 让「能点的」连成一簇，
+          与「只是给人看的」文字读数在视觉上分开。此前全部 8px 等距，
+          六个元素地位相同，眼睛既找不到起点也找不到终点。
         -->
-        <ChatVoiceInput
-          :draft="modelValue"
-          :disabled="streaming"
-          @update:draft="(value: string) => emit('update:modelValue', value)"
-        />
+        <span class="chat-composer__action-group">
+          <!--
+            语音输入紧邻发送按钮：它产出的是「输入框内容」，与发送是同一件事的
+            两个环节，放在「附件/知识库」那行会让人以为它影响检索范围。
+          -->
+          <ChatVoiceInput
+            :draft="modelValue"
+            :disabled="streaming"
+            @update:draft="(value: string) => emit('update:modelValue', value)"
+          />
 
-        <!--
+          <!--
           思考程度从工具栏搬到 footer，并改成下拉触发。
           原来它在工具栏占一整段（标签 + 三选一 + 一长串说明），把「知识库增强」
           挤到角落，且分段按钮在窄屏会折行。搬到 footer 后：工具栏只留知识库，
           这里一个按钮显示当前档位，点开才列出三档与代价 —— 与 Codex 一类
           agent 的「模型/推理设置放在发送区附近」一致。
         -->
-        <el-dropdown
-          trigger="click"
-          placement="top-end"
-          @command="(value: ThinkingLevel) => emit('update:thinkingLevel', value)"
-        >
-          <!--
+          <el-dropdown
+            trigger="click"
+            placement="top-end"
+            @command="(value: ThinkingLevel) => emit('update:thinkingLevel', value)"
+          >
+            <!--
             纯图标触发器：不显示「思考」二字，也不显示档位文字 ——
             档位用颜色区分（灰=关闭 / 主色=标准 / 琥珀=深度），
             当前档位与代价由原生 title 提示。
             刻意**不用** el-tooltip 包裹：它会插在按钮外层抢走点击，
             实测导致下拉菜单打不开（点了只显示提示，选项弹不出来）。
           -->
-          <el-button
-            text
-            size="small"
-            class="chat-composer__thinking-trigger"
-            :class="`chat-composer__thinking-trigger--${props.thinkingLevel}`"
-            :title="thinkingTooltip"
-            :aria-label="`思考程度：${THINKING_LABELS[props.thinkingLevel]}。${thinkingTooltip}`"
-          >
-            <el-icon :size="14"><MagicStick /></el-icon>
-          </el-button>
-          <template #dropdown>
-            <el-dropdown-menu class="chat-composer__thinking-menu">
-              <el-dropdown-item
-                v-for="level in THINKING_LEVELS"
-                :key="level"
-                :command="level"
-                :title="THINKING_HINTS[level]"
-              >
-                <!--
+            <el-button
+              text
+              size="small"
+              class="chat-composer__thinking-trigger"
+              :class="`chat-composer__thinking-trigger--${props.thinkingLevel}`"
+              :title="thinkingTooltip"
+              :aria-label="`思考程度：${THINKING_LABELS[props.thinkingLevel]}。${thinkingTooltip}`"
+            >
+              <el-icon :size="14"><MagicStick /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu class="chat-composer__thinking-menu">
+                <el-dropdown-item
+                  v-for="level in THINKING_LEVELS"
+                  :key="level"
+                  :command="level"
+                  :title="THINKING_HINTS[level]"
+                >
+                  <!--
                   只放档位名，不放代价说明：说明放在原生 title 里（hover 才看），
                   菜单保持三行短标签 —— 原来把说明并排挤在一行里又长又吵。
                   当前档不再禁用：禁用会让用户以为点坏了，实际只是想关菜单而已。
                 -->
-                <span class="chat-composer__thinking-option">
-                  <span :class="{ 'chat-composer__thinking-option--on': level === thinkingLevel }">
-                    {{ THINKING_LABELS[level] }}
+                  <span class="chat-composer__thinking-option">
+                    <span :class="{ 'chat-composer__thinking-option--on': level === thinkingLevel }">
+                      {{ THINKING_LABELS[level] }}
+                    </span>
                   </span>
-                </span>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
 
-        <el-button v-if="streaming" round @click="emit('stop')">停止</el-button>
-        <!-- 上传期间同时置灰：拦截逻辑在 handleSend 里，但按钮先给一个「现在不能点」的视觉信号 -->
-        <el-button
-          v-else
-          type="primary"
-          round
-          :disabled="modelValue.trim().length === 0 || uploading"
-          :loading="uploading"
-          @click="handleSend"
-        >
-          发送
-        </el-button>
+          <el-button v-if="streaming" round @click="emit('stop')">停止</el-button>
+          <!-- 上传期间同时置灰：拦截逻辑在 handleSend 里，但按钮先给一个「现在不能点」的视觉信号 -->
+          <el-button
+            v-else
+            type="primary"
+            round
+            :disabled="modelValue.trim().length === 0 || uploading"
+            :loading="uploading"
+            @click="handleSend"
+          >
+            发送
+          </el-button>
+        </span>
       </div>
     </div>
   </div>
@@ -415,65 +440,83 @@ onMounted(autosize)
   background: var(--el-bg-color);
 }
 
-/* ---- 工具行 ---- */
+/* ---- 行（边框内部分两行：输入增强 / 生成发送） ---- */
 
-.chat-composer__toolbar {
+/*
+ * 两行各自内部统一高度。
+ *
+ * <h3>为什么是「各自」而不是「一致」</h3>
+ * 改造前四种高度混用（实测）：chip 27px、条数下拉 24px、模型下拉 28px、
+ * 图标按钮 32px。同一行里出现四种高度，眼睛会看出「参差」但说不出哪里不对。
+ * 现在：第一行全是 28px（胶囊 + 条数下拉），第二行全是 32px（模型 + 图标 + 发送）。
+ *
+ * <p>两行**不强求跨行等高**：第二行压到 28px 会撞上 `theme.css` 里
+ * `html .el-button--small:not(.is-link) { min-height: 32px }`（0-2-1）——
+ * 那是全站有意统一的（改造前「刷新」按钮在用量页比别人矮一截）。
+ * 为一个局部推翻全局约定，别处又会不一致。
+ */
+
+/*
+ * 垂直节奏：输入框 → 4px → 第一行 → 6px → 第二行 → 8px(盒内 padding) → 边框。
+ *
+ * <h3>为什么两行之间是 6px 而不是 4px</h3>
+ * 原先两处都用 4px，结果「文本→第一行」与「第一行→第二行」间隔相同，
+ * 视线读不出「这两行是一组控件、而不是三块独立内容」。
+ * 6px 介于两者之间：比「文本与控件」松一点，又明显紧于盒内 padding(8px)，
+ * 于是两行自动成簇。**间距必须互不相等才能表达层级** —— 全都相等等于没分组。
+ */
+.chat-composer__row {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: var(--os-space-2);
-  margin-bottom: var(--os-space-2);
+  min-width: 0;
 }
 
-.chat-composer__meter {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+/* 第一行紧贴输入框：它是「输入框的附件」而不是独立段落 */
+.chat-composer__row--tools {
+  margin-top: var(--os-space-1);
+}
+
+/* 第二行与第一行之间 6px：略松于上一处，使两行成簇 */
+.chat-composer__row--actions {
+  margin-top: 6px;
+}
+
+/* 工具栏里的读数推到行尾：左操作 / 右读数，两行结构一致 */
+.chat-composer__meter-slot {
   margin-left: auto;
+  flex: none;
+  /*
+   * 父级是 `align-items: center`，子元素默认按内容高（12px）参与布局；
+   * 而 ContextMeter 内部那层 `.context-meter` 带 `margin: -6px 0`（它原为卡片
+   * 头部里贴边而写），放进 flex 行后会上下各溢出 6px（实测 slot 12px / inner 24px）。
+   * 虽然 overflow 是 visible、点击仍有效，但行高会由这 12px 决定，
+   * 使这一行的中心线与右侧 chip 差 6px。显式给满行高把它撑平。
+   */
+  height: var(--os-button-height-inline);
+  display: flex;
+  align-items: center;
 }
 
-.chat-composer__meter-label {
-  color: var(--el-text-color-placeholder);
-  font-size: var(--os-font-xs);
-}
+/*
+ * 下面这段 `.chat-composer__meter-*` 在 ContextMeter 拆成独立组件后就没人用了
+ * （组件自己的 scoped 样式管内部结构），留着只会让后来的人以为这里有覆盖逻辑。
+ */
 
-/* 48px 细条：够看清比例，又不至于像个按钮 */
-.chat-composer__meter-track {
-  display: inline-block;
-  width: 48px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--el-fill-color);
-  overflow: hidden;
-}
-
-.chat-composer__meter-fill {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--el-color-primary);
-  transition: width var(--os-duration-normal) var(--os-ease);
-}
-
-.chat-composer__meter-fill--warn {
-  background: var(--el-color-warning);
-}
-
-.chat-composer__meter-fill--over {
-  background: var(--el-color-danger);
-}
-
-.chat-composer__meter-value {
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
-  font-variant-numeric: tabular-nums;
-}
-
+/*
+ * chip：与同行的下拉、图标按钮统一 28px。
+ *
+ * <p>padding 从 `4px 10px` 改为 `0 10px` + 固定 height：靠 padding 撑出来的高度
+ * 会随字体行高浮动（12px 字体在不同缩放比下能差 1~2px），而同一行里
+ * 下拉是固定高度，两者就对不上了。
+ */
 .chat-composer__chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
+  flex: none;
+  height: var(--os-button-height-inline);
+  padding: 0 10px;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 999px;
   background: var(--el-bg-color);
@@ -500,10 +543,19 @@ onMounted(autosize)
 
 .chat-composer__topk {
   width: 78px;
+  flex: none;
 }
 
+/*
+ * 条数下拉的边框与 box-shadow 都收掉：它紧跟在「知识库增强」这个已开启的
+ * chip 之后，语义上属于「知识库」的一个参数，两者视觉上应连成一体。
+ * 保留边框会变成三个并列的方框，观众会以为它是独立开关。
+ * 高度统一走 `--os-button-height-inline`（28px），与 chip 齐平。
+ */
 .chat-composer__topk :deep(.el-select__wrapper) {
+  min-height: var(--os-button-height-inline);
   box-shadow: none;
+  background: var(--el-fill-color-lighter);
 }
 
 /* footer 里的思考档位触发器：纯图标，颜色即档位 */
@@ -636,26 +688,24 @@ onMounted(autosize)
   min-height: 46px;
 }
 
-.chat-composer__footer {
-  display: flex;
-  align-items: center;
-  gap: var(--os-space-3);
-  margin-top: var(--os-space-1);
-}
-
-.chat-composer__footer .chat-composer__hint {
-  margin-right: auto;
+/*
+ * 操作行的读数组（提示 + 字数）靠右。
+ *
+ * <p>模型下拉在最左，读数组推到右侧：形成「左边选谁答 / 右边还能打多少」的
+ * 双端结构。改造前是「提示 → 模型 → 字数 → 图标 → 发送」五段等距平铺，
+ * 每个元素地位相同，眼睛找不到起点也找不到终点 —— 这正是「分不清谁和谁一组」
+ * 的来源。
+ */
+.chat-composer__hint {
+  margin-left: auto;
   color: var(--el-text-color-placeholder);
   font-size: var(--os-font-xs);
   /*
    * 窄屏直接隐藏，而不是截断成省略号。
    *
-   * 实测 1024px 视口下 footer 只剩 ~436px，装不下完整提示，截断后显示成
+   * 实测 1024px 视口下这一行只剩 ~436px，装不下完整提示，截断后显示成
    * 「Enter 发送 · Shi...」—— 一句被腰斩的快捷键说明比没有更糟：用户会以为
    * 界面上还有别的内容没加载出来。提示本身在设置页里也有，隐藏不丢信息。
-   *
-   * 760px 这个断点是量出来的：1440px 下整行需 ~700px 才放得下所有元素，
-   * 再窄下去就必须先牺牲这段说明。
    */
   flex: 0 1 auto;
   min-width: 0;
@@ -665,8 +715,13 @@ onMounted(autosize)
 }
 
 @media (max-width: 1180px) {
-  .chat-composer__footer .chat-composer__hint {
+  .chat-composer__hint {
     display: none;
+  }
+
+  /* 提示消失后由字数统计接管「推右」的职责，否则整组会贴到模型下拉边上 */
+  .chat-composer__count {
+    margin-left: auto;
   }
 }
 
@@ -677,5 +732,47 @@ onMounted(autosize)
   /* 「0 / 4000」在窄屏被压成「0 /」+「4000」两行（实测 h=30、w=32） */
   flex: none;
   white-space: nowrap;
+}
+
+/*
+ * 操作行统一到 32px（`--os-button-height`），与全站按钮一致。
+ *
+ * <h3>为什么不是 28px</h3>
+ * 本来想让整行压到 28px 与第一行的 chip 齐平，实测做不到且不该做：
+ * `theme.css` 有一条 `html .el-button--small:not(.is-link) { min-height: 32px }`
+ * （特异性 0-2-1），是**全站有意统一的**——改造前「刷新」按钮在用量页比其他页
+ * 矮一截，就是被这条治好的。在组件里用更高特异性压回 28px，等于为一个局部
+ * 推翻一条全局约定，别处又会不一致。
+ *
+ * <p>所以改成让这一行**整体**取 32px：模型下拉也抬到 32（见 ChatModelPicker），
+ * 与语音、思考、发送同高。
+ */
+.chat-composer__row--actions {
+  gap: var(--os-space-2);
+  min-width: 0;
+}
+
+/* 行内按钮之间的间隙由父级 gap 提供，禁掉 EP 自带 margin-left 的叠加
+   （EP 默认 margin-left: 12px，与 gap: 8px 叠成 20px，多行叠起来呈锯齿） */
+.chat-composer__row--actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
+/*
+ * 图标按钮组：语音 / 思考 / 发送。
+ *
+ * <p>组内 4px、组与左侧读数组之间 12px（由外层 gap 8 + 这里 margin-left 4 凑出）。
+ * 目的是让「能点的」连成一簇，与「只是给人看的」文字读数分开 ——
+ * 改造前六个元素全是 8px 等距，地位相同，眼睛找不到视觉起点与终点。
+ *
+ * <p>用 `span` 而不是再包一层 `div`：span 是 inline 的，在 flex 容器里
+ * 会被自动块级化（display: inline-flex 显式指定），不会引入额外的块格式化上下文。
+ */
+.chat-composer__action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--os-space-1);
+  flex: none;
+  margin-left: var(--os-space-1);
 }
 </style>

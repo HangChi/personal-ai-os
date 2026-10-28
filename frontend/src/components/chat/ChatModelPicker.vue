@@ -107,7 +107,7 @@ const hint = computed(() =>
 }
 
 /*
- * 高度对齐顶栏的搜索框（实测 28px）。
+ * 高度对齐操作行（32px = `--os-button-height`）。
  *
  * 必须写在 `:deep(.el-select__wrapper)` 上而不是 `.model-picker` 上：
  * `size="small"` 的 `el-select` 高度由内部 wrapper 决定，外层 div 只是跟着内容走
@@ -116,9 +116,13 @@ const hint = computed(() =>
  *
  * 平铺写法（不嵌套在 `.model-picker { :deep(...) }` 里）：嵌套会让 Vue 编译时
  * 丢掉宿主类名，特异性掉到 0-2-0，与 EP 打平后因加载顺序被静默覆盖。
+ *
+ * <p>取 32 而不是 28：它右边是语音/思考/发送三个按钮，`theme.css` 已把全站
+ * 小号按钮统一到 32px（`html .el-button--small:not(.is-link)`，0-2-1），
+ * 下拉跟着按钮走比跟着左边的输入框走更不容易看出落差。
  */
 .model-picker :deep(.el-select__wrapper) {
-  min-height: var(--os-button-height-inline);
+  min-height: var(--os-button-height);
 }
 
 /*
