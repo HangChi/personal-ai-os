@@ -16,14 +16,17 @@ import com.personalos.task.entity.TaskEntity;
 import com.personalos.task.entity.TaskPriority;
 import com.personalos.task.entity.TaskStatus;
 import com.personalos.task.repository.TaskRepository;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,21 +49,17 @@ public class TaskService {
     /**
      * 展示顺序：未完成在前 → 截止时间早的在前（无截止时间排最后）→ 新建的在前。
      *
-     * <p>排序放在内存里做，而不是 SQL：因为「未完成优先」需要一个 CASE 表达式，
-     * 而条件筛选已经用 Specification 表达。个人任务规模（千级以内）下内存排序成本可忽略，
-     * 且行为完全确定、可单元测试。
+     * <p><b>排序已整体下推到 SQL</b>（2026-10-28，审查第 10 项）。原先这里是内存
+     * comparator，先 {@code findAll} 全量再排序切片；任务涨到几千条后，每翻一页都要
+     * 把整表读进内存排一遍。现在由 {@link #applyDisplayOrder} 翻译成 ORDER BY，
+     * 内存 comparator 已删除 —— 删掉而不是留着「双保险」，因为两套顺序一旦有细微差别
+     * （NULLS LAST 的方言差异、稳定排序的兜底键不同），翻页就会重复或漏项，那种 bug
+     * 极难复现。顺序只有一处真相，就是这段 SQL。
      *
-     * <p><b>为什么分页后仍然不做 SQL 排序</b>（2026-10-14 分页落地时的复核）：一旦引入
-     * SQL 排序，就会出现「SQL 一套顺序、内存 comparator 一套顺序」两个真相，
-     * 二者任何细微差别（如 NULLS LAST 的方言差异）都会让翻页出现重复或漏项。
-     * 分页只负责切片，顺序仍然只有这一个 comparator。真有规模问题时的正确做法是
-     * **把排序整体搬进 SQL 并删掉这个 comparator**，而不是两套并存。
+     * <p>注意「未完成优先」不能用 {@code ORDER BY status} 实现：status 是 varchar，
+     * 字母序给出 {@code DOING < DONE < TODO}，已完成的会排在待办前面，与界面完全相反。
+     * 必须用 CASE 表达式显式映射（见 {@link #applyDisplayOrder}）。
      */
-    private static final Comparator<TaskEntity> DISPLAY_ORDER = Comparator
-            .comparingInt((TaskEntity task) -> task.getStatus() == TaskStatus.DONE ? 1 : 0)
-            .thenComparing(TaskEntity::getDueAt, Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparing(TaskEntity::getCreatedAt, Comparator.reverseOrder());
-
     private final TaskRepository taskRepository;
 
     public TaskService(TaskRepository taskRepository) {
@@ -83,32 +82,106 @@ public class TaskService {
     /**
      * 查询任务列表（分页）。
      *
-     * <p>顺序由 {@link #DISPLAY_ORDER} 决定，分页只切片——「有多少」与「这一页是什么」
-     * 由 {@link PageDto} 一并返回，不再有静默截断。
+     * <p>排序与切片都在 SQL 完成（见 {@link #applyDisplayOrder} 与
+     * {@link PageDto#ofPage}）：只把当前页的实体读进内存，而不是先全量加载再切。
+     *
+     * <p>{@code total} 用独立 count 查询而不是本页条数——前端要靠它决定还有没有下一页。
+     * 这里刻意<b>不</b>把 count 与 list 合成一条窗口函数查询：Spring Data 的
+     * Specification 分页接口已经为这两件事各提供一条路径，合成一条需要放弃
+     * {@code JpaSpecificationExecutor} 去手写原生 SQL，筛选条件就得复制一份。
+     * 两害相权，多一次 count 往返更划算，也不会出现「条件写两份、改一处忘一处」。
      */
     @Transactional(readOnly = true)
     public PageDto<TaskDto> search(TaskQuery query) {
-        List<TaskEntity> matched = taskRepository.findAll(buildSpecification(query));
+        Specification<TaskEntity> filter = buildSpecification(query);
+
+        // 极大页码必须在进入 SQL 之前挡掉，不能指望底层报错或自己收敛。
+        //
+        // 这正是 ErrorEnvelopeIntegrationTest#hugePageNumberReturnsEmptyPage 盯着的场景：
+        // page=21474837、size=100 → offset=2147483700 > Integer.MAX_VALUE，而 JDBC 的
+        // setFirstResult 只接受 int。Spring Data 会在 PageableUtils 里抛
+        // InvalidDataAccessApiUsageException，用户拿到 500 —— 「翻到太后面」是正常操作，
+        // 不该是服务器错误。
+        //
+        // 旧实现（全量加载后手工 subList）用 long 算起点并在越界时直接返回空列表，
+        // 天然不会踩到；改成 SQL 分页后这个保护必须显式补回来。这里用 long 算偏移是
+        // 关键：以 int 相乘会溢出成负数，判断随之失效。
+        //
+        // 注意不能直接 return 空页了事：total 必须是**真实总数**，前端要靠它渲染
+        // 分页器。所以这里只跳过内容查询、仍然走一次 count。
+        long offset = (long) query.page() * query.size();
+        if (offset > Integer.MAX_VALUE) {
+            long total = taskRepository.count(filter);
+            return PageDto.ofPage(List.of(), query.page(), query.size(), total);
+        }
+
+        PageRequest pageRequest = PageRequest.of(query.page(), query.size());
+        // 排序不能走 PageRequest 的 Sort：前两个键都需要 CASE/NULL 处理，Sort 只能表达
+        // 「列名 + 方向」。所以把 orderBy 写进 Specification 本身（且必须与 count 用的
+        // 那个分开——count 查询带上 ORDER BY 会白排序，某些数据库还会直接报错）。
+        Page<TaskEntity> page = taskRepository.findAll(withDisplayOrder(filter), pageRequest);
+
         Instant now = Instant.now();
-        List<TaskDto> ordered = matched.stream()
-                .sorted(DISPLAY_ORDER)
+        List<TaskDto> items = page.getContent().stream()
                 .map(task -> toDto(task, now))
                 .toList();
-        return PageDto.of(ordered, query.page(), query.size());
+        return PageDto.ofPage(items, query.page(), query.size(), page.getTotalElements());
+    }
+
+    /**
+     * 给筛选条件套上展示顺序（SQL 层 ORDER BY）。
+     *
+     * <h2>为什么不用 {@code Sort}</h2>
+     * 前两个排序键都不是「列 + 方向」能表达的：
+     * <ul>
+     *   <li><b>未完成优先</b>：status 是 varchar，字母序是 {@code DOING < DONE < TODO}，
+     *       直接排会把已完成的放到待办前面 —— 与界面完全相反。必须 CASE 映射成 0/1。</li>
+     *   <li><b>无截止时间排最后</b>：用 {@code CASE WHEN due_at IS NULL THEN 1 ELSE 0 END}
+     *       显式表达，而不是依赖 PostgreSQL「ASC 默认 NULLS LAST」。后者虽然当前成立，
+     *       但那是方言行为，换库或换排序方向就静默翻转，而这种错只在少数行上体现，
+     *       肉眼极难发现。</li>
+     * </ul>
+     *
+     * <h2>为什么要 created_at 与 id 两级兜底</h2>
+     * 前两个键都可能并列。并列时数据库返回的先后是<b>未定义</b>的，翻页就可能重复或
+     * 漏项（同一行在第 1 页出现两次、另一行谁也没出现）。created_at 在同一毫秒批量
+     * 导入时也不唯一，最终用主键 id 兜底才能保证全序。
+     */
+    private static Specification<TaskEntity> withDisplayOrder(Specification<TaskEntity> filter) {        return (root, query, builder) -> {
+            // 只为 count 查询服务时不需要排序（Spring Data 会传入 count 的 CriteriaQuery，
+            // 其 select 是 count，此时加 orderBy 会报「ORDER BY 表达式不在 GROUP BY 中」）
+            if (query.getResultType() == Long.class || query.getResultType() == long.class) {
+                return filter.toPredicate(root, query, builder);
+            }
+
+            Expression<Integer> unfinishedFirst = builder.<Integer>selectCase()
+                    .when(builder.equal(root.get("status"), TaskStatus.DONE), 1)
+                    .otherwise(0);
+            Expression<Integer> dueDateMissing = builder.<Integer>selectCase()
+                    .when(builder.isNull(root.get("dueAt")), 1)
+                    .otherwise(0);
+            query.orderBy(
+                    builder.asc(unfinishedFirst),
+                    builder.asc(dueDateMissing),
+                    builder.asc(root.get("dueAt")),
+                    builder.desc(root.get("createdAt")),
+                    builder.asc(root.get("id")));
+            return filter.toPredicate(root, query, builder);
+        };
     }
 
     /**
      * 全部任务，顺序与界面一致（导出用，阶段 12）。
      *
      * <p>不走 {@link #search} 是因为它受分页上限约束（{@code MAX_SIZE=100}），
-     * 拿它做导出会在任务超过 100 条时**静默少导**。这里显式返回全量，
-     * 并复用 {@link #DISPLAY_ORDER} 让文件里的顺序与用户看到的一致。
+     * 拿它做导出会在任务超过 100 条时**静默少导**。这里显式返回全量，但**复用同一段
+     * SQL 排序**（{@link #withDisplayOrder}），所以导出文件里的顺序与界面逐行一致 ——
+     * 而且是同一处真相，不存在「两套顺序慢慢漂移」的可能。
      */
     @Transactional(readOnly = true)
     public List<TaskDto> listAll() {
         Instant now = Instant.now();
-        return taskRepository.findAll().stream()
-                .sorted(DISPLAY_ORDER)
+        return taskRepository.findAll(withDisplayOrder(noFilter())).stream()
                 .map(task -> toDto(task, now))
                 .toList();
     }
@@ -120,9 +193,15 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskDto> findByIds(List<UUID> ids) {
+        if (ids.isEmpty()) {
+            // 空列表若照常拼 `id IN ()`，生成的是非法 SQL（PostgreSQL 直接报语法错）。
+            // 原 findAllById 对空列表返回空，行为要保持一致。
+            return List.of();
+        }
         Instant now = Instant.now();
-        return taskRepository.findAllById(ids).stream()
-                .sorted(DISPLAY_ORDER)
+        // 同样走 SQL 排序：这几个方法的结果会与列表页并排展示，顺序不一致会显得「跳」
+        return taskRepository.findAll(withDisplayOrder((root, query, builder) -> root.get("id").in(ids)))
+                .stream()
                 .map(task -> toDto(task, now))
                 .toList();
     }
@@ -244,6 +323,9 @@ public class TaskService {
      */
     @Transactional(readOnly = true)
     public List<TaskDto> findDueBetween(Instant from, Instant to) {
+        // 这里的顺序是「按截止时间升序」，与列表页的展示顺序（未完成优先）不同 ——
+        // 日历/提醒场景关心的是时间轴，已完成的本来就被排除了。所以不复用
+        // withDisplayOrder，单独用 Sort 表达即可（只需一列，无 CASE/NULL 需求）。
         Specification<TaskEntity> specification = (root, query, builder) -> builder.and(
                 builder.isNotNull(root.get("dueAt")),
                 builder.greaterThanOrEqualTo(root.get("dueAt"), from),
@@ -251,8 +333,7 @@ public class TaskService {
                 builder.notEqual(root.get("status"), TaskStatus.DONE));
 
         Instant now = Instant.now();
-        return taskRepository.findAll(specification).stream()
-                .sorted(Comparator.comparing(TaskEntity::getDueAt))
+        return taskRepository.findAll(specification, Sort.by(Sort.Direction.ASC, "dueAt")).stream()
                 .map(task -> toDto(task, now))
                 .toList();
     }
@@ -272,6 +353,16 @@ public class TaskService {
         }
         return taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("任务不存在：" + id));
+    }
+
+    /**
+     * 空筛选条件（不限制任何行）。
+     *
+     * <p>单独抽出来是为了让调用处读起来是「全量 + 展示顺序」，而不是造一个
+     * 永远返回 true 的 lambda 混在业务代码里。
+     */
+    private static Specification<TaskEntity> noFilter() {
+        return (root, query, builder) -> builder.conjunction();
     }
 
     private Specification<TaskEntity> buildSpecification(TaskQuery query) {

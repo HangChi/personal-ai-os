@@ -45,4 +45,25 @@ public record PageDto<T>(List<T> items, int page, int size, long total) {
         int end = (int) Math.min(from + effectiveSize, all.size());
         return new PageDto<>(List.copyOf(all.subList(start, end)), effectivePage, effectiveSize, all.size());
     }
+
+    /**
+     * 从「数据库已经分好页」的结果构造（排序与切片都在 SQL 完成）。
+     *
+     * <p>与 {@link #of(List, int, int)} 并存而不是替换它：两者适用于不同场景，
+     * 且混用会立刻暴露问题——
+     * <ul>
+     *   <li>{@code of}：数据量小、顺序依赖 Java 语义（如自定义 comparator），把全量读进内存再切；</li>
+     *   <li>{@code ofPage}：数据量可能很大、顺序能用 SQL 表达（ORDER BY + NULLS LAST）。</li>
+     * </ul>
+     * <b>同一个查询只能用一种</b>：先 SQL 排序再交给 {@code of} 切片，等于用两套顺序，
+     * 翻页会出现重复或漏项。
+     *
+     * @param items 数据库返回的当前页
+     * @param page  页码（从 0 开始）
+     * @param size  每页条数
+     * @param total 符合条件的总条数（由 {@code count} 查询得到，不是本页条数）
+     */
+    public static <T> PageDto<T> ofPage(List<T> items, int page, int size, long total) {
+        return new PageDto<>(List.copyOf(items), Math.max(page, 0), Math.max(size, 1), total);
+    }
 }

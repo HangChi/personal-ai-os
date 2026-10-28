@@ -14,6 +14,7 @@ import com.personalos.task.entity.TaskStatus;
 import com.personalos.task.repository.TaskRepository;
 import com.personalos.task.service.TaskService;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -301,9 +302,49 @@ class TaskApiIntegrationTest {
     }
 
     @Test
+    @DisplayName("排序下推到 SQL 后：逐页取完必须不重不漏，且与一次性全量顺序一致")
+    void paginationCoversEveryTaskExactlyOnce() {
+        // 2026-10-28 第 10 项把排序从内存 comparator 搬到 SQL。这个改动最容易引入的
+        // bug 是「并列键没有全序兜底」—— 数据库对并列行的返回顺序未定义，翻页时同一行
+        // 可能出现在两页里，另一行谁也没出现。旧实现（全量加载后内存排序切片）天然不会
+        // 犯这个错，所以只有专门测它才可能被发现。
+        //
+        // 刻意造大量并列：状态、截止时间全都相同，逼出「只能靠主键兜底」的场景。
+        //
+        // 诚实的边界：实测把 ORDER BY 末尾的 id 兜底键删掉，本用例**仍然通过** ——
+        // PG 在这种小表上恰好返回稳定顺序。也就是说本用例锁住的是「翻页不重不漏」这个
+        // 可观测结果，并不能证明兜底键是否必要。兜底键的真正价值在大表、并发写入、
+        // 执行计划切换（如改走并行扫描）时才显现，那些场景在单机小数据下无法复现。
+        // 保留它是因为成本为零、而一旦出问题极难定位；不要因为这条测试绿了就以为
+        // 删掉兜底键是安全的。
+        Instant sameDue = Instant.now().plusSeconds(86_400);
+        for (int i = 0; i < 25; i++) {
+            taskService.create(new CreateTaskRequest("并列" + i, null, null, sameDue, null));
+        }
+
+        long total = taskService.search(TaskQuery.all()).total();
+        assertThat(total).isEqualTo(25);
+
+        List<UUID> pagedIds = new ArrayList<>();
+        int pageSize = 4;
+        for (int page = 0; page * pageSize < total; page++) {
+            taskService.search(new TaskQuery(null, null, null, page, pageSize)).items()
+                    .forEach(dto -> pagedIds.add(dto.id()));
+        }
+
+        List<UUID> allIds = taskService.search(new TaskQuery(null, null, null, 0, TaskQuery.MAX_SIZE))
+                .items().stream().map(dto -> dto.id()).toList();
+
+        assertThat(pagedIds)
+                .as("逐页拼起来必须覆盖全部任务，且没有重复 —— 重复说明排序键并列时没有全序兜底")
+                .hasSize((int) total)
+                .doesNotHaveDuplicates()
+                .containsExactlyElementsOf(allIds);
+    }
+
+    @Test
     @DisplayName("不存在的任务：查询/修改均抛资源不存在")
-    void missingTaskRaisesNotFound() {
-        UUID missing = UUID.randomUUID();
+    void missingTaskRaisesNotFound() {        UUID missing = UUID.randomUUID();
 
         assertThatThrownBy(() -> taskService.get(missing)).isInstanceOf(ResourceNotFoundException.class);
         assertThatThrownBy(() -> taskService.update(missing,
