@@ -95,6 +95,22 @@ function removeAttachment(id: string): void {
 
 /** 发送后由父组件回调这里清空（父组件持有 draft，清空也归它） */
 function handleSend(): void {
+  /*
+   * 上传未完成时不允许发送。
+   *
+   * <p>原先这里直接 emit + 清空 attachments：用户在附件还在上传时按回车，草稿被发出去
+   * 而附件**不会跟着走** —— `pickFiles` 要等 await 上传返回后才把结果追加进列表，那时
+   * 列表早已被清空，`[...attachments.value, uploaded]` 写进去的只是这一条，可消息已经
+   * 发出去了。用户看到的是「附件没了」，而且没有任何提示解释为什么。上传失败至少还有
+   * 一句错误提示，这条路径连提示都没有。
+   *
+   * <p>选择拦住而不是「等上传完再自动发送」：自动发送会让用户失去最后一次确认机会
+   * （他可能只是想先把文字发出去）。拦一下、给一句提示，是这里最不容易出错的处理。
+   */
+  if (uploading.value) {
+    ElMessage.warning('附件还在上传，请稍候再发送')
+    return
+  }
   emit('send', attachments.value)
   attachments.value = []
 }
@@ -336,7 +352,15 @@ onMounted(autosize)
         </el-dropdown>
 
         <el-button v-if="streaming" round @click="emit('stop')">停止</el-button>
-        <el-button v-else type="primary" round :disabled="modelValue.trim().length === 0" @click="handleSend">
+        <!-- 上传期间同时置灰：拦截逻辑在 handleSend 里，但按钮先给一个「现在不能点」的视觉信号 -->
+        <el-button
+          v-else
+          type="primary"
+          round
+          :disabled="modelValue.trim().length === 0 || uploading"
+          :loading="uploading"
+          @click="handleSend"
+        >
           发送
         </el-button>
       </div>
