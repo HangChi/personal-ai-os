@@ -178,7 +178,17 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
   font-weight: 600;
 }
 
-/* 「+」只在悬停时出现：42 个格子都常驻一个加号会非常吵 */
+/*
+ * 「+」只在悬停时出现：42 个格子都常驻一个加号会非常吵。
+ *
+ * 但**触屏设备根本没有 hover**：iPad / 手机上这个按钮会永远是 opacity:0，
+ * 也就是月视图里「点某天新建日程」这个入口完全消失 —— 用户只能看到没处点的格子。
+ * 那不是「吵不吵」的取舍，是功能不可用。
+ *
+ * 所以两段：默认按悬停显隐；在不支持 hover 的设备上常驻显示（并放大到可点面积，
+ * 手指不像鼠标那样能精确点中 12px 的加号）。用 `(hover: none)` 而不是按屏宽判断：
+ * 带触摸屏的笔记本同时有 hover，按宽度判断会把它们错划进来。
+ */
 .cal-month__cell-add {
   opacity: 0;
   transition: opacity var(--os-duration-fast) var(--os-ease);
@@ -186,6 +196,19 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 
 .cal-month__cell:hover .cal-month__cell-add {
   opacity: 1;
+}
+
+/* 触屏：没有 hover，必须常驻；同时撑大点击热区到可手指点中的尺寸 */
+@media (hover: none) {
+  .cal-month__cell-add {
+    opacity: 1;
+    min-width: 28px;
+    min-height: 28px;
+    /* EP 的小按钮给了固定 height/line-height，只写 min-height 会被压回 24px */
+    height: 28px;
+    line-height: 28px;
+    padding: 0;
+  }
 }
 
 /*
