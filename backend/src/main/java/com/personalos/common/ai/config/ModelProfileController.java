@@ -4,6 +4,7 @@ import com.personalos.common.ai.config.dto.ModelListResult;
 import com.personalos.common.ai.config.dto.ModelProfileDto;
 import com.personalos.common.ai.config.dto.ModelProfileListDto;
 import com.personalos.common.ai.config.dto.ProbeModelsRequest;
+import com.personalos.common.ai.config.dto.ProbeWindowRequest;
 import com.personalos.common.ai.config.dto.ReorderModelProfilesRequest;
 import com.personalos.common.ai.config.dto.SaveModelProfileRequest;
 import com.personalos.common.api.ApiResponse;
@@ -205,14 +206,48 @@ public class ModelProfileController {
         if (request == null) {
             throw new BusinessException(ErrorCode.VALIDATION_FAILED, "请求体不能为空");
         }
-        checkLength(request.baseUrl(), BASE_URL_MAX, "端点地址");
-        ModelProtocol protocol = ModelProtocol.parse(request.protocol());
-        String baseUrl = request.baseUrl();
-        String apiKey = request.apiKey();
+        ProbeTarget target = resolveProbeTarget(request.protocol(), request.baseUrl(),
+                request.apiKey(), request.profileId());
+        return ApiResponse.ok(modelListProbeService.probe(target.protocol(), target.baseUrl(),
+                target.apiKey(), request.preferredModels()));
+    }
+
+    /**
+     * 查单个模型的上下文窗口（阶段 24）。
+     *
+     * <p>给「刚加入清单、窗口还是空的」模型一个独立入口：只发一次详情请求，
+     * 不重新拉列表、不占批量名额、不必再撞一次限流。
+     *
+     * <p>与批量探测一致：拿不到也返回 200 + {@code ok=false}。
+     * 端点不提供详情是常态，不该表现为接口错误。
+     */
+    @PostMapping("/probe-window")
+    public ApiResponse<ModelListProbeService.WindowProbeResult> probeWindow(@RequestBody ProbeWindowRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "请求体不能为空");
+        }
+        ProbeTarget target = resolveProbeTarget(request.protocol(), request.baseUrl(),
+                request.apiKey(), request.profileId());
+        return ApiResponse.ok(modelListProbeService.probeWindow(target.protocol(), target.baseUrl(),
+                target.apiKey(), request.model()));
+    }
+
+    /**
+     * 解析探测目标：密钥/端点留空时回落到指定配置已保存的值。
+     *
+     * <p>抽出来是因为两个探测端点必须用**同一套**回落规则。写两遍必然漂移，
+     * 而漂移的症状是「批量能探、单个探不了」这种极难解释的行为差异。
+     */
+    private ProbeTarget resolveProbeTarget(String protocolRaw, String baseUrlRaw,
+                                           String apiKeyRaw, UUID profileId) {
+        checkLength(baseUrlRaw, BASE_URL_MAX, "端点地址");
+        ModelProtocol protocol = ModelProtocol.parse(protocolRaw);
+        String baseUrl = baseUrlRaw;
+        String apiKey = apiKeyRaw;
 
         // 表单没填密钥但指明了配置 → 用库里那套的密钥
-        if ((apiKey == null || apiKey.isBlank()) && request.profileId() != null) {
-            AiModelProfileEntity existing = profileService.require(request.profileId());
+        if ((apiKey == null || apiKey.isBlank()) && profileId != null) {
+            AiModelProfileEntity existing = profileService.require(profileId);
             ModelConfigService.ResolvedConfig resolved = configService.resolveFrom(existing);
             apiKey = resolved.apiKey();
             // 端点也留空时同样回落到那套配置的生效值，否则无从探测
@@ -220,8 +255,11 @@ public class ModelProfileController {
                 baseUrl = resolved.baseUrl();
             }
         }
-        return ApiResponse.ok(
-                modelListProbeService.probe(protocol, baseUrl, apiKey, request.preferredModels()));
+        return new ProbeTarget(protocol, baseUrl, apiKey);
+    }
+
+    /** 探测目标（协议 + 端点 + 密钥），三个必须一起确定 */
+    private record ProbeTarget(ModelProtocol protocol, String baseUrl, String apiKey) {
     }
 
     // ------------------------------------------------------------------ 内部

@@ -11,11 +11,11 @@
  * 编辑时密钥框留空 = 不改动。把后端返回的掩码 `****8f3a` 填进去再提交，
  * 会把真实密钥覆盖成那七个字符 —— 所以这里始终 `apiKey: ''`。
  */
-import { Download, QuestionFilled } from '@element-plus/icons-vue'
+import { Download, QuestionFilled, Refresh } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { computed, reactive, ref, watch } from 'vue'
 
-import { probeModelList } from '@/api/model-profile'
+import { probeModelList, probeModelWindow } from '@/api/model-profile'
 import { confirmDanger } from '@/lib/confirm-box'
 import {
   MODEL_NAME_MAX,
@@ -349,6 +349,67 @@ function finish(): void {
 }
 
 /**
+ * 正在查窗口的模型名（null 表示没有进行中的查询）。
+ *
+ * <p>用「模型名」而不是布尔：按钮 loading 只该出现在被点的那一行。
+ * 用布尔会让所有行一起转圈，用户分不清是哪个在查。
+ */
+const probingWindow = ref<string | null>(null)
+
+/**
+ * 查单个模型的上下文窗口（阶段 24）。
+ *
+ * <h3>只填空缺、不覆盖已填的值</h3>
+ * 这个按钮解决的是「刚加进来的模型窗口是空的」。而端点返回的
+ * `max_input_tokens` 常常是**实例默认参数**而不是能力上限（DashScope 对
+ * 几乎所有模型都回 129024，包括文档写着 1M 的模型）。若无条件覆盖，
+ * 用户点一下就会把自己按文档填的 1M 冲成 126K —— 那正是要避免的事。
+ * 所以：空 → 写入；已有值且不同 → 只提示不覆盖，让用户自己决定。
+ *
+ * @param name 模型名
+ */
+async function handleProbeWindow(name: string): Promise<void> {
+  if (probingWindow.value) {
+    return
+  }
+  probingWindow.value = name
+  try {
+    const result = await probeModelWindow({
+      protocol: form.protocol,
+      baseUrl: form.baseUrl,
+      apiKey: form.apiKey.trim().length > 0 ? form.apiKey : undefined,
+      profileId: props.profile?.id ?? null,
+      model: name,
+    })
+    if (!result.ok || typeof result.window !== 'number') {
+      ElMessage.warning(result.error ?? '没有取到这个模型的上下文窗口')
+      return
+    }
+    const detected = result.window
+    const current = form.contextWindows[name]
+    const currentText = current === undefined || current === null ? '' : String(current).trim()
+    if (currentText.length === 0) {
+      form.contextWindows[name] = String(detected)
+      ElMessage.success(`${name}：${formatContextWindow(detected)}`)
+      return
+    }
+    const parsedCurrent = parseContextWindow(currentText)
+    if (parsedCurrent === detected) {
+      ElMessage.success(`与端点一致：${formatContextWindow(detected)}`)
+      return
+    }
+    // 已有值就不动它 —— 端点报小是常态（见上面注释），静默覆盖比不查更糟
+    ElMessage.info(
+      `端点返回 ${formatContextWindow(detected)}，当前填的是 ${parsedCurrent === null ? currentText : formatContextWindow(parsedCurrent)}，未覆盖。需要以端点为准请先清空输入框再查`,
+    )
+  } catch (cause) {
+    ElMessage.warning(cause instanceof Error ? cause.message : '查询窗口失败')
+  } finally {
+    probingWindow.value = null
+  }
+}
+
+/**
  * 某一行的窗口输入提示。
  *
  * <p>分三种语气，与输入框的三种状态一一对应：
@@ -612,6 +673,24 @@ defineExpose({ finish })
               >
                 {{ windowNote(name).text }}
               </span>
+              <!--
+                单模型查窗口（阶段 24）：只发一次详情请求，解决「刚加进来的模型
+                窗口恒为空、必须整轮重探」的问题。图标按钮而不是文字按钮 ——
+                这一行已经有名称、输入框、换算提示、默认徽章与移除，再加「查询」
+                两个字会把行宽推到折行。
+              -->
+              <el-button
+                class="profile-form__model-probe"
+                link
+                size="small"
+                :loading="probingWindow === name"
+                :disabled="probingWindow !== null && probingWindow !== name"
+                title="向端点查询这个模型的上下文窗口（不会覆盖已填的值）"
+                :aria-label="`查询 ${name} 的上下文窗口`"
+                @click="handleProbeWindow(name)"
+              >
+                <el-icon v-if="probingWindow !== name"><Refresh /></el-icon>
+              </el-button>
             </span>
             <!--
               这一列放「默认」徽章、不放「设为默认」按钮：
@@ -1208,7 +1287,24 @@ html .profile-dialog {
   flex-shrink: 0;
   align-items: center;
   gap: 6px;
-  width: 152px;
+  /*
+   * 152 → 180：阶段 24 在本容器里加了「查窗口」图标按钮（22px + 6px 间距）。
+   * 不加宽的话输入框会被挤到 62px，「上下文窗口」的占位文字都显示不全。
+   * 定宽的意义不变：同列各行输入框右边缘必须对齐（见下方 note 的注释）。
+   */
+  width: 180px;
+}
+
+/*
+ * 查窗口按钮：只放一个刷新图标。
+ *
+ * <p>不用文字按钮（「查询」两个字约 28px）：这一行已有名称、输入框、换算提示、
+ * 默认徽章与移除，再加文字会把行宽推到折行。图标配 title 已足够表达。
+ */
+.profile-form__model-probe {
+  flex: none;
+  width: 22px;
+  padding: 0;
 }
 
 .profile-form__model-window :deep(.el-input) {

@@ -522,13 +522,45 @@ public class ModelProfileService {
                 continue;
             }
             Integer window = contextWindows == null ? null : contextWindows.get(name);
-            // 用户没填时用内置对照表补一个合理的起点 —— 这是「比猜准一点」的默认值，
-            // 界面上可改。顺序：用户显式提交 > 内置表 > 未知
-            if (window == null) {
-                window = com.personalos.common.ai.ModelContextWindows.lookup(name);
-            }
+            // 顺序：用户/探测值 > 内置表 > 未知。但「>」不等于「直接用」——
+            // 探测值可能比模型真实能力**小得多**，见下面的取大规则。
+            Integer known = com.personalos.common.ai.ModelContextWindows.lookup(name);
+            window = reconcileWindow(window, known);
             target.add(new AiModelProfileModelEntity(profileId, kind, name, seen.size() - 1, window, now));
         }
+    }
+
+    /**
+     * 协调「探测到的窗口」与「内置表窗口」，取较大者。
+     *
+     * <h2>为什么不能直接信探测值（2026-10-29 实测）</h2>
+     * DashScope 的 {@code GET /models/{name}} 返回的
+     * {@code extra_info.default_envs.max_input_tokens} 是**部署实例的默认参数**，
+     * 不是模型能力上限：
+     * <ul>
+     *   <li>几乎所有模型都回 129024（= 131072 - 2048，一个通用默认值）；</li>
+     *   <li>{@code qwen-long} 文档口径 1M，它也回 129024；</li>
+     *   <li>embedding / rerank 这类根本没有上下文概念的模型同样回 129024。</li>
+     * </ul>
+     * 于是「探测值优先」会把 1M 的模型记成 126K —— 用户看到的正是这个数。
+     * 内置表是**文档口径**、人工维护、只收录窗口明确的模型，在这种冲突下可信度更高。
+     *
+     * <h2>为什么不无条件用内置表</h2>
+     * 端点比文档更了解自己的部署：自建 vLLM 可能只开了 8K，此时端点的值才是真的。
+     * 取较大者只影响「内置表说更大」的情形，其余仍然是端点说了算。
+     *
+     * <h2>风险</h2>
+     * 内置表写错（偏大）会让预算分母偏大，用户选高档位时可能撞 400。
+     * 这张表因此只收录窗口明确的模型，且界面上始终可改。
+     */
+    static Integer reconcileWindow(Integer probed, Integer known) {
+        if (probed == null) {
+            return known;
+        }
+        if (known == null) {
+            return probed;
+        }
+        return Math.max(probed, known);
     }
 
     /** 单值列 → 一条清单（迁移未生效时的兜底） */

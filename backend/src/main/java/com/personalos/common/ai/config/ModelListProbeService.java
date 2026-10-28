@@ -1,6 +1,8 @@
 package com.personalos.common.ai.config;
 
 import com.personalos.common.ai.config.dto.ModelListResult;
+import com.personalos.common.api.ErrorCode;
+import com.personalos.common.exception.BusinessException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -423,6 +425,80 @@ public class ModelListProbeService {
      *                        避免为三种协议再写一遍构造逻辑（也避免两边走偏）
      * @param preferredModels 用户已选中的模型：优先补查，排在队列最前
      */
+    /**
+     * 详情接口的路径前缀。两种协议一致（列表接口同样是 {@code /v1/models}）。
+     */
+    private static final String DETAIL_PATH = "/v1/models/";
+
+    /**
+     * 单模型查窗口（阶段 24）：只问一个模型，不拉列表、不占批量名额。
+     *
+     * <h2>为什么需要它</h2>
+     * 批量探测只能补查 12 个模型（限流与预算约束），而「新加入清单的模型」
+     * 那一刻还不在优先名单里，窗口必然是空的。用户要么重新整轮探测（1.8 秒 + 再撞一次限流），
+     * 要么手填。给每个模型一个独立入口，成本降到一次请求。
+     *
+     * <h2>为什么复用列表请求的头</h2>
+     * 鉴权方式（Bearer / x-api-key + 版本头）在列表探测时已经验证过可用，
+     * 单模型请求没有理由再实现一遍协议差异 —— 写两遍必然漂移。
+     *
+     * @param protocol 协议
+     * @param baseUrl  端点地址
+     * @param apiKey   密钥（调用方负责回落到已保存配置）
+     * @param model    模型名
+     * @return 查询结果；拿不到也是 200 + {@code ok=false}（端点不提供详情是常态）
+     */
+    public WindowProbeResult probeWindow(ModelProtocol protocol, String baseUrl, String apiKey, String model) {
+        if (model == null || model.isBlank()) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "模型名不能为空");
+        }
+        if (baseUrl == null || baseUrl.isBlank()) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "请先填写端点地址");
+        }
+        String name = model.strip();
+        HttpRequest listRequest = buildRequest(protocol, resolveUri(protocol, baseUrl), apiKey);
+        DetailOutcome outcome = fetchDetailWindow(detailBase(baseUrl), DETAIL_PATH, name, listRequest);
+
+        if (outcome.rateLimited()) {
+            return new WindowProbeResult(false, null, "RATE_LIMITED", "端点限流（429），请稍后再试");
+        }
+        if (outcome.window() == null) {
+            // 404 与「响应里没有窗口字段」在这一层无法区分，也无需区分：
+            // 对用户而言都是「这个端点没告诉我们」，而它仍然能正常聊天
+            return new WindowProbeResult(false, null, "UNSUPPORTED",
+                    "这个端点没有返回「" + name + "」的上下文窗口，请按模型文档手动填写");
+        }
+        return new WindowProbeResult(true, outcome.window(), null, null);
+    }
+
+    /**
+     * 详情请求的基准地址：去掉末尾斜杠，并把用户可能已经写进去的 {@code /v1} 摘掉。
+     *
+     * <p>两种情况都必须能工作：填 {@code https://api.openai.com} 与
+     * {@code https://api.openai.com/v1} 都要得到同一套 {@code /v1/models/{name}}。
+     */
+    static String detailBase(String baseUrl) {
+        String root = stripTrailingSlash(baseUrl.trim());
+        return root.endsWith("/v1") ? root.substring(0, root.length() - 3) : root;
+    }
+
+    /**
+     * 单模型查窗口的结果。
+     *
+     * @param ok    是否取到
+     * @param window 窗口（token）；未取到为 null
+     * @param kind   未取到的原因：{@code UNSUPPORTED}（端点不提供，不用管）或
+     *               {@code RATE_LIMITED}（过一会儿可重试）
+     * @param error  面向用户的说明
+     */
+    public record WindowProbeResult(boolean ok, Integer window, String kind, String error) {
+    }
+
+    /**
+     * 补查一批模型的详情窗口。
+     *
+     * <p>参数说明见 {@link #lookupDetailWindows}。
+     */
     private Map<String, Integer> lookupDetailWindows(ModelProtocol protocol, String baseUrl,
                                                      HttpRequest listRequest, List<String> models,
                                                      List<String> preferredModels) {
@@ -430,12 +506,11 @@ public class ModelListProbeService {
         if (targets.isEmpty()) {
             return Map.of();
         }
-        String root = stripTrailingSlash(baseUrl.trim());
+        String root = detailBase(baseUrl);
         // 两种协议的详情路径都是 /v1/models/{name}；写成常量而不是三元，
         // 免得后来人误以为两家路径不同（列表接口是一样的：/v1/models）
-        String path = "/v1/models/";
-        // 用户填的 baseUrl 已含 /v1 时不能再补一次
-        String base = root.endsWith("/v1") ? root.substring(0, root.length() - 3) : root;
+        String path = DETAIL_PATH;
+        String base = root;
 
         Map<String, Integer> found = new java.util.concurrent.ConcurrentHashMap<>();
         long deadline = System.nanoTime() + Duration.ofMillis(DETAIL_BUDGET_MS).toNanos();

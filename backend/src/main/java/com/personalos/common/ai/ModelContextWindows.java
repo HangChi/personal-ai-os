@@ -80,6 +80,10 @@ public final class ModelContextWindows {
             Map.entry("deepseek-chat", 65_536),
             Map.entry("deepseek-reasoner", 65_536),
             Map.entry("deepseek-coder", 65_536),
+            // v4.1 系列的公开口径是 1M。DashScope 详情接口对它回 129024
+            // （131072-2048 的通用实例默认值），那不是能力上限 —— 若只按探测值记，
+            // 会把它记成 126K。合并规则见 ModelProfileService#reconcileWindow。
+            Map.entry("deepseek-v4.1-flash", 1_048_576),
 
             // ---- Google ----
             Map.entry("gemini-2.5", 1_048_576),

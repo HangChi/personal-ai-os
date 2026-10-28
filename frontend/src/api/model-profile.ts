@@ -137,3 +137,38 @@ export function probeModelList(payload: {
     timeout: 15_000,
   })
 }
+
+/** 单模型查窗口结果（阶段 24） */
+export interface WindowProbeResult {
+  ok: boolean
+  window: number | null
+  /** 未取到的原因：UNSUPPORTED（端点不提供）/ RATE_LIMITED（稍后重试） */
+  kind: string | null
+  error: string | null
+}
+
+/**
+ * 查单个模型的上下文窗口（阶段 24）。
+ *
+ * <p>为什么需要它：批量探测只能补查 12 个模型，而「刚加入清单的模型」
+ * 那一刻不在优先名单里，窗口必然为空。要么整轮重探（1.8 秒 + 再撞一次限流），
+ * 要么手填。这个接口只发一次详情请求。
+ *
+ * <p>拿不到也返回 {@code ok=false} 而不是报错：大量端点不提供详情接口，
+ * 但它们能正常聊天。
+ */
+export function probeModelWindow(payload: {
+  protocol?: ModelProtocol | null
+  baseUrl?: string | null
+  apiKey?: string | null
+  profileId?: string | null
+  model: string
+}): Promise<WindowProbeResult> {
+  return requestData<WindowProbeResult>({
+    url: '/settings/model/profiles/probe-window',
+    method: 'post',
+    data: payload,
+    // 单模型后端等待上限 2.5 秒，这里给 8 秒：留网络与排队余量
+    timeout: 8_000,
+  })
+}
