@@ -111,7 +111,7 @@ function handlePage(target: number): void {
       <template #header>
         <div class="activity__card-header">
           <span class="activity__card-title">MCP 接入状态</span>
-          <el-button size="small" :loading="mcpLoading" @click="store.loadMcp()">刷新</el-button>
+          <el-button :loading="mcpLoading" @click="store.loadMcp()">刷新</el-button>
         </div>
       </template>
 
@@ -145,25 +145,33 @@ function handlePage(target: number): void {
           description="MCP_SERVERS_<名字>_COMMAND 等配置项为空，助手暂时拿不到外部工具。"
         />
 
-        <el-table v-else :data="mcp.servers" size="small">
-          <el-table-column prop="name" label="Server" width="140" show-overflow-tooltip />
-          <el-table-column label="状态" width="90">
+        <el-table v-else :data="mcp.servers">
+          <el-table-column prop="name" label="Server" width="150" show-overflow-tooltip />
+          <el-table-column label="状态" width="88">
             <template #default="{ row }">
               <el-tag :type="row.available ? 'success' : 'danger'" size="small">
                 {{ row.available ? '可用' : '不可用' }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="toolCount" label="工具数" width="80" />
+          <el-table-column prop="toolCount" label="工具数" width="80" align="right" />
           <el-table-column label="只读直行" min-width="200">
             <template #default="{ row }">
-              <span v-if="row.autoTools.length === 0" class="activity__muted"> 无（全部需确认） </span>
-              <el-tag v-for="tool in row.autoTools" :key="tool" class="activity__tool-tag" size="small" effect="plain">
-                {{ tool }}
-              </el-tag>
+              <div v-if="row.autoTools.length === 0" class="activity__muted">无（全部需确认）</div>
+              <div v-else class="activity__tool-tags">
+                <el-tag
+                  v-for="tool in row.autoTools"
+                  :key="tool"
+                  class="activity__tool-tag"
+                  size="small"
+                  effect="plain"
+                >
+                  {{ tool }}
+                </el-tag>
+              </div>
             </template>
           </el-table-column>
-          <el-table-column label="说明" min-width="180">
+          <el-table-column label="说明" min-width="180" show-overflow-tooltip>
             <template #default="{ row }">
               <span v-if="row.failureReason" class="activity__reason">{{ row.failureReason }}</span>
               <span v-else class="activity__muted">—</span>
@@ -192,7 +200,7 @@ function handlePage(target: number): void {
               <el-radio-button value="table">表格</el-radio-button>
               <el-radio-button value="timeline">时间线</el-radio-button>
             </el-radio-group>
-            <el-button size="small" :loading="loading" @click="store.loadInvocations()"> 刷新 </el-button>
+            <el-button :loading="loading" @click="store.loadInvocations()">刷新</el-button>
           </div>
         </div>
       </template>
@@ -207,25 +215,19 @@ function handlePage(target: number): void {
       />
 
       <template v-else>
-        <el-table
-          v-if="viewMode === 'table'"
-          v-loading="loading"
-          :data="invocations"
-          :empty-text="emptyText"
-          size="small"
-        >
-          <el-table-column label="时间" width="180">
+        <el-table v-if="viewMode === 'table'" v-loading="loading" :data="invocations" :empty-text="emptyText">
+          <el-table-column label="时间" width="170">
             <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
           </el-table-column>
-          <el-table-column prop="operation" label="工具" min-width="180" show-overflow-tooltip />
-          <el-table-column label="结果" width="100">
+          <el-table-column prop="operation" label="工具" min-width="200" show-overflow-tooltip />
+          <el-table-column label="结果" width="96">
             <template #default="{ row }">
               <el-tag :type="outcomeMeta(row.outcome).type" size="small">
                 {{ outcomeMeta(row.outcome).label }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="耗时" width="90">
+          <el-table-column label="耗时" width="88" align="right">
             <template #default="{ row }">{{ formatDuration(row.durationMs) }}</template>
           </el-table-column>
           <el-table-column label="会话" min-width="150" show-overflow-tooltip>
@@ -404,8 +406,19 @@ function handlePage(target: number): void {
   color: var(--el-text-color-secondary);
 }
 
+/*
+ * 标签容器用 flex + gap 统一间距。
+ * 原先每个 tag 自带 margin，最后一个会在右侧多留一段空隙，与单元格内边距叠加后
+ * 显得右边界不齐；交给容器的 gap 就没有"尾部余量"这个问题。
+ */
+.activity__tool-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--os-space-1);
+}
+
 .activity__tool-tag {
-  margin: 0 var(--os-space-1) var(--os-space-1) 0;
+  margin: 0;
 }
 
 .activity__muted {

@@ -145,7 +145,8 @@ function labelX(index: number): number {
           {{ option.label }}
         </el-radio-button>
       </el-radio-group>
-      <el-button size="small" :icon="Refresh" :loading="loading" @click="store.load()">刷新</el-button>
+      <!-- 去掉 size="small"：同一颗「刷新」在其他页是 32px，这里 24px，同一个动作两种大小 -->
+      <el-button :icon="Refresh" :loading="loading" @click="store.load()">刷新</el-button>
     </PageHeader>
 
     <el-alert v-if="error" type="error" :closable="false" show-icon title="无法加载用量统计" :description="error" />
@@ -274,8 +275,8 @@ function labelX(index: number): number {
               按天明细
             </span>
           </template>
-          <el-table :data="[...stats.daily].reverse()" size="small" max-height="360">
-            <el-table-column prop="date" label="日期" width="120" />
+          <el-table :data="[...stats.daily].reverse()" max-height="360">
+            <el-table-column prop="date" label="日期" width="130" />
             <el-table-column label="输入" width="110" align="right">
               <template #default="{ row }">{{ row.promptTokens.toLocaleString('zh-CN') }}</template>
             </el-table-column>
