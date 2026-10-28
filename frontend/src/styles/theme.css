@@ -250,6 +250,49 @@ textarea {
   box-shadow: 0 2px 6px 0 rgb(79 70 229 / 28%);
 }
 
+/*
+ * 禁用态的主按钮（2026-10-28 实测补）。
+ *
+ * 这不是「可有可无的打磨」。EP 的禁用态直接用 `--el-color-primary-light-5`
+ * 当底色，在深色主题里 light-5 是**更亮**的（#b4bcf8），于是「不可点击」
+ * 的按钮反而成了整页最亮的色块 —— 实测它比卡片亮 9.13:1，比真正可点的
+ * 主按钮还抢眼，视觉权重与可用状态完全颠倒。浅色下则反过来：底 #a29cf3
+ * 配白字只有 2.45:1，字几乎读不出来。
+ *
+ * 因此禁用态一律「退到背景里」：底色接近卡片、文字降为低饱和的本色系，
+ * 深色底/亮字、浅色底/深字各自成立。WCAG 1.4.3 豁免禁用控件，但仍要求
+ * 「看得出这里有个按钮」，所以两组的文字**底色**对比都压过了 3:1：
+ *   - 深色 #343161 底 + #a09cc8 字 → 4.60:1，底仅比卡片亮 1.40:1；
+ *   - 浅色 #dcd9f9 底 + #6d63ce 字 → 3.54:1，底仅比卡片深 1.37:1。
+ * 浅色没有继续加深到 4.5:1：那需要 #5b4fc4 这类深紫字，禁用按钮会重新
+ * 变得像可点的主按钮，反而破坏「灰掉」的语义。这是刻意的取舍。
+ *
+ * ⚠️ 顺序：浅色基线在前、暗色覆盖在后，两者特异性相同，只靠顺序决胜。
+ *
+ * ⚠️ 选择器必须复刻上面主按钮那条的 `:not(...)` 链。正常态的
+ * `html.dark .el-button--primary:not(.is-plain):not(.is-text):not(.is-link)`
+ * 是 0-5-0（`html.dark` 算 0-2-0，三个 `:not` 各带一个类），只写
+ * `.el-button--primary.is-disabled`（0-3-0）压不过 → 实测背景色改对了、
+ * 但 `color` 被正常态抢回成 #16182a，文字对比掉到 1.47:1。
+ */
+html .el-button--primary:not(.is-plain):not(.is-text):not(.is-link).is-disabled,
+html .el-button--primary:not(.is-plain):not(.is-text):not(.is-link).is-disabled:hover,
+html .el-button--primary:not(.is-plain):not(.is-text):not(.is-link).is-disabled:focus {
+  color: #6d63ce;
+  background-color: #dcd9f9;
+  border-color: #cfcbf5;
+  box-shadow: none;
+}
+
+html.dark .el-button--primary:not(.is-plain):not(.is-text):not(.is-link).is-disabled,
+html.dark .el-button--primary:not(.is-plain):not(.is-text):not(.is-link).is-disabled:hover,
+html.dark .el-button--primary:not(.is-plain):not(.is-text):not(.is-link).is-disabled:focus {
+  color: #a09cc8;
+  background-color: #343161;
+  border-color: #3d3a6e;
+  box-shadow: none;
+}
+
 /* ---- 输入 / 选择 ---- */
 
 /*
@@ -751,6 +794,56 @@ html.dark .el-card {
   border-color: var(--el-border-color-light);
 }
 
+/*
+ * 描边式控件的轮廓（2026-10-28 实测补）。
+ *
+ * 为什么不能靠调 `--el-border-color`：它同时被表格线、分割线、输入框、
+ * 按钮共用，整体提亮一档会让表格显得毛躁 —— 而真正看不清的只有
+ * **悬在卡片上、靠 1px 描边定义边界**的那两类控件。因此定点修这两处。
+ *
+ * ⚠️ 选择器必须带 `html` 前缀（0-2-x）：EP 的 per-component 样式由 unplugin
+ * 在用到该组件的 SFC 内注入，路由懒加载使其运行时**晚于**本文件；
+ * 同特异性下 EP 胜出，写 `.el-slider__runway`（0-1-0）会被静默吃掉
+ * —— 实测漏了前缀时轨道仍停在 2.07:1。
+ *
+ * ⚠️ 顺序：**浅色基线在前、暗色覆盖在后**。两者特异性相同（都是 0-2-x），
+ * 只能靠顺序决出胜负；反过来写会让暗色被浅色盖掉。
+ *
+ * 修复前实测（WCAG 对非文本元素建议 ≥3:1）：
+ * - 浅色：按钮边框 #d8dce4 在白卡上仅 1.37:1、滑块轨道 1.24:1
+ *   → 看起来「没有边框/没有轨道」；
+ * - 暗色：按钮边框 #3a3f4d 在 #1d1e1f 上 1.59:1、轨道 1.43:1 → 同样几乎不可见。
+ *
+ * 修复后实测（Playwright 取 getComputedStyle 现算，不是估的）：
+ * - 滑块轨道 #8892a5 / #666d80 → 浅色 3.13:1、暗色 3.23:1，达标。
+ *   轨道整条只有「颜色」一个视觉信号（没有文字、没有描边），所以必须拉满 3:1。
+ * - 按钮边框 #a3acbc / #666d80 → 浅色 2.29:1、暗色 3.23:1。
+ *   ⚠️ 浅色这一项**刻意没有拉到 3:1**：再深要让边框到 #8892a5，而那样
+ *   「取消」这类次级按钮的视觉重量会超过旁边的主按钮，按钮层级就乱了。
+ *   WCAG 1.4.11 要求的是「识别控件所必需的视觉信息」——按钮自带高对比度
+ *   文字（12:1+），边框只承担辅助轮廓，故此取舍。归属「已知取舍」，
+ *   不是漏改。
+ */
+html .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(.is-info) {
+  border-color: #a3acbc;
+}
+
+html .el-slider__runway {
+  background-color: #8892a5;
+}
+
+html.dark .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(.is-info) {
+  border-color: #666d80;
+}
+
+html.dark .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(.is-info):hover {
+  border-color: var(--el-color-primary-light-3);
+}
+
+html.dark .el-slider__runway {
+  background-color: #666d80;
+}
+
 html.dark .el-table {
   --el-table-header-bg-color: var(--el-fill-color-light);
   --el-table-tr-bg-color: var(--el-bg-color);
@@ -764,55 +857,62 @@ html.dark .el-table {
  *    而字色是 --el-color-white → 实测 2.98:1。改成「深底 + 亮字」：底用更暗的
  *    light-7/8，字用原基色。
  * ② el-radio-button 选中态同理（主色底 + 白字在深色主题里对比不足）。
+ *
+ * ⚠️ 选择器**不能写成 `html.dark html .el-tag...`**（2026-10-28 实测修复）。
+ * 本文件这 10 条规则曾全部写成双 `html`，而 `html` 不可能是 `html.dark` 的
+ * 后代 —— 整组规则**从未匹配过**，暗色下 tag 一直是浅底深字（近白色的
+ * `#f2f3f5` 块贴在深色卡片上）。因为不报错、只是配色不对，静默了很久。
+ * `.dark` 就在 `<html>` 上，正确写法是 `html.dark .el-tag...`（0-2-1，
+ * 已足够压过 EP 的 `html .el-tag--info`）。
  */
-html.dark html .el-tag.el-tag--primary {
+html.dark .el-tag.el-tag--primary {
   --el-tag-text-color: #c3c9fb;
   --el-tag-bg-color: #2c2957;
   --el-tag-border-color: #3a3570;
 }
 
-html.dark html .el-tag.el-tag--success {
+html.dark .el-tag.el-tag--success {
   --el-tag-text-color: #9ce9b4;
   --el-tag-bg-color: #1d4a2d;
   --el-tag-border-color: #235c38;
 }
 
-html.dark html .el-tag.el-tag--warning {
+html.dark .el-tag.el-tag--warning {
   --el-tag-text-color: #fddc8f;
   --el-tag-bg-color: #4d3c12;
   --el-tag-border-color: #624c16;
 }
 
-html.dark html .el-tag.el-tag--danger {
+html.dark .el-tag.el-tag--danger {
   --el-tag-text-color: #fcc0c0;
   --el-tag-bg-color: #4c2525;
   --el-tag-border-color: #612e2e;
 }
 
-html.dark html .el-tag.el-tag--info {
+html.dark .el-tag.el-tag--info {
   --el-tag-text-color: #d4d8e0;
   --el-tag-bg-color: #333845;
   --el-tag-border-color: #3a3f4d;
 }
 
 /* plain 变体在暗色下是「透明底 + 亮类型色字」，基色已提亮，只需微调 */
-html.dark html .el-tag.is-plain.el-tag--primary {
+html.dark .el-tag.is-plain.el-tag--primary {
   --el-tag-text-color: #b4bcf8;
 }
 
-html.dark html .el-tag.is-plain.el-tag--success {
+html.dark .el-tag.is-plain.el-tag--success {
   --el-tag-text-color: #86e0a4;
 }
 
-html.dark html .el-tag.is-plain.el-tag--warning {
+html.dark .el-tag.is-plain.el-tag--warning {
   --el-tag-text-color: #fbd06a;
 }
 
-html.dark html .el-tag.is-plain.el-tag--danger {
+html.dark .el-tag.is-plain.el-tag--danger {
   --el-tag-text-color: #fba3a3;
 }
 
-html.dark html .el-tag.is-plain.el-tag--info {
+html.dark .el-tag.is-plain.el-tag--info {
   --el-tag-text-color: #d4d8e0;
 }
 
