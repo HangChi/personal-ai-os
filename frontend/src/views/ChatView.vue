@@ -496,6 +496,9 @@ async function jumpToMatch(step: number): Promise<void> {
         >
           <el-alert v-if="error" class="chat__error" type="error" :closable="false" show-icon :title="error" />
 
+          <!-- 执行计划（阶段 22）：这一轮多步任务做到哪了。无计划时组件自身不渲染 -->
+          <ChatPlanPanel :conversation-id="currentConversationId" :streaming="streaming" />
+
           <!-- 空态：欢迎 + 建议问题 -->
           <ChatWelcome
             v-if="messages.length === 0 && !streamingContent && !loadingMessages"
