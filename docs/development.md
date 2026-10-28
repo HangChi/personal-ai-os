@@ -290,8 +290,10 @@ java -jar backend/target/personal-ai-os-backend-0.1.0-SNAPSHOT.jar --server.port
 cd frontend && npm run dev -- --host 127.0.0.1
 
 # ③ 跑验证（依赖只需装一次）
-cd /Users/songhangchi/.workbuddy/binaries/node/workspace && npm install playwright
-cd - && NODE_PATH=/Users/songhangchi/.workbuddy/binaries/node/workspace/node_modules \
+#    把 NODE_WORKSPACE 换成你自己的 node 工作区路径
+NODE_WORKSPACE="$HOME/.workbuddy/binaries/node/workspace"
+(cd "$NODE_WORKSPACE" && npm install playwright)
+NODE_PATH="$NODE_WORKSPACE/node_modules" \
   PLAYWRIGHT_BROWSERS_PATH=$HOME/Library/Caches/ms-playwright \
   node scripts/dev/verify-frontend.js
 ```

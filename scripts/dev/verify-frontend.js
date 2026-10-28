@@ -12,7 +12,9 @@
  *   3. 控制台无错误
  *
  * 前置（只需一次）：
- *   cd /Users/songhangchi/.workbuddy/binaries/node/workspace && npm install playwright
+ *   在任一 node 工作区里装 playwright（下面用 $NODE_WORKSPACE 指代）：
+ *   NODE_WORKSPACE="$HOME/.workbuddy/binaries/node/workspace"
+ *   (cd "$NODE_WORKSPACE" && npm install playwright)
  *   浏览器使用 ms-playwright 缓存（见下面 CACHED_SHELL），或退回本机安装的 Chrome
  *
  * 运行方式（需先启动后端与前端 dev server）：
