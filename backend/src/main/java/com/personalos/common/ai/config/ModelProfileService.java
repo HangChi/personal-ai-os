@@ -55,17 +55,20 @@ public class ModelProfileService {
     static final int NAME_MAX = 60;
 
     private final AiModelProfileRepository repository;
+    private final AiModelProfileModelRepository modelRepository;
     private final AiModelConfigRepository legacyRepository;
     private final ModelConfigService configService;
     private final AiChatClientProvider provider;
     private final Clock clock;
 
     public ModelProfileService(AiModelProfileRepository repository,
+                               AiModelProfileModelRepository modelRepository,
                                AiModelConfigRepository legacyRepository,
                                ModelConfigService configService,
                                AiChatClientProvider provider,
                                Clock clock) {
         this.repository = repository;
+        this.modelRepository = modelRepository;
         this.legacyRepository = legacyRepository;
         this.configService = configService;
         this.provider = provider;
@@ -125,13 +128,17 @@ public class ModelProfileService {
                 blankToNull(command.presetId()),
                 blankToNull(command.baseUrl()),
                 blankToNull(command.apiKey()),
-                blankToNull(command.chatModel()),
+                // 单值列 = 清单第一项（见 effectiveChatModel 的说明）
+                effectiveChatModel(command),
                 command.temperature(),
-                blankToNull(command.embeddingModel()),
+                effectiveEmbeddingModel(command),
                 command.protocol(),
                 now);
         AiModelProfileEntity saved = repository.save(entity);
-        log.info("已新建模型配置：id={}, name={}", saved.getId(), saved.getName());
+        replaceModels(saved.getId(), command.chatModels(), command.embeddingModels());
+        log.info("已新建模型配置：id={}, name={}, 对话模型数={}, 嵌入模型数={}",
+                saved.getId(), saved.getName(),
+                countOf(command.chatModels()), countOf(command.embeddingModels()));
         return saved;
     }
 
@@ -155,15 +162,62 @@ public class ModelProfileService {
                 blankToNull(command.presetId()),
                 blankToNull(command.baseUrl()),
                 apiKey,
-                blankToNull(command.chatModel()),
+                effectiveChatModel(command),
                 command.temperature(),
-                blankToNull(command.embeddingModel()),
+                effectiveEmbeddingModel(command),
                 command.protocol(),
                 clock.instant());
         AiModelProfileEntity saved = repository.save(entity);
-        log.info("已更新模型配置：id={}, name={}, revision={}",
-                saved.getId(), saved.getName(), saved.getRevision());
+        replaceModels(id, command.chatModels(), command.embeddingModels());
+        log.info("已更新模型配置：id={}, name={}, revision={}, 对话模型数={}, 嵌入模型数={}",
+                saved.getId(), saved.getName(), saved.getRevision(),
+                countOf(command.chatModels()), countOf(command.embeddingModels()));
         return saved;
+    }
+
+    /**
+     * 该写进单值列的对话模型名：清单第一项优先，否则用命令里的 {@code chatModel}。
+     *
+     * <h2>为什么保留单值列并且让它等于清单第一项</h2>
+     * 单值列 {@code chat_model} 是「这套配置默认用哪个模型」，被三处依赖：
+     * 启动期的 {@link ModelConfigService#applyOnStartup}、启用配置时的
+     * {@link ModelConfigService#applyResolved}、以及未指定模型的会话。
+     * 若让它与清单各行其是，就会出现「卡片上写着 qwen-max，默认请求发的是 qwen-plus」。
+     *
+     * <p>把「清单第一项」定义为默认，让用户只需维护一份有序清单 ——
+     * 想换默认模型就把它拖到第一位，不必再单独填一个字段。
+     *
+     * <p>清单为空时回落到命令里的 {@code chatModel}：那是老客户端（V22 及以前
+     * 的前端）提交的字段，继续支持它们不会带来额外成本。
+     */
+    private static String effectiveChatModel(SaveProfileCommand command) {
+        String fromList = firstOf(command.chatModels());
+        return fromList != null ? fromList : blankToNull(command.chatModel());
+    }
+
+    /** 嵌入模型的默认值，规则同 {@link #effectiveChatModel} */
+    private static String effectiveEmbeddingModel(SaveProfileCommand command) {
+        String fromList = firstOf(command.embeddingModels());
+        return fromList != null ? fromList : blankToNull(command.embeddingModel());
+    }
+
+    /** 列表里第一个非空白项；没有时返回 null */
+    private static String firstOf(List<String> values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.strip();
+            }
+        }
+        return null;
+    }
+
+    private static int countOf(List<String> values) {
+        return values == null ? 0 : (int) values.stream()
+                .filter(value -> value != null && !value.isBlank())
+                .count();
     }
 
     /**
@@ -291,6 +345,128 @@ public class ModelProfileService {
         repository.saveAll(changed);
     }
 
+    // ------------------------------------------------------------------ 模型清单（V23）
+
+    /**
+     * 某套配置保存的模型清单。
+     *
+     * <p>清单为空时**回落到单值列**：V23 之前保存的配置只有
+     * {@code chat_model} 一个模型名，迁移已经把它搬进子表；但若在已被手工改过的
+     * 库上迁移没跑到，这里仍要让界面看到一个模型而不是「还没有模型」。
+     * 这条兜底与 {@link #resolveCurrent} 里回落 V20 老表是同一个思路：
+     * 数据搬迁出问题时，用户不该看到自己从未做过的改动。
+     *
+     * @param profileId 配置 id
+     * @return 该配置的模型清单；顺序为 kind 升序（CHAT 在前）、清单内顺序
+     */
+    @Transactional(readOnly = true)
+    public List<AiModelProfileModelEntity> modelsOf(UUID profileId) {
+        List<AiModelProfileModelEntity> models =
+                modelRepository.findByProfileIdOrderByKindAscSortOrderAscIdAsc(profileId);
+        if (!models.isEmpty()) {
+            return models;
+        }
+        AiModelProfileEntity profile = repository.findById(profileId).orElse(null);
+        return profile == null ? List.of() : fallbackModels(profile);
+    }
+
+    /**
+     * 一次取回多套配置的模型清单，供列表接口使用。
+     *
+     * <p>逐套查一次是 N+1，见 {@link AiModelProfileModelRepository#findByProfileIdInOrderByKindAscSortOrderAscIdAsc}。
+     * 返回的 Map 里没有键表示「这套配置没有任何模型」；键存在但值为空列表
+     * 只可能来自兜底路径 —— 调用方按「有没有值」判断即可。
+     *
+     * @param profiles 全部配置
+     * @return 配置 id → 模型清单
+     */
+    @Transactional(readOnly = true)
+    public Map<UUID, List<AiModelProfileModelEntity>> modelsOf(List<AiModelProfileEntity> profiles) {
+        if (profiles.isEmpty()) {
+            return Map.of();
+        }
+        List<UUID> ids = profiles.stream().map(AiModelProfileEntity::getId).toList();
+        Map<UUID, List<AiModelProfileModelEntity>> grouped = new LinkedHashMap<>();
+        for (AiModelProfileModelEntity model : modelRepository
+                .findByProfileIdInOrderByKindAscSortOrderAscIdAsc(ids)) {
+            grouped.computeIfAbsent(model.getProfileId(), key -> new ArrayList<>()).add(model);
+        }
+        // 兜底：子表里完全没有记录的配置，用单值列凑一条
+        for (AiModelProfileEntity profile : profiles) {
+            grouped.computeIfAbsent(profile.getId(), key -> fallbackModels(profile));
+        }
+        return grouped;
+    }
+
+    /**
+     * 用子表里的清单覆盖某套配置的模型。
+     *
+     * <p><b>整体替换</b>而非增量合并：设置页提交的是整份清单，用户删掉一个模型
+     * 就是要它消失。增量合并会让「删除」永远不生效 —— 删了的项因为「库里本来有」
+     * 又被保留下来。
+     *
+     * <p>先删后插的顺序不可颠倒：反过来会在删除前撞上唯一约束
+     * {@code uq_ai_model_profile_model_name}（用户把一个模型从清单中间挪到前面，
+     * 语义上没变，但插入先发生就会与还没删掉的那条重复）。
+     *
+     * @param profileId 配置 id
+     * @param chatModels     对话模型名清单（按用户排序，可含空串，会被丢弃）
+     * @param embeddingModels 嵌入模型名清单
+     */
+    @Transactional
+    public void replaceModels(UUID profileId, List<String> chatModels, List<String> embeddingModels) {
+        modelRepository.deleteByProfileId(profileId);
+        // 必须立刻落库：紧接着的插入若是与旧行同名，会撞唯一约束
+        modelRepository.flush();
+
+        Instant now = clock.instant();
+        List<AiModelProfileModelEntity> toSave = new ArrayList<>();
+        appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.CHAT, chatModels, now);
+        appendModels(toSave, profileId, AiModelProfileModelEntity.Kind.EMBEDDING, embeddingModels, now);
+        if (!toSave.isEmpty()) {
+            modelRepository.saveAll(toSave);
+        }
+    }
+
+    /** 把一组模型名转成实体并追加到目标列表；跳过空串与重复项 */
+    private static void appendModels(List<AiModelProfileModelEntity> target, UUID profileId,
+                                     AiModelProfileModelEntity.Kind kind,
+                                     List<String> modelNames, Instant now) {
+        if (modelNames == null) {
+            return;
+        }
+        // 去重在这里自己做：数据库的唯一约束会拒绝重复，但那是一个 500 级别的
+        // 约束冲突，而「重复提交同一个模型名」是用户很容易无意做出的事。
+        java.util.LinkedHashSet<String> seen = new java.util.LinkedHashSet<>();
+        for (String raw : modelNames) {
+            if (raw == null) {
+                continue;
+            }
+            String name = raw.strip();
+            if (name.isEmpty() || !seen.add(name)) {
+                continue;
+            }
+            target.add(new AiModelProfileModelEntity(profileId, kind, name, seen.size() - 1, now));
+        }
+    }
+
+    /** 单值列 → 一条清单（迁移未生效时的兜底） */
+    private static List<AiModelProfileModelEntity> fallbackModels(AiModelProfileEntity profile) {
+        List<AiModelProfileModelEntity> models = new ArrayList<>(2);
+        Instant now = profile.getUpdatedAt() == null ? Instant.EPOCH : profile.getUpdatedAt();
+        String chat = profile.getChatModel();
+        if (chat != null && !chat.isBlank()) {
+            models.add(new AiModelProfileModelEntity(profile.getId(),
+                    AiModelProfileModelEntity.Kind.CHAT, chat.strip(), 0, now));
+        }
+        String embedding = profile.getEmbeddingModel();
+        if (embedding != null && !embedding.isBlank()) {
+            models.add(new AiModelProfileModelEntity(profile.getId(),
+                    AiModelProfileModelEntity.Kind.EMBEDDING, embedding.strip(), 0, now));
+        }
+        return models;
+    }
+
     // ------------------------------------------------------------------ 运行时应用
 
     /**
@@ -349,13 +525,16 @@ public class ModelProfileService {
     /**
      * 新建 / 更新配置的表单。
      *
-     * @param name           展示名（必填）
-     * @param presetId       预设标识；null 表示自定义
-     * @param baseUrl        端点地址；空表示回落到环境变量
-     * @param apiKey         密钥；**null 表示不改动**，空串表示清空（仅 update 有意义）
-     * @param chatModel      对话模型名
-     * @param temperature    温度；null 表示沿用服务端默认
-     * @param embeddingModel 嵌入模型名（改动需重启）
+     * @param name            展示名（必填）
+     * @param presetId        预设标识；null 表示自定义
+     * @param baseUrl         端点地址；空表示回落到环境变量
+     * @param protocol        协议（只影响「获取模型列表」）
+     * @param apiKey          密钥；**null 表示不改动**，空串表示清空（仅 update 有意义）
+     * @param chatModel       单个对话模型名（V22 及以前的前端用；清单非空时被忽略）
+     * @param temperature     温度；null 表示沿用服务端默认
+     * @param embeddingModel  单个嵌入模型名（同上，兼容旧客户端）
+     * @param chatModels      对话模型清单（V23）。**第一项即默认模型**，可为 null
+     * @param embeddingModels 嵌入模型清单（V23）。第一项即默认，可为 null
      */
     public record SaveProfileCommand(String name,
                                      String presetId,
@@ -364,6 +543,16 @@ public class ModelProfileService {
                                      String apiKey,
                                      String chatModel,
                                      Double temperature,
-                                     String embeddingModel) {
+                                     String embeddingModel,
+                                     List<String> chatModels,
+                                     List<String> embeddingModels) {
+
+        /** 兼容构造器：只给单个模型名（V22 及以前的调用方与测试） */
+        public SaveProfileCommand(String name, String presetId, String baseUrl, String protocol,
+                                  String apiKey, String chatModel, Double temperature,
+                                  String embeddingModel) {
+            this(name, presetId, baseUrl, protocol, apiKey, chatModel, temperature, embeddingModel,
+                    null, null);
+        }
     }
 }

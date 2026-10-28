@@ -49,6 +49,7 @@ class ModelProfileServiceTest {
     private static final Clock CLOCK = Clock.fixed(NOW, ZoneOffset.UTC);
 
     private AiModelProfileRepository repository;
+    private AiModelProfileModelRepository modelRepository;
     private AiModelConfigRepository legacyRepository;
     private ModelConfigService configService;
     private ModelProfileService service;
@@ -56,17 +57,54 @@ class ModelProfileServiceTest {
     /** 内存里的「表」：id → 实体 */
     private final Map<UUID, AiModelProfileEntity> table = new HashMap<>();
 
+    /** 内存里的模型清单：id → 实体（V23） */
+    private final Map<Long, AiModelProfileModelEntity> modelTable = new HashMap<>();
+
     /** 记录 saveAndFlush 的调用顺序，用于断言「先取消、后启用」 */
     private final List<String> flushOrder = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
         table.clear();
+        modelTable.clear();
         flushOrder.clear();
 
         repository = mock(AiModelProfileRepository.class);
+        modelRepository = mock(AiModelProfileModelRepository.class);
         legacyRepository = mock(AiModelConfigRepository.class);
         when(legacyRepository.findSingleton()).thenReturn(Optional.empty());
+
+        // 模型清单的内存替身（V23）。整组替换是唯一的写路径：
+        // deleteByProfileId 必须真的把行删掉，否则「删掉的模型还在」这类
+        // bug 会被测试放过 —— 与配置表的 delete 替身同一个理由。
+        doAnswer(invocation -> {
+            UUID profileId = invocation.getArgument(0);
+            modelTable.entrySet().removeIf(entry -> profileId.equals(entry.getValue().getProfileId()));
+            return null;
+        }).when(modelRepository).deleteByProfileId(any(UUID.class));
+        when(modelRepository.saveAll(any())).thenAnswer(invocation -> {
+            Iterable<AiModelProfileModelEntity> all = invocation.getArgument(0);
+            List<AiModelProfileModelEntity> saved = new ArrayList<>();
+            for (AiModelProfileModelEntity entity : all) {
+                assignModelIdIfMissing(entity);
+                modelTable.put(entity.getId(), entity);
+                saved.add(entity);
+            }
+            return saved;
+        });
+        when(modelRepository.findByProfileIdOrderByKindAscSortOrderAscIdAsc(any(UUID.class)))
+                .thenAnswer(invocation -> modelsOf((UUID) invocation.getArgument(0)));
+        when(modelRepository.findByProfileIdInOrderByKindAscSortOrderAscIdAsc(any()))
+                .thenAnswer(invocation -> {
+                    java.util.Collection<UUID> ids = invocation.getArgument(0);
+                    List<AiModelProfileModelEntity> result = new ArrayList<>();
+                    for (UUID id : ids) {
+                        result.addAll(modelsOf(id));
+                    }
+                    return result;
+                });
+        when(modelRepository.countByProfileId(any(UUID.class)))
+                .thenAnswer(invocation -> (long) modelsOf(invocation.getArgument(0)).size());
 
         when(repository.save(any(AiModelProfileEntity.class))).thenAnswer(invocation -> {
             AiModelProfileEntity entity = invocation.getArgument(0);
@@ -117,7 +155,8 @@ class ModelProfileServiceTest {
                         "https://env.example.com", "sk-env", "env-model", null, "env-embed",
                         null, null, Map.of()));
 
-        service = new ModelProfileService(repository, legacyRepository, configService, provider, CLOCK);
+        service = new ModelProfileService(repository, modelRepository, legacyRepository,
+                configService, provider, CLOCK);
     }
 
     // ------------------------------------------------------------------ 新建
@@ -365,7 +404,153 @@ class ModelProfileServiceTest {
         verify(configService).applyResolved(any());
     }
 
+    // ------------------------------------------------------------------ 模型清单（V23）
+
+    @Test
+    @DisplayName("新建时清单第一项成为单值列的默认模型")
+    void firstChatModelBecomesDefault() {
+        AiModelProfileEntity created = service.create(
+                new SaveProfileCommand("DashScope", "dashscope", "https://api.example.com", "OPENAI",
+                        "sk-test", null, null, null,
+                        List.of("qwen-max", "qwen-plus"), List.of("text-embedding-v3")));
+
+        assertThat(created.getChatModel())
+                .as("单值列是「默认用哪个」，必须与清单第一项一致，否则界面显示与实际请求会对不上")
+                .isEqualTo("qwen-max");
+        assertThat(created.getEmbeddingModel()).isEqualTo("text-embedding-v3");
+    }
+
+    @Test
+    @DisplayName("清单里的空串与重复项被丢弃，顺序保持用户提交的顺序")
+    void listIsSanitizedButKeepsOrder() {
+        AiModelProfileEntity created = service.create(
+                new SaveProfileCommand("c", null, null, "OPENAI", "sk", null, null, null,
+                        List.of("  ", "qwen-max", "qwen-plus", "qwen-max"), null));
+
+        assertThat(service.modelsOf(created.getId()))
+                .extracting(AiModelProfileModelEntity::getModelName)
+                .containsExactly("qwen-max", "qwen-plus");
+    }
+
+    @Test
+    @DisplayName("清单为空时回落到命令里的单个模型名（兼容 V22 客户端）")
+    void emptyListFallsBackToSingleModel() {
+        AiModelProfileEntity created = service.create(command("旧客户端", null));
+
+        assertThat(created.getChatModel()).isEqualTo("test-model");
+        assertThat(service.modelsOf(created.getId()))
+                .extracting(AiModelProfileModelEntity::getModelName)
+                .containsExactly("test-model");
+    }
+
+    @Test
+    @DisplayName("更新时整体替换清单，删掉的模型真的消失")
+    void updateReplacesWholeList() {
+        AiModelProfileEntity created = service.create(
+                new SaveProfileCommand("c", null, null, "OPENAI", "sk", null, null, null,
+                        List.of("qwen-max", "qwen-plus"), null));
+
+        service.update(created.getId(), new SaveProfileCommand("c", null, null, "OPENAI", "sk",
+                null, null, null, List.of("qwen-turbo"), null));
+
+        assertThat(service.modelsOf(created.getId()))
+                .as("增量合并会让「删除」永远不生效，必须整体替换")
+                .extracting(AiModelProfileModelEntity::getModelName)
+                .containsExactly("qwen-turbo");
+    }
+
+    @Test
+    @DisplayName("同时提交清单与单值时以清单为准")
+    void listWinsOverSingleField() {
+        AiModelProfileEntity created = service.create(
+                new SaveProfileCommand("c", null, null, "OPENAI", "sk", "old-model", null, null,
+                        List.of("new-model"), null));
+
+        assertThat(created.getChatModel())
+                .as("两个来源同时生效会造出「界面显示 A、实际用 B」")
+                .isEqualTo("new-model");
+    }
+
+    @Test
+    @DisplayName("modelsOf 把对话与嵌入分开，且对话在前")
+    void modelsOfGroupsByKind() {
+        AiModelProfileEntity created = service.create(
+                new SaveProfileCommand("c", null, null, "OPENAI", "sk", null, null, null,
+                        List.of("qwen-max"), List.of("text-embedding-v3")));
+
+        List<AiModelProfileModelEntity> models = service.modelsOf(created.getId());
+
+        assertThat(models).hasSize(2);
+        assertThat(models.get(0).kindEnum()).isEqualTo(AiModelProfileModelEntity.Kind.CHAT);
+        assertThat(models.get(1).kindEnum()).isEqualTo(AiModelProfileModelEntity.Kind.EMBEDDING);
+    }
+
+    @Test
+    @DisplayName("批量取清单时不漏任何一套配置")
+    void modelsOfBatchCoversAllProfiles() {
+        AiModelProfileEntity first = service.create(
+                new SaveProfileCommand("a", null, null, "OPENAI", "sk", null, null, null,
+                        List.of("m1"), null));
+        AiModelProfileEntity second = service.create(
+                new SaveProfileCommand("b", null, null, "OPENAI", "sk", null, null, null,
+                        List.of("m2"), null));
+
+        Map<UUID, List<AiModelProfileModelEntity>> grouped =
+                service.modelsOf(List.of(first, second));
+
+        assertThat(grouped.get(first.getId()))
+                .extracting(AiModelProfileModelEntity::getModelName).containsExactly("m1");
+        assertThat(grouped.get(second.getId()))
+                .extracting(AiModelProfileModelEntity::getModelName).containsExactly("m2");
+    }
+
+    @Test
+    @DisplayName("modelsOf 对空配置列表返回空 Map，不抛异常")
+    void modelsOfEmptyProfiles() {
+        assertThat(service.modelsOf(List.of())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("清单为空且单值列也为空时，清单就是空的（没有模型）")
+    void noModelsAtAll() {
+        AiModelProfileEntity created = service.create(
+                new SaveProfileCommand("c", null, null, "OPENAI", "sk", null, null, null,
+                        List.of(), List.of()));
+
+        assertThat(service.modelsOf(created.getId())).isEmpty();
+    }
+
     // ------------------------------------------------------------------ 替身
+
+    /** 内存替身里的「按配置取清单」，排序与真实仓储一致（kind 升序、再按 sortOrder） */
+    private List<AiModelProfileModelEntity> modelsOf(UUID profileId) {
+        return modelTable.values().stream()
+                .filter(entity -> profileId.equals(entity.getProfileId()))
+                .sorted((a, b) -> {
+                    int byKind = a.getKind().compareTo(b.getKind());
+                    return byKind != 0 ? byKind : Integer.compare(a.getSortOrder(), b.getSortOrder());
+                })
+                .toList();
+    }
+
+    /**
+     * 给模型清单项补一个 id（理由同 {@link #assignIdIfMissing}）。
+     */
+    private static void assignModelIdIfMissing(AiModelProfileModelEntity entity) {
+        try {
+            var field = AiModelProfileModelEntity.class.getDeclaredField("id");
+            field.setAccessible(true);
+            if (field.get(entity) == null) {
+                field.set(entity, MODEL_ID_SEQUENCE.incrementAndGet());
+            }
+        } catch (ReflectiveOperationException ex) {
+            throw new IllegalStateException("无法为测试模型清单项注入 id", ex);
+        }
+    }
+
+    /** 模型清单的自增 id */
+    private static final java.util.concurrent.atomic.AtomicLong MODEL_ID_SEQUENCE =
+            new java.util.concurrent.atomic.AtomicLong();
 
     private static SaveProfileCommand command(String name, String presetId) {
         return new SaveProfileCommand(name, presetId, "https://api.example.com", null, "sk-test",

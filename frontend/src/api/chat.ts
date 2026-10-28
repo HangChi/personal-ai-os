@@ -65,6 +65,22 @@ export function renameSession(conversationId: string, title: string): Promise<Ch
   })
 }
 
+/**
+ * 设置这个会话用哪个对话模型（V23）。
+ *
+ * <p>传 `null` 表示「改回跟随生效配置的默认模型」。后端刻意不刷新
+ * `updatedAt` —— 换模型不是对话活动，把会话顶到列表最前面会让人困惑。
+ *
+ * <p>返回完整会话视图，调用方据此就地替换列表项，不必再拉一次列表。
+ */
+export function setSessionModel(conversationId: string, model: string | null): Promise<ChatSession> {
+  return requestData<ChatSession>({
+    url: `/chat/sessions/${conversationId}/model`,
+    method: 'put',
+    data: { model },
+  })
+}
+
 /** 消息分页参数（阶段 21） */
 export interface MessageListQuery {
   /** 返回条数（1~200）。省略则返回全部消息（老契约，导出等场景用） */

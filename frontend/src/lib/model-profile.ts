@@ -15,6 +15,9 @@ export const TEMPERATURE_MAX = 2
 export const MODEL_NAME_MAX = 120
 export const PROFILE_NAME_MAX = 60
 
+/** 模型清单条数上限，与后端 `ModelProfileController.MODEL_LIST_MAX` 一致 */
+export const MODEL_LIST_MAX = 500
+
 /**
  * 协议的中文标签。
  *
@@ -93,9 +96,18 @@ export interface ModelProfileForm {
   /** 协议：只影响「获取模型列表」打哪个接口，不影响聊天 */
   protocol: ModelProtocol
   apiKey: string
-  chatModel: string
+  /**
+   * 对话模型清单（V23）。**第一项即默认模型**。
+   *
+   * 为什么是数组而不是单个字符串：一个端点通常提供几十上百个模型，
+   * 用户会按任务换着用。清单既是「收藏夹」也是「下拉选项来源」，
+   * 第一项就是默认 —— 让「换默认模型」变成「拖到第一位」，
+   * 不必再单独维护一个「默认模型」字段。
+   */
+  chatModels: string[]
   temperature: number | null
-  embeddingModel: string
+  /** 嵌入模型清单（V23）。第一项即默认 */
+  embeddingModels: string[]
 }
 
 /** 空表单（新建时用） */
@@ -106,9 +118,9 @@ export function emptyForm(presetId: string | null = null): ModelProfileForm {
     baseUrl: '',
     protocol: DEFAULT_PROTOCOL,
     apiKey: '',
-    chatModel: '',
+    chatModels: [],
     temperature: null,
-    embeddingModel: '',
+    embeddingModels: [],
   }
 }
 
@@ -127,10 +139,21 @@ export function toForm(profile: ModelProfile): ModelProfileForm {
     baseUrl: profile.baseUrl ?? '',
     protocol: profile.protocol ?? DEFAULT_PROTOCOL,
     apiKey: '',
-    chatModel: profile.chatModel ?? '',
+    // 清单为空时用单值列兜底：老后端（V22）只返回 chatModel，
+    // 不兜底的话用户打开编辑框会看到「没有模型」而实际上有。
+    chatModels: nonEmpty(profile.chatModels) ?? (profile.chatModel ? [profile.chatModel] : []),
     temperature: profile.temperature,
-    embeddingModel: profile.embeddingModel ?? '',
+    embeddingModels: nonEmpty(profile.embeddingModels) ?? (profile.embeddingModel ? [profile.embeddingModel] : []),
   }
+}
+
+/** 去掉空串后的副本；全空时返回 null，便于 `??` 做兜底判断 */
+function nonEmpty(values: string[] | undefined | null): string[] | null {
+  if (!values || values.length === 0) {
+    return null
+  }
+  const cleaned = values.map((value) => value.trim()).filter((value) => value.length > 0)
+  return cleaned.length > 0 ? cleaned : null
 }
 
 /**
@@ -155,6 +178,8 @@ export function buildProfilePayload(
   chatModel: string | null
   temperature: number | null
   embeddingModel: string | null
+  chatModels: string[]
+  embeddingModels: string[]
 } {
   const trimmedKey = form.apiKey.trim()
   let apiKey: string | undefined
@@ -166,16 +191,63 @@ export function buildProfilePayload(
     apiKey = undefined
   }
 
+  const chatModels = normalizeModelList(form.chatModels)
+  const embeddingModels = normalizeModelList(form.embeddingModels)
+
   return {
     name: form.name.trim(),
     presetId: form.presetId,
     baseUrl: blankToNull(form.baseUrl),
     protocol: form.protocol,
     apiKey,
-    chatModel: blankToNull(form.chatModel),
+    // 单值字段继续提交，且与清单第一项保持一致。
+    // 只在清单为空时它才有实际作用（老后端读它），但让两者始终相同
+    // 可以避免「清单删光了、旧的单值还留在库里」这种半旧状态。
+    chatModel: chatModels.length > 0 ? chatModels[0] : null,
     temperature: form.temperature,
-    embeddingModel: blankToNull(form.embeddingModel),
+    embeddingModel: embeddingModels.length > 0 ? embeddingModels[0] : null,
+    chatModels,
+    embeddingModels,
   }
+}
+
+/**
+ * 规范化模型清单：裁剪空白、丢弃空串、按首次出现顺序去重。
+ *
+ * <p>去重在前端做不是「后端也会做所以多余」：用户从探测列表里点两次
+ * 「加入」是很容易发生的事，提交一份带重复的清单会让后端唯一约束报错，
+ * 而那是个 500 级别的错误，用户完全无从判断自己哪里做错了。
+ */
+export function normalizeModelList(values: string[]): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const raw of values) {
+    const name = (raw ?? '').trim()
+    if (name.length === 0 || seen.has(name)) {
+      continue
+    }
+    seen.add(name)
+    result.push(name)
+  }
+  return result
+}
+
+/**
+ * 把清单里的一项移到指定位置（默认模型 = 第一项，所以「上移到底」就是设默认）。
+ *
+ * @param values 清单
+ * @param from   被移动的下标
+ * @param to     目标下标
+ * @returns 新数组；下标非法时返回副本
+ */
+export function moveModel(values: string[], from: number, to: number): string[] {
+  const next = [...values]
+  if (from < 0 || from >= next.length || to < 0 || to >= next.length || from === to) {
+    return next
+  }
+  const [moved] = next.splice(from, 1)
+  next.splice(to, 0, moved)
+  return next
 }
 
 /**
@@ -208,11 +280,23 @@ export function validateProfileForm(form: ModelProfileForm): string | null {
   if (form.apiKey.trim().length > 500) {
     return 'API Key 长度不能超过 500 个字符'
   }
-  if (form.chatModel.trim().length > MODEL_NAME_MAX) {
-    return `对话模型名长度不能超过 ${MODEL_NAME_MAX} 个字符`
+  const chatModels = normalizeModelList(form.chatModels)
+  const embeddingModels = normalizeModelList(form.embeddingModels)
+  if (chatModels.length > MODEL_LIST_MAX) {
+    return `对话模型最多保存 ${MODEL_LIST_MAX} 个`
   }
-  if (form.embeddingModel.trim().length > MODEL_NAME_MAX) {
-    return `嵌入模型名长度不能超过 ${MODEL_NAME_MAX} 个字符`
+  if (embeddingModels.length > MODEL_LIST_MAX) {
+    return `嵌入模型最多保存 ${MODEL_LIST_MAX} 个`
+  }
+  for (const name of chatModels) {
+    if (name.length > MODEL_NAME_MAX) {
+      return `对话模型名「${name.slice(0, 20)}…」长度不能超过 ${MODEL_NAME_MAX} 个字符`
+    }
+  }
+  for (const name of embeddingModels) {
+    if (name.length > MODEL_NAME_MAX) {
+      return `嵌入模型名「${name.slice(0, 20)}…」长度不能超过 ${MODEL_NAME_MAX} 个字符`
+    }
   }
   if (form.temperature != null) {
     if (!Number.isFinite(form.temperature)) {
@@ -226,14 +310,37 @@ export function validateProfileForm(form: ModelProfileForm): string | null {
 }
 
 /**
+ * 这套配置到底有没有可用的对话模型。
+ *
+ * <p>判定口径必须看**清单**（V23 之后真相在清单里，单值列只是它的第一项），
+ * 否则会出现「卡片写着未指定模型、但其实清单里有」这种自相矛盾的显示。
+ * 单独的 `MISSING_MODEL_TEXT` 常量让「摘要文案」与「是否缺省」共用同一个来源，
+ * 不靠比较字符串。
+ */
+export const MISSING_MODEL_TEXT = '未指定模型'
+
+export function hasChatModel(profile: ModelProfile): boolean {
+  return modelSummary(profile) !== MISSING_MODEL_TEXT
+}
+
+/**
  * 卡片上的模型摘要。
  *
  * <p>只显示模型名而不显示端点：端点通常很长，塞进卡片会把布局撑乱；
  * 而「哪个模型」是用户区分几张卡片最常用的依据。端点放在卡片的悬浮提示里。
+ *
+ * <p>有清单时报出**共几个**并用第一项（= 默认模型）作为主名称：
+ * 只显示默认模型会让用户以为这套配置只配了一个模型，
+ * 从而反复编辑确认 —— 而「一套 API 配多个模型」正是这个功能的核心。
  */
 export function modelSummary(profile: ModelProfile): string {
+  const list = normalizeModelList(profile.chatModels ?? [])
   const chat = (profile.chatModel ?? '').trim()
-  return chat.length > 0 ? chat : '未指定模型'
+  if (list.length === 0) {
+    return chat.length > 0 ? chat : MISSING_MODEL_TEXT
+  }
+  const head = list[0]
+  return list.length > 1 ? `${head} 等 ${list.length} 个` : head
 }
 
 /**
@@ -381,8 +488,42 @@ export function probeBlockedReason(
   return null
 }
 
-/** 连通性测试结果的一句话摘要 */
-export function testResultSummary(result: {
+/**
+ * 聊天页模型选择器的候选清单。
+ *
+ * <p>入参是**生效配置**的对话模型清单 —— 只有生效那一套的密钥与端点
+ * 是真正在用的，选另一套里的模型名必然会打到一个不认它的端点。
+ *
+ * <p>会话自己记着的模型名即使已从配置里删掉也要补进来：否则
+ * `el-select` 找不到匹配项会显示空白或原始值，用户既看不懂发生了什么，
+ * 也没法主动把它去掉（选项里没有它，就选不到「取消」）。
+ */
+export function sessionModelOptions(models: string[] | null | undefined, sessionModel: string | null): string[] {
+  const list = normalizeModelList(models ?? [])
+  const current = (sessionModel ?? '').trim()
+  if (current.length === 0 || list.includes(current)) {
+    return list
+  }
+  return [current, ...list]
+}
+
+/**
+ * 生效配置的默认对话模型名（供聊天页做「跟随配置」的说明文案）。
+ *
+ * <p>清单优先、单值兜底：V23 之后真相在清单里，但老数据可能只有单值列。
+ */
+export function defaultChatModel(profile: ModelProfile | null): string {
+  if (!profile) {
+    return ''
+  }
+  const list = normalizeModelList(profile.chatModels ?? [])
+  if (list.length > 0) {
+    return list[0]
+  }
+  return (profile.chatModel ?? '').trim()
+}
+
+/** 连通性测试结果的一句话摘要 */ export function testResultSummary(result: {
   ok: boolean
   latencyMs: number
   replyPreview: string | null

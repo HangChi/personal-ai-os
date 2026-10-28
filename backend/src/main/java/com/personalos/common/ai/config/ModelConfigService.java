@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 也让「未设置」与「设置为环境变量里的同一个值」无法区分。
  */
 @Service
-public class ModelConfigService {
+public class ModelConfigService implements com.personalos.common.ai.RuntimeChatModelResolver {
 
     private static final Logger log = LoggerFactory.getLogger(ModelConfigService.class);
 
@@ -56,6 +56,15 @@ public class ModelConfigService {
     private final AiChatClientProvider provider;
     private final Clock clock;
 
+    /**
+     * 多配置服务（V23 按模型名解析时要知道「当前生效配置」）。
+     *
+     * <p>用 {@code ObjectProvider} 而不是直接注入：{@code ModelProfileService}
+     * 依赖本类，构造期互注会形成循环依赖。懒取让编译期依赖方向保持单向。
+     */
+    private final org.springframework.beans.factory.ObjectProvider<ModelProfileService>
+            profileServiceProvider;
+
     /** 环境变量来源的兜底值，由 Spring 在构造期解析 */
     private final String envBaseUrl;
     private final String envApiKey;
@@ -71,10 +80,20 @@ public class ModelConfigService {
      */
     private static final int MASK_TAIL = 4;
 
+    /**
+     * 生产构造器。
+     *
+     * <p>显式标 {@code @Autowired} 是必须的：本类有两个构造器（另一个是给测试的
+     * 兼容重载），Spring 在没有标注时无法判断该用哪个，启动会报
+     * 「No default constructor found」—— 一个看起来与「构造函数」毫不相干的报错。
+     */
+    @org.springframework.beans.factory.annotation.Autowired
     public ModelConfigService(AiModelConfigRepository repository,
                               OpenAiChatModelFactory modelFactory,
                               AiChatClientProvider provider,
                               Clock clock,
+                              org.springframework.beans.factory.ObjectProvider<ModelProfileService>
+                                      profileServiceProvider,
                               @Value("${spring.ai.openai.base-url:}") String envBaseUrl,
                               @Value("${spring.ai.openai.api-key:}") String envApiKey,
                               @Value("${spring.ai.openai.chat.model:}") String envChatModel,
@@ -84,11 +103,32 @@ public class ModelConfigService {
         this.modelFactory = modelFactory;
         this.provider = provider;
         this.clock = clock;
+        this.profileServiceProvider = profileServiceProvider;
         this.envBaseUrl = blankToNull(envBaseUrl);
         this.envApiKey = blankToNull(envApiKey);
         this.envChatModel = blankToNull(envChatModel);
         this.envEmbeddingModel = blankToNull(envEmbeddingModel);
         this.envTemperature = parseTemperature(envTemperature);
+    }
+
+    /**
+     * 兼容构造器：不接多配置服务（V22 及以前的测试用）。
+     *
+     * <p>此时 {@link #currentResolved()} 回落到「只有单行表 + 环境变量」的解析结果，
+     * 与改造前的行为逐字段一致 —— 按模型名解析仍可用，只是不知道多配置表里
+     * 哪一套生效。生产环境永远走上面那个带 {@code ObjectProvider} 的构造器。
+     */
+    public ModelConfigService(AiModelConfigRepository repository,
+                              OpenAiChatModelFactory modelFactory,
+                              AiChatClientProvider provider,
+                              Clock clock,
+                              String envBaseUrl,
+                              String envApiKey,
+                              String envChatModel,
+                              String envEmbeddingModel,
+                              String envTemperature) {
+        this(repository, modelFactory, provider, clock, null,
+                envBaseUrl, envApiKey, envChatModel, envEmbeddingModel, envTemperature);
     }
 
     // ------------------------------------------------------------------ 读取
@@ -276,6 +316,82 @@ public class ModelConfigService {
             // 「整个应用不可用」。记录后继续，用户可在设置页改回来。
             log.warn("应用数据库中的模型配置失败，沿用启动期模型：{}", describe(cause));
         }
+    }
+
+    // ------------------------------------------------------------------ 按模型名构造（V23）
+
+    /**
+     * 按模型名造一个模型实例，复用**当前生效配置**的端点、密钥与温度。
+     *
+     * <h2>为什么只换模型名，其余沿用</h2>
+     * 会话级选模型的语义是「这套 API 配置下的另一个模型」—— 端点与密钥是配置级
+     * （同一把 key 能用这个端点的所有模型），温度是用户对这一套配置的偏好。
+     * 只有模型名是会话级的选择。
+     *
+     * <h2>为什么每次都重新解析配置</h2>
+     * 用户可能在会话打开的这段时间里切换了生效配置。缓存一份「造模型用的凭据」
+     * 会让新会话继续用旧端点 —— 而环境变量与数据库都可能变，重新解析是唯一
+     * 能保证一致的做法。它的成本是一次数据库读，相对一次模型调用可忽略。
+     *
+     * @param modelName 模型名
+     * @return 新建的模型实例
+     * @throws BusinessException 模型名为空、或当前配置没有密钥
+     */
+    @Override
+    public org.springframework.ai.chat.model.ChatModel resolve(String modelName) {
+        String trimmed = modelName == null ? "" : modelName.strip();
+        if (trimmed.isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED, "模型名不能为空");
+        }
+        ResolvedConfig resolved = currentResolved();
+        if (!resolved.hasApiKey()) {
+            // 没有密钥时构造出来的客户端任何请求都会 401，不如在这里给出可读的原因
+            throw new BusinessException(ErrorCode.AI_NOT_CONFIGURED,
+                    "当前配置没有可用的 API Key，无法按模型名切换");
+        }
+        return modelFactory.create(resolved.baseUrl(), resolved.apiKey(), trimmed,
+                resolved.temperature(), Map.of());
+    }
+
+    /** 当前生效配置的默认对话模型名（会话没选模型时用它） */
+    @Override
+    public String defaultChatModel() {
+        return currentResolved().chatModel();
+    }
+
+    /**
+     * 取当前生效配置。
+     *
+     * <p>与 {@link ModelProfileService#resolveCurrent} 走的是同一套语义（优先
+     * 多配置表里生效的那行，没有则回落 V20 老表），但本类拿不到多配置表 ——
+     * 那是上层的职责。为了不在两个类之间制造循环依赖，这里用
+     * {@code ObjectProvider} 懒取那个服务，取不到时退回只有环境变量的解析结果。
+     *
+     * <p>懒取而不是构造注入：{@code ModelProfileService} 依赖本类
+     * （要 {@code resolveFrom} / {@code applyResolved}），构造期互注会形成循环。
+     */
+    private ResolvedConfig currentResolved() {
+        if (profileServiceProvider != null) {
+            ModelProfileService profiles = profileServiceProvider.getIfAvailable();
+            if (profiles != null) {
+                return profiles.resolveCurrent();
+            }
+        }
+        return resolve();
+    }
+
+    /**
+     * 启动完成后把本类注册为 provider 的「按名造模型」工厂（V23）。
+     *
+     * <p>放在 {@code ApplicationReadyEvent} 而不是构造器或 {@code @PostConstruct}：
+     * 那时配置服务与被它依赖的 provider 都已经装配完成，不存在半初始化状态。
+     * 用事件也顺带避免了在构造期就去碰 {@code ObjectProvider} 里的懒加载代理。
+     */
+    @org.springframework.context.event.EventListener(
+            org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    public void registerResolver() {
+        provider.setModelResolver(this);
+        log.debug("已注册按模型名构造聊天模型的工厂");
     }
 
     // ------------------------------------------------------------------ 工具

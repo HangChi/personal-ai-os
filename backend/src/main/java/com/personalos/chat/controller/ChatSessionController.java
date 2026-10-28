@@ -6,6 +6,7 @@ import com.personalos.chat.dto.ChatSessionDto;
 import com.personalos.chat.dto.ChatSessionQuery;
 import com.personalos.chat.dto.CreateSessionRequest;
 import com.personalos.chat.dto.RenameSessionRequest;
+import com.personalos.chat.dto.SetSessionModelRequest;
 import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.chat.service.ChatCompletionService;
 import com.personalos.chat.service.ChatMarkdownExporter;
@@ -194,6 +195,24 @@ public class ChatSessionController {
             @RequestBody(required = false) RenameSessionRequest request) {
         return ApiResponse.ok(
                 sessionService.rename(conversationId, request == null ? null : request.title()));
+    }
+
+    /**
+     * 设置该会话使用的模型（V23）。
+     *
+     * <p>用 {@code PUT /model} 而不是 {@code PATCH} 整个会话：这是**一个字段的
+     * 幂等赋值**，语义正好是「把模型设成这个值」，且 {@code null} 有明确含义
+     * （恢复为沿用生效配置的默认模型），不会与「没传该字段」混淆。
+     *
+     * <p>不校验模型名是否在配置的清单里 —— 清单是收藏夹不是白名单，
+     * 理由见 {@code ChatSessionService#setModel}。
+     */
+    @PutMapping("/sessions/{conversationId}/model")
+    public ApiResponse<ChatSessionDto> setModel(
+            @PathVariable String conversationId,
+            @RequestBody(required = false) SetSessionModelRequest request) {
+        return ApiResponse.ok(
+                sessionService.setModel(conversationId, request == null ? null : request.model()));
     }
 
     /**

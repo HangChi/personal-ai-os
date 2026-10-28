@@ -11,20 +11,26 @@ import { check, eq } from './assert.mjs'
 
 const {
   buildProfilePayload,
+  defaultChatModel,
   deleteBlockedReason,
   emptyForm,
+  hasChatModel,
   keySummary,
   modelSummary,
   moveItem,
+  moveModel,
+  normalizeModelList,
   probeAlertType,
   probeBlockedReason,
   probeResultHint,
   probeResultSummary,
   reorderBefore,
+  sessionModelOptions,
   sourceHint,
   testResultSummary,
   toForm,
   validateProfileForm,
+  MODEL_LIST_MAX,
   MODEL_NAME_MAX,
   PROFILE_NAME_MAX,
   PROTOCOL_HINTS,
@@ -45,6 +51,9 @@ const PROFILE = {
   chatModel: 'qwen3.8-flash',
   temperature: 0.7,
   embeddingModel: 'qwen3.7-text-embedding-flash',
+  // V23：清单第一项恒等于上面的单值列
+  chatModels: ['qwen3.8-flash'],
+  embeddingModels: ['qwen3.7-text-embedding-flash'],
   active: true,
   sortOrder: 0,
   revision: 3,
@@ -79,7 +88,7 @@ const PROFILE = {
 
 {
   // ① 没碰密钥框（空串）→ 不传该字段，后端保持原值
-  const payload = buildProfilePayload({ ...toForm(PROFILE), chatModel: 'qwen-max' })
+  const payload = buildProfilePayload({ ...toForm(PROFILE), chatModels: ['qwen-max'] })
   eq('密钥输入框留空时不传 apiKey（后端保持原值）', payload.apiKey, undefined)
   eq('其他字段照常提交', payload.chatModel, 'qwen-max')
 }
@@ -117,7 +126,7 @@ const PROFILE = {
   const badTemp = validateProfileForm({ ...emptyForm(), name: 'n', temperature: TEMPERATURE_MAX + 0.5 })
   check('温度越界被拒', badTemp !== null && badTemp.includes('温度'))
 
-  const badModel = validateProfileForm({ ...emptyForm(), name: 'n', chatModel: 'm'.repeat(MODEL_NAME_MAX + 1) })
+  const badModel = validateProfileForm({ ...emptyForm(), name: 'n', chatModels: ['m'.repeat(MODEL_NAME_MAX + 1)] })
   check('模型名超长被拒', badModel !== null && badModel.includes('不能超过'))
 
   // 端点留空是合法的（回落到环境变量）
@@ -144,9 +153,142 @@ const PROFILE = {
 
 {
   eq('模型摘要取模型名', modelSummary(PROFILE), 'qwen3.8-flash')
-  eq('空模型名给出说明而不是空白', modelSummary({ ...PROFILE, chatModel: '  ' }), '未指定模型')
+  eq('空模型名给出说明而不是空白', modelSummary({ ...PROFILE, chatModel: '  ', chatModels: [] }), '未指定模型')
+
+  // 关键：有多个模型时必须让用户看出来，否则会以为「只配了一个」而反复编辑核对
+  eq(
+    '多模型时报出总数并用第一项作主名',
+    modelSummary({ ...PROFILE, chatModels: ['qwen3.8-flash', 'qwen-max', 'qwen-long'] }),
+    'qwen3.8-flash 等 3 个',
+  )
+  eq('老后端只返回单值时仍能显示', modelSummary({ ...PROFILE, chatModels: undefined }), 'qwen3.8-flash')
+
   eq('有密钥时显示掩码', keySummary(PROFILE), '****LKmg')
   eq('无密钥时说清楚而不是留空', keySummary({ ...PROFILE, hasApiKey: false }), '未设置密钥')
+}
+
+// ---------------------------------------------------------------- 模型清单
+
+{
+  // toForm：清单优先，缺失时用单值列兜底（老后端 / V22 数据）
+  eq('toForm 带出对话清单', toForm(PROFILE).chatModels.join(','), 'qwen3.8-flash')
+  eq(
+    'toForm 在清单缺失时用单值列兜底：否则编辑框会显示「没有模型」而实际有',
+    toForm({ ...PROFILE, chatModels: undefined }).chatModels.join(','),
+    'qwen3.8-flash',
+  )
+  eq(
+    'toForm 在清单为空数组时也用单值列兜底',
+    toForm({ ...PROFILE, chatModels: [] }).chatModels.join(','),
+    'qwen3.8-flash',
+  )
+  eq('toForm 带出嵌入清单', toForm(PROFILE).embeddingModels.join(','), 'qwen3.7-text-embedding-flash')
+  eq(
+    'toForm 在嵌入模型也没有时给空清单',
+    toForm({ ...PROFILE, embeddingModels: [], embeddingModel: '' }).embeddingModels.length,
+    0,
+  )
+
+  const form = emptyForm()
+  eq('emptyForm 的对话清单为空', form.chatModels.length, 0)
+  eq('emptyForm 的嵌入清单为空', form.embeddingModels.length, 0)
+}
+
+{
+  // normalizeModelList：裁剪、去空、去重（保序）
+  eq('规范化裁剪空白', normalizeModelList([' a ', 'b']).join(','), 'a,b')
+  eq('规范化丢弃空串', normalizeModelList(['a', '', '  ']).join(','), 'a')
+  eq('规范化按首次出现去重并保序', normalizeModelList(['b', 'a', 'b']).join(','), 'b,a')
+  eq('重复点「加入」不会让后端撞唯一约束', normalizeModelList(['x', 'x', 'x']).length, 1)
+  eq('全空时返回空数组', normalizeModelList([]).length, 0)
+}
+
+{
+  // moveModel：设默认 = 挪到第一位
+  eq('设为默认（移到首位）', moveModel(['a', 'b', 'c'], 2, 0).join(','), 'c,a,b')
+  eq('移到原位不变', moveModel(['a', 'b'], 1, 1).join(','), 'a,b')
+  const source = ['a', 'b']
+  const moved = moveModel(source, 9, 0)
+  eq('越界索引返回原顺序', moved.join(','), 'a,b')
+  check('越界时返回副本而不是原数组', moved !== source)
+  eq('原数组不被修改', source.join(','), 'a,b')
+}
+
+{
+  // buildProfilePayload：清单第一项必须与单值字段一致
+  const payload = buildProfilePayload({ ...emptyForm(), name: 'n', chatModels: ['qwen-max', 'qwen-plus'] })
+  eq('payload 提交完整清单', payload.chatModels.join(','), 'qwen-max,qwen-plus')
+  eq('单值字段取清单第一项（两处存同一事实，不许不一致）', payload.chatModel, 'qwen-max')
+
+  const empty = buildProfilePayload({ ...emptyForm(), name: 'n' })
+  eq('清单为空时单值字段传 null', empty.chatModel, null)
+  eq('清单为空时提交空数组而不是 undefined', empty.chatModels.length, 0)
+
+  // 清单里的空白与重复在提交前就被清掉，避免后端 500
+  const dirty = buildProfilePayload({ ...emptyForm(), name: 'n', chatModels: [' qwen-max ', 'qwen-max', ''] })
+  eq('提交前清掉重复与空白', dirty.chatModels.join(','), 'qwen-max')
+
+  // 删光清单后单值字段必须一起变 null，否则库里会留着一个已不属于清单的旧模型
+  const cleared = buildProfilePayload({ ...toForm(PROFILE), chatModels: [] })
+  eq('清单删光后单值字段跟着清空', cleared.chatModel, null)
+}
+
+{
+  // 校验：条数上限与嵌入清单同样受管
+  const tooMany = validateProfileForm({
+    ...emptyForm(),
+    name: 'n',
+    chatModels: Array.from({ length: MODEL_LIST_MAX + 1 }, (_, i) => `m${i}`),
+  })
+  check('对话模型超过上限被拒', tooMany !== null && tooMany.includes('对话模型'))
+
+  const tooManyEmbedding = validateProfileForm({
+    ...emptyForm(),
+    name: 'n',
+    embeddingModels: Array.from({ length: MODEL_LIST_MAX + 1 }, (_, i) => `m${i}`),
+  })
+  check('嵌入模型超过上限被拒', tooManyEmbedding !== null && tooManyEmbedding.includes('嵌入模型'))
+
+  const longEmbedding = validateProfileForm({
+    ...emptyForm(),
+    name: 'n',
+    embeddingModels: ['e'.repeat(MODEL_NAME_MAX + 1)],
+  })
+  check('嵌入模型名超长被拒', longEmbedding !== null && longEmbedding.includes('不能超过'))
+
+  // 清单为空是合法的：留空表示沿用环境变量
+  eq('空清单合法', validateProfileForm({ ...emptyForm(), name: 'n' }), null)
+}
+
+// ---------------------------------------------------------------- 会话级模型选择
+
+{
+  // 候选来自生效配置的清单
+  eq('候选即生效配置的清单', sessionModelOptions(['qwen-max', 'qwen-plus'], null).join(','), 'qwen-max,qwen-plus')
+  eq('会话未选模型时不会多出空项', sessionModelOptions(['qwen-max'], null).length, 1)
+
+  // 关键：会话记着一个已从配置里删掉的模型名 → 必须补进选项，
+  // 否则 el-select 无从回显，用户也选不到「取消」
+  eq('已从配置删掉的会话模型仍出现在候选里', sessionModelOptions(['qwen-max'], 'gpt-4o').join(','), 'gpt-4o,qwen-max')
+  eq('已在清单里的会话模型不重复添加', sessionModelOptions(['qwen-max', 'x'], 'x').join(','), 'qwen-max,x')
+
+  eq('清单为空但会话有值时只剩那一项', sessionModelOptions([], 'gpt-4o').join(','), 'gpt-4o')
+  eq('清单为 null 时不炸', sessionModelOptions(null, null).length, 0)
+  eq('会话值为空白视为未选', sessionModelOptions(['a'], '  ').join(','), 'a')
+}
+
+{
+  // 「跟随配置」的说明文案取默认模型名
+  eq('默认模型取清单第一项', defaultChatModel({ ...PROFILE, chatModels: ['a', 'b'] }), 'a')
+  eq('清单缺失时用单值列兜底', defaultChatModel({ ...PROFILE, chatModels: [] }), 'qwen3.8-flash')
+  eq('没有生效配置时给空串（不是 null，便于直接拼文案）', defaultChatModel(null), '')
+}
+
+{
+  // hasChatModel 与 modelSummary 必须同口径，否则会出现「文字不灰却写着未指定模型」
+  eq('有清单时算有模型', hasChatModel(PROFILE), true)
+  eq('只配了单值也算有模型', hasChatModel({ ...PROFILE, chatModels: [] }), true)
+  eq('两处都空才算没有', hasChatModel({ ...PROFILE, chatModel: '', chatModels: [] }), false)
 }
 
 // ---------------------------------------------------------------- 顺序调整

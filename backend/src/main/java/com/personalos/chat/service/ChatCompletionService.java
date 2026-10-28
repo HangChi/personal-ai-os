@@ -5,6 +5,7 @@ import com.personalos.chat.dto.ChatCitationDto;
 import com.personalos.chat.dto.ChatStreamEvents;
 import com.personalos.chat.dto.StreamChatRequest;
 import com.personalos.chat.dto.ThinkingLevel;
+import com.personalos.chat.entity.ChatSessionEntity;
 import com.personalos.chat.metrics.ChatStreamMetrics;
 import com.personalos.chat.support.ChatResponseInspection;
 import com.personalos.chat.support.SseHeartbeatScheduler;
@@ -174,8 +175,12 @@ public class ChatCompletionService {
         // 先把 requestId 抓成局部变量：回调可能跑在第四个、第五个池化线程上，
         // 那时请求线程早被回收、MDC 也清空了。见 runWithRequestId 的说明。
         String requestId = MDC.get(RequestIdFilter.MDC_KEY);
-        sessionService.requireSession(conversationId);
-        ChatClient chatClient = aiProvider.requireChatClient();
+        ChatSessionEntity session = sessionService.requireSession(conversationId);
+        // 会话级选模型（V23）：会话自己选过就用它的，否则沿用生效配置的默认模型。
+        // 取到的模型实例必须与客户端**配对使用** —— applyThinkingOptions 要按
+        // 这个模型的默认选项合并，拿错模型会让请求里带着另一个模型的名字（静默）。
+        AiChatClientProvider.ChatTarget target = aiProvider.targetFor(session.getChatModel());
+        ChatClient chatClient = target.chatClient();
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
         sessionService.initializeTitleFromFirstMessage(conversationId, userContent);
 
@@ -268,7 +273,9 @@ public class ChatCompletionService {
 
             // 思考程度（阶段 22）：由 provider 门面在模型默认选项上合并，
             // 非 OpenAI 系模型时原样返回，此处无需判断 provider 类型。
-            request = aiProvider.applyThinkingOptions(request, thinkingLevel.budget());
+            // V23：必须传入**本轮实际使用的模型**（target.model()），
+            // 否则会话选了别的模型时，请求里仍会带着默认模型的名字。
+            request = aiProvider.applyThinkingOptions(request, thinkingLevel.budget(), target.model());
 
             // 用 chatResponse() 而不是 content()：后者内部是
             // "map(取正文) → filter(非空)"，正文之外的元数据（含 usage）在这一步被丢掉。

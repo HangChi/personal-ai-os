@@ -46,6 +46,14 @@ export interface ChatSession {
   createdAt: string
   updatedAt: string
   messageCount: number
+  /**
+   * 这个会话选用的对话模型名（V23）。
+   *
+   * <p>`null` 表示「跟随当前生效配置的默认模型」。刻意不在这里填一份
+   * 「当时到底用了哪个」的快照：它是**用户选的**而不是**实际发生的**，
+   * 实际用哪个由后端在发请求时解析（配置换了，跟随默认的会话就该跟着换）。
+   */
+  chatModel: string | null
 }
 
 /**
@@ -373,9 +381,20 @@ export interface ModelProfile {
   protocol: ModelProtocol
   apiKeyMasked: string
   hasApiKey: boolean
+  /** 生效的**默认**对话模型名（= `chatModels` 第一项） */
   chatModel: string
   temperature: number | null
+  /** 生效的**默认**嵌入模型名（= `embeddingModels` 第一项） */
   embeddingModel: string
+  /**
+   * 保存的对话模型清单（V23）。**第一项即默认模型**。
+   *
+   * 一个端点通常提供几十上百个模型，用户会按任务在推理型/日常型/视觉型之间换着用，
+   * 所以清单是主体、单值列只是「默认用哪个」的快照。
+   */
+  chatModels: string[]
+  /** 保存的嵌入模型清单（V23）。第一项即默认 */
+  embeddingModels: string[]
   /** 是否当前生效 */
   active: boolean
   sortOrder: number
@@ -412,6 +431,15 @@ export interface SaveModelProfilePayload {
   chatModel?: string | null
   temperature?: number | null
   embeddingModel?: string | null
+  /**
+   * 对话模型清单（V23）。**第一项即默认模型**，由后端写进单值列。
+   *
+   * 与 `chatModel` 同时给时以清单为准 —— 两个来源都生效会造成
+   * 「界面显示 A、实际请求用 B」。
+   */
+  chatModels?: string[] | null
+  /** 嵌入模型清单（V23）。第一项即默认 */
+  embeddingModels?: string[] | null
 }
 
 /**

@@ -27,6 +27,7 @@ import {
   TEMPERATURE_MIN,
   buildProfilePayload,
   emptyForm,
+  moveModel,
   probeAlertType,
   probeBlockedReason,
   probeResultHint,
@@ -67,6 +68,21 @@ const probing = ref(false)
 /** 最近一次探测结果；null 表示还没探测过 */
 const probeResult = ref<ModelListResult | null>(null)
 
+/**
+ * 「加入清单」输入框的草稿。
+ *
+ * <p>必须声明在下面的 `watch(..., { immediate: true })` **之前**：那个 watch
+ * 在定义时就会立刻跑一次，若草稿在它后面用 `const` 声明，回调里赋值会撞
+ * 暂时性死区（ReferenceError），整个组件都渲染不出来。
+ *
+ * <p>不直接绑到 `form.chatModels` 上：清单是**有序数组**，顺序本身就是
+ * 「哪个是默认」的语义，不能边输入边改。草稿是待加入的候选，加入后立刻清空 ——
+ * 否则再点一次「加入」会把同一个模型名加两遍（后端虽然会去重，
+ * 但界面上先出现重复行再消失很怪）。
+ */
+const chatModelDraft = ref('')
+const embeddingModelDraft = ref('')
+
 const isEdit = computed(() => props.profile !== null)
 
 /** 编辑态下这套配置已保存过密钥吗（探测可回落到它） */
@@ -94,6 +110,9 @@ watch(
     }
     pendingClearKey.value = false
     submitting.value = false
+    // 草稿必须一起清：上次关框时留了半截输入，下次打开会直接看到它
+    chatModelDraft.value = ''
+    embeddingModelDraft.value = ''
     // 每次打开都清掉上次的探测结果：它属于「上一次填的端点」，
     // 留着会让用户以为当前端点的模型就是这些
     probeResult.value = null
@@ -102,12 +121,13 @@ watch(
       Object.assign(form, toForm(props.profile))
     } else {
       Object.assign(form, emptyForm(props.preset?.id ?? null))
+      // 新建时从预设填入清单（预设只有一个模型名 → 单元素清单）
       if (props.preset) {
         form.name = props.preset.name
         form.baseUrl = props.preset.baseUrl
         form.protocol = props.preset.protocol
-        form.chatModel = props.preset.chatModel
-        form.embeddingModel = props.preset.embeddingModel
+        form.chatModels = props.preset.chatModel ? [props.preset.chatModel] : []
+        form.embeddingModels = props.preset.embeddingModel ? [props.preset.embeddingModel] : []
       }
     }
   },
@@ -183,9 +203,54 @@ async function handleProbe(): Promise<void> {
   }
 }
 
-/** 选了模型后，若对话模型还没填就顺手填上（最常见的情形） */
-function handlePickChatModel(value: string): void {
-  form.chatModel = value
+/**
+ * 下拉候选：去掉已经在清单里的。
+ *
+ * <p>不去掉的话，加完 `qwen-max` 之后下拉里还留着它，用户很容易再选一次
+ * 然后疑惑「为什么没反应」。
+ */
+const chatModelOptions = computed<string[]>(() => remainingModels(availableModels.value, form.chatModels))
+const embeddingModelOptions = computed<string[]>(() => remainingModels(availableModels.value, form.embeddingModels))
+
+function remainingModels(candidates: string[], picked: string[]): string[] {
+  if (candidates.length === 0) {
+    return []
+  }
+  const taken = new Set(picked)
+  return candidates.filter((name) => !taken.has(name))
+}
+
+function handleAddChatModel(value: string | null | undefined): void {
+  form.chatModels = appendModel(form.chatModels, value)
+  chatModelDraft.value = ''
+}
+
+function handleAddEmbeddingModel(value: string | null | undefined): void {
+  form.embeddingModels = appendModel(form.embeddingModels, value)
+  embeddingModelDraft.value = ''
+}
+
+/**
+ * 往清单末尾追加一个模型名。
+ *
+ * <p>先 `trim` 再查重：`「qwen-max 」` 与 `「qwen-max」` 在模型名语义上是同一个，
+ * 但字符串比较不等 —— 放进去会变成两行、且后端唯一索引会因空白差异判定为不同值。
+ */
+function appendModel(picked: string[], value: string | null | undefined): string[] {
+  const name = (value ?? '').trim()
+  if (name.length === 0) {
+    return picked
+  }
+  return picked.includes(name) ? picked : [...picked, name]
+}
+
+/** 移除清单里的一项。默认模型（第一项）移除后由原来的第二项顶上，符合「第一个即默认」 */
+function removeModel(kind: 'chat' | 'embedding', index: number): void {
+  if (kind === 'chat') {
+    form.chatModels = form.chatModels.filter((_, i) => i !== index)
+    return
+  }
+  form.embeddingModels = form.embeddingModels.filter((_, i) => i !== index)
 }
 
 /** 提交结束后由父组件调用，关闭对话框（失败时父组件不关） */
@@ -199,6 +264,7 @@ defineExpose({ finish })
 <template>
   <el-dialog
     v-model="visible"
+    class="profile-dialog"
     :title="isEdit ? '编辑模型配置' : '添加模型配置'"
     width="560px"
     :close-on-click-modal="false"
@@ -308,8 +374,8 @@ defineExpose({ finish })
         </el-alert>
       </div>
 
-      <!-- 对话模型 -->
-      <label class="profile-form__field">
+      <!-- 对话模型清单 -->
+      <div class="profile-form__field">
         <span class="profile-form__label">
           对话模型
           <template v-if="current">
@@ -318,27 +384,59 @@ defineExpose({ finish })
             </el-tag>
           </template>
         </span>
+        <div class="profile-form__models">
+          <div v-if="form.chatModels.length === 0" class="profile-form__models-empty">
+            还没有模型 —— 点「获取模型列表」挑几个，或直接手动输入
+          </div>
+          <div v-for="(name, index) in form.chatModels" :key="`chat-${index}-${name}`" class="profile-form__model-row">
+            <span class="profile-form__model-name">{{ name }}</span>
+            <el-tag v-if="index === 0" size="small" type="success">默认</el-tag>
+            <span class="profile-form__model-actions">
+              <el-button
+                link
+                :disabled="index === 0"
+                title="设为默认（挪到第一位）"
+                @click="form.chatModels = moveModel(form.chatModels, index, 0)"
+              >
+                设为默认
+              </el-button>
+              <el-button link type="danger" @click="removeModel('chat', index)">移除</el-button>
+            </span>
+          </div>
+        </div>
         <!--
-          有探测结果时用「可输入的下拉」，没有时退回普通输入框。
+          有探测结果时用「可输入的下拉」加入清单，没有时用普通输入框。
           不做成纯下拉：很多端点拿不到列表，纯下拉会让这些用户完全无法配置。
         -->
-        <el-select
-          v-if="availableModels.length > 0"
-          :model-value="form.chatModel"
-          class="profile-form__model-select"
-          filterable
-          allow-create
-          default-first-option
-          clearable
-          :reserve-keyword="false"
-          placeholder="从列表里选，或直接输入模型名"
-          @update:model-value="handlePickChatModel"
-        >
-          <el-option v-for="name in availableModels" :key="name" :value="name" :label="name" />
-        </el-select>
-        <el-input v-else v-model="form.chatModel" placeholder="qwen3.8-flash" clearable :maxlength="MODEL_NAME_MAX" />
-        <span class="profile-form__help">模型名须与端点支持的名称完全一致</span>
-      </label>
+        <div class="profile-form__model-add">
+          <el-select
+            v-if="availableModels.length > 0"
+            v-model="chatModelDraft"
+            class="profile-form__model-select"
+            filterable
+            allow-create
+            default-first-option
+            clearable
+            :reserve-keyword="false"
+            placeholder="从列表里选，或直接输入模型名"
+            @change="handleAddChatModel"
+          >
+            <el-option v-for="name in chatModelOptions" :key="name" :value="name" :label="name" />
+          </el-select>
+          <el-input
+            v-else
+            v-model="chatModelDraft"
+            placeholder="qwen3.8-flash"
+            clearable
+            :maxlength="MODEL_NAME_MAX"
+            @keyup.enter="handleAddChatModel(chatModelDraft)"
+          />
+          <el-button :disabled="chatModelDraft.trim().length === 0" @click="handleAddChatModel(chatModelDraft)">
+            加入
+          </el-button>
+        </div>
+        <span class="profile-form__help"> 可以加多个，第一个就是默认模型。每个会话还能单独选用哪个。 </span>
+      </div>
 
       <!-- 温度 -->
       <div class="profile-form__field">
@@ -365,8 +463,8 @@ defineExpose({ finish })
         <span class="profile-form__help">越低越确定、越高越发散；「用默认」表示交给服务端</span>
       </div>
 
-      <!-- 嵌入模型 -->
-      <label class="profile-form__field">
+      <!-- 嵌入模型清单 -->
+      <div class="profile-form__field">
         <span class="profile-form__label">
           嵌入模型
           <template v-if="current">
@@ -374,32 +472,66 @@ defineExpose({ finish })
               {{ SOURCE_LABELS[current.sources.embeddingModel] }}
             </el-tag>
           </template>
-          <el-tag size="small" type="warning">需重启</el-tag>
+          <el-tag size="small" type="warning">换模型需重建向量</el-tag>
         </span>
-        <el-select
-          v-if="availableModels.length > 0"
-          v-model="form.embeddingModel"
-          class="profile-form__model-select"
-          filterable
-          allow-create
-          default-first-option
-          clearable
-          :reserve-keyword="false"
-          placeholder="从列表里选，或直接输入模型名"
-        >
-          <el-option v-for="name in availableModels" :key="name" :value="name" :label="name" />
-        </el-select>
-        <el-input
-          v-else
-          v-model="form.embeddingModel"
-          placeholder="qwen3.7-text-embedding-flash"
-          clearable
-          :maxlength="MODEL_NAME_MAX"
-        />
+        <div class="profile-form__models">
+          <div v-if="form.embeddingModels.length === 0" class="profile-form__models-empty">
+            还没有嵌入模型（可留空，知识库功能将不可用）
+          </div>
+          <div
+            v-for="(name, index) in form.embeddingModels"
+            :key="`embed-${index}-${name}`"
+            class="profile-form__model-row"
+          >
+            <span class="profile-form__model-name">{{ name }}</span>
+            <el-tag v-if="index === 0" size="small" type="success">默认</el-tag>
+            <span class="profile-form__model-actions">
+              <el-button
+                link
+                :disabled="index === 0"
+                title="设为默认（挪到第一位）"
+                @click="form.embeddingModels = moveModel(form.embeddingModels, index, 0)"
+              >
+                设为默认
+              </el-button>
+              <el-button link type="danger" @click="removeModel('embedding', index)">移除</el-button>
+            </span>
+          </div>
+        </div>
+        <div class="profile-form__model-add">
+          <el-select
+            v-if="availableModels.length > 0"
+            v-model="embeddingModelDraft"
+            class="profile-form__model-select"
+            filterable
+            allow-create
+            default-first-option
+            clearable
+            :reserve-keyword="false"
+            placeholder="从列表里选，或直接输入模型名"
+            @change="handleAddEmbeddingModel"
+          >
+            <el-option v-for="name in embeddingModelOptions" :key="name" :value="name" :label="name" />
+          </el-select>
+          <el-input
+            v-else
+            v-model="embeddingModelDraft"
+            placeholder="qwen3.7-text-embedding-flash"
+            clearable
+            :maxlength="MODEL_NAME_MAX"
+            @keyup.enter="handleAddEmbeddingModel(embeddingModelDraft)"
+          />
+          <el-button
+            :disabled="embeddingModelDraft.trim().length === 0"
+            @click="handleAddEmbeddingModel(embeddingModelDraft)"
+          >
+            加入
+          </el-button>
+        </div>
         <span class="profile-form__help">
-          知识库向量化用，可留空。改动需重启后端：向量表维度由建表语句固定，维度一变写入会失败。
+          知识库向量化用，可留空。**换嵌入模型会让已有向量全部失效**（维度可能变化）， 需要重建知识库索引才能继续检索。
         </span>
-      </label>
+      </div>
     </div>
 
     <template #footer>
@@ -410,6 +542,64 @@ defineExpose({ finish })
     </template>
   </el-dialog>
 </template>
+
+<!--
+  非 scoped 的样式块：弹窗带 `append-to-body`，EP 会把 `.el-dialog` 整块
+  移动到 `<body>` 下，移动后宿主元素上没有任何 `data-v-xxx` 属性
+  （实测 `.el-dialog` 的 data-v 属性列表为空）。因此 scoped 里写
+  `.profile-dialog :deep(.el-dialog__body)` 编译出的
+  `.profile-dialog[data-v-xxx] .el-dialog__body` 永远匹配不上，
+  规则会静默失效（`max-height` 实测仍是 `none`，底部的「保存」
+  在 800px 高的屏幕上落到 y=1021，完全点不到）。
+
+  作用范围靠 `.profile-dialog` 这个只在当前组件用的一次性类名限定，
+  不影响页面上其它弹窗。
+-->
+<style>
+/*
+ * 高度上限：表单从 5 个字段长到 8 个（多了两个模型清单），紧凑屏幕下
+ * 会超过视口 —— 实测 800px 高时弹窗 917px，底部「保存」按钮落在
+ * y=1021，**完全点不到**。
+ *
+ * 做法是限制整块对话框的高度、让中间的表单区自己滚动，头部标题与
+ * 底部按钮始终可见。
+ *
+ * 为什么用 `.el-dialog` 而不是 `.el-dialog__body` 限高：
+ * EP 的 `.el-dialog` 默认 `margin-top: 15vh`，只压 body 的话
+ * 「15vh + 头部 + body + 底部」仍会顶出视口（实测 800px 屏幕下
+ * 底边到 829）。限制整体到 84vh 连这笔上边距一起兜住。
+ */
+.profile-dialog {
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-dialog .el-dialog__body {
+  /* flex:1 + min-height:0 才能让中间这块在 flex 列里真正收缩并出现滚动条 */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /*
+   * 滚动条常显（不用 overlay 自动隐藏）：macOS 的 overlay 滚动条只在
+   * 滚动瞬间出现，用户打开弹窗时看到的是一个「被硬切掉的」嵌入模型栏，
+   * 无从知道下面还有内容。实测连视觉复核都把这种情况读成「内容被裁切」。
+   * 常显的细滚动条把「还能往下滚」变成视觉事实。
+   */
+  scrollbar-width: thin;
+  scrollbar-color: var(--el-border-color) transparent;
+}
+
+/*
+ * `.el-dialog__header` / `__footer` 默认 `flex-shrink:1`，
+ * 空间不足时它们会被压扁（标题行变窄、按钮被切）。
+ * 固定为 0，让「该滚的那块滚、不该滚的不缩」。
+ */
+.profile-dialog .el-dialog__header,
+.profile-dialog .el-dialog__footer {
+  flex-shrink: 0;
+}
+</style>
 
 <style scoped>
 .profile-form {
@@ -535,6 +725,86 @@ defineExpose({ finish })
 
 .profile-form__model-select {
   width: 100%;
+}
+
+/*
+ * 模型清单：一行一个，等宽行高。
+ *
+ * 不用 `<el-tag closable>` 堆成一个流式标签墙：清单是**有序**的（第一项就是默认），
+ * 而标签墙会折行、看不出顺序。逐行列表还能给第一项挂「默认」徽章、
+ * 给每行挂「设为默认 / 移除」两个动作。
+ */
+.profile-form__models {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--el-border-radius-base);
+  background: var(--el-fill-color-lighter);
+  overflow: hidden;
+}
+
+.profile-form__models-empty {
+  padding: var(--os-space-3);
+  font-size: var(--os-font-xs);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--el-text-color-placeholder);
+}
+
+/*
+ * 行高用 `--os-button-height` 兜住动作按钮（link 按钮仍是 32px 高）。
+ * 不按文字高度算：`font-size: 13px` 单行看起来只要 22px，
+ * 但里面嵌了 `<el-button link>`，实测会把行撑到 32px 并顶出边框。
+ */
+.profile-form__model-row {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  min-height: var(--os-button-height);
+  padding: 0 var(--os-space-2) 0 var(--os-space-3);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.profile-form__model-row:last-child {
+  border-bottom: none;
+}
+
+/*
+ * 模型名可能很长（`qwen3.8-text-embedding-flash-2025-09-01`），
+ * 必须能省略而不是把「移除」按钮挤到框外。
+ * `flex: 1` + `min-width: 0` 是让 ellipsis 生效的必要组合。
+ */
+.profile-form__model-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--os-font-sm);
+  color: var(--el-text-color-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-form__model-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--os-space-1);
+}
+
+/* 加入行：输入/下拉占满剩余宽度，按钮固定靠右 */
+.profile-form__model-add {
+  display: flex;
+  gap: var(--os-space-2);
+}
+
+.profile-form__model-add :deep(.el-select) {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-form__model-add :deep(.el-input) {
+  flex: 1;
+  min-width: 0;
 }
 
 .profile-form__inline {

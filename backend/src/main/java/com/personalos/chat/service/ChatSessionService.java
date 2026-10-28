@@ -44,6 +44,9 @@ public class ChatSessionService {
 
     private static final int AUTO_TITLE_MAX_LENGTH = 30;
 
+    /** 模型名列宽，与 V23 的 {@code chat_session.chat_model VARCHAR(120)} 一致 */
+    private static final int MODEL_NAME_MAX_LENGTH = 120;
+
     /**
      * 会话标识格式：与数据库 {@code varchar(64)} 对齐。
      *
@@ -176,6 +179,45 @@ public class ChatSessionService {
     }
 
     /**
+     * 设置该会话使用的模型（V23）。
+     *
+     * <h2>为什么不校验模型名是否在清单里</h2>
+     * 清单是「方便挑选」的收藏夹，不是白名单。用户可能：
+     * <ul>
+     *   <li>把模型名直接手打进来（探测接口不提供列表的端点很常见）；</li>
+     *   <li>先用一个清单外的模型跑，之后再整理清单。</li>
+     * </ul>
+     * 拦下来的后果是「想用的模型选不上」，而放过去最坏只是一次调用失败，
+     * 且失败原因（模型不存在）由上游给出，比这里的猜测准确。
+     *
+     * <h2>为什么传 null 是「恢复默认」而不是「拒绝」</h2>
+     * 界面上需要「跟着配置走」这个选项 —— 用户换了生效配置，
+     * 没选过模型的会话应该自动用新配置的默认模型。传 null 就是选它。
+     *
+     * @param conversationId 会话标识
+     * @param modelName      模型名；null / 空白表示恢复为沿用生效配置的默认模型
+     * @return 更新后的会话视图
+     */
+    @Transactional
+    public ChatSessionDto setModel(String conversationId, String modelName) {
+        validateConversationId(conversationId);
+        ChatSessionEntity session = requireSession(conversationId);
+        // 长度按列宽（VARCHAR(120)）拦一次：否则超长值会在 flush 时才炸成 500，
+        // 而前端拿不到任何可读的原因
+        if (modelName != null && modelName.strip().length() > MODEL_NAME_MAX_LENGTH) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED,
+                    "模型名长度不能超过 " + MODEL_NAME_MAX_LENGTH + " 个字符");
+        }
+        session.setChatModel(modelName);
+        // 刻意不刷新 updatedAt：换模型不是对话活动，刷新会让会话在列表里跳到最前
+        ChatSessionEntity saved = sessionRepository.save(session);
+        long messageCount = messageRepository.countByConversationId(conversationId);
+        log.info("设置会话模型 conversationId={} model={}",
+                conversationId, saved.getChatModel() == null ? "（沿用默认）" : saved.getChatModel());
+        return toDto(saved, messageCount);
+    }
+
+    /**
      * 校验并取回会话实体；不存在时抛「资源不存在」。
      */
     @Transactional(readOnly = true)
@@ -277,6 +319,7 @@ public class ChatSessionService {
 
     private ChatSessionDto toDto(ChatSessionEntity entity, long messageCount) {
         return new ChatSessionDto(entity.getConversationId(), entity.getTitle(),
-                entity.getCreatedAt(), entity.getUpdatedAt(), messageCount);
+                entity.getCreatedAt(), entity.getUpdatedAt(), messageCount,
+                entity.getChatModel());
     }
 }

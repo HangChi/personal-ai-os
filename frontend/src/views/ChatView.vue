@@ -19,16 +19,20 @@ import { confirmDanger } from '@/lib/confirm-box'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
+import ChatModelPicker from '@/components/chat/ChatModelPicker.vue'
 import ChatSessionList from '@/components/chat/ChatSessionList.vue'
 import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
 import ChatWelcome from '@/components/chat/ChatWelcome.vue'
 import { useChatStore } from '@/stores/chat'
 import { clampTopK, conversationKnowledgeKey, type ThinkingLevel } from '@/lib/settings'
+import { defaultChatModel } from '@/lib/model-profile'
+import { useModelProfileStore } from '@/stores/model-profile'
 import { useSettingsStore } from '@/stores/settings'
 import type { ChatAttachment, ChatMessage, ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
 const settingsStore = useSettingsStore()
+const modelProfileStore = useModelProfileStore()
 const {
   sessions,
   sessionsTotal,
@@ -234,12 +238,44 @@ const retrievalHint = computed(() => {
 
 onMounted(async () => {
   loadKnowledgePref()
+  // 模型清单来自生效配置：只有生效那套的端点与密钥是真在用的。
+  // 不 await：它只影响顶栏那个下拉的选项，拿不到也只是「暂时没得选」，
+  // 不该拖住首屏会话的加载。失败由 store 自己记错，页面不额外提示。
+  void modelProfileStore.load()
   await chatStore.loadSessions()
   const first = sessions.value[0]
   if (!currentConversationId.value && first) {
     await chatStore.selectSession(first.conversationId)
   }
 })
+
+/** 当前会话记录着的模型（null = 跟随生效配置的默认模型） */
+const sessionModel = computed(() => {
+  const current = sessions.value.find((item) => item.conversationId === currentConversationId.value)
+  return current?.chatModel ?? null
+})
+
+/** 生效配置里可选的对话模型清单 */
+const availableChatModels = computed(() => modelProfileStore.activeProfile?.chatModels ?? [])
+
+/** 生效配置的默认模型名，用于「跟随配置」的说明文案 */
+const activeDefaultModel = computed(() => defaultChatModel(modelProfileStore.activeProfile))
+
+/**
+ * 切换本会话的模型。
+ *
+ * <p>成功不弹提示：下拉本身已经显示成新值，再弹一个「已切换」是噪音。
+ * 失败必须提示 —— 界面还显示着旧值，不说一声用户会以为已经切了。
+ */
+async function handleModelChange(model: string | null): Promise<void> {
+  if (!currentConversationId.value) {
+    return
+  }
+  const success = await chatStore.setModel(currentConversationId.value, model)
+  if (!success && chatStore.error) {
+    ElMessage.error(chatStore.error)
+  }
+}
 
 async function handleSend(attachments: ChatAttachment[] = []): Promise<void> {
   if (!canSend.value) {
@@ -383,6 +419,18 @@ async function jumpToMatch(step: number): Promise<void> {
             <span class="chat__main-meta">
               {{ hasOlderMessages ? `已加载 ${messages.length} 条` : `${messages.length} 条消息` }}
             </span>
+            <!--
+              会话级模型选择（V23）。只在新会话存在时显示：
+              没有会话就没有「这个会话用哪个模型」可言。
+            -->
+            <ChatModelPicker
+              v-if="currentConversationId"
+              :model-value="sessionModel"
+              :models="availableChatModels"
+              :default-model="activeDefaultModel"
+              :disabled="streaming"
+              @update:model-value="handleModelChange"
+            />
           </div>
           <div class="chat__header-actions">
             <div class="chat__search">

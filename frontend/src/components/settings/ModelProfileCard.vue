@@ -16,7 +16,7 @@ import { Check, Delete, Edit } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 
 import { findPreset } from '@/lib/provider-presets'
-import { keySummary, modelSummary } from '@/lib/model-profile'
+import { hasChatModel, keySummary, modelSummary } from '@/lib/model-profile'
 import type { ModelProfile } from '@/types/api'
 
 const props = defineProps<{
@@ -43,8 +43,14 @@ const endpointDisplay = computed(() => {
   return url.length > 0 ? url : '使用环境变量中的端点'
 })
 
-/** 卡片上是否要显示「未指定模型」这类缺省提示 */
-const hasModel = computed(() => (props.profile.chatModel ?? '').trim().length > 0)
+/**
+ * 卡片上是否要显示「未指定模型」这类缺省提示。
+ *
+ * <p>走 {@code hasChatModel} 而不是再看一遍 {@code chatModel}：有了清单之后，
+ * 「有没有模型」的真相在清单里，单值列只是它的第一项。两处各写一套判断
+ * 迟早会不一致（表现为文字不灰、却写着「未指定模型」）。
+ */
+const hasModel = computed(() => hasChatModel(props.profile))
 </script>
 
 <template>

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.personalos.chat.dto.ChatSessionDto;
 import com.personalos.chat.entity.ChatSessionEntity;
 import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.chat.repository.ChatSessionRepository;
@@ -220,5 +221,98 @@ class ChatSessionServiceTest {
         String padded = "  " + "x".repeat(190) + "  ".repeat(19);
 
         assertThat(service.create(padded).title()).hasSize(190);
+    }
+
+    // ------------------------------------------------------------------ 会话级选模型（V23）
+
+    @Test
+    @DisplayName("setModel(): 选定的模型会被记下来并回显")
+    void setModelStoresChoice() {
+        ChatSessionEntity session = existingSession("c-model", "会话");
+        given(sessionRepository.findById("c-model")).willReturn(Optional.of(session));
+        given(sessionRepository.save(any(ChatSessionEntity.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        ChatSessionDto dto = service.setModel("c-model", "  qwen-max  ");
+
+        assertThat(dto.chatModel())
+                .as("两端空白必须裁掉：否则同一个模型会因为多了空格被当成另一个")
+                .isEqualTo("qwen-max");
+    }
+
+    @Test
+    @DisplayName("setModel(): 传 null 表示恢复默认（沿用配置的默认模型）")
+    void setModelNullRestoresDefault() {
+        ChatSessionEntity session = existingSession("c-default", "会话");
+        session.setChatModel("qwen-max");
+        given(sessionRepository.findById("c-default")).willReturn(Optional.of(session));
+        given(sessionRepository.save(any(ChatSessionEntity.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        ChatSessionDto dto = service.setModel("c-default", null);
+
+        assertThat(dto.chatModel())
+                .as("null 是「跟着配置走」，不是「卡在一个空模型上」")
+                .isNull();
+    }
+
+    @Test
+    @DisplayName("setModel(): 空白串同样视为恢复默认")
+    void setModelBlankRestoresDefault() {
+        ChatSessionEntity session = existingSession("c-blank", "会话");
+        session.setChatModel("qwen-max");
+        given(sessionRepository.findById("c-blank")).willReturn(Optional.of(session));
+        given(sessionRepository.save(any(ChatSessionEntity.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+
+        assertThat(service.setModel("c-blank", "   ").chatModel()).isNull();
+    }
+
+    @Test
+    @DisplayName("setModel(): 超长模型名被拒绝，而不是等到 flush 时炸成 500")
+    void setModelRejectsTooLongName() {
+        ChatSessionEntity session = existingSession("c-long", "会话");
+        given(sessionRepository.findById("c-long")).willReturn(Optional.of(session));
+
+        assertThatThrownBy(() -> service.setModel("c-long", "x".repeat(121)))
+                .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    @DisplayName("setModel(): 会话不存在时报 404 语义，而不是静默成功")
+    void setModelOnMissingSessionFails() {
+        given(sessionRepository.findById("missing")).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.setModel("missing", "qwen-max"))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("setModel(): 会话标识格式非法时在查库之前就被拒绝")
+    void setModelValidatesIdFormat() {
+        assertThatThrownBy(() -> service.setModel("非法 标识!", "qwen-max"))
+                .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    @DisplayName("会话列表带上各自的模型选择，未选过的为 null")
+    void listIncludesModelChoice() {
+        ChatSessionEntity chosen = existingSession("c-a", "A");
+        chosen.setChatModel("qwen-max");
+        ChatSessionEntity defaulted = existingSession("c-b", "B");
+        given(sessionRepository.findAllByOrderByUpdatedAtDesc())
+                .willReturn(List.of(chosen, defaulted));
+        given(messageRepository.countGroupedByConversationId(any()))
+                .willReturn(List.of());
+
+        List<ChatSessionDto> list = service.list();
+
+        assertThat(list).extracting(ChatSessionDto::chatModel)
+                .containsExactly("qwen-max", null);
+    }
+
+    /** 造一个已存在的会话实体 */
+    private static ChatSessionEntity existingSession(String id, String title) {
+        return new ChatSessionEntity(id, title, Instant.now(), Instant.now());
     }
 }

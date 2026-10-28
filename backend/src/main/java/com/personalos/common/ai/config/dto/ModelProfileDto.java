@@ -2,6 +2,7 @@ package com.personalos.common.ai.config.dto;
 
 import com.personalos.common.ai.config.ModelConfigService.ConfigSource;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,9 +25,11 @@ import java.util.UUID;
  * @param protocol        协议类型（OPENAI / ANTHROPIC / OLLAMA），只影响「获取模型列表」
  * @param apiKeyMasked    密钥掩码（形如 {@code ****8f3a}）；未配置时为空串
  * @param hasApiKey       是否已配置密钥
- * @param chatModel       生效的对话模型名
+ * @param chatModel       生效的**默认**对话模型名（= 清单第一项）
  * @param temperature     生效的温度；null 表示沿用服务端默认
- * @param embeddingModel  生效的嵌入模型名（改动需重启）
+ * @param embeddingModel  生效的**默认**嵌入模型名
+ * @param chatModels      保存的对话模型清单（V23）。第一项即默认，可直接用于下拉
+ * @param embeddingModels 保存的嵌入模型清单（V23）
  * @param active          是否当前生效
  * @param sortOrder       排序位
  * @param revision        配置版本；0 表示从未保存过内容
@@ -43,6 +46,8 @@ public record ModelProfileDto(UUID id,
                               String chatModel,
                               Double temperature,
                               String embeddingModel,
+                              List<String> chatModels,
+                              List<String> embeddingModels,
                               boolean active,
                               int sortOrder,
                               int revision,

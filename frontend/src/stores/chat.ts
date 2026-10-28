@@ -9,6 +9,7 @@ import {
   listMessages,
   listSessions,
   renameSession as renameSessionApi,
+  setSessionModel as setSessionModelApi,
   streamChat,
   rewindMessages,
 } from '@/api/chat'
@@ -369,6 +370,36 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   /**
+   * 设置当前会话使用的对话模型（V23）。
+   *
+   * <p>与 {@link renameSession} 同一套路：成功后就地替换列表项，不重拉列表
+   * （后端刻意不刷新 `updatedAt`，换模型不会改变列表顺序）。
+   *
+   * <p>传 `null` 表示改回「跟随生效配置的默认模型」。
+   *
+   * <p>**只在非流式期间允许**：模型是在发请求那一刻解析的，
+   * 流式途中切换不会影响正在进行的这一轮，却会让会话记录与实际用的模型
+   * 不一致 —— 这是最难排查的一类困惑。
+   *
+   * @returns 是否成功，供调用方决定是否提示
+   */
+  async function setModel(conversationId: string, model: string | null): Promise<boolean> {
+    if (streaming.value) {
+      error.value = '正在生成回复，请等这一轮结束后再切换模型'
+      return false
+    }
+    error.value = null
+    try {
+      const updated = await setSessionModelApi(conversationId, model)
+      sessions.value = sessions.value.map((item) => (item.conversationId === conversationId ? updated : item))
+      return true
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '切换模型失败'
+      return false
+    }
+  }
+
+  /**
    * 发送一条消息并流式接收回复。
    *
    * 用户消息先乐观追加到本地列表（否则会出现「点发送后界面毫无反应」的观感），
@@ -550,6 +581,7 @@ export const useChatStore = defineStore('chat', () => {
     loadOlderMessages,
     removeSession,
     renameSession,
+    setModel,
     send,
     regenerate,
     editAndResend,

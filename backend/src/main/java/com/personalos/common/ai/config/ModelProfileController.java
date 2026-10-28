@@ -11,6 +11,7 @@ import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.task.dto.DeletionAck;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,6 +63,9 @@ public class ModelProfileController {
     private static final int PRESET_ID_MAX = 60;
     private static final int PROTOCOL_MAX = 20;
 
+    /** 模型清单条数上限，与 ModelListProbeService.MAX_MODELS 对齐（探测最多返回这么多） */
+    private static final int MODEL_LIST_MAX = 500;
+
     private final ModelProfileService profileService;
     private final ModelConfigService configService;
     private final ModelConnectionTestService connectionTestService;
@@ -83,7 +87,11 @@ public class ModelProfileController {
     @GetMapping
     public ApiResponse<ModelProfileListDto> list() {
         List<AiModelProfileEntity> profiles = profileService.list();
-        List<ModelProfileDto> dtos = profiles.stream().map(this::toDto).toList();
+        // 一次批量取回全部清单，避免逐张卡片查一次（N+1）
+        Map<UUID, List<AiModelProfileModelEntity>> models = profileService.modelsOf(profiles);
+        List<ModelProfileDto> dtos = profiles.stream()
+                .map(entity -> toDto(entity, models.getOrDefault(entity.getId(), List.of())))
+                .toList();
         UUID activeId = profiles.stream()
                 .filter(AiModelProfileEntity::isActive)
                 .map(AiModelProfileEntity::getId)
@@ -228,6 +236,12 @@ public class ModelProfileController {
      * **生效值**（可能是环境变量兜底来的），来源标记告诉用户这一点。
      */
     private ModelProfileDto toDto(AiModelProfileEntity entity) {
+        return toDto(entity, profileService.modelsOf(entity.getId()));
+    }
+
+    /** 已取到清单时的映射（列表接口用，避免重复查） */
+    private ModelProfileDto toDto(AiModelProfileEntity entity,
+                                  List<AiModelProfileModelEntity> models) {
         ModelConfigService.ResolvedConfig resolved = resolveFor(entity);
         return new ModelProfileDto(
                 entity.getId(),
@@ -240,11 +254,25 @@ public class ModelProfileController {
                 resolved.chatModel(),
                 resolved.temperature(),
                 resolved.embeddingModel(),
+                namesOf(models, AiModelProfileModelEntity.Kind.CHAT),
+                namesOf(models, AiModelProfileModelEntity.Kind.EMBEDDING),
                 entity.isActive(),
                 entity.getSortOrder(),
                 entity.getRevision(),
                 entity.getUpdatedAt(),
                 resolved.sources());
+    }
+
+    /** 从清单里挑出某一类的模型名，保持库里的顺序 */
+    private static List<String> namesOf(List<AiModelProfileModelEntity> models,
+                                        AiModelProfileModelEntity.Kind kind) {
+        if (models == null || models.isEmpty()) {
+            return List.of();
+        }
+        return models.stream()
+                .filter(model -> model.kindEnum() == kind)
+                .map(AiModelProfileModelEntity::getModelName)
+                .toList();
     }
 
     private static ModelProfileService.SaveProfileCommand toCommand(SaveModelProfileRequest request) {
@@ -256,7 +284,9 @@ public class ModelProfileController {
                 request.apiKey(),
                 request.chatModel(),
                 request.temperature(),
-                request.embeddingModel());
+                request.embeddingModel(),
+                request.chatModels(),
+                request.embeddingModels());
     }
 
     /**
@@ -276,6 +306,8 @@ public class ModelProfileController {
         checkLength(request.embeddingModel(), MODEL_NAME_MAX, "嵌入模型名");
         checkLength(request.presetId(), PRESET_ID_MAX, "预设标识");
         checkLength(request.protocol(), PROTOCOL_MAX, "协议类型");
+        checkModelList(request.chatModels(), MODEL_NAME_MAX, "对话模型");
+        checkModelList(request.embeddingModels(), MODEL_NAME_MAX, "嵌入模型");
 
         Double temperature = request.temperature();
         if (temperature != null && (temperature < TEMPERATURE_MIN || temperature > TEMPERATURE_MAX)) {
@@ -292,6 +324,29 @@ public class ModelProfileController {
                 throw new BusinessException(ErrorCode.VALIDATION_FAILED,
                         "端点地址必须以 http:// 或 https:// 开头");
             }
+        }
+    }
+
+    /**
+     * 校验模型清单。
+     *
+     * <p>只限制**条数与单项长度**，不校验模型名是否真实存在：端点会动态增减模型，
+     * 而且用户完全可能先填一个还没开通的模型名 —— 那不是数据错误，
+     * 顶多是一次失败的调用，由探测结果去告诉他。
+     *
+     * <p>上限 500 与 {@code ModelListProbeService.MAX_MODELS} 对齐：
+     * 探测最多返回 500 个，用户「全选」也不会超过它。
+     */
+    private static void checkModelList(List<String> models, int max, String fieldName) {
+        if (models == null) {
+            return;
+        }
+        if (models.size() > MODEL_LIST_MAX) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED,
+                    fieldName + "最多保存 " + MODEL_LIST_MAX + " 个");
+        }
+        for (String model : models) {
+            checkLength(model, max, fieldName + "名");
         }
     }
 

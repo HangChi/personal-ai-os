@@ -5,6 +5,7 @@ import com.personalos.common.exception.BusinessException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -59,6 +60,42 @@ public class AiChatClientProvider {
      * <p>为 {@code null} 表示当前没有任何可用模型（chat 能力未启用）。
      */
     private volatile Bundle bundle;
+
+    /**
+     * 按模型名缓存的 Bundle（V23，会话级选模型）。
+     *
+     * <h2>为什么需要它</h2>
+     * 一个会话可以选「这套配置里另一个模型」。每次请求都新建模型实例有三个代价：
+     * 重建 HTTP 客户端（每次新开连接池）、重新包装工具与 Advisor、以及最要命的
+     * —— 每个实例都持有一份独立的连接池且永不关闭，聊二十个会话就是二十个池。
+     *
+     * <h2>为什么键里带 generation</h2>
+     * 配置一改（换端点、换密钥、切生效配置），所有按旧配置造出来的实例都必须作废。
+     * 用一个自增的代次号做前缀，比「遍历缓存逐个清空」简单且没有中间态：
+     * 换代之后旧键永久失联，会被下面的容量上限自然淘汰。
+     *
+     * <h2>为什么有容量上限</h2>
+     * 模型名来自用户输入，没有上限就是一个可以被撑爆的内存泄漏点。
+     * 超出时**整体清空**而不是 LRU 淘汰：清空的代价只是下次请求重建一次，
+     * 而 LRU 需要记录访问时间，为几十个条目引入一套淘汰算法并不划算。
+     */
+    private final ConcurrentHashMap<String, Bundle> namedBundles = new ConcurrentHashMap<>();
+
+    /** 换代号：配置每次变更都自增，让旧缓存键永久失联 */
+    private volatile int generation;
+
+    /** 按模型名缓存的条目上限；超出时清空重来 */
+    private static final int NAMED_CACHE_LIMIT = 32;
+
+    /**
+     * 按名取模型的工厂（V23）。
+     *
+     * <p>用 {@code volatile} 字段 + setter 而不是构造参数：它由配置模块实现，
+     * 而配置模块本身依赖本类（保存配置后要 {@code replaceModel}），
+     * 构造期互注会形成循环。声明成可为 null 也让「没有配置模块」的场景
+     * （测试、裁剪部署）继续可用 —— 那时按名取模型直接报未配置。
+     */
+    private volatile RuntimeChatModelResolver modelResolver;
 
     public AiChatClientProvider(ObjectProvider<ChatModel> chatModels,
                                 ObjectProvider<ToolCallingManager> toolCallingManagers,
@@ -150,10 +187,142 @@ public class AiChatClientProvider {
             throw new IllegalArgumentException("不能把聊天模型替换为 null");
         }
         Bundle previous = this.bundle;
+        // 换模型意味着「配置变了」：按模型名缓存的那些实例全都基于旧端点/旧密钥，
+        // 必须一起作废。换代后旧键永久失联，等价于全清但不需要遍历。
+        invalidateNamedBundles();
         this.bundle = buildBundle(model);
         log.info("聊天模型已切换：{} → {}",
                 previous == null ? "（无）" : previous.model().getClass().getSimpleName(),
                 model.getClass().getSimpleName());
+    }
+
+    /**
+     * 让按模型名缓存的全部实例失效。
+     *
+     * <p>由 {@link #replaceModel} 调用。单独开一个方法是为了让「何时作废」
+     * 这个决策只存在一处 —— 将来加了别的配置变更入口（比如改温度），
+     * 也应该调它，而不是各自去 {@code namedBundles.clear()}。
+     */
+    public void invalidateNamedBundles() {
+        this.generation = this.generation + 1;
+        if (!namedBundles.isEmpty()) {
+            log.debug("按模型名缓存的聊天客户端已作废（数量={}）", namedBundles.size());
+            namedBundles.clear();
+        }
+    }
+
+    /**
+     * 注册按名造模型的工厂（V23）。
+     *
+     * <p>由配置模块在启动时调用一次。用 setter 而不是构造注入，理由见字段注释。
+     *
+     * @param resolver 工厂；传 null 表示「不支持按名取模型」
+     */
+    public void setModelResolver(RuntimeChatModelResolver resolver) {
+        this.modelResolver = resolver;
+    }
+
+    /**
+     * 取指定模型名的聊天客户端；{@code null}/{@code blank} 时用当前生效的那个。
+     *
+     * <h2>为什么要单独一个入口而不是让调用方自己 replaceModel</h2>
+     * 会话级选模型是**并发的**：两个标签页里两个会话用不同模型，若靠「切换全局
+     * 当前模型」实现，它们会互相把对方的模型换掉 —— 表现为「回答着突然换了个模型」。
+     * 这里按名取一个**独立的** Bundle，两条流各持各的，互不影响。
+     *
+     * <h2>为什么不改 {@link #requireChatClient()}</h2>
+     * 那个方法是「用当前配置默认模型」的既有语义，被多处使用且行为不能变。
+     * 让它在模型名为空时保持原样，两个入口的分工就一目了然。
+     *
+     * @param modelName 模型名；null 或空白表示用默认
+     * @return 对应模型的客户端
+     * @throws BusinessException 未配置任何模型，或按名构造失败
+     */
+    public ChatClient chatClientFor(String modelName) {
+        return targetFor(modelName).chatClient();
+    }
+
+    /**
+     * 取「模型 + 客户端」这一对；会话级选模型的主入口。
+     *
+     * <p>把模型本身也交出去，是因为 {@link #applyThinkingOptions} 需要它
+     * —— 若只给客户端，调用方就只能去问「当前默认模型是谁」，那正是
+     * 「选了 qwen-max 却按 qwen-plus 的选项发请求」的来源。
+     *
+     * @param modelName 模型名；null 或空白表示用当前生效配置的默认模型
+     * @return 该模型对应的客户端与模型实例
+     * @throws BusinessException 未配置任何模型
+     */
+    public ChatTarget targetFor(String modelName) {
+        Bundle resolved = bundleFor(modelName);
+        return new ChatTarget(resolved.model(), resolved.chatClient());
+    }
+
+    /** 解析出「该用哪个 Bundle」：空名走默认，同名复用，否则按名造并缓存 */
+    private Bundle bundleFor(String modelName) {
+        Bundle current = this.bundle;
+        if (current == null) {
+            throw new BusinessException(ErrorCode.AI_NOT_CONFIGURED);
+        }
+        if (modelName == null || modelName.isBlank()) {
+            return current;
+        }
+        String trimmed = modelName.strip();
+        // 与当前默认模型同名时直接复用，省掉一次缓存查找与可能的重建
+        if (sameModelName(trimmed, current)) {
+            return current;
+        }
+
+        String key = generation + "|" + trimmed;
+        Bundle cached = namedBundles.get(key);
+        if (cached != null) {
+            return cached;
+        }
+
+        RuntimeChatModelResolver resolver = this.modelResolver;
+        if (resolver == null) {
+            // 没有按名造模型的能力时，退回默认模型而不是报错：
+            // 「用默认模型回答」比「这个会话打不开」好得多。
+            log.debug("没有 RuntimeChatModelResolver，模型 {} 无法按名生效，改用当前默认模型", trimmed);
+            return current;
+        }
+
+        ChatModel model;
+        try {
+            model = resolver.resolve(trimmed);
+        } catch (RuntimeException cause) {
+            log.warn("按模型名构造聊天模型失败，改用当前默认模型：model={}", trimmed, cause);
+            return current;
+        }
+
+        // 缓存可能被别的线程同时写入 —— putIfAbsent 后以先入者为准，
+        // 避免两个线程各自 buildBundle 又各自覆盖（多造一份连接池）
+        if (namedBundles.size() >= NAMED_CACHE_LIMIT) {
+            log.debug("按模型名缓存达到上限 {}，清空重来", NAMED_CACHE_LIMIT);
+            namedBundles.clear();
+        }
+        Bundle built = buildBundle(model);
+        Bundle existing = namedBundles.putIfAbsent(generation + "|" + trimmed, built);
+        return existing == null ? built : existing;
+    }
+
+    /**
+     * 「模型 + 客户端」的一对（V23）。
+     *
+     * @param model      模型实例，{@code applyThinkingOptions} 要用它取默认选项
+     * @param chatClient 已装配系统提示、记忆与工具的客户端
+     */
+    public record ChatTarget(ChatModel model, ChatClient chatClient) {
+    }
+
+    /** 判断某个 Bundle 里装的模型是否就是给定名字（名字取自模型的默认选项） */
+    private static boolean sameModelName(String modelName, Bundle bundle) {
+        ChatOptions options = bundle.model().getOptions();
+        if (!(options instanceof OpenAiChatOptions openAiOptions)) {
+            return false;
+        }
+        String configured = openAiOptions.getModel();
+        return configured != null && configured.strip().equals(modelName);
     }
 
     /**
@@ -195,10 +364,33 @@ public class AiChatClientProvider {
     public ChatClient.ChatClientRequestSpec applyThinkingOptions(ChatClient.ChatClientRequestSpec request,
                                                                  int thinkingBudget) {
         Bundle current = this.bundle;
-        if (current == null) {
+        return applyThinkingOptions(request, thinkingBudget, current == null ? null : current.model());
+    }
+
+    /**
+     * 把「思考程度」与「流式用量上报」应用到请求上，**基于指定模型**的默认选项合并。
+     *
+     * <h2>为什么必须传入目标模型（V23 踩坑记录）</h2>
+     * 上一版直接用 {@code this.bundle.model()} 的选项来 mutate。单模型时代两者
+     * 恒等，看不出问题；一旦会话能选别的模型，这里会把**默认模型的名字**
+     * 写进请求的 options —— 于是「用户选了 qwen-max，实际发给上游的是 qwen-plus」。
+     * 更糟的是它完全不报错：界面上显示 qwen-max，账单与回答都来自 qwen-plus。
+     *
+     * <p>症状一旦发生极难定位（需要抓上游请求体才能发现），
+     * 所以这里不做「猜」，而是要求调用方显式给出它正在用的那个模型。
+     *
+     * @param request        当前请求
+     * @param thinkingBudget 思考预算；≤0 表示不思考，但仍会打开流式用量上报
+     * @param model          这条请求实际使用的模型；null 时原样返回请求
+     * @return 应用了上述参数的请求；模型非 OpenAI 系时原样返回
+     */
+    public ChatClient.ChatClientRequestSpec applyThinkingOptions(ChatClient.ChatClientRequestSpec request,
+                                                                 int thinkingBudget,
+                                                                 ChatModel model) {
+        if (model == null) {
             return request;
         }
-        ChatOptions base = current.model().getOptions();
+        ChatOptions base = model.getOptions();
         if (!(base instanceof OpenAiChatOptions openAiOptions)) {
             log.debug("当前模型选项类型不支持按请求设置思考程度与流式用量：{}",
                     base == null ? "null" : base.getClass().getSimpleName());
