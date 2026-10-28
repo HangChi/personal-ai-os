@@ -245,12 +245,23 @@ function onDrop(event: DragEvent): void {
         :image-size="70"
       />
       <el-table v-else v-loading="loadingDocuments" :data="documents">
-        <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="filename" label="文件名" min-width="160" show-overflow-tooltip />
-        <el-table-column label="大小" width="100">
+        <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
+        <!--
+          文件名这类写入标识符（juejin-7672711130193936424.md）按宽度截断没有意义 ——
+          截到哪都是乱码一样的前缀，看不出区别。给它一个能显示到扩展名的宽度。
+
+          列宽分配（总 974，与 1440 宽下的内容区精确贴合，不产生横向滚动条）：
+            文件名 236 + 大小 80 + 片段数 78 + 字符数 82 + 上传时间 168 + 操作 112 = 756
+            剩下的 218 给标题（min-width 200）。
+          数字列压到 80 左右是够的：「1.9 KB」约 45px、「12,345」约 50px，
+          加上左右内边距 24px 仍有富余；而这几个值最多 6~7 个字符，再加宽纯属浪费。
+          把省下来的空间给标题 —— 标题才是这一列里唯一需要读的内容。
+        -->
+        <el-table-column prop="filename" label="文件名" width="236" show-overflow-tooltip />
+        <el-table-column label="大小" width="80" align="right">
           <template #default="{ row }">{{ formatBytes(row.sizeBytes) }}</template>
         </el-table-column>
-        <el-table-column label="片段数" width="90">
+        <el-table-column label="片段数" width="78" align="right">
           <template #header>
             <el-tooltip content="解析后切分的文本块数量，检索以片段为单位" placement="top">
               <span class="kd__column-hint">片段数 ?</span>
@@ -263,7 +274,7 @@ function onDrop(event: DragEvent): void {
           扫描版 PDF 体积很大但字符数接近 0，一眼能看出「这篇没解析出什么内容」。
           该字段阶段 3 起后端一直没写入（恒为 0），阶段 10 才修复；展示出来也让回归能被肉眼发现。
         -->
-        <el-table-column label="字符数" width="100">
+        <el-table-column label="字符数" width="82" align="right">
           <template #header>
             <el-tooltip
               content="解析出的文本字符数（分块前）；扫描版 PDF 体积大但字符数接近 0，说明没解析出内容"
@@ -272,15 +283,21 @@ function onDrop(event: DragEvent): void {
               <span class="kd__column-hint">字符数 ?</span>
             </el-tooltip>
           </template>
-          <template #default="{ row }">{{ row.charCount }}</template>
+          <template #default="{ row }">{{ row.charCount.toLocaleString('zh-CN') }}</template>
         </el-table-column>
-        <el-table-column label="上传时间" width="180">
+        <!--
+          152px 是「刚好」放下 2026/10/26 02:04:54 的宽度，结果每行都折成两行、
+          把行高撑到 59px。给到 168px 留出余量（字体回退、locale 差异都吃得下）。
+        -->
+        <el-table-column label="上传时间" width="168">
           <template #default="{ row }">{{ formatDateTime(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="130" fixed="right">
+        <el-table-column label="操作" width="112" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" size="small" @click="pickReplaceFile(row.id)">替换</el-button>
-            <el-button link type="danger" size="small" @click="handleDelete(row.id, row.title)">删除</el-button>
+            <div class="kd__actions">
+              <el-button link type="primary" size="small" @click="pickReplaceFile(row.id)">替换</el-button>
+              <el-button link type="danger" size="small" @click="handleDelete(row.id, row.title)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -360,5 +377,16 @@ function onDrop(event: DragEvent): void {
 .kd__column-hint {
   cursor: help;
   border-bottom: 1px dashed var(--el-text-color-placeholder);
+}
+
+/* 操作列：两个 link 按钮同组，用 gap 控制间距（不叠 EP 的 margin-left） */
+.kd__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--os-button-gap);
+}
+
+.kd__actions .el-button + .el-button {
+  margin-left: 0;
 }
 </style>
