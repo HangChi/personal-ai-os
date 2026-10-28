@@ -78,8 +78,9 @@ public class ChatPromptAssembler {
         }
 
         promptContributors.orderedStream().forEach(contributor -> {
-            // 传入本轮问题：贡献者据此做相关性筛选（如长期记忆按相关度而非纯时间排序）
-            String contribution = contributor.contribute(userInput);
+            // 传本轮问题 + 会话标识：前者用于相关性筛选（如长期记忆按相关度排序），
+            // 后者用于会话级上下文（如执行计划 —— 换个会话就不该出现）
+            String contribution = contributor.contribute(userInput, conversationId);
             if (contribution != null && !contribution.isBlank()) {
                 prompt.append("\n\n").append(contribution);
             }

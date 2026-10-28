@@ -101,6 +101,14 @@ public class AgentPlanService {
     /**
      * 开始某一步。
      *
+     * <p><b>阶段 23 起只允许推进「第一个未结束的步骤」</b>。这是把计划从记录层
+     * 抬到控制层的关键一步：只要还能随便跳到第 5 步，「按序执行」就只是提示词里
+     * 的一句客气话。跳步被拒绝时给出「先做第几 步」，模型据此能自己纠正 ——
+     * 拒绝而不解释会让它反复重试同一个调用。
+     *
+     * <p>例外（仍然允许）：本步已在 RUNNING（幂等返回）、本步是 FAILED 且排在
+     * 第一个未结束位置（重试）。
+     *
      * @param conversationId 会话
      * @param seq            步骤序号
      * @return 最新计划
@@ -118,6 +126,13 @@ public class AgentPlanService {
                     "步骤 " + seq + " 已结束（" + step.getStatus() + "），如需重做请先说明原因并重规划");
         }
 
+        int nextSeq = firstOpenSeq(plan);
+        if (nextSeq > 0 && seq != nextSeq) {
+            throw new BusinessException(ErrorCode.BUSINESS_CONFLICT,
+                    "计划必须按序推进：第 " + nextSeq + " 步还没结束，不能开始第 " + seq + " 步。"
+                            + "请先执行第 " + nextSeq + " 步，或调用 revisePlan 换一条路线");
+        }
+
         Instant now = Instant.now();
         step.start(now);
         stepRepository.save(step);
@@ -129,6 +144,14 @@ public class AgentPlanService {
 
     /**
      * 完成某一步。
+     *
+     * <p><b>阶段 23 起要求「产出证据」</b>：这一步至少绑定过一次工具调用，
+     * 或者调用方给出了非空 summary。两者都没有时拒绝。
+     *
+     * <p>为什么这条约束重要：模型最常见的虚假完成是「我已经查过了，结果如下」
+     * 然后直接进下一步 —— 而它其实什么都没调。加入校验后，要么真的调了工具
+     * （工具名由执行外壳回填，无法伪造），要么至少写下一句可核对的结论。
+     * 这不是完美校验（模型可以编造 summary），但它把「零成本的空口完成」堵掉了。
      *
      * @param conversationId 会话
      * @param seq            步骤序号
@@ -151,6 +174,13 @@ public class AgentPlanService {
             // 让「耗时」这个字段不会出现「有结束没开始」的缺口
             log.debug("步骤 {} 未经 start 直接完成，补记开始时间", seq);
             step.start(Instant.now());
+        }
+
+        boolean hasEvidence = step.getToolName() != null || (summary != null && !summary.isBlank());
+        if (!hasEvidence) {
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED,
+                    "第 " + seq + " 步没有任何实际动作或结论，不能标记完成。"
+                            + "请先调用完成这一步所需的工具，或在 summary 里写下可核对的结果");
         }
 
         Instant now = Instant.now();
@@ -364,6 +394,20 @@ public class AgentPlanService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.VALIDATION_FAILED,
                         "计划里没有第 " + seq + " 步（有效范围 1~" + stepRepository
                                 .findByPlanIdOrderBySeqAsc(plan.getId()).size() + "）"));
+    }
+
+    /**
+     * 第一个「未到终态」的步骤序号；没有则返回 -1。
+     *
+     * <p>它是「按序推进」的判据：只有它允许被 start。FAILED 也算未到终态 ——
+     * 失败的那一步必须重试或跳过，不能直接跳到后面。
+     */
+    private int firstOpenSeq(AgentPlanEntity plan) {
+        return stepRepository.findByPlanIdOrderBySeqAsc(plan.getId()).stream()
+                .filter(step -> !step.getStatus().isTerminal())
+                .mapToInt(AgentPlanStepEntity::getSeq)
+                .findFirst()
+                .orElse(-1);
     }
 
     /** 所有步骤都到终态时把计划标记完成 */

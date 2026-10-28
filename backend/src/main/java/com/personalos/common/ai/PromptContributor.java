@@ -42,4 +42,24 @@ public interface PromptContributor {
     default String contribute(String userInput) {
         return contribute();
     }
+
+    /**
+     * 带「会话标识」的版本（阶段 23）。
+     *
+     * <h2>为什么贡献者需要知道是哪个会话</h2>
+     * 有些上下文是**会话级**的，而不是用户级的：执行计划挂在某个会话上，
+     * 换个会话就不该出现。没有这个参数，会话级贡献者只能靠 ThreadLocal 猜，
+     * 而线程池复用会让「猜」在并发下指向别人的会话 —— 这类错误不报错，只会串味。
+     *
+     * <h2>为什么必须是默认方法</h2>
+     * 现有实现（长期记忆）按用户级工作，不需要会话；默认委托给两参版本，
+     * 它们一行都不用改。新增能力不该逼所有实现跟着改签名。
+     *
+     * @param userInput      本轮用户消息原文，可能为空串
+     * @param conversationId 当前会话标识
+     * @return 要追加到系统提示的文本；无内容时返回空串
+     */
+    default String contribute(String userInput, String conversationId) {
+        return contribute(userInput);
+    }
 }

@@ -45,7 +45,7 @@ public class AgentPlanTools {
     @Tool(name = "createPlan",
             description = "为一个多步骤任务建立执行计划。**仅当任务需要 2 步以上且步骤之间有依赖时调用**"
                     + "（例如「整理上周会议并给每人发提醒」）。单步任务、纯问答、单次查询不要调用。"
-                    + "调用后应逐步执行：每步开始前调用 startPlanStep，做完调用 completePlanStep。"
+                    + "计划建立后，系统会在每一轮把「当前该做哪一步」作为执行约束推送给你。"
                     + "同一会话只保留一个进行中的计划，新计划会取代旧的。")
     public String createPlan(
             @ToolParam(description = "目标的一句话复述，例如：把本周所有未完成任务按优先级重排") String goal,
@@ -64,8 +64,9 @@ public class AgentPlanTools {
     }
 
     @Tool(name = "startPlanStep",
-            description = "开始执行计划中的某一步。开始后该步状态为 RUNNING，期间的工具调用结果会自动归到这一步。"
-                    + "失败过的步骤可以通过它重试。")
+            description = "开始执行计划中的某一步。**必须按序推进**：只能开始第一个尚未结束的步骤，"
+                    + "跳到后面的步骤会被拒绝。失败过的步骤可以通过它重试。"
+                    + "开始后该步状态为 RUNNING，期间的工具调用结果会自动归到这一步。")
     public String startPlanStep(
             @ToolParam(description = "步骤序号（从 1 开始）") Integer seq,
             ToolContext toolContext) {
@@ -78,10 +79,12 @@ public class AgentPlanTools {
     }
 
     @Tool(name = "completePlanStep",
-            description = "把计划中的某一步标记为完成。完成标准应写在 summary 里，便于后续步骤与用户核对。")
+            description = "把计划中的某一步标记为完成。**需要产出证据**：这一步必须已经调用过工具，"
+                    + "或者在 summary 里写下可核对的结果 —— 两者都没有会被拒绝。"
+                    + "不要在没做任何事的情况下声称完成。")
     public String completePlanStep(
             @ToolParam(description = "步骤序号（从 1 开始）") Integer seq,
-            @ToolParam(required = false, description = "这一步的结论或产出，可省略") String summary,
+            @ToolParam(required = false, description = "这一步的结论或产出；本步没有调用工具时必填") String summary,
             ToolContext toolContext) {
 
         Map<String, Object> arguments = ToolExecutor.arguments(args -> {

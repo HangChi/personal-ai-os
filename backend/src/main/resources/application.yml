@@ -246,6 +246,13 @@ app:
       # 存量条目向量回填。关掉后 V26 之前写入的记忆永远排在相关度 0。
       enabled: ${APP_MEMORY_BACKFILL_ENABLED:true}
       batch-size: ${APP_MEMORY_BACKFILL_BATCH:20}
+  # 计划控制层（阶段 23）。
+  # enabled 关掉的是「引擎每轮把计划注入系统提示」，不是计划功能本身 ——
+  # 关掉后计划退回纯记录层（模型要看就自己调 getPlan），行为与阶段 22 一致。
+  plan:
+    enabled: ${APP_PLAN_ENFORCE:true}
+    # 注入块的字符上限。12 步全量渲染会吃掉两千字，把记忆与知识库挤出去。
+    max-inject-chars: ${APP_PLAN_MAX_INJECT_CHARS:1200}
   knowledge:
     # 嵌入维度。必须与 Flyway V4 中 vector_store.embedding 的维度一致，
     # 否则应用**启动失败**并给出修复指引（与其在写入时才报原始 SQL 错误，不如启动就拦住）。

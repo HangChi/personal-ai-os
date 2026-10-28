@@ -198,9 +198,74 @@ class AgentPlanServiceTest {
         given(stepRepository.findByPlanIdAndSeq(planId, 1)).willReturn(Optional.of(first));
         given(stepRepository.findByPlanIdOrderBySeqAsc(planId)).willReturn(List.of(first, second));
 
-        service.completeStep("conv-1", 1, null);
+        service.completeStep("conv-1", 1, "已处理");
 
         assertThat(plan.getStatus()).isEqualTo(PlanStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("startStep(): 不能跳步 —— 只要还能随便跳，「按序执行」就只是提示词里的一句客气话")
+    void startShouldRejectSkippingAhead() {
+        AgentPlanEntity plan = activePlan("目标");
+        AgentPlanStepEntity first = step(planId, 1, StepStatus.PENDING);
+        AgentPlanStepEntity second = step(planId, 2, StepStatus.PENDING);
+        given(planRepository.findFirstByConversationIdAndStatusOrderByCreatedAtDesc("conv-1", PlanStatus.ACTIVE))
+                .willReturn(Optional.of(plan));
+        given(stepRepository.findByPlanIdAndSeq(planId, 2)).willReturn(Optional.of(second));
+        given(stepRepository.findByPlanIdOrderBySeqAsc(planId)).willReturn(List.of(first, second));
+
+        assertThatThrownBy(() -> service.startStep("conv-1", 2))
+                .isInstanceOf(BusinessException.class)
+                // 拒绝时点明该做哪一步，否则模型会反复重试同一个调用
+                .hasMessageContaining("第 1 步还没结束");
+        assertThat(second.getStatus()).isEqualTo(StepStatus.PENDING);
+    }
+
+    @Test
+    @DisplayName("startStep(): 失效的步骤也不例外 —— 失败的那步必须重试或跳过，不能直接跳到后面")
+    void startShouldNotSkipOverFailedStep() {
+        AgentPlanEntity plan = activePlan("目标");
+        AgentPlanStepEntity failed = step(planId, 1, StepStatus.FAILED);
+        AgentPlanStepEntity third = step(planId, 3, StepStatus.PENDING);
+        given(planRepository.findFirstByConversationIdAndStatusOrderByCreatedAtDesc("conv-1", PlanStatus.ACTIVE))
+                .willReturn(Optional.of(plan));
+        given(stepRepository.findByPlanIdAndSeq(planId, 3)).willReturn(Optional.of(third));
+        given(stepRepository.findByPlanIdOrderBySeqAsc(planId)).willReturn(List.of(failed, third));
+
+        assertThatThrownBy(() -> service.startStep("conv-1", 3))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("第 1 步还没结束");
+    }
+
+    @Test
+    @DisplayName("completeStep(): 既没调过工具、也没写结论时拒绝 —— 堵掉「零成本的空口完成」")
+    void completeShouldRequireEvidence() {
+        AgentPlanEntity plan = activePlan("目标");
+        AgentPlanStepEntity running = step(planId, 1, StepStatus.RUNNING);
+        given(planRepository.findFirstByConversationIdAndStatusOrderByCreatedAtDesc("conv-1", PlanStatus.ACTIVE))
+                .willReturn(Optional.of(plan));
+        given(stepRepository.findByPlanIdAndSeq(planId, 1)).willReturn(Optional.of(running));
+
+        assertThatThrownBy(() -> service.completeStep("conv-1", 1, "   "))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("没有任何实际动作或结论");
+        assertThat(running.getStatus()).as("被拒绝时不能改状态").isEqualTo(StepStatus.RUNNING);
+    }
+
+    @Test
+    @DisplayName("completeStep(): 绑定过工具即可完成（工具名由执行外壳回填，模型伪造不了）")
+    void completeShouldAcceptBoundToolAsEvidence() {
+        AgentPlanEntity plan = activePlan("目标");
+        AgentPlanStepEntity running = step(planId, 1, StepStatus.RUNNING);
+        running.bindTool("findTasks", "找到 3 条任务", 200);
+        given(planRepository.findFirstByConversationIdAndStatusOrderByCreatedAtDesc("conv-1", PlanStatus.ACTIVE))
+                .willReturn(Optional.of(plan));
+        given(stepRepository.findByPlanIdAndSeq(planId, 1)).willReturn(Optional.of(running));
+        given(stepRepository.findByPlanIdOrderBySeqAsc(planId)).willReturn(List.of(running));
+
+        service.completeStep("conv-1", 1, null);
+
+        assertThat(running.getStatus()).isEqualTo(StepStatus.DONE);
     }
 
     @Test
