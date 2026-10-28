@@ -1,0 +1,363 @@
+package com.personalos.common.ai.config;
+
+import com.personalos.common.ai.AiChatClientProvider;
+import com.personalos.common.api.ErrorCode;
+import com.personalos.common.exception.BusinessException;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * 模型配置的读取、保存与「环境变量兜底」合并。
+ *
+ * <h2>三层取值优先级</h2>
+ * <ol>
+ *   <li><b>数据库</b>（设置页保存的值）—— 最高</li>
+ *   <li><b>环境变量 / application.yml</b>（{@code OPENAI_*} 系列）</li>
+ *   <li><b>内置默认</b>（见本类的 {@code DEFAULT_*} 常量）</li>
+ * </ol>
+ * 逐字段独立回落，而不是「有数据库行就整份用数据库的」。这一点很关键：
+ * 用户在设置页只改了模型名，Base URL 与密钥仍应继续用环境变量里那套，
+ * 否则一次局部修改会把整份配置打成空白。
+ *
+ * <h2>为什么把「有效地」计算放在这里而不是实体里</h2>
+ * 实体只表达「用户设过什么」（全 null 合法），而「最终用哪个端点」是
+ * 跨越数据库与环境变量的决策。把两层混进实体会让实体依赖外部配置，
+ * 也让「未设置」与「设置为环境变量里的同一个值」无法区分。
+ */
+@Service
+public class ModelConfigService {
+
+    private static final Logger log = LoggerFactory.getLogger(ModelConfigService.class);
+
+    /** 内置默认端点：与 application.yml 的 {@code spring.ai.openai.base-url} 默认值一致 */
+    static final String DEFAULT_BASE_URL = "https://api.openai.com";
+
+    /**
+     * 内置默认模型名。
+     *
+     * <p>与 {@code application.yml} 的 {@code OPENAI_CHAT_MODEL} 默认值刻意保持一致
+     * （{@code gpt-4o-mini}）：两者不一致时，用户会看到「页面上显示 A、实际请求用 B」
+     * 而找不到原因。
+     */
+    static final String DEFAULT_CHAT_MODEL = "gpt-4o-mini";
+
+    /** 内置默认嵌入模型名 */
+    static final String DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small";
+
+    private final AiModelConfigRepository repository;
+    private final OpenAiChatModelFactory modelFactory;
+    private final AiChatClientProvider provider;
+    private final Clock clock;
+
+    /** 环境变量来源的兜底值，由 Spring 在构造期解析 */
+    private final String envBaseUrl;
+    private final String envApiKey;
+    private final String envChatModel;
+    private final String envEmbeddingModel;
+    private final Double envTemperature;
+
+    /**
+     * 密钥掩码时保留的尾字符数。
+     *
+     * <p>保留 4 位是为了让用户能确认「这就是我上次填的那把」——
+     * 同时 4 位对 32+ 位的密钥而言泄露的信息可忽略。
+     */
+    private static final int MASK_TAIL = 4;
+
+    public ModelConfigService(AiModelConfigRepository repository,
+                              OpenAiChatModelFactory modelFactory,
+                              AiChatClientProvider provider,
+                              Clock clock,
+                              @Value("${spring.ai.openai.base-url:}") String envBaseUrl,
+                              @Value("${spring.ai.openai.api-key:}") String envApiKey,
+                              @Value("${spring.ai.openai.chat.model:}") String envChatModel,
+                              @Value("${spring.ai.openai.embedding.model:}") String envEmbeddingModel,
+                              @Value("${spring.ai.openai.chat.temperature:}") String envTemperature) {
+        this.repository = repository;
+        this.modelFactory = modelFactory;
+        this.provider = provider;
+        this.clock = clock;
+        this.envBaseUrl = blankToNull(envBaseUrl);
+        this.envApiKey = blankToNull(envApiKey);
+        this.envChatModel = blankToNull(envChatModel);
+        this.envEmbeddingModel = blankToNull(envEmbeddingModel);
+        this.envTemperature = parseTemperature(envTemperature);
+    }
+
+    // ------------------------------------------------------------------ 读取
+
+    /**
+     * 当前**实际生效**的配置（已合并数据库与环境变量）。
+     *
+     * @return 生效配置，密钥为明文 —— 调用方若是接口层，必须自行掩码
+     */
+    @Transactional(readOnly = true)
+    public ResolvedConfig resolve() {
+        AiModelConfigEntity entity = repository.findSingleton().orElse(null);
+        return merge(entity);
+    }
+
+    /**
+     * 把数据库行与环境变量合并成生效配置。
+     *
+     * <p>逐字段回落：数据库列非 null 优先，否则用环境变量，最后用内置默认。
+     */
+    private ResolvedConfig merge(AiModelConfigEntity entity) {
+        String baseUrl = firstNonBlank(
+                entity == null ? null : entity.getBaseUrl(), envBaseUrl, DEFAULT_BASE_URL);
+        String apiKey = firstNonBlank(entity == null ? null : entity.getApiKey(), envApiKey, "");
+        String chatModel = firstNonBlank(
+                entity == null ? null : entity.getChatModel(), envChatModel, DEFAULT_CHAT_MODEL);
+        String embeddingModel = firstNonBlank(
+                entity == null ? null : entity.getEmbeddingModel(), envEmbeddingModel, DEFAULT_EMBEDDING_MODEL);
+        Double temperature = entity != null && entity.getTemperature() != null
+                ? entity.getTemperature()
+                : envTemperature;
+
+        // 每一项都记下「来源」，前端据此显示「来自环境变量」还是「设置页覆盖」。
+        // 没有这个信息，用户改了 .env 发现不生效时无从判断是被覆盖了。
+        Map<String, ConfigSource> sources = new LinkedHashMap<>();
+        sources.put("baseUrl", sourceOf(entity == null ? null : entity.getBaseUrl(), envBaseUrl));
+        sources.put("apiKey", sourceOf(entity == null ? null : entity.getApiKey(), envApiKey));
+        sources.put("chatModel", sourceOf(entity == null ? null : entity.getChatModel(), envChatModel));
+        sources.put("embeddingModel",
+                sourceOf(entity == null ? null : entity.getEmbeddingModel(), envEmbeddingModel));
+        sources.put("temperature", entity != null && entity.getTemperature() != null
+                ? ConfigSource.DATABASE
+                : (envTemperature != null ? ConfigSource.ENVIRONMENT : ConfigSource.DEFAULT));
+
+        return new ResolvedConfig(baseUrl, apiKey, chatModel, temperature, embeddingModel,
+                entity == null ? null : entity.getRevision(),
+                entity == null ? null : entity.getUpdatedAt(),
+                sources);
+    }
+
+    // ------------------------------------------------------------------ 写入
+
+    /**
+     * 保存配置到数据库。**只落库，不切换模型** —— 切换由调用方在本事务外做。
+     *
+     * <h3>为什么落库与切换必须分开</h3>
+     * 这是本轮踩到的一个真实 bug：早先这里标了 {@code @Transactional} 并在方法末尾
+     * 调用 {@link #applyToRuntime}，而后者在模型构造失败时抛
+     * {@link BusinessException} —— 异常穿出事务边界会让**整个事务回滚**。
+     * 结果是「配置已保存，但按该配置初始化模型失败」这句提示在说谎：
+     * 配置根本没保存，数据库里一行都没有。
+     *
+     * <p>正确语义是「保存成功」与「切换成功」两件事分开报告：本方法只负责前者
+     * （几乎不会失败），后者交给 {@link ModelConfigController#save} 在事务外调用
+     * {@link #applyToRuntime}。切换失败时配置仍然保留，用户改个参数重试即可，
+     * 不必重新填一遍。
+     *
+     * <p><b>不要把这个方法改回「保存 + 生效」一步到位。</b>那会把两件失败概率
+     * 完全不同的事绑到同一个事务边界上，回滚时还会让提示语与真实状态不一致。
+     *
+     * @param command 用户提交的表单
+     * @return 保存并合并后的生效配置（密钥为明文，接口层必须掩码）
+     */
+    @Transactional
+    public ResolvedConfig save(SaveCommand command) {
+        Instant now = clock.instant();
+        AiModelConfigEntity entity = repository.findSingleton()
+                .orElseGet(() -> new AiModelConfigEntity(now));
+
+        // 密钥的特殊约定：传 null 表示「不改动」，传空串表示「清空、回落到环境变量」。
+        // 前端不回填明文，因此「用户没碰密钥输入框」与「用户清空了密钥」必须能区分，
+        // 否则每次保存其他字段都会把密钥清掉。
+        String apiKey = command.apiKey() == null
+                ? (entity.getApiKey())
+                : blankToNull(command.apiKey());
+
+        entity.overwrite(
+                blankToNull(command.baseUrl()),
+                apiKey,
+                blankToNull(command.chatModel()),
+                command.temperature(),
+                blankToNull(command.embeddingModel()),
+                now);
+        repository.save(entity);
+
+        ResolvedConfig resolved = merge(entity);
+        log.info("模型配置已保存：revision={}, baseUrl={}, chatModel={}, 密钥{}",
+                entity.getRevision(), resolved.baseUrl(), resolved.chatModel(),
+                resolved.hasApiKey() ? "已设置" : "为空");
+        return resolved;
+    }
+
+    /**
+     * 按当前生效配置重建聊天模型；失败时抛出可读的业务异常。
+     *
+     * <p>不吞异常：调用方需要知道「配置存下来了，但这套参数连不上」。
+     *
+     * <p><b>必须在事务外调用。</b>抛出的 {@link BusinessException} 若发生在事务内
+     * 会让事务整体回滚，连带把已经落库的配置一起撤销 —— 见 {@link #save} 的说明。
+     */
+    public void applyToRuntime(ResolvedConfig resolved) {
+        if (resolved.apiKey().isBlank()) {
+            // 没有密钥时不去构造模型 —— 构造本身不校验密钥，但任何请求都会失败。
+            // 保持现有模型不动（若环境变量那套仍可用，就不该因为设置页留空而失能）。
+            log.info("生效配置中没有 API 密钥，聊天模型保持不变");
+            return;
+        }
+        try {
+            var model = modelFactory.create(
+                    resolved.baseUrl(), resolved.apiKey(), resolved.chatModel(),
+                    resolved.temperature(), Map.of());
+            provider.replaceModel(model);
+        } catch (RuntimeException cause) {
+            throw new BusinessException(ErrorCode.AI_UPSTREAM_ERROR,
+                    "配置已保存，但按该配置初始化模型失败：" + describe(cause));
+        }
+    }
+
+    /**
+     * 启动时把数据库里的配置应用到运行期。
+     *
+     * <p>没有数据库行、或当时没有密钥时什么都不做 —— 启动期由 Spring AI 自动配置
+     * 装配的模型继续生效，行为与改造前完全一致。
+     */
+    public void applyOnStartup() {
+        ResolvedConfig resolved = resolve();
+        if (resolved.revision() == null) {
+            log.info("模型配置来自环境变量（数据库无覆盖）：baseUrl={}, chatModel={}",
+                    resolved.baseUrl(), resolved.chatModel());
+            return;
+        }
+        if (resolved.apiKey().isBlank()) {
+            log.info("数据库有模型配置但没有密钥，沿用启动期模型");
+            return;
+        }
+        try {
+            provider.replaceModel(modelFactory.create(
+                    resolved.baseUrl(), resolved.apiKey(), resolved.chatModel(),
+                    resolved.temperature(), Map.of()));
+            log.info("已应用数据库中的模型配置：revision={}, baseUrl={}, chatModel={}",
+                    resolved.revision(), resolved.baseUrl(), resolved.chatModel());
+        } catch (RuntimeException cause) {
+            // 启动期不能因为配置有问题就起不来：那是「一个可修的配置错误」被升级成
+            // 「整个应用不可用」。记录后继续，用户可在设置页改回来。
+            log.warn("应用数据库中的模型配置失败，沿用启动期模型：{}", describe(cause));
+        }
+    }
+
+    // ------------------------------------------------------------------ 工具
+
+    /**
+     * 掩码密钥：保留末 4 位。
+     *
+     * @param apiKey 明文密钥
+     * @return 形如 {@code sk-****...8f3a} 的掩码；空密钥返回空串
+     */
+    public static String mask(String apiKey) {
+        if (apiKey == null || apiKey.isBlank()) {
+            return "";
+        }
+        if (apiKey.length() <= MASK_TAIL) {
+            // 极短密钥（不该出现）整体打码，不暴露任何字符
+            return "****";
+        }
+        return "****" + apiKey.substring(apiKey.length() - MASK_TAIL);
+    }
+
+    private static ConfigSource sourceOf(String dbValue, String envValue) {
+        if (dbValue != null && !dbValue.isBlank()) {
+            return ConfigSource.DATABASE;
+        }
+        return envValue != null ? ConfigSource.ENVIRONMENT : ConfigSource.DEFAULT;
+    }
+
+    private static String firstNonBlank(String first, String second, String fallback) {
+        if (first != null && !first.isBlank()) {
+            return first;
+        }
+        if (second != null && !second.isBlank()) {
+            return second;
+        }
+        return fallback;
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.strip();
+    }
+
+    private static Double parseTemperature(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return Double.valueOf(raw.strip());
+        } catch (NumberFormatException ignored) {
+            // 配置里的温度写错不该阻断启动，回落「未设置」
+            return null;
+        }
+    }
+
+    private static String describe(Throwable cause) {
+        String message = cause.getMessage();
+        return message == null || message.isBlank()
+                ? cause.getClass().getSimpleName()
+                : message;
+    }
+
+    // ------------------------------------------------------------------ 类型
+
+    /** 配置项的来源，用于前端区分「设置页覆盖」与「环境变量兜底」 */
+    public enum ConfigSource {
+        /** 设置页保存的值 */
+        DATABASE,
+        /** 来自环境变量 / application.yml */
+        ENVIRONMENT,
+        /** 代码内置默认 */
+        DEFAULT
+    }
+
+    /**
+     * 生效配置（数据库 + 环境变量合并后的结果）。
+     *
+     * @param baseUrl        OpenAI 兼容端点根地址
+     * @param apiKey         密钥明文；**接口层必须掩码后再返回**
+     * @param chatModel      对话模型名
+     * @param temperature    采样温度；null 表示沿用服务端默认
+     * @param embeddingModel 嵌入模型名（改动需重启）
+     * @param revision       数据库配置版本；null 表示数据库里没有配置行
+     * @param updatedAt      最后一次保存时间
+     * @param sources        各字段的来源
+     */
+    public record ResolvedConfig(String baseUrl,
+                                 String apiKey,
+                                 String chatModel,
+                                 Double temperature,
+                                 String embeddingModel,
+                                 Integer revision,
+                                 Instant updatedAt,
+                                 Map<String, ConfigSource> sources) {
+
+        /** 当前是否配了密钥（不暴露密钥本身） */
+        public boolean hasApiKey() {
+            return apiKey != null && !apiKey.isBlank();
+        }
+    }
+
+    /**
+     * 保存指令。
+     *
+     * @param baseUrl        端点地址；空表示回落到环境变量
+     * @param apiKey         密钥；**null 表示不改动**，空串表示清空
+     * @param chatModel      模型名；空表示回落到环境变量
+     * @param temperature    温度；null 表示回落到环境变量
+     * @param embeddingModel 嵌入模型；空表示回落到环境变量（需重启生效）
+     */
+    public record SaveCommand(String baseUrl,
+                              String apiKey,
+                              String chatModel,
+                              Double temperature,
+                              String embeddingModel) {
+    }
+}

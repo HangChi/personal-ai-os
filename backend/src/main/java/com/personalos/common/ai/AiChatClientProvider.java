@@ -27,32 +27,38 @@ import org.springframework.stereotype.Component;
  * 这样应用仍能正常启动、健康检查与其它端点不受影响，故障被限制在聊天功能内
  * （见 research.md R-06）。未配置时调用方会收到
  * {@link ErrorCode#AI_NOT_CONFIGURED}，而不是启动失败或空指针。
+ *
+ * <h2>为什么客户端是可整体替换的（2026-10-28，设置页热切换）</h2>
+ * 此前三个字段都是 {@code final}，模型与客户端在构造期一次性定死。
+ * 设置页要求「保存即生效」，就必须能在运行期换掉这三者。
+ * 现在的形态是把「模型 + 两个客户端」打成一个不可变的 {@link Bundle}，
+ * 整体替换引用：
+ * <ul>
+ *   <li>读路径无锁（{@code volatile} 引用 + 局部变量缓存），切模型的瞬间不会让请求排队；</li>
+ *   <li>替换是**原子**的：请求不可能拿到「新模型配旧客户端」的中间态；</li>
+ *   <li>已在进行的流不受影响 —— 它持有的是订阅那一刻的 Bundle，
+ *       用旧模型跑完。中途换模型会让一条回答前后出自两个模型，
+ *       而用户只会觉得「说着说着语气变了」。</li>
+ * </ul>
  */
 @Component
 public class AiChatClientProvider {
 
     private static final Logger log = LoggerFactory.getLogger(AiChatClientProvider.class);
 
-    /** 为空表示当前没有任何可用的模型（chat 能力未启用） */
-    private final ChatClient chatClient;
+    /** 构造期依赖，用于运行期重建同一套 Advisor 与工具 */
+    private final ChatMemory chatMemory;
+    private final AiProperties aiProperties;
+    private final ToolCallingManager toolCallingManager;
+    private final List<Object> tools;
+    private final List<ToolCallback> toolCallbacks;
 
     /**
-     * 无状态单轮客户端：**不**挂记忆 Advisor、**不**挂工具。
+     * 当前生效的「模型 + 客户端」组合。
      *
-     * <p>知识库问答用它。不能复用上面那个客户端，原因有两个：
-     * <ol>
-     *   <li>{@code MessageChatMemoryAdvisor} 强制要求每次请求都带 {@code conversationId} 参数，
-     *       单轮问答没有会话，直接调用会抛参数校验异常；</li>
-     *   <li>问答需要的是「只依据给定资料作答」，把任务工具一并暴露给它只会增加模型跑偏的机会。</li>
-     * </ol>
+     * <p>为 {@code null} 表示当前没有任何可用模型（chat 能力未启用）。
      */
-    private final ChatClient plainChatClient;
-
-    /**
-     * 底层聊天模型。留着引用不是为了「以后可能用到」——{@link #thinkingOptions(int)}
-     * 需要读它的默认选项来做按请求合并（见该方法注释里「为什么必须 mutate 而不是新建」）。
-     */
-    private final ChatModel chatModel;
+    private volatile Bundle bundle;
 
     public AiChatClientProvider(ObjectProvider<ChatModel> chatModels,
                                 ObjectProvider<ToolCallingManager> toolCallingManagers,
@@ -60,19 +66,43 @@ public class AiChatClientProvider {
                                 ObjectProvider<ToolCallbackProvider> toolCallbackProviders,
                                 ChatMemory chatMemory,
                                 AiProperties aiProperties) {
+        this.chatMemory = chatMemory;
+        this.aiProperties = aiProperties;
+        this.toolCallingManager = toolCallingManagers.getIfAvailable();
+
+        // 工具集合在构造期固定：它们由各业务模块的 Bean 贡献，不随模型切换而变。
+        // 先收集一次存下来，重建时直接复用 —— 每次切换都重新遍历 ObjectProvider
+        // 会拿到懒加载代理，可能触发意料之外的 Bean 初始化。
+        List<Object> collectedTools = new ArrayList<>();
+        toolContributors.forEach(contributor -> collectedTools.addAll(contributor.toolObjects()));
+        List<ToolCallback> collectedCallbacks = new ArrayList<>();
+        toolCallbackProviders.forEach(provider -> collectedCallbacks.addAll(List.of(provider.getToolCallbacks())));
+        this.tools = List.copyOf(collectedTools);
+        this.toolCallbacks = List.copyOf(collectedCallbacks);
+
         ChatModel chatModel = chatModels.getIfAvailable();
         if (chatModel == null) {
             log.warn("未检测到任何 ChatModel，AI 聊天能力不可用。"
                     + "请将 AI_CHAT_PROVIDER 设为 ollama 或 openai 后重启。");
-            this.chatClient = null;
-            this.plainChatClient = null;
-            this.chatModel = null;
+            this.bundle = null;
             return;
         }
 
-        this.chatModel = chatModel;
+        this.bundle = buildBundle(chatModel);
+        log.info("AI 聊天能力已启用：model={}, maxMessages={}, tools={}, toolCallbacks={}",
+                chatModel.getClass().getSimpleName(), aiProperties.memory().maxMessages(),
+                this.tools.size(), this.toolCallbacks.size());
+    }
 
-        this.plainChatClient = ChatClient.builder(chatModel)
+    /**
+     * 用给定模型构造一整套「模型 + 带记忆与工具的客户端 + 无状态客户端」。
+     *
+     * <p>三个东西必须一起换：只换模型而不换客户端，客户端里仍然嵌着旧模型实例；
+     * 只换会话客户端而漏了问答客户端，会出现「对话用新模型、知识库问答用旧模型」
+     * ——一个只在特定页面体现、极难联想的错位。
+     */
+    private Bundle buildBundle(ChatModel chatModel) {
+        ChatClient plain = ChatClient.builder(chatModel)
                 .defaultSystem(aiProperties.systemPrompt())
                 .build();
 
@@ -86,26 +116,14 @@ public class AiChatClientProvider {
                 .defaultSystem(aiProperties.systemPrompt())
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build());
 
-        // 收集各业务模块贡献的工具。使用 SPI 而非直接依赖具体模块，
-        // 因此 chat 模块无需知道「任务」「知识库」这些业务概念的存在。
-        List<Object> tools = new ArrayList<>();
-        toolContributors.forEach(contributor -> tools.addAll(contributor.toolObjects()));
-
-        // 收集「已成型」的工具回调（阶段 6：MCP 工具经 mcp 模块的装饰层以
-        // ToolCallbackProvider 形态提供）。本类不认识 MCP 这个概念——
-        // 它只是多收集一类 Provider，与 @Tool 那条路径并列。
-        List<ToolCallback> toolCallbacks = new ArrayList<>();
-        toolCallbackProviders.forEach(provider -> toolCallbacks.addAll(List.of(provider.getToolCallbacks())));
-
-        if (!tools.isEmpty() || !toolCallbacks.isEmpty()) {
+        boolean hasTools = !tools.isEmpty() || !toolCallbacks.isEmpty();
+        if (hasTools) {
             ToolCallingAdvisor.Builder<?> advisorBuilder = ToolCallingAdvisor.builder();
-            ToolCallingManager toolCallingManager = toolCallingManagers.getIfAvailable();
             if (toolCallingManager != null) {
                 advisorBuilder = advisorBuilder.toolCallingManager(toolCallingManager);
             }
             builder = builder.defaultAdvisors(advisorBuilder.build());
-        }
-        if (!tools.isEmpty() || !toolCallbacks.isEmpty()) {
+
             // 两类工具合成一次 defaultTools()：它接受 Object...，其中 @Tool 标注的普通对象
             // 会被包装成回调，已经是 ToolCallback 的实例则原样使用。
             //
@@ -117,18 +135,32 @@ public class AiChatClientProvider {
             builder = builder.defaultTools(toolArgs.toArray());
         }
 
-        this.chatClient = builder.build();
+        return new Bundle(chatModel, builder.build(), plain);
+    }
 
-        log.info("AI 聊天能力已启用：model={}, maxMessages={}, tools={}, toolCallbacks={}",
-                chatModel.getClass().getSimpleName(), aiProperties.memory().maxMessages(),
-                tools.size(), toolCallbacks.size());
+    /**
+     * 替换为新的模型实例，并重建两个客户端。
+     *
+     * <p>由设置页保存配置后调用。原子替换，读路径不受影响。
+     *
+     * @param model 新的模型实例
+     */
+    public void replaceModel(ChatModel model) {
+        if (model == null) {
+            throw new IllegalArgumentException("不能把聊天模型替换为 null");
+        }
+        Bundle previous = this.bundle;
+        this.bundle = buildBundle(model);
+        log.info("聊天模型已切换：{} → {}",
+                previous == null ? "（无）" : previous.model().getClass().getSimpleName(),
+                model.getClass().getSimpleName());
     }
 
     /**
      * @return 当前是否已装配可用的聊天客户端
      */
     public boolean isConfigured() {
-        return chatClient != null;
+        return bundle != null;
     }
 
     /**
@@ -162,10 +194,11 @@ public class AiChatClientProvider {
      */
     public ChatClient.ChatClientRequestSpec applyThinkingOptions(ChatClient.ChatClientRequestSpec request,
                                                                  int thinkingBudget) {
-        if (chatModel == null) {
+        Bundle current = this.bundle;
+        if (current == null) {
             return request;
         }
-        ChatOptions base = chatModel.getOptions();
+        ChatOptions base = current.model().getOptions();
         if (!(base instanceof OpenAiChatOptions openAiOptions)) {
             log.debug("当前模型选项类型不支持按请求设置思考程度与流式用量：{}",
                     base == null ? "null" : base.getClass().getSimpleName());
@@ -185,10 +218,11 @@ public class AiChatClientProvider {
      * @return 已装配 system prompt 与 ChatMemory Advisor 的聊天客户端
      */
     public ChatClient requireChatClient() {
-        if (chatClient == null) {
+        Bundle current = this.bundle;
+        if (current == null) {
             throw new BusinessException(ErrorCode.AI_NOT_CONFIGURED);
         }
-        return chatClient;
+        return current.chatClient();
     }
 
     /**
@@ -197,9 +231,29 @@ public class AiChatClientProvider {
      * @return 用于知识库问答等单轮场景的客户端
      */
     public ChatClient requirePlainChatClient() {
-        if (plainChatClient == null) {
+        Bundle current = this.bundle;
+        if (current == null) {
             throw new BusinessException(ErrorCode.AI_NOT_CONFIGURED);
         }
-        return plainChatClient;
+        return current.plainChatClient();
+    }
+
+    /**
+     * 当前生效的模型实例（测试与连通性检查用）。
+     *
+     * @return 模型；未配置时为 {@code null}
+     */
+    public ChatModel currentModel() {
+        Bundle current = this.bundle;
+        return current == null ? null : current.model();
+    }
+
+    /**
+     * 一次切换要同时替换的整体。
+     *
+     * <p>用 record 而不是三个 volatile 字段：三个独立字段无法保证「一起换」，
+     * 请求可能读到「新模型 + 旧客户端」这种组合。
+     */
+    private record Bundle(ChatModel model, ChatClient chatClient, ChatClient plainChatClient) {
     }
 }
