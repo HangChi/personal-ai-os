@@ -395,12 +395,21 @@ async function handleProbeWindow(name: string): Promise<void> {
     }
     const parsedCurrent = parseContextWindow(currentText)
     if (parsedCurrent === detected) {
-      ElMessage.success(`与端点一致：${formatContextWindow(detected)}`)
+      ElMessage.success(`端点确认：${formatContextWindow(detected)}`)
       return
     }
-    // 已有值就不动它 —— 端点报小是常态（见上面注释），静默覆盖比不查更糟
-    ElMessage.info(
-      `端点返回 ${formatContextWindow(detected)}，当前填的是 ${parsedCurrent === null ? currentText : formatContextWindow(parsedCurrent)}，未覆盖。需要以端点为准请先清空输入框再查`,
+    /*
+     * 已填值与端点值不同：不覆盖，但要说清「为什么」。
+     *
+     * <p>用 warning 而不是 info：实测 DashScope 对**所有**模型都回 129024
+     * （连文档写着 1M 的 qwen-long 也是），这个值通常比真实能力小。
+     * 若只轻描淡写地提示，用户会以为自己「没获取到」——而事实是
+     * 获取到了、但被这条保护挡住了。文案里必须点明它是实例默认值。
+     */
+    ElMessage.warning(
+      `端点返回 ${formatContextWindow(detected)}（这是端点的实例默认值，通常小于模型真实能力），` +
+        `当前填的是 ${parsedCurrent === null ? currentText : formatContextWindow(parsedCurrent)}，已保留你的值。` +
+        `要改成端点值，请先清空输入框再点查询`,
     )
   } catch (cause) {
     ElMessage.warning(cause instanceof Error ? cause.message : '查询窗口失败')
