@@ -72,7 +72,10 @@ class ErrorEnvelopeIntegrationTest {
     void malformedJsonIsClientError() throws Exception {
         HttpTestClient.Response response = http.post("/api/v1/tasks", "{\"title\": ");
 
-        assertThat(response.status()).isEqualTo(400);
+        // 断言里带上响应体：这三条用例曾偶发返回 404（整个应用层都没接上的样子），
+        // 只断言状态码的话，失败时无从判断 404 到底是谁返回的。40004 是本应用的
+        // 「资源不存在」，别的结构就说明请求压根没打到这个应用。
+        assertThat(response.status()).as("POST /api/v1/tasks 的响应：%s", response.body()).isEqualTo(400);
         JsonNode body = mapper.readTree(response.body());
         assertThat(body.path("code").asInt()).isEqualTo(40000);
         assertThat(body.path("message").asString()).contains("请求体格式错误");
@@ -84,14 +87,15 @@ class ErrorEnvelopeIntegrationTest {
         // /chat/uploads 只接受 POST；这里刻意用 GET
         HttpTestClient.Response response = http.get("/api/v1/chat/uploads");
 
-        assertThat(response.status()).isEqualTo(405);
+        assertThat(response.status()).as("GET /api/v1/chat/uploads 的响应：%s", response.body()).isEqualTo(405);
         assertThat(mapper.readTree(response.body()).path("code").asInt()).isEqualTo(40005);
     }
 
     @Test
     @DisplayName("页码溢出：返回空页，而不是 subList 负下标导致的 500")
     void hugePageNumberReturnsEmptyPage() throws Exception {
-        assertThat(http.post("/api/v1/tasks", "{\"title\":\"唯一的一条\"}").status()).isEqualTo(201);
+        HttpTestClient.Response created = http.post("/api/v1/tasks", "{\"title\":\"唯一的一条\"}");
+        assertThat(created.status()).as("创建任务的响应：%s", created.body()).isEqualTo(201);
 
         // 21474837 * 100 超过 int 上界；用 int 计算会溢出成负数。
         // 这条请求以前能稳定打出 500，且不需要任何特殊权限。

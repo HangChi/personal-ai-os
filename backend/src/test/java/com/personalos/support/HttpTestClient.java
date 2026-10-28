@@ -28,8 +28,18 @@ public class HttpTestClient {
 
     private final String baseUrl;
 
+    /**
+     * 用 {@code 127.0.0.1} 而不是 {@code localhost}。
+     *
+     * <p>本机上 {@code localhost} 同时解析出 {@code 127.0.0.1} 与 {@code ::1}（IPv4 在前，
+     * 但连接走哪个由客户端内部决定）。内嵌 Tomcat 绑的是通配地址、两个都收，所以多数时候
+     * 没区别；可一旦某次只有一侧在监听，请求就会落到别的监听者上——症状是快速返回一个
+     * 与本应用无关的 404，日志里连「资源未找到」都不会出现。
+     *
+     * <p>写死 IPv4 字面量把这个变量消掉：不解析、不走代理选择器的名称匹配，行为确定。
+     */
     public HttpTestClient(int port) {
-        this.baseUrl = "http://localhost:" + port;
+        this.baseUrl = "http://127.0.0.1:" + port;
     }
 
     /** 普通响应 */
