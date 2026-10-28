@@ -279,18 +279,20 @@ function switchView(next: 'table' | 'board'): void {
         v-else
         :tasks="sortedTasks"
         :loading="loading"
+        :total="total"
         @toggle="handleToggle"
         @edit="openEdit"
         @remove="handleDelete"
       />
 
-      <AppPagination
-        v-if="tasksView === 'table'"
-        :total="total"
-        :page="page"
-        :size="size"
-        @change="(next: number) => taskStore.goToPage(next)"
-      />
+      <!--
+        分页对两种视图都生效。
+        原先这里写着 v-if="tasksView === 'table'"：切到看板后**没有任何翻页入口**，
+        而看板拿到的同样是「当前页」的数据（服务端分页，每页 20 条）。结果是任务一旦
+        超过一页，看板里剩下的任务就再也看不到，用户也没有任何提示或操作能翻过去 ——
+        看起来就像「任务丢了」。看板不是另一种数据源，它只是同一页数据的另一种排版。
+      -->
+      <AppPagination :total="total" :page="page" :size="size" @change="(next: number) => taskStore.goToPage(next)" />
     </el-card>
 
     <TaskEditDialog

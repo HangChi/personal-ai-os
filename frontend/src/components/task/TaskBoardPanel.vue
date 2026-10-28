@@ -16,6 +16,14 @@ import type { TaskItem } from '@/types/api'
 const props = defineProps<{
   tasks: TaskItem[]
   loading: boolean
+  /**
+   * 当前筛选条件下的**总条数**（服务端分页的 total）。
+   *
+   * <p>看板只拿到当前页的 20 条，所以列头上那个数字是「本页这一列有几张卡」。
+   * 不告诉用户还有更多，他会以为「待办就这 3 条」——而实际上第 2 页还有十几条。
+   * 有了 total 才能在这种情况给一句提示，而不是让数字说谎。
+   */
+  total?: number
 }>()
 
 const emit = defineEmits<{
@@ -25,10 +33,25 @@ const emit = defineEmits<{
 }>()
 
 const columns = computed(() => groupTasksByStatus(props.tasks))
+
+/**
+ * 当前页装不下全部任务时给出提示。
+ *
+ * <p>看板的列计数只能反映本页，无法反映总量（要按状态分组统计就得让后端再提供一组
+ * 聚合数字，为一句提示加一个接口不划算）。退一步：明确告诉用户「还有更多，请翻页」，
+ * 比让那个数字悄悄说谎要好。
+ */
+const moreCount = computed(() => {
+  const total = props.total ?? props.tasks.length
+  return Math.max(total - props.tasks.length, 0)
+})
 </script>
 
 <template>
   <div v-loading="loading" class="task-board">
+    <p v-if="moreCount > 0" class="task-board__more-hint">
+      本页显示 {{ tasks.length }} 条，还有 {{ moreCount }} 条未显示 —— 下面可以翻页
+    </p>
     <section v-for="column in columns" :key="column.key" class="task-board__column">
       <header class="task-board__header">
         <span class="task-board__title">{{ column.label }}</span>
@@ -70,6 +93,17 @@ const columns = computed(() => groupTasksByStatus(props.tasks))
   grid-template-columns: repeat(3, 1fr);
   gap: var(--os-space-3);
   align-items: start;
+}
+
+/* 提示条横跨整行，否则它会占掉第一列的格子、把三列挤成「提示 + 两列」 */
+.task-board__more-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: var(--os-space-2) var(--os-space-3);
+  border-radius: var(--os-radius-md);
+  background: var(--el-fill-color-lighter);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
 }
 
 .task-board__column {
