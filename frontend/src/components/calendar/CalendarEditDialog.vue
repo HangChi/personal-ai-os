@@ -97,7 +97,7 @@ function submit(): void {
   <el-dialog
     :model-value="visible"
     title="编辑日程"
-    width="560px"
+    width="min(560px, 92vw)"
     @update:model-value="(value: boolean) => emit('update:visible', value)"
   >
     <!--

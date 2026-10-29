@@ -15,6 +15,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { downloadSessionMarkdown } from '@/api/chat'
 import { matchMessageIds, nextMatchCursor } from '@/lib/chat-search'
+import { isNearBottom as isNearBottomOf, scrollDeltaForPrepend } from '@/lib/chat-scroll'
 import { confirmDanger } from '@/lib/confirm-box'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
@@ -141,13 +142,22 @@ const lastMessageKey = computed(() => {
   return last ? `${last.id}:${last.content.length}` : 'empty'
 })
 
-/** 是否贴近底部（距离底部 80px 内算「在底部」） */
+/**
+ * 是否贴近底部：判据与阈值在 `@/lib/chat-scroll` 里（纯函数、有边界测试）。
+ *
+ * <p>抽出去的原因不是「想拆文件」，而是这段判据在视图里**无法测试**：
+ * happy-dom 的 `scrollHeight` 恒为 0，组件断言写出来只会是「0 < 80」恒真。
+ */
 function isNearBottom(): boolean {
   const element = messageArea.value
   if (!element) {
     return true
   }
-  return element.scrollHeight - element.scrollTop - element.clientHeight < 80
+  return isNearBottomOf({
+    scrollHeight: element.scrollHeight,
+    scrollTop: element.scrollTop,
+    clientHeight: element.clientHeight,
+  })
 }
 
 /**
@@ -182,7 +192,7 @@ async function handleLoadOlder(): Promise<void> {
   await chatStore.loadOlderMessages()
   await nextTick()
   if (element) {
-    element.scrollTop += element.scrollHeight - prevHeight
+    element.scrollTop += scrollDeltaForPrepend(prevHeight, element.scrollHeight)
   }
 }
 

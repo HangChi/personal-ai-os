@@ -199,7 +199,7 @@ function formatTime(value: string): string {
       </div>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="min(560px, 92vw)">
       <el-input
         v-model="draft"
         type="textarea"

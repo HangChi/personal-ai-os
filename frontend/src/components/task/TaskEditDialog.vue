@@ -86,7 +86,7 @@ function submit(): void {
   <el-dialog
     :model-value="visible"
     title="编辑任务"
-    width="520px"
+    width="min(520px, 92vw)"
     @update:model-value="(value: boolean) => emit('update:visible', value)"
   >
     <el-form label-width="80px">

@@ -463,7 +463,7 @@ defineExpose({ finish })
     v-model="visible"
     class="profile-dialog"
     :title="isEdit ? '编辑模型配置' : '添加模型配置'"
-    width="640px"
+    width="min(640px, 92vw)"
     :close-on-click-modal="false"
     append-to-body
   >
