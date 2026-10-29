@@ -373,6 +373,8 @@ AUTH_PASSWORD=<你的密码>      # 开启时必填
 - [接口清单](docs/api.md)（48 个端点与特殊约定）
 - [本地开发指南](docs/development.md)
 - [运维手册](docs/operations.md)（部署 / 备份恢复 / 迁移回滚 / 故障排查）
+- [参与贡献](CONTRIBUTING.md)（环境、提交前必跑的命令、代码约定）
+- [安全策略](SECURITY.md)（**部署前必须逐条确认的 5 项**、已知取舍）
 - [阶段 0 规格](specs/001-project-skeleton/spec.md) ｜ [实现计划](specs/001-project-skeleton/plan.md) ｜ [版本决策与踩坑](specs/001-project-skeleton/research.md)
 
 ## 许可证
