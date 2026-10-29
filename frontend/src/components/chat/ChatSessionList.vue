@@ -10,7 +10,7 @@
  * 也让「列表长什么样」这件事只有一个出处。
  */
 import { Delete, Download, EditPen } from '@element-plus/icons-vue'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch, type ComponentPublicInstance } from 'vue'
 
 import AppPagination from '@/components/AppPagination.vue'
 import { groupSessionsByDay } from '@/lib/session-group'
@@ -88,6 +88,54 @@ function cancelEdit(): void {
  */
 const deletingId = ref<string | null>(null)
 
+/*
+ * 切换会话时必须退出编辑态（2026-10-29）。
+ *
+ * <h3>为什么不能只靠 `@blur`</h3>
+ *
+ * 用户报的原话是「点修改图标后点其他会话，那一行还是修改标题的状态」。
+ * 直接原因是：`@blur` 是编辑态**唯一**的退出通道，而它当时因为 ref 收集成数组
+ * 的 bug 从来没触发过（详见 `renameInput` 的注释）。ref 修好之后 blur 能工作了，
+ * 但**仍然不该只依赖它** —— blur 是「焦点去哪了」的副作用，不是「用户在切会话」
+ * 的语义。任何让输入框保持焦点的路径都会漏：
+ *
+ * - 拖拽/键盘（`Tab` 到会话项后按 Enter）选中别的会话；
+ * - 将来会话项改成 `pointerdown` 触发（blur 与 select 的先后顺序会变）；
+ * - 输入框因某种原因没有真正拿到焦点（这次的真实故障）。
+ *
+ * 所以要有一条**声明式**的规则：只要「正在编辑的行」不是「当前选中的会话」，
+ * 编辑态就必须退出。这条规则不关心焦点，只关心状态之间的一致性。
+ *
+ * <p>注意两个细节：
+ * <ol>
+ *   <li>**不能走 `commitEdit`**：切会话不是「确认改名」的动作，走 commit 会把
+ *       用户随手敲了一半的文字落库 —— 他可能只是点错了行。</li>
+ *   <li>⚠️ 与 `@blur` 的**先后顺序**：点别的会话时，浏览器先让输入框 blur、再派发
+ *       click。若 blur 已经把改动 commit 掉，本 watch 看到的 `editingId` 已是 null，
+ *       直接跳过 —— 也就是说**鼠标点击时「blur 即保存」仍然生效**（实测打字后
+ *       点别处，改动确实落库）。这条 watch 兜的是 blur **不发生**的那些路径
+ *       （键盘 Enter 切换、输入框未获焦点的故障态），此时才是「放弃改动」。</li>
+ *   <li>`currentId` 初值是 `null`（会话还没加载完）。此时若 `editingId` 有值，
+ *       说明列表正在重排，不该粗暴清掉 —— 所以只在 `currentId` 非空时判定。</li>
+ * </ol>
+ *
+ * <p>这里**不需要**复位 `editCancelled`（曾加过，已删）：`startEdit` 每次进入编辑
+ * 都会把它置回 false，所以「上一次的取消标记连坐下一次编辑」是不可能发生的。
+ * 当时以为需要、并写了断言去守，注入该 bug 后测试照样全绿 —— 那就是一段死代码
+ * 配一条假断言。**验证方式：把修复删掉，测试必须变红；不变红就不是修复。**
+ */
+watch(
+  () => props.currentId,
+  (id) => {
+    if (!id || editingId.value === null) {
+      return
+    }
+    if (editingId.value !== id) {
+      editingId.value = null
+    }
+  },
+)
+
 function startDelete(session: ChatSession): void {
   editingId.value = null
   editCancelled.value = true
@@ -112,9 +160,40 @@ function confirmDelete(session: ChatSession): void {
  *    焦点会跳到一个用户没在编辑的会话上；
  * 2. 查询时机依赖 `nextTick` 恰好晚于 DOM 更新，任何把输入框放进
  *    `v-if` 之外的地方（如改为 `v-show`）都会静默拿到 null。
- * 用 ref 后范围天然限定在本组件内，且 ref 绑定与 DOM 更新同步。
+ *
+ * <h3>⚠️ 但用 ref 时踩了个更隐蔽的坑（2026-10-29 修）</h3>
+ *
+ * 这个 `ref` 写在 `v-for` **内部**。Vue 3 对这种写法有特殊处理：
+ * 同名 ref 会被收集成**数组**，所以 `renameInput.value` 是 `[input]` 而不是 `input`，
+ * `.focus()` 直接不存在 —— 运行时报 `renameInput.value?.focus is not a function`。
+ *
+ * 而 `?.` 只防 `null`、不防「有值但没有该方法」，所以它**没能兜住**这个错误。
+ * 后果是连锁的、且完全静默（不在控制台附近就看不到）：
+ * <ol>
+ *   <li>输入框**从未获得焦点** → 用户点重命名图标后无法直接打字；</li>
+ *   <li>既然没焦点，`@blur` 就**永远不会触发** → 编辑态没有任何退出通道；</li>
+ *   <li>于是点别的会话时，上一行仍停在一个空的输入框里，标题「消失」了。</li>
+ * </ol>
+ * 实测确认：手动 `input.focus()` 之后再点别的会话，编辑态正常退出（输入框归 0）；
+ * 不手动聚焦则残留 1 个。
+ *
+ * <p>修法是**不用 `ref` 属性收集**，而是用函数式 ref 只认「当前正在编辑的那一个」。
+ * 这样无论 `v-for` 渲染多少行，`renameInput` 永远只指向 `editingId` 对应的元素。
  */
 const renameInput = ref<HTMLInputElement | null>(null)
+
+/**
+ * 绑定到重命名输入框的 ref 回调。
+ *
+ * <p>函数式 ref 在元素挂载时收到 DOM、卸载时收到 `null`，正好拿来做「只认当前编辑行」。
+ * 必须在 `v-for` 里按行判断，否则最后一行会把引用覆盖掉。
+ */
+function setRenameInput(el: Element | ComponentPublicInstance | null, conversationId: string): void {
+  if (conversationId !== editingId.value) {
+    return
+  }
+  renameInput.value = (el as HTMLInputElement | null) ?? null
+}
 
 // 进入编辑态后聚焦并全选，省得用户再手动清空原标题
 watch(editingId, async (id) => {
@@ -122,7 +201,8 @@ watch(editingId, async (id) => {
     return
   }
   await nextTick()
-  // 再用可选链兜底：重命名态可能在 nextTick 之前就被取消（快速双击）
+  // 这里不再是数组：setRenameInput 已经把引用收敛成单个元素。
+  // 仍用 `?.` 兜底「快速双击导致 nextTick 前就被取消」的情况。
   renameInput.value?.focus()
   renameInput.value?.select()
 })
@@ -189,7 +269,7 @@ const groups = computed(() => groupSessionsByDay(props.sessions))
               <div class="chat-sessions__body" @dblclick="startEdit(session)">
                 <input
                   v-if="editingId === session.conversationId"
-                  ref="renameInput"
+                  :ref="(el) => setRenameInput(el, session.conversationId)"
                   :value="editingValue"
                   class="chat-sessions__rename"
                   maxlength="200"
