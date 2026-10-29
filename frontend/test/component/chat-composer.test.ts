@@ -129,17 +129,19 @@ describe('ChatComposer', () => {
   })
 
   /*
-   * 分行契约（2026-10-29 最终摆法，用户 feedback「上下文长度和 0/4000 的位置太丑了」后定）：
+   * 分行契约（2026-10-29 第三版摆法，两轮反馈后定）：
    *
-   *   输入区本体 = textarea + 右下角字数（字数数的是草稿 → 属于输入框，有内容才显示）
-   *   读数行   = 只剩上下文用量（会话级状态，靠左，不再与字数分居两端）
+   *   输入框   = textarea
+   *   读数行   = 上下文仪表盘 + 字数合成一组（.chat-composer__readings），靠右
    *   工具行   = 控件（附件/知识库/模型/思考/语音/发送）
    *
-   * <p>这几条断言守的是**布局契约**而不是视觉效果。判据因此是
-   * 「字数在不在输入区里、读数行还剩谁、模型在不在动作组」，
-   * 而不是任何主观描述。
+   * <p>演进：最初两读数分居读数行两端（中间空 528px）→ 字数移入输入区右下角
+   * （更丑 + 高度随输入跳 + 仪表盘没动）→ 本版：两读数合并成一组推右。
+   *
+   * <p>这几条断言守的是**布局契约**而不是视觉效果：字数在不在读数行里、
+   * 读数行是不是恒定高度、模型在不在动作组。
    */
-  it('读数行只剩上下文用量：字数在输入区右下角，都不含模型选择器', () => {
+  it('读数行：上下文与字数同在一组靠右，都不含模型选择器', () => {
     const wrapper = mount(ChatComposer, {
       // budgetTokens 必须一起给：ContextMeter 在 budgetTokens=0 时整块不渲染，
       // 只覆盖 contextWindow 会得到「读数组不存在」的假红
@@ -150,26 +152,23 @@ describe('ChatComposer', () => {
     })
 
     const metaRow = wrapper.find('.chat-composer__meta-row')
-    expect(metaRow.exists()).toBe(true)
-    // 上下文读数在读数行
-    expect(metaRow.find('.context-meter').exists()).toBe(true)
-    // 字数**不在**读数行 —— 它已移入输入区（两个孤儿分居两端就是被这次反馈掉的摆法）
-    expect(metaRow.find('.chat-composer__count').exists()).toBe(false)
-    // 模型选择器也不在读数行 —— 它已移入动作组
-    expect(metaRow.find('.model-picker').exists()).toBe(false)
-
-    // 字数住在输入区本体里，分母必须与 textarea 的 maxlength 一致，
-    // 否则「还能打多少」是错的
+    const readings = metaRow.find('.chat-composer__readings')
+    expect(readings.exists()).toBe(true)
+    // 两个读数都在这一组里
+    expect(readings.find('.context-meter').exists()).toBe(true)
+    // 字数分母必须与 textarea 的 maxlength 一致，否则「还能打多少」是错的
     const maxlength = wrapper.find('textarea').attributes('maxlength')
-    const count = wrapper.find('.chat-composer__input .chat-composer__count')
-    expect(count.exists()).toBe(true)
-    expect(count.text()).toBe(`5 / ${maxlength}`)
+    expect(readings.find('.chat-composer__count').text()).toBe(`5 / ${maxlength}`)
+    // 模型选择器**不在**读数行 —— 它已移入动作组
+    expect(metaRow.find('.model-picker').exists()).toBe(false)
   })
 
-  it('空草稿不显示字数：没有可数的东西，不占位也不显示 0 / 4000', () => {
+  it('空草稿也显示 0 / 4000：读数行高度恒定，不随输入跳动', () => {
     const wrapper = mount(ChatComposer, { props: baseProps({ modelValue: '' }) })
 
-    expect(wrapper.find('.chat-composer__count').exists()).toBe(false)
+    const count = wrapper.find('.chat-composer__count')
+    expect(count.exists()).toBe(true)
+    expect(count.text()).toBe(`0 / ${wrapper.find('textarea').attributes('maxlength')}`)
   })
 
   it('模型选择器在第二行的动作组内（与思考 / 语音 / 发送同排）', () => {
@@ -187,14 +186,13 @@ describe('ChatComposer', () => {
     expect(wrapper.find('.context-meter').exists()).toBe(false)
   })
 
-  it('有预算时上下文读数渲染在读数行（该行现在只有它一个元素）', async () => {
+  it('有预算时上下文读数渲染在读数行，与字数同组', async () => {
     const usage: ContextUsage = { promptTokens: 4096, budgetTokens: 32768, contextWindow: 32768, estimated: false }
     const wrapper = mount(ChatComposer, { props: baseProps({ contextUsage: usage }) })
 
     const metaRow = wrapper.find('.chat-composer__meta-row')
-    expect(metaRow.find('.context-meter').exists()).toBe(true)
-    // 字数已移入输入区，空草稿（baseProps 默认）下不渲染
-    expect(metaRow.find('.chat-composer__count').exists()).toBe(false)
+    expect(metaRow.find('.chat-composer__readings .context-meter').exists()).toBe(true)
+    expect(metaRow.find('.chat-composer__readings .chat-composer__count').exists()).toBe(true)
   })
 })
 

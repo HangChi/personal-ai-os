@@ -288,63 +288,57 @@ check(
 )
 check('发送框：附件按钮有 aria-label（收字后仍可读）', /aria-label="添加附件"/.test(composer))
 
-// 盒内三段结构（2026-10-29 最终摆法）：
-//   输入区本体（textarea + 右下角字数）→ 读数行（只剩上下文）→ 工具行（控件 + 动作组）
+// 盒内三段结构（2026-10-29 第三版摆法）：
+//   输入框 → 读数行（仪表盘 + 字数一组靠右）→ 工具行（控件 + 动作组）
 check(
-  '发送框：输入区本体是 .chat-composer__input（textarea + 字数一个块）',
-  /class="chat-composer__input"/.test(composer),
+  '发送框：读数行内是读数组 .chat-composer__readings（两个读数合成一组）',
+  /class="chat-composer__readings"/.test(composer),
 )
-check('发送框：读数行是 meta-row（现在只剩上下文用量）', /class="chat-composer__meta-row"/.test(composer))
+check('发送框：读数行是 meta-row', /class="chat-composer__meta-row"/.test(composer))
 check('发送框：工具行是 tool-row（工具 + 动作组）', /class="chat-composer__tool-row"/.test(composer))
 
 /*
- * 读数行的分布：左对齐（`justify-content: flex-start`）。
+ * 读数行的分布：读数组整体靠右（`margin-left: auto`），行自身不做分布。
  *
- * <h3>2026-10-29：为什么不再是 space-between</h3>
- * 用户反馈「上下文长度和 0/4000 的位置太丑了」——那一版是「上下文贴左、
- * 字数贴右」分居两端，1440px 实测中间空 528px，两个 12px 灰字各站一头。
- * 现在的摆法按**语义归属**分：
- * <ul>
- *   <li>字数数的是输入框里的草稿 → 移入输入区本体右下角，有内容才显示；</li>
- *   <li>上下文用量是会话级状态 → 独自留在读数行靠左。</li>
- * </ul>
- * 读数行只剩一个元素，`space-between` 与左对齐渲染相同，但不写它：
- * 「两端各一个」的语义已不成立，留着会让人以为这行还该有第二个元素。
+ * <h3>2026-10-29 第三版：为什么是「一组靠右」</h3>
+ * 用户三轮反馈的终点。最初两读数分居两端（1440px 实测中间空 528px，孤儿相）；
+ * 第二版把字数挪进输入区右下角（更丑 + 高度随输入跳 + 仪表盘没动）。
+ * 现在两个读数合成**一组**推到右端，与第二行右端的动作组上下对齐，
+ * 右边缘成一条竖线。仪表盘也就此从左端搬了过来。
  *
- * <p>同时加一条反向断言：字数**不能**带 margin-left: auto。它现在靠
- * `align-self: flex-end` 贴输入区右缘，自己再带 auto 会与输入区的列布局
- * 叠加，在窄屏挤出多余空隙。
+ * <p>读数行自身不写 `justify-content`：它只有一个组，默认 flex-start 即可，
+ * 推右是组自己的 margin。写 space-between 会让「这里应该有两个组」的语义
+ * 复活（2026-10-28 那版就是这么坏的）。
  */
 check(
-  '发送框：读数行左对齐（只剩一个元素，不再两端对齐）',
-  /\.chat-composer__meta-row\s*\{[^}]*justify-content:\s*flex-start/.test(composer) &&
+  '发送框：读数组整体靠右（margin-left: auto），读数行自身不分布',
+  /\.chat-composer__readings\s*\{[^}]*margin-left:\s*auto/.test(composer) &&
     !/\.chat-composer__meta-row\s*\{[^}]*justify-content:\s*space-between/.test(composer),
 )
 check(
-  '发送框：字数自己不带 margin-left: auto（贴右缘靠 align-self）',
+  '发送框：字数自己不带 margin-left: auto（贴右缘由读数组负责）',
   !/\.chat-composer__count\s*\{[^}]*margin-left:\s*auto/.test(composer),
 )
-check('发送框：字数靠 align-self 贴输入区右缘', /\.chat-composer__count\s*\{[^}]*align-self:\s*flex-end/.test(composer))
 check('发送框：已删掉的 readouts 容器不再残留样式', !/\.chat-composer__readouts\s*\{/.test(composer))
+check(
+  '发送框：已删掉的输入区包装层（.chat-composer__input）不再残留样式',
+  !/\.chat-composer__input\s*\{/.test(composer),
+)
 
 /*
- * 字数与上下文的**模板块序**：字数必须在输入区块内、读数行之前。
+ * 字数与仪表盘的**模板块序**：字数必须在读数组内、读数组在读数行内。
  *
- * <p>按 DOM 块序判断，不用「谁在文件里出现得早」—— 旧断言拿
+ * <p>按 DOM 块序判断，不用「谁在文件里出现得早」—— 曾经有一条断言拿
  * `indexOf('ContextMeter') < indexOf('chat-composer__count')` 比下标，
  * 而 ContextMeter 在 import 语句里就出现过，于是不管模板怎么摆都恒真
- * （假绿）。这里比的是三个 class 锚点的先后：input < meta-row < tool-row，
- * 字数必须落在 input 与 meta-row 之间 —— 即「在输入区里、不在读数行里」。
+ * （假绿）。这里比的是三个 class 锚点的先后：meta-row < readings < count < tool-row。
  */
-const idxInput = composer.indexOf('class="chat-composer__input"')
 const idxMeta2 = composer.indexOf('class="chat-composer__meta-row"')
+const idxReadings = composer.indexOf('class="chat-composer__readings"')
 const idxCount = composer.indexOf('class="chat-composer__count"')
 check(
-  '发送框：字数在输入区块内、读数行之前（属于输入框，不属于状态行）',
-  idxInput > 0 &&
-    idxCount > idxInput &&
-    idxCount < idxMeta2 &&
-    idxMeta2 < composer.indexOf('class="chat-composer__tool-row"'),
+  '发送框：字数在读数组内（与仪表盘同组，不再分居两端）',
+  idxReadings > idxMeta2 && idxCount > idxReadings && idxCount < composer.indexOf('class="chat-composer__tool-row"'),
 )
 /*
  * 模型选择器的位置：必须在 tool-row 之内、meta-row 之外。

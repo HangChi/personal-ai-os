@@ -2,10 +2,10 @@
 /**
  * 对话输入区（从 ChatView 拆出，2026-10-26；阶段 22 增加思考程度）。
  *
- * <p>盒内结构（自上而下，2026-10-29 最新摆法）：
+ * <p>盒内结构（自上而下，2026-10-29 第三版摆法）：
  * <ul>
- *   <li>输入区本体：textarea + 右下角字数（字数数的是草稿，属于输入框，有内容才显示）；</li>
- *   <li>读数行：只剩上下文用量（会话级状态，靠左）；</li>
+ *   <li>输入框：textarea，单行起步、随内容长高；</li>
+ *   <li>读数行：上下文仪表盘 + 字数合成一组靠右（恒定 24px，不随输入跳动）；</li>
  *   <li>工具行：附件、知识库增强（含条数）在左，模型、思考、语音、发送/停止在右。</li>
  * </ul>
  * 键盘行为在这里实现而不是父组件，因为它完全由「输入框聚焦时的按键」触发：
@@ -376,70 +376,61 @@ onBeforeUnmount(() => {
         class="chat-composer__file-input"
         @change="pickFiles(($event.target as HTMLInputElement).files)"
       />
-      <!--
-        ============ 输入区本体：textarea + 右下角字数 ============
-
-        <h3>字数为什么住在这里、而不是下面的读数行（2026-10-29 用户反馈后调整）</h3>
-        用户原话：「上下文长度和 0/4000 的位置太丑了」。当时的摆法是两个 12px
-        灰字分居读数行两端 —— 1440px 实测中间空 528px，各站一头，读起来像
-        两个没地方放的孤儿。
-
-        <p>分开的根据是**语义归属**，不是凑布局：
-        <ul>
-          <li>字数数的是**这个输入框**里的草稿（上限 4000），是输入框的属性 ——
-              所以它贴在输入区右下角，有内容才出现（空态没有可数的东西，
-              「0 / 4000」常驻反而是噪音）；</li>
-          <li>上下文用量是**会话级**状态（上一轮实际送了多少 / 预算多少），
-              与当前草稿无关，所以它留在读数行，独自靠左。</li>
-        </ul>
-
-        <p>用流内布局（textarea 下方右对齐的一行）而不是绝对定位盖在文字上：
-        长文本的最后一行会顶到右边缘，盖上去就会压字；挂在下方永不被遮挡，
-        代价是打第一个字时盒子长高约 17px —— 与 autosize 打第二行时涨一截
-        是同一种「内容驱动的高度」，比恒定占一块地（空洞）合理。
-      -->
-      <div class="chat-composer__input">
-        <el-input
-          :model-value="modelValue"
-          class="chat-composer__textarea"
-          type="textarea"
-          :rows="1"
-          maxlength="4000"
-          resize="none"
-          :placeholder="inputPlaceholder"
-          @update:model-value="(value: string) => emit('update:modelValue', value)"
-          @keydown="handleKeydown"
-          @paste="onPaste"
-        />
-        <!-- 有内容才显示：空态下这一行不占地，盒子保持紧凑 -->
-        <span
-          v-if="modelValue.length > 0"
-          class="chat-composer__count"
-          :class="{ 'chat-composer__count--warn': countNearLimit }"
-        >
-          {{ modelValue.length }} / {{ MAX_LENGTH }}
-        </span>
-      </div>
+      <el-input
+        :model-value="modelValue"
+        class="chat-composer__textarea"
+        type="textarea"
+        :rows="1"
+        maxlength="4000"
+        resize="none"
+        :placeholder="inputPlaceholder"
+        @update:model-value="(value: string) => emit('update:modelValue', value)"
+        @keydown="handleKeydown"
+        @paste="onPaste"
+      />
 
       <!--
-        ============ 读数行：只剩上下文用量 ============
+        ============ 读数行：上下文用量 + 字数，一组靠右 ============
 
-        <h3>为什么这一行现在只有一个元素（2026-10-29）</h3>
-        用户选定的摆法：字数移入输入区右下角，上下文用量单独留在这里靠左。
-        它不需要再 `space-between` —— 只有一個元素时两端对齐与左对齐等价，
-        写成左对齐是把「这里以后可能加东西」的想象关掉：真加了第二种读数
-        （比如「草稿已自动保存」），再按那时的语义决定分布，不提前预留。
+        <h3>这一版的来历（2026-10-29，三轮反馈后的结果）</h3>
+        用户最初的反馈是「上下文长度和 0/4000 的位置太丑了」。两轮尝试都被否：
+        <ol>
+          <li><b>分居两端</b>（最初）：上下文贴左、字数贴右，1440px 实测中间
+              空 528px —— 两个 12px 灰字各站一头，读起来像没地方放的孤儿；</li>
+          <li><b>字数移入输入区右下角</b>（上一版）：更丑，且打第一个字盒子
+              长高 17px（高度会跳），仪表盘还留在原处没动；</li>
+          <li><b>本版：两个读数合并成一组、整体靠右</b>。仪表盘从左端搬到右端，
+              字数回到它旁边，一簇 24px 的读数贴着动作组上方 —— 与「工具在左、
+              动作在右」的第二行形成同一套左右分工，不再有跨越大半个盒子的空跑。</li>
+        </ol>
 
-        <p>历史：这一行曾同时放模型名、字数、上下文三个读数（2026-10-28 前），
-        也曾模型挪走后仍是「上下文 + 字数」分居两端 —— 后者就是被这次
-        反馈掉的那一版。模型是控件，归第二行动作组，不再回来。
+        <h3>为什么靠右、不靠左</h3>
+        两个读数都是**状态**，不是**入口**：放在行的起点会抢在工具前面，而用户
+        的操作顺序是先看工具再发送。靠右收尾与下方动作组（模型/思考/语音/发送）
+        右对齐，右边缘成一条竖线，读起来是「这一列的收尾信息」。
+
+        <h3>为什么两个字读数都常驻、不搞「有内容才显示」</h3>
+        上一版把字数改成有条件渲染，高度随输入跳动（125 → 142），用户明确
+        反馈「高度还会变」。读数行现在**恒定 24px**：无论空草稿、长草稿、
+        有没有产生上下文用量，这一行都在、都一样高。代价是空态也显示
+        「0 / 4000」—— 那是它本来的样子，为消掉两个字换来整盒跳动不划算。
+
+        <h3>为什么两个读数之间只有 gap、没有分隔线</h3>
+        同一族读数（12px / placeholder 灰 / tabular-nums），且仪表盘自带
+        进度条这个图形锚点，与纯数字的字数已经分得开。再补一根竖线是把
+        「已经分开的两组」再拆一次，纯噪音（这根线在更早的版本里加过又删）。
       -->
       <div class="chat-composer__meta-row">
-        <ContextMeter
-          v-if="contextUsage.budgetTokens > 0"
-          :usage="contextUsage"
-          @change-budget="(tokens: number) => emit('change-budget', tokens)"
-        />
+        <span class="chat-composer__readings">
+          <ContextMeter
+            v-if="contextUsage.budgetTokens > 0"
+            :usage="contextUsage"
+            @change-budget="(tokens: number) => emit('change-budget', tokens)"
+          />
+          <span class="chat-composer__count" :class="{ 'chat-composer__count--warn': countNearLimit }">
+            {{ modelValue.length }} / {{ MAX_LENGTH }}
+          </span>
+        </span>
       </div>
 
       <!--
@@ -712,30 +703,39 @@ onBeforeUnmount(() => {
 }
 
 /*
- * 输入区本体：textarea + 右下角字数，一个纵向块。
+ * 读数行：flex 容器，但分布交给里面的读数组（组内两个读数排成一组，
+ * 整组 `margin-left: auto` 推右）。
  *
- * <p>包一层是为了让字数**属于输入区**：它是输入框的脚注，不是状态行的
- * 一份子（2026-10-29 用户反馈「位置太丑」后从读数行搬来）。
- * 纵向 flex + 字数 `align-self: flex-end`，永远贴在文字下方右角，
- * 不绝对定位、不盖字 —— 长文本最后一行顶到右缘时也不会被遮挡。
+ * <p>不写 `justify-content` —— 这行只有一个组，默认 flex-start 即可；
+ * 推右是组自己的 margin，不是行的分布方式。写 space-between 会让
+ * 「这里应该有两个组」的语义复活（2026-10-28 那版就是这么坏的）。
  */
-.chat-composer__input {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
 .chat-composer__meta-row {
   margin-top: var(--os-space-2);
-  /*
-   * 左对齐，不再两端对齐。
-   *
-   * <p>这一行现在只剩上下文用量一个元素（字数已移入输入区右下角）。
-   * 单个元素时 `space-between` 与左对齐渲染结果相同，但不写它：
-   * 「两端各一个」的语义已经不成立，留着会让人以为这行还该有第二个元素，
-   * 下次真加了读数反而要先怀疑这行是不是漏了对齐。左对齐即「一个，靠左」。
-   */
-  justify-content: flex-start;
+}
+
+/*
+ * 读数组：仪表盘 + 字数，一簇 24px 的状态信息，整体靠右收尾。
+ *
+ * <h3>为什么靠右（2026-10-29 第三版）</h3>
+ * 前两版的坟都立在这行里：最初两个读数分居两端（中间空 528px，孤儿相）；
+ * 上一版把字数挪进输入区右下角（更丑 + 高度跳动 + 仪表盘没动）。
+ * 现在两个读数合成**一组**推到右端，与第二行右端的动作组上下对齐，
+ * 右边缘成一条竖线 —— 「这一列的收尾信息」。仪表盘也就此从左端搬了过来。
+ *
+ * <p>常驻、不搞有条件渲染：这一行的高度必须恒定（用户反馈「高度还会变」），
+ * 空草稿也显示「0 / 4000」是它本来的样子。
+ *
+ * <p>`flex: none` 防止窄屏被压缩：两个读数加起来约 190px，读数行在
+ * 1024px 下也有 444px 可用，没有折叠的必要，也就不允许被压。
+ */
+.chat-composer__readings {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  flex: none;
+  margin-left: auto;
+  height: 24px;
 }
 
 .chat-composer__tool-row {
@@ -745,23 +745,20 @@ onBeforeUnmount(() => {
 }
 
 /*
- * 字数统计：`12 / 4000`，贴在输入区右下角。
+ * 字数统计：`0 / 4000`，读数组里的第二个元素。
  *
  * <p>字号、颜色与上下文读数完全一致（12px / placeholder 灰）——
  * 它们是同一族的读数，任何差异都会被读成「这两个数字重要性不同」，
  * 而实际上用户对两者的关心程度只取决于内容，不取决于画面。
  *
- * <p>有内容才渲染（`v-if` 在模板上）：空态没有可数的东西，「0 / 4000」
- * 常驻只会给空盒子添一行灰字。不预留高度 —— 恒定占地而内容为空就是空洞，
- * 打第一个字时长高 17px 与 autosize 打第二行时长高一截是同一种
- * 「内容驱动的高度」，用户感知为「输入框在长大」，不是跳动。
+ * <p>常驻显示（不再「有内容才出现」）：读数行高度必须恒定，
+ * 有条件渲染会让盒子在打第一个字时跳 17px（2026-10-29 被反馈「高度还会变」）。
  *
- * <p>`margin-top: 2px` 而不是贴死 textarea：2px 是「还属于输入区」的最小
- * 间距，0 会让字数读成 textarea 的一部分（选中/聚焦时会更明显）。
+ * <p>它现在与仪表盘同组相邻，不再需要分隔竖线 —— 仪表盘自带进度条这个
+ * 图形锚点，与纯数字已经分得开。
  */
 .chat-composer__count {
-  align-self: flex-end;
-  margin-top: 2px;
+  flex: none;
   color: var(--el-text-color-placeholder);
   font-size: var(--os-font-xs);
   font-variant-numeric: tabular-nums;
