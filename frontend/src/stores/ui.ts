@@ -42,6 +42,20 @@ export const useUiStore = defineStore('ui', () => {
   const navCollapsed = ref(localStorage.getItem('os.nav.collapsed') === '1')
 
   /**
+   * 对话页会话栏折叠（2026-10-30）：true = 收成 48px 竖条。
+   *
+   * <p>与 `navCollapsed` 分开存，而不是合成一个「全局折叠」：
+   * 侧栏是**全站导航**，会话栏只属于对话页 —— 用户在对话页收起会话栏
+   * 与在其他页面收起侧栏是两个独立意图，合并会让「去任务页再回来」
+   * 莫名其妙地改版式。两者都用 `os.` 前缀，重置偏好时会一起清掉。
+   *
+   * <p>实测动机（各视口下主列剩余宽度）：1440 主列 920、1280 主列 760、
+   * 1100 只有 580、1024 只有 504。会话栏固定占 260px，在 1100 及以下
+   * 已经是阅读区的主要挤压源（气泡从设计值 680 被压到 502 / 426）。
+   */
+  const sessionPanelCollapsed = ref(localStorage.getItem('os.chat.sessionPanel') === 'collapsed')
+
+  /**
    * 侧栏展开态宽度（阶段 18 追加，拖拽调宽）。
    *
    * 存在 store 而不是 App.vue 的局部 ref：宽度是跨组件的界面状态（折叠态与展开态
@@ -98,6 +112,12 @@ export const useUiStore = defineStore('ui', () => {
   watch(knowledgeTab, (next) => localStorage.setItem('os.knowledge.tab', next))
   watch(navCollapsed, (next) => localStorage.setItem('os.nav.collapsed', next ? '1' : '0'))
   /*
+   * 会话栏折叠用字符串而不是 '1'/'0'：语义自解释，将来加第三态
+   * （如「自动」）时不必迁移旧值。读取处按 `=== 'collapsed'` 判等，
+   * 任何未知值都回落到「展开」——列表是这个页面的主导航，默认应该看得见。
+   */
+  watch(sessionPanelCollapsed, (next) => localStorage.setItem('os.chat.sessionPanel', next ? 'collapsed' : 'expanded'))
+  /*
    * 宽度同样走 watch：写入方是拖拽把手与键盘微调，两者都是命令式赋值，
    * 用 setter 也能覆盖，但保持与 navCollapsed 一致的做法。
    * 这里不做二次收敛——写入方都已按视口夹过，重复夹一次会让「存的值」和
@@ -113,6 +133,7 @@ export const useUiStore = defineStore('ui', () => {
     tasksView,
     knowledgeTab,
     navCollapsed,
+    sessionPanelCollapsed,
     sidebarWidth,
     toggleTheme,
   }

@@ -28,11 +28,19 @@ import { clampTopK, conversationKnowledgeKey, type ThinkingLevel } from '@/lib/s
 import { defaultChatModel } from '@/lib/model-profile'
 import { useModelProfileStore } from '@/stores/model-profile'
 import { useSettingsStore } from '@/stores/settings'
+import { useUiStore } from '@/stores/ui'
 import type { ChatAttachment, ChatMessage, ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
 const settingsStore = useSettingsStore()
 const modelProfileStore = useModelProfileStore()
+/*
+ * 会话栏折叠（2026-10-30）走 uiStore 而不是本组件的 ref：
+ * 「刷新后保持」的落盘逻辑与侧栏折叠、主题等偏好放在一起，
+ * 重置偏好清 `os.` 前缀时才会连带清掉。放组件里就漏了。
+ */
+const uiStore = useUiStore()
+const { sessionPanelCollapsed } = storeToRefs(uiStore)
 const {
   sessions,
   sessionsTotal,
@@ -399,7 +407,7 @@ async function jumpToMatch(step: number): Promise<void> {
 </script>
 
 <template>
-  <div class="chat">
+  <div :class="['chat', { 'chat--session-collapsed': sessionPanelCollapsed }]">
     <!-- ============ 会话列表 ============ -->
     <ChatSessionList
       v-model:keyword="sessionKeyword"
@@ -409,6 +417,7 @@ async function jumpToMatch(step: number): Promise<void> {
       :page="sessionsPage"
       :size="sessionsSize"
       :loading="loadingSessions"
+      :collapsed="sessionPanelCollapsed"
       @refresh="chatStore.loadSessions()"
       @create="handleNewSession"
       @select="chatStore.selectSession($event)"
@@ -417,6 +426,7 @@ async function jumpToMatch(step: number): Promise<void> {
       @export="handleExportSession"
       @search="chatStore.searchSessions()"
       @page-change="chatStore.goToSessionPage($event)"
+      @toggle-collapse="sessionPanelCollapsed = $event"
     />
 
     <!-- ============ 主对话列（全高） ============ -->
@@ -579,13 +589,35 @@ async function jumpToMatch(step: number): Promise<void> {
  */
 .chat {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  /*
+   * 两栏：会话栏 + 主对话列。列宽由 `--os-session-panel` 决定（见下），
+   * 折叠时它变成 48px —— 这也是整页唯一需要改宽度的地方。
+   */
+  grid-template-columns: var(--os-session-panel) 1fr;
   /* 两栏间距收窄到 10px：原先 16px 在宽屏下像一道沟 */
   gap: var(--os-space-3);
   /* flex:1 撑满 main 的剩余高度；不写 height:100%（父链上有 auto 高度元素时它不解析） */
   flex: 1;
   min-height: 0;
   align-items: stretch;
+  /*
+   * 折叠过渡（2026-10-30）。只在 grid-template-columns 上做，不用 width：
+   * 列宽是 grid 属性，直接改 width 对 `1fr` 那一列无效，会变成「栏变窄了
+   * 但主列没变宽」的错位。
+   *
+   * 0.18s：与全站 `--os-duration-fast` 同档。视觉上「一下子」而不是「动画」，
+   * 因为它改变的是布局宽度，慢一点会让文字整段重排、看着晃。
+   */
+  transition: grid-template-columns var(--os-duration-fast) var(--os-ease);
+}
+
+/* 会话栏宽度：折叠 48 / 展开 260。定义为变量，模板只需切一个布尔值 */
+.chat {
+  --os-session-panel: 260px;
+}
+
+.chat--session-collapsed {
+  --os-session-panel: 48px;
 }
 
 /* ---- 主对话卡（全高列） ---- */
@@ -690,7 +722,31 @@ async function jumpToMatch(step: number): Promise<void> {
     grid-template-columns: 1fr;
     height: auto;
     flex: none;
+    /*
+     * 窄屏没有过渡：这里列宽固定 `1fr`（单列上下堆叠），
+     * 折叠与否都不改变布局方向 —— 留着过渡只会在切态时让整页闪一下。
+     */
+    transition: none;
   }
+
+  /*
+   * ⚠️ 折叠轨在窄屏要变成一条**横条**，但那几条样式**不在这里**（2026-10-30 修）。
+   *
+   * <p>最初写在下面这段媒体查询里，用的是 `.chat-sessions__rail { flex-direction: row }`
+   * 这类选择器 —— 全是**子组件内部**的元素。scoped 的 scope id 只会加到子组件的
+   * **根元素**上，内部元素的 `[data-v-parent]` 永远不存在，于是这几条规则
+   * **一条都没生效**，而且完全不报错：
+   * <ul>
+   *   <li>实测 860px 折叠态：`dir=column`、卡片高 **156px**、按钮被 `align-items: center`
+   *       居中到 `l:526` —— 一条占满整行、只放得下两个小图标的高条；</li>
+   *   <li>而 `.chat-sessions--rail :deep(.el-card__body)` 是有效的（它作用于根元素），
+   *       所以看起来「有的生效有的不生效」，更容易误判成媒体查询没命中。</li>
+   * </ul>
+   * 现在窄屏横条的样式在 `ChatSessionList.vue` 自己的媒体查询里 —— 样式跟着元素走。
+   *
+   * <p>这里保留的两条都作用于**根元素** `.chat-sessions`（子组件根元素会带上
+   * 父组件的 scope id），是「页面决定它占多高」这类真正的页面级约束。
+   */
 
   /*
    * 侧栏限高：不限制时它会把会话列表全部展开（实测 860px 视口里占 300px），
@@ -700,6 +756,12 @@ async function jumpToMatch(step: number): Promise<void> {
   .chat-sessions {
     max-height: 200px;
   }
+
+  /*
+   * 已知取舍：`max-height: 200px` 也作用在折叠轨上。窄屏横条的内容高度约 44px，
+   * 远小于 200px，实际高度由内容决定，所以不受影响；这里不额外放宽，
+   * 避免多一条「只对折叠态生效」的特例。
+   */
 
   /*
    * 消息区在窄屏的最小高度。

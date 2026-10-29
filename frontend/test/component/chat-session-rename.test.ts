@@ -55,8 +55,12 @@ const SESSIONS = [makeSession('c-1', '第一个会话'), makeSession('c-2', '第
  * <p>`AppPagination` 与 EP 组件都显式 stub / 注册：`vitest.config.ts` 刻意不装 unplugin
  * （自动注册在测试里没有意义，还会往源码注入未使用的自动导入语句），
  * 不 stub 会刷一堆 "Failed to resolve component"。
+ *
+ * <p>`collapsed` 是必填 prop（2026-10-30 起）。不传会触发 Vue 的 missing required prop
+ * 警告，且折叠分支判断的是 `undefined` —— 恰好等价于 `false`，于是**测试全绿**，
+ * 那条警告被当成噪音忽略。所以这里显式给默认值，需要折叠态时用第三个参数打开。
  */
-function mountList(currentId: string | null = 'c-1') {
+function mountList(currentId: string | null = 'c-1', collapsed = false) {
   return mount(ChatSessionList, {
     props: {
       sessions: SESSIONS,
@@ -66,6 +70,7 @@ function mountList(currentId: string | null = 'c-1') {
       page: 1,
       size: 20,
       loading: false,
+      collapsed,
     },
     global: {
       stubs: {
