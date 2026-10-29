@@ -255,13 +255,23 @@ const emit = defineEmits<{
  * 实测同屏 5 个会话分别是 455 / 469 / 622 / 842px，摆在一起就是「有的框很大、
  * 有的很小」。而那个 842 并不是「内容需要 842」，只是被代码块撑到了容器上限。
  *
- * 铺满后所有助手消息宽度统一等于内容栏（1440px 下 842px），且实测：
- * - 五个会话的气泡高度**一条都没变**（34/46/31/18/23 行原样），说明加宽没有
- *   逼出任何重排 —— 原先的窄宽度纯粹是 fit-content 算窄了，不是内容要求；
- * - 代码块随容器从 814 变到 842（更完整），无横向溢出。
+ * 铺满后所有助手消息宽度统一等于内容栏（1440px 下 842px）。
  *
- * 为什么不给助手气泡留 `fit-content` + 一个 `max-width` 上限：那样宽度会落在
- * 「455 ~ 上限」之间浮动，差异只是被压小、并没有消除。一致性要求的是定值。
+ * ⚠️ 原先这里写的是「高度一条都没变，说明加宽没逼出重排」——**那是错的**。
+ * 当时代入的是「容器改宽 → 文字行数不变」，可实际重测发现 Excel 那个会话
+ * 从 687 涨到 735（代码块窄了 → 高度增加），另外四个确实是 0 变化。
+ * 所以准确的说法是：**宽度变成定值解决了「每条不一样」，但铺满本身带来了新问题**——
+ *
+ * 实测填充率（文字墨迹面积 / 内容区面积，越高越「不空」）：
+ * - 铺满 842：**17.4%** —— 五个会话里每个块平均右侧空出 471~561px，
+ *   内容区才 816px，一格灰底大框里只有半边有字，读起来像「空盒子」；
+ * - 收到 640：22.8%，但 Excel 会话要变高 48px（代码块被迫换行）；
+ * - 收缩 + 上限 760：27.8%，但宽度又退回 455~760 的浮动，等于回到老问题。
+ *
+ * 所以最终采用的是「**铺满 + 尾巴 + 头像贴齐**」这套组合：
+ * 用尾巴把气泡和头像连成一个整体，用整体感消化掉「框大而字少」的空旷；
+ * 同时把气泡左边界推到与头像同一条轴线上，让两者真正咬合。
+ * 详见 `.chat-msg__bubble--assistant::before` 的注释。
  *
  * 底色 + 边框 + 阴影必须三者并存。
  *
@@ -276,12 +286,71 @@ const emit = defineEmits<{
  * 助手回答的正文是主角，气泡只需要「圈出范围」，不该抢注意力。
  */
 .chat-msg__bubble--assistant {
+  /*
+   * `position: relative` 是尾巴的**必要条件**，不是随手加的。
+   * 两个伪元素都是 `position: absolute`，而它们要贴的是「气泡自己的左上外沿」——
+   * 一旦气泡不是定位元素，`left/top` 会一路向上找到别的定位祖先（都没有的话
+   * 就退到初始包含块），尾巴会跑到页面左上角去。实测漏掉这行时
+   * `getComputedStyle(bubble).position === 'static'`，尾巴完全不在气泡旁边。
+   */
+  position: relative;
   width: 100%;
   background: var(--os-bubble-bg);
   border: 1px solid var(--os-bubble-border);
   box-shadow: var(--os-shadow-bubble);
   /* 圆角朝向头像那一侧收窄：气泡的「尖角」暗示说话人方向 */
   border-bottom-left-radius: var(--os-radius-xs);
+}
+
+/*
+ * 助手气泡的尾巴：把「头像」和「气泡」连成一个整体。
+ *
+ * 为什么需要它：气泡改成 `width: 100%` 之后，左边界与头像之间隔着 12px 硬空隙，
+ * 视觉上头像像一枚飘在旁边的独立徽章，而气泡只是一块和它无关的灰条 ——
+ * 这正是「回复和头看起来是分离的、有点丑」的来源。实测每个块平均右侧空出
+ * 471~561px（内容区 816px），一块大半是空的灰底，再没有一个连接物就会散。
+ *
+ * 做法是**纯 CSS 双三角**（border trick），不用 SVG、不用额外 DOM：
+ * 外层 `::before` 画描边三角（用气泡的边框色），内层 `::after` 画填充三角
+ * （用气泡的底色，右移 1px 盖住前者的右边一条），合起来就是一个带描边的尖角。
+ *
+ * 几何（全部相对气泡自身）：
+ * - `left: -7px`：气泡左边框外侧，伸进那 12px 空隙里；
+ * - 三角宽 7px（`border-right: 7px`）；高 8px 上下（`border-width: 8px 0` 太宽，
+ *   这里用 `8px` 的上下 border 造出 16px 底边，再靠 `top` 定位）；
+ * - `top: 10px`：让三角的尖端对齐**头像的垂直中心**（实测头像 172~204，
+ *   中心 188；气泡顶 170，所以中心相对气泡是 18px，减去三角半高 8px ≈ 10px）。
+ *
+ * ⚠️ 两个必须同时满足的前提：
+ * 1. 气泡的 `overflow` 必须是 `visible`（默认值）。若有人给气泡加
+ *    `overflow: hidden`（比如为了裁代码块圆角），尾巴会整个消失且**不报错**。
+ * 2. `::before` / `::after` 会被 `.md-code` 之类的子元素挡住一层，
+ *    所以尾巴的 `z-index` 不重要、但**必须写在气泡自身上**而不是内容容器上。
+ */
+.chat-msg__bubble--assistant::before,
+.chat-msg__bubble--assistant::after {
+  content: '';
+  position: absolute;
+  top: 11px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  pointer-events: none;
+}
+
+/* 描边三角：比填充三角大 1px（向右多 1px），露出来的那一圈就是尾巴的边 */
+.chat-msg__bubble--assistant::before {
+  left: -12px;
+  border-width: 7px 12px 7px 0;
+  border-color: transparent var(--os-bubble-border) transparent transparent;
+}
+
+/* 填充三角：底色，右移 1px 压住描边三角的内侧，让两者共用一条外边 */
+.chat-msg__bubble--assistant::after {
+  top: 12px;
+  left: -11px;
+  border-width: 6px 11px 6px 0;
+  border-color: transparent var(--os-bubble-bg) transparent transparent;
 }
 
 /*

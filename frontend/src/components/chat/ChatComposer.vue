@@ -499,7 +499,22 @@ onMounted(autosize)
 <style scoped>
 .chat-composer {
   flex: none;
-  padding: var(--os-space-3) var(--os-space-5) var(--os-space-4);
+  /*
+   * 左右内边距与消息区**完全同一个公式**（`--os-chat-band` 见 tokens.css）。
+   *
+   * 目标不是「输入框和气泡左右齐平」，而是**输入区和消息行属于同一列**：
+   * 两边用同一个居中公式，于是 composer 的左沿 = 头像左沿、右沿 = 气泡右沿，
+   * 气泡因为被头像推了一下多缩进 44px —— 这是结构必然，不是错位。
+   *
+   * 中途试过在左侧补 44px 让输入框和气泡严格齐平（宽屏实测 Δ左 0 / Δ右 0），
+   * 但**窄屏必然退回**：带宽不够时 `max()` 取到 16px，那 44px 补不出来，
+   * 结果宽屏齐平、窄屏差 44，同一套样式两种表现，比一开始就不齐更显错。
+   * 所以不做特例，只对齐「列」。
+   *
+   * 最小 16 与消息区一致（不是原来输入区的 20）：两个 4px 的差会让窄屏下
+   * 输入框比上面的气泡各宽 4px，边缘对不齐。
+   */
+  padding: var(--os-space-3) max(var(--os-space-4), calc((100% - var(--os-chat-band)) / 2)) var(--os-space-4);
   border-top: 1px solid var(--el-border-color-lighter);
   background: var(--el-bg-color);
 }

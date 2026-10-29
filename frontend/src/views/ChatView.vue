@@ -662,7 +662,14 @@ async function jumpToMatch(step: number): Promise<void> {
   flex-direction: column;
   /* 消息间距与内边距双双收窄：让内容尽量铺开，减少「周围一圈白」 */
   gap: var(--os-space-3);
-  padding: var(--os-space-3) var(--os-space-4) var(--os-space-3);
+  /*
+   * 左右内边距 = 把居中阅读栏之外的空间让出来（`max` 保证窄屏时不小于 16px）。
+   * 用 padding 而不是给每个子项加 `max-width + margin: auto`：
+   * 消息流里还夹着错误条、欢迎态、加载更早按钮、确认列表等一堆子项，
+   * 逐个限宽必然漏掉其中一个，而 padding 一次管住所有层。
+   * 竖向 padding 保持原值。
+   */
+  padding: var(--os-space-3) max(var(--os-space-4), calc((100% - var(--os-chat-band)) / 2));
 }
 
 .chat__error {

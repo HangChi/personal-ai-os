@@ -190,3 +190,128 @@ describe('气泡宽度：助手定宽铺满，用户按内容收缩', () => {
     expect(rule).not.toMatch(/(?<![-\w])width:/)
   })
 })
+
+/**
+ * 助手气泡的尾巴（2026-10-30）。
+ *
+ * <p>守的是用户说的「回复和头看起来像是分离的」。气泡铺满后左边界与头像之间
+ * 隔着 12px 硬空隙，头像像一枚飘在旁边的独立徽章。
+ *
+ * <p>尾巴用纯 CSS 双三角（`::before` 描边 + `::after` 填充）实现，这里守三件事：
+ *
+ * 1. **气泡必须是 `position: relative`**。两个伪元素都是 `position: absolute`，
+ *    要贴的是「气泡自己的左上外沿」。气泡一旦不是定位元素，`left/top` 会一路
+ *    向上找别的定位祖先，没有就退到初始包含块 —— 尾巴会跑到页面左上角去。
+ *    实测漏掉这行时 `getComputedStyle(bubble).position === 'static'`，
+ *    尾巴完全不在气泡旁边，而且**控制台一声不响**。
+ * 2. **颜色必须走令牌**，不能硬编码。暗色下实测 `::before` 要与气泡
+ *    `border-color` 完全相等、`::after` 要与 `background` 完全相等
+ *    （亮色 rgb(214,219,230)/rgb(234,237,243)，暗色 rgb(82,90,112)/rgb(51,56,73)）。
+ *    硬编码任何一个，切到暗色就会露出一块浅色三角。
+ * 3. **`top` 必须让尾尖对齐头像垂直中心**，且描边三角比填充三角大 1px（否则
+ *    填充会盖住描边，尾巴看起来没有边）。
+ *
+ * <p>happy-dom 不算布局，也不产出伪元素的计算样式，所以这里只能做
+ * **源码结构断言**；真实几何（尾尖到头像右沿的间距、尾心偏差）靠浏览器实测，
+ * 三档视宽 × 两个主题下都是 0。
+ */
+describe('助手气泡尾巴：双三角必然依赖定位与令牌', () => {
+  const SOURCE = readFileSync(resolve(process.cwd(), 'src/components/chat/ChatMessageItem.vue'), 'utf8')
+  const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '')
+  /**
+   * 取某个选择器的属性体。
+   *
+   * <p>两个坑都要绕开，且都是「看起来对、其实抓错块」：
+   *
+   * <ol>
+   *   <li>**必须先剥注释再匹配**。这些规则的注释里就写着 `.chat-msg__bubble--assistant::before`
+   *       这类选择器名（用于解释），先匹配会把注释当规则抓走；</li>
+   *   <li>**必须取最后一次匹配**。`::after` 出现了两次 —— 先是与 `::before` 并列的
+   *       公共块（`.chat-msg__bubble--assistant::before,\n.chat-msg__bubble--assistant::after {`），
+   *       再是它自己的独立块。`String.match` 只取第一个，于是拿到的会是公共块的内容
+   *       `content/position/top/width/height`，而断言要找的 `left` 根本不在里面 ——
+   *       报错信息指向「left 不存在」，真实原因却是抓错了块。</li>
+   * </ol>
+   */
+  const ruleOf = (selector: string): string => {
+    const src = strip(SOURCE)
+    const re = new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'g')
+    const bodies = [...src.matchAll(re)].map((m) => m[1])
+    return bodies.length > 0 ? bodies[bodies.length - 1] : ''
+  }
+
+  it('气泡必须是定位元素 —— 否则绝对定位的尾巴会跑到页面左上角', () => {
+    expect(ruleOf('.chat-msg__bubble--assistant')).toContain('position: relative')
+  })
+
+  it('气泡不能有 overflow 裁剪 —— 会静默剪掉画在外面的尾巴', () => {
+    // 尾巴画在 `left: -12px`，落在气泡盒外。若有人为了裁代码块圆角给气泡加
+    // `overflow: hidden`，尾巴会整个消失且不报错。这里只允许 overflow 不出现，
+    // 或显式声明为 visible。
+    const rule = ruleOf('.chat-msg__bubble--assistant')
+    expect(rule).not.toMatch(/overflow:\s*hidden/)
+    expect(rule).not.toMatch(/overflow:\s*clip/)
+  })
+
+  it('两个伪元素都声明了绝对定位与零宽高（border 三角的前提）', () => {
+    // 直接找公共块本身：它是一条同时列出两个伪元素的规则，
+    // 用 `ruleOf('...::before')` 取到的只会是 `::before` 自己的块。
+    const shared = strip(SOURCE).match(
+      /\.chat-msg__bubble--assistant::before,\s*\.chat-msg__bubble--assistant::after\s*\{([^}]*)\}/,
+    )?.[1]
+
+    expect(shared).toBeTruthy()
+    expect(shared).toContain('position: absolute')
+    expect(shared).toContain('width: 0')
+    expect(shared).toContain('height: 0')
+    expect(shared).toContain('border-style: solid')
+  })
+
+  it('描边三角用气泡边框色，填充三角用气泡底色 —— 都不能硬编码', () => {
+    const before = ruleOf('.chat-msg__bubble--assistant::before')
+    const after = ruleOf('.chat-msg__bubble--assistant::after')
+
+    // 走令牌而不是字面量颜色：亮/暗两套主题下尾巴自动跟随，实测两者
+    // 分别与 border-color / background 完全相等。
+    expect(before).toContain('var(--os-bubble-border)')
+    expect(after).toContain('var(--os-bubble-bg)')
+    expect(before).not.toMatch(/#[0-9a-f]{3,8}/i)
+    expect(after).not.toMatch(/#[0-9a-f]{3,8}/i)
+    expect(before).not.toMatch(/rgba?\(/)
+    expect(after).not.toMatch(/rgba?\(/)
+  })
+
+  it('填充三角比描边三角小 1px 且错开 1px，两者共用一条外边', () => {
+    const before = ruleOf('.chat-msg__bubble--assistant::before')
+    const after = ruleOf('.chat-msg__bubble--assistant::after')
+    const shared = strip(SOURCE).match(
+      /\.chat-msg__bubble--assistant::before,\s*\.chat-msg__bubble--assistant::after\s*\{([^}]*)\}/,
+    )?.[1]
+
+    // 描边三角高 14px（7+7）、向右伸 12px；填充三角高 12px（6+6）、伸 11px，
+    // 顶点各下移 1px。差这 1px 才露出左上那圈边；相等则填充盖住描边，
+    // 尾巴看起来是「一块没有轮廓的色块」。
+    expect(before).toMatch(/border-width:\s*7px\s+12px\s+7px\s+0/)
+    expect(after).toMatch(/border-width:\s*6px\s+11px\s+6px\s+0/)
+    // `top` 写在公共块里（两个伪元素共用起点），填充三角再单独覆盖成 12px。
+    expect(shared).toMatch(/top:\s*11px/)
+    expect(after).toMatch(/top:\s*12px/)
+  })
+
+  it('尾巴的横向位置必须完全伸进 12px 空隙（与 .chat-msg 的 gap 一致）', () => {
+    const before = ruleOf('.chat-msg__bubble--assistant::before')
+    const after = ruleOf('.chat-msg__bubble--assistant::after')
+
+    // 伸出的长度必须等于消息行的 gap（12px），尾尖才能正好顶到头像右沿。
+    // 实测漏算时尾尖距头像还差 5px（tailTipX 562 vs avatarR 557），
+    // 视觉上就是「尾巴浮在半空没接上」。
+    expect(before).toMatch(/left:\s*-12px/)
+    expect(after).toMatch(/left:\s*-11px/)
+    // 与 .chat-msg 的 gap 联动：改了 gap 就必须同步改这两个值
+    expect(ruleOf('.chat-msg')).toContain('gap: var(--os-space-3)')
+    // 空隙的实际像素值是 12，所以「伸出 12px」才是正好够到。这个数在 tokens.css 里，
+    // 不在本组件里 —— 必须去令牌文件取，否则断言的是不存在于当前文件的字面量。
+    const tokens = readFileSync(resolve(process.cwd(), 'src/styles/tokens.css'), 'utf8')
+    expect(tokens).toMatch(/--os-space-3:\s*12px/)
+  })
+})
