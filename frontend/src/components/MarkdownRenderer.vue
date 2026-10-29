@@ -12,7 +12,6 @@
  * 超长内容（> LIMIT 字符）截断预览 + 「展开全文」：marked 是同步解析，
  * 流式期间每帧全量重解析 5 万字符会掉帧（C-01 用例 7）。
  */
-import { ElMessage } from 'element-plus'
 import hljs from 'highlight.js/lib/core'
 import bash from 'highlight.js/lib/languages/bash'
 import java from 'highlight.js/lib/languages/java'
@@ -27,6 +26,8 @@ import yaml from 'highlight.js/lib/languages/yaml'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { computed, nextTick, ref, watch } from 'vue'
+
+import { buildCodeHeader } from '@/lib/code-header'
 
 hljs.registerLanguage('java', java)
 hljs.registerLanguage('javascript', javascript)
@@ -108,6 +109,14 @@ const sanitizedHtml = computed(() => {
  * 无法挂 Vue 事件，按钮用原生 addEventListener，并用 data 属性标记
  * 「已处理」，避免流式重渲染时重复添加。头部条是独立 div（插到 pre 前），
  * 不再悬浮在代码上——旧版复制按钮压在代码右上角会遮挡内容。
+ *
+ * <p>按钮是**纯图标**（2026-10-29）：与消息操作区保持一致。原先写 textContent='复制'，
+ * 代码块右上角因此常驻两个字，一屏里有多个代码块时视觉噪音很大 ——
+ * 而代码块的复制是个低风险、可重试的动作，不需要文字反复解释。
+ *
+ * <p>图标用 createVNode + render 渲染成真实 SVG，而不是手写 innerHTML：
+ * 手抄 path 字符串会在图标库升级后悄悄变旧，且抄错没人发现；
+ * 走同一个组件（与消息操作区的 CopyDocument 是同一个），两处外观天然一致。
  */
 async function decorateCodeBlocks(): Promise<void> {
   await nextTick()
@@ -129,33 +138,7 @@ async function decorateCodeBlocks(): Promise<void> {
     const langClass = [...code.classList].find((name) => name.startsWith('language-'))
     const language = langClass ? langClass.slice('language-'.length) : 'text'
 
-    const header = document.createElement('div')
-    header.className = 'md-code__header'
-
-    const label = document.createElement('span')
-    label.className = 'md-code__lang'
-    label.textContent = language
-
-    const button = document.createElement('button')
-    button.type = 'button'
-    button.className = 'md-code__copy'
-    button.textContent = '复制'
-    button.addEventListener('click', () => {
-      void navigator.clipboard.writeText(code.textContent ?? '').then(
-        () => {
-          button.textContent = '已复制'
-          window.setTimeout(() => {
-            button.textContent = '复制'
-          }, 1500)
-        },
-        () => {
-          ElMessage.error('复制失败，请手动选择复制')
-        },
-      )
-    })
-
-    header.append(label, button)
-    wrapper.insertBefore(header, pre)
+    wrapper.insertBefore(buildCodeHeader(language, code.textContent ?? ''), pre)
   }
 }
 
@@ -393,22 +376,56 @@ function toggleExpand(): void {
   font-family: 'SFMono-Regular', Consolas, monospace;
 }
 
+/*
+ * 复制按钮：纯图标热区（2026-10-29 改）。
+ *
+ * 改造前是「复制」两个字 + 1px 边框的胶囊，padding 1px 8px —— 文字宽约 24px，
+ * 加上内边距总宽 40px。去掉文字后若沿用这套 padding/边框，会变成一个
+ * **比图标大一圈的空框**（看着像没加载出来的按钮）。所以这里换掉边框思路：
+ * 平时无边框、悬停才浮出底色，热区固定 22×22。
+ *
+ * 22 而不是消息操作区的 26：代码块头部条本身只有 4px 上下内边距、总高约 26px，
+ * 放 26 会把整个头部条顶高；22 在这个高度里仍有足够的命中区。
+ */
 .md__body :deep(.md-code__copy) {
-  padding: 1px 8px;
-  border: 1px solid var(--os-code-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
   border-radius: var(--os-radius-sm);
-  background: var(--os-code-bg);
+  background: none;
   color: var(--os-code-muted);
-  font-size: var(--os-font-xs);
   cursor: pointer;
   transition:
     color var(--os-duration-fast) var(--os-ease),
-    border-color var(--os-duration-fast) var(--os-ease);
+    background var(--os-duration-fast) var(--os-ease);
 }
 
 .md__body :deep(.md-code__copy:hover) {
+  background: var(--os-code-header-bg);
   color: var(--el-color-primary);
-  border-color: var(--el-color-primary-light-5);
+}
+
+/*
+ * 复制成功：图标换成对勾并染成 success —— 去掉文字后这是唯一的成功反馈。
+ *
+ * ⚠️ 必须写成 `.md-code__copy.md-code__copy--done`（0-3-0），不能只写
+ * `.md-code__copy--done`（0-2-0）：上面的基础规则 `.md__body .md-code__copy`
+ * 也是 0-2-0，**同特异性时后者（基础规则）赢**，成功态会静默失效 ——
+ * 图标会变对勾、颜色却停在灰色，看起来像「点了没反应」。
+ * 这条是实测出来的：改完先写成 0-2-0，点完按钮测到 color 仍是灰的。
+ */
+.md__body :deep(.md-code__copy.md-code__copy--done) {
+  color: var(--el-color-success);
+}
+
+/* 键盘聚焦要可见：这是纯图标按钮，没有焦点环等于「看不见的焦点」 */
+.md__body :deep(.md-code__copy:focus-visible) {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 1px;
 }
 
 .md__body :deep(.md-code pre) {
