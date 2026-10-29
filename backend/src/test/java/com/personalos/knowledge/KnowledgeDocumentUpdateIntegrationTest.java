@@ -1,8 +1,11 @@
 package com.personalos.knowledge;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.personalos.common.exception.BusinessException;
 import com.personalos.knowledge.dto.KnowledgeDocumentDto;
+import com.personalos.knowledge.service.DocumentWriteLock;
 import com.personalos.knowledge.service.KnowledgeDocumentService;
 import com.personalos.knowledge.service.KnowledgeRetrievalService;
 import com.personalos.knowledge.service.VectorStoreInspector;
@@ -73,6 +76,9 @@ class KnowledgeDocumentUpdateIntegrationTest {
 
     @Autowired
     private VectorStoreInspector inspector;
+
+    @Autowired
+    private DocumentWriteLock writeLock;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -160,5 +166,47 @@ class KnowledgeDocumentUpdateIntegrationTest {
         assertThat(updated.filename().length()).isLessThanOrEqualTo(300);
         assertThat(updated.filename()).as("扩展名必须保住，它决定用哪个解析器").endsWith(".md");
         assertThat(updated.title().length()).isLessThanOrEqualTo(300);
+    }
+
+    @Test
+    @DisplayName("同一文档正在写入时，替换被拒（不同时改两代向量）")
+    void rejectsConcurrentUpdate() {
+        KnowledgeDocumentDto original = documentService.ingest(
+                "schedule.md", "排课说明", ORIGINAL.getBytes(StandardCharsets.UTF_8));
+
+        // 手动持锁模拟「另一个请求正在替换」：真起两个线程去撞几十秒的窗口太不稳定，
+        // 而这里要验的是**接线**——update 到底有没有去抢锁、异常路径有没有释放。
+        writeLock.acquire(original.id());
+        try {
+            assertThatThrownBy(() -> documentService.update(
+                    original.id(), "v2.md", REPLACED.getBytes(StandardCharsets.UTF_8)))
+                    .as("并发替换必须在入口被拒，而不是两个请求各写一代向量")
+                    .isInstanceOf(BusinessException.class);
+        } finally {
+            writeLock.release(original.id());
+        }
+
+        // 释放后必须能正常更新：证明拒绝确实来自锁，且锁没有把文档永久锁死
+        assertThat(documentService.update(
+                original.id(), "schedule-v2.md", REPLACED.getBytes(StandardCharsets.UTF_8)).filename())
+                .isEqualTo("schedule-v2.md");
+    }
+
+    @Test
+    @DisplayName("删除与替换共用同一把锁：替换进行中不能删")
+    void deleteRespectsSameLock() {
+        KnowledgeDocumentDto original = documentService.ingest(
+                "schedule.md", "排课说明", ORIGINAL.getBytes(StandardCharsets.UTF_8));
+
+        writeLock.acquire(original.id());
+        try {
+            assertThatThrownBy(() -> documentService.delete(original.id()))
+                    .as("删除也清旧向量，必须与替换互斥")
+                    .isInstanceOf(BusinessException.class);
+        } finally {
+            writeLock.release(original.id());
+        }
+
+        assertThat(documentService.delete(original.id())).isGreaterThan(0);
     }
 }

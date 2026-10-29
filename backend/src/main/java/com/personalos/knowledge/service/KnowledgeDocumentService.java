@@ -34,7 +34,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+// 文件名/标题/类型的规范化抽在同包的 DocumentFilenameSupport（纯函数、可单测）。
+// 这里用静态导入保持调用点简洁：它们在本类里出现九次，写成类名限定会淹没主流程。
+import static com.personalos.knowledge.service.DocumentFilenameSupport.contentTypeOf;
+import static com.personalos.knowledge.service.DocumentFilenameSupport.extensionOf;
+import static com.personalos.knowledge.service.DocumentFilenameSupport.sanitizeFilename;
+import static com.personalos.knowledge.service.DocumentFilenameSupport.stripExtension;
+import static com.personalos.knowledge.service.DocumentFilenameSupport.truncateTitle;
 
 /**
  * 知识文档的入库、更新、列表与删除。
@@ -58,12 +65,6 @@ public class KnowledgeDocumentService {
 
     private static final Logger log = LoggerFactory.getLogger(KnowledgeDocumentService.class);
 
-    /** 与 {@code knowledge_document.title} 的 length 一致；超长截断而不是让插入炸成 500 */
-    private static final int TITLE_MAX_LENGTH = 300;
-
-    /** 与 {@code knowledge_document.filename} 的 length 一致 */
-    private static final int FILENAME_MAX_LENGTH = 300;
-
     private final KnowledgeDocumentRepository repository;
     private final VectorStore vectorStore;
     private final KnowledgeProperties properties;
@@ -73,17 +74,24 @@ public class KnowledgeDocumentService {
     /** 短事务模板（默认传播行为）。长耗时步骤一律在它外面做 */
     private final TransactionTemplate transactionTemplate;
 
+    /**
+     * 替换 / 删除的进程内互斥（为什么不用数据库行锁，见 {@link DocumentWriteLock} 的类注释）。
+     */
+    private final DocumentWriteLock writeLock;
+
     public KnowledgeDocumentService(KnowledgeDocumentRepository repository,
                                     VectorStore vectorStore,
                                     KnowledgeProperties properties,
                                     VectorStoreInspector inspector,
                                     DocumentReaderFactory readerFactory,
+                                    DocumentWriteLock writeLock,
                                     PlatformTransactionManager transactionManager) {
         this.repository = repository;
         this.vectorStore = vectorStore;
         this.properties = properties;
         this.inspector = inspector;
         this.readerFactory = readerFactory;
+        this.writeLock = writeLock;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
@@ -265,28 +273,37 @@ public class KnowledgeDocumentService {
      */
     @Transactional
     public int delete(UUID documentId) {
-        KnowledgeDocumentEntity document = repository.findById(documentId)
-                .orElseThrow(() -> new ResourceNotFoundException("知识文档不存在：" + documentId));
+        // 与 update 共用同一把锁，理由见 DocumentWriteLock 的类注释。
+        // 注意：@Transactional 的提交发生在方法返回之后，所以释放锁与提交之间还有一个
+        // 极短窗口（微秒级）。要彻底消除得把整个删除也搬进 TransactionTemplate，
+        // 代价与收益不成比例 —— 单用户场景下第二次操作只会得到 404。
+        writeLock.acquire(documentId);
+        try {
+            KnowledgeDocumentEntity document = repository.findById(documentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("知识文档不存在：" + documentId));
 
-        int before = inspector.countByDocumentId(documentId);
+            int before = inspector.countByDocumentId(documentId);
 
-        // ① 先删向量
-        vectorStore.delete(new FilterExpressionBuilder()
-                .eq(KnowledgeMetadata.DOCUMENT_ID, documentId.toString())
-                .build());
+            // ① 先删向量
+            vectorStore.delete(new FilterExpressionBuilder()
+                    .eq(KnowledgeMetadata.DOCUMENT_ID, documentId.toString())
+                    .build());
 
-        // ② 再删文档记录
-        repository.delete(document);
+            // ② 再删文档记录
+            repository.delete(document);
 
-        // 兜底自检：过滤器若未生效，必须让整个事务回滚，而不是留下幽灵向量
-        int after = inspector.countByDocumentId(documentId);
-        if (after != 0) {
-            throw new IllegalStateException(String.format(
-                    "向量清理未完全生效：document_id=%s 仍残留 %d 条。已回滚本次删除。", documentId, after));
+            // 兜底自检：过滤器若未生效，必须让整个事务回滚，而不是留下幽灵向量
+            int after = inspector.countByDocumentId(documentId);
+            if (after != 0) {
+                throw new IllegalStateException(String.format(
+                        "向量清理未完全生效：document_id=%s 仍残留 %d 条。已回滚本次删除。", documentId, after));
+            }
+
+            log.info("删除知识文档 id={} title={} 清理向量 {} 条", documentId, document.getTitle(), before);
+            return before;
+        } finally {
+            writeLock.release(documentId);
         }
-
-        log.info("删除知识文档 id={} title={} 清理向量 {} 条", documentId, document.getTitle(), before);
-        return before;
     }
 
     /**
@@ -311,6 +328,18 @@ public class KnowledgeDocumentService {
      * 各占一个短事务。中间失败时文档记录仍是旧内容、向量为空 —— 可再更新一次。
      */
     public KnowledgeDocumentDto update(UUID documentId, String originalFilename, byte[] bytes) {
+        // 替换与删除共用同一把锁：两者都要先清旧向量，
+        // 并发执行会让两代向量混存（后果见 DocumentWriteLock 的类注释）。
+        writeLock.acquire(documentId);
+        try {
+            return doUpdate(documentId, originalFilename, bytes);
+        } finally {
+            writeLock.release(documentId);
+        }
+    }
+
+    /** 真正的替换实现：只允许由 {@link #update} 在持有互斥时调用。 */
+    private KnowledgeDocumentDto doUpdate(UUID documentId, String originalFilename, byte[] bytes) {
         KnowledgeDocumentEntity document = requireDocument(documentId);
 
         String filename = sanitizeFilename(originalFilename);
@@ -486,64 +515,6 @@ public class KnowledgeDocumentService {
             }
         }
         return builder.toString();
-    }
-
-    private String sanitizeFilename(String originalFilename) {
-        if (originalFilename == null || originalFilename.isBlank()) {
-            return "untitled.txt";
-        }
-        // 去掉任何路径成分：上传方可能带上完整路径，我们只需要文件名
-        String normalized = originalFilename.replace('\\', '/');
-        int slash = normalized.lastIndexOf('/');
-        String filename = slash >= 0 ? normalized.substring(slash + 1) : normalized;
-        if (filename.isBlank()) {
-            return "untitled.txt";
-        }
-        // 列宽 300（见 V4）。超长文件名不截断的话，插入时抛 DataIntegrityViolation，
-        // 用户看到的是「服务器内部错误」——而真正的信息是「名字太长」。
-        // 截断时保住扩展名：它决定后续用哪个解析器。
-        if (filename.length() > FILENAME_MAX_LENGTH) {
-            int dot = filename.lastIndexOf('.');
-            String extension = dot > 0 && filename.length() - dot <= 10 ? filename.substring(dot) : "";
-            int keep = Math.max(1, FILENAME_MAX_LENGTH - extension.length());
-            filename = filename.substring(0, keep) + extension;
-        }
-        return filename;
-    }
-
-    /** 标题列宽（见 {@code knowledge_document.title} 的 length） */
-    private static String truncateTitle(String title) {
-        return title.length() <= TITLE_MAX_LENGTH ? title : title.substring(0, TITLE_MAX_LENGTH);
-    }
-
-    /**
-     * 扩展名 → MIME 类型。
-     *
-     * <p>图片的 MIME 不只是展示用：它会被传给视觉模型的 {@code Media}，
-     * 写错会让模型收到一个「类型是 text/plain 的图片」，表现为识别不出任何内容。
-     */
-    private String contentTypeOf(String extension) {
-        return switch (extension) {
-            case "md", "markdown" -> "text/markdown";
-            case "pdf" -> "application/pdf";
-            case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-            case "png" -> "image/png";
-            case "jpg", "jpeg" -> "image/jpeg";
-            case "webp" -> "image/webp";
-            case "gif" -> "image/gif";
-            default -> "text/plain";
-        };
-    }
-
-    private String extensionOf(String filename) {
-        int dot = filename.lastIndexOf('.');
-        return dot < 0 ? "" : filename.substring(dot + 1).toLowerCase(Locale.ROOT);
-    }
-
-    private String stripExtension(String filename) {
-        int dot = filename.lastIndexOf('.');
-        String base = dot <= 0 ? filename : filename.substring(0, dot);
-        return base.isBlank() ? filename : base;
     }
 
     private KnowledgeDocumentDto toDto(KnowledgeDocumentEntity entity) {
