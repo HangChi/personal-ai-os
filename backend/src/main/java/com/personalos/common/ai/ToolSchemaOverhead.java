@@ -70,7 +70,27 @@ public class ToolSchemaOverhead {
         return value;
     }
 
-    /** 工具定义折算成的 token 数。 */
+    /**
+     * 工具定义折算成的 token 数。
+     *
+     * <h2>为什么这里**不**套用 {@link TokenEstimation} 的拉丁口径（2026-10-29 实测）</h2>
+     * 工具 schema 以 ASCII 为主，看起来该用 {@code LATIN_CHARS_PER_TOKEN = 5.5}，
+     * 但那是「英文散文」的标定 —— 散文里大量是长单词，tokenizer 的 BPE 合并率高。
+     * JSON schema 恰恰相反：{@code {"type":"object","properties":{...}}} 里
+     * 引号、冒号、逗号、括号密集，每个标点基本各占一个 token。
+     *
+     * <p>实测同一份工具集（22 个，压缩后 8415 字符）：
+     * <ul>
+     *   <li>按中文口径 1.6 → 5259 token，与真实 {@code prompt_tokens}(4077) 同量级，高估约 29%；</li>
+     *   <li>按拉丁口径 5.5 → 1530 token，低估 60% 以上 —— 而低估的后果是**预算被撑爆**。</li>
+     * </ul>
+     * 也就是说 1.6 在这里既不是「中文口径」也不是巧合，它接近 JSON 的真实密度（约 2.4 字符/token，
+     * 偏保守取更小的比值）。<b>谁想「修正」成 5.5，请先拿真实 {@code prompt_tokens} 复核这一条。</b>
+     *
+     * <p>方向刻意偏保守：宁可让用户以为快满了（会去看仪表盘、会调预算），
+     * 也不要显示假的宽裕（请求被端点拒绝，而界面上还有大片余量）。
+     * 有真实 {@code usage} 时一律以真实值为准，本值只在「还没有真实用量」时顶上。
+     */
     public int tokens() {
         return ContextBudgetService.toTokens(chars());
     }
