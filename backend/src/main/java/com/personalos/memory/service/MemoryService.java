@@ -387,45 +387,18 @@ public class MemoryService {
         Map<UUID, Double> similarities = queryVector
                 .map(vector -> embeddingStore.similarityTo(vector, embeddingService.modelTag(), candidates.size()))
                 .orElse(Map.of());
-        Set<String> queryGrams = textGrams(userInput);
+        Set<String> queryGrams = MemoryRelevance.textGrams(userInput);
         Instant now = Instant.now();
+        // 半衰期取一次即可：它不随条目变化，逐个取会让 comparator 里重复读配置
+        int halfLifeDays = properties.ranking().halfLifeDays();
 
         return candidates.stream()
                 .sorted(Comparator
-                        .comparingDouble((MemoryEntity memory) -> score(memory, similarities, queryGrams, now))
+                        .comparingDouble((MemoryEntity memory) ->
+                                MemoryRelevance.score(memory, similarities, queryGrams, now, halfLifeDays))
                         .reversed()
                         .thenComparing(MemoryEntity::getUpdatedAt, Comparator.reverseOrder()))
                 .toList();
-    }
-
-    /** 单条得分：相关度 0.7 + 新近度 0.3 */
-    private double score(MemoryEntity memory, Map<UUID, Double> similarities, Set<String> queryGrams, Instant now) {
-        double relevance = 0;
-        // id 为 null 只在「尚未落库的对象」上出现（单测直接构造实体）。
-        // 这里显式挡住它：Map.of() 是不可变映射，get(null) 会抛 NPE ——
-        // 一条还没落库的记忆不该让整轮渲染崩掉。
-        Double similarity = memory.getId() == null ? null : similarities.get(memory.getId());
-        if (similarity != null) {
-            // 余弦可能因浮点误差略超出 [0,1]，夹一下保证它不会压过满分
-            relevance = Math.max(0, Math.min(1, similarity));
-        } else if (!queryGrams.isEmpty()) {
-            relevance = overlapRatio(queryGrams, textGrams(memory.getContent()));
-        }
-        return 0.7 * relevance + 0.3 * recency(memory.getUpdatedAt(), now);
-    }
-
-    /**
-     * 新近度（0~1）：半衰期后降到 0.5。
-     *
-     * <p>半衰期配成 0 表示不衰减，恒为 1 —— 此时得分等价于「只看相关度」。
-     */
-    private double recency(Instant updatedAt, Instant now) {
-        int halfLifeDays = properties.ranking().halfLifeDays();
-        if (halfLifeDays <= 0 || updatedAt == null) {
-            return 1.0;
-        }
-        double days = Math.max(0, Duration.between(updatedAt, now).toMinutes() / (double) (60 * 24));
-        return Math.pow(0.5, days / halfLifeDays);
     }
 
     /** 查询向量（带超时）；排序关闭或无输入时为空 */
@@ -508,30 +481,6 @@ public class MemoryService {
             repository.save(older);
             log.info("记忆近重复取代：旧={} 新={}", olderId, newer.getId());
         });
-    }
-
-    /** 重叠率 = 查询二元组中出现在记忆里的比例（0~1） */
-    private static double overlapRatio(Set<String> queryGrams, Set<String> memoryGrams) {
-        long hit = queryGrams.stream().filter(memoryGrams::contains).count();
-        return (double) hit / queryGrams.size();
-    }
-
-    /**
-     * 中文/英文通用的字符二元组。
-     *
-     * <p>先去掉所有空白并转小写，再逐对取两字符。单字符输入得到空集合 ——
-     * 一个字的查询没有可比对的二元组，此时调用方退化为时间排序而不是「全都不相关」。
-     */
-    private static Set<String> textGrams(String text) {
-        if (text == null || text.isBlank()) {
-            return Set.of();
-        }
-        String normalized = text.replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
-        Set<String> grams = new LinkedHashSet<>();
-        for (int i = 0; i + 1 < normalized.length(); i++) {
-            grams.add(normalized.substring(i, i + 2));
-        }
-        return grams;
     }
 
     private String normalize(String content) {
