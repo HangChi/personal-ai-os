@@ -7,7 +7,6 @@
  * 有内容后就换成 Markdown 渲染，状态文字降到内容下方 ——
  * 位置变化是刻意的：它不该继续占据首屏的视觉焦点。
  */
-import { ChatLineRound } from '@element-plus/icons-vue'
 import { onBeforeUnmount, ref, watch } from 'vue'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
@@ -55,7 +54,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="chat-streaming">
     <span class="chat-streaming__avatar">
-      <el-icon :size="14"><ChatLineRound /></el-icon>
+      <AppLogo variant="mark" :size="22" />
     </span>
     <div class="chat-streaming__content">
       <!--

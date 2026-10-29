@@ -36,10 +36,26 @@ function makeMessage(overrides: Partial<ChatMessage> = {}): ChatMessage {
   } as ChatMessage
 }
 
+/**
+ * AppLogo 的 stub。
+ *
+ * <p>`vitest.config.ts` 刻意不装 unplugin（自动注册在测试里没有意义，
+ * 还会往源码注入未使用的自动导入语句），所以组件里的 `<AppLogo>` 必须显式 stub，
+ * 否则每个用例都会刷一条 "Failed to resolve component"。
+ *
+ * <p>stub **保留类名**：`.app-logo--mark` 是真正的断言对象（见文末的头像用例），
+ * 若 stub 成一个空 div，那条断言就变成「测 stub 自己」了。
+ */
+const AppLogoStub = {
+  name: 'AppLogo',
+  props: { size: { type: Number, default: 30 }, variant: { type: String, default: 'tile' } },
+  template: '<svg :class="`app-logo app-logo--${variant}`" />',
+}
+
 function mountItem(overrides: Partial<ChatMessage> = {}) {
   return mount(ChatMessageItem, {
     props: { message: makeMessage(overrides), toolTrail: [] },
-    global: { stubs: { MarkdownRenderer: MarkdownStub } },
+    global: { stubs: { MarkdownRenderer: MarkdownStub, AppLogo: AppLogoStub } },
   })
 }
 
@@ -82,5 +98,30 @@ describe('气泡结构：首末段距清零依赖 v-html 包裹层', () => {
     // 一旦有人给 v-html 换掉这层包装，`.md__html > :last-child` 会静默失效，
     // 气泡底部重新多出一截 margin，而所有现有测试仍然全绿。
     expect(html.exists()).toBe(true)
+  })
+})
+
+describe('助手头像：用品牌标记而不是通用图标', () => {
+  it('头像里是 AppLogo 的 mark 变体，不是 EP 的 ChatLineRound', () => {
+    const wrapper = mountItem()
+    const avatar = wrapper.find('.chat-msg__avatar--assistant')
+
+    expect(avatar.exists()).toBe(true)
+    // 换成 mark 变体是因为头像底已经是 --el-color-primary-light-9，
+    // 再叠一个实心方块（tile）会与用户头像的主色实底抢重心。
+    // 同时守「不再是 el-icon」：通用图标没有身份识别度，改造前整个产品
+    // 用的都是 EP 的 ChatLineRound，和任何 AI 产品都撞。
+    expect(avatar.find('.app-logo--mark').exists()).toBe(true)
+    expect(avatar.find('.el-icon').exists()).toBe(false)
+  })
+
+  it('用户头像保持主色实底 + 白色图标，不被品牌标记顶掉', () => {
+    const wrapper = mountItem({ role: 'USER' })
+    const avatar = wrapper.find('.chat-msg__avatar--user')
+
+    // 用户侧不需要身份标记：人只有一个，图标只是「这是你说的」的标记。
+    // 两个头像都换成 logo 会让对话读起来像「两个 AI 在互相回复」。
+    expect(avatar.find('.app-logo').exists()).toBe(false)
+    expect(avatar.find('.el-icon').exists()).toBe(true)
   })
 })

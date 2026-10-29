@@ -292,7 +292,7 @@ async function handleLogout(): Promise<void> {
         :class="{ 'app-shell__brand--collapsed': navCollapsed }"
         title="返回总览"
       >
-        <span class="app-shell__logo">AI</span>
+        <AppLogo :size="30" />
         <span v-show="!navCollapsed" class="app-shell__title">Personal AI OS</span>
       </router-link>
 
@@ -320,7 +320,7 @@ async function handleLogout(): Promise<void> {
         <!-- 登录页：顶栏只放品牌与主题，其余空间留白 -->
         <template v-if="isLoginPage">
           <div class="app-shell__brand app-shell__brand--header">
-            <span class="app-shell__logo">AI</span>
+            <AppLogo :size="30" />
             <span class="app-shell__title">Personal AI OS</span>
           </div>
           <div class="app-shell__header-spacer" />
@@ -569,24 +569,10 @@ html.os-resizing .app-shell__aside {
 }
 
 /*
- * Logo：主色渐变 + 内高光。纯色方块在浅色侧栏上略显扁平，
- * 一层 135° 渐变足以让它看起来像个「应用图标」而不是「一个蓝色 div」。
+ * Logo 的样式已迁到 AppLogo.vue（组件自带渐变底、圆角、投影）。
+ * 这里刻意**不再保留** .app-shell__logo：留着它只会让下一个人以为
+ * 「品牌块由 App.vue 定义」，而真正的视觉常量在组件里 —— 两侧各改一半最容易漂移。
  */
-.app-shell__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--os-radius-md);
-  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
-  box-shadow: 0 1px 3px 0 rgb(79 70 229 / 32%);
-  color: #fff;
-  font-size: var(--os-font-xs);
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  flex: none;
-}
 
 .app-shell__title {
   font-size: var(--os-font-md);

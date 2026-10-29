@@ -21,10 +21,20 @@ const MarkdownStub = {
   template: '<div class="md-stub" :data-content="content" />',
 }
 
+/**
+ * AppLogo 的 stub。头像在流式态里也是品牌标记（与 ChatMessageItem 保持一致），
+ * 但本文件关心的是节流接线，不需要渲染真正的 SVG —— 只求别刷 resolve 警告。
+ */
+const AppLogoStub = {
+  name: 'AppLogo',
+  props: { size: { type: Number, default: 30 }, variant: { type: String, default: 'tile' } },
+  template: '<svg :class="`app-logo app-logo--${variant}`" />',
+}
+
 function mountWith(content: string) {
   return mount(ChatStreamingItem, {
     props: { content, hint: null },
-    global: { stubs: { MarkdownRenderer: MarkdownStub } },
+    global: { stubs: { MarkdownRenderer: MarkdownStub, AppLogo: AppLogoStub } },
   })
 }
 

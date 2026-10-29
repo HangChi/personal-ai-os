@@ -17,7 +17,7 @@
  * 「重新生成」「编辑」两按钮只剩文字、图标位空一格，因为这个坑不报错，
  * 一直没人发现。合并成一条 import 也顺带修掉原先分散的两处 Document 导入。
  */
-import { ChatLineRound, CopyDocument, Document, EditPen, RefreshRight, User } from '@element-plus/icons-vue'
+import { CopyDocument, Document, EditPen, RefreshRight, User } from '@element-plus/icons-vue'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { relativeTime } from '@/lib/relative-time'
@@ -51,7 +51,7 @@ const emit = defineEmits<{
     <!-- 助手：头像在左，内容直排 -->
     <template v-if="message.role !== 'USER'">
       <span class="chat-msg__avatar chat-msg__avatar--assistant">
-        <el-icon :size="14"><ChatLineRound /></el-icon>
+        <AppLogo variant="mark" :size="22" />
       </span>
       <div class="chat-msg__content">
         <!--

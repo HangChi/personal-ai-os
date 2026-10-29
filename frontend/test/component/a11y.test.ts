@@ -55,7 +55,10 @@ describe('无障碍契约', () => {
   })
 
   it('流式占位给了文字替代 —— 三点动画对读屏是完全无声的', () => {
-    const wrapper = mount(ChatStreamingItem, { props: { content: '', hint: '' } })
+    const wrapper = mount(ChatStreamingItem, {
+      props: { content: '', hint: '' },
+      global: { stubs: { AppLogo: true } },
+    })
 
     const hidden = wrapper.find('.sr-only')
     expect(hidden.exists()).toBe(true)
@@ -65,7 +68,12 @@ describe('无障碍契约', () => {
   it('sr-only 不能用 display:none —— 那样连读屏也读不到，等于没写', () => {
     // 样式断言只能靠约定保证，这里守住「类名存在」这个可检查的部分；
     // 真正禁止 display:none 的是 main.css 里的实现与它的注释。
-    const wrapper = mount(ChatStreamingItem, { props: { content: '', hint: '' } })
+    const wrapper = mount(ChatStreamingItem, {
+      props: { content: '', hint: '' },
+      // vitest 刻意不装 unplugin（自动注册），AppLogo 需显式 stub 才不刷 resolve 警告。
+      // 本文件只关心无障碍属性，标记造型由 app-logo.test.ts 负责，所以 stub 成 true 即可。
+      global: { stubs: { AppLogo: true } },
+    })
 
     expect(wrapper.find('.sr-only').classes()).toContain('sr-only')
   })

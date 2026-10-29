@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppLogo: typeof import('./src/components/AppLogo.vue')['default']
     AppPagination: typeof import('./src/components/AppPagination.vue')['default']
     CalendarCreateForm: typeof import('./src/components/calendar/CalendarCreateForm.vue')['default']
     CalendarDayList: typeof import('./src/components/calendar/CalendarDayList.vue')['default']
