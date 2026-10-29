@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 import { buildCodeHeader, COPY_DONE_MS } from '@/lib/code-header'
@@ -82,5 +85,56 @@ describe('代码块头部条', () => {
     expect(button.querySelectorAll('path').length).toBe(beforePathCount)
 
     vi.useRealTimers()
+  })
+})
+
+/**
+ * 图标尺寸：热区与图标是两个不同的数字，不能混为一谈。
+ *
+ * <p>守的是一个**已经犯过、且所有门禁都看不出来**的错：按钮给了 22×22，
+ * 但没给里面的 svg 宽高，而 EP 图标组件在没有约束时会**撑满容器** ——
+ * 实测 svg 也是 22×22，整个热区变成纯墨迹，读起来就是一个「大号图标」。
+ *
+ * <p>对照组是消息操作区：热区 26px、图标 13px。于是**同一个图标**在代码块里
+ * 被放到了 1.7 倍，这正是「代码块的复制按钮有点大」的来源。
+ *
+ * <p>happy-dom 不做布局计算，`getBoundingClientRect` 永远是 0，所以这里
+ * 只能断言「样式规则写没写」—— 但它恰好就是那条会漏写的规则。
+ * 真实尺寸靠浏览器实测（22 热区 / 13 图标 / 头部条 31px 未被顶高）。
+ */
+describe('复制按钮的图标尺寸', () => {
+  const RENDERER_SRC = readFileSync(resolve(process.cwd(), 'src/components/MarkdownRenderer.vue'), 'utf8')
+  // 选择器在这份源码里一律是 `.md__body :deep(.md-code__copy)` 的形态
+  // （scoped + :deep，因为按钮由 JS 命令式创建、带不上 data-v），
+  // 所以正则必须按含 `:deep(` 的实际写法来匹配，不能只写裸类名。
+  const ruleOf = (selector: string): string =>
+    RENDERER_SRC.match(
+      new RegExp(`:deep\\(${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\)\\s*\\{([^}]*)\\}`),
+    )?.[1] ?? ''
+
+  it('必须显式给 svg 定宽高，否则图标会撑满 22px 热区', () => {
+    const rule = ruleOf('.md-code__copy > svg')
+
+    expect(rule).toBeTruthy()
+    expect(rule).toContain('width: 13px')
+    expect(rule).toContain('height: 13px')
+  })
+
+  it('图标必须与消息操作区的 13px 一致 —— 两处尺寸不同就是「一大一小」', () => {
+    // 消息操作区用的是 <el-icon :size="13">，这是它的对照基准。
+    const itemSrc = readFileSync(resolve(process.cwd(), 'src/components/chat/ChatMessageItem.vue'), 'utf8')
+    const sizeAttrs = [...itemSrc.matchAll(/<el-icon :size="(\d+)">/g)].map((m) => m[1])
+    const copyIconSize = ruleOf('.md-code__copy > svg').match(/width:\s*(\d+)px/)?.[1]
+
+    expect(sizeAttrs).toContain('13')
+    expect(copyIconSize).toBe('13')
+  })
+
+  it('热区仍要大于图标：22px 热区 + 13px 墨迹，命中区不能被一起缩小', () => {
+    const btnRule = ruleOf('.md-code__copy')
+
+    // 缩图标不是缩热区：13px 的命中区对鼠标太小，22px 才是可点的。
+    expect(btnRule).toContain('width: 22px')
+    expect(btnRule).toContain('height: 22px')
   })
 })

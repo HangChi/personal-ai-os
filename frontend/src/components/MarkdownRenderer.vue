@@ -377,15 +377,21 @@ function toggleExpand(): void {
 }
 
 /*
- * 复制按钮：纯图标热区（2026-10-29 改）。
+ * 复制按钮：纯图标热区（2026-10-29 改，2026-10-30 修图标尺寸）。
  *
  * 改造前是「复制」两个字 + 1px 边框的胶囊，padding 1px 8px —— 文字宽约 24px，
  * 加上内边距总宽 40px。去掉文字后若沿用这套 padding/边框，会变成一个
  * **比图标大一圈的空框**（看着像没加载出来的按钮）。所以这里换掉边框思路：
  * 平时无边框、悬停才浮出底色，热区固定 22×22。
  *
- * 22 而不是消息操作区的 26：代码块头部条本身只有 4px 上下内边距、总高约 26px，
- * 放 26 会把整个头部条顶高；22 在这个高度里仍有足够的命中区。
+ * 22 而不是消息操作区的 26：代码块头部条总高实测 31px（12px 语言名 × 行高 20.6
+ * + 上下内边距 8 + 下边框 1），放 26 会把头部条顶高；22 这个高度里命中区够用。
+ *
+ * ⚠️ **热区 ≠ 图标**。这里踩过一次：原先只给了按钮 22×22，但 EP 的图标组件
+ * 没有收到宽高时会**撑满容器** —— 实测按钮内 `svg` 也是 22×22，整个热区是纯墨迹，
+ * 看起来就是一个「大号图标」。而消息操作区是热区 26 + 图标 13，
+ * 于是**同一个图标在代码块里被放到 1.7 倍**，这正是「复制按钮有点大」的来源。
+ * 现在显式给 svg 13px，与消息操作区同尺寸。
  */
 .md__body :deep(.md-code__copy) {
   display: inline-flex;
@@ -402,6 +408,15 @@ function toggleExpand(): void {
   transition:
     color var(--os-duration-fast) var(--os-ease),
     background var(--os-duration-fast) var(--os-ease);
+}
+
+/*
+ * 图标尺寸必须显式写。用 `svg` 而不是 `.el-icon`：这里渲染的是裸图标组件
+ * （`render(createVNode(CopyDocument), button)`），外层没有 el-icon 包一层。
+ */
+.md__body :deep(.md-code__copy > svg) {
+  width: 13px;
+  height: 13px;
 }
 
 .md__body :deep(.md-code__copy:hover) {

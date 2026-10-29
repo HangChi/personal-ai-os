@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 
@@ -123,5 +126,67 @@ describe('助手头像：用品牌标记而不是通用图标', () => {
     // 两个头像都换成 logo 会让对话读起来像「两个 AI 在互相回复」。
     expect(avatar.find('.app-logo').exists()).toBe(false)
     expect(avatar.find('.el-icon').exists()).toBe(true)
+  })
+})
+
+/**
+ * 气泡宽度的角色分工。
+ *
+ * <p>守的是一个**用户直接看出来的问题**：「有些框宽度很大，有些很小」。
+ *
+ * <p>根因：助手气泡用了 `width: fit-content`，而 fit-content 的宽度
+ * = **这条消息里最长那一行 + 2×内边距**。「最长一行」由内容换行位置决定，
+ * 于是每条回答各自算出一个与别人无关的数 —— 实测同屏 5 个会话分别是
+ * 455 / 469 / 622 / 842px。
+ *
+ * <p>更关键的是：那个 842 不是「内容需要 842」——把 455 的那个会话加宽到 842 后，
+ * 行数**一条都没变**（34→34、46→46、31→31、18→18、23→23）。原先的窄宽度
+ * 纯粹是 fit-content 算窄了。所以修法是让助手侧定宽 `100%`。
+ *
+ * <p>happy-dom 不算布局，所以这里断言的是「宽度策略写在哪一侧」，
+ * 而不是具体像素。真实像素靠浏览器实测（1440 下全部 842、1280 下 682、1024 下 426）。
+ */
+describe('气泡宽度：助手定宽铺满，用户按内容收缩', () => {
+  const SOURCE = readFileSync(resolve(process.cwd(), 'src/components/chat/ChatMessageItem.vue'), 'utf8')
+  /**
+   * 取某条规则的属性体。
+   *
+   * <p>必须先剥掉 CSS 注释：这些规则的注释里写着「原先用 fit-content」这类说明，
+   * 不剥的话断言会被注释内容污染 —— 第一版就是这么假失败的
+   * （`not.toMatch(/\bwidth:/)` 匹配到了注释里的「width: 100%」）。
+   */
+  const ruleOf = (selector: string): string => {
+    const raw =
+      SOURCE.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`))?.[1] ?? ''
+    return raw.replace(/\/\*[\s\S]*?\*\//g, '')
+  }
+
+  it('助手气泡必须是 width: 100%，不能是 fit-content', () => {
+    const rule = ruleOf('.chat-msg__bubble--assistant')
+
+    expect(rule).toContain('width: 100%')
+    // fit-content 是已修掉的病根，重新出现就是回退
+    expect(rule).not.toContain('fit-content')
+  })
+
+  it('用户气泡必须显式保留 fit-content —— 它不再从通用类继承', () => {
+    const rule = ruleOf('.chat-msg__bubble--user')
+
+    // 这条容易漏：宽度原先是写在通用 .chat-msg__bubble 上的，
+    // 助手侧改成 100% 时把通用那条删了。删掉后用户气泡会退回 flex 子项
+    // 默认的 auto，**短消息也被拉成整栏宽**，右对齐的缺口消失。
+    expect(rule).toContain('width: fit-content')
+  })
+
+  it('通用气泡类不能带 width —— 两侧策略必须分开写', () => {
+    const rule = ruleOf('.chat-msg__bubble')
+
+    // 通用层留一个 width 会让「按角色分开」重新退化成「两侧一个值」，
+    // 而具体是哪个值取决于书写顺序，非常难查。
+    //
+    // ⚠️ 不能用 `/\bwidth:/`：`max-width:` 的前缀是 `-`（非单词字符），
+    // `\b` 成立，于是这条断言会把合法的 `max-width: 100%` 判成违规。
+    // 必须用后视排除前面紧邻的 `-`。
+    expect(rule).not.toMatch(/(?<![-\w])width:/)
   })
 })
