@@ -169,8 +169,15 @@ function toggleExpand(): void {
 <template>
   <div class="md">
     <div ref="container" class="md__body" :class="{ 'md__body--streaming': streaming }">
+      <!--
+        class="md__html" 不是为了样式好看，是**唯一定位得到 v-html 内容的锚点**。
+        v-html 会把内容塞进这个 div，于是 `.md__body` 的直接子元素永远只有它一个 ——
+        任何写在外层的 `.md__body > :first-child / :last-child` 都只能命中这层空壳，
+        对真正首末的段落毫无作用（曾据此以为「末尾段距已清」，实测气泡底部比顶部
+        多出 8px，正是最后一个 <p> 的 margin-bottom 漏在气泡里）。
+      -->
       <!-- eslint-disable-next-line vue/no-v-html -- 内容已过 DOMPurify 消毒（C-01） -->
-      <div v-html="sanitizedHtml"></div>
+      <div class="md__html" v-html="sanitizedHtml"></div>
     </div>
     <el-button v-if="truncated" class="md__expand" link type="primary" size="small" @click="toggleExpand">
       {{ expanded ? '收起' : `展开全文（${content.length} 字符）` }}
@@ -234,11 +241,27 @@ function toggleExpand(): void {
   font-size: var(--os-font-sm);
 }
 
-.md__body :deep(h1:first-child),
-.md__body :deep(h2:first-child),
-.md__body :deep(h3:first-child),
-.md__body :deep(p:first-child) {
+/*
+ * 首末块清零（2026-10-29 修）。
+ *
+ * 原规则写的是 `.md__body > :first-child`，但 `.md__body` 的直接子元素是 v-html 的
+ * 包裹层 `.md__html`，这条选择器只会命中那个空壳 div —— 对真正的首个/末个块元素
+ * 完全无效。后果是**容器自己也要为内容的首末段距买单**：实测气泡内
+ * padTop 10.8 / padBottom 18.8，底部多出 8px，看起来「字压在气泡底部」。
+ *
+ * 现在必须穿过一层：`.md__body > .md__html > :first-child`。
+ * 注意 `:deep()` 在这里仍然需要 —— MarkdownRenderer 自己的 scoped 只管到带
+ * data-v 的那几层，v-html 出来的标签不带作用域属性。
+ *
+ * `last-child` 一并处理：只清 first 是改造前就有的遗漏（当时只想着「标题别顶着上沿」），
+ * 而段距是 margin 塌陷后仍然留在容器内的，末尾不清就会在底部露出一截。
+ */
+.md__body :deep(.md__html > :first-child) {
   margin-top: 0;
+}
+
+.md__body :deep(.md__html > :last-child) {
+  margin-bottom: 0;
 }
 
 .md__body :deep(p) {

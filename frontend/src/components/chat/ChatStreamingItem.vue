@@ -127,7 +127,7 @@ onBeforeUnmount(() => {
  * 流式态需要一个「打字点也能装进来」的变体，抽公共组件反而要加条件分支）。
  */
 .chat-streaming__bubble {
-  padding: 0.75em 1em;
+  padding: 0.85em 1em;
   border-radius: var(--os-radius-2xl);
   border-bottom-left-radius: var(--os-radius-xs);
   background: var(--os-bubble-bg);
@@ -142,13 +142,8 @@ onBeforeUnmount(() => {
   line-height: 1.72;
 }
 
-.chat-streaming__bubble :deep(.md__body > :first-child) {
-  margin-top: 0;
-}
-
-.chat-streaming__bubble :deep(.md__body > :last-child) {
-  margin-bottom: 0;
-}
+/* 首末块距由 MarkdownRenderer 统一清零（见 .md__html > :first-child 的注释）；
+   原先这里写的 `.md__body > :first-child` 命中的是 v-html 包裹层，从没生效过。 */
 
 /* ---- 流式打字动画（阶段 20，FR-004） ---- */
 

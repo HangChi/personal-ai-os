@@ -89,13 +89,23 @@ const emit = defineEmits<{
         <!-- 悬停操作行 -->
         <div class="chat-msg__actions">
           <span class="chat-msg__time">{{ relativeTime(message.createdAt) }}</span>
-          <button type="button" class="chat-msg__action" @click="emit('copy', message.content)">
-            <el-icon :size="11"><CopyDocument /></el-icon>
-            复制
+          <button
+            type="button"
+            class="chat-msg__action"
+            title="复制"
+            aria-label="复制这条回复"
+            @click="emit('copy', message.content)"
+          >
+            <el-icon :size="13"><CopyDocument /></el-icon>
           </button>
-          <button type="button" class="chat-msg__action" @click="emit('regenerate')">
-            <el-icon :size="11"><RefreshRight /></el-icon>
-            重新生成
+          <button
+            type="button"
+            class="chat-msg__action"
+            title="重新生成"
+            aria-label="重新生成这条回复"
+            @click="emit('regenerate')"
+          >
+            <el-icon :size="13"><RefreshRight /></el-icon>
           </button>
         </div>
       </div>
@@ -131,13 +141,23 @@ const emit = defineEmits<{
         </div>
         <div class="chat-msg__actions chat-msg__actions--user">
           <span class="chat-msg__time">{{ relativeTime(message.createdAt) }}</span>
-          <button type="button" class="chat-msg__action" @click="emit('copy', message.content)">
-            <el-icon :size="11"><CopyDocument /></el-icon>
-            复制
+          <button
+            type="button"
+            class="chat-msg__action"
+            title="复制"
+            aria-label="复制这条消息"
+            @click="emit('copy', message.content)"
+          >
+            <el-icon :size="13"><CopyDocument /></el-icon>
           </button>
-          <button type="button" class="chat-msg__action" @click="emit('edit', message)">
-            <el-icon :size="11"><EditPen /></el-icon>
-            编辑
+          <button
+            type="button"
+            class="chat-msg__action"
+            title="编辑并重发"
+            aria-label="编辑并重发这条消息"
+            @click="emit('edit', message)"
+          >
+            <el-icon :size="13"><EditPen /></el-icon>
           </button>
         </div>
       </div>
@@ -212,8 +232,13 @@ const emit = defineEmits<{
   /*
    * 内边距按「行」算，不按固定值：单行消息上下留 10px 就够，多行则需要 14px
    * 才不显闷。用 em 让它随字号缩放，正文字号调整时不用再改这里。
+   *
+   * 2026-10-29：上下改回与左右同阶（原 0.75em / 1em 的组合在 14px 下是 10.5 vs 14，
+   * 但首末段距漏清又让底部多出 8px，实测变成 10.8 / 18.8）。段距已在
+   * MarkdownRenderer 里清零，这里把上下左右统一到 0.85em —— 单行消息的
+   * 气泡高度从 53.6 收到约 51，且四向视觉留白一致。
    */
-  padding: 0.75em 1em;
+  padding: 0.85em 1em;
   border-radius: var(--os-radius-2xl);
   /* 气泡内的 Markdown 自带段距，这里不再叠一层 */
   width: fit-content;
@@ -279,13 +304,12 @@ html.dark .chat-msg__bubble--user :deep(.md__body) {
   line-height: 1.72;
 }
 
-.chat-msg__bubble :deep(.md__body > :first-child) {
-  margin-top: 0;
-}
-
-.chat-msg__bubble :deep(.md__body > :last-child) {
-  margin-bottom: 0;
-}
+/*
+ * 首末块距由 MarkdownRenderer 统一清零（`.md__html > :first-child / :last-child`），
+ * 这里不再重复写 —— 原先这三条规则写的是 `.md__body > :first-child`，
+ * 而 `.md__body` 的直接子元素是 v-html 包裹层，**它们从没生效过**。
+ * 留着只会让下一个人以为已经处理了。
+ */
 
 /* 悬停操作行：默认隐形，不抢版面（FR-003） */
 .chat-msg__actions {
@@ -318,27 +342,41 @@ html.dark .chat-msg__bubble--user :deep(.md__body) {
 }
 
 /*
- * 可点区补到 24px 高（阶段 23）：原先 padding:0 + 12px 字，实测只有 38×17px，
- * 低于最小可点尺寸——「复制」是悬停才浮现的按钮，本来就难命中。
- * 用负外边距抵消多出来的留白，视觉位置不变。
+ * 可点区 26×26（2026-10-29 改）。
+ *
+ * 阶段 23 曾把高度补到 24px、宽度靠文字撑开（「复制」42×25 / 「重新生成」66×25）。
+ * 现在去掉文字只剩图标，若沿用原来的 padding 会缩成 18×25 的窄条 ——
+ * 图标按钮**必须显式定宽**，否则宽度完全由 13px 图标决定。
+ *
+ * 26 而不是 24：去掉文字后它是唯一的命中区，比 EP 的 small 按钮（32）小、
+ * 但比 24 更耐点（实测 24 在触控板上要瞄）。间距用 gap 控制，
+ * 不用 padding 撑 —— 撑出来的空隙看着像「按钮更大」，实际可点区没变。
  */
 .chat-msg__action {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  min-height: 24px;
-  margin: -4px 0;
-  padding: 4px 2px;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
   border: none;
   border-radius: var(--os-radius-sm);
   background: none;
   color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
   cursor: pointer;
+  transition:
+    background var(--os-duration-fast) var(--os-ease),
+    color var(--os-duration-fast) var(--os-ease);
 }
 
 .chat-msg__action:hover {
+  background: var(--el-fill-color-light);
   color: var(--el-color-primary);
+}
+
+/* 键盘聚焦要可见：悬停才浮现的按钮，Tab 到时若没反馈等于「看不见的焦点」 */
+.chat-msg__action:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 1px;
 }
 
 /* 工具行在气泡上方：与气泡拉开一点距离，与上一条消息靠近（同属「这一轮」） */
