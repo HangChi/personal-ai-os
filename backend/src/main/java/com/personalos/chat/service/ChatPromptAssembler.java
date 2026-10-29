@@ -3,7 +3,9 @@ package com.personalos.chat.service;
 import com.personalos.chat.entity.ChatMessageEntity;
 import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.common.ai.AiProperties;
+import com.personalos.common.ai.ContextBudgetService;
 import com.personalos.common.ai.PromptContributor;
+import com.personalos.common.ai.ToolSchemaOverhead;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
@@ -36,15 +38,23 @@ public class ChatPromptAssembler {
     private final ObjectProvider<PromptContributor> promptContributors;
     private final ChatSummaryService summaryService;
     private final ChatMessageRepository messageRepository;
+    private final ToolSchemaOverhead toolSchemaOverhead;
 
     public ChatPromptAssembler(AiProperties aiProperties,
                                ObjectProvider<PromptContributor> promptContributors,
                                ChatSummaryService summaryService,
-                               ChatMessageRepository messageRepository) {
+                               ChatMessageRepository messageRepository,
+                               ToolSchemaOverhead toolSchemaOverhead,
+                               ContextBudgetService contextBudget) {
         this.aiProperties = aiProperties;
         this.promptContributors = promptContributors;
         this.summaryService = summaryService;
         this.messageRepository = messageRepository;
+        this.toolSchemaOverhead = toolSchemaOverhead;
+        // 把自己算的固定开销注册给预算服务：预算要扣掉它才能真正约束「整轮请求」。
+        // 反向注册（预算服务注入本类）会形成构造器环 —— 本类依赖工具集合，
+        // 工具集合经 ChatMemory 又依赖预算服务。
+        contextBudget.registerFixedOverhead(this::fixedOverheadTokens);
     }
 
     /**
@@ -104,8 +114,37 @@ public class ChatPromptAssembler {
         // 只含系统提示 + 窗口内历史：窗口里已经包含最新的那些消息，
         // 再单独加一条「最新消息长度」就是重复计算（2026-10-26 修）。
         // 下一轮用户要发什么这里不可能知道，所以不计入。
+        //
+        // 2026-10-29 加上工具定义：它每轮都随请求发送，却不在系统提示与历史里。
+        // 漏掉它的后果是仪表盘显示「103 / 32K」，而实际请求已是 4K —— 用户
+        // 据此判断「还有余量」，做出的决定全是错的。
         String systemPrompt = assemble(List.of(), "", conversationId);
-        return systemPrompt.length() + estimateHistoryChars(conversationId);
+        return systemPrompt.length() + estimateHistoryChars(conversationId) + toolSchemaOverhead.chars();
+    }
+
+    /**
+     * 一份完整请求里**与对话内容无关**的固定开销（token）：基础人设 + 工具定义。
+     *
+     * <p>它的唯一用途是给预算兜底：预算比这份开销还小的时候，无论怎么裁历史，
+     * 请求都必然超出预算 —— 那不是「预算生效了」，而是「这个预算不可能被满足」。
+     * 详见 {@code ChatSessionController#setContextBudget}。
+     *
+     * <p>刻意**不含**摘要、记忆、知识库：它们随会话与问题变化，属于「内容」，
+     * 该由预算去约束，而不是被当成不可压缩的底盘。
+     */
+    public int fixedOverheadTokens() {
+        int base = aiProperties.systemPrompt() == null ? 0 : aiProperties.systemPrompt().length();
+        return ContextBudgetService.toTokens(base + toolSchemaOverhead.chars());
+    }
+
+    /**
+     * 工具定义的字符数（与系统提示、历史分开给）。
+     *
+     * <p>流式路径要把「系统提示 + 用户消息 + 历史 + 工具」加在一起做用量估算，
+     * 那一处需要的是字符而不是 token，因此单独暴露一次，避免调用方自己再折算一遍。
+     */
+    public int toolOverheadChars() {
+        return toolSchemaOverhead.chars();
     }
 
     /**

@@ -53,6 +53,12 @@ public class ToolInvocationService {
             spec = spec.and((root, criteriaQuery, cb) -> cb.equal(root.get("conversationId"), conversationId));
         }
 
+        // 同 ChatSessionService：页码溢出会让 offset 变负并抛异常（→ 500）。
+        // 审计页的 total 也要真实，否则用户会以为「审计记录被清了」。
+        if (PageDto.offsetOverflows(query.page(), query.size())) {
+            return PageDto.ofPage(List.of(), query.page(), query.size(), repository.count(spec));
+        }
+
         PageRequest pageRequest = PageRequest.of(query.page(), query.size(),
                 Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id")));
         Page<OperationRecordEntity> page = repository.findAll(spec, pageRequest);

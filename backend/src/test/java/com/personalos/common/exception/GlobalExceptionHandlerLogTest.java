@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
 /**
  * 405 的日志必须带上请求路径。
@@ -35,9 +36,16 @@ class GlobalExceptionHandlerLogTest {
     private Logger handlerLogger;
     private ListAppender<ILoggingEvent> appender;
 
+    /** 原始级别：本类要把级别降到 DEBUG 才能看到「断连只记 debug」那条，事后必须还原 */
+    private Level originalLevel;
+
     @BeforeEach
     void attachAppender() {
         handlerLogger = (Logger) LoggerFactory.getLogger(GlobalExceptionHandler.class);
+        // 不降级别的话，DEBUG 事件在到达 appender 之前就被过滤掉了 ——
+        // 断言会变成「没看到 debug 日志」而通过，测了个寂寞
+        originalLevel = handlerLogger.getLevel();
+        handlerLogger.setLevel(Level.DEBUG);
         appender = new ListAppender<>();
         appender.start();
         handlerLogger.addAppender(appender);
@@ -47,6 +55,7 @@ class GlobalExceptionHandlerLogTest {
     void detachAppender() {
         handlerLogger.detachAppender(appender);
         appender.stop();
+        handlerLogger.setLevel(originalLevel);
     }
 
     @Test
@@ -79,5 +88,21 @@ class GlobalExceptionHandlerLogTest {
         String message = appender.list.getFirst().getFormattedMessage();
         assertThat(message).contains("/api/v1/memories/7");
         assertThat(message).doesNotContain("我的私密笔记");
+    }
+
+    @Test
+    @DisplayName("客户端断连只记 debug，不记 error + 堆栈")
+    void clientDisconnectIsNotLoggedAsError() {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/chat/sessions/c-1/stream");
+        AsyncRequestNotUsableException ex =
+                new AsyncRequestNotUsableException("Servlet container error notification for disconnected client");
+
+        handler.handleClientDisconnected(ex, request);
+
+        // 关键断言：没有 error 级日志。用户点「停止」是正常操作，
+        // 把它记成服务端故障会让真故障淹没在噪音里（实测每取消一次一条 40 行堆栈）。
+        assertThat(appender.list).noneMatch(event -> event.getLevel() == Level.ERROR);
+        assertThat(appender.list).anyMatch(event -> event.getLevel() == Level.DEBUG
+                && event.getFormattedMessage().contains("/chat/sessions/c-1/stream"));
     }
 }

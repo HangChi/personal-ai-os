@@ -227,6 +227,25 @@ public class KnowledgeDocumentService {
                     builder.like(builder.lower(root.get("filename")), pattern, SearchPatterns.ESCAPE));
         };
 
+        /*
+         * 页码溢出必须先拦（2026-10-29 实测又中招一次）。
+         *
+         * <p>{@code page=21474837&size=100} 交给 PageRequest.of 时，Spring Data
+         * 用 int 算 offset → 抛 InvalidDataAccessApiUsageException → 落到全局兜底
+         * 就是 **500 + 一条假堆栈**。页码是纯客户端输入，不该有能力制造 500。
+         *
+         * <p>同一轮已经在会话搜索与工具审计上修过，但那条防线是**逐个服务手写**的，
+         * 这个接口当时没被点到名，于是漏了 —— 端到端日志里 10:35 又炸了一次。
+         * 判据统一用 {@link PageDto#offsetOverflows}，别在这里另写一遍算术。
+         *
+         * <p>不能直接 return 空页了事：total 必须是真实总数，前端要靠它渲染分页器。
+         * 所以只跳过内容查询、仍然走一次 count。
+         */
+        if (PageDto.offsetOverflows(query.page(), query.size())) {
+            long total = repository.count(spec);
+            return PageDto.ofPage(List.of(), query.page(), query.size(), total);
+        }
+
         PageRequest pageRequest = PageRequest.of(query.page(), query.size(),
                 Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<KnowledgeDocumentEntity> page = repository.findAll(spec, pageRequest);

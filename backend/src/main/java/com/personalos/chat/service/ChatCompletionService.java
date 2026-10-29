@@ -249,8 +249,11 @@ public class ChatCompletionService {
             // 历史由 Advisor 在请求链路里装载，这里拿不到原文，
             // 因此用「窗口条数 × 已存消息的平均长度」逼近并在事件里如实标注为估算值。
             systemPromptCharsRef.set(systemPrompt.length());
+            // 工具定义（JSON Schema）也要算进 prompt：它每轮都随请求发送，
+            // 实测占 4K 左右，漏掉它会让估算值只有真实值的 1/40。
             promptCharsRef.set(systemPrompt.length() + userContent.length()
-                    + promptAssembler.estimateHistoryChars(conversationId));
+                    + promptAssembler.estimateHistoryChars(conversationId)
+                    + promptAssembler.toolOverheadChars());
             // 用户消息用作语言口径的判定样本（见 promptSampleRef 的声明处注释）
             promptSampleRef.set(userContent);
             ChatClient.ChatClientRequestSpec request = chatClient.prompt()
@@ -411,6 +414,9 @@ public class ChatCompletionService {
                     // 客户端一收到 done 就可能认为本轮全部结束并去查库，
                     // 此时引用还没提交就会看到 0 条。详见 ChatTurnFinisher 的类注释。
                     finisher.attachCitations(conversationId, hitsRef.get());
+                    // 附件与引用同一时机：都属于「用户消息的可追溯信息」，
+                    // 客户端收到 done 后可能立刻重拉消息列表，晚一步写就等于「附件丢了」。
+                    finisher.attachAttachments(conversationId, requestAttachments);
 
                     String reply = fullContent.toString();
                     // 用量事件的下发与记录（清单第 7 项）。
@@ -426,8 +432,8 @@ public class ChatCompletionService {
                     // 记账放在 complete 之后：统计失败或慢都不该影响「回答已结束」这个事实
                     usageRecorder.record(conversationId, usage);
 
-                    // done 之后：附件补写、摘要刷新、轮末钩子（都只影响下一轮或仅用于展示）
-                    finisher.afterDone(conversationId, userContent, reply, requestAttachments);
+                    // done 之后：摘要刷新、轮末钩子（都只影响下一轮或仅用于展示）
+                    finisher.afterDone(conversationId, userContent, reply);
                 }));
         subscriptionRef.set(subscription);
         // 订阅返回前就已被终止（上面任一路径抢先）：这里补一次 dispose，

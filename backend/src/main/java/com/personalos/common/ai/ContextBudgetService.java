@@ -58,6 +58,21 @@ public class ContextBudgetService {
     /** 用户选择的预算（token）。volatile：可能被设置接口并发修改 */
     private volatile int budgetTokens;
 
+    /**
+     * 固定开销的来源（基础人设 + 工具定义）。默认 0，由 {@code ChatPromptAssembler} 注册。
+     *
+     * <p>用函数式依赖而不是直接注入的原因见 {@link #fixedOverheadTokens()}。
+     */
+    private volatile java.util.function.IntSupplier fixedOverhead = () -> 0;
+
+    /**
+     * 扣掉固定开销后至少要留给历史的那一段（token）。
+     *
+     * <p>取 1024 而不是 0：0 会让「预算 = 固定开销」退化成「一条历史都不带」，
+     * 用户看到的是一个能对话但完全失忆的助手，比报错更难理解。
+     */
+    private static final int MIN_HISTORY_TOKENS = 1_024;
+
     /** 默认预算：32K（前端档位里的最小档）。原来是拿 max-context-chars 折算成 7.5K，     结果不在任何档位里，仪表盘显示「158 / 7.3K」却没有对应选项可点 */
     private static final int DEFAULT_BUDGET_TOKENS = 32_768;
 
@@ -125,6 +140,41 @@ public class ContextBudgetService {
     }
 
     /**
+     * 一份请求里**不可压缩的固定开销**（token）：基础人设 + 工具定义。
+     *
+     * <p>由 {@code ChatPromptAssembler} 在构造期注册进来，而不是在这里注入 ——
+     * 本类被 {@code JpaChatMemory} 依赖，而工具集合又经 {@code ChatMemory} 间接依赖本类，
+     * 直接注入会形成构造器环。
+     *
+     * <p>注册前的默认值是 0：那段时间内的行为与改造前一致（预算只约束历史），
+     * 属于可接受的降级，而不是错误。
+     */
+    public int fixedOverheadTokens() {
+        try {
+            return Math.max(fixedOverhead.getAsInt(), 0);
+        } catch (RuntimeException ex) {
+            log.warn("读取固定开销失败，按 0 处理：{}", ex.toString());
+            return 0;
+        }
+    }
+
+    /**
+     * 预算的下限：固定开销 + 一小段历史。
+     *
+     * <p>比它更小的预算**在数学上不可能被满足**（固定开销无法压缩），
+     * 保留它只会让仪表盘永远显示「超预算」，而请求照样发出去 ——
+     * 那比直接把它抬到能成立的值更误导。
+     */
+    public int minimumBudgetTokens() {
+        return fixedOverheadTokens() + MIN_HISTORY_TOKENS;
+    }
+
+    /** 注册固定开销的来源（幂等、无副作用的读操作）。 */
+    public void registerFixedOverhead(java.util.function.IntSupplier supplier) {
+        this.fixedOverhead = supplier == null ? () -> 0 : supplier;
+    }
+
+    /**
      * 在指定模型窗口下生效的预算（token）。
      *
      * <p>为什么要「收敛」而不是直接用 {@code budgetTokens}：预算是用户在某个
@@ -137,7 +187,9 @@ public class ContextBudgetService {
      */
     public int budgetTokensFor(String modelName) {
         int window = contextWindowTokens(modelName);
-        return Math.min(budgetTokens, window);
+        // 先抬到下限再按窗口截断：顺序不能反 —— 先截断再抬，会把下限顶到窗口之外
+        int effective = Math.max(budgetTokens, minimumBudgetTokens());
+        return Math.min(effective, window);
     }
 
     /**
@@ -176,10 +228,17 @@ public class ContextBudgetService {
      * <p>这是窗口裁剪**真正**该用的值：换到窗口小的模型后，字符预算也要跟着降，
      * 否则「仪表盘显示占满了」而「实际还在往里塞」，请求直接被端点拒绝。
      *
+     * <p><b>2026-10-29 起先扣掉固定开销</b>：预算的语义是「这一轮请求最多送多少 token」，
+     * 而基础人设与工具定义（实测约 4K）无法通过裁历史去掉。不扣的话，
+     * 预算 32K 实际会送出 36K，预算设成 2048 时更是必然超出 —— 用户设的数值
+     * 与系统行为完全脱节。扣完留一小段历史（{@link #MIN_HISTORY_TOKENS}），
+     * 保证预算极小时也不会退化成「一条历史都不带」。
+     *
      * @param modelName 当前会话使用的模型名
      */
     public int effectiveCharBudgetFor(String modelName) {
-        return (int) Math.round(budgetTokensFor(modelName) * CHARS_PER_TOKEN);
+        int usable = Math.max(budgetTokensFor(modelName) - fixedOverheadTokens(), MIN_HISTORY_TOKENS);
+        return (int) Math.round(usable * CHARS_PER_TOKEN);
     }
 
     /**

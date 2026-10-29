@@ -148,13 +148,15 @@ class JpaChatMemoryTest {
     void getShouldTrimByCharacterBudget() {
         JpaChatMemory budgeted = new JpaChatMemory(messageRepository, sessionRepository,
                 new AiProperties(new AiProperties.Memory(10, 0), "系统提示"),
-                budgetWithChars(250), transactionManager);
+                budgetWithChars(2_500), transactionManager);
         given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class)))
-                .willReturn(threeMessages(100));
+                .willReturn(threeMessages(1_000));
 
         List<Message> messages = budgeted.get(CID);
 
-        // 100 + 100 = 200 ≤ 250，再加第三条就是 300 > 250 → 只保留最新两条
+        // 1000 + 1000 = 2000 ≤ 2500，再加第三条就是 3000 > 2500 → 只保留最新两条
+        // 用千级而不是百级：预算有下限（固定开销 + 1024），百级预算会被抬到下限，
+        // 那样测的就不再是「字符预算生效」而是「下限生效」。
         assertThat(messages).hasSize(2);
         assertThat(messages.get(0).getText()).startsWith("msg-2-");
         assertThat(messages.get(1).getText()).startsWith("msg-3-");
@@ -165,14 +167,32 @@ class JpaChatMemoryTest {
     void getShouldAlwaysKeepNewestMessage() {
         JpaChatMemory tight = new JpaChatMemory(messageRepository, sessionRepository,
                 new AiProperties(new AiProperties.Memory(10, 0), "系统提示"),
-                budgetWithChars(250), transactionManager);
+                budgetWithChars(2_500), transactionManager);
         given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class)))
-                .willReturn(threeMessages(200));
+                .willReturn(threeMessages(2_000));
 
         List<Message> messages = tight.get(CID);
 
         assertThat(messages).hasSize(1);
         assertThat(messages.get(0).getText()).startsWith("msg-3-");
+    }
+
+    @Test
+    @DisplayName("get(): 预算小于下限时按「下限」裁，而不是按一个不可能满足的数裁")
+    void getShouldUseMinimumBudgetWhenBudgetTooSmall() {
+        // 100 字符 ≈ 63 token，远小于「固定开销 + 1024」的下限。
+        // 不设下限的话，用户把预算调到 100 会得到「一条历史都不带」的助手 ——
+        // 能对话但完全失忆，比报错更难理解。
+        JpaChatMemory floored = new JpaChatMemory(messageRepository, sessionRepository,
+                new AiProperties(new AiProperties.Memory(10, 0), "系统提示"),
+                budgetWithChars(100), transactionManager);
+        given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class)))
+                .willReturn(threeMessages(400));
+
+        List<Message> messages = floored.get(CID);
+
+        // 下限 1024 token ≈ 1638 字符：三条各 400 字（共 1200）全部放得下
+        assertThat(messages).hasSize(3);
     }
 
     /** 构造三条各 length 字的「新 → 旧」消息（seq 3/2/1），与仓储返回顺序一致；内容带序号便于断言 */

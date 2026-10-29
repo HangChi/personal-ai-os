@@ -1,0 +1,70 @@
+{
+  "base": "http://127.0.0.1:8080/api/v1",
+  "startedAt": "20261029-015110",
+  "elapsedSeconds": 0.1,
+  "counts": {
+    "PASS": 7,
+    "FAIL": 0,
+    "SKIP": 0,
+    "NOTE": 0,
+    "ERROR": 0
+  },
+  "results": [
+    {
+      "group": "G8",
+      "name": "任务 CRUD 全链路",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.02,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "任务边界：空标题 400 / 非法优先级 400 / 超 5 标签 400",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "任务筛选与标签去重",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "任务统计与筛选无关（全量口径）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "日程：重复规则在区间查询中被展开",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "日程边界：结束早于开始 → 400；区间超 90 天 → 400",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "提醒：扫描物化 → 标记已读后不再出现在到点列表",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    }
+  ]
+}

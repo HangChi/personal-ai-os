@@ -55,19 +55,22 @@ public class ChatSessionController {
     private final AiProperties aiProperties;
     private final com.personalos.common.ai.ContextBudgetService contextBudget;
     private final ChatMarkdownExporter markdownExporter;
+    private final com.personalos.chat.service.UsageStatsService usageStats;
 
     public ChatSessionController(ChatSessionService sessionService,
                                  ChatMessageService messageService,
                                  ChatCompletionService completionService,
                                  AiProperties aiProperties,
                                  com.personalos.common.ai.ContextBudgetService contextBudget,
-                                 ChatMarkdownExporter markdownExporter) {
+                                 ChatMarkdownExporter markdownExporter,
+                                 com.personalos.chat.service.UsageStatsService usageStats) {
         this.sessionService = sessionService;
         this.messageService = messageService;
         this.completionService = completionService;
         this.aiProperties = aiProperties;
         this.contextBudget = contextBudget;
         this.markdownExporter = markdownExporter;
+        this.usageStats = usageStats;
     }
 
     /**
@@ -157,11 +160,19 @@ public class ChatSessionController {
     public ApiResponse<ChatContextUsageDto> contextUsage(@PathVariable String conversationId) {
         var session = sessionService.requireSession(conversationId);
         String model = session.getChatModel();
+        // 分子优先取「上一轮真实用量」：它与 done.promptTokens 同源，
+        // 用户刷新页面后看到的数是上一轮结束时看到的那个，不会两处不一致。
+        // 没有真实记录（新会话、或上游不回 usage）才退回字符估算 —— 此时 estimated=true，
+        // 前端据此说明「这是估算」。估算已含工具定义开销（见 ToolSchemaOverhead）。
+        java.util.OptionalInt actual = usageStats.latestActualPromptTokens(conversationId);
+        int promptTokens = actual.isPresent()
+                ? actual.getAsInt()
+                : completionService.estimatePromptTokens(conversationId);
         return ApiResponse.ok(new ChatContextUsageDto(
-                completionService.estimatePromptTokens(conversationId),
+                promptTokens,
                 contextBudget.budgetTokensFor(model),
                 contextBudget.contextWindowTokens(model),
-                true));
+                actual.isEmpty()));
     }
 
     /**
@@ -178,7 +189,10 @@ public class ChatSessionController {
                     com.personalos.common.api.ErrorCode.VALIDATION_FAILED, "预算必须是正整数");
         }
         contextBudget.setBudgetTokens(tokens);
-        return ApiResponse.ok(new ChatContextUsageDto(0, contextBudget.budgetTokens(),
+        // 回显**生效值**而不是用户填的值：小于固定开销的预算会被抬到下限
+        // （见 ContextBudgetService#minimumBudgetTokens），不回声会让界面继续显示
+        // 一个系统根本不会执行的数字。
+        return ApiResponse.ok(new ChatContextUsageDto(0, contextBudget.budgetTokensFor(null),
                 contextBudget.contextWindowTokens(), true));
     }
 

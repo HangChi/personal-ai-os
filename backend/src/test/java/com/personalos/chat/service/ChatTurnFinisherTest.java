@@ -104,7 +104,7 @@ class ChatTurnFinisherTest {
     @Test
     @DisplayName("done 之后刷新摘要，并按注册顺序调用每个轮末钩子")
     void refreshesSummaryAndRunsHooksInOrder() {
-        finisher.afterDone(CONVERSATION, "用户消息", "助手回复", List.of());
+        finisher.afterDone(CONVERSATION, "用户消息", "助手回复");
 
         InOrder order = inOrder(summaryService, firstHook, secondHook);
         order.verify(summaryService).refreshAsync(CONVERSATION);
@@ -118,7 +118,7 @@ class ChatTurnFinisherTest {
         doThrow(new RuntimeException("记忆模块坏了"))
                 .when(firstHook).afterTurn(anyString(), anyString(), anyString());
 
-        finisher.afterDone(CONVERSATION, "问", "答", List.of());
+        finisher.afterDone(CONVERSATION, "问", "答");
 
         verify(secondHook).afterTurn(CONVERSATION, "问", "答");
     }
@@ -126,7 +126,7 @@ class ChatTurnFinisherTest {
     @Test
     @DisplayName("没有附件时不查消息表（每轮都查一次是纯浪费）")
     void skipsAttachmentLookupWhenNone() {
-        finisher.afterDone(CONVERSATION, "问", "答", List.of());
+        finisher.attachAttachments(CONVERSATION, List.of());
 
         verifyNoInteractions(messageRepository);
     }
@@ -140,7 +140,8 @@ class ChatTurnFinisherTest {
         when(messageRepository.findFirstByConversationIdAndMessageTypeOrderBySequenceNoDesc(anyString(), any()))
                 .thenThrow(new IllegalStateException("库挂了"));
 
-        finisher.afterDone(CONVERSATION, "问", "答", List.of(attachment));
+        finisher.attachAttachments(CONVERSATION, List.of(attachment));
+        finisher.afterDone(CONVERSATION, "问", "答");
 
         verify(summaryService).refreshAsync(CONVERSATION);
         verify(firstHook).afterTurn(CONVERSATION, "问", "答");
@@ -154,7 +155,7 @@ class ChatTurnFinisherTest {
         when(messageRepository.findFirstByConversationIdAndMessageTypeOrderBySequenceNoDesc(anyString(), any()))
                 .thenReturn(java.util.Optional.empty());
 
-        finisher.afterDone(CONVERSATION, "问", "答", List.of(attachment));
+        finisher.attachAttachments(CONVERSATION, List.of(attachment));
 
         assertThat(true).as("走到这里且没有异常即通过").isTrue();
         verify(messageRepository, never()).save(any());

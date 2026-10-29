@@ -66,4 +66,22 @@ public record PageDto<T>(List<T> items, int page, int size, long total) {
     public static <T> PageDto<T> ofPage(List<T> items, int page, int size, long total) {
         return new PageDto<>(List.copyOf(items), Math.max(page, 0), Math.max(size, 1), total);
     }
+
+    /**
+     * 页码 × 每页条数是否会溢出 {@code int}（= 交给 SQL 做 offset 时会炸）。
+     *
+     * <p><b>为什么要单独判</b>：走 SQL 分页的接口把 {@code page}/{@code size} 直接交给
+     * {@code PageRequest.of}，而 Spring Data 计算 offset 时用 {@code int}。
+     * `page=21474837 & size=100` 会抛 {@code Page offset exceeds Integer.MAX_VALUE}，
+     * 落到全局兜底就是 **500 + 一条假堆栈**（2026-10-29 端到端实测，会话搜索与工具审计
+     * 两个接口同时中招）。页码是纯客户端输入，不该有能力制造 500。
+     *
+     * <p>为什么在 {@code PageDto} 而不在各自的 Query 里把 page 拍上限：拍上限会把
+     * 「翻太深」伪装成「有数据但页号被改过」，前端手里的 page 与响应里的 page
+     * 不一致；而 `TaskService` 已经确立了「算一次 long、越界就返回空页但仍查 total」
+     * 的做法。这里只把那个判断抽出来共用，行为不变。
+     */
+    public static boolean offsetOverflows(int page, int size) {
+        return (long) Math.max(page, 0) * Math.max(size, 0) > Integer.MAX_VALUE;
+    }
 }

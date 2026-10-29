@@ -9,7 +9,9 @@ import static org.mockito.Mockito.when;
 import com.personalos.chat.entity.ChatMessageEntity;
 import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.common.ai.AiProperties;
+import com.personalos.common.ai.ContextBudgetService;
 import com.personalos.common.ai.PromptContributor;
+import com.personalos.common.ai.ToolSchemaOverhead;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import com.personalos.support.StaticObjectProvider;
 import java.util.List;
@@ -31,11 +33,19 @@ class ChatPromptAssemblerTest {
 
     private ChatMessageRepository messageRepository;
     private ChatSummaryService summaryService;
+    private ToolSchemaOverhead toolSchemaOverhead;
+    private ContextBudgetService contextBudget;
+
+    /** 工具定义的固定字符数：取值随意，但必须非 0 —— 用 0 会让「有没有算进去」测不出来 */
+    private static final int TOOL_CHARS = 4000;
 
     @BeforeEach
     void setUp() {
         messageRepository = mock(ChatMessageRepository.class);
         summaryService = mock(ChatSummaryService.class);
+        toolSchemaOverhead = mock(ToolSchemaOverhead.class);
+        contextBudget = mock(ContextBudgetService.class);
+        when(toolSchemaOverhead.chars()).thenReturn(TOOL_CHARS);
         // 默认：无历史、无摘要 —— 各用例按需覆盖
         when(messageRepository.findRecentByConversationId(anyString(), any())).thenReturn(List.of());
         when(summaryService.renderForConversation(anyString())).thenReturn("");
@@ -44,7 +54,7 @@ class ChatPromptAssemblerTest {
     private ChatPromptAssembler assembler(PromptContributor... contributors) {
         AiProperties properties = new AiProperties(new AiProperties.Memory(20, 32_000), BASE_PROMPT);
         return new ChatPromptAssembler(properties, new StaticObjectProvider<>(List.of(contributors)),
-                summaryService, messageRepository);
+                summaryService, messageRepository, toolSchemaOverhead, contextBudget);
     }
 
     @Test
@@ -156,14 +166,15 @@ class ChatPromptAssemblerTest {
     }
 
     @Test
-    @DisplayName("estimatePromptChars = 不含知识库的系统提示 + 历史（仪表盘口径）")
+    @DisplayName("estimatePromptChars = 系统提示 + 历史 + 工具定义（仪表盘口径）")
     void estimatesPromptCharsWithoutKnowledge() {
         ChatMessageEntity message = mock(ChatMessageEntity.class);
         when(message.getContent()).thenReturn("1234567890");
         when(messageRepository.findRecentByConversationId(anyString(), any())).thenReturn(List.of(message));
         when(summaryService.renderForConversation(CONVERSATION)).thenReturn("摘要");
 
-        // 人设 5 字 + "\n\n" 2 字 + 摘要 2 字 = 9；历史 10 → 19
-        assertThat(assembler().estimatePromptChars(CONVERSATION)).isEqualTo(19);
+        // 人设 5 字 + "\n\n" 2 字 + 摘要 2 字 = 9；历史 10；工具定义 TOOL_CHARS
+        // 工具必须计入：漏掉它会让仪表盘比真实值小一个数量级（103 vs 4116）
+        assertThat(assembler().estimatePromptChars(CONVERSATION)).isEqualTo(19 + TOOL_CHARS);
     }
 }

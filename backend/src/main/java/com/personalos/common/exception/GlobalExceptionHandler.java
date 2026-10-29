@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -188,6 +190,46 @@ public class GlobalExceptionHandler {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.METHOD_NOT_ALLOWED,
                         "请求方法 " + ex.getMethod() + " 不被支持"));
+    }
+
+    /**
+     * 内容协商失败：客户端的 {@code Accept} 与端点能产出的类型没有交集。
+     *
+     * <p>典型场景：{@code GET /chat/sessions/{id}/export} 只产 Markdown，
+     * 而调用方声明只接受 {@code application/json}。语义上这是 **406**，
+     * 但 Spring 抛的 {@code HttpMediaTypeNotAcceptableException} 此前没有专门处理，
+     * 落到兜底分支变成 500 + 一条 error 级堆栈 —— 客户端看到「服务器内部错误」，
+     * 服务端日志被一条由客户端 Accept 头造成的假故障刷掉（2026-10-29 实测）。
+     *
+     * <p>响应仍显式写 {@code application/json}：既然客户端说「不接受其它类型」，
+     * 能给出的最有用信息仍然是一个可解析的错误信封；浏览器/axios 这类会带
+     * {@code *}{@code /*} 的客户端不会走到这里。
+     */
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotAcceptable(
+            HttpMediaTypeNotAcceptableException ex, HttpServletRequest request) {
+        log.warn("内容协商失败: uri={}, accept={}, supported={}",
+                request.getRequestURI(), request.getHeader("Accept"), ex.getSupportedMediaTypes());
+        return ResponseEntity.status(ErrorCode.NOT_ACCEPTABLE.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiResponse.error(ErrorCode.NOT_ACCEPTABLE,
+                        "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept"));
+    }
+
+    /**
+     * 客户端在流式输出中途断开（用户点了「停止」、关页面、切会话）。
+     *
+     * <p><b>这不是服务端故障</b>：SSE 写失败必然发生，且我们已经在
+     * {@code ChatCompletionService} 里据此取消上游订阅。但在此之前它会落到
+     * 兜底分支，记一条 error 级 + 40 行堆栈的假故障 —— 实测每取消一次就刷一条，
+     * 真正的服务端异常被淹在下面。
+     *
+     * <p>返回 {@code void}（无响应体）是刻意的：连接已经没了，再写任何东西都只会
+     * 触发第二次写失败。
+     */
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleClientDisconnected(AsyncRequestNotUsableException ex, HttpServletRequest request) {
+        log.debug("客户端已断开，响应无法继续写入: uri={}", request.getRequestURI());
     }
 
     /**

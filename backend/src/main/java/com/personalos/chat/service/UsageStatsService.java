@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +44,25 @@ public class UsageStatsService {
         this.repository = repository;
         this.clock = clock;
         this.zoneId = zoneId;
+    }
+
+    /**
+     * 某会话最近一轮的**真实** prompt token 数；没有真实记录时返回空。
+     *
+     * <p>给对话页的上下文仪表盘用：它的分子必须与 {@code done.promptTokens}
+     * 同源，否则会出现「仪表盘说 103、done 说 4116」这种同一屏内自相矛盾的读数。
+     *
+     * <p>返回 {@code OptionalInt} 而不是 0 作为哨兵：0 是合法的真实用量
+     * （空对话也可能被上游报到 0），用 0 表示「没有」会让调用方无法区分。
+     */
+    @Transactional(readOnly = true)
+    public OptionalInt latestActualPromptTokens(String conversationId) {
+        return repository
+                .findFirstByConversationIdAndSourceOrderByCreatedAtDescIdDesc(
+                        conversationId, TokenUsageSource.ACTUAL)
+                .map(entity -> OptionalInt.of(entity.getPromptTokens() == null
+                        ? 0 : entity.getPromptTokens()))
+                .orElseGet(OptionalInt::empty);
     }
 
     /**

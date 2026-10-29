@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.support.DeterministicEmbeddingModel;
 import com.personalos.support.HttpTestClient;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -105,5 +106,39 @@ class ErrorEnvelopeIntegrationTest {
         JsonNode data = mapper.readTree(response.body()).path("data");
         assertThat(data.path("items").size()).isZero();
         assertThat(data.path("total").asInt()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("会话搜索的分页溢出：同样是空页 + 真实 total，而不是 500")
+    void hugePageNumberOnSessionSearchReturnsEmptyPage() throws Exception {
+        HttpTestClient.Response created = http.post("/api/v1/chat/sessions", "{\"title\":\"溢出靶子\"}");
+        assertThat(created.status()).as("创建会话的响应：%s", created.body()).isEqualTo(201);
+
+        // 与任务那条同一个根因，但走的是另一条代码路径（SQL 分页而不是内存切片）：
+        // PageRequest 把 page*size 交给 JDBC 时按 int 截断 → offset 变负 →
+        // InvalidDataAccessApiUsageException → 500。2026-10-29 端到端实测。
+        HttpTestClient.Response response = http.get("/api/v1/chat/sessions/search?page=21474837&size=100");
+
+        assertThat(response.status()).as("响应：%s", response.body()).isEqualTo(200);
+        JsonNode data = mapper.readTree(response.body()).path("data");
+        assertThat(data.path("items").size()).isZero();
+        // total 必须是真实数：返回 0 会让前端显示「没有会话」，比报错更难排查
+        assertThat(data.path("total").asInt()).isGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("内容协商失败：406 + 40600，而不是 500 + 一条假堆栈")
+    void unacceptableResponseTypeIsNotServerError() throws Exception {
+        HttpTestClient.Response created = http.post("/api/v1/chat/sessions", "{\"title\":\"协商靶子\"}");
+        String conversationId = mapper.readTree(created.body()).path("data").path("conversationId").asText();
+
+        // 导出接口只产 Markdown；声明只接受 JSON 时两者没有交集。
+        // 以前这条会走兜底分支返回 500，客户端以为服务端坏了。
+        HttpTestClient.Response response = http.get(
+                "/api/v1/chat/sessions/" + conversationId + "/export",
+                Map.of("Accept", "application/json"));
+
+        assertThat(response.status()).as("响应：%s", response.body()).isEqualTo(406);
+        assertThat(mapper.readTree(response.body()).path("code").asInt()).isEqualTo(40600);
     }
 }

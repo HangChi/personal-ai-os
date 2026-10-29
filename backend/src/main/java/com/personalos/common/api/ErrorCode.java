@@ -31,6 +31,15 @@ public enum ErrorCode {
     /** 请求方法不被支持。 */
     METHOD_NOT_ALLOWED(40005, "请求方法不被支持", HttpStatus.METHOD_NOT_ALLOWED),
 
+    /**
+     * 无法按客户端要求的 {@code Accept} 生成响应。
+     *
+     * <p>典型场景：导出接口只产出 {@code text/markdown} 或文件流，而客户端声明
+     * 只接受 {@code application/json}。这是**内容协商失败**，不是服务端故障 ——
+     * 没有这个码时它会落到兜底分支变成 500 + 一条假堆栈（2026-10-29 实测）。
+     */
+    NOT_ACCEPTABLE(40600, "响应格式不被支持", HttpStatus.NOT_ACCEPTABLE),
+
     /** 未登录或会话已过期（阶段 15）。 */
     UNAUTHORIZED(40100, "未登录或登录已过期", HttpStatus.UNAUTHORIZED),
 

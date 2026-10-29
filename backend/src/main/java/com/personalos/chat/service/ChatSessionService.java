@@ -158,6 +158,15 @@ public class ChatSessionService {
             return builder.like(builder.lower(root.get("title")), pattern, SearchPatterns.ESCAPE);
         };
 
+        // 页码 × 每页条数溢出 int 时，PageRequest 交给 SQL 的 offset 会是负数 →
+        // InvalidDataAccessApiUsageException → 500。一条构造出来的查询参数即可触发，
+        // 所以先自己算一遍 long，越界就返回**空页但仍带真实 total**
+        //（前端要靠 total 渲染分页器，直接返回 0 会显示「没有会话」）。
+        if (PageDto.offsetOverflows(query.page(), query.size())) {
+            return PageDto.ofPage(List.of(), query.page(), query.size(),
+                    sessionRepository.count(spec));
+        }
+
         PageRequest pageRequest = PageRequest.of(query.page(), query.size(),
                 Sort.by(Sort.Direction.DESC, "updatedAt"));
         Page<ChatSessionEntity> page = sessionRepository.findAll(spec, pageRequest);

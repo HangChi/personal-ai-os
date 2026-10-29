@@ -203,4 +203,70 @@ class ContextBudgetServiceTest {
                         .as("模型 %s 的窗口", name)
                         .isEqualTo(expected));
     }
+
+    // ---------------------------------------------------------- 固定开销与预算下限
+
+    @Test
+    @DisplayName("字符预算先扣掉固定开销：预算约束的是「整轮请求」而不只是历史")
+    void charBudgetSubtractsFixedOverhead() {
+        ContextBudgetService service = new ContextBudgetService(props(131_072));
+        service.registerFixedOverhead(() -> 4_000);
+        service.setBudgetTokens(32_768);
+
+        int charBudget = service.effectiveCharBudgetFor(null);
+
+        // (32768 - 4000) * 1.6 = 46028.8 → 46029
+        // 不扣的话是 52429，多出来的 6.4K 字符会被当成「还能塞的历史」，
+        // 结果整轮请求变成 36K 而用户的预算是 32K。
+        assertThat(charBudget).isEqualTo(46_029);
+    }
+
+    @Test
+    @DisplayName("预算小于固定开销时被抬到下限，而不是永远显示超预算")
+    void budgetRaisedToMinimum() {
+        ContextBudgetService service = new ContextBudgetService(props(131_072));
+        service.registerFixedOverhead(() -> 4_000);
+        service.setBudgetTokens(2_048);   // 用户通过 API 设了一个不可能的预算
+
+        // 下限 = 固定开销 + 1024 的历史余量
+        assertThat(service.budgetTokensFor(null)).isEqualTo(5_024);
+        // 存的值不动：用户当初填的数字仍可回显，改配置时不会被静默改写
+        assertThat(service.budgetTokens()).isEqualTo(2_048);
+    }
+
+    @Test
+    @DisplayName("下限也要被模型窗口截断：先抬后截，顺序不能反")
+    void minimumBudgetStillClampedByWindow() {
+        ContextBudgetService service = new ContextBudgetService(props(131_072));
+        service.registerFixedOverhead(() -> 40_000);
+        service.setBudgetTokens(2_048);
+
+        // 下限 41024 超过 qwen-max 的 30720 窗口 —— 只能给窗口值，
+        // 否则会把一个「端点必然拒绝」的预算发给模型
+        assertThat(service.budgetTokensFor("qwen-max")).isEqualTo(30_720);
+    }
+
+    @Test
+    @DisplayName("扣掉固定开销后至少留 1024 token 给历史（不会退化成零历史）")
+    void keepsMinimumHistoryAfterOverhead() {
+        ContextBudgetService service = new ContextBudgetService(props(131_072));
+        service.registerFixedOverhead(() -> 32_768);
+        service.setBudgetTokens(32_768);
+
+        // 预算恰好等于开销：可用的历史预算取下限 1024，而不是 0
+        assertThat(service.effectiveCharBudgetFor(null))
+                .isEqualTo((int) Math.round(1_024 * ContextBudgetService.CHARS_PER_TOKEN));
+    }
+
+    @Test
+    @DisplayName("固定开销来源抛异常时按 0 处理，不影响对话")
+    void fixedOverheadFailureFallsBackToZero() {
+        ContextBudgetService service = new ContextBudgetService(props(131_072));
+        service.registerFixedOverhead(() -> {
+            throw new IllegalStateException("工具集合读不到");
+        });
+
+        assertThat(service.fixedOverheadTokens()).isZero();
+        assertThat(service.budgetTokensFor(null)).isEqualTo(32_768);
+    }
 }

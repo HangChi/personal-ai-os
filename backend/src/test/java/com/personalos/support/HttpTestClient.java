@@ -54,6 +54,19 @@ public class HttpTestClient {
         return send(HttpRequest.newBuilder(URI.create(baseUrl + path)).GET().build());
     }
 
+    /**
+     * 带请求头的 GET。
+     *
+     * <p>存在的理由只有一个：**内容协商**要能测。{@code Accept} 是唯一能让
+     * 「端点能产出什么」与「客户端要什么」冲突的头，而冲突时的行为（406 还是 500）
+     * 恰恰是最容易写错、也最容易被忽略的一类。
+     */
+    public Response get(String path, Map<String, String> headers) throws Exception {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path));
+        headers.forEach(builder::header);
+        return send(builder.GET().build());
+    }
+
     public Response post(String path, String jsonBody) throws Exception {
         return post(path, jsonBody, Map.of());
     }

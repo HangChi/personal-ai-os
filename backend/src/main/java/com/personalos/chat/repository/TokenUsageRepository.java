@@ -1,8 +1,10 @@
 package com.personalos.chat.repository;
 
 import com.personalos.chat.entity.TokenUsageEntity;
+import com.personalos.chat.entity.TokenUsageSource;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -55,4 +57,17 @@ public interface TokenUsageRepository extends JpaRepository<TokenUsageEntity, Lo
 
     /** 删除早于某个时刻的记录（保留期清理用） */
     int deleteByCreatedAtBefore(Instant threshold);
+
+    /**
+     * 某会话最近一条**真实**（非估算）用量。
+     *
+     * <p>与类注释里「不做按会话查询」的关系：那条约束针对的是**统计页** ——
+     * 统计是账号级的，按会话切片没有意义。这里是另一个用途：对话页的上下文仪表盘
+     * 需要一个「真实的已用量」，而字符估算在工具定义占大头时会低一个数量级
+     * （实测 103 vs 4116）。宁可复用同一张表，也不为它单开一列/一张表。
+     *
+     * <p>只取 ACTUAL：估算值不值得用第二次 —— 仪表盘自己就能算，且口径未必相同。
+     */
+    Optional<TokenUsageEntity> findFirstByConversationIdAndSourceOrderByCreatedAtDescIdDesc(
+            String conversationId, TokenUsageSource source);
 }

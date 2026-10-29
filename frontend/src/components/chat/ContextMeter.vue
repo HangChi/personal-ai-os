@@ -69,11 +69,18 @@ const meterTitle = computed(() => {
   if (props.usage.budgetTokens <= 0) {
     return '本轮尚未产生上下文用量'
   }
+  // 读数来源要如实区分：有真实 usage 时它是**上一轮实际**送出的量（含工具定义），
+  // 没有时才是估算。把两者都说成「预计」，用户就永远不知道哪个能拿去对账。
+  const headline = props.usage.estimated
+    ? `本轮预计送入模型约 ${formatTokens(props.usage.promptTokens)} token`
+    : `上一轮实际送入模型 ${formatTokens(props.usage.promptTokens)} token`
   return (
-    `本轮预计送入模型约 ${formatTokens(props.usage.promptTokens)} token，预算 ${formatTokens(props.usage.budgetTokens)}` +
+    `${headline}，预算 ${formatTokens(props.usage.budgetTokens)}` +
     `（模型上限 ${formatTokens(props.usage.contextWindow)}）。\n` +
-    '构成：系统提示（人设 + 会话摘要 + 长期记忆 + 检索片段）+ 窗口内历史 + 本条消息。\n' +
-    '超预算后更早的历史会被整体丢弃，不切半条。点击可改预算。'
+    // 工具定义必须写进构成里：实测它占 4K 左右，是「读数比想象中大」的主要原因。
+    // 漏掉它，用户会以为是历史或记忆算多了。
+    '构成：系统提示（人设 + 会话摘要 + 长期记忆 + 检索片段）+ 工具定义 + 窗口内历史 + 本条消息。\n' +
+    '超预算后更早的历史会被整体丢弃，不切半条；工具定义无法压缩，所以预算不会低于它的开销。点击可改预算。'
   )
 })
 </script>

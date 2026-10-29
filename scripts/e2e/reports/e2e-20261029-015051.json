@@ -1,0 +1,686 @@
+{
+  "base": "http://127.0.0.1:8080/api/v1",
+  "startedAt": "20261029-015051",
+  "elapsedSeconds": 123.0,
+  "counts": {
+    "PASS": 78,
+    "FAIL": 2,
+    "SKIP": 4,
+    "NOTE": 0,
+    "ERROR": 0
+  },
+  "results": [
+    {
+      "group": "G0",
+      "name": "数据库已处于干净状态（清库生效）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.39,
+      "mode": "fail"
+    },
+    {
+      "group": "G0",
+      "name": "健康检查：应用 + 数据库 + AI 配置",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.02,
+      "mode": "fail"
+    },
+    {
+      "group": "G0",
+      "name": "会话列表在空库下返回空数组（而非 404/错误）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G1",
+      "name": "X-Request-Id 被回显",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G1",
+      "name": "非法 X-Request-Id 不被原样回显（防日志注入）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G1",
+      "name": "未知路径返回统一信封且不泄漏堆栈",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G1",
+      "name": "不支持的方法返回 405（不是 404）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G1",
+      "name": "非法 JSON 请求体返回 400 而不是 500",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "创建会话：省略标题得到默认标题",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "创建会话：自定义标题被规范化（首尾空白去除）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "创建会话：纯空白标题回落默认值",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "首条消息后标题由消息内容生成",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.83,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "会话搜索：命中关键词 / 未命中返回空",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "会话搜索：分页参数生效",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "分页极端值：超大页码 / 负页码 / size=0 不返回 500",
+      "outcome": "FAIL",
+      "detail": "分页参数 page=21474837&size=100 不应导致 500（实际 500）",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "重命名：正常 / 空值 400 / 超长 400 / 不存在 404",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "会话导出为 Markdown（不套信封）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "内容协商：只接受 JSON 的客户端访问导出接口",
+      "outcome": "SKIP",
+      "detail": "Accept 不匹配时返回 500（应为 406）：HTTP 语义错误被降级成内部错误",
+      "duration": 0.0,
+      "mode": "observe"
+    },
+    {
+      "group": "G2",
+      "name": "删除会话：级联删除消息，再取返回 404",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 1.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "删除不存在的会话返回 404",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G2",
+      "name": "消息分页：limit + beforeSeq 向前翻页",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 1.6,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "基本流：事件顺序 start → delta* → done，内容非空",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 1.94,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "落库一致性：助手消息内容 == done.content",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "空 content → 400 且不走 SSE",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "纯空白 content → 400",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "超长 content（4001 字）→ 400",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "不存在的会话 → 404 普通 JSON（不是半截流）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "边界值：恰好 4000 字可正常完成",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 3.95,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "多轮上下文：第二轮能引用第一轮的事实",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 11.5,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "思考程度：未知值回落 off 且不报错",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 1.93,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "topK 越界（999）被收敛且不报错",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 1.25,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "客户端中断：不把半截回答落库为助手消息",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 4.43,
+      "mode": "fail"
+    },
+    {
+      "group": "G3",
+      "name": "Idempotency-Key：同键重试不报错、不重复落用户消息",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 3.27,
+      "mode": "fail"
+    },
+    {
+      "group": "G4",
+      "name": "上下文用量：字段齐全且窗口 >= 预算",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G4",
+      "name": "预算设置：合法值生效",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G4",
+      "name": "预算设置：0/负数 → 400，超大 → 收敛到上限",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G4",
+      "name": "小预算（2048）下超长历史仍能完成，不因超出预算而失败",
+      "outcome": "SKIP",
+      "detail": "实测 promptTokens=[4992, 5855, 5865] 已超过预算 2048：预算是历史裁剪阈值，不含系统提示与工具定义，两者口径不同",
+      "duration": 4.2,
+      "mode": "fail"
+    },
+    {
+      "group": "G4",
+      "name": "预算与实测 token 的口径差异（仪表盘 vs done）",
+      "outcome": "SKIP",
+      "detail": "两处口径相差 4013 token：done=4116（上游 usage，含工具定义） vs 仪表盘=103（字符估算）",
+      "duration": 0.01,
+      "mode": "observe"
+    },
+    {
+      "group": "G4",
+      "name": "会话级模型覆盖：切到 1M 模型后窗口变化",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.04,
+      "mode": "fail"
+    },
+    {
+      "group": "G4",
+      "name": "会话模型是历史事实：不因配置变化而丢失",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.02,
+      "mode": "fail"
+    },
+    {
+      "group": "G5",
+      "name": "工具调用：创建任务真实落库",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 4.72,
+      "mode": "fail"
+    },
+    {
+      "group": "G5",
+      "name": "工具调用审计：成功记录可查",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G5",
+      "name": "破坏性操作：删除任务先落确认，不直接执行",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 7.12,
+      "mode": "fail"
+    },
+    {
+      "group": "G5",
+      "name": "确认令牌错误 → 拒绝执行，任务仍在",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.05,
+      "mode": "fail"
+    },
+    {
+      "group": "G5",
+      "name": "正确令牌确认 → 真正执行删除",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.05,
+      "mode": "fail"
+    },
+    {
+      "group": "G5",
+      "name": "取消确认 → 不执行且状态为 CANCELLED",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 7.76,
+      "mode": "fail"
+    },
+    {
+      "group": "G5",
+      "name": "不存在的确认记录 → 404",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G5",
+      "name": "工具超限不打断流（return_error_response）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 10.13,
+      "mode": "observe"
+    },
+    {
+      "group": "G5",
+      "name": "计划：多步任务生成可查询的计划",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 41.31,
+      "mode": "observe"
+    },
+    {
+      "group": "G6",
+      "name": "上传 Markdown：解析 + 切分成块",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.35,
+      "mode": "fail"
+    },
+    {
+      "group": "G6",
+      "name": "上传不支持的类型 → 400",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G6",
+      "name": "上传空文件 → 400",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G6",
+      "name": "检索：独特标识符能命中（混合检索）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.15,
+      "mode": "fail"
+    },
+    {
+      "group": "G6",
+      "name": "检索：空 query → 400，topK 越界不报错",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.14,
+      "mode": "fail"
+    },
+    {
+      "group": "G6",
+      "name": "知识库问答：基于检索作答并带引用编号",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 1.56,
+      "mode": "fail"
+    },
+    {
+      "group": "G6",
+      "name": "无关提问：不编造知识库里没有的事实",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.14,
+      "mode": "fail"
+    },
+    {
+      "group": "G6",
+      "name": "对话增强：citations 事件在 done 之前且编号从 1 开始",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 2.12,
+      "mode": "fail"
+    },
+    {
+      "group": "G6",
+      "name": "删除文档：向量一并删除且不再命中",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.22,
+      "mode": "fail"
+    },
+    {
+      "group": "G7",
+      "name": "写入记忆：内容与来源正确",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.15,
+      "mode": "fail"
+    },
+    {
+      "group": "G7",
+      "name": "空内容 → 400，超长内容不导致 500",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G7",
+      "name": "设为常驻：pinned 生效且受上限约束",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G7",
+      "name": "常驻记忆在新会话中自动生效（不靠相似度召回）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 1.44,
+      "mode": "fail"
+    },
+    {
+      "group": "G7",
+      "name": "修改记忆内容",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.13,
+      "mode": "fail"
+    },
+    {
+      "group": "G7",
+      "name": "删除记忆后列表不再包含",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G7",
+      "name": "「请记住」写入记忆：只能经 saveMemory 工具，不是轮末自动沉淀",
+      "outcome": "SKIP",
+      "detail": "新增 1 条，source=MANUAL：auto-memory 配置为 false，写入来自模型显式调用 saveMemory 工具",
+      "duration": 5.54,
+      "mode": "observe"
+    },
+    {
+      "group": "G8",
+      "name": "任务 CRUD 全链路",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.03,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "任务边界：空标题 400 / 非法优先级 400 / 超 5 标签 400",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "任务筛选与标签去重",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "任务统计与筛选无关（全量口径）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "日程：重复规则在区间查询中被展开",
+      "outcome": "FAIL",
+      "detail": "区间查询：HTTP 状态（实际 400）",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "日程边界：结束早于开始 → 400；区间超 90 天 → 400",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G8",
+      "name": "提醒：扫描物化 → 标记已读后不再出现在到点列表",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G9",
+      "name": "全局搜索：跨模块分组返回",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G9",
+      "name": "导出：返回文件而非 JSON 信封",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.02,
+      "mode": "fail"
+    },
+    {
+      "group": "G9",
+      "name": "用量统计：有对话后产生 token 记录",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.05,
+      "mode": "fail"
+    },
+    {
+      "group": "G9",
+      "name": "列表分页溢出：任务与知识库同样不受影响",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G9",
+      "name": "MCP 状态：无配置时返回空清单而不是 500",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G9",
+      "name": "语音转写状态接口可用",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G10",
+      "name": "附件上传 + 取回内容一致",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.01,
+      "mode": "fail"
+    },
+    {
+      "group": "G10",
+      "name": "上传缺少 file 字段 → 4xx 而不是 500",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.0,
+      "mode": "fail"
+    },
+    {
+      "group": "G10",
+      "name": "附件超限（>6MB）被拒绝",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.02,
+      "mode": "fail"
+    },
+    {
+      "group": "G10",
+      "name": "带附件的对话：模型读到附件内容且消息落库附件名片",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 1.54,
+      "mode": "fail"
+    },
+    {
+      "group": "G10",
+      "name": "并发同一会话：不产生 5xx（互斥或排队都可接受）",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 1.41,
+      "mode": "observe"
+    },
+    {
+      "group": "G10",
+      "name": "限流：突发超过容量后返回 429 + code 42900",
+      "outcome": "PASS",
+      "detail": "",
+      "duration": 0.15,
+      "mode": "fail"
+    }
+  ]
+}

@@ -109,17 +109,20 @@ public class ChatTurnFinisher {
     }
 
     /**
-     * done 之后的收尾：附件补写、摘要刷新、轮末钩子。
+     * done 之后的收尾：摘要刷新、轮末钩子。
      *
      * <p>这些都在同一个线程里串行执行，因此任何一步慢都会推迟「流的完全收尾」
      * （但不会推迟 done 事件本身）。
      *
+     * <p><b>附件已从这里移走</b>（2026-10-29）：附件名片是用户消息的一部分，
+     * 必须与引用一样在 done **之前**落库。留在这里的后果是——客户端收到 done
+     * 立刻拉消息，看到的是没有附件的用户消息，几十毫秒后才补上；
+     * 而 api.md 写的是「done 表示该落的库都落完了」，两者直接矛盾。
+     *
      * @param userContent 本轮用户消息，轮末钩子需要它做记忆沉淀
      * @param reply       本轮助手回复全文
      */
-    public void afterDone(String conversationId, String userContent, String reply,
-                          List<ChatAttachmentDto> requestAttachments) {
-        attachRequestAttachments(conversationId, requestAttachments);
+    public void afterDone(String conversationId, String userContent, String reply) {
         // 摘要刷新与记忆沉淀都只影响**下一轮**，因此一律异步提交，
         // 绝不让它们拖住本轮的收尾
         summaryService.refreshAsync(conversationId);
@@ -136,9 +139,13 @@ public class ChatTurnFinisher {
 
     /**
      * 附件挂载：附件属于用户发的那条消息，而它由 Advisor 落库，
-     * 因此只能在此刻补写 attachments 列 —— 与引用挂载同一时机、同一些约束。
+     * 因此只能在此刻补写 {@code attachments} 列 —— 与引用挂载同一时机、同一些约束。
+     *
+     * <p>**必须在 done 之前调用**：{@code done} 的契约是「该落的库都落完了」，
+     * 客户端收到它之后会立刻拉消息列表。放在 done 之后会让附件短暂「消失」，
+     * 而这种几十毫秒的窗口在慢机器上足以被用户当成 bug 报上来。
      */
-    private void attachRequestAttachments(String conversationId, List<ChatAttachmentDto> requestAttachments) {
+    public void attachAttachments(String conversationId, List<ChatAttachmentDto> requestAttachments) {
         List<ChatAttachmentDto> attachments = attachmentService.verify(requestAttachments);
         if (attachments.isEmpty()) {
             return;
