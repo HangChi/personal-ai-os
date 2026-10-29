@@ -303,22 +303,28 @@ function labelX(index: number): number {
             是 `align="center"`、数字贴着列右边缘 → 日期文字到输入数字之间被拉出
             227px 空洞，是全表最刺眼的一处。日期收到 96 后与其余五列基准值接近，
             富余均摊，间隙都落在同一量级。
+
+            2026-10-29：六列统一 166 后，总和 996 超过 1280px 视口下的容器宽 974
+            —— 桌面端也要横向滑 22px 才能看到最右的「口径」列（实测
+            `scrollWidth 996 / clientWidth 974`）。收到 160 后总和 960，留 14px 余量；
+            这不是猜的数：容器宽 = 视口 1280 − 侧栏 196 − 内边距 ≈ 974。
+            改列宽后请用 `scripts/dev/ui-audit.mjs` 复测这一项。
           -->
           <el-table :data="[...stats.daily].reverse()" max-height="360">
-            <el-table-column prop="date" label="日期" min-width="166" align="center" />
-            <el-table-column label="输入" min-width="166" align="center">
+            <el-table-column prop="date" label="日期" min-width="160" align="center" />
+            <el-table-column label="输入" min-width="160" align="center">
               <template #default="{ row }">{{ row.promptTokens.toLocaleString('zh-CN') }}</template>
             </el-table-column>
-            <el-table-column label="输出" min-width="166" align="center">
+            <el-table-column label="输出" min-width="160" align="center">
               <template #default="{ row }">{{ row.completionTokens.toLocaleString('zh-CN') }}</template>
             </el-table-column>
-            <el-table-column label="合计" min-width="166" align="center">
+            <el-table-column label="合计" min-width="160" align="center">
               <template #default="{ row }">
                 <strong>{{ row.totalTokens.toLocaleString('zh-CN') }}</strong>
               </template>
             </el-table-column>
-            <el-table-column prop="turns" label="轮次" min-width="166" align="center" />
-            <el-table-column label="口径" min-width="166" align="center">
+            <el-table-column prop="turns" label="轮次" min-width="160" align="center" />
+            <el-table-column label="口径" min-width="160" align="center">
               <template #default="{ row }">
                 <el-tag v-if="row.estimated" size="small" type="warning" effect="plain">估算</el-tag>
                 <el-tag v-else size="small" type="success" effect="plain">真实</el-tag>
