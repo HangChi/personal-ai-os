@@ -91,6 +91,23 @@ class AuthIntegrationTest {
     }
 
     @Test
+    @DisplayName("未认证读 /actuator/health：只给状态，不给组件详情")
+    void healthDetailsShouldBeHiddenWhenAnonymous() throws Exception {
+        // 必须用不带 cookie 的 client：本类多个用例共用带 cookie 的 client，
+        // 而 JUnit 方法顺序不定 —— 一旦跑过 login，匿名断言就恒真失败。
+        HttpClient fresh = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
+        HttpResponse<String> response = fresh.send(
+                HttpRequest.newBuilder(URI.create(baseUrl + "/actuator/health")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        JsonNode body = mapper.readTree(response.body());
+        assertThat(body.path("status").asString()).isEqualTo("UP");
+        // show-details 默认 when_authorized：匿名时没有 components（数据库/磁盘/连接池）
+        assertThat(body.has("components")).isFalse();
+    }
+
+    @Test
     @DisplayName("未登录时 /auth/me 返回 200 + username=null（不是 401）")
     void meShouldReportAnonymous() throws Exception {
         HttpClient fresh = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();

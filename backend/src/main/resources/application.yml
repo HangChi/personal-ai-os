@@ -310,9 +310,12 @@ management:
         include: health,info,metrics
   endpoint:
     health:
-      # 本地单用户场景下展示细节便于排错；
-      # 若将来对公网开放，必须先接入认证并改为 when_authorized（宪法原则 II）
-      show-details: always
+      # 默认只对**已认证**调用方展示组件详情（数据库/磁盘/连接池）。
+      # 改造前是 always，而 /actuator/health 又在匿名白名单里 —— 等于
+      # 把「数据库厂商、连接池占用、磁盘水位」敞开给任何能访问端口的人。
+      # 本地排错要详情时，在 .env 里设 ACTUATOR_HEALTH_DETAILS=always 即可，
+      # 不必改代码（默认值必须安全，例外由使用方显式声明）。
+      show-details: ${ACTUATOR_HEALTH_DETAILS:when_authorized}
   info:
     env:
       enabled: true
