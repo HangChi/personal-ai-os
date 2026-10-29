@@ -78,7 +78,13 @@ onBeforeUnmount(() => {
       </div>
       <template v-else>
         <div class="chat-streaming__bubble">
-          <MarkdownRenderer :content="content" streaming />
+          <!--
+            必须绑 renderedContent（节流后的值），不能绑 content（原始 delta 流）。
+            这里曾绑成 content：节流器照常被调用、renderedContent 照常被赋值，
+            但没人读它 —— 于是每个 delta 都触发一次完整重解析，节流形同虚设，
+            而 lint / vue-tsc 都不会报（ref 被写就算「已使用」）。
+          -->
+          <MarkdownRenderer :content="renderedContent" streaming />
         </div>
         <div v-if="hint" class="chat-streaming__hint chat-streaming__hint--below">{{ hint }}</div>
       </template>
