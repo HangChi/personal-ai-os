@@ -1,5 +1,6 @@
-import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import type { ContextUsage } from '@/api/chat'
@@ -12,6 +13,22 @@ import type { ContextUsage } from '@/api/chat'
  * 以及「正在生成」时按钮必须变成停止。这些规则纯函数测试完全覆盖不到，
  * 而写错的表现是「打中文时消息被吞」或「想换行却发出去了」—— 用户会立刻感知。
  */
+
+/**
+ * 上传接口 mock（拖拽 / 粘贴上传用）。
+ *
+ * <p>用 `vi.hoisted` 而不是在 `vi.mock` 工厂里直接 `vi.fn()`：工厂是惰性求值的，
+ * 用例里要能拿到**同一个** mock 实例来断言「传上去了吗」。整个 `@/api/chat`
+ * 被替换掉，所以语音输入用到的两个导出也要给一份 —— 本用例里它们不会被调用
+ * （happy-dom 没有 MediaRecorder），但少了会 import 失败。
+ */
+const { uploadAttachment } = vi.hoisted(() => ({ uploadAttachment: vi.fn() }))
+
+vi.mock('@/api/chat', () => ({
+  uploadAttachment,
+  fetchTranscriptionStatus: vi.fn(),
+  transcribeAudio: vi.fn(),
+}))
 
 /** budgetTokens 为 0 时不渲染仪表盘，多数用例不需要它 */
 const contextUsage: ContextUsage = {
@@ -165,5 +182,143 @@ describe('ChatComposer', () => {
     const metaRow = wrapper.find('.chat-composer__meta-row')
     expect(metaRow.find('.context-meter').exists()).toBe(true)
     expect(metaRow.find('.chat-composer__count').exists()).toBe(true)
+  })
+})
+
+/*
+ * ------------------------------------------------------------------ 拖拽 / 粘贴上传
+ *
+ * <p>守三条规则，全部是「错了用户立刻能感知、但纯函数测不到」的那类：
+ * <ol>
+ *   <li>拖进来要有蒙层（否则用户不知道松手会发生什么）；</li>
+ *   <li>松手要真的把文件传给上传接口（蒙层只是皮，传文件才是里）；</li>
+ *   <li>拖到页面别处松手不能把当前文档替换掉（浏览器默认行为，会丢整个会话）。</li>
+ * </ol>
+ *
+ * <p>事件用 `new Event + dispatchEvent` 而不是 `wrapper.trigger`：VTU 对
+ * drag/drop 这类事件的 options 支持不完整，`dataTransfer` 塞不进事件对象，
+ * 而这里断言的恰恰是 `event.dataTransfer.files` 传对了没有。
+ */
+describe('ChatComposer 拖拽上传', () => {
+  beforeEach(() => {
+    uploadAttachment.mockReset()
+    uploadAttachment.mockResolvedValue({ id: 'att-1', filename: 'a.txt', size: 12, contentType: 'text/plain' })
+  })
+
+  /** 在根元素上派发一个 drag* 事件（bubbles/cancelable 与真实事件一致） */
+  async function fireDrag(wrapper: ReturnType<typeof mount>, type: string): Promise<void> {
+    wrapper.find('.chat-composer').element.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }))
+    // 蒙层是 v-if 渲染的：dragging 置位后要等一个 tick 才进 DOM，
+    // 不同步等会得到「状态对了但断言时还没渲染」的假红
+    await nextTick()
+  }
+
+  it('拖入后出现「松开上传」蒙层，离开后消失', async () => {
+    const wrapper = mount(ChatComposer, { props: baseProps() })
+
+    await fireDrag(wrapper, 'dragenter')
+    expect(wrapper.find('.chat-composer__drop-mask').exists()).toBe(true)
+
+    await fireDrag(wrapper, 'dragleave')
+    expect(wrapper.find('.chat-composer__drop-mask').exists()).toBe(false)
+  })
+
+  it('在子元素之间移动不会误消蒙层（enter/leave 成对出现）', async () => {
+    const wrapper = mount(ChatComposer, { props: baseProps() })
+
+    await fireDrag(wrapper, 'dragenter') // 进入根元素
+    await fireDrag(wrapper, 'dragenter') // 继续进入子元素
+    await fireDrag(wrapper, 'dragleave') // 离开子元素（仍在根元素内）
+    // 用布尔值直接置 false 的实现会在这里闪没了 —— 这条守的是计数器
+    expect(wrapper.find('.chat-composer__drop-mask').exists()).toBe(true)
+
+    await fireDrag(wrapper, 'dragleave') // 真正离开根元素
+    expect(wrapper.find('.chat-composer__drop-mask').exists()).toBe(false)
+  })
+
+  it('松手把文件逐个交给上传接口，蒙层随之消失', async () => {
+    const wrapper = mount(ChatComposer, { props: baseProps() })
+    const file = new File(['内容'], '周报.txt', { type: 'text/plain' })
+
+    fireDrag(wrapper, 'dragenter')
+    const drop = new Event('drop', { bubbles: true, cancelable: true })
+    Object.assign(drop, { dataTransfer: { files: [file] } })
+    wrapper.find('.chat-composer').element.dispatchEvent(drop)
+    await flushPromises()
+
+    expect(uploadAttachment).toHaveBeenCalledWith(file)
+    expect(wrapper.find('.chat-composer__drop-mask').exists()).toBe(false)
+  })
+
+  it('粘贴剪贴板里的文件同样走上传（截图后 Ctrl+V 的路径）', async () => {
+    const wrapper = mount(ChatComposer, { props: baseProps() })
+    const file = new File(['图'], 'shot.png', { type: 'image/png' })
+
+    const paste = new Event('paste', { bubbles: true, cancelable: true })
+    Object.assign(paste, { clipboardData: { files: [file] } })
+    wrapper.find('textarea').element.dispatchEvent(paste)
+    await flushPromises()
+
+    expect(uploadAttachment).toHaveBeenCalledWith(file)
+  })
+
+  it('纯文字粘贴不拦：输入框的本职行为不能被吞掉', async () => {
+    const wrapper = mount(ChatComposer, { props: baseProps() })
+
+    const paste = new Event('paste', { bubbles: true, cancelable: true })
+    Object.assign(paste, { clipboardData: { files: [] } })
+    wrapper.find('textarea').element.dispatchEvent(paste)
+    await flushPromises()
+
+    expect(uploadAttachment).not.toHaveBeenCalled()
+  })
+
+  it('文件拖到页面别处松手：默认的「替换文档」被拦住', () => {
+    mount(ChatComposer, { props: baseProps() })
+
+    const drop = new Event('drop', { bubbles: true, cancelable: true })
+    document.body.dispatchEvent(drop)
+
+    // 浏览器默认会把文件 URL 替换当前文档 —— 整个会话状态清零
+    expect(drop.defaultPrevented).toBe(true)
+  })
+
+  it('卸载时摘掉页面级监听：别在别的页面留副作用', () => {
+    const wrapper = mount(ChatComposer, { props: baseProps() })
+
+    /*
+     * 用 spy 而不是「再派发一次 drop 看 defaultPrevented」：
+     * 同文件前面的用例 mount 后没有卸载，它们的 document 监听还挂着，
+     * 行为断言会被这些泄漏的监听判成 true —— 假红，且红的原因跟本用例无关。
+     * spy 断言「注销调用发生过」，不受全局监听状态影响。
+     */
+    const removeSpy = vi.spyOn(document, 'removeEventListener')
+    wrapper.unmount()
+
+    expect(removeSpy).toHaveBeenCalledWith('drop', expect.any(Function))
+    expect(removeSpy).toHaveBeenCalledWith('dragover', expect.any(Function))
+    removeSpy.mockRestore()
+  })
+})
+
+/*
+ * ------------------------------------------------------------------ 视觉规格
+ *
+ * <p>只守**结构与类名契约**，不断言颜色/像素值 —— 后者会随主题令牌调整而假红，
+ * 而这两条规则（按钮必须带图标、逼近上限必须挂预警类）是行为语义。
+ */
+describe('ChatComposer 视觉规格', () => {
+  it('发送与停止按钮都带图标，不只靠文字表意', () => {
+    const sending = mount(ChatComposer, { props: baseProps({ modelValue: '内容' }) })
+    expect(buttonByText(sending, '发送')!.find('.el-icon').exists()).toBe(true)
+
+    const stopping = mount(ChatComposer, { props: baseProps({ streaming: true, modelValue: '内容' }) })
+    expect(buttonByText(stopping, '停止')!.find('.el-icon').exists()).toBe(true)
+  })
+
+  it('字数 ≥90% 时挂预警类（maxlength 是硬截断，超出的字直接消失）', () => {
+    const wrapper = mount(ChatComposer, { props: baseProps({ modelValue: 'x'.repeat(3600) }) })
+
+    expect(wrapper.find('.chat-composer__count--warn').exists()).toBe(true)
   })
 })

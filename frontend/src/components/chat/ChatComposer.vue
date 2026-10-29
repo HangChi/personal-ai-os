@@ -11,8 +11,17 @@
  *   <li>输入法选词期间的 Enter 一律不发送（否则打不了中文）</li>
  * </ul>
  */
-import { Close, Document, MagicStick, Paperclip, Reading } from '@element-plus/icons-vue'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import {
+  Close,
+  Document,
+  MagicStick,
+  Paperclip,
+  Promotion,
+  Reading,
+  UploadFilled,
+  VideoPause,
+} from '@element-plus/icons-vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { uploadAttachment } from '@/api/chat'
 import { ElMessage } from 'element-plus'
 import ChatModelPicker from '@/components/chat/ChatModelPicker.vue'
@@ -72,6 +81,80 @@ const fileInput = ref<HTMLInputElement | null>(null)
 
 /** 单文件上限与后端一致（20MB）：前端先挡一道，省得传完才被拒 */
 const MAX_SIZE = 20 * 1024 * 1024
+
+// ------------------------------------------------------------------ 拖拽 / 粘贴上传
+
+/**
+ * 拖拽悬浮状态：控制「松开上传」蒙层的显隐。
+ *
+ * <h3>为什么用 enter/leave 计数器而不是一个布尔值</h3>
+ * 拖拽过程中指针在盒内子元素之间移动时，每穿过一条子元素边界就会触发一次
+ * `dragleave` 紧跟一次 `dragenter`。直接 `dragging = false` 再 `true` 虽然
+ * 最终状态一样，但 `dragleave` 的 `relatedTarget` 可能是 null（移出窗口）、
+ * 也可能是盒外元素 —— 用计数器只在「离开整个根元素」时归零，
+ * 不猜 relatedTarget，也就不用在「移入子元素」和「真的移出」之间做区分。
+ */
+const dragging = ref(false)
+let dragDepth = 0
+
+function onDragEnter(event: DragEvent): void {
+  // preventDefault 是「此地可放置」的声明：不做的话光标显示禁止图标，
+  // 且 drop 事件根本不会派发
+  event.preventDefault()
+  dragDepth += 1
+  dragging.value = true
+}
+
+function onDragOver(event: DragEvent): void {
+  // dragover 必须持续 preventDefault，只在做 enter 时做一次不够
+  event.preventDefault()
+}
+
+function onDragLeave(event: DragEvent): void {
+  event.preventDefault()
+  dragDepth -= 1
+  if (dragDepth <= 0) {
+    dragDepth = 0
+    dragging.value = false
+  }
+}
+
+function onDrop(event: DragEvent): void {
+  event.preventDefault()
+  dragDepth = 0
+  dragging.value = false
+  void pickFiles(event.dataTransfer?.files ?? null)
+}
+
+/**
+ * 页面级兜底：拦住「把文件拖到页面别处」的浏览器默认行为。
+ *
+ * <p>浏览器对落在非输入区的文件，默认操作用文件 URL **替换当前文档** ——
+ * 聊天页攒的会话、没发出去的草稿全部清零，且没有任何撤销余地。
+ * 这条监听挂在 document 上，与盒子内的 onDrop 不冲突：盒子的 drop
+ * 先处理上传（冒泡到 document 时文件已经在传了），document 这一层
+ * 只负责消灭「替换文档」这个默认动作。
+ */
+function guardDocumentDrop(event: DragEvent): void {
+  event.preventDefault()
+}
+
+/**
+ * 粘贴上传：截图之后直接 Ctrl+V 进输入框，是比拖拽更高频的路径。
+ *
+ * <h3>为什么只拦 files、不拦 text</h3>
+ * 剪贴板里同时可能有文字（复制了一段话）和文件（截了张图）。
+ * 只有 files 非空时才 preventDefault —— 否则会把「粘贴文字」这个
+ * 输入框的本职行为一起吞掉，用户复制的话打不出来。
+ */
+function onPaste(event: ClipboardEvent): void {
+  const files = event.clipboardData?.files
+  if (!files || files.length === 0) {
+    return
+  }
+  event.preventDefault()
+  void pickFiles(files)
+}
 
 async function pickFiles(files: FileList | null): Promise<void> {
   if (!files || files.length === 0) {
@@ -167,6 +250,16 @@ const thinkingTooltip = computed(
  */
 const inputPlaceholder = computed(() => (props.knowledgeOn ? '输入消息，将基于知识库回答' : '输入消息'))
 
+/**
+ * 字数是否逼近上限（≥90% 转预警色）。
+ *
+ * <p>`0 / 4000` 绝大多数时候是没人看的背景信息，但贴着上限时「再打就要
+ * 被截断」是用户必须知道的事 —— 此时转琥珀色，与上下文进度条的
+ * warn/over 用同一套预警色系。阈值取 90% 而不是 99%：等看到红色再停，
+ * 往往已经打超了（maxlength 是硬截断，超出的字直接消失）。
+ */
+const countNearLimit = computed(() => props.modelValue.length >= MAX_LENGTH * 0.9)
+
 /** 发送按钮的提示：把快捷键从常驻布局里挪到这里（hover 才出现，不占位） */
 const sendTooltip = computed(() =>
   props.enterSend ? 'Enter 发送（Shift+Enter 换行）' : 'Ctrl+Enter 发送（Enter 换行）',
@@ -221,11 +314,31 @@ watch(
 )
 
 // 挂载时也算一次：从「点击建议问题」进来的内容可能一进来就不止两行
-onMounted(autosize)
+onMounted(() => {
+  autosize()
+  document.addEventListener('dragover', guardDocumentDrop)
+  document.addEventListener('drop', guardDocumentDrop)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('dragover', guardDocumentDrop)
+  document.removeEventListener('drop', guardDocumentDrop)
+})
 </script>
 
 <template>
-  <div class="chat-composer">
+  <!--
+    根元素同时是**放置区**：拖拽监听挂在这里而不是里面的盒子上，
+    附件条出现在盒子外面时，拖到那条区域上同样能松手上传。
+  -->
+  <div
+    class="chat-composer"
+    :class="{ 'chat-composer--dragging': dragging }"
+    @dragenter="onDragEnter"
+    @dragover="onDragOver"
+    @dragleave="onDragLeave"
+    @drop="onDrop"
+  >
     <!-- 附件条：只在有附件时出现，避免常驻占位 -->
     <div v-if="attachments.length > 0" class="chat-composer__attachments">
       <div v-for="item in attachments" :key="item.id" class="chat-composer__attachment">
@@ -268,6 +381,7 @@ onMounted(autosize)
         :placeholder="inputPlaceholder"
         @update:model-value="(value: string) => emit('update:modelValue', value)"
         @keydown="handleKeydown"
+        @paste="onPaste"
       />
 
       <!--
@@ -305,7 +419,9 @@ onMounted(autosize)
           :usage="contextUsage"
           @change-budget="(tokens: number) => emit('change-budget', tokens)"
         />
-        <span class="chat-composer__count">{{ modelValue.length }} / {{ MAX_LENGTH }}</span>
+        <span class="chat-composer__count" :class="{ 'chat-composer__count--warn': countNearLimit }">
+          {{ modelValue.length }} / {{ MAX_LENGTH }}
+        </span>
       </div>
 
       <!--
@@ -319,11 +435,11 @@ onMounted(autosize)
         <button
           type="button"
           class="chat-composer__chip"
-          title="添加附件"
+          title="添加附件（也可把文件拖到此处或直接粘贴）"
           aria-label="添加附件"
           @click="fileInput?.click()"
         >
-          <el-icon :size="13"><Paperclip /></el-icon>
+          <el-icon :size="14"><Paperclip /></el-icon>
           <span class="chat-composer__chip-label">附件</span>
           <span v-if="uploading">…</span>
         </button>
@@ -357,7 +473,7 @@ onMounted(autosize)
             :aria-pressed="knowledgeOn"
             @click="emit('toggle-knowledge', !knowledgeOn)"
           >
-            <el-icon :size="13"><Reading /></el-icon>
+            <el-icon :size="14"><Reading /></el-icon>
             <span class="chat-composer__chip-label">知识库增强</span>
           </button>
 
@@ -443,7 +559,7 @@ onMounted(autosize)
               :title="thinkingTooltip"
               :aria-label="`思考程度：${THINKING_LABELS[props.thinkingLevel]}。${thinkingTooltip}`"
             >
-              <el-icon :size="15"><MagicStick /></el-icon>
+              <el-icon :size="14"><MagicStick /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu class="chat-composer__thinking-menu">
@@ -477,7 +593,15 @@ onMounted(autosize)
             @update:draft="(value: string) => emit('update:modelValue', value)"
           />
 
-          <el-button v-if="streaming" round @click="emit('stop')">停止</el-button>
+          <!--
+            停止按钮用 danger 实底：打断生成是这一行里唯一的「中止」动作，
+            白色默认按钮混在一排灰色图标里不够醒目，与主色的「发送」也拉不开
+            距离。红色 + 停止图标，让「正在生成时该点哪儿」一眼可辨。
+          -->
+          <el-button v-if="streaming" type="danger" round @click="emit('stop')">
+            <el-icon :size="12"><VideoPause /></el-icon>
+            停止
+          </el-button>
           <!-- 上传期间同时置灰：拦截逻辑在 handleSend 里，但按钮先给一个「现在不能点」的视觉信号 -->
           <el-button
             v-else
@@ -488,10 +612,22 @@ onMounted(autosize)
             :title="sendTooltip"
             @click="handleSend"
           >
+            <el-icon :size="13"><Promotion /></el-icon>
             发送
           </el-button>
         </span>
       </div>
+    </div>
+
+    <!--
+      拖拽蒙层：盖住整个输入区（含附件条），把「现在可以松手」说清楚。
+
+      <p>`pointer-events: none` 是必须的：蒙层若接走指针事件，dragover/drop
+      就不再落到根元素上，计数器会立刻归零、蒙层闪烁后消失，文件也传不上去。
+    -->
+    <div v-if="dragging" class="chat-composer__drop-mask" aria-hidden="true">
+      <el-icon :size="16"><UploadFilled /></el-icon>
+      <span>松开上传到附件</span>
     </div>
   </div>
 </template>
@@ -499,6 +635,11 @@ onMounted(autosize)
 <style scoped>
 .chat-composer {
   flex: none;
+  /*
+   * `position: relative` 是拖拽蒙层的定位锚：蒙层 `inset: 0` 要覆盖的是
+   * 整个输入区（含附件条），不是里面那个盒子。
+   */
+  position: relative;
   /*
    * 左右内边距与消息区**完全同一个公式**（`--os-chat-band` 见 tokens.css）。
    *
@@ -512,7 +653,7 @@ onMounted(autosize)
    * 所以不做特例，只对齐「列」。
    *
    * 最小 16 与消息区一致（不是原来输入区的 20）：两个 4px 的差会让窄屏下
-   * 输入框比上面的气泡各宽 4px，边缘对不齐。
+   * 输入框比上面的气泡各宽 4px，边缘对齐不上。
    */
   padding: var(--os-space-3) max(var(--os-space-4), calc((100% - var(--os-chat-band)) / 2)) var(--os-space-4);
   border-top: 1px solid var(--el-border-color-lighter);
@@ -589,6 +730,16 @@ onMounted(autosize)
   font-variant-numeric: tabular-nums;
   /* 「0 / 4000」在窄屏被压成「0 /」+「4000」两行（实测 h=30、w=32） */
   white-space: nowrap;
+}
+
+/*
+ * 逼近上限（≥90%）转琥珀：与上下文进度条的 warn 同一色系。
+ *
+ * <p>平时它是没人看的背景信息，贴着上限时「再打就要被 maxlength 硬截断」
+ * 才必须被看见 —— 预警色只在需要预警时出现，不常驻。
+ */
+.chat-composer__count--warn {
+  color: var(--el-color-warning);
 }
 
 /*
@@ -915,9 +1066,16 @@ onMounted(autosize)
   border-radius: var(--os-radius-xl);
   background: var(--el-bg-color);
   padding: var(--os-space-2) var(--os-space-3) var(--os-space-3);
+  /*
+   * 最轻一档阴影（气泡档）而不是平贴：输入盒落在同色卡片上时，
+   * 只靠 1px 边框在浅色 UI 里接近「描边线稿」（tokens.css 里气泡的结论：
+   * 面负责体积、线只负责收口）。阴影极轻，不与边框抢戏。
+   */
+  box-shadow: var(--os-shadow-bubble);
   transition:
     border-color var(--os-duration-fast) var(--os-ease),
-    box-shadow var(--os-duration-fast) var(--os-ease);
+    box-shadow var(--os-duration-fast) var(--os-ease),
+    background var(--os-duration-fast) var(--os-ease);
 }
 
 .chat-composer__box:hover {
@@ -928,6 +1086,48 @@ onMounted(autosize)
 .chat-composer__box:focus-within {
   border-color: var(--el-color-primary);
   box-shadow: 0 0 0 3px var(--el-color-primary-light-9);
+}
+
+/*
+ * 拖拽悬浮：盒子整体换主色边框 + 浅主色底。
+ *
+ * <p>边框换色而不只是加蒙层：蒙层出现前的那一两百毫秒里，
+ * 用户需要从盒子本身得到「接住了」的反馈，否则会以为没拖对地方。
+ */
+.chat-composer--dragging .chat-composer__box {
+  border-color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+}
+
+/*
+ * 拖拽蒙层：提示「松开上传到附件」。
+ *
+ * <h3>为什么 inset 要复刻根元素的 padding 公式、而不是 inset: 0</h3>
+ * 放置区是整条底栏（监听挂在根元素上，附件条在盒子外面也要能接），
+ * 但**视觉高亮必须落在盒子上** —— 用户感知里的「输入框」是那个盒子，
+ * 不是它外面的居中留白。直接 inset: 0 时蒙层比盒子各边宽出约 94px
+ * （1440 实测），盒子的边缘与蒙层的边缘对不齐，读起来像「蒙层浮在
+ * 别的东西上面」。用同一个 max() 公式后两者严格重合，窄屏留白收到
+ * 16px 时也一起收，不会出现两种表现。
+ */
+.chat-composer__drop-mask {
+  position: absolute;
+  /*
+   * 上 12 / 下 16 与根元素 padding 一致；左右复刻居中公式。
+   * 注意这里的 100% 是根元素宽度，与 `.chat-composer` 的 padding 同源。
+   */
+  inset: var(--os-space-3) max(var(--os-space-4), calc((100% - var(--os-chat-band)) / 2)) var(--os-space-4);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--os-space-2);
+  border-radius: var(--os-radius-xl);
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+  font-size: var(--os-font-sm);
+  /* 不抢指针事件：dragover/drop 必须继续打到根元素上（见模板注释） */
+  pointer-events: none;
 }
 
 .chat-composer__textarea :deep(.el-textarea__inner) {

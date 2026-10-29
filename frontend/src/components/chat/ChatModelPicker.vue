@@ -130,9 +130,9 @@ const hint = computed(() => {
       :title="hint"
       :aria-label="`本会话使用的模型：${displayModel || '未配置'}。点击切换`"
     >
-      <el-icon class="model-picker__icon" :size="12"><Cpu /></el-icon>
+      <el-icon class="model-picker__icon" :size="14"><Cpu /></el-icon>
       <span class="model-picker__name">{{ displayModel || '未配置模型' }}</span>
-      <el-icon v-if="!blocked" class="model-picker__caret" :size="10"><ArrowDown /></el-icon>
+      <el-icon v-if="!blocked" class="model-picker__caret" :size="12"><ArrowDown /></el-icon>
     </button>
 
     <template #dropdown>
