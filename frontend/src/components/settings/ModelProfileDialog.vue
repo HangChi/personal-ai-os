@@ -833,10 +833,11 @@ defineExpose({ finish })
               :min="TEMPERATURE_MIN"
               :max="TEMPERATURE_MAX"
               :step="0.1"
-              show-input
-              :show-input-controls="false"
               class="profile-form__slider"
             />
+            <span class="profile-form__temperature-value" aria-live="polite">
+              {{ form.temperature.toFixed(1) }}
+            </span>
             <el-button v-if="form.temperature !== null" link size="small" @click="form.temperature = null">
               用默认
             </el-button>
@@ -1358,8 +1359,13 @@ html .profile-dialog {
   text-underline-offset: 3px;
 }
 .profile-form__temperature {
-  padding-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid var(--el-border-color-lighter);
+}
+.profile-form__temperature .profile-form__label {
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  font-weight: 500;
 }
 .profile-form__temperature-default {
   display: flex;
@@ -1372,12 +1378,24 @@ html .profile-dialog {
 .profile-form__inline {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 .profile-form__slider {
   flex: 1;
   min-width: 0;
-  padding-left: 4px;
+  padding: 0 4px;
+}
+.profile-form__temperature-value {
+  flex: none;
+  min-width: 38px;
+  padding: 3px 7px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 5px;
+  color: var(--el-text-color-secondary);
+  background: var(--el-fill-color-lighter);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 .profile-form__optional {
   border: 1px solid var(--el-border-color-lighter);
@@ -1501,12 +1519,6 @@ html .profile-dialog {
   }
   .profile-form__inline {
     gap: 8px;
-  }
-  .profile-form__slider :deep(.el-input-number) {
-    width: 64px;
-  }
-  .profile-form__slider :deep(.el-slider__runway.show-input) {
-    margin-right: 78px;
   }
 }
 </style>

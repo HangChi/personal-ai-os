@@ -12,7 +12,7 @@
 import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { downloadSessionMarkdown } from '@/api/chat'
 import { matchMessageIds, nextMatchCursor } from '@/lib/chat-search'
@@ -29,19 +29,19 @@ import { clampTopK, conversationKnowledgeKey, type ThinkingLevel } from '@/lib/s
 import { defaultChatModel } from '@/lib/model-profile'
 import { useModelProfileStore } from '@/stores/model-profile'
 import { useSettingsStore } from '@/stores/settings'
-import { useUiStore } from '@/stores/ui'
+import {
+  CHAT_SESSION_PANEL_DEFAULT_WIDTH,
+  CHAT_SESSION_PANEL_MAX_WIDTH,
+  CHAT_SESSION_PANEL_MIN_WIDTH,
+  useUiStore,
+} from '@/stores/ui'
 import type { ChatAttachment, ChatMessage, ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
 const settingsStore = useSettingsStore()
 const modelProfileStore = useModelProfileStore()
-/*
- * 会话栏折叠（2026-10-30）走 uiStore 而不是本组件的 ref：
- * 「刷新后保持」的落盘逻辑与侧栏折叠、主题等偏好放在一起，
- * 重置偏好清 `os.` 前缀时才会连带清掉。放组件里就漏了。
- */
 const uiStore = useUiStore()
-const { sessionPanelCollapsed } = storeToRefs(uiStore)
+const { sessionPanelWidth } = storeToRefs(uiStore)
 const {
   sessions,
   sessionsTotal,
@@ -68,6 +68,65 @@ const { settings } = storeToRefs(settingsStore)
 const draft = ref('')
 const messageArea = ref<HTMLElement | null>(null)
 const resolvingId = ref<string | null>(null)
+
+/* ---- 会话栏拖拽调宽 ---- */
+const resizingSessionPanel = ref(false)
+let sessionResizePointerId: number | null = null
+let sessionResizeStartX = 0
+let sessionResizeStartWidth = CHAT_SESSION_PANEL_DEFAULT_WIDTH
+
+function clampSessionPanelWidth(value: number): number {
+  return Math.min(Math.max(Math.round(value), CHAT_SESSION_PANEL_MIN_WIDTH), CHAT_SESSION_PANEL_MAX_WIDTH)
+}
+
+function setResizeCursor(active: boolean): void {
+  document.documentElement.classList.toggle('os-resizing', active)
+}
+
+function startSessionPanelResize(event: PointerEvent): void {
+  if (event.button !== 0 || window.innerWidth <= 900) return
+  event.preventDefault()
+  resizingSessionPanel.value = true
+  sessionResizePointerId = event.pointerId
+  sessionResizeStartX = event.clientX
+  sessionResizeStartWidth = sessionPanelWidth.value
+  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+  setResizeCursor(true)
+}
+
+function moveSessionPanelResize(event: PointerEvent): void {
+  if (!resizingSessionPanel.value || event.pointerId !== sessionResizePointerId) return
+  sessionPanelWidth.value = clampSessionPanelWidth(sessionResizeStartWidth + event.clientX - sessionResizeStartX)
+}
+
+function endSessionPanelResize(event: PointerEvent): void {
+  if (!resizingSessionPanel.value || event.pointerId !== sessionResizePointerId) return
+  resizingSessionPanel.value = false
+  sessionResizePointerId = null
+  const target = event.currentTarget as HTMLElement
+  if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId)
+  setResizeCursor(false)
+}
+
+function resetSessionPanelWidth(): void {
+  sessionPanelWidth.value = CHAT_SESSION_PANEL_DEFAULT_WIDTH
+}
+
+function onSessionPanelResizeKeydown(event: KeyboardEvent): void {
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    event.preventDefault()
+    const delta = event.key === 'ArrowLeft' ? -8 : 8
+    sessionPanelWidth.value = clampSessionPanelWidth(sessionPanelWidth.value + delta)
+  } else if (event.key === 'Home') {
+    event.preventDefault()
+    sessionPanelWidth.value = CHAT_SESSION_PANEL_MIN_WIDTH
+  } else if (event.key === 'End') {
+    event.preventDefault()
+    sessionPanelWidth.value = CHAT_SESSION_PANEL_MAX_WIDTH
+  }
+}
+
+onBeforeUnmount(() => setResizeCursor(false))
 
 const canSend = computed(() => draft.value.trim().length > 0 && !streaming.value)
 
@@ -416,27 +475,45 @@ async function jumpToMatch(step: number): Promise<void> {
 </script>
 
 <template>
-  <div :class="['chat', { 'chat--session-collapsed': sessionPanelCollapsed }]">
+  <div class="chat" :style="{ '--os-session-panel': `${sessionPanelWidth}px` }">
     <!-- ============ 会话列表 ============ -->
-    <ChatSessionList
-      v-model:keyword="sessionKeyword"
-      :sessions="sessions"
-      :current-id="currentConversationId"
-      :total="sessionsTotal"
-      :page="sessionsPage"
-      :size="sessionsSize"
-      :loading="loadingSessions"
-      :collapsed="sessionPanelCollapsed"
-      @refresh="chatStore.loadSessions()"
-      @create="handleNewSession"
-      @select="chatStore.selectSession($event)"
-      @rename="handleRename"
-      @remove="handleRemove"
-      @export="handleExportSession"
-      @search="chatStore.searchSessions()"
-      @page-change="chatStore.goToSessionPage($event)"
-      @toggle-collapse="sessionPanelCollapsed = $event"
-    />
+    <div class="chat__sessions-wrap">
+      <ChatSessionList
+        v-model:keyword="sessionKeyword"
+        :sessions="sessions"
+        :current-id="currentConversationId"
+        :total="sessionsTotal"
+        :page="sessionsPage"
+        :size="sessionsSize"
+        :loading="loadingSessions"
+        @refresh="chatStore.loadSessions()"
+        @create="handleNewSession"
+        @select="chatStore.selectSession($event)"
+        @rename="handleRename"
+        @remove="handleRemove"
+        @export="handleExportSession"
+        @search="chatStore.searchSessions()"
+        @page-change="chatStore.goToSessionPage($event)"
+      />
+      <div
+        class="chat__session-resizer"
+        :class="{ 'chat__session-resizer--active': resizingSessionPanel }"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="调整会话栏宽度"
+        :aria-valuemin="CHAT_SESSION_PANEL_MIN_WIDTH"
+        :aria-valuemax="CHAT_SESSION_PANEL_MAX_WIDTH"
+        :aria-valuenow="sessionPanelWidth"
+        tabindex="0"
+        title="拖动调整会话栏宽度，双击恢复默认"
+        @pointerdown="startSessionPanelResize"
+        @pointermove="moveSessionPanelResize"
+        @pointerup="endSessionPanelResize"
+        @pointercancel="endSessionPanelResize"
+        @dblclick="resetSessionPanelWidth"
+        @keydown="onSessionPanelResizeKeydown"
+      />
+    </div>
 
     <!-- ============ 主对话列（全高） ============ -->
     <el-card class="chat__main" shadow="never">
@@ -605,8 +682,8 @@ async function jumpToMatch(step: number): Promise<void> {
 .chat {
   display: grid;
   /*
-   * 两栏：会话栏 + 主对话列。列宽由 `--os-session-panel` 决定（见下），
-   * 折叠时它变成 48px —— 这也是整页唯一需要改宽度的地方。
+   * 两栏：会话栏 + 主对话列。会话栏宽度由拖拽把手更新的
+   * `--os-session-panel` 控制。
    */
   grid-template-columns: var(--os-session-panel) 1fr;
   /* 两栏间距收窄到 10px：原先 16px 在宽屏下像一道沟 */
@@ -615,24 +692,58 @@ async function jumpToMatch(step: number): Promise<void> {
   flex: 1;
   min-height: 0;
   align-items: stretch;
-  /*
-   * 折叠过渡（2026-10-30）。只在 grid-template-columns 上做，不用 width：
-   * 列宽是 grid 属性，直接改 width 对 `1fr` 那一列无效，会变成「栏变窄了
-   * 但主列没变宽」的错位。
-   *
-   * 0.18s：与全站 `--os-duration-fast` 同档。视觉上「一下子」而不是「动画」，
-   * 因为它改变的是布局宽度，慢一点会让文字整段重排、看着晃。
-   */
+  /* 键盘调整时保留轻微过渡，拖拽期间由 .os-resizing 关闭。 */
   transition: grid-template-columns var(--os-duration-fast) var(--os-ease);
 }
 
-/* 会话栏宽度：折叠 48 / 展开 260。定义为变量，模板只需切一个布尔值 */
-.chat {
-  --os-session-panel: 260px;
+.chat__sessions-wrap {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
 }
 
-.chat--session-collapsed {
-  --os-session-panel: 48px;
+.chat__sessions-wrap :deep(.chat-sessions) {
+  height: 100%;
+}
+
+html.os-resizing .chat {
+  transition: none;
+}
+
+.chat__session-resizer {
+  position: absolute;
+  top: 0;
+  right: -6px;
+  bottom: 0;
+  z-index: 5;
+  width: 12px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.chat__session-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 5px;
+  bottom: 0;
+  width: 2px;
+  background: var(--el-color-primary);
+  opacity: 0;
+  transition: opacity var(--os-duration-fast) var(--os-ease);
+}
+
+.chat__session-resizer:hover::after,
+.chat__session-resizer:focus-visible::after {
+  opacity: 0.75;
+}
+
+.chat__session-resizer.chat__session-resizer--active::after {
+  opacity: 1;
+}
+
+.chat__session-resizer:focus-visible {
+  outline: none;
 }
 
 /* ---- 主对话卡（全高列） ---- */
@@ -739,39 +850,18 @@ async function jumpToMatch(step: number): Promise<void> {
     transition: none;
   }
 
-  /*
-   * ⚠️ 折叠轨在窄屏要变成一条**横条**，但那几条样式**不在这里**（2026-10-30 修）。
-   *
-   * <p>最初写在下面这段媒体查询里，用的是 `.chat-sessions__rail { flex-direction: row }`
-   * 这类选择器 —— 全是**子组件内部**的元素。scoped 的 scope id 只会加到子组件的
-   * **根元素**上，内部元素的 `[data-v-parent]` 永远不存在，于是这几条规则
-   * **一条都没生效**，而且完全不报错：
-   * <ul>
-   *   <li>实测 860px 折叠态：`dir=column`、卡片高 **156px**、按钮被 `align-items: center`
-   *       居中到 `l:526` —— 一条占满整行、只放得下两个小图标的高条；</li>
-   *   <li>而 `.chat-sessions--rail :deep(.el-card__body)` 是有效的（它作用于根元素），
-   *       所以看起来「有的生效有的不生效」，更容易误判成媒体查询没命中。</li>
-   * </ul>
-   * 现在窄屏横条的样式在 `ChatSessionList.vue` 自己的媒体查询里 —— 样式跟着元素走。
-   *
-   * <p>这里保留的两条都作用于**根元素** `.chat-sessions`（子组件根元素会带上
-   * 父组件的 scope id），是「页面决定它占多高」这类真正的页面级约束。
-   */
+  .chat__session-resizer {
+    display: none;
+  }
 
   /*
-   * 侧栏限高：不限制时它会把会话列表全部展开（实测 860px 视口里占 300px），
+   * 会话栏限高：不限制时它会把会话列表全部展开（实测 860px 视口里占 300px），
    * 把对话区挤到下半屏。卡片内部本来就会滚动，限高后对话区立刻回到首屏。
    * 200px 是量出来的：再高就把空态的输入框顶出首屏（手机上第一件事是打字）。
    */
   .chat-sessions {
     max-height: 200px;
   }
-
-  /*
-   * 已知取舍：`max-height: 200px` 也作用在折叠轨上。窄屏横条的内容高度约 44px，
-   * 远小于 200px，实际高度由内容决定，所以不受影响；这里不额外放宽，
-   * 避免多一条「只对折叠态生效」的特例。
-   */
 
   /*
    * 消息区在窄屏的最小高度。

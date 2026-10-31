@@ -9,7 +9,7 @@
  * <p>分组在组件内计算：`groupSessionsByDay` 是纯函数，放这里能少一层 props，
  * 也让「列表长什么样」这件事只有一个出处。
  */
-import { Delete, Download, EditPen, Expand, Fold, Plus, Refresh } from '@element-plus/icons-vue'
+import { Delete, Download, EditPen, Plus, Refresh } from '@element-plus/icons-vue'
 import { computed, nextTick, ref, watch, type ComponentPublicInstance } from 'vue'
 
 import AppPagination from '@/components/AppPagination.vue'
@@ -25,8 +25,6 @@ const props = defineProps<{
   page: number
   size: number
   loading: boolean
-  /** 折叠态：收成 48px 竖轨（2026-10-30）。状态归父组件，这里只负责渲染 */
-  collapsed: boolean
 }>()
 
 const emit = defineEmits<{
@@ -42,18 +40,7 @@ const emit = defineEmits<{
   (e: 'create'): void
   (e: 'page-change', page: number): void
   (e: 'search'): void
-  /** 请求切换会话栏的展开状态 */
-  (e: 'toggle-collapse', collapsed: boolean): void
 }>()
-
-const panelToggle = ref<ComponentPublicInstance | null>(null)
-
-async function togglePanel(collapsed: boolean): Promise<void> {
-  emit('toggle-collapse', collapsed)
-  await nextTick()
-  // 切换会替换整个分支，焦点跟随新的切换按钮。
-  panelToggle.value?.$el.focus()
-}
 
 /**
  * 行内重命名状态。
@@ -221,85 +208,10 @@ watch(editingId, async (id) => {
 })
 
 const groups = computed(() => groupSessionsByDay(props.sessions))
-
-/*
- * 折叠态（2026-10-30）。
- *
- * <h3>为什么收成「竖条」而不是整个隐藏</h3>
- *
- * 会话列表是对话页的**主导航** —— 隐藏后用户既看不到「还有几个会话」，
- * 也找不到回来的入口。所以在折叠态保留一条 48px 的竖轨：
- * 顶部一个「展开」按钮 + 一个新建按钮，中间是会话数量，下面是当前会话的
- * 首字头像。宽度从 260 降到 48，主列净增 212px。
- *
- * <p>实测各视口主列宽度（会话栏 260 时）：1440→920、1280→760、1100→580、
- * 1024→504。1024 下气泡从设计值 680 被压到 426（63%）—— 折叠后回到 638。
- */
-const collapsed = computed(() => props.collapsed)
-
-/** 当前会话的首字，作为折叠轨上的定位标记；无会话时退回一个通用标记 */
-const activeInitial = computed(() => {
-  const active = props.sessions.find((s) => s.conversationId === props.currentId)
-  return active ? active.title.trim().charAt(0) || '·' : null
-})
 </script>
 
 <template>
-  <!--
-    折叠态走独立的 template 分支，而不是给展开态加一堆 v-show：
-    两态的 DOM 结构差异太大（列表 / 搜索框 / 分页全都不存在），
-    用 v-show 会留下一个 260px 宽的隐藏盒子，宽度根本降不下来。
-  -->
-  <el-card v-if="collapsed" class="chat-sessions chat-sessions--rail" shadow="never">
-    <div class="chat-sessions__rail">
-      <el-button
-        ref="panelToggle"
-        link
-        class="chat-sessions__rail-btn"
-        title="展开会话列表"
-        aria-label="展开会话列表"
-        :aria-expanded="false"
-        @click="togglePanel(false)"
-      >
-        <el-icon :size="16"><Expand /></el-icon>
-      </el-button>
-      <!--
-        两个按钮同构（都是 link、都无 type）：折叠轨只有 48px 宽，一列图标里
-        出现「主色 + 灰色」两种语气，「新建」会显得比「展开」重要得多 ——
-        而它俩其实是平级操作。
-        ⚠️ 曾经给「新建」加 `type="primary"`，实测它因边框多 2px，与上面那个
-        按钮的中心相差 4px，整列看着是歪的。**结构上同构比事后对尺寸更可靠。**
-      -->
-      <el-button link class="chat-sessions__rail-btn" title="新建会话" aria-label="新建会话" @click="emit('create')">
-        <el-icon :size="16"><Plus /></el-icon>
-      </el-button>
-
-      <div class="chat-sessions__rail-spacer" />
-
-      <!--
-        会话数量：折叠态唯一能表达「你有几个会话」的地方。
-        用 title 补全语义，读屏靠 aria-label。
-      -->
-      <span class="chat-sessions__rail-count" :title="`共 ${total} 个会话`" :aria-label="`共 ${total} 个会话`">
-        {{ total }}
-      </span>
-
-      <!--
-        当前会话的首字标记：折叠轨上唯一带内容的锚点。
-        有它才看得出「我现在在哪」，否则只剩两个按钮悬在一条空轨上。
-      -->
-      <span
-        v-if="activeInitial"
-        class="chat-sessions__rail-active"
-        :title="`当前会话：${sessions.find((s) => s.conversationId === currentId)?.title ?? ''}`"
-      >
-        {{ activeInitial }}
-      </span>
-      <div class="chat-sessions__rail-spacer" />
-    </div>
-  </el-card>
-
-  <el-card v-else class="chat-sessions" shadow="never">
+  <el-card class="chat-sessions" shadow="never">
     <template #header>
       <div class="chat-sessions__header">
         <span class="chat-sessions__title">会话</span>
@@ -325,23 +237,6 @@ const activeInitial = computed(() => {
               @click="emit('create')"
             />
           </el-tooltip>
-          <!--
-            收起按钮放在头部的动作组里，而不是卡片边缘：
-            这一行本来就是「会话 + 三个动作」的语义分组，收起属于同一族。
-            图标用 Fold（与全站侧栏折叠一致），title 与 aria-label 都写全，
-            因为纯图标按钮没有可读文本。
-          -->
-          <el-button
-            ref="panelToggle"
-            text
-            class="chat-sessions__collapse"
-            title="收起会话列表"
-            aria-label="收起会话列表"
-            :aria-expanded="true"
-            @click="togglePanel(true)"
-          >
-            <el-icon :size="15"><Fold /></el-icon>
-          </el-button>
         </div>
       </div>
       <el-input
@@ -543,34 +438,9 @@ const activeInitial = computed(() => {
   border-radius: var(--os-radius-sm);
 }
 
-.chat-sessions__actions :deep(.el-button:focus-visible),
-.chat-sessions__rail-btn:focus-visible {
+.chat-sessions__actions :deep(.el-button:focus-visible) {
   outline: 2px solid var(--el-color-primary);
   outline-offset: 2px;
-}
-
-/* ---- 折叠态：48px 竖轨 ---- */
-
-/*
- * 竖轨的宽度由父层（ChatView 的 grid 列宽）决定，这里只负责「撑满 + 纵向排布」。
- * 卡片在折叠态要把默认的 padding / 边框噪点压掉：48px 宽里再留 20px 内边距，
- * 装不下一个 24px 的按钮。
- */
-.chat-sessions--rail :deep(.el-card__body) {
-  padding: var(--os-space-2) 0;
-  flex: 1;
-  display: flex;
-  min-height: 0;
-}
-
-.chat-sessions__rail {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--os-space-1);
-  padding: 0 var(--os-space-1);
 }
 
 /*
@@ -583,38 +453,10 @@ const activeInitial = computed(() => {
  * 整列是歪的（4px 偏移，肉眼不是明显歪，但叠在正中的计数与首字上就看得出不齐）。
  * 结构上说：**纵向堆叠里不能沿用为横向并排写的间距规则**，间距交给 gap。
  */
-.chat-sessions__rail-btn {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  flex: none;
-  margin-left: 0;
-  color: var(--el-text-color-regular);
-}
-
-.chat-sessions__rail-btn:hover {
-  color: var(--el-color-primary);
-}
-
-.chat-sessions__rail-spacer {
-  flex: 1;
-  min-height: var(--os-space-2);
-}
-
 /*
  * 会话数量：折叠态唯一能表达「你有几个会话」的地方。
  * 用等宽数字，数量从 9 变 10 时不会左右跳。
  */
-.chat-sessions__rail-count {
-  flex: none;
-  padding: 2px 0;
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  line-height: 1.2;
-}
-
 /*
  * 当前会话首字标记。
  *
@@ -622,22 +464,6 @@ const activeInitial = computed(() => {
  * （不是自己发明一个颜色）。圆形而非方形：折叠轨上它就是一枚「头像」，
  * 与消息区的头像形成同一种形状语言。
  */
-.chat-sessions__rail-active {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-  box-shadow: inset 0 0 0 1px var(--el-color-primary-light-7);
-  font-size: var(--os-font-xs);
-  font-weight: 600;
-  line-height: 1;
-}
-
 .chat-sessions__filter {
   margin-top: var(--os-space-2);
 }
@@ -868,59 +694,4 @@ const activeInitial = computed(() => {
  * 根元素尺寸属于「页面决定它占多高」（本组件只被 ChatView 使用一次），
  * 所以留在 ChatView。这里只保留组件内部元素（竖轨/按钮/卡片内容）的样式。
  */
-
-/*
- * 窄屏折叠态：竖轨变成一条**横条**（2026-10-30）。
- *
- * <h3>为什么必须写在这里，而不是 ChatView</h3>
- *
- * 这几条最初写在 `ChatView.vue` 的 `@media (max-width: 900px)` 里，
- * 结果**一条都没生效**，而且没有任何报错：
- * `<style scoped>` 的 scope id 只加到子组件的**根元素**上，
- * 而 `.chat-sessions__rail` / `-spacer` / `-count` 全是本组件**内部**的元素，
- * 父组件的 `[data-v-parent]` 属性在它们身上根本不存在 → 选择器永不匹配。
- *
- * <p>更难发现的是**同批规则里有的生效了**：`.chat-sessions--rail :deep(.el-card__body)`
- * 作用于根元素，行为正常。于是症状看起来像「媒体查询没命中」，而不是「作用域穿不过去」。
- *
- * <p>实测退化形态（860px 折叠态，修前）：`dir=column`、卡片高 **156px**、
- * 按钮被 `align-items: center` 居中到 `l:526` —— 一条占满整行、
- * 里面只有两个小图标的高条。修后：`dir=row`、卡片高 44px、按钮靠左。
- *
- * <p>结论：**样式跟着元素走**。「页面级」的约束（这一栏占多高、多少列）留在页面；
- * 「组件内部长什么样」留在组件，哪怕它只在窄屏生效。
- */
-@media (max-width: 900px) {
-  /* 横条的气泡内边距：竖轨的 8px 0 换成横条的 4px 12px（左起图标、右收计数） */
-  .chat-sessions--rail :deep(.el-card__body) {
-    padding: var(--os-space-1) var(--os-space-3);
-  }
-
-  .chat-sessions__rail {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: var(--os-space-2);
-  }
-
-  /*
-   * 横条里撑杆要整个移除，不能只压 `flex: 0`（2026-10-30 实测修正）。
-   *
-   * <p>竖轨靠两个 `flex: 1` 的撑杆把「计数 + 首字」夹在正中；横条里改为
-   * 「图标靠左、读数靠右」，撑杆没有存在的理由了。压成 `flex: 0` 后它的宽度是 0，
-   * **但它仍然是一个 flex 项，仍然要吃掉一个 `gap`（8px）** ——
-   * 实测：按钮左边缘距卡片 17px，而首字右边缘距卡片 25px，左右差正好 8px，
-   * 就是尾部那个 0 宽撑杆的 gap。42px 高的条里，这点不对称看着像「右边没对齐」。
-   *
-   * <p>`display: none` 才是「不存在」。移除后两侧都是 17px（1px 边框 + 12px body + 4px rail）。
-   */
-  .chat-sessions__rail-spacer {
-    display: none;
-  }
-
-  /* 「数量 + 首字」靠右收尾，中间的空隙由自动外边距吃掉 */
-  .chat-sessions__rail-count {
-    margin-left: auto;
-    padding: 0;
-  }
-}
 </style>
