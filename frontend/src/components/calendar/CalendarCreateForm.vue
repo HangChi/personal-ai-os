@@ -224,5 +224,19 @@ defineExpose({ fillSlot, reset })
   margin: var(--os-space-3) 0 0;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .cal-create__row > .el-input,
+  .cal-create__row > .el-select,
+  .cal-create__row :deep(.el-date-editor) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cal-create__actions > .el-button {
+    width: 100%;
+  }
 }
 </style>

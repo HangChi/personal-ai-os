@@ -328,7 +328,9 @@ function switchView(next: 'table' | 'board'): void {
 }
 
 .tasks__filters {
-  margin-top: var(--os-space-2);
+  margin-top: var(--os-space-4);
+  padding-top: var(--os-space-4);
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .tasks__filter {
@@ -351,6 +353,7 @@ function switchView(next: 'table' | 'board'): void {
   border: 1px solid var(--el-color-primary-light-8);
   border-radius: var(--os-radius-md);
   background: var(--el-color-primary-light-9);
+  flex-wrap: wrap;
 }
 
 .tasks__batch-count {
@@ -363,5 +366,10 @@ function switchView(next: 'table' | 'board'): void {
   display: flex;
   align-items: center;
   gap: var(--os-space-2);
+  flex-wrap: wrap;
+}
+
+.tasks__batch-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

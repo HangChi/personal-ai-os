@@ -34,15 +34,17 @@ const emit = defineEmits<{
       </div>
     </template>
 
-    <div v-for="reminder in reminders" :key="reminder.id" class="cal-reminders__item">
-      <div class="cal-reminders__body">
-        <el-tag size="small" type="warning" effect="plain">{{ sourceLabel(reminder.sourceType) }}</el-tag>
-        <span class="cal-reminders__title">{{ reminder.title }}</span>
-        <span class="cal-reminders__meta">
-          {{ formatTime(reminder.occurrenceAt) }} 开始 · 提醒时间 {{ formatTime(reminder.remindAt) }}
-        </span>
+    <div class="cal-reminders__list" role="region" aria-label="待处理提醒" tabindex="0">
+      <div v-for="reminder in reminders" :key="reminder.id" class="cal-reminders__item">
+        <div class="cal-reminders__body">
+          <el-tag size="small" type="warning" effect="plain">{{ sourceLabel(reminder.sourceType) }}</el-tag>
+          <span class="cal-reminders__title">{{ reminder.title }}</span>
+          <span class="cal-reminders__meta">
+            {{ formatTime(reminder.occurrenceAt) }} 开始 · 提醒时间 {{ formatTime(reminder.remindAt) }}
+          </span>
+        </div>
+        <el-button size="small" @click="emit('acknowledge', reminder)">知道了</el-button>
       </div>
-      <el-button size="small" type="primary" @click="emit('acknowledge', reminder)">知道了</el-button>
     </div>
   </el-card>
 </template>
@@ -54,9 +56,18 @@ const emit = defineEmits<{
 
 .cal-reminders__header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--os-space-3);
+}
+
+.cal-reminders__list {
+  max-height: 280px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-right: var(--os-space-1);
 }
 
 .cal-reminders__actions {
@@ -85,6 +96,7 @@ const emit = defineEmits<{
 
 .cal-reminders__body {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--os-space-2);
   min-width: 0;
@@ -93,6 +105,11 @@ const emit = defineEmits<{
 .cal-reminders__title {
   font-size: var(--os-font-md);
   font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cal-reminders__item > .el-button {
+  flex: none;
 }
 
 .cal-reminders__meta {

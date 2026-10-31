@@ -88,7 +88,7 @@ function recurrenceLabel(type: string): string {
 }
 
 .cal-list__day-label {
-  margin-bottom: var(--os-space-1);
+  margin-bottom: var(--os-space-2);
   font-size: var(--os-font-sm);
   font-weight: 600;
   color: var(--el-text-color-regular);
@@ -98,7 +98,7 @@ function recurrenceLabel(type: string): string {
   display: flex;
   align-items: center;
   gap: var(--os-space-2);
-  padding: var(--os-space-1) 0 var(--os-space-1) var(--os-space-3);
+  padding: var(--os-space-2) 0 var(--os-space-2) var(--os-space-3);
   border-left: 3px solid var(--el-color-primary-light-5);
 }
 
@@ -110,10 +110,13 @@ function recurrenceLabel(type: string): string {
 }
 
 .cal-list__item-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: var(--os-font-md);
 }
 
 .cal-list__item-location {
+  overflow-wrap: anywhere;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
 }
@@ -129,5 +132,23 @@ function recurrenceLabel(type: string): string {
  */
 .cal-list__item-delete {
   margin-left: 0;
+}
+
+@media (max-width: 600px) {
+  .cal-list__item {
+    flex-wrap: wrap;
+  }
+
+  .cal-list__item-time {
+    width: 100%;
+  }
+
+  .cal-list__item-title {
+    flex: 1 1 160px;
+  }
+
+  .cal-list__item-location {
+    flex-basis: 100%;
+  }
 }
 </style>

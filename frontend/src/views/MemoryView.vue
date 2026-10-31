@@ -199,9 +199,19 @@ function formatTime(value: string): string {
       </div>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="min(560px, 92vw)">
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="min(560px, 92vw)"
+      :close-on-click-modal="false"
+      :show-close="!saving"
+      :close-on-press-escape="!saving"
+    >
+      <label for="memory-content" class="memory__field-label">记忆内容</label>
       <el-input
+        id="memory-content"
         v-model="draft"
+        :disabled="saving"
         type="textarea"
         :rows="5"
         :maxlength="CONTENT_MAX_LENGTH"
@@ -210,7 +220,7 @@ function formatTime(value: string): string {
       />
       <p class="memory__dialog-tip">写成一两句自足的陈述 —— 它会单独出现在每次对话里，没有上下文可以依赖。</p>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button :disabled="saving" @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="saving" :disabled="!canSave" @click="handleSave"> 保存 </el-button>
       </template>
     </el-dialog>
@@ -332,6 +342,7 @@ function formatTime(value: string): string {
 
 .memory__meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--os-space-2);
   margin-top: var(--os-space-2);
@@ -366,6 +377,18 @@ function formatTime(value: string): string {
   gap: var(--os-space-1);
   /* 与正文首行对齐（正文 line-height 1.65 × 14px ≈ 23px，按钮自身高 24px） */
   margin-top: -2px;
+}
+
+.memory__actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
+.memory__field-label {
+  display: block;
+  margin-bottom: var(--os-space-2);
+  font-size: var(--os-font-md);
+  font-weight: 500;
+  color: var(--el-text-color-primary);
 }
 
 .memory__dialog-tip {

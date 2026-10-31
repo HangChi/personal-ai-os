@@ -98,6 +98,9 @@ function submit(): void {
     :model-value="visible"
     title="编辑日程"
     width="min(560px, 92vw)"
+    :close-on-click-modal="false"
+    :show-close="!saving"
+    :close-on-press-escape="!saving"
     @update:model-value="(value: boolean) => emit('update:visible', value)"
   >
     <!--
@@ -108,7 +111,7 @@ function submit(): void {
       编辑作用于<strong>整条日程</strong>（含全部重复发生）：改时间后每一次发生都会用新时间。
       目前不支持「只改/只删某一次发生」。
     </p>
-    <el-form label-width="90px">
+    <el-form label-position="top" :disabled="saving">
       <el-form-item label="标题" required>
         <el-input v-model="form.title" maxlength="200" placeholder="日程标题" />
       </el-form-item>
@@ -156,8 +159,8 @@ function submit(): void {
     </el-form>
 
     <template #footer>
-      <el-button @click="emit('update:visible', false)">取消</el-button>
-      <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
+      <el-button :disabled="saving" @click="emit('update:visible', false)">取消</el-button>
+      <el-button type="primary" :loading="saving" :disabled="!form.title.trim()" @click="submit">保存修改</el-button>
     </template>
   </el-dialog>
 </template>

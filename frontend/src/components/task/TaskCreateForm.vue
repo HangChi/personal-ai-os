@@ -81,17 +81,25 @@ defineExpose({ reset })
     <div class="task-create">
       <el-input
         v-model="title"
+        aria-label="任务标题"
         class="task-create__title"
         maxlength="200"
         placeholder="任务标题，例如：周五前交周报"
         @keydown.enter="submit"
       />
-      <el-select v-model="priority" class="task-create__priority">
+      <el-select v-model="priority" class="task-create__priority" aria-label="优先级">
         <el-option v-for="option in PRIORITY_OPTIONS" :key="option.value" :label="option.label" :value="option.value" />
       </el-select>
-      <el-date-picker v-model="dueDate" type="datetime" placeholder="截止时间（可选）" class="task-create__due" />
+      <el-date-picker
+        v-model="dueDate"
+        type="datetime"
+        aria-label="截止时间"
+        placeholder="截止时间（可选）"
+        class="task-create__due"
+      />
       <el-select
         v-model="pickedTags"
+        aria-label="任务标签"
         class="task-create__tags"
         multiple
         filterable
@@ -102,7 +110,7 @@ defineExpose({ reset })
       >
         <el-option v-for="tag in tags" :key="tag" :label="tag" :value="tag" />
       </el-select>
-      <el-button type="primary" :loading="creating" @click="submit">新建</el-button>
+      <el-button type="primary" :loading="creating" :disabled="!title.trim()" @click="submit">新建任务</el-button>
     </div>
   </el-card>
 </template>
@@ -118,25 +126,53 @@ defineExpose({ reset })
 }
 
 .task-create {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--os-space-2);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 220px auto;
+  gap: var(--os-space-3);
+  align-items: start;
 }
 
 .task-create__title {
-  flex: 1;
-  min-width: 220px;
+  grid-column: 1 / -1;
+  min-width: 0;
 }
 
-.task-create__priority {
-  width: 100px;
-}
-
-.task-create__due {
-  width: 220px;
+.task-create__priority,
+.task-create__due,
+.task-create__tags {
+  width: 100%;
+  min-width: 0;
 }
 
 .task-create__tags {
-  width: 240px;
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.task-create :deep(.el-date-editor.el-input) {
+  width: 100%;
+}
+
+.task-create > .el-button {
+  grid-column: 4;
+  justify-self: end;
+  margin-left: 0;
+}
+
+@media (max-width: 600px) {
+  .task-create {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .task-create__title,
+  .task-create__tags,
+  .task-create > .el-button {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .task-create > .el-button {
+    width: 100%;
+  }
 }
 </style>

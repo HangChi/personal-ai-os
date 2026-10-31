@@ -376,7 +376,9 @@ function onDrop(event: DragEvent): void {
 }
 
 .kd__filename {
-  min-width: 160px;
+  flex: 1 1 160px;
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
 }
@@ -389,6 +391,25 @@ function onDrop(event: DragEvent): void {
 .kd__column-hint {
   cursor: help;
   border-bottom: 1px dashed var(--el-text-color-placeholder);
+}
+
+@media (max-width: 600px) {
+  .kd__filters {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .kd__filter {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+
+  .kd__dropzone .kd__title,
+  .kd__dropzone > .el-button:last-child {
+    width: 100%;
+    margin-left: 0;
+  }
 }
 
 /* 操作列样式见 theme.css 的 `.os-table-actions`（与任务表格共用同一份） */

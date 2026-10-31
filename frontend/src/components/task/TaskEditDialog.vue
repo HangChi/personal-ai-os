@@ -87,9 +87,12 @@ function submit(): void {
     :model-value="visible"
     title="编辑任务"
     width="min(520px, 92vw)"
+    :close-on-click-modal="false"
+    :show-close="!saving"
+    :close-on-press-escape="!saving"
     @update:model-value="(value: boolean) => emit('update:visible', value)"
   >
-    <el-form label-width="80px">
+    <el-form label-position="top" :disabled="saving">
       <el-form-item label="标题" required>
         <el-input v-model="form.title" maxlength="200" placeholder="任务标题" />
       </el-form-item>
@@ -133,8 +136,8 @@ function submit(): void {
     </el-form>
 
     <template #footer>
-      <el-button @click="emit('update:visible', false)">取消</el-button>
-      <el-button type="primary" :loading="saving" @click="submit">保存</el-button>
+      <el-button :disabled="saving" @click="emit('update:visible', false)">取消</el-button>
+      <el-button type="primary" :loading="saving" :disabled="!form.title.trim()" @click="submit">保存修改</el-button>
     </template>
   </el-dialog>
 </template>

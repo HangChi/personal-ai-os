@@ -173,7 +173,7 @@
  * ================================================================== */
 
 :root {
-  --el-component-size: 34px;
+  --el-component-size: var(--os-button-height);
   --el-component-size-small: 28px;
   --el-component-size-large: 40px;
 }
@@ -192,7 +192,7 @@
  * 1px #e4e7ed 边框，视觉上是一条条描边方块，没有层次。
  * 这里给一个极轻的投影，并用更淡的边框兜住边界（纯阴影在浅灰底上会「飘」）。
  */
-.el-card {
+html .el-card {
   border-radius: var(--os-radius-xl);
   border: 1px solid var(--el-border-color-lighter);
   box-shadow: var(--os-shadow-card);
@@ -201,17 +201,17 @@
 }
 
 /* EP 的 .el-card__header 默认 padding 18px 20px、下边框 1px；这里收紧并去掉硬边 */
-.el-card__header {
+html .el-card__header {
   padding: var(--os-space-3) var(--os-space-5);
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
-.el-card__body {
+html .el-card__body {
   padding: var(--os-space-5);
 }
 
 /* 无 header 的卡片（登录 / 对话主列）不需要额外上内边距补偿 */
-.el-card__header + .el-card__body {
+html .el-card__header + .el-card__body {
   padding-top: var(--os-space-4);
 }
 
@@ -636,7 +636,7 @@ html .el-table {
 }
 
 /* 表头：稍矮于数据行，但同样用 14px 字（改造前 small 版表头只有 12px） */
-.el-table th.el-table__cell {
+html .el-table th.el-table__cell {
   height: var(--os-table-header-height);
   padding: 0;
   font-size: var(--os-table-font-size);
@@ -650,12 +650,12 @@ html .el-table {
  * padding-left/right（默认 12px），而 td 自身的 padding 是 8px 0。
  * 两处都要接管，否则会得到「上下 8 + 左右 12」的默认组合。
  */
-.el-table td.el-table__cell {
+html .el-table td.el-table__cell {
   height: var(--os-table-row-height);
   padding: var(--os-table-cell-padding-y) 0;
 }
 
-.el-table .el-table__cell > .cell {
+html .el-table .el-table__cell > .cell {
   padding-left: var(--os-table-cell-padding-x);
   padding-right: var(--os-table-cell-padding-x);
   line-height: 1.5;
@@ -947,7 +947,7 @@ html .el-dialog {
  * 晚于本文件落地，同特异性下 EP 胜出。
  */
 html .os-confirm {
-  border-radius: var(--os-radius-md);
+  border-radius: var(--os-radius-2xl);
 }
 
 html .os-confirm .el-message-box__btns {
@@ -1155,8 +1155,15 @@ html.dark .el-card {
  *   不是漏改。
  */
 html
-  .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(
-    .is-info
+  .el-button:not(
+    .is-text,
+    .is-link,
+    .is-disabled,
+    .el-button--primary,
+    .el-button--success,
+    .el-button--warning,
+    .el-button--danger,
+    .el-button--info
   ) {
   border-color: #a3acbc;
 }
@@ -1166,15 +1173,29 @@ html .el-slider__runway {
 }
 
 html.dark
-  .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(
-    .is-info
+  .el-button:not(
+    .is-text,
+    .is-link,
+    .is-disabled,
+    .el-button--primary,
+    .el-button--success,
+    .el-button--warning,
+    .el-button--danger,
+    .el-button--info
   ) {
   border-color: #666d80;
 }
 
 html.dark
-  .el-button:not(.is-text):not(.is-link):not(.is-primary):not(.is-success):not(.is-warning):not(.is-danger):not(
-    .is-info
+  .el-button:not(
+    .is-text,
+    .is-link,
+    .is-disabled,
+    .el-button--primary,
+    .el-button--success,
+    .el-button--warning,
+    .el-button--danger,
+    .el-button--info
   ):hover {
   border-color: var(--el-color-primary-light-3);
 }
@@ -1264,4 +1285,261 @@ html.dark .el-radio-button .el-radio-button__original-radio:checked + .el-radio-
 /* 浅色主题下选中态同样是「主色底 + 白字」，一并加重字重提升可读性 */
 html:not(.dark) .el-radio-button .el-radio-button__original-radio:checked + .el-radio-button__inner {
   font-weight: 600;
+}
+
+/* Shared control geometry. Keep theme colors in the existing semantic tokens. */
+html .el-button:not(.is-link):not(.is-text) {
+  min-height: var(--os-button-height);
+}
+
+html .el-button:not(.is-link):not(.is-text):not(.is-circle) {
+  padding-inline: var(--os-space-4);
+}
+
+html .el-button > .el-icon + span,
+html .el-button > span > .el-icon:first-child:not(:last-child) {
+  margin-right: var(--os-space-1);
+}
+
+html .el-button:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 2px;
+}
+
+html .el-button.is-link:not(.is-disabled):hover {
+  text-decoration: underline;
+  text-underline-offset: var(--os-space-1);
+}
+
+html .el-table {
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--os-radius-lg);
+  overflow: hidden;
+}
+
+html .el-table th.el-table__cell {
+  font-size: var(--os-font-sm);
+  font-weight: 600;
+}
+
+html .el-table .cell {
+  overflow-wrap: anywhere;
+}
+
+html .el-table [class*='is-right'] .cell,
+html .el-table [class*='is-center'] .cell {
+  font-variant-numeric: tabular-nums;
+}
+
+html .el-table__empty-block {
+  min-height: 144px;
+}
+
+html .el-table:focus-within .el-scrollbar__bar.is-horizontal {
+  opacity: 1;
+}
+
+/* Long forms scroll inside the dialog; the title and actions remain visible.
+   Model profiles have their own composed shell and retain its layout. */
+html .el-dialog:not(.profile-dialog) {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - var(--os-space-8) * 2);
+  margin: var(--os-space-8) auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--os-radius-2xl);
+  box-shadow: var(--os-shadow-popup);
+}
+
+html .el-dialog:not(.profile-dialog) .el-dialog__header {
+  flex: none;
+  margin: 0;
+  padding: var(--os-space-5) calc(var(--os-space-8) + var(--os-space-4)) var(--os-space-4) var(--os-space-6);
+}
+
+html .el-dialog:not(.profile-dialog) .el-dialog__title {
+  font-size: var(--os-font-xl);
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+html .el-dialog:not(.profile-dialog) .el-dialog__headerbtn {
+  top: var(--os-space-4);
+  right: var(--os-space-4);
+  width: var(--os-button-size-icon);
+  height: var(--os-button-size-icon);
+  border-radius: var(--os-radius-md);
+}
+
+html .el-dialog:not(.profile-dialog) .el-dialog__body {
+  min-height: 0;
+  padding: var(--os-space-6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+html .el-dialog:not(.profile-dialog) .el-dialog__footer {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--os-button-gap);
+  padding: var(--os-space-4) var(--os-space-6);
+  border-top: 1px solid var(--el-border-color-lighter);
+  background: var(--el-fill-color-lighter);
+}
+
+html .el-dialog:not(.profile-dialog) .el-dialog__footer .el-button + .el-button {
+  margin-left: 0;
+}
+
+html .el-dialog .el-form-item__content {
+  min-width: 0;
+}
+
+html .el-dialog .el-form-item .el-select,
+html .el-dialog .el-form-item .el-date-editor {
+  width: 100%;
+  min-width: 0;
+}
+
+html .el-dialog .el-form-item:last-child {
+  margin-bottom: 0;
+}
+
+html .el-dialog .el-checkbox {
+  height: auto;
+  min-height: var(--os-button-height);
+}
+
+html .el-dialog .el-checkbox__label {
+  white-space: normal;
+  line-height: 1.6;
+}
+
+/* The same structure serves deletion, reset confirmation, and text prompts. */
+html .el-message-box {
+  display: inline-flex;
+  flex-direction: column;
+  width: 440px;
+  max-width: calc(100vw - var(--os-space-7));
+  max-height: calc(100dvh - var(--os-space-7));
+  padding: 0;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--os-radius-2xl);
+  box-shadow: var(--os-shadow-popup);
+}
+
+html .el-message-box__header {
+  flex: none;
+  padding: var(--os-space-6) calc(var(--os-space-8) + var(--os-space-4)) 0 var(--os-space-6);
+}
+
+html .el-message-box__title {
+  font-size: var(--os-font-xl);
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+html .el-message-box__content {
+  min-height: 0;
+  padding: var(--os-space-4) var(--os-space-6) var(--os-space-6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+html .el-message-box__container {
+  align-items: flex-start;
+}
+
+html .el-message-box__status {
+  flex: none;
+  margin-top: var(--os-space-1);
+}
+
+html .el-message-box__message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+html .el-message-box__btns {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--os-button-gap);
+  padding: var(--os-space-4) var(--os-space-6);
+  border-top: 1px solid var(--el-border-color-lighter);
+  background: var(--el-fill-color-lighter);
+}
+
+html .el-message-box .el-message-box__btns .el-button + .el-button {
+  margin-left: 0;
+}
+
+@media (max-width: 600px) {
+  html .el-dialog:not(.profile-dialog) {
+    margin-block: var(--os-space-4);
+    max-height: calc(100dvh - var(--os-space-7));
+  }
+
+  html .el-dialog:not(.profile-dialog) .el-dialog__header {
+    padding-left: var(--os-space-4);
+  }
+
+  html .el-dialog:not(.profile-dialog) .el-dialog__body,
+  html .el-dialog:not(.profile-dialog) .el-dialog__footer {
+    padding: var(--os-space-4);
+  }
+
+  html .el-date-editor.el-range-editor {
+    display: grid;
+    grid-template-columns: var(--os-space-5) minmax(0, 1fr) var(--os-space-5);
+    row-gap: var(--os-space-1);
+    height: auto;
+    min-height: var(--os-button-height);
+  }
+
+  html .el-date-editor.el-range-editor .el-range-input {
+    grid-column: 2;
+    width: 100%;
+    height: var(--os-button-height-inline);
+    text-align: left;
+  }
+
+  html .el-date-editor.el-range-editor .el-range__icon {
+    grid-column: 1;
+    grid-row: 1;
+    line-height: normal;
+  }
+
+  html .el-date-editor.el-range-editor .el-range-separator {
+    display: none;
+  }
+
+  html .el-date-editor.el-range-editor .el-range__close-icon {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    width: 100%;
+  }
+
+  html .el-dialog .el-form-item__label {
+    font-size: var(--os-font-sm);
+  }
+}
+
+@media (pointer: coarse) {
+  html .el-button:not(.is-link),
+  html .el-radio-button .el-radio-button__inner {
+    min-height: var(--os-space-8);
+  }
+
+  html .el-table .el-scrollbar__bar.is-horizontal {
+    opacity: 1;
+  }
 }

@@ -61,6 +61,7 @@ function handleCurrentChange(next: number): void {
     <el-pagination
       layout="prev, pager, next"
       :small="compact"
+      :pager-count="5"
       :background="!compact"
       :total="total"
       :current-page="page + 1"
@@ -77,6 +78,8 @@ function handleCurrentChange(next: number): void {
   justify-content: flex-end;
   gap: var(--os-space-4);
   margin-top: var(--os-space-3);
+  flex-wrap: wrap;
+  row-gap: var(--os-space-2);
 }
 
 .app-pagination__total {
@@ -111,5 +114,13 @@ function handleCurrentChange(next: number): void {
   /* 归零基类的 margin-top：顶边的间距由上方滚动容器的 padding 提供 */
   margin-top: 0;
   padding: 0 0 var(--os-space-3);
+}
+
+@media (max-width: 600px) {
+  .app-pagination:not(.app-pagination--compact) {
+    justify-content: space-between;
+    padding-top: var(--os-space-3);
+    border-top: 1px solid var(--el-border-color-lighter);
+  }
 }
 </style>

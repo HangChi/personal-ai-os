@@ -47,6 +47,7 @@ withDefaults(
 }
 
 .page-header__text {
+  flex: 1 1 240px;
   min-width: 0;
 }
 
@@ -66,6 +67,7 @@ withDefaults(
 }
 
 .page-header__description {
+  max-width: 72ch;
   margin: var(--os-space-1) 0 0;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-sm);
@@ -79,6 +81,16 @@ withDefaults(
   flex-wrap: wrap;
   gap: var(--os-space-2);
   flex: none;
+}
+
+.page-header__actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
+@media (max-width: 600px) {
+  .page-header__actions {
+    width: 100%;
+  }
 }
 
 /* ---- 三档层级 ---- */

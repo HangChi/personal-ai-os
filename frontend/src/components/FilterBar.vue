@@ -21,6 +21,10 @@
   gap: var(--os-space-2);
 }
 
+.filter-bar :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+
 /* 窄屏：纵向堆叠，控件拉满宽度（FR-014） */
 @media (max-width: 768px) {
   .filter-bar {
@@ -32,6 +36,7 @@
   .filter-bar :deep(.el-input),
   .filter-bar :deep(.el-date-editor) {
     width: 100%;
+    min-width: 0;
   }
 }
 </style>

@@ -295,10 +295,11 @@ async function handleReset(): Promise<void> {
   flex-direction: column;
   gap: 2px;
   position: sticky;
-  top: var(--os-space-4);
+  top: calc(var(--os-header-height) + var(--os-space-4));
 }
 
 .settings__nav-item {
+  min-height: var(--os-button-height);
   padding: var(--os-space-2) var(--os-space-3);
   font-size: var(--os-font-sm);
   color: var(--el-text-color-regular);
