@@ -59,8 +59,22 @@ class ModelListProbeServiceWindowTest {
     private void handle(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         receivedPaths.add(path);
+        if (path.equals("/v1/models")) {
+            respond(exchange, 200, """
+                    {"data":[{"id":"listonly-model","limits":{"max_context_window_tokens":"65536"}},
+                    {"id":"nowindow-model"},{"id":"deepseek-v4-pro"},{"id":"glm-5.3"}]}
+                    """);
+            return;
+        }
         String name = path.substring(path.lastIndexOf("/v1/models/") + "/v1/models/".length());
 
+        if (name.contains("listonly")) { respond(exchange, 404, "{}"); return; }
+        if (name.contains("auth")) { respond(exchange, 401, "{}"); return; }
+        if (name.contains("forbidden")) { respond(exchange, 403, "{}"); return; }
+        if (name.contains("servererror")) { respond(exchange, 503, "{}"); return; }
+        if (name.contains("inputonly")) {
+            respond(exchange, 200, "{\"max_input_tokens\":196601,\"limits\":{\"context_window\":204800}}"); return;
+        }
         if (name.contains("limited")) {
             respond(exchange, 429, "{\"error\":\"rate limited\"}");
             return;
@@ -106,12 +120,12 @@ class ModelListProbeServiceWindowTest {
         ModelListProbeService.WindowProbeResult result =
                 service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "deepseek-v4.1-flash");
 
-        assertThat(result.ok())
-                .as("DashScope 对几乎所有模型都回 129024，连文档 1M 的 qwen-long 也是 —— 这是派生值")
-                .isFalse();
-        assertThat(result.window()).isNull();
-        assertThat(result.kind()).isEqualTo("UNSUPPORTED");
-        assertThat(receivedPaths).containsExactly("/v1/models/deepseek-v4.1-flash");
+        assertThat(result.ok()).isTrue();
+        assertThat(result.window()).isEqualTo(1_048_576);
+        assertThat(result.source()).isEqualTo("catalog");
+        assertThat(result.detailKind()).isEqualTo("DERIVED_DEFAULT");
+        assertThat(result.reportedDefaultWindow()).isEqualTo(129024);
+        assertThat(receivedPaths).containsExactly("/v1/models/deepseek-v4.1-flash", "/v1/models");
     }
 
     @Test
@@ -139,7 +153,7 @@ class ModelListProbeServiceWindowTest {
     void shouldNotDuplicateV1() {
         service.probeWindow(ModelProtocol.OPENAI, baseUrl + "/v1", "sk-test", "qwen-max");
 
-        assertThat(receivedPaths).containsExactly("/v1/models/qwen-max");
+        assertThat(receivedPaths).containsExactly("/v1/models/qwen-max", "/v1/models");
     }
 
     @Test
@@ -147,7 +161,7 @@ class ModelListProbeServiceWindowTest {
     void shouldKeepSlashInModelName() {
         service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "kimi/k3.1-pro");
 
-        assertThat(receivedPaths).singleElement().asString().isEqualTo("/v1/models/kimi/k3.1-pro");
+        assertThat(receivedPaths).containsExactly("/v1/models/kimi/k3.1-pro", "/v1/models");
     }
 
     @Test
@@ -168,7 +182,7 @@ class ModelListProbeServiceWindowTest {
                 service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "unknown-model");
 
         assertThat(result.ok()).isFalse();
-        assertThat(result.kind()).isEqualTo("UNSUPPORTED");
+        assertThat(result.kind()).isEqualTo("MODEL_NOT_LISTED");
         assertThat(result.error()).contains("手动填写");
     }
 
@@ -179,7 +193,7 @@ class ModelListProbeServiceWindowTest {
                 service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "nowindow-model");
 
         assertThat(result.ok()).isFalse();
-        assertThat(result.kind()).isEqualTo("UNSUPPORTED");
+        assertThat(result.kind()).isEqualTo("NO_METADATA");
     }
 
     @Test
@@ -200,5 +214,49 @@ class ModelListProbeServiceWindowTest {
         assertThat(ModelListProbeService.detailBase("https://api.example.com/")).isEqualTo("https://api.example.com");
         assertThat(ModelListProbeService.detailBase("https://api.example.com/v1")).isEqualTo("https://api.example.com");
         assertThat(ModelListProbeService.detailBase("https://api.example.com/v1/")).isEqualTo("https://api.example.com");
+    }
+    @Test
+    void readsModelsThatExposeMetadataOnlyInTheList() {
+        var result = service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "listonly-model");
+        assertThat(result.ok()).isTrue();
+        assertThat(result.window()).isEqualTo(65536);
+        assertThat(result.source()).isEqualTo("endpoint");
+        assertThat(receivedPaths).containsExactly("/v1/models/listonly-model", "/v1/models");
+    }
+
+    @Test
+    void distinguishesAuthAndPermissionFailuresAndDoesNotHideThemWithReferences() {
+        var result = service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "auth-model");
+        assertThat(result.kind()).isEqualTo("AUTH_FAILED");
+        assertThat(result.httpStatus()).isEqualTo(401);
+        assertThat(receivedPaths).hasSize(1);
+        result = service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "forbidden-model");
+        assertThat(result.kind()).isEqualTo("FORBIDDEN");
+        assertThat(result.httpStatus()).isEqualTo(403);
+    }
+
+    @Test
+    void distinguishesInputLimitFromTotalContext() {
+        var result = service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "inputonly-model");
+        assertThat(result.window()).isEqualTo(196601);
+        assertThat(result.source()).isEqualTo("input-limit");
+        assertThat(result.message()).contains("204800").contains("保守配置");
+    }
+
+    @Test
+    void explainsDefaultParametersInsteadOfPretendingNoResponse() {
+        var result = service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "derived-new-model");
+        assertThat(result.ok()).isFalse();
+        assertThat(result.kind()).isEqualTo("DERIVED_DEFAULT");
+        assertThat(result.httpStatus()).isEqualTo(200);
+        assertThat(result.error()).contains("默认调用参数");
+    }
+
+    @Test
+    void unknownReferencesAreNeverInventedAndHttpFailuresRemainVisible() {
+        var result = service.probeWindow(ModelProtocol.OPENAI, baseUrl, "sk-test", "servererror-model");
+        assertThat(result.ok()).isFalse();
+        assertThat(result.kind()).isEqualTo("HTTP_ERROR");
+        assertThat(result.httpStatus()).isEqualTo(503);
     }
 }

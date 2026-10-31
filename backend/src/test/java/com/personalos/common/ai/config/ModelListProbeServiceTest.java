@@ -279,4 +279,16 @@ class ModelListProbeServiceTest {
         assertThat(ModelListProbeService.readWindow(mapper.readTree(
                 "{\"max_context_window\":200000}"))).isEqualTo(200000);
     }
+    @Test
+    void parsesNestedNumericStringsWithoutOverflowOrConfusingInputAndTotalLimits() {
+        var mapper = new tools.jackson.databind.ObjectMapper();
+        assertThat(ModelListProbeService.readWindow(mapper.readTree(
+                "{\"max_input_tokens\":196608,\"limits\":{\"max_context_window_tokens\":\"204800\"}}"))).isEqualTo(204800);
+        assertThat(ModelListProbeService.readWindow(mapper.readTree(
+                "{\"context_length\":4295098368}"))).isNull();
+        assertThat(ModelListProbeService.readWindow(mapper.readTree(
+                "{\"context_length\":1024.5}"))).isNull();
+        assertThat(ModelListProbeService.readWindow(mapper.readTree(
+                "{\"top_provider\":{\"context_length\":\"128,000\"}}"))).isEqualTo(128000);
+    }
 }

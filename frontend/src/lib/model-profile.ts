@@ -355,11 +355,11 @@ export function formatContextWindow(tokens: number | null | undefined): string {
   }
   if (tokens >= 1024 * 1024) {
     const m = tokens / (1024 * 1024)
-    return `${Number.isInteger(m) ? m : m.toFixed(1)}M`
+    return `${Number.isInteger(m) ? m : Number(m.toFixed(1))}M`
   }
   if (tokens >= 1024) {
     const k = tokens / 1024
-    return `${Number.isInteger(k) ? k : k.toFixed(1)}K`
+    return `${Number.isInteger(k) ? k : Number(k.toFixed(1))}K`
   }
   return String(tokens)
 }

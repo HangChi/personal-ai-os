@@ -73,6 +73,23 @@ const pendingClearKey = ref(false)
 const probing = ref(false)
 /** 最近一次探测结果；null 表示还没探测过 */
 const probeResult = ref<ModelListResult | null>(null)
+const probingWindow = ref<string | null>(null)
+const completingWindows = ref(false)
+const windowFeedback = ref<Record<string, { text: string; sourceUrl?: string | null; reference: boolean }>>({})
+let windowProbeEpoch = 0
+
+function resetWindowProbes(): void {
+  windowProbeEpoch += 1
+  probingWindow.value = null
+  completingWindows.value = false
+  windowFeedback.value = {}
+}
+
+watch(
+  () => [form.protocol, form.baseUrl, form.apiKey, pendingClearKey.value, props.profile?.id, props.modelValue],
+  resetWindowProbes,
+  { flush: 'sync' },
+)
 
 /**
  * 「加入清单」输入框的草稿。
@@ -302,6 +319,8 @@ function handleAddChatModel(): void {
   // probeResult 里了，让他再手抄一遍纯属多余。
   if (form.chatModels !== before) {
     form.contextWindows = mergeProbedWindows(form.contextWindows, probeResult.value?.contextWindows, form.chatModels)
+    const name = chatModelDraft.value.trim()
+    if (!form.contextWindows[name] && !probeBlocked.value) void handleProbeWindow(name)
   }
   chatModelDraft.value = ''
 }
@@ -354,8 +373,6 @@ function finish(): void {
  * <p>用「模型名」而不是布尔：按钮 loading 只该出现在被点的那一行。
  * 用布尔会让所有行一起转圈，用户分不清是哪个在查。
  */
-const probingWindow = ref<string | null>(null)
-
 /**
  * 查单个模型的上下文窗口（阶段 24）。
  *
@@ -368,10 +385,9 @@ const probingWindow = ref<string | null>(null)
  *
  * @param name 模型名
  */
-async function handleProbeWindow(name: string): Promise<void> {
-  if (probingWindow.value) {
-    return
-  }
+async function handleProbeWindow(name: string): Promise<boolean> {
+  if (probingWindow.value || probeBlocked.value) return false
+  const epoch = windowProbeEpoch
   probingWindow.value = name
   try {
     const result = await probeModelWindow({
@@ -381,32 +397,73 @@ async function handleProbeWindow(name: string): Promise<void> {
       profileId: props.profile?.id ?? null,
       model: name,
     })
+    if (epoch !== windowProbeEpoch || !form.chatModels.includes(name)) return false
     if (!result.ok || typeof result.window !== 'number') {
-      ElMessage.warning(result.error ?? '没有取到这个模型的上下文窗口')
-      return
+      windowFeedback.value[name] = { text: result.error ?? '未取得窗口，可手动填写', reference: false }
+      if (!completingWindows.value) ElMessage.warning(windowFeedback.value[name].text)
+      return !['AUTH_FAILED', 'FORBIDDEN', 'RATE_LIMITED', 'NETWORK_ERROR', 'TIMEOUT', 'HTTP_ERROR'].includes(
+        result.kind ?? '',
+      )
     }
     const detected = result.window
+    const reference = result.source === 'reference' || result.source === 'catalog'
+    const label = reference
+      ? result.source === 'catalog'
+        ? '内置参考'
+        : '官方参考'
+      : result.source === 'input-limit'
+        ? '端点输入上限（作为保守配置）'
+        : '端点窗口'
     const current = form.contextWindows[name]
     const currentText = current === undefined || current === null ? '' : String(current).trim()
-    if (currentText.length === 0) {
-      form.contextWindows[name] = String(detected)
-      ElMessage.success(`${name}：${formatContextWindow(detected)}`)
-      return
+    const differs = currentText.length > 0 && parseContextWindow(currentText) !== detected
+    if (!currentText) form.contextWindows[name] = String(detected)
+    windowFeedback.value[name] = {
+      text:
+        `${label}：${detected.toLocaleString()} token${differs ? '，已保留当前填写值' : ''}。` +
+        (result.message ?? (reference ? '不是此端点的实测上限。' : '')),
+      sourceUrl: result.sourceUrl,
+      reference,
     }
-    const parsedCurrent = parseContextWindow(currentText)
-    if (parsedCurrent === detected) {
-      ElMessage.success(`端点确认：${formatContextWindow(detected)}`)
-      return
+    if (!completingWindows.value) {
+      if (reference || differs) ElMessage.warning(differs ? '查询结果不同，已保留当前值' : '已填入参考值，请核对来源')
+      else ElMessage.success(`${name}：${formatContextWindow(detected)}`)
     }
-    ElMessage.warning(
-      `端点返回 ${formatContextWindow(detected)}，当前为 ${parsedCurrent === null ? currentText : formatContextWindow(parsedCurrent)}，已保留当前值。` +
-        '如需采用端点值，请清空输入框后重新查询。',
-    )
+    return true
   } catch (cause) {
-    ElMessage.warning(cause instanceof Error ? cause.message : '查询窗口失败')
+    if (epoch === windowProbeEpoch && form.chatModels.includes(name)) {
+      windowFeedback.value[name] = {
+        text: cause instanceof Error ? cause.message : '查询窗口失败，请重试',
+        reference: false,
+      }
+    }
+    return false
   } finally {
-    probingWindow.value = null
+    if (epoch === windowProbeEpoch) probingWindow.value = null
   }
+}
+
+const missingWindows = computed(() => form.chatModels.filter((name) => !String(form.contextWindows[name] ?? '').trim()))
+
+async function completeMissingWindows(): Promise<void> {
+  if (completingWindows.value || probingWindow.value || probeBlocked.value) return
+  completingWindows.value = true
+  const epoch = windowProbeEpoch
+  const targets = [...missingWindows.value]
+  try {
+    // Sequential metadata requests avoid bursting the provider's rate limit.
+    for (const name of targets) {
+      if (epoch !== windowProbeEpoch) break
+      if (!(await handleProbeWindow(name))) break
+    }
+  } finally {
+    if (epoch === windowProbeEpoch) completingWindows.value = false
+  }
+}
+
+function updateWindow(name: string, value: string): void {
+  form.contextWindows[name] = value
+  delete windowFeedback.value[name]
 }
 
 /**
@@ -443,7 +500,7 @@ function windowNote(name: string): { text: string; bad: boolean; hint: string } 
   if (parsed === null) {
     return { text: '无效', bad: true, hint: windowHint(name) }
   }
-  return { text: `= ${formatContextWindow(parsed)}`, bad: false, hint: windowHint(name) }
+  return { text: formatContextWindow(parsed), bad: false, hint: windowHint(name) }
 }
 
 defineExpose({ finish })
@@ -631,8 +688,23 @@ defineExpose({ finish })
           （视觉复核原话：「提示语和已填内容挨得很近，读起来有自相矛盾的错觉」）。
           空清单本身不需要占位：输入行就是这个功能唯一的入口。
         -->
-        <div v-if="form.chatModels.length > 0" class="profile-form__models">
-          <div v-for="(name, index) in form.chatModels" :key="`chat-${index}-${name}`" class="profile-form__model-row">
+        <div v-if="form.chatModels.length > 0" class="profile-form__window-toolbar">
+          <span>上下文窗口 <span class="profile-form__window-unit">token</span></span>
+          <el-button
+            link
+            size="small"
+            :loading="completingWindows"
+            :disabled="!missingWindows.length || !!probeBlocked || probingWindow !== null"
+            @click="completeMissingWindows"
+            >补全空缺窗口</el-button
+          >
+        </div>
+        <div v-if="form.chatModels.length > 0" class="profile-form__models profile-form__models--chat">
+          <div
+            v-for="(name, index) in form.chatModels"
+            :key="`chat-${index}-${name}`"
+            class="profile-form__model-row profile-form__model-row--chat"
+          >
             <span class="profile-form__model-name" :title="name">{{ name }}</span>
             <!--
               ============ 上下文窗口（V25） ============
@@ -656,10 +728,10 @@ defineExpose({ finish })
                 size="small"
                 clearable
                 :maxlength="12"
-                placeholder="上下文窗口"
+                placeholder="待获取"
                 :title="windowHint(name)"
                 :aria-label="`${name} 的上下文窗口（token）`"
-                @update:model-value="(value: string) => (form.contextWindows[name] = value)"
+                @update:model-value="(value: string) => updateWindow(name, value)"
               />
               <!--
                 换算提示：用户填 `32768`，右边告诉他「= 32K」。
@@ -684,7 +756,7 @@ defineExpose({ finish })
                 link
                 size="small"
                 :loading="probingWindow === name"
-                :disabled="probingWindow !== null && probingWindow !== name"
+                :disabled="!!probeBlocked || completingWindows || (probingWindow !== null && probingWindow !== name)"
                 title="向端点查询这个模型的上下文窗口（不会覆盖已填的值）"
                 :aria-label="`查询 ${name} 的上下文窗口`"
                 @click="handleProbeWindow(name)"
@@ -714,6 +786,21 @@ defineExpose({ finish })
             <span class="profile-form__model-actions">
               <el-button link size="small" type="danger" @click="removeModel('chat', index)">移除</el-button>
             </span>
+            <div
+              v-if="windowFeedback[name]"
+              class="profile-form__window-feedback"
+              :class="{ 'profile-form__window-feedback--reference': windowFeedback[name].reference }"
+              role="status"
+            >
+              <span>{{ windowFeedback[name].text }}</span>
+              <a
+                v-if="windowFeedback[name].sourceUrl"
+                :href="windowFeedback[name].sourceUrl!"
+                target="_blank"
+                rel="noopener noreferrer"
+                >查看官方说明</a
+              >
+            </div>
           </div>
         </div>
         <!--
@@ -1312,16 +1399,7 @@ html .profile-dialog {
   min-width: 0;
 }
 
-/*
- * 换算提示：`= 32K`。
- *
- * <p>固定 50px：`= 1.5M` 是 6 个字符里最宽的一种（约 38px），留 12px 余量。
- * 不定宽的话「32K」与「= 1.5M」两种行会让输入框右边缘差 8px ——
- * 同一列里输入框长短不一，看起来像是每行各自贴了块补丁。
- *
- * <p>`text-align: left` 而不是 right：它紧跟在输入框右侧，右对齐会让
- * 短文本「32K」离输入框远、长文本贴着，读起来是两段不相干的东西。
- */
+/* 换算值单行显示；具体列宽由对话模型行的网格统一控制。 */
 .profile-form__model-window-note {
   flex: none;
   width: 50px;
@@ -1390,5 +1468,82 @@ html .profile-dialog {
 .profile-form__slider {
   flex: 1;
   min-width: 0;
+}
+</style>
+
+<style scoped>
+.profile-form__window-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--os-space-3);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+.profile-form__window-unit {
+  margin-left: var(--os-space-1);
+  font-variant-numeric: tabular-nums;
+}
+.profile-form__models--chat {
+  max-height: 260px;
+}
+.profile-form__model-row--chat {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 240px 56px 40px;
+  column-gap: var(--os-space-3);
+  row-gap: var(--os-space-1);
+  padding: var(--os-space-2) var(--os-space-3);
+}
+.profile-form__model-row--chat .profile-form__model-window {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 60px 32px;
+  gap: var(--os-space-2);
+  width: 100%;
+  min-width: 0;
+}
+.profile-form__model-row--chat .profile-form__model-window-note {
+  width: auto;
+  white-space: nowrap;
+  line-height: 1;
+}
+.profile-form__model-row--chat .profile-form__model-probe {
+  width: 32px;
+  min-height: 32px;
+}
+.profile-form__window-feedback {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--os-space-1) var(--os-space-2);
+  padding-top: var(--os-space-1);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.profile-form__window-feedback--reference {
+  color: var(--el-color-warning);
+}
+.profile-form__window-feedback a {
+  color: var(--el-color-primary);
+  text-underline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .profile-form__model-row--chat {
+    grid-template-columns: minmax(0, 1fr) 56px 40px;
+    column-gap: var(--os-space-2);
+  }
+  .profile-form__model-row--chat .profile-form__model-name {
+    grid-column: 1 / -1;
+  }
+  .profile-form__model-row--chat .profile-form__model-window {
+    grid-template-columns: minmax(0, 1fr) 48px 28px;
+    gap: var(--os-space-1);
+  }
+  .profile-form__model-row--chat .profile-form__model-probe {
+    width: 28px;
+  }
 }
 </style>

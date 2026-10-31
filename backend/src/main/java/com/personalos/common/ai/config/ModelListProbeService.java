@@ -438,7 +438,7 @@ public class ModelListProbeService {
      * <h2>为什么需要它</h2>
      * 批量探测只能补查 12 个模型（限流与预算约束），而「新加入清单的模型」
      * 那一刻还不在优先名单里，窗口必然是空的。用户要么重新整轮探测（1.8 秒 + 再撞一次限流），
-     * 要么手填。给每个模型一个独立入口，成本降到一次请求。
+     * 要么手填。给每个模型一个独立入口，先查详情，必要时回退到列表。
      *
      * <h2>为什么复用列表请求的头</h2>
      * 鉴权方式（Bearer / x-api-key + 版本头）在列表探测时已经验证过可用，
@@ -460,17 +460,117 @@ public class ModelListProbeService {
         String name = model.strip();
         HttpRequest listRequest = buildRequest(protocol, resolveUri(protocol, baseUrl), apiKey);
         DetailOutcome outcome = fetchDetailWindow(protocol, detailBase(baseUrl), name, listRequest);
+        if (outcome.window() != null) return windowResult(outcome, "endpoint", null, null);
+        if (canFallback(outcome.kind())) {
+            DetailOutcome listed = fetchListedWindow(listRequest, name);
+            if (listed.window() != null) return windowResult(listed, "endpoint", null, "已从模型列表读取窗口");
+            if (!canFallback(listed.kind())) return windowResult(listed, null, null, null);
+            if ("MODEL_NOT_LISTED".equals(listed.kind()) && !Integer.valueOf(200).equals(outcome.httpStatus())) {
+                return windowResult(listed, null, null, null);
+            }
+            var reference = com.personalos.common.ai.ModelWindowReferences.find(name, baseUrl);
+            if (reference == null) {
+                Integer known = com.personalos.common.ai.ModelContextWindows.lookup(name);
+                if (known != null) return new WindowProbeResult(true, known, "REFERENCE", null, "catalog", null,
+                        outcome.kind(), outcome.httpStatus(), outcome.defaultWindow(),
+                        failureMessage(outcome.kind(), outcome.httpStatus()) + "；提供内置参考值，不代表此端点的实测上限");
+            }
+            if (reference != null) {
+                return new WindowProbeResult(true, reference.configurationWindow(), "REFERENCE", null, "reference", reference.url(),
+                        outcome.kind(), outcome.httpStatus(), outcome.defaultWindow(),
+                        failureMessage(outcome.kind(), outcome.httpStatus())
+                                + "；提供官方参考值，不代表此端点的实测上限"
+                                + (reference.inputLimit() == null ? "" : "；官方总窗口 " + reference.tokens()
+                                + " token，已采用兼容思考模式的较小输入上限作保守配置"));
+            }
+        }
+        return windowResult(outcome, null, null, null);
+    }
 
-        if (outcome.rateLimited()) {
-            return new WindowProbeResult(false, null, "RATE_LIMITED", "端点限流（429），请稍后再试");
+    private static boolean canFallback(String kind) {
+        return java.util.Set.of("NOT_FOUND", "NO_METADATA", "DERIVED_DEFAULT", "INVALID_RESPONSE", "MODEL_NOT_LISTED").contains(kind);
+    }
+
+    private static WindowProbeResult windowResult(DetailOutcome outcome, String source, String sourceUrl, String message) {
+        return new WindowProbeResult(outcome.window() != null, outcome.window(), outcome.window() == null ? outcome.kind() : null,
+                outcome.window() == null ? failureMessage(outcome.kind(), outcome.httpStatus()) : null,
+                "INPUT_LIMIT".equals(outcome.kind()) ? "input-limit" : source, sourceUrl, outcome.kind(), outcome.httpStatus(), outcome.defaultWindow(),
+                "INPUT_LIMIT".equals(outcome.kind()) ? (outcome.contextWindow() == null ? "端点未提供总窗口，已用输入上限作保守配置"
+                        : "端点总窗口 " + outcome.contextWindow() + " token，已采用更小的输入上限作保守配置") : message);
+    }
+
+    private static String failureMessage(String kind, Integer status) {
+        return switch (kind) {
+            case "AUTH_FAILED" -> "认证失败（HTTP 401），请检查 API Key 与端点地址";
+            case "FORBIDDEN" -> "没有查询权限（HTTP 403），请检查密钥权限";
+            case "RATE_LIMITED" -> "端点限流（HTTP 429），请稍后重试";
+            case "NOT_FOUND" -> "端点未提供该模型的详情接口（HTTP 404/405）";
+            case "MODEL_NOT_LISTED" -> "模型列表中未找到该名称，请检查模型名；也可按供应商说明手动填写窗口";
+            case "DERIVED_DEFAULT" -> "端点只返回了默认调用参数，无法据此确认模型的上下文窗口";
+            case "NO_METADATA" -> "接口正常响应，但没有提供可识别的上下文窗口字段";
+            case "TIMEOUT" -> "查询窗口超时，请稍后重试或检查网络";
+            case "NETWORK_ERROR" -> "无法连接模型端点，请检查网络和端点地址";
+            case "INVALID_RESPONSE" -> "端点未返回有效的模型元数据 JSON，请检查端点地址";
+            default -> "模型端点查询失败（HTTP " + status + "），请稍后重试";
+        };
+    }
+
+    /** Some providers publish limits only in GET /models, not GET /models/{id}. */
+    private DetailOutcome fetchListedWindow(HttpRequest listRequest, String modelName) {
+        Integer status = null;
+        try {
+            HttpRequest request = HttpRequest.newBuilder(listRequest, (name, value) -> true)
+                    .timeout(Duration.ofMillis(DETAIL_TIMEOUT_MS)).GET().build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            status = response.statusCode();
+            if (status < 200 || status >= 300) return DetailOutcome.failed(httpFailure(status), status, null);
+            JsonNode root = objectMapper.readTree(response.body());
+            if (root == null) return DetailOutcome.failed("INVALID_RESPONSE", status, null);
+            JsonNode models = root.isArray() ? root : root.path("data").isArray() ? root.path("data") : root.path("models");
+            if (!models.isArray()) return DetailOutcome.failed("INVALID_RESPONSE", status, null);
+            for (JsonNode node : models) {
+                String id = node.path("id").asString(null);
+                String name = node.path("name").asString(null);
+                if (!modelName.equals(id) && !modelName.equals(name)) continue;
+                return metadataOutcome(node, status);
+            }
+            return DetailOutcome.failed("MODEL_NOT_LISTED", status, null);
+        } catch (java.net.http.HttpTimeoutException ex) {
+            return DetailOutcome.failed("TIMEOUT", status, null);
+        } catch (IOException ex) {
+            return DetailOutcome.failed("NETWORK_ERROR", status, null);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return DetailOutcome.failed("NETWORK_ERROR", status, null);
+        } catch (RuntimeException ex) {
+            return DetailOutcome.failed("INVALID_RESPONSE", status, null);
         }
-        if (outcome.window() == null) {
-            // 404 与「响应里没有窗口字段」在这一层无法区分，也无需区分：
-            // 对用户而言都是「这个端点没告诉我们」，而它仍然能正常聊天
-            return new WindowProbeResult(false, null, "UNSUPPORTED",
-                    "这个端点没有返回「" + name + "」的上下文窗口，请按模型文档手动填写");
+    }
+
+    private static String httpFailure(int status) {
+        return switch (status) {
+            case 401 -> "AUTH_FAILED";
+            case 403 -> "FORBIDDEN";
+            case 404, 405 -> "NOT_FOUND";
+            case 429 -> "RATE_LIMITED";
+            default -> "HTTP_ERROR";
+        };
+    }
+
+    private static DetailOutcome metadataOutcome(JsonNode node, Integer status) {
+        Integer context = readDeclaredWindow(node, false);
+        Integer input = readDeclaredWindow(node, true);
+        if (input != null && (context == null || input < context)) return DetailOutcome.input(input, context);
+        if (context != null) return DetailOutcome.found(context);
+        return missingMetadata(node, status);
+    }
+
+    private static DetailOutcome missingMetadata(JsonNode root, Integer status) {
+        JsonNode extra = root.path("extra_info");
+        if (isDerivedFromDefaultMaxTokens(extra)) {
+            return DetailOutcome.failed("DERIVED_DEFAULT", status, extra.path("default_envs").path("max_input_tokens").asInt());
         }
-        return new WindowProbeResult(true, outcome.window(), null, null);
+        return DetailOutcome.failed("NO_METADATA", status, null);
     }
 
     /**
@@ -489,11 +589,12 @@ public class ModelListProbeService {
      *
      * @param ok    是否取到
      * @param window 窗口（token）；未取到为 null
-     * @param kind   未取到的原因：{@code UNSUPPORTED}（端点不提供，不用管）或
-     *               {@code RATE_LIMITED}（过一会儿可重试）
+     * @param kind   查询失败的具体原因；参考回退成功时为 {@code REFERENCE}
      * @param error  面向用户的说明
      */
-    public record WindowProbeResult(boolean ok, Integer window, String kind, String error) {
+    public record WindowProbeResult(boolean ok, Integer window, String kind, String error,
+                                    String source, String sourceUrl, String detailKind, Integer httpStatus,
+                                    Integer reportedDefaultWindow, String message) {
     }
 
     /**
@@ -604,18 +705,11 @@ public class ModelListProbeService {
      * @param window      取到的窗口；没取到为 null
      * @param rateLimited 本轮是否被限流（429）
      */
-    private record DetailOutcome(Integer window, boolean rateLimited) {
-
-        static DetailOutcome found(int window) {
-            return new DetailOutcome(window, false);
-        }
-
-        static DetailOutcome missing() {
-            return new DetailOutcome(null, false);
-        }
-
-        static DetailOutcome throttled() {
-            return new DetailOutcome(null, true);
+    private record DetailOutcome(Integer window, boolean rateLimited, String kind, Integer httpStatus, Integer defaultWindow, Integer contextWindow) {
+        static DetailOutcome found(int window) { return new DetailOutcome(window, false, "FOUND", 200, null, window); }
+        static DetailOutcome input(int limit, Integer context) { return new DetailOutcome(limit, false, "INPUT_LIMIT", 200, null, context); }
+        static DetailOutcome failed(String kind, Integer status, Integer defaultWindow) {
+            return new DetailOutcome(null, "RATE_LIMITED".equals(kind), kind, status, defaultWindow, null);
         }
     }
 
@@ -628,6 +722,7 @@ public class ModelListProbeService {
      */
     private DetailOutcome fetchDetailWindow(ModelProtocol protocol, String base, String modelName,
                                             HttpRequest listRequest) {
+        Integer status = null;
         try {
             String encoded = java.util.Arrays.stream(modelName.split("/"))
                     .map(part -> java.net.URLEncoder.encode(part, StandardCharsets.UTF_8))
@@ -652,25 +747,22 @@ public class ModelListProbeService {
                     .build();
             HttpResponse<String> response = httpClient.send(detailRequest,
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-            if (response.statusCode() == 429) {
-                return DetailOutcome.throttled();
-            }
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                return DetailOutcome.missing();
-            }
+            status = response.statusCode();
+            if (status < 200 || status >= 300) return DetailOutcome.failed(httpFailure(status), status, null);
             JsonNode root = objectMapper.readTree(response.body());
             if (root == null || root.isNull()) {
-                return DetailOutcome.missing();
+                return DetailOutcome.failed("NO_METADATA", status, null);
             }
-            Integer window = readWindow(root);
-            return window == null ? DetailOutcome.missing() : DetailOutcome.found(window);
-        } catch (IOException | RuntimeException ex) {
-            // 单模型的失败不值得记日志：多数模型并不支持详情接口，
-            // 全记下来会把日志刷满，反而盖住真正的问题
-            return DetailOutcome.missing();
+            return metadataOutcome(root, status);
+        } catch (java.net.http.HttpTimeoutException ex) {
+            return DetailOutcome.failed("TIMEOUT", status, null);
+        } catch (IOException ex) {
+            return DetailOutcome.failed("NETWORK_ERROR", status, null);
+        } catch (RuntimeException ex) {
+            return DetailOutcome.failed("INVALID_RESPONSE", status, null);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            return DetailOutcome.missing();
+            return DetailOutcome.failed("NETWORK_ERROR", status, null);
         }
     }
 
@@ -709,81 +801,58 @@ public class ModelListProbeService {
             if (!keep.contains(name)) {
                 continue;
             }
-            Integer window = readWindow(node);
-            if (window != null) {
-                out.put(name, window);
-            }
+            Integer window = metadataOutcome(node, 200).window();
+            if (window != null) out.put(name, window);
         }
         return out;
     }
 
-    /** 按上述多种字段名依次尝试读一个合理的窗口值；都不像就返回 null */
+    private static final java.util.List<String> CONTEXT_FIELDS = java.util.List.of(
+            "context_length", "context_window", "max_model_len", "max_context_length", "max_context_window",
+            "context_window_tokens", "max_context_window_tokens", "max_position_embeddings", "n_ctx");
+    private static final java.util.List<String> INPUT_FIELDS = java.util.List.of("max_input_tokens", "max_prompt_tokens");
+
+    /** Prefer a total window anywhere in supported metadata, then a conservative input-only limit. */
     static Integer readWindow(JsonNode node) {
-        for (String field : new String[] {
-                "context_length", "context_window", "max_model_len",
-                "max_context_length", "max_input_tokens", "max_context_window"}) {
-            JsonNode value = node.path(field);
-            if (value.isNumber()) {
-                int window = value.asInt();
-                if (isPlausibleWindow(window)) {
-                    return window;
+        Integer context = readDeclaredWindow(node, false);
+        return context != null ? context : readDeclaredWindow(node, true);
+    }
+
+    private static Integer readDeclaredWindow(JsonNode node, boolean inputOnly) {
+        var fields = inputOnly ? INPUT_FIELDS : CONTEXT_FIELDS;
+        for (String field : fields) {
+            Integer value = windowNumber(node.path(field));
+            if (value != null) return value;
+        }
+        if (!inputOnly && node.path("model_info").isObject()) {
+            for (var entry : node.path("model_info").properties()) {
+                if (entry.getKey().endsWith(".context_length")) {
+                    Integer value = windowNumber(entry.getValue());
+                    if (value != null) return value;
                 }
             }
         }
-        // Ollama /api/tags 把它塞在 model_info 下，键名形如 "llama.context_length"
-        JsonNode info = node.path("model_info");
-        if (info.isObject()) {
-            java.util.Iterator<Map.Entry<String, JsonNode>> it = info.properties().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, JsonNode> entry = it.next();
-                if (entry.getKey().endsWith(".context_length") && entry.getValue().isNumber()) {
-                    int window = entry.getValue().asInt();
-                    if (isPlausibleWindow(window)) {
-                        return window;
-                    }
-                }
+        for (String container : new String[] {"extra_info", "data", "model_info", "meta", "metadata", "limits", "capabilities", "top_provider", "config", "details"}) {
+            JsonNode child = node.path(container);
+            if (child.isObject()) {
+                Integer value = findWindowInObject(child, 0, fields);
+                if (value != null) return value;
             }
-        }
-        Integer nested = readNestedWindow(node);
-        if (nested != null) {
-            return nested;
         }
         return null;
     }
 
-    /**
-     * 在嵌套容器里找窗口（V26）。
-     *
-     * <h2>为什么必须递归找</h2>
-     * DashScope 的单模型详情把它放在
-     * {@code extra_info.default_envs.max_input_tokens} —— 两层嵌套，且
-     * <b>三个已知的窗口字段名都出现在这里</b>。只查顶层字段的实现
-     * 对这类端点恒返回 null，于是「自动识别」看起来完全失效。
-     *
-     * <pre>
-     *   GET /compatible-mode/v1/models/qwen-max
-     *   { "id": "qwen-max",
-     *     "extra_info": { "default_envs": { "max_input_tokens": 30720 } } }
-     * </pre>
-     *
-     * <p>深度限制 4 层：真实响应不会更深，而无限递归会在
-     * 异常端点上把栈打爆。只往 object 与 array 里走，标量不递归。
-     *
-     * <p>先查 {@code extra_info} 再查 {@code data}：前者是详情接口的形状，
-     * 后者是少数聚合网关把详情又包一层的形状。
-     */
-    private static Integer readNestedWindow(JsonNode node) {
-        for (String container : new String[] {"extra_info", "data", "model_info", "meta", "metadata"}) {
-            JsonNode child = node.path(container);
-            if (child.isObject()) {
-                // 默认生成参数中的派生输入长度不等于模型窗口；在遍历时仅跳过该子树。
-                Integer found = findWindowInObject(child, 0);
-                if (found != null) {
-                    return found;
-                }
-            }
-        }
-        return null;
+    private static Integer windowNumber(JsonNode node) {
+        try {
+            long value;
+            if (node.isNumber()) {
+                if (node.asDouble() != Math.rint(node.asDouble())) return null;
+                value = node.asLong();
+            } else if (node.isString() && node.asString().length() <= 24 && node.asString().matches("[0-9][0-9,]*")) {
+                value = Long.parseLong(node.asString().replace(",", ""));
+            } else return null;
+            return value >= 1024 && value <= 32L * 1024 * 1024 ? (int) value : null;
+        } catch (NumberFormatException ex) { return null; }
     }
 
     /** 派生关系的固定差值：DashScope 的 max_input_tokens = max_tokens - 2048 */
@@ -819,9 +888,7 @@ public class ModelListProbeService {
      * 且能让「先浅后深」的顺序成立 —— 越靠近顶层越可能是真正的窗口声明，
      * 深处的同名键更可能是别的含义（如某个 tokenizer 配置里的长度）。
      */
-    private static Integer findWindowInObject(JsonNode root, int startDepth) {
-        Set<String> fields = Set.of("max_input_tokens", "context_length", "context_window",
-                "max_model_len", "max_context_length", "max_context_window");
+    private static Integer findWindowInObject(JsonNode root, int startDepth, java.util.List<String> fields) {
         java.util.ArrayDeque<Map.Entry<JsonNode, Integer>> queue = new java.util.ArrayDeque<>();
         queue.add(Map.entry(root, startDepth));
         while (!queue.isEmpty()) {
@@ -836,11 +903,9 @@ public class ModelListProbeService {
                 while (it.hasNext()) {
                     Map.Entry<String, JsonNode> entry = it.next();
                     JsonNode value = entry.getValue();
-                    if (fields.contains(entry.getKey()) && value.isNumber()) {
-                        int window = value.asInt();
-                        if (isPlausibleWindow(window)) {
-                            return window;
-                        }
+                    if (fields.contains(entry.getKey())) {
+                        Integer window = windowNumber(value);
+                        if (window != null) return window;
                     }
                     if ("default_envs".equals(entry.getKey()) && isDerivedFromDefaultMaxTokens(node)) {
                         continue;

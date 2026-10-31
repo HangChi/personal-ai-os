@@ -780,3 +780,5 @@ const PROFILE = {
   const api = readFileSync(resolve(here, '..', 'src/api/model-profile.ts'), 'utf8')
   check('API 类型里声明了 models 字段', /probeModelList\(payload:\s*\{[\s\S]*?models\?:\s*string\[\]/.test(api))
 }
+
+eq('接近整数 K 的换算不显示多余小数', formatContextWindow(196601), '192K')
