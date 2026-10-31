@@ -634,6 +634,7 @@ async function jumpToMatch(step: number): Promise<void> {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
 }
 
 .chat__main :deep(.el-card__body) {
@@ -702,14 +703,8 @@ async function jumpToMatch(step: number): Promise<void> {
   flex-direction: column;
   /* 消息间距与内边距双双收窄：让内容尽量铺开，减少「周围一圈白」 */
   gap: var(--os-space-3);
-  /*
-   * 左右内边距 = 把居中阅读栏之外的空间让出来（`max` 保证窄屏时不小于 16px）。
-   * 用 padding 而不是给每个子项加 `max-width + margin: auto`：
-   * 消息流里还夹着错误条、欢迎态、加载更早按钮、确认列表等一堆子项，
-   * 逐个限宽必然漏掉其中一个，而 padding 一次管住所有层。
-   * 竖向 padding 保持原值。
-   */
-  padding: var(--os-space-3) max(var(--os-space-4), calc((100% - var(--os-chat-band)) / 2));
+  /* 与输入区共用固定边距，收起会话栏后内容也跟随扩展。 */
+  padding: var(--os-space-3) var(--os-chat-gutter);
 }
 
 .chat__error {
@@ -795,6 +790,25 @@ async function jumpToMatch(step: number): Promise<void> {
 
 .chat__search-input {
   width: 200px;
+}
+
+@media (max-width: 600px) {
+  .chat__main-header {
+    flex-wrap: wrap;
+    gap: var(--os-space-2);
+  }
+
+  .chat__header-actions,
+  .chat__search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .chat__search-input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
 }
 
 /* 计数用等宽数字：切换匹配时宽度不跳，视线不会被带着走 */

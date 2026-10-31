@@ -207,15 +207,11 @@ const emit = defineEmits<{
   color: var(--os-on-primary);
 }
 
-/*
- * 宽度上限（2026-10-26 调整）：原先 760px，在 1440px 屏上右侧会空出 350px 以上，
- * 对话区显得「没占满」。放到 1000px（约合中文 77 字）后内容铺满主列，
- * 同时仍留出一道右边距，避免文字顶到卡片边缘。
- */
+/* 长回复可使用主列的可用宽度，短回复仍由气泡按内容收缩。 */
 .chat-msg__content {
   min-width: 0;
   flex: 1;
-  max-width: 1000px;
+  max-width: 100%;
   font-size: var(--os-font-sm);
   line-height: 1.75;
 }
@@ -254,7 +250,7 @@ const emit = defineEmits<{
    */
   position: relative;
   width: fit-content;
-  max-width: min(100%, var(--os-chat-reply-max));
+  max-width: 100%;
   background: var(--os-bubble-bg);
   border: 1px solid var(--os-bubble-border);
   box-shadow: var(--os-shadow-bubble);

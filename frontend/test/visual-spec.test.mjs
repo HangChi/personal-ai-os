@@ -353,77 +353,22 @@ check(
 )
 
 /* ==========================================================================
- * 聊天阅读栏宽度（2026-10-30）
- *
- * 守的是一个**用户直接看出来的问题**：「助手的回复铺满又有点丑了」。
- *
- * <p>背景：助手气泡为了消除「有的框很大、有的很小」改成了 `width: 100%`，
- * 但 1440px 下气泡宽 842px，而实测**最长的一行文字只占内宽的 55%**（约 449px）
- * —— 一大块灰底里只有半边有字。填充率（文字墨迹面积 / 内容区面积）
- * 842px 时仅 17.4%，收到 680px 后是 21.4%。
- *
- * <p>这三条断言防的是三种「写了但没生效 / 只改了一边」的退化：
- * 1. 令牌被删或改回宽值 → 宽屏重新变回大灰框；
- * 2. 消息区用了新公式、输入区忘了改 → 消息窄、输入框宽，一宽一窄更难看；
- * 3. 输入区沿用了旧的 20px 最小内边距 → 窄屏下比气泡各宽 4px，边缘对不齐。
+ * 对话区不再固定居中限宽，消息与输入框共用边距。
  * ========================================================================== */
-
-const bandPx = tokenPx('os-chat-band')
-check('阅读栏：令牌 --os-chat-band 存在且是 px 数值', bandPx !== null)
-/*
- * 上界 800：再宽就回到「一行 50 字以上、右侧大片空灰底」的老样子。
- * 下界 640：再窄代码块会被迫横向滚动（实测 640 时滚动 12px），且一行不足 40 字。
- */
-check(
-  '阅读栏：宽度落在 640~800 之间（过宽则空、过窄则代码块横向滚动）',
-  bandPx !== null && bandPx >= 640 && bandPx <= 800,
-)
 
 const chatViewSrc = read('src/views/ChatView.vue')
 const composerSrc = read('src/components/chat/ChatComposer.vue')
-
-/*
- * 两边必须用**同一个公式**（同一个令牌 + 同一个 `max()` 兜底下限）。
- *
- * <p>不比对整条 padding 字符串：允许各自保留不同的上/下内边距。
- * 只要求「左右两侧的算式里出现了这个令牌」，以及「都用了 max() 兜底」。
- */
-function usesBand(src, selector) {
+function horizontalPadding(src, selector) {
   const body =
     src.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([\\s\\S]*?)\\n\\}`))?.[1] ?? ''
   const stripped = body.replace(/\/\*[\s\S]*?\*\//g, '')
-  return {
-    body: stripped,
-    hasBand: stripped.includes('var(--os-chat-band)'),
-    hasMax: /padding:[^;]*max\(/.test(stripped),
-  }
+  return stripped.match(/padding:\s*var\(--os-space-3\)\s+([^;]+);/)?.[1]
 }
 
-const msgBand = usesBand(chatViewSrc, '.chat__messages')
-check('阅读栏：消息滚动区用令牌控制左右内边距', msgBand.hasBand)
-check('阅读栏：消息滚动区用 max() 保证窄屏不小于最小值', msgBand.hasMax)
-check('阅读栏：消息区的 padding 是简写（漏写会只改到个别边）', /padding:\s*var\(--os-space-3\)/.test(msgBand.body))
-
-const composerBand = usesBand(composerSrc, '.chat-composer')
-check('阅读栏：输入区必须用同一个令牌，否则消息窄、输入框宽', composerBand.hasBand)
-check('阅读栏：输入区同样用 max() 兜底', composerBand.hasMax)
-
-/*
- * 输入区的最小内边距必须是 16（`--os-space-4`），与消息区一致。
- *
- * <p>改造前输入区是 `--os-space-5`（20px）。差 4px 在宽屏被居中公式吃掉看不出来，
- * 但窄屏（<724+32）下 `max()` 退回最小值，20 与 16 的差就直接暴露成
- * 「输入框比气泡各宽 4px」。这类只在特定宽度出现的不对齐，肉眼极难归因。
- */
+const messagePadding = horizontalPadding(chatViewSrc, '.chat__messages')
+const composerPadding = horizontalPadding(composerSrc, '.chat-composer')
+check('对话区：消息与输入框保持相同水平边距', messagePadding !== undefined && messagePadding === composerPadding)
 check(
-  '阅读栏：输入区最小内边距与消息区一致（16，不是 20）',
-  /padding:\s*var\(--os-space-3\)\s*max\(var\(--os-space-4\)/.test(composerBand.body),
+  '对话区：不再保留固定阅读栏宽度',
+  !chatViewSrc.includes('var(--os-chat-band)') && !composerSrc.includes('var(--os-chat-band)'),
 )
-
-/*
- * 死样式守卫：输入区不能残留把宽度写死的旧写法。
- *
- * <p>`padding-inline` 与 `padding` 同时存在时后者被覆盖的顺序取决于书写顺序，
- * 是典型的「改了不生效」来源。这里要求它不出现。
- */
-check('阅读栏：输入区不用 padding-inline 与 padding 混写', !/padding-inline/.test(composerBand.body))

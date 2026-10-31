@@ -9,7 +9,7 @@
  * <p>分组在组件内计算：`groupSessionsByDay` 是纯函数，放这里能少一层 props，
  * 也让「列表长什么样」这件事只有一个出处。
  */
-import { Delete, Download, EditPen, Expand, Fold, Plus } from '@element-plus/icons-vue'
+import { Delete, Download, EditPen, Expand, Fold, Plus, Refresh } from '@element-plus/icons-vue'
 import { computed, nextTick, ref, watch, type ComponentPublicInstance } from 'vue'
 
 import AppPagination from '@/components/AppPagination.vue'
@@ -42,9 +42,18 @@ const emit = defineEmits<{
   (e: 'create'): void
   (e: 'page-change', page: number): void
   (e: 'search'): void
-  /** 折叠态请求展开：传 false 是「展开」，将来若要「收起」也走这里 */
+  /** 请求切换会话栏的展开状态 */
   (e: 'toggle-collapse', collapsed: boolean): void
 }>()
+
+const panelToggle = ref<ComponentPublicInstance | null>(null)
+
+async function togglePanel(collapsed: boolean): Promise<void> {
+  emit('toggle-collapse', collapsed)
+  await nextTick()
+  // 切换会替换整个分支，焦点跟随新的切换按钮。
+  panelToggle.value?.$el.focus()
+}
 
 /**
  * 行内重命名状态。
@@ -244,11 +253,13 @@ const activeInitial = computed(() => {
   <el-card v-if="collapsed" class="chat-sessions chat-sessions--rail" shadow="never">
     <div class="chat-sessions__rail">
       <el-button
+        ref="panelToggle"
         link
         class="chat-sessions__rail-btn"
         title="展开会话列表"
         aria-label="展开会话列表"
-        @click="emit('toggle-collapse', false)"
+        :aria-expanded="false"
+        @click="togglePanel(false)"
       >
         <el-icon :size="16"><Expand /></el-icon>
       </el-button>
@@ -293,8 +304,27 @@ const activeInitial = computed(() => {
       <div class="chat-sessions__header">
         <span class="chat-sessions__title">会话</span>
         <div class="chat-sessions__actions">
-          <el-button size="small" :loading="loading" @click="emit('refresh')">刷新</el-button>
-          <el-button type="primary" size="small" @click="emit('create')">新建</el-button>
+          <el-tooltip content="刷新会话" placement="top">
+            <el-button
+              text
+              class="chat-sessions__action"
+              :icon="Refresh"
+              :loading="loading"
+              :disabled="loading"
+              aria-label="刷新会话"
+              @click="emit('refresh')"
+            />
+          </el-tooltip>
+          <el-tooltip content="新建会话" placement="top">
+            <el-button
+              text
+              type="primary"
+              class="chat-sessions__action"
+              :icon="Plus"
+              aria-label="新建会话"
+              @click="emit('create')"
+            />
+          </el-tooltip>
           <!--
             收起按钮放在头部的动作组里，而不是卡片边缘：
             这一行本来就是「会话 + 三个动作」的语义分组，收起属于同一族。
@@ -302,11 +332,13 @@ const activeInitial = computed(() => {
             因为纯图标按钮没有可读文本。
           -->
           <el-button
-            link
+            ref="panelToggle"
+            text
             class="chat-sessions__collapse"
             title="收起会话列表"
             aria-label="收起会话列表"
-            @click="emit('toggle-collapse', true)"
+            :aria-expanded="true"
+            @click="togglePanel(true)"
           >
             <el-icon :size="15"><Fold /></el-icon>
           </el-button>
@@ -499,20 +531,22 @@ const activeInitial = computed(() => {
 }
 
 /*
- * 收起按钮的可点区（2026-10-30）。
- *
- * `el-button link` 的高度只由内容决定（15px 图标 → 约 20px 高），
- * 而同排的「刷新」「新建」是 24px（EP small）—— 三个动作里两个高一个矮，
- * 底边对不齐。这里补到 24px 并保持图标居中：可点区与同排按钮同高，
- * 视觉上才是「一组」，也更好点中。
- *
- * 宽度同样给足 24：纯图标按钮不显式定宽时宽度由图标撑开（15px），
- * 比 24 窄 9px，该是 24×24 的热区会变成 15×24 的窄条。
+ * 头部统一为 28px 图标按钮，显式覆盖全局按钮的高度和相邻外边距。
  */
-.chat-sessions__collapse {
-  width: 24px;
-  height: 24px;
+.chat-sessions__actions :deep(.el-button) {
+  width: var(--os-button-height-inline);
+  height: var(--os-button-height-inline);
+  min-height: var(--os-button-height-inline);
+  margin-left: 0;
   padding: 0;
+  flex: none;
+  border-radius: var(--os-radius-sm);
+}
+
+.chat-sessions__actions :deep(.el-button:focus-visible),
+.chat-sessions__rail-btn:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 2px;
 }
 
 /* ---- 折叠态：48px 竖轨 ---- */

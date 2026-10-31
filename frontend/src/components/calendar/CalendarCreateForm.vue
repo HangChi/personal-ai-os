@@ -2,13 +2,14 @@
 /**
  * 新建日程表单（从 CalendarView 拆出，2026-10-26）。
  *
- * <p>三组纵排（基本信息 / 时间 / 重复与提醒），组内横排（T031）。
+ * <p>基本信息与时间设置按两列对齐，提醒与提交停靠在同一行。
  *
  * <p>{@code fillSlot} 供月视图「点格子加号」调用：预填标题为空 + 该日 9:00 起一小时，
  * 省掉用户再选一次日期。表单自己不知道「哪一天被点了」，由父层决定。
  */
+import { Calendar, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { ref } from 'vue'
+import { ref, useId } from 'vue'
 
 import { RECURRENCE_OPTIONS } from '@/lib/calendar-format'
 import type { RecurrenceType } from '@/types/api'
@@ -42,6 +43,7 @@ const range = ref<[Date, Date] | null>(null)
 const recurrenceType = ref<RecurrenceType>('NONE')
 const recurrenceUntil = ref<Date | null>(null)
 const leadMinutes = ref(props.defaultLead)
+const formId = useId()
 
 /** 月视图点格子：把该时间段填进表单 */
 function fillSlot(start: Date, end: Date): void {
@@ -53,6 +55,9 @@ function fillSlot(start: Date, end: Date): void {
 }
 
 function submit(): void {
+  if (props.creating) {
+    return
+  }
   const value = title.value.trim()
   if (!value) {
     ElMessage.warning('请填写日程标题')
@@ -88,154 +93,202 @@ defineExpose({ fillSlot, reset })
 </script>
 
 <template>
-  <el-card shadow="never">
-    <template #header>新建日程</template>
+  <el-card class="cal-create-panel" shadow="never">
+    <template #header>
+      <div class="cal-create-panel__heading">
+        <el-icon aria-hidden="true"><Calendar /></el-icon>
+        <h2>新建日程</h2>
+      </div>
+    </template>
 
-    <!-- 表单分组（T031）：基本信息 / 时间 / 重复与提醒，替代原来一排混放的控件 -->
-    <div class="cal-create">
-      <section class="cal-create__group">
-        <span class="cal-create__group-label">基本信息</span>
-        <div class="cal-create__row">
-          <el-input v-model="title" class="cal-create__title" maxlength="200" placeholder="日程标题，例如：周会" />
-          <el-input v-model="location" class="cal-create__location" placeholder="地点（可选）" />
+    <el-form class="cal-create" :disabled="creating" @submit.prevent="submit">
+      <div class="cal-create__field">
+        <label class="cal-create__label" :for="`${formId}-title`">日程标题</label>
+        <el-input
+          :id="`${formId}-title`"
+          v-model="title"
+          class="cal-create__title"
+          maxlength="200"
+          placeholder="例如：每周例会"
+        />
+      </div>
+
+      <div class="cal-create__field">
+        <label class="cal-create__label" :for="`${formId}-location`">
+          地点<span class="cal-create__optional">可选</span>
+        </label>
+        <el-input :id="`${formId}-location`" v-model="location" maxlength="200" placeholder="会议室或线上会议链接" />
+      </div>
+
+      <div class="cal-create__field">
+        <div class="cal-create__field-head">
+          <label class="cal-create__label" :for="`${formId}-start`">起止时间</label>
+          <div class="cal-create__all-day">
+            <span>全天</span>
+            <el-switch v-model="allDay" aria-label="全天日程" size="small" />
+          </div>
         </div>
-      </section>
+        <label class="sr-only" :for="`${formId}-end`">结束时间</label>
+        <el-date-picker
+          :id="[`${formId}-start`, `${formId}-end`]"
+          v-model="range"
+          type="datetimerange"
+          class="cal-create__range"
+          format="YYYY-MM-DD HH:mm"
+          range-separator="至"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+        />
+      </div>
 
-      <section class="cal-create__group">
-        <span class="cal-create__group-label">时间</span>
-        <div class="cal-create__row">
-          <el-date-picker
-            v-model="range"
-            type="datetimerange"
-            class="cal-create__range"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
+      <div class="cal-create__field">
+        <label class="cal-create__label" :for="`${formId}-recurrence`">重复</label>
+        <el-select :id="`${formId}-recurrence`" v-model="recurrenceType" class="cal-create__recurrence">
+          <el-option
+            v-for="option in RECURRENCE_OPTIONS"
+            :key="option.value"
+            :label="option.label"
+            :value="option.value"
           />
-          <el-checkbox v-model="allDay">全天</el-checkbox>
-        </div>
-      </section>
-
-      <section class="cal-create__group">
-        <span class="cal-create__group-label">重复与提醒</span>
-        <div class="cal-create__row">
-          <el-select v-model="recurrenceType" class="cal-create__recurrence">
-            <el-option
-              v-for="option in RECURRENCE_OPTIONS"
-              :key="option.value"
-              :label="option.label"
-              :value="option.value"
-            />
-          </el-select>
+        </el-select>
+        <div v-if="recurrenceType !== 'NONE'" class="cal-create__repeat-until">
+          <label class="cal-create__label" :for="`${formId}-until`">
+            重复截止<span class="cal-create__optional">可选</span>
+          </label>
           <el-date-picker
-            v-if="recurrenceType !== 'NONE'"
+            :id="`${formId}-until`"
             v-model="recurrenceUntil"
             type="date"
             class="cal-create__until"
-            placeholder="重复截止（可选）"
+            placeholder="不设截止日期"
           />
-          <div class="cal-create__lead">
-            <span class="cal-create__lead-label">提前</span>
-            <el-input-number v-model="leadMinutes" :min="0" :max="10080" :step="5" size="small" />
-            <span class="cal-create__lead-label">分钟提醒</span>
-          </div>
         </div>
-      </section>
-
-      <div class="cal-create__actions">
-        <el-button type="primary" :loading="creating" @click="submit">创建</el-button>
       </div>
-    </div>
 
-    <p class="cal-create__hint">
-      重复日程在查询时展开为一次次发生，服务端只存规则；「全天」会归一到当天 00:00 至次日 00:00。
-    </p>
+      <div class="cal-create__footer">
+        <div class="cal-create__lead">
+          <label class="cal-create__label" :for="`${formId}-lead`">提前提醒</label>
+          <el-input-number :id="`${formId}-lead`" v-model="leadMinutes" :min="0" :max="10080" :step="5" />
+          <span class="cal-create__unit">分钟</span>
+        </div>
+        <el-button type="primary" native-type="submit" :icon="Plus" :loading="creating" :disabled="creating">
+          创建日程
+        </el-button>
+      </div>
+    </el-form>
   </el-card>
 </template>
 
 <style scoped>
-/* 新建表单：三组纵排，组内横排（T031）。间距一律走 token，禁止裸值（宪法 V） */
-.cal-create {
+.cal-create-panel__heading {
   display: flex;
-  flex-direction: column;
-  gap: var(--os-space-3);
-}
-
-.cal-create__group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--os-space-1);
-}
-
-.cal-create__group-label {
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
-  font-weight: 600;
-}
-
-.cal-create__row {
-  display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--os-space-2);
+  color: var(--el-text-color-regular);
 }
 
-.cal-create__actions {
+.cal-create-panel__heading h2 {
+  margin: 0;
+  font-size: var(--os-font-md);
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.cal-create {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--os-space-4) var(--os-space-5);
+}
+
+.cal-create__field,
+.cal-create__repeat-until {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: var(--os-space-2);
+  min-width: 0;
 }
 
-/*
- * 输入框定宽：这些宽度是「内容刚好放得下」的实测值（标题 220、时间段 360、
- * 地点 160、重复 110、截止 160），属于控件自身的尺寸契约，
- * 不是可收敛的间距节奏，因此保留像素值。
- */
-.cal-create__title {
-  width: 220px;
+.cal-create__label {
+  color: var(--el-text-color-regular);
+  font-size: var(--os-font-sm);
+  line-height: var(--os-space-6);
+  font-weight: 500;
 }
 
-.cal-create__range {
-  width: 360px;
+.cal-create__field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--os-space-6);
 }
 
-.cal-create__location {
-  width: 160px;
+.cal-create__all-day {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
 }
 
-.cal-create__recurrence {
-  width: 110px;
+.cal-create__optional {
+  margin-left: var(--os-space-2);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+  font-weight: 400;
 }
 
-.cal-create__until {
-  width: 160px;
+.cal-create__repeat-until {
+  margin-top: var(--os-space-1);
+}
+
+/* 日期控件的默认宽度与 flex-basis 都需要解除，才能对齐网格。 */
+.cal-create :deep(.el-date-editor),
+.cal-create :deep(.el-select) {
+  width: 100%;
+  min-width: 0;
+  flex: none;
+}
+
+.cal-create :deep(.el-range-input) {
+  min-width: 0;
+}
+
+.cal-create__footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--os-space-4);
+  padding-top: var(--os-space-4);
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .cal-create__lead {
   display: flex;
   align-items: center;
-  gap: var(--os-space-1);
+  gap: var(--os-space-2);
 }
 
-.cal-create__lead-label {
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
+.cal-create__lead :deep(.el-input-number) {
+  width: 112px;
 }
 
-.cal-create__hint {
-  margin: var(--os-space-3) 0 0;
+.cal-create__unit {
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
-  line-height: 1.6;
 }
 
 @media (max-width: 600px) {
-  .cal-create__row > .el-input,
-  .cal-create__row > .el-select,
-  .cal-create__row :deep(.el-date-editor) {
-    width: 100%;
-    min-width: 0;
+  .cal-create {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .cal-create__actions > .el-button {
+  .cal-create__footer {
+    flex-wrap: wrap;
+    gap: var(--os-space-3);
+  }
+
+  .cal-create__footer > .el-button {
     width: 100%;
   }
 }

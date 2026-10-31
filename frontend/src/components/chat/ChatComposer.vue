@@ -487,7 +487,7 @@ onBeforeUnmount(() => {
   flex: none;
   position: relative;
   container-type: inline-size;
-  padding: var(--os-space-3) max(var(--os-space-4), calc((100% - var(--os-chat-band)) / 2)) var(--os-space-3);
+  padding: var(--os-space-3) var(--os-chat-gutter);
   background: var(--el-bg-color);
 }
 
@@ -759,8 +759,7 @@ onBeforeUnmount(() => {
 .chat-composer__drop-mask {
   position: absolute;
 
-  inset: var(--os-space-3) max(var(--os-space-4), calc((100% - var(--os-chat-band)) / 2))
-    calc(var(--os-space-3) + var(--os-space-6) + var(--os-space-1));
+  inset: var(--os-space-3) var(--os-chat-gutter) calc(var(--os-space-3) + var(--os-space-6) + var(--os-space-1));
   z-index: 2;
   display: flex;
   align-items: center;

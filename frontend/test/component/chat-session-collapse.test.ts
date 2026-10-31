@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, expect, it } from 'vitest'
-import { nextTick } from 'vue'
+import { nextTick, ref } from 'vue'
 
 import ChatSessionList from '@/components/chat/ChatSessionList.vue'
 import { useUiStore } from '@/stores/ui'
@@ -216,6 +216,46 @@ describe('折叠轨上仍能看出「我在哪」「有几个会话」', () => {
     const wrapper = mountList({ collapsed: true, currentId: 'c-1', sessions: [makeSession('c-1', '   ')] })
     // 空串会让圆形底色变成一个没有内容的空圆 —— 看起来像渲染失败。
     expect(wrapper.find('.chat-sessions__rail-active').text()).toBe('·')
+  })
+})
+
+describe('会话栏头部交互', () => {
+  it('刷新和新建图标可操作，加载时禁止重复刷新', async () => {
+    const wrapper = mountList()
+    const refresh = wrapper.get('button[aria-label="刷新会话"]')
+    const create = wrapper.get('button[aria-label="新建会话"]')
+    expect(refresh.text()).toBe('')
+    expect(create.text()).toBe('')
+    await refresh.trigger('click')
+    await create.trigger('click')
+    expect(wrapper.emitted('refresh')).toHaveLength(1)
+    expect(wrapper.emitted('create')).toHaveLength(1)
+    await wrapper.setProps({ loading: true })
+    await refresh.trigger('click')
+    expect(wrapper.emitted('refresh')).toHaveLength(1)
+    wrapper.unmount()
+  })
+
+  it('收起再展开后焦点留在切换按钮，会话选择保持不变', async () => {
+    const wrapper = mount(
+      {
+        components: { ChatSessionList },
+        setup: () => ({ collapsed: ref(false), sessions: SESSIONS }),
+        template: `<ChatSessionList :sessions="sessions" current-id="c-2" keyword="" :total="3"
+          :page="1" :size="20" :loading="false" :collapsed="collapsed"
+          @toggle-collapse="collapsed = $event" />`,
+      },
+      { attachTo: document.body },
+    )
+    await wrapper.get('button[aria-label="收起会话列表"]').trigger('click')
+    await flushPromises()
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('展开会话列表')
+    expect(document.activeElement?.getAttribute('aria-expanded')).toBe('false')
+    await wrapper.get('button[aria-label="展开会话列表"]').trigger('click')
+    await flushPromises()
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('收起会话列表')
+    expect(wrapper.get('[aria-current="true"]').text()).toContain('Excel 算平均分')
+    wrapper.unmount()
   })
 })
 
