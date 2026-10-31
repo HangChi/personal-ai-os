@@ -258,4 +258,25 @@ class ModelListProbeServiceTest {
         assertThat(msg.length()).isLessThan(230);
         assertThat(msg).endsWith("…");
     }
+    @Test
+    void ignoresDerivedDefaultsWithoutDiscardingActualMetadata() {
+        var mapper = new tools.jackson.databind.ObjectMapper();
+        var node = mapper.readTree("""
+                {"extra_info":{"default_envs":{"max_tokens":131072,"max_input_tokens":129024},
+                "metadata":{"context_length":1048576}}}
+                """);
+        assertThat(ModelListProbeService.readWindow(node)).isEqualTo(1_048_576);
+        assertThat(ModelListProbeService.readWindow(mapper.readTree("""
+                {"extra_info":{"default_envs":{"max_tokens":131072,"max_input_tokens":129024}}}
+                """))).isNull();
+    }
+
+    @Test
+    void readsOllamaArchitectureAndAnthropicContextMetadata() {
+        var mapper = new tools.jackson.databind.ObjectMapper();
+        assertThat(ModelListProbeService.readWindow(mapper.readTree(
+                "{\"model_info\":{\"llama.context_length\":8192}}"))).isEqualTo(8192);
+        assertThat(ModelListProbeService.readWindow(mapper.readTree(
+                "{\"max_context_window\":200000}"))).isEqualTo(200000);
+    }
 }

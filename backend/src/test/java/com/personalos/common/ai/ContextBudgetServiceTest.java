@@ -269,4 +269,27 @@ class ContextBudgetServiceTest {
         assertThat(service.fixedOverheadTokens()).isZero();
         assertThat(service.budgetTokensFor(null)).isEqualTo(32_768);
     }
+    @Test
+    void followingDefaultUsesActualModelAndTracksProfileChanges() {
+        ContextBudgetService service = new ContextBudgetService(props(131_072));
+        var selected = new java.util.concurrent.atomic.AtomicReference<>("small-custom");
+        service.registerDefaultModel(selected::get);
+        service.registerWindowLookup(name -> "small-custom".equals(name) ? 8_192 : 2_000_000);
+        assertThat(service.contextWindowTokens(null)).isEqualTo(8_192);
+        assertThat(service.budgetTokensFor(null)).isEqualTo(8_192);
+        selected.set("large-custom");
+        service.setBudgetTokens(2_000_000);
+        assertThat(service.contextWindowTokens(null)).isEqualTo(2_000_000);
+        assertThat(service.budgetTokensFor(null)).isEqualTo(2_000_000);
+    }
+
+    @Test
+    void fallbackIsNotReportedAsConfirmedModelCapability() {
+        ContextBudgetService service = new ContextBudgetService(props(131_072));
+        assertThat(service.modelWindow("unknown-model").source()).isEqualTo("fallback");
+        assertThat(service.modelWindow("gpt-4o").source()).isEqualTo("catalog");
+        service.registerWindowLookup(name -> 16_384);
+        assertThat(service.modelWindow("gpt-4o").source()).isEqualTo("configured");
+        assertThat(service.contextWindowTokens("gpt-4o")).isEqualTo(16_384);
+    }
 }

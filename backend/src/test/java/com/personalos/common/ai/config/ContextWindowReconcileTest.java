@@ -5,20 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- * {@link ModelProfileService#reconcileWindow} 单元测试。
- *
- * <p>守的是一个具体的线上现象：DashScope 的详情接口对**几乎所有**模型都回
- * {@code max_input_tokens = 129024}（131072 - 2048 的通用实例默认值），
- * 包括文档写着 1M 的 {@code qwen-long} 与 {@code deepseek-v4.1-flash}。
- * 早先的实现「探测值优先」，于是这些模型全被记成 126K —— 用户看到的就是这个数。
- */
+/** 显式配置与端点部署限制必须压过内置参考。 */
 class ContextWindowReconcileTest {
 
     @Test
-    @DisplayName("端点报 126K、文档是 1M → 取 1M（探测值是实例默认，不是能力上限）")
-    void shouldPreferLargerKnownWindow() {
-        assertThat(ModelProfileService.reconcileWindow(129_024, 1_048_576)).isEqualTo(1_048_576);
+    @DisplayName("端点或手动窗口更小时仍保留，不被较大的内置值覆盖")
+    void shouldRespectSmallerConfiguredWindow() {
+        assertThat(ModelProfileService.reconcileWindow(129_024, 1_048_576)).isEqualTo(129_024);
     }
 
     @Test

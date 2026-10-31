@@ -278,6 +278,14 @@ const availableChatModels = computed(() => modelProfileStore.activeProfile?.chat
 /** 生效配置的默认模型名，用于「跟随配置」的说明文案 */
 const activeDefaultModel = computed(() => defaultChatModel(modelProfileStore.activeProfile))
 
+watch(
+  () => modelProfileStore.activeProfile,
+  () => {
+    if (!streaming.value) void chatStore.refreshContextUsage()
+  },
+  { immediate: true },
+)
+
 /**
  * 切换本会话的模型。
  *

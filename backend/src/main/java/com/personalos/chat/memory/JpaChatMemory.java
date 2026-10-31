@@ -202,9 +202,7 @@ public class JpaChatMemory implements ChatMemory {
                     .map(entity -> entity.getChatModel() == null || entity.getChatModel().isBlank()
                             ? null
                             : entity.getChatModel())
-                    // 会话没选模型 → null 表示「跟随生效配置」，由预算服务回落到默认窗口。
-                    // 这里不主动去查配置的默认模型名：那样会引入对 ModelProfileService
-                    // 的依赖，而预算服务本来就能用全局默认值兜住这一档。
+                    // null 交给预算服务解析当前默认模型，窗口与实际发送模型保持一致。
                     .orElse(null);
         } catch (RuntimeException ex) {
             log.warn("读取会话 {} 的模型失败，窗口按默认处理：{}", conversationId, ex.toString());

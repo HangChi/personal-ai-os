@@ -40,10 +40,10 @@ const { budgetPresetsFor, formatTokens, meterLevelOf, meterPercentOf } = await i
 
   /*
    * 1M 模型（deepseek-v4-pro 手填 1000000）：529 档来自固定表，
-   * 满窗档是 1000000 向下取整到 1024 的倍数 = 999424。
+   * 满窗档保留 1000000 的精确值。
    */
   const big = budgetPresetsFor(1_000_000)
-  eq('1M 窗口最高档是满窗取整值', big[big.length - 1], 999424)
+  eq('1M 窗口最高档保留精确值', big[big.length - 1], 1_000_000)
   check('1M 窗口含 512K', big.includes(524288))
 
   // 未知窗口（<=0）不给任何档位：此时分母都不知道，列档位没有意义

@@ -398,18 +398,9 @@ async function handleProbeWindow(name: string): Promise<void> {
       ElMessage.success(`端点确认：${formatContextWindow(detected)}`)
       return
     }
-    /*
-     * 已填值与端点值不同：不覆盖，但要说清「为什么」。
-     *
-     * <p>用 warning 而不是 info：实测 DashScope 对**所有**模型都回 129024
-     * （连文档写着 1M 的 qwen-long 也是），这个值通常比真实能力小。
-     * 若只轻描淡写地提示，用户会以为自己「没获取到」——而事实是
-     * 获取到了、但被这条保护挡住了。文案里必须点明它是实例默认值。
-     */
     ElMessage.warning(
-      `端点返回 ${formatContextWindow(detected)}（这是端点的实例默认值，通常小于模型真实能力），` +
-        `当前填的是 ${parsedCurrent === null ? currentText : formatContextWindow(parsedCurrent)}，已保留你的值。` +
-        `要改成端点值，请先清空输入框再点查询`,
+      `端点返回 ${formatContextWindow(detected)}，当前为 ${parsedCurrent === null ? currentText : formatContextWindow(parsedCurrent)}，已保留当前值。` +
+        '如需采用端点值，请清空输入框后重新查询。',
     )
   } catch (cause) {
     ElMessage.warning(cause instanceof Error ? cause.message : '查询窗口失败')
@@ -437,7 +428,7 @@ function windowHint(name: string): string {
   if (parsed === null) {
     return '认不出这个值。可以填 32768、32k、1m 这类写法，最小 1024'
   }
-  return `${parsed} token。这个会话用它时，仪表盘的分母与历史裁剪阈值都按它算`
+  return `${parsed} token。该模型的上下文上限；实际输入预算会收敛在此范围内`
 }
 
 /** 输入框右侧的换算短写；非法时给出警示文案 */

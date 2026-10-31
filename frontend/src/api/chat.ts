@@ -456,13 +456,17 @@ export interface ContextUsage {
   budgetTokens: number
   /** 模型支持的上下文窗口（token） */
   contextWindow: number
+  /** 实际使用的模型；空会话也会解析默认模型 */
+  modelName?: string | null
+  /** fallback 只是默认保护值，不能当作已识别的模型上限 */
+  windowSource?: 'configured' | 'catalog' | 'fallback'
   /** 是否为估算值 */
   estimated: boolean
 }
 
-export function fetchContextUsage(conversationId: string): Promise<ContextUsage> {
+export function fetchContextUsage(conversationId?: string | null): Promise<ContextUsage> {
   return requestData<ContextUsage>({
-    url: `/chat/sessions/${conversationId}/context`,
+    url: conversationId ? `/chat/sessions/${conversationId}/context` : '/chat/context',
     method: 'get',
   })
 }
@@ -473,10 +477,10 @@ export function fetchContextUsage(conversationId: string): Promise<ContextUsage>
  * 预算同时是窗口裁剪阈值，所以必须落到服务端 —— 前端自己记一份的话，
  * 仪表盘的分母和实际裁剪就不是同一个数了。
  */
-export function setContextBudget(tokens: number): Promise<ContextUsage> {
+export function setContextBudget(tokens: number, conversationId?: string | null): Promise<ContextUsage> {
   return requestData<ContextUsage>({
     url: '/chat/context-budget',
     method: 'put',
-    data: { tokens },
+    data: { tokens, conversationId },
   })
 }

@@ -26,7 +26,7 @@ class ModelContextWindowsTest {
     @Test
     @DisplayName("包含匹配：厂商/中转前缀不影响命中")
     void shouldMatchByContains() {
-        assertThat(ModelContextWindows.lookup("cmaas-qwen3.8-flash")).isEqualTo(131_072);
+        assertThat(ModelContextWindows.lookup("cmaas-qwen3-turbo")).isEqualTo(131_072);
         assertThat(ModelContextWindows.lookup("cmaas-deepseek-v4.1-flash")).isEqualTo(1_048_576);
         assertThat(ModelContextWindows.lookup("azure/gpt-4o")).isEqualTo(128_000);
     }
@@ -59,5 +59,12 @@ class ModelContextWindowsTest {
         assertThat(ModelContextWindows.lookup("qwen_max")).isEqualTo(30_720);
         // 冒号后是端点自定义标签（Ollama 的 llama-3.1:8b-instruct），截掉再匹配
         assertThat(ModelContextWindows.lookup("llama-3.1:8b-instruct")).isEqualTo(131_072);
+    }
+    @Test
+    void doesNotGuessNewModelVersionsFromOlderPrefixes() {
+        assertThat(ModelContextWindows.lookup("qwen3.8-flash")).isNull();
+        assertThat(ModelContextWindows.lookup("cmaas-qwen3.8-flash")).isNull();
+        assertThat(ModelContextWindows.lookup("gpt-4.10")).isNull();
+        assertThat(ModelContextWindows.lookup("notgpt-4o-custom")).isNull();
     }
 }

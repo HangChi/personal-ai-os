@@ -1,7 +1,6 @@
 package com.personalos.common.ai.config;
 
 import com.personalos.common.ai.ContextBudgetService;
-import com.personalos.common.ai.ModelContextWindows;
 import java.util.UUID;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,7 +22,8 @@ import org.springframework.context.annotation.Configuration;
 public class ContextWindowRegistrar {
 
     public ContextWindowRegistrar(ContextBudgetService contextBudget,
-                                  ModelProfileService profileService) {
+                                  ModelProfileService profileService, ModelConfigService configService) {
+        contextBudget.registerDefaultModel(configService::defaultChatModel);
         contextBudget.registerWindowLookup(modelName -> lookup(profileService, modelName));
     }
 

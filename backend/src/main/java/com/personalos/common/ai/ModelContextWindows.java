@@ -150,11 +150,18 @@ public final class ModelContextWindows {
         return KNOWN.entrySet().stream()
                 .filter(entry -> entry.getKey().length() >= (prefixOnly ? 1 : MIN_CONTAINS_KEY_LENGTH))
                 .filter(entry -> prefixOnly
-                        ? normalized.startsWith(entry.getKey())
-                        : normalized.contains(entry.getKey()))
+                        ? matchesModelPrefix(normalized, entry.getKey())
+                        : java.util.Arrays.stream(normalized.split("/"))
+                                .anyMatch(part -> matchesModelPrefix(part, entry.getKey())
+                                        || part.contains("-" + entry.getKey() + "-")
+                                        || part.endsWith("-" + entry.getKey())))
                 .min((a, b) -> Integer.compare(b.getKey().length(), a.getKey().length()))
                 .map(Map.Entry::getValue)
                 .orElse(null);
+    }
+
+    private static boolean matchesModelPrefix(String name, String prefix) {
+        return name.equals(prefix) || name.startsWith(prefix + "-");
     }
 
     /** 包含匹配的键长下限：短键（o1 / kimi）做包含匹配会误伤无辜模型名 */

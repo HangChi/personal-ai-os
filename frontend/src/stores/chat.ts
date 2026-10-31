@@ -105,10 +105,37 @@ export const useChatStore = defineStore('chat', () => {
    */
   const contextUsage = ref<ContextUsage>({ promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true })
 
-  /** 设置上下文预算（token）；服务端会收敛到 [1, 模型窗口] */
+  let contextReqSeq = 0
+
+  function emptyContext(): ContextUsage {
+    return { promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true }
+  }
+
+  /** 旧会话或旧模型的慢响应不能覆盖当前读数。失败时清空，避免冒充新模型窗口。 */
+  async function refreshContextUsage(): Promise<void> {
+    const id = currentConversationId.value
+    const sessionSeq = sessionReqSeq
+    const seq = ++contextReqSeq
+    try {
+      const next = await fetchContextUsage(id)
+      if (seq === contextReqSeq && sessionSeq === sessionReqSeq && id === currentConversationId.value) {
+        contextUsage.value = next
+      }
+    } catch {
+      if (seq === contextReqSeq && sessionSeq === sessionReqSeq && id === currentConversationId.value) {
+        contextUsage.value = emptyContext()
+      }
+    }
+  }
+
   async function changeContextBudget(tokens: number): Promise<void> {
-    const next = await setContextBudget(tokens)
-    contextUsage.value = { ...contextUsage.value, budgetTokens: next.budgetTokens, contextWindow: next.contextWindow }
+    const id = currentConversationId.value
+    const sessionSeq = sessionReqSeq
+    const seq = ++contextReqSeq
+    const next = await setContextBudget(tokens, id)
+    if (seq === contextReqSeq && sessionSeq === sessionReqSeq && id === currentConversationId.value) {
+      contextUsage.value = next
+    }
   }
 
   let abortController: AbortController | null = null
@@ -175,6 +202,7 @@ export const useChatStore = defineStore('chat', () => {
     // 那样挡不住「A→B→A」这种绕一圈回来的情况（id 相同但已是不同一轮）。
     const reqSeq = ++sessionReqSeq
     currentConversationId.value = conversationId
+    contextUsage.value = emptyContext()
     loadingMessages.value = true
     error.value = null
     streamingContent.value = ''
@@ -190,11 +218,7 @@ export const useChatStore = defineStore('chat', () => {
       // 刚好装满一页 ⇒ 很可能还有更早的；不足一页 ⇒ 已经到头
       hasOlderMessages.value = page.length === MESSAGE_PAGE_SIZE
       // 仪表盘数据：done 事件只在当轮有效，刷新页面后靠这里补一次
-      try {
-        contextUsage.value = await fetchContextUsage(conversationId)
-      } catch {
-        // 仪表盘是增强信息，查不到就不显示，不该影响会话打开
-      }
+      await refreshContextUsage()
       if (reqSeq !== sessionReqSeq) {
         return
       }
@@ -296,7 +320,6 @@ export const useChatStore = defineStore('chat', () => {
   async function loadToolTrail(): Promise<void> {
     if (!currentConversationId.value) {
       toolTrail.value = []
-      contextUsage.value = { promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true }
       return
     }
     try {
@@ -307,7 +330,6 @@ export const useChatStore = defineStore('chat', () => {
       toolTrail.value = result.items
     } catch {
       toolTrail.value = []
-      contextUsage.value = { promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true }
     }
   }
 
@@ -392,23 +414,9 @@ export const useChatStore = defineStore('chat', () => {
     try {
       const updated = await setSessionModelApi(conversationId, model)
       sessions.value = sessions.value.map((item) => (item.conversationId === conversationId ? updated : item))
-      /*
-       * 重拉一次用量。
-       *
-       * <h3>为什么换模型必须重拉（V25 之后新增）</h3>
-       * V25 起上下文窗口是**模型**的属性：`qwen-max` 是 32K、`deepseek-v4-pro`
-       * 是 1M，同一个会话换一次模型，仪表盘的分母与历史裁剪阈值都会变。
-       * 不重拉的话界面会一直显示旧模型的分母 —— 用 1M 模型时显示「/ 32K」
-       * （白白浪费 97% 能力），或反过来在小模型上显示「/ 1M」，
-       * 用户以为还有余量而请求早已被端点拒绝。
-       *
-       * <p>失败不抛：用量是增强信息，查不到就不更新，不该让「切换模型」
-       * 这个动作显示为失败（模型其实已经切成功了）。
-       */
-      try {
-        contextUsage.value = await fetchContextUsage(conversationId)
-      } catch {
-        // 静默：保留旧读数，下一轮对话结束后会自然刷新
+      if (currentConversationId.value === conversationId) {
+        contextUsage.value = emptyContext()
+        await refreshContextUsage()
       }
       return true
     } catch (cause) {
@@ -512,6 +520,7 @@ export const useChatStore = defineStore('chat', () => {
           // 刷新失败不影响本轮已展示的内容
         }
         await loadSessions()
+        await refreshContextUsage()
         // 助手可能刚生成了待确认操作，本轮结束后立即拉一次
         await loadConfirmations()
         // 本轮助手可能调了工具，轨迹一起刷新
@@ -588,6 +597,7 @@ export const useChatStore = defineStore('chat', () => {
     pendingConfirmations,
     toolTrail,
     contextUsage,
+    refreshContextUsage,
     changeContextBudget,
     liveCitations,
     retrievalState,

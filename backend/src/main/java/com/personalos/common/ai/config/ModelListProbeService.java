@@ -364,11 +364,13 @@ public class ModelListProbeService {
                 .limit(MAX_MODELS)
                 .toList();
         Map<String, Integer> windows = collectContextWindows(array, nameField, sorted);
-        // 列表里一个窗口都没自报 → 逐个问详情。这是绝大多数端点的真实情况：
-        // 原生 OpenAI / Anthropic 的列表完全不返回窗口，DashScope 则把它藏在
-        // /models/{name} 的 extra_info 里（实测 183 个模型全部如此）。
-        if (windows.isEmpty() && protocol != ModelProtocol.OLLAMA) {
-            windows = lookupDetailWindows(protocol, baseUrl, listRequest, sorted, preferredModels);
+        // 只补查缺失的模型；部分模型已返回窗口，不能阻止其余模型的详情探测。
+        Set<String> detectedNames = Set.copyOf(windows.keySet());
+        List<String> missing = sorted.stream().filter(name -> !detectedNames.contains(name)).toList();
+        if (!missing.isEmpty()) {
+            Map<String, Integer> merged = new HashMap<>(windows);
+            merged.putAll(lookupDetailWindows(protocol, baseUrl, listRequest, missing, preferredModels));
+            windows = merged;
         }
         log.info("模型列表探测成功：{} {} → {} 个模型（其中 {} 个自报上下文窗口），耗时 {}ms",
                 protocol, uri, sorted.size(), windows.size(), latencyMs);
@@ -457,7 +459,7 @@ public class ModelListProbeService {
         }
         String name = model.strip();
         HttpRequest listRequest = buildRequest(protocol, resolveUri(protocol, baseUrl), apiKey);
-        DetailOutcome outcome = fetchDetailWindow(detailBase(baseUrl), DETAIL_PATH, name, listRequest);
+        DetailOutcome outcome = fetchDetailWindow(protocol, detailBase(baseUrl), name, listRequest);
 
         if (outcome.rateLimited()) {
             return new WindowProbeResult(false, null, "RATE_LIMITED", "端点限流（429），请稍后再试");
@@ -507,9 +509,6 @@ public class ModelListProbeService {
             return Map.of();
         }
         String root = detailBase(baseUrl);
-        // 两种协议的详情路径都是 /v1/models/{name}；写成常量而不是三元，
-        // 免得后来人误以为两家路径不同（列表接口是一样的：/v1/models）
-        String path = DETAIL_PATH;
         String base = root;
 
         Map<String, Integer> found = new java.util.concurrent.ConcurrentHashMap<>();
@@ -527,7 +526,7 @@ public class ModelListProbeService {
                         return;
                     }
                     String name = targets.get(index);
-                    DetailOutcome outcome = fetchDetailWindow(base, path, name, listRequest);
+                    DetailOutcome outcome = fetchDetailWindow(protocol, base, name, listRequest);
                     if (outcome.window() != null) {
                         found.put(name, outcome.window());
                     } else if (outcome.rateLimited()) {
@@ -627,17 +626,23 @@ public class ModelListProbeService {
      * **保留斜杠**：整段 {@code URLEncoder.encode} 会把 {@code /} 编成
      * {@code %2F}，多数网关不认，直接 404。
      */
-    private DetailOutcome fetchDetailWindow(String base, String path, String modelName,
+    private DetailOutcome fetchDetailWindow(ModelProtocol protocol, String base, String modelName,
                                             HttpRequest listRequest) {
         try {
             String encoded = java.util.Arrays.stream(modelName.split("/"))
                     .map(part -> java.net.URLEncoder.encode(part, StandardCharsets.UTF_8))
                     .reduce((a, b) -> a + "/" + b)
                     .orElse("");
-            URI detailUri = URI.create(base + path + encoded);
-            // 复用列表请求的头：鉴权方式（Bearer / x-api-key）与版本头都已验证可用
-            HttpRequest detailRequest = HttpRequest.newBuilder(detailUri)
-                    .GET()
+            URI detailUri = URI.create(base + (protocol == ModelProtocol.OLLAMA ? "/api/show" : DETAIL_PATH + encoded));
+            HttpRequest.Builder builder = HttpRequest.newBuilder(detailUri);
+            if (protocol == ModelProtocol.OLLAMA) {
+                builder.header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(Map.of("model", modelName))));
+            } else {
+                builder.GET();
+            }
+            // 复用端点鉴权头，Ollama 详情使用 POST /api/show。
+            HttpRequest detailRequest = builder
                     .timeout(Duration.ofMillis(DETAIL_TIMEOUT_MS))
                     .headers(listRequest.headers().map().entrySet().stream()
                             .filter(e -> !e.getKey().equalsIgnoreCase("host")
@@ -713,10 +718,10 @@ public class ModelListProbeService {
     }
 
     /** 按上述多种字段名依次尝试读一个合理的窗口值；都不像就返回 null */
-    private static Integer readWindow(JsonNode node) {
+    static Integer readWindow(JsonNode node) {
         for (String field : new String[] {
                 "context_length", "context_window", "max_model_len",
-                "max_context_length", "max_input_tokens"}) {
+                "max_context_length", "max_input_tokens", "max_context_window"}) {
             JsonNode value = node.path(field);
             if (value.isNumber()) {
                 int window = value.asInt();
@@ -771,27 +776,7 @@ public class ModelListProbeService {
         for (String container : new String[] {"extra_info", "data", "model_info", "meta", "metadata"}) {
             JsonNode child = node.path(container);
             if (child.isObject()) {
-                /*
-                 * DashScope 的 default_envs 是一套**通用默认调用参数模板**，
-                 * 不是模型能力描述。2026-10-29 实测同一端点七个模型：
-                 *
-                 *   qwen-max               max_tokens=32768   max_input_tokens=30720
-                 *   qwen-plus              max_tokens=131072  max_input_tokens=129024
-                 *   qwen-long（文档 1M）    max_tokens=131072  max_input_tokens=129024
-                 *   deepseek-v4.1-flash    max_tokens=131072  max_input_tokens=129024
-                 *
-                 * max_input_tokens **恒等于 max_tokens - 2048** —— 它是从
-                 * 「默认最大生成长度」推算出来的派生值。而默认 max_tokens
-                 * 大部分模型都配成 131072，于是所有模型都读成 126K，
-                 * 连文档写着 1M 的 qwen-long 也不例外。
-                 *
-                 * 这种值比「没有值」更糟：它看起来像个准确数字，会盖住内置表。
-                 * 所以识别出派生关系就跳过整个容器，让调用方回落到内置表。
-                 */
-                if ("extra_info".equals(container) && isDerivedFromDefaultMaxTokens(child)) {
-                    log.debug("跳过 extra_info.default_envs：max_input_tokens 是由默认 max_tokens 推算的派生值");
-                    continue;
-                }
+                // 默认生成参数中的派生输入长度不等于模型窗口；在遍历时仅跳过该子树。
                 Integer found = findWindowInObject(child, 0);
                 if (found != null) {
                     return found;
@@ -836,7 +821,7 @@ public class ModelListProbeService {
      */
     private static Integer findWindowInObject(JsonNode root, int startDepth) {
         Set<String> fields = Set.of("max_input_tokens", "context_length", "context_window",
-                "max_model_len", "max_context_length");
+                "max_model_len", "max_context_length", "max_context_window");
         java.util.ArrayDeque<Map.Entry<JsonNode, Integer>> queue = new java.util.ArrayDeque<>();
         queue.add(Map.entry(root, startDepth));
         while (!queue.isEmpty()) {
@@ -856,6 +841,9 @@ public class ModelListProbeService {
                         if (isPlausibleWindow(window)) {
                             return window;
                         }
+                    }
+                    if ("default_envs".equals(entry.getKey()) && isDerivedFromDefaultMaxTokens(node)) {
+                        continue;
                     }
                     if (value.isObject() || value.isArray()) {
                         queue.add(Map.entry(value, depth + 1));

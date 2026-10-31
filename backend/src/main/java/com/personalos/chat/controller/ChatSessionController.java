@@ -158,42 +158,46 @@ public class ChatSessionController {
      */
     @GetMapping("/sessions/{conversationId}/context")
     public ApiResponse<ChatContextUsageDto> contextUsage(@PathVariable String conversationId) {
-        var session = sessionService.requireSession(conversationId);
-        String model = session.getChatModel();
-        // 分子优先取「上一轮真实用量」：它与 done.promptTokens 同源，
-        // 用户刷新页面后看到的数是上一轮结束时看到的那个，不会两处不一致。
-        // 没有真实记录（新会话、或上游不回 usage）才退回字符估算 —— 此时 estimated=true，
-        // 前端据此说明「这是估算」。估算已含工具定义开销（见 ToolSchemaOverhead）。
-        java.util.OptionalInt actual = usageStats.latestActualPromptTokens(conversationId);
-        int promptTokens = actual.isPresent()
-                ? actual.getAsInt()
-                : completionService.estimatePromptTokens(conversationId);
-        return ApiResponse.ok(new ChatContextUsageDto(
-                promptTokens,
-                contextBudget.budgetTokensFor(model),
-                contextBudget.contextWindowTokens(model),
-                actual.isEmpty()));
+        return ApiResponse.ok(contextFor(conversationId));
     }
 
-    /**
-     * 设置上下文预算（token）。
-     *
-     * <p>预算同时是**窗口裁剪阈值**：选 300K 就按 300K 裁，选模型满窗就基本不裁。
-     * 服务端收敛到 [1, 模型窗口] —— 超过窗口的预算模型根本吃不下。
-     */
+    /** 空白对话也能显示实际默认模型的窗口。 */
+    @GetMapping("/context")
+    public ApiResponse<ChatContextUsageDto> defaultContextUsage() {
+        return ApiResponse.ok(contextFor(null));
+    }
+
+    private ChatContextUsageDto contextFor(String conversationId) {
+        String model = conversationId == null ? null : sessionService.requireSession(conversationId).getChatModel();
+        var window = contextBudget.modelWindow(model);
+        java.util.OptionalInt actual = conversationId == null ? java.util.OptionalInt.empty()
+                : usageStats.latestActualPromptTokens(conversationId);
+        int promptTokens = actual.isPresent() ? actual.getAsInt()
+                : conversationId == null ? 0 : completionService.estimatePromptTokens(conversationId);
+        return new ChatContextUsageDto(promptTokens, contextBudget.budgetTokensForWindow(window.tokens()),
+                window.tokens(), actual.isEmpty(), window.modelName(), window.source());
+    }
+
+    public record ContextBudgetRequest(Integer tokens, String conversationId) {
+    }
+
+    /** 返回同一会话的生效预算与窗口，避免全局窗口覆盖当前模型。 */
     @PutMapping("/context-budget")
-    public ApiResponse<ChatContextUsageDto> setContextBudget(@RequestBody java.util.Map<String, Integer> body) {
-        Integer tokens = body.get("tokens");
+    public ApiResponse<ChatContextUsageDto> setContextBudget(@RequestBody ContextBudgetRequest body) {
+        Integer tokens = body.tokens();
         if (tokens == null || tokens <= 0) {
             throw new com.personalos.common.exception.BusinessException(
                     com.personalos.common.api.ErrorCode.VALIDATION_FAILED, "预算必须是正整数");
         }
+        String id = body.conversationId();
+        if (id != null && id.isBlank()) {
+            id = null;
+        }
+        if (id != null) {
+            sessionService.requireSession(id);
+        }
         contextBudget.setBudgetTokens(tokens);
-        // 回显**生效值**而不是用户填的值：小于固定开销的预算会被抬到下限
-        // （见 ContextBudgetService#minimumBudgetTokens），不回声会让界面继续显示
-        // 一个系统根本不会执行的数字。
-        return ApiResponse.ok(new ChatContextUsageDto(0, contextBudget.budgetTokensFor(null),
-                contextBudget.contextWindowTokens(), true));
+        return ApiResponse.ok(contextFor(id));
     }
 
     /**

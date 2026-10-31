@@ -41,8 +41,8 @@ export function budgetPresetsFor(contextWindow: number): number[] {
   if (!Number.isFinite(contextWindow) || contextWindow <= 0) {
     return []
   }
-  // 向下取整到 1024 的倍数：窗口常是 32768 这种数，但用户手填的可能带零头
-  const full = Math.floor(contextWindow / MIN_PRESET) * MIN_PRESET
+  // 满窗保留精确值（例如 128000），不能悄悄丢掉零头。
+  const full = Math.floor(contextWindow)
   const half = Math.floor(full / 2 / MIN_PRESET) * MIN_PRESET
   const candidates = [...BASE_PRESETS, full, half]
   return [...new Set(candidates)].filter((value) => value >= MIN_PRESET && value <= contextWindow).sort((a, b) => a - b)
