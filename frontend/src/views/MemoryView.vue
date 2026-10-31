@@ -160,7 +160,9 @@ function formatTime(value: string): string {
           :description="memoryKeyword ? '没有匹配的记忆' : '还没有长期记忆'"
           :image-size="70"
         >
-          <p v-if="!memoryKeyword" class="memory__empty-tip">在对话里说「记住：我的周报每周五交」，也会出现在这里。</p>
+          <p v-if="!memoryKeyword" class="memory__empty-tip">
+            在对话里说「记住：我偏好先看结论，再看细节」，也会出现在这里。
+          </p>
         </el-empty>
 
         <ul v-else class="memory__list">
@@ -216,7 +218,7 @@ function formatTime(value: string): string {
         :rows="5"
         :maxlength="CONTENT_MAX_LENGTH"
         show-word-limit
-        placeholder="例如：我的周报每周五下午交"
+        placeholder="例如：我偏好先看结论，再看细节"
       />
       <p class="memory__dialog-tip">写成一两句自足的陈述 —— 它会单独出现在每次对话里，没有上下文可以依赖。</p>
       <template #footer>

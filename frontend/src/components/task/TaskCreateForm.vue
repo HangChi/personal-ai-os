@@ -83,7 +83,7 @@ defineExpose({ reset })
     <el-form class="task-create" :disabled="creating" @submit.prevent="submit">
       <div class="task-create__field task-create__field--title">
         <label class="task-create__label" :for="`${formId}-title`">任务标题</label>
-        <el-input :id="`${formId}-title`" v-model="title" maxlength="200" placeholder="例如：周五前交周报" />
+        <el-input :id="`${formId}-title`" v-model="title" maxlength="200" placeholder="例如：周五前整理本月账单" />
       </div>
 
       <div class="task-create__field">

@@ -43,8 +43,8 @@
 上面的 `OPENAI_BASE_URL` 即可；`OPENAI_EMBEDDING_MODEL` 随便填，mock 不校验模型名。
 
 触发协议（用自然语言前缀模拟"模型决定调用工具"）：
-    「创建任务：写周报」        -> 调用 createTask
-    「创建任务：写周报|HIGH」   -> 调用 createTask 并指定优先级
+    「创建任务：整理本月账单」        -> 调用 createTask
+    「创建任务：整理本月账单|HIGH」   -> 调用 createTask 并指定优先级
     「查看待办」                -> 调用 findTasks
     「删除任务：<uuid>」        -> 调用 deleteTask（注意：需人工确认才会生效）
     「MCP列目录」               -> 调用 mcp_sandbox_list_directory（只读，直接执行）
