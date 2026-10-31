@@ -74,4 +74,21 @@ function deferred() {
   await store.loadToolTrail()
   eq('审计失败不清空上下文读数', store.contextUsage.modelName, 'current')
 }
+{
+  const store = fresh()
+  let params
+  let payload
+  handlers.set('/chat/context', (config) => {
+    params = config.params
+    return Promise.resolve(usage('default', 131072))
+  })
+  await store.refreshContextUsage('deep')
+  eq('按当前思考深度查询预留空间', params.thinkingLevel, 'deep')
+  handlers.set('/chat/context-budget', (config) => {
+    payload = config.data
+    return Promise.resolve(usage('default', 131072))
+  })
+  await store.changeContextBudget(65536)
+  eq('修改预算保留当前思考深度', payload.thinkingLevel, 'deep')
+}
 handlers.clear()

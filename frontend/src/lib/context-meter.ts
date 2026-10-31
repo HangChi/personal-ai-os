@@ -18,7 +18,7 @@
  */
 
 /** 档位候选的固定值：整齐、好认，覆盖主流模型的窗口尺寸 */
-const BASE_PRESETS = [32_768, 65_536, 131_072, 524_288, 1_048_576]
+const BASE_PRESETS = [32_768, 65_536, 131_072, 262_144, 524_288, 1_048_576]
 
 /** 预算下限，与后端 `ContextBudgetService` 的 `>= 1` 与窗口 CHECK 的 1024 对齐 */
 const MIN_PRESET = 1024
@@ -37,15 +37,15 @@ const MIN_PRESET = 1024
  * @param contextWindow 模型窗口（token）；<= 0 表示未知，返回空数组
  * @returns 升序、去重、全部 <= 窗口的档位
  */
-export function budgetPresetsFor(contextWindow: number): number[] {
+export function budgetPresetsFor(contextWindow: number, inputLimit: number = contextWindow): number[] {
   if (!Number.isFinite(contextWindow) || contextWindow <= 0) {
     return []
   }
   // 满窗保留精确值（例如 128000），不能悄悄丢掉零头。
-  const full = Math.floor(contextWindow)
-  const half = Math.floor(full / 2 / MIN_PRESET) * MIN_PRESET
+  const full = Math.floor(Math.min(contextWindow, inputLimit))
+  const half = Math.floor(contextWindow / 2 / MIN_PRESET) * MIN_PRESET
   const candidates = [...BASE_PRESETS, full, half]
-  return [...new Set(candidates)].filter((value) => value >= MIN_PRESET && value <= contextWindow).sort((a, b) => a - b)
+  return [...new Set(candidates)].filter((value) => value >= MIN_PRESET && value <= full).sort((a, b) => a - b)
 }
 
 /**

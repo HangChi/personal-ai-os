@@ -78,7 +78,8 @@ class ModelConfigServiceTest {
                 emptyProvider(),
                 mock(ChatMemory.class),
                 // AiProperties 的 compact constructor 会把 null 补成默认值
-                new AiProperties(null, null));
+                new AiProperties(null, null),
+                new com.personalos.common.ai.ContextBudgetService(new AiProperties(null, null)));
     }
 
     // ------------------------------------------------------------------ 三层回落

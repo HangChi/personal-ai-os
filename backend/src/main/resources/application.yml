@@ -208,6 +208,11 @@ app:
   # 上下文治理（阶段 22）：窗口之外的历史怎么处理。
   # 刻意与 app.ai 分开：那边是「用哪个模型、带多少窗口」，这里是「多出来的历史去哪」。
   context:
+    protection:
+      output-reserve-tokens: ${CONTEXT_OUTPUT_RESERVE_TOKENS:4096}
+      safety-margin-tokens: ${CONTEXT_SAFETY_MARGIN_TOKENS:512}
+      image-reserve-tokens: ${CONTEXT_IMAGE_RESERVE_TOKENS:4096}
+      max-retries: ${CONTEXT_MAX_RETRIES:1}
     summary:
       # 滚动摘要：把已滑出上下文窗口的历史压成一段文字，注入系统提示。
       # 关掉后既不生成也不注入，行为回到「只有窗口、更早的对话对模型不可见」。

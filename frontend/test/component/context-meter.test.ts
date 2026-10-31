@@ -40,4 +40,24 @@ describe('ContextMeter', () => {
     expect(wrapper.find('.context-meter__value').text()).toBe('100 / 32K')
     expect(wrapper.find('button').attributes('title')).toContain('保护性默认预算')
   })
+
+  it('说明回复预留量与安全余量', () => {
+    const wrapper = mount(ContextMeter, {
+      props: {
+        usage: {
+          promptTokens: 100,
+          budgetTokens: 32768,
+          contextWindow: 131072,
+          estimated: true,
+          inputLimitTokens: 126464,
+          outputReserveTokens: 4096,
+          safetyMarginTokens: 512,
+          modelName: 'custom',
+          windowSource: 'configured',
+        },
+      },
+    })
+    expect(wrapper.find('button').attributes('title')).toContain('预留回复：4,096 token')
+    expect(wrapper.find('button').attributes('title')).toContain('安全余量：512 token')
+  })
 })

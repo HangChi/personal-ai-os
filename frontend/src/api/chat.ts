@@ -460,14 +460,22 @@ export interface ContextUsage {
   modelName?: string | null
   /** fallback 只是默认保护值，不能当作已识别的模型上限 */
   windowSource?: 'configured' | 'catalog' | 'fallback'
+  /** 已扣除回复空间和安全余量的输入上限 */
+  inputLimitTokens?: number
+  outputReserveTokens?: number
+  safetyMarginTokens?: number
   /** 是否为估算值 */
   estimated: boolean
 }
 
-export function fetchContextUsage(conversationId?: string | null): Promise<ContextUsage> {
+export function fetchContextUsage(
+  conversationId?: string | null,
+  thinkingLevel: string = 'off',
+): Promise<ContextUsage> {
   return requestData<ContextUsage>({
     url: conversationId ? `/chat/sessions/${conversationId}/context` : '/chat/context',
     method: 'get',
+    params: { thinkingLevel },
   })
 }
 
@@ -477,10 +485,14 @@ export function fetchContextUsage(conversationId?: string | null): Promise<Conte
  * 预算同时是窗口裁剪阈值，所以必须落到服务端 —— 前端自己记一份的话，
  * 仪表盘的分母和实际裁剪就不是同一个数了。
  */
-export function setContextBudget(tokens: number, conversationId?: string | null): Promise<ContextUsage> {
+export function setContextBudget(
+  tokens: number,
+  conversationId?: string | null,
+  thinkingLevel: string = 'off',
+): Promise<ContextUsage> {
   return requestData<ContextUsage>({
     url: '/chat/context-budget',
     method: 'put',
-    data: { tokens, conversationId },
+    data: { tokens, conversationId, thinkingLevel },
   })
 }

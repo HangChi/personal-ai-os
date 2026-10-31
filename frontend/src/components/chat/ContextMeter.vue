@@ -26,8 +26,8 @@ const limitText = computed(() =>
     : `${props.usage.windowSource === 'catalog' ? '参考' : '上限'} ${formatTokens(props.usage.contextWindow)}`,
 )
 const budgetPresets = computed(() =>
-  [...new Set([...budgetPresetsFor(props.usage.contextWindow), props.usage.budgetTokens])]
-    .filter((value) => value > 0 && value <= props.usage.contextWindow)
+  [...new Set([...budgetPresetsFor(props.usage.contextWindow, props.usage.inputLimitTokens), props.usage.budgetTokens])]
+    .filter((value) => value > 0 && value <= (props.usage.inputLimitTokens ?? props.usage.contextWindow))
     .sort((a, b) => a - b),
 )
 const meterTitle = computed(() => {
@@ -36,8 +36,14 @@ const meterTitle = computed(() => {
     `模型：${u.modelName || '未配置'}`,
     `${u.estimated ? '预计输入（估算）' : '上一轮实际输入'}：${u.promptTokens.toLocaleString()} token`,
     `当前输入预算：${u.budgetTokens.toLocaleString()} token`,
+    ...(u.inputLimitTokens ? [`安全输入上限：${u.inputLimitTokens.toLocaleString()} token`] : []),
     unknownWindow.value ? '模型上限：未知' : `模型上限：${u.contextWindow.toLocaleString()} token`,
     `来源：${sourceLabel.value}`,
+    ...(u.outputReserveTokens
+      ? [
+          `预留回复：${u.outputReserveTokens.toLocaleString()} token；安全余量：${(u.safetyMarginTokens ?? 0).toLocaleString()} token`,
+        ]
+      : []),
     '输入包含系统提示、工具定义、历史与本条消息；预算控制历史裁剪，不等同于模型上限。点击调整预算。',
   ].join('\n')
 })
@@ -66,6 +72,10 @@ const meterTitle = computed(() => {
           <span class="context-meter__model">{{ usage.modelName || '当前模型' }}</span>
           <span>{{ unknownWindow ? '模型窗口未知' : `模型上限 ${usage.contextWindow.toLocaleString()} token` }}</span>
           <span class="context-meter__source">{{ sourceLabel }}</span>
+          <span v-if="usage.outputReserveTokens" class="context-meter__source"
+            >预留回复 {{ formatTokens(usage.outputReserveTokens) }} · 安全余量
+            {{ formatTokens(usage.safetyMarginTokens ?? 0) }}</span
+          >
         </div>
         <el-dropdown-item
           v-for="preset in budgetPresets"

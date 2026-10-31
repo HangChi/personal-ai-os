@@ -50,6 +50,7 @@ public class AiChatClientProvider {
     /** 构造期依赖，用于运行期重建同一套 Advisor 与工具 */
     private final ChatMemory chatMemory;
     private final AiProperties aiProperties;
+    private final ContextBudgetService contextBudget;
     private final ToolCallingManager toolCallingManager;
     private final List<Object> tools;
     private final List<ToolCallback> toolCallbacks;
@@ -102,9 +103,10 @@ public class AiChatClientProvider {
                                 ObjectProvider<ToolContributor> toolContributors,
                                 ObjectProvider<ToolCallbackProvider> toolCallbackProviders,
                                 ChatMemory chatMemory,
-                                AiProperties aiProperties) {
+                                AiProperties aiProperties, ContextBudgetService contextBudget) {
         this.chatMemory = chatMemory;
         this.aiProperties = aiProperties;
+        this.contextBudget = contextBudget;
         this.toolCallingManager = toolCallingManagers.getIfAvailable();
 
         // 工具集合在构造期固定：它们由各业务模块的 Bean 贡献，不随模型切换而变。
@@ -139,7 +141,8 @@ public class AiChatClientProvider {
      * ——一个只在特定页面体现、极难联想的错位。
      */
     private Bundle buildBundle(ChatModel chatModel) {
-        ChatClient plain = ChatClient.builder(chatModel)
+        ChatModel guarded = new ContextGuardChatModel(chatModel, contextBudget);
+        ChatClient plain = ChatClient.builder(guarded)
                 .defaultSystem(aiProperties.systemPrompt())
                 .build();
 
@@ -149,7 +152,7 @@ public class AiChatClientProvider {
         // 模型正常返回工具调用、对话正常结束、日志零报错，只是**工具从不执行**。
         // 复用自动配置的 Builder 则要赌「当前配置下它是否存在」，这条不确定性不值得保留：
         // 显式装配后，行为只取决于本方法，与自动配置的启用条件无关。
-        ChatClient.Builder builder = ChatClient.builder(chatModel)
+        ChatClient.Builder builder = ChatClient.builder(guarded)
                 .defaultSystem(aiProperties.systemPrompt())
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build());
 

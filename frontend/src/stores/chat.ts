@@ -106,18 +106,20 @@ export const useChatStore = defineStore('chat', () => {
   const contextUsage = ref<ContextUsage>({ promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true })
 
   let contextReqSeq = 0
+  let contextThinkingLevel = 'off'
 
   function emptyContext(): ContextUsage {
     return { promptTokens: 0, budgetTokens: 0, contextWindow: 0, estimated: true }
   }
 
   /** 旧会话或旧模型的慢响应不能覆盖当前读数。失败时清空，避免冒充新模型窗口。 */
-  async function refreshContextUsage(): Promise<void> {
+  async function refreshContextUsage(thinkingLevel?: string): Promise<void> {
+    if (thinkingLevel !== undefined) contextThinkingLevel = thinkingLevel
     const id = currentConversationId.value
     const sessionSeq = sessionReqSeq
     const seq = ++contextReqSeq
     try {
-      const next = await fetchContextUsage(id)
+      const next = await fetchContextUsage(id, contextThinkingLevel)
       if (seq === contextReqSeq && sessionSeq === sessionReqSeq && id === currentConversationId.value) {
         contextUsage.value = next
       }
@@ -132,7 +134,7 @@ export const useChatStore = defineStore('chat', () => {
     const id = currentConversationId.value
     const sessionSeq = sessionReqSeq
     const seq = ++contextReqSeq
-    const next = await setContextBudget(tokens, id)
+    const next = await setContextBudget(tokens, id, contextThinkingLevel)
     if (seq === contextReqSeq && sessionSeq === sessionReqSeq && id === currentConversationId.value) {
       contextUsage.value = next
     }

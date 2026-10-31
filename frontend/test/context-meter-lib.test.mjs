@@ -97,3 +97,12 @@ const { budgetPresetsFor, formatTokens, meterLevelOf, meterPercentOf } = await i
   eq('999 原样', formatTokens(999), '999')
   eq('NaN 归零', formatTokens(Number.NaN), '0')
 }
+
+{
+  const protectedLimit = 131072 - 4096 - 512
+  const options = budgetPresetsFor(131072, protectedLimit)
+  eq('保护后的输入档位保留精确安全上限', options.at(-1), protectedLimit)
+  check('预留回复后不再提供模型满窗输入', !options.includes(131072))
+  check('半窗档仍为 64K，避免多出 61K 这类重复档位', options.includes(65536) && !options.includes(62464))
+  check('1M 模型包含 256K 中间档位', budgetPresetsFor(1048576).includes(262144))
+}

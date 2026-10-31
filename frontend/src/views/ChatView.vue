@@ -279,9 +279,9 @@ const availableChatModels = computed(() => modelProfileStore.activeProfile?.chat
 const activeDefaultModel = computed(() => defaultChatModel(modelProfileStore.activeProfile))
 
 watch(
-  () => modelProfileStore.activeProfile,
+  () => [modelProfileStore.activeProfile, settings.value.thinkingLevel],
   () => {
-    if (!streaming.value) void chatStore.refreshContextUsage()
+    if (!streaming.value) void chatStore.refreshContextUsage(settings.value.thinkingLevel)
   },
   { immediate: true },
 )

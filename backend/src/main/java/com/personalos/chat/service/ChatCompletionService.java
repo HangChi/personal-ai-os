@@ -266,8 +266,8 @@ public class ChatCompletionService {
             // 附件：图片随 user message 走（多模态协议要求），文本进系统提示（避免存进历史）。
             // 只影响本轮 —— 见 ChatAttachmentContextBuilder 的类注释。
             ChatAttachmentContext attachmentContext = attachmentContextBuilder.build(requestAttachments);
-            String systemPrompt = promptAssembler.assemble(hits, userContent, conversationId,
-                    attachmentContext.textBlock());
+            String systemPrompt = promptAssembler.prepare(hits, userContent, conversationId,
+                    attachmentContext.textBlock(), attachmentContext.images().size(), session.getChatModel(), thinkingLevel.budget());
             // 上下文用量：本轮系统提示 + 本条用户消息 + 窗口内历史（后两项为估算）。
             // 历史由 Advisor 在请求链路里装载，这里拿不到原文，
             // 因此用「窗口条数 × 已存消息的平均长度」逼近并在事件里如实标注为估算值。
@@ -660,6 +660,7 @@ public class ChatCompletionService {
      */
     private ErrorCode classify(Throwable error) {
         for (Throwable current = error; current != null; current = current.getCause()) {
+            if (current instanceof BusinessException business) return business.getErrorCode();
             if (current instanceof IOException) {
                 return ErrorCode.AI_UPSTREAM_ERROR;
             }

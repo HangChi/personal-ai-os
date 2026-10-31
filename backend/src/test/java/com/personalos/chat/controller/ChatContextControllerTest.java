@@ -29,12 +29,18 @@ class ChatContextControllerTest {
         var changed = controller.setContextBudget(new ChatSessionController.ContextBudgetRequest(2_000_000, "current")).data();
         assertThat(changed.modelName()).isEqualTo("large-custom");
         assertThat(changed.contextWindow()).isEqualTo(2_000_000);
-        assertThat(changed.budgetTokens()).isEqualTo(2_000_000);
+        assertThat(changed.budgetTokens()).isEqualTo(1_995_392);
         assertThat(changed.promptTokens()).isEqualTo(4_096);
         assertThat(changed.estimated()).isFalse();
-        var blank = controller.defaultContextUsage().data();
+        var blank = controller.defaultContextUsage("off").data();
         assertThat(blank.modelName()).isEqualTo("default-small");
         assertThat(blank.contextWindow()).isEqualTo(8_192);
-        assertThat(blank.budgetTokens()).isEqualTo(8_192);
+        assertThat(blank.budgetTokens()).isEqualTo(5_632);
+        assertThat(changed.outputReserveTokens()).isEqualTo(4096);
+        assertThat(changed.safetyMarginTokens()).isEqualTo(512);
+        var deep = controller.contextUsage("current", "deep").data();
+        assertThat(deep.outputReserveTokens()).isEqualTo(9216);
+        assertThat(deep.inputLimitTokens()).isEqualTo(1_990_272);
+        assertThat(deep.budgetTokens()).isEqualTo(deep.inputLimitTokens());
     }
 }

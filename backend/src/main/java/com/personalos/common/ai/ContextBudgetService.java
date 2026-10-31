@@ -41,6 +41,32 @@ public class ContextBudgetService {
     public static final double CHARS_PER_TOKEN = TokenEstimation.CJK_CHARS_PER_TOKEN;
 
     private final AiProperties aiProperties;
+    private ContextProtectionProperties protection = ContextProtectionProperties.defaults();
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureProtection(ContextProtectionProperties protection) {
+        this.protection = protection;
+    }
+
+    public ContextProtectionProperties protection() { return protection; }
+
+    public int outputReserveForWindow(int window) {
+        return Math.min(protection.outputReserveTokens(), Math.max(1, window / 4));
+    }
+
+    public int outputReserveForWindow(int window, int thinkingBudget) {
+        int desired = thinkingBudget > 0 ? Math.max(outputReserveForWindow(window), thinkingBudget + 1024) : outputReserveForWindow(window);
+        return Math.min(desired, Math.max(1, window - safetyMarginForWindow(window) - 1));
+    }
+
+    public int safetyMarginForWindow(int window) {
+        return Math.min(protection.safetyMarginTokens(), Math.max(1, window / 16));
+    }
+
+    public int inputLimitForWindow(int window) {
+        return Math.max(1, window - outputReserveForWindow(window) - safetyMarginForWindow(window));
+    }
+
 
     /**
      * 按模型名查窗口的钩子（V25）。
@@ -202,7 +228,7 @@ public class ContextBudgetService {
     public int budgetTokensForWindow(int window) {
         // 先抬到下限再按窗口截断：顺序不能反 —— 先截断再抬，会把下限顶到窗口之外
         int effective = Math.max(budgetTokens, minimumBudgetTokens());
-        return Math.min(effective, window);
+        return Math.min(effective, inputLimitForWindow(window));
     }
 
     /**

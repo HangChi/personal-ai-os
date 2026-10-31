@@ -99,7 +99,7 @@ class ContextBudgetServiceTest {
         service.setBudgetTokens(300_000);
 
         // 30K 窗口的模型下，300K 预算必须被压到 30K
-        assertThat(service.budgetTokensFor("qwen-max")).isEqualTo(30_720);
+        assertThat(service.budgetTokensFor("qwen-max")).isEqualTo(26_112);
         // 同一个预算在 1M 窗口的模型下不被压
         assertThat(service.budgetTokensFor("qwen-long")).isEqualTo(300_000);
     }
@@ -151,7 +151,7 @@ class ContextBudgetServiceTest {
 
         assertThat(small).isLessThan(large);
         // 逆运算能还原回去，证明两条路径用的是同一个折算比
-        assertThat((int) Math.round(small / ContextBudgetService.CHARS_PER_TOKEN)).isEqualTo(30_720);
+        assertThat((int) Math.round(small / ContextBudgetService.CHARS_PER_TOKEN)).isEqualTo(26_112);
     }
 
     // ------------------------------------------------------------------ 内置对照表
@@ -243,7 +243,7 @@ class ContextBudgetServiceTest {
 
         // 下限 41024 超过 qwen-max 的 30720 窗口 —— 只能给窗口值，
         // 否则会把一个「端点必然拒绝」的预算发给模型
-        assertThat(service.budgetTokensFor("qwen-max")).isEqualTo(30_720);
+        assertThat(service.budgetTokensFor("qwen-max")).isEqualTo(26_112);
     }
 
     @Test
@@ -276,11 +276,11 @@ class ContextBudgetServiceTest {
         service.registerDefaultModel(selected::get);
         service.registerWindowLookup(name -> "small-custom".equals(name) ? 8_192 : 2_000_000);
         assertThat(service.contextWindowTokens(null)).isEqualTo(8_192);
-        assertThat(service.budgetTokensFor(null)).isEqualTo(8_192);
+        assertThat(service.budgetTokensFor(null)).isEqualTo(5_632);
         selected.set("large-custom");
         service.setBudgetTokens(2_000_000);
         assertThat(service.contextWindowTokens(null)).isEqualTo(2_000_000);
-        assertThat(service.budgetTokensFor(null)).isEqualTo(2_000_000);
+        assertThat(service.budgetTokensFor(null)).isEqualTo(1_995_392);
     }
 
     @Test

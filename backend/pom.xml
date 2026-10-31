@@ -30,6 +30,11 @@
 
     <dependencyManagement>
         <dependencies>
+        <dependency>
+            <groupId>com.knuddels</groupId>
+            <artifactId>jtokkit</artifactId>
+            <version>1.1.0</version>
+        </dependency>
             <!--
               只导入 Spring AI 的版本清单，不引入任何 spring-ai-starter-*。
               原因：模型 Starter 会要求 API Key，使骨架在无密钥时无法启动，

@@ -157,28 +157,33 @@ public class ChatSessionController {
      * 模型时界面显示「/ 128K」，用户以为还有余量、实际请求已被端点拒绝。
      */
     @GetMapping("/sessions/{conversationId}/context")
-    public ApiResponse<ChatContextUsageDto> contextUsage(@PathVariable String conversationId) {
-        return ApiResponse.ok(contextFor(conversationId));
+    public ApiResponse<ChatContextUsageDto> contextUsage(@PathVariable String conversationId, @RequestParam(required = false) String thinkingLevel) {
+        return ApiResponse.ok(contextFor(conversationId, thinkingLevel));
     }
 
     /** 空白对话也能显示实际默认模型的窗口。 */
     @GetMapping("/context")
-    public ApiResponse<ChatContextUsageDto> defaultContextUsage() {
-        return ApiResponse.ok(contextFor(null));
+    public ApiResponse<ChatContextUsageDto> defaultContextUsage(@RequestParam(required = false) String thinkingLevel) {
+        return ApiResponse.ok(contextFor(null, thinkingLevel));
     }
 
-    private ChatContextUsageDto contextFor(String conversationId) {
+    private ChatContextUsageDto contextFor(String conversationId, String thinkingLevel) {
         String model = conversationId == null ? null : sessionService.requireSession(conversationId).getChatModel();
         var window = contextBudget.modelWindow(model);
         java.util.OptionalInt actual = conversationId == null ? java.util.OptionalInt.empty()
                 : usageStats.latestActualPromptTokens(conversationId);
         int promptTokens = actual.isPresent() ? actual.getAsInt()
                 : conversationId == null ? 0 : completionService.estimatePromptTokens(conversationId);
-        return new ChatContextUsageDto(promptTokens, contextBudget.budgetTokensForWindow(window.tokens()),
-                window.tokens(), actual.isEmpty(), window.modelName(), window.source());
+        int reserve = contextBudget.outputReserveForWindow(window.tokens(), com.personalos.chat.dto.ThinkingLevel.fromCode(thinkingLevel).budget());
+        int inputLimit = Math.max(1, window.tokens() - reserve - contextBudget.safetyMarginForWindow(window.tokens()));
+        return new ChatContextUsageDto(promptTokens, Math.min(contextBudget.budgetTokensForWindow(window.tokens()), inputLimit),
+                window.tokens(), actual.isEmpty(), window.modelName(), window.source(),
+                inputLimit, reserve,
+                contextBudget.safetyMarginForWindow(window.tokens()));
     }
 
-    public record ContextBudgetRequest(Integer tokens, String conversationId) {
+    public record ContextBudgetRequest(Integer tokens, String conversationId, String thinkingLevel) {
+        public ContextBudgetRequest(Integer tokens, String conversationId) { this(tokens, conversationId, "off"); }
     }
 
     /** 返回同一会话的生效预算与窗口，避免全局窗口覆盖当前模型。 */
@@ -197,7 +202,7 @@ public class ChatSessionController {
             sessionService.requireSession(id);
         }
         contextBudget.setBudgetTokens(tokens);
-        return ApiResponse.ok(contextFor(id));
+        return ApiResponse.ok(contextFor(id, body.thinkingLevel()));
     }
 
     /**

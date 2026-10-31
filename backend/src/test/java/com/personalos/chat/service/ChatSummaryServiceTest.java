@@ -270,4 +270,39 @@ class ChatSummaryServiceTest {
         verify(sessionRepository, never()).save(any());
         assertThat(advanced.getContextSummary()).as("并发写入的摘要不能被覆盖").isEqualTo("并发写入的新摘要");
     }
+    @Test
+    void preflightSummarizesBeforeSendingEvenBelowAsyncThreshold() {
+        var session = new ChatSessionEntity(CID, "title", Instant.EPOCH, Instant.EPOCH);
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(session));
+        given(messageRepository.findRangeBySequenceNo(eq(CID), anyInt(), anyInt())).willAnswer(invocation -> {
+            int from = invocation.getArgument(1);
+            return from <= 1 ? List.of(message(1, "important earlier decision")) : List.of();
+        });
+        stubModel("decision summary");
+        service(enabled(4)).refreshBeforeRequest(CID, 1);
+        assertThat(session.getSummaryUptoSeq()).isEqualTo(1);
+        assertThat(session.getContextSummary()).isEqualTo("decision summary");
+        verifyNoInteractions(chatMemory);
+    }
+
+    @Test
+    void boundedPreflightOnlyMarksOldestBatchesActuallySummarized() {
+        var session = new ChatSessionEntity(CID, "title", Instant.EPOCH, Instant.EPOCH);
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(session));
+        List<ChatMessageEntity> history = List.of(message(1, "a".repeat(60)), message(2, "b".repeat(60)), message(3, "c".repeat(60)));
+        given(messageRepository.findRangeBySequenceNo(eq(CID), anyInt(), anyInt())).willAnswer(invocation -> {
+            int from = invocation.getArgument(1);
+            return history.stream().filter(m -> m.getSequenceNo() >= from).toList();
+        });
+        var call = stubModel("summary");
+        var properties = new ContextProperties(new ContextProperties.Summary(true, 4, 80, 1200, DEFAULT_TIMEOUT), null);
+        service(properties).refreshBeforeRequest(CID, 3);
+        assertThat(session.getSummaryUptoSeq()).isEqualTo(2);
+        verify(call, org.mockito.Mockito.times(2)).content();
+    }
+    @Test
+    void aSingleHugeHistoryMessageCannotOverflowTheSummaryRequest() {
+        String transcript = ChatSummaryService.buildTranscript(List.of(message(1, "begin " + "x".repeat(10000) + " end")), 200);
+        assertThat(transcript).hasSize(200).contains("仅保留首尾供摘要").startsWith("用户：begin").endsWith(" end");
+    }
 }

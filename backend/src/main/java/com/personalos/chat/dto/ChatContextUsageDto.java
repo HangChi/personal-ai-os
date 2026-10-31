@@ -5,5 +5,6 @@ package com.personalos.chat.dto;
  * windowSource=fallback 时 contextWindow 只是保护性默认值，不是已确认的模型能力。
  */
 public record ChatContextUsageDto(int promptTokens, int budgetTokens, int contextWindow, boolean estimated,
-                                 String modelName, String windowSource) {
+                                 String modelName, String windowSource, int inputLimitTokens,
+                                 int outputReserveTokens, int safetyMarginTokens) {
 }

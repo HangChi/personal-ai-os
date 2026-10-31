@@ -52,7 +52,8 @@ class AiChatClientProviderModelSelectionTest {
         provider = new AiChatClientProvider(
                 providerOf(new FakeModel("default-model", "sk-test")),
                 emptyProvider(), emptyProvider(), emptyProvider(),
-                mock(ChatMemory.class), new AiProperties(null, null));
+                mock(ChatMemory.class), new AiProperties(null, null),
+                new com.personalos.common.ai.ContextBudgetService(new AiProperties(null, null)));
         provider.setModelResolver(resolver);
     }
 
@@ -169,7 +170,8 @@ class AiChatClientProviderModelSelectionTest {
         AiChatClientProvider bare = new AiChatClientProvider(
                 providerOf(new FakeModel("default-model", "sk-test")),
                 emptyProvider(), emptyProvider(), emptyProvider(),
-                mock(ChatMemory.class), new AiProperties(null, null));
+                mock(ChatMemory.class), new AiProperties(null, null),
+                new com.personalos.common.ai.ContextBudgetService(new AiProperties(null, null)));
 
         assertThat(modelNameOf(bare.targetFor("qwen-max").model())).isEqualTo("default-model");
     }
@@ -179,7 +181,8 @@ class AiChatClientProviderModelSelectionTest {
     void noModelConfiguredThrows() {
         AiChatClientProvider bare = new AiChatClientProvider(
                 emptyProvider(), emptyProvider(), emptyProvider(), emptyProvider(),
-                mock(ChatMemory.class), new AiProperties(null, null));
+                mock(ChatMemory.class), new AiProperties(null, null),
+                new com.personalos.common.ai.ContextBudgetService(new AiProperties(null, null)));
 
         assertThatThrownBy(() -> bare.targetFor("qwen-max"))
                 .isInstanceOf(BusinessException.class)
@@ -201,7 +204,8 @@ class AiChatClientProviderModelSelectionTest {
 
         AiChatClientProvider bare = new AiChatClientProvider(
                 emptyProvider(), emptyProvider(), emptyProvider(), emptyProvider(),
-                mock(ChatMemory.class), new AiProperties(null, null));
+                mock(ChatMemory.class), new AiProperties(null, null),
+                new com.personalos.common.ai.ContextBudgetService(new AiProperties(null, null)));
 
         assertThat(bare.isConfigured()).isFalse();
     }

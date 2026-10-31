@@ -148,7 +148,8 @@ class ModelProfileServiceTest {
         // 不需要真实模型：本类测试只关心数据库状态与调用顺序
         AiChatClientProvider provider = new AiChatClientProvider(
                 emptyProvider(), emptyProvider(), emptyProvider(), emptyProvider(),
-                mock(ChatMemory.class), new AiProperties(null, null));
+                mock(ChatMemory.class), new AiProperties(null, null),
+                new com.personalos.common.ai.ContextBudgetService(new AiProperties(null, null)));
         configService = mock(ModelConfigService.class);
         when(configService.resolveFrom(any())).thenReturn(
                 new ModelConfigService.ResolvedConfig(

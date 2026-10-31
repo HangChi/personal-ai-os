@@ -177,4 +177,16 @@ class ChatPromptAssemblerTest {
         // 工具必须计入：漏掉它会让仪表盘比真实值小一个数量级（103 vs 4116）
         assertThat(assembler().estimatePromptChars(CONVERSATION)).isEqualTo(19 + TOOL_CHARS);
     }
+    @Test
+    void preflightIncludesAttachmentsAndSummarizesHistoryBeforeAssembly() {
+        var properties = new AiProperties(new AiProperties.Memory(20, 8192), BASE_PROMPT);
+        var budget = new ContextBudgetService(properties);
+        budget.setBudgetTokens(2000);
+        when(messageRepository.findRecentByConversationId(anyString(), any())).thenReturn(List.of(
+                new ChatMessageEntity(CONVERSATION, com.personalos.chat.entity.MessageRole.USER, "history ".repeat(3000), 5, java.time.Instant.EPOCH)));
+        var assembler = new ChatPromptAssembler(properties, new StaticObjectProvider<>(List.of()),
+                summaryService, messageRepository, toolSchemaOverhead, budget);
+        assembler.prepare(List.of(), "current", CONVERSATION, "attachment text", 1, "custom", 0);
+        org.mockito.Mockito.verify(summaryService).refreshBeforeRequest(CONVERSATION, 5);
+    }
 }

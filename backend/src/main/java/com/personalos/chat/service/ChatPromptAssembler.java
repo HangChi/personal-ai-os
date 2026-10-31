@@ -39,6 +39,7 @@ public class ChatPromptAssembler {
     private final ChatSummaryService summaryService;
     private final ChatMessageRepository messageRepository;
     private final ToolSchemaOverhead toolSchemaOverhead;
+    private final ContextBudgetService contextBudget;
 
     public ChatPromptAssembler(AiProperties aiProperties,
                                ObjectProvider<PromptContributor> promptContributors,
@@ -51,6 +52,7 @@ public class ChatPromptAssembler {
         this.summaryService = summaryService;
         this.messageRepository = messageRepository;
         this.toolSchemaOverhead = toolSchemaOverhead;
+        this.contextBudget = contextBudget;
         // 把自己算的固定开销注册给预算服务：预算要扣掉它才能真正约束「整轮请求」。
         // 反向注册（预算服务注入本类）会形成构造器环 —— 本类依赖工具集合，
         // 工具集合经 ChatMemory 又依赖预算服务。
@@ -102,6 +104,35 @@ public class ChatPromptAssembler {
             prompt.append("\n\n").append(buildKnowledgeSection(hits));
         }
         return prompt.toString();
+    }
+
+    /** Assemble complete dynamic context, then summarize the history that will not fit this turn. */
+    public String prepare(List<KnowledgeHitDto> hits, String userInput, String conversationId,
+                          String attachmentBlock, int imageCount, String modelName, int thinkingBudget) {
+        String model = contextBudget.effectiveModelName(modelName);
+        String system = assemble(hits, userInput, conversationId, attachmentBlock);
+        int fixed = com.personalos.common.ai.PromptTokenCounter.text(system, model)
+                + com.personalos.common.ai.PromptTokenCounter.text(userInput, model)
+                + ContextBudgetService.toTokens(toolSchemaOverhead.chars())
+                + imageCount * contextBudget.protection().imageReserveTokens() + 128;
+        int window = contextBudget.contextWindowTokens(model);
+        int inputLimit = window - contextBudget.outputReserveForWindow(window, thinkingBudget) - contextBudget.safetyMarginForWindow(window);
+        int historyBudget = Math.max(0, (int) (Math.min(contextBudget.budgetTokensFor(model), inputLimit) * 0.85) - fixed);
+        List<ChatMessageEntity> recent = messageRepository.findRecentByConversationId(
+                conversationId, PageRequest.of(0, aiProperties.memory().maxMessages()));
+        int boundary = recent.isEmpty() ? 0 : recent.get(recent.size() - 1).getSequenceNo() - 1;
+        int used = 0;
+        for (ChatMessageEntity message : recent) {
+            int cost = com.personalos.common.ai.PromptTokenCounter.text(message.getContent(), model) + 12;
+            if (used + cost > historyBudget) {
+                boundary = message.getSequenceNo();
+                break;
+            }
+            used += cost;
+        }
+        if (boundary <= 0) return system;
+        summaryService.refreshBeforeRequest(conversationId, boundary);
+        return assemble(hits, userInput, conversationId, attachmentBlock);
     }
 
     /**

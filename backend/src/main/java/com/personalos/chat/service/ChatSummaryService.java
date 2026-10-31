@@ -143,26 +143,35 @@ public class ChatSummaryService {
      * <p>三段式：只读快照 → **事务外**调模型 → 校验后写入。任何一步失败都保留旧摘要。
      */
     public void refresh(String conversationId) {
-        if (!properties.summary().enabled()) {
-            return;
-        }
+        refresh(conversationId, null);
+    }
+
+    /** Before sending, summarize a bounded oldest-first batch instead of waiting another turn. */
+    public void refreshBeforeRequest(String conversationId, int boundary) {
+        if (boundary <= 0) return;
+        // Bounded latency and work: subsequent turns continue where the last completed batch ended.
+        for (int i = 0; i < 2; i++) if (!refresh(conversationId, boundary)) break;
+    }
+
+    private boolean refresh(String conversationId, Integer requestedBoundary) {
+        if (!properties.summary().enabled()) return false;
         try {
-            SummarySnapshot snapshot = readOnlyTemplate.execute(status -> loadSnapshot(conversationId));
+            SummarySnapshot snapshot = readOnlyTemplate.execute(status -> loadSnapshot(conversationId, requestedBoundary));
             if (snapshot == null) {
-                return; // 窗口没推进、新增消息不足、或会话已删除
+                return false; // 窗口没推进、新增消息不足、或会话已删除
             }
 
             // 事务外：一次完整 HTTP，最慢的一步。绝不能占着数据库连接做这件事
             String summary = summarize(snapshot.existingSummary(), snapshot.transcript());
-            if (summary == null || summary.isBlank()) {
-                return;
-            }
+            if (summary == null || summary.isBlank()) return false;
 
             String finalSummary = truncate(summary.trim(), properties.summary().maxSummaryChars());
             writeTemplate.executeWithoutResult(status -> applySnapshot(snapshot, finalSummary));
+            return true;
         } catch (RuntimeException ex) {
             // 摘要失败不能影响任何用户可见行为
             log.debug("摘要刷新失败，保留旧摘要 conversationId={}", conversationId, ex);
+            return false;
         }
     }
 
@@ -171,28 +180,39 @@ public class ChatSummaryService {
      *
      * @return 没有可摘要的内容时返回 {@code null}
      */
-    private SummarySnapshot loadSnapshot(String conversationId) {
+    private SummarySnapshot loadSnapshot(String conversationId, Integer requestedBoundary) {
         ChatSessionEntity session = sessionRepository.findById(conversationId).orElse(null);
         if (session == null) {
             return null;
         }
         // 窗口起点 - 1 = 最后一条已经滑出窗口的消息
-        int boundary = chatMemory.contextStartSequence(conversationId) - 1;
+        int boundary = requestedBoundary == null ? chatMemory.contextStartSequence(conversationId) - 1 : requestedBoundary;
         if (boundary <= session.getSummaryUptoSeq()) {
             return null; // 还没有新的消息滑出窗口
         }
 
         List<ChatMessageEntity> pending = messageRepository.findRangeBySequenceNo(
                 conversationId, session.getSummaryUptoSeq() + 1, boundary);
-        if (pending.size() < properties.summary().minMessages()) {
+        if (pending.size() < (requestedBoundary == null ? properties.summary().minMessages() : 1)) {
             return null;
         }
 
         // 把要送模型的内容在这里就拼成纯文本：
         // 一是它只依赖已加载的实体字段（出事务后安全），
         // 二是避免把 JPA 实体带出事务边界（那会引出延迟加载问题）。
-        String transcript = buildTranscript(pending, properties.summary().maxExcerptChars());
-        return new SummarySnapshot(conversationId, boundary, session.getSummaryUptoSeq(),
+        // Only advance the checkpoint across messages actually supplied to the summarizer.
+        // The previous newest-only excerpt could mark unseen older messages as summarized.
+        List<ChatMessageEntity> batch = new ArrayList<>();
+        int chars = 0;
+        for (ChatMessageEntity message : pending) {
+            int size = (message.getContent() == null ? 0 : message.getContent().length()) + 16;
+            if (!batch.isEmpty() && chars + size > properties.summary().maxExcerptChars()) break;
+            batch.add(message);
+            chars += size;
+        }
+        if (batch.isEmpty()) return null;
+        String transcript = buildTranscript(batch, properties.summary().maxExcerptChars());
+        return new SummarySnapshot(conversationId, batch.get(batch.size() - 1).getSequenceNo(), session.getSummaryUptoSeq(),
                 session.getContextSummary(), transcript);
     }
 
@@ -285,6 +305,12 @@ public class ChatSummaryService {
             String line = roleLabel(message.getMessageType()) + "：" + message.getContent();
             if (!picked.isEmpty() && used + line.length() + 1 > maxChars) {
                 break;
+            }
+            if (picked.isEmpty() && line.length() > maxChars) {
+                String marker = "\n[该条历史过长，仅保留首尾供摘要]\n";
+                int available = maxChars - marker.length();
+                line = available > 0 ? line.substring(0, available / 2) + marker
+                        + line.substring(line.length() - (available - available / 2)) : line.substring(0, maxChars);
             }
             picked.add(line);
             used += line.length() + 1;

@@ -49,6 +49,8 @@ public enum ErrorCode {
     /** 模型调用被限流（短时间内请求过多）。 */
     RATE_LIMITED(42900, "请求过于频繁，请稍后再试", HttpStatus.TOO_MANY_REQUESTS),
 
+    CONTEXT_TOO_LARGE(41301, "上下文超出当前模型可用空间，请减少附件或检索内容、降低思考深度，或切换更大窗口模型", HttpStatus.BAD_REQUEST),
+
     /** AI 服务调用失败（上游模型不可用或返回错误）。 */
     AI_UPSTREAM_ERROR(50200, "AI 服务调用失败，请稍后重试或检查模型配置", HttpStatus.BAD_GATEWAY),
 
