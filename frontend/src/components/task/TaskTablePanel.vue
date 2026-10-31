@@ -62,7 +62,7 @@ function rememberTruncation(event: MouseEvent): void {
       收窄后：优先级 72、状态 80、截止时间 164、操作 160 合计 476（原 518），
       任务列的可用宽度因此多出 42px。
 
-      操作列 168→160：实测「编辑 取消完成 删除」三按钮合计 110px，
+      操作列 168→160：实测「编辑 重新打开 删除」三按钮合计 110px，
       加左右内边距 24 = 134，可用区 136 —— 恰好不换行但只剩 2px。
       取 160（可用 136 + 4 余量）是为了不把「刚好卡住」写进布局：
       字体或语言包一变就会折行，而折行会让该行行高从 46 跳到 58。
@@ -130,7 +130,7 @@ function rememberTruncation(event: MouseEvent): void {
         <div class="os-table-actions">
           <el-button link type="primary" size="small" @click="emit('edit', row)">编辑</el-button>
           <el-button link type="primary" size="small" @click="emit('toggle', row)">
-            {{ isDone(row) ? '取消完成' : '完成' }}
+            {{ isDone(row) ? '重新打开' : '完成' }}
           </el-button>
           <el-button link type="danger" size="small" @click="emit('remove', row)">删除</el-button>
         </div>

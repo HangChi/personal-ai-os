@@ -88,7 +88,7 @@ defineExpose({ reset })
 
       <div class="task-create__field">
         <label class="task-create__label" :for="`${formId}-tags`">
-          标签<span class="task-create__optional">可选，最多 5 个</span>
+          标签<span class="task-create__optional">可选，最多 5 个 · 输入后回车创建</span>
         </label>
         <el-select
           :id="`${formId}-tags`"
@@ -99,7 +99,7 @@ defineExpose({ reset })
           allow-create
           default-first-option
           :multiple-limit="5"
-          placeholder="选择或输入标签"
+          placeholder="选择已有标签，或输入后回车创建"
         >
           <el-option v-for="tag in tags" :key="tag" :label="tag" :value="tag" />
         </el-select>

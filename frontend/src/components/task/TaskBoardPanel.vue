@@ -74,7 +74,7 @@ const moreCount = computed(() => {
           </div>
           <div class="task-board__card-actions">
             <el-button link type="primary" size="small" @click="emit('toggle', task)">
-              {{ isDone(task) ? '取消完成' : '完成' }}
+              {{ isDone(task) ? '重新打开' : '完成' }}
             </el-button>
             <el-button link type="primary" size="small" @click="emit('edit', task)">编辑</el-button>
             <el-button link type="danger" size="small" @click="emit('remove', task)">删除</el-button>

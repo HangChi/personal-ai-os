@@ -128,7 +128,7 @@ function submit(): void {
           allow-create
           default-first-option
           :multiple-limit="5"
-          placeholder="最多 5 个；全部删除即清空标签"
+          placeholder="选择已有标签，或输入后回车创建"
         >
           <el-option v-for="tag in tags" :key="tag" :label="tag" :value="tag" />
         </el-select>

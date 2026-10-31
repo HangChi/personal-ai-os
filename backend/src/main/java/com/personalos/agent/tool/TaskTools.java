@@ -156,10 +156,10 @@ public class TaskTools {
     }
 
     @Tool(name = "setTaskCompleted",
-            description = "把任务标记为已完成，或取消完成。该操作可逆且不破坏数据，因此无需用户确认。")
+            description = "把任务标记为已完成，或重新打开已完成的任务。该操作可逆且不破坏数据，因此无需用户确认。")
     public String setTaskCompleted(
             @ToolParam(description = "任务 id") String taskId,
-            @ToolParam(description = "true 表示标记完成，false 表示取消完成") Boolean completed,
+            @ToolParam(description = "true 表示标记完成，false 表示重新打开") Boolean completed,
             ToolContext toolContext) {
 
         Map<String, Object> arguments = ToolExecutor.arguments(args -> {
@@ -169,11 +169,11 @@ public class TaskTools {
 
         return toolExecutor.write("setTaskCompleted", arguments, toolContext, () -> {
             if (completed == null) {
-                return ToolExecutionResult.rejected("必须明确指示是标记完成还是取消完成");
+                return ToolExecutionResult.rejected("必须明确指示是标记完成还是重新打开");
             }
             TaskDto updated = taskService.setCompleted(
                     ToolExecutor.parseUuid(taskId, "taskId"), completed);
-            String action = completed ? "已完成" : "已取消完成";
+            String action = completed ? "已完成" : "已重新打开";
             return ToolExecutionResult.ok("任务「" + updated.title() + "」" + action, updated);
         });
     }
