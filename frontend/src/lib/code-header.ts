@@ -33,7 +33,7 @@ export function buildCodeHeader(language: string, codeText: string): HTMLElement
 
   const label = document.createElement('span')
   label.className = 'md-code__lang'
-  label.textContent = language
+  label.textContent = language === 'text' ? '代码' : language
 
   const button = document.createElement('button')
   button.type = 'button'

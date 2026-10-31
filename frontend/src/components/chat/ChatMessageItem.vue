@@ -254,6 +254,7 @@ const emit = defineEmits<{
    */
   position: relative;
   width: fit-content;
+  max-width: min(100%, var(--os-chat-reply-max));
   background: var(--os-bubble-bg);
   border: 1px solid var(--os-bubble-border);
   box-shadow: var(--os-shadow-bubble);

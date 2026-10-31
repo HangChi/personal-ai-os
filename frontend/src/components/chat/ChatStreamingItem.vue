@@ -133,7 +133,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--os-bubble-border);
   box-shadow: var(--os-shadow-bubble);
   width: fit-content;
-  max-width: 100%;
+  max-width: min(100%, var(--os-chat-reply-max));
 }
 
 .chat-streaming__bubble :deep(.md__body) {

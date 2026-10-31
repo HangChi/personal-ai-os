@@ -354,9 +354,11 @@ function toggleExpand(): void {
  * 改成独立令牌后，代码块无论放在什么底色上都是「一块浅色卡片」。
  */
 .md__body :deep(.md-code) {
+  width: 100%;
+  max-width: 100%;
   margin: var(--os-space-2) 0;
   border: 1px solid var(--os-code-border);
-  border-radius: var(--os-radius-md);
+  border-radius: var(--os-radius-lg);
   overflow: hidden;
   background: var(--os-code-bg);
 }
@@ -365,7 +367,8 @@ function toggleExpand(): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 10px;
+  gap: var(--os-space-5);
+  padding: var(--os-space-1) var(--os-space-4);
   background: var(--os-code-header-bg);
   border-bottom: 1px solid var(--os-code-border);
 }
@@ -374,6 +377,7 @@ function toggleExpand(): void {
   color: var(--os-code-muted);
   font-size: var(--os-font-xs);
   font-family: 'SFMono-Regular', Consolas, monospace;
+  font-weight: 500;
 }
 
 /*
@@ -445,17 +449,20 @@ function toggleExpand(): void {
 
 .md__body :deep(.md-code pre) {
   margin: 0;
-  padding: var(--os-space-2) var(--os-space-3);
+  padding: var(--os-space-3) var(--os-space-4);
   border-radius: 0;
   overflow-x: auto;
   background: var(--os-code-bg);
-  font-size: var(--os-font-xs);
-  line-height: 1.6;
+  font-size: var(--os-font-sm);
+  line-height: 1.7;
 }
 
 /* 代码正文必须吃掉 hljs 主题自带的白底，否则会在上面盖出第二层浅色块 */
 .md__body :deep(.md-code pre code),
 .md__body :deep(.md-code .hljs) {
   background: transparent;
+  padding: 0;
+  overflow: visible;
+  font-size: inherit;
 }
 </style>
