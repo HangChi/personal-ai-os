@@ -134,4 +134,54 @@ describe('ModelProfileDialog window discovery', () => {
     expect((row(wrapper, 'glm-5.3').find('input').element as HTMLInputElement).value).toBe('')
     expect(row(wrapper, 'glm-5.3').find('[role="status"]').exists()).toBe(false)
   })
+  it('采用参考值只修改草稿，保存后才提交准确的 token 值', async () => {
+    probeModelWindow.mockResolvedValue(reference(204800))
+    const wrapper = await open()
+    await row(wrapper, 'MiniMax-M2.5').find('.profile-form__model-probe').trigger('click')
+    await flushPromises()
+    expect(wrapper.emitted('submit')).toBeUndefined()
+    expect(row(wrapper, 'MiniMax-M2.5').find('details').attributes('open')).toBeUndefined()
+    await row(wrapper, 'MiniMax-M2.5').find('.profile-form__apply-window').trigger('click')
+    expect((row(wrapper, 'MiniMax-M2.5').find('input').element as HTMLInputElement).value).toBe('204800')
+    expect(row(wrapper, 'MiniMax-M2.5').find('.profile-form__apply-window').exists()).toBe(false)
+    expect(row(wrapper, 'MiniMax-M2.5').find('[role="status"]').text()).toContain('已采用，保存后生效')
+    expect(wrapper.emitted('submit')).toBeUndefined()
+    await wrapper
+      .findAll('button')
+      .find((b) => b.text() === '保存')!
+      .trigger('click')
+    const payload = wrapper.emitted('submit')![0]![0] as { contextWindows: Record<string, number> }
+    expect(payload.contextWindows['MiniMax-M2.5']).toBe(204800)
+  })
+  it('未采用查询值时，保存仍使用原有窗口', async () => {
+    probeModelWindow.mockResolvedValue(reference(204800))
+    const wrapper = await open()
+    await row(wrapper, 'MiniMax-M2.5').find('.profile-form__model-probe').trigger('click')
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find((b) => b.text() === '保存')!
+      .trigger('click')
+    const payload = wrapper.emitted('submit')![0]![0] as { contextWindows: Record<string, number> }
+    expect(payload.contextWindows['MiniMax-M2.5']).toBe(196601)
+  })
+  it('默认温度明确显示服务端控制，支持自定义后恢复默认', async () => {
+    const wrapper = await open()
+    expect(wrapper.find('.profile-form__temperature-default').text()).toContain('使用服务端默认值')
+    expect(wrapper.find('.profile-form__slider').exists()).toBe(false)
+    await wrapper.find('.profile-form__temperature-default button').trigger('click')
+    expect(wrapper.find('.profile-form__slider').exists()).toBe(true)
+    await wrapper
+      .find('.profile-form__temperature')
+      .findAll('button')
+      .find((b) => b.text() === '用默认')!
+      .trigger('click')
+    expect(wrapper.find('.profile-form__temperature-default').exists()).toBe(true)
+    await wrapper
+      .findAll('button')
+      .find((b) => b.text() === '保存')!
+      .trigger('click')
+    const payload = wrapper.emitted('submit')![0]![0] as { temperature: number | null }
+    expect(payload.temperature).toBeNull()
+  })
 })
