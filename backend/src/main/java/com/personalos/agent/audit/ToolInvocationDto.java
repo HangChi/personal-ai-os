@@ -19,5 +19,7 @@ public record ToolInvocationDto(Long id,
                                String outcome,
                                Integer durationMs,
                                String conversationId,
-                               Instant createdAt) {
+                               Instant createdAt,
+                               String turnId,
+                               String argumentsDigest) {
 }

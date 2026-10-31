@@ -68,6 +68,8 @@ public enum ErrorCode {
      */
     AI_TIMEOUT(50202, "模型响应超时，请稍后重试或降低思考深度", HttpStatus.GATEWAY_TIMEOUT),
 
+    AGENT_EXECUTION_LIMIT(50203, "工具调用已停止：重复失败或执行步数超限，请检查失败原因或拆分任务", HttpStatus.BAD_GATEWAY),
+
     /** AI 模型未配置（未提供任何可用的 ChatModel）。 */
     AI_NOT_CONFIGURED(50300, "AI 模型未配置，请设置 AI_CHAT_PROVIDER 为 ollama 或 openai", HttpStatus.SERVICE_UNAVAILABLE),
 

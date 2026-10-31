@@ -76,6 +76,43 @@ class OpenAiChatModelFactoryTest {
         return new OpenAiChatModelFactory(new StaticObjectProvider<ToolCallingManager>(List.of()));
     }
 
+    @Test
+    @DisplayName("上游 500 时同步和流式请求都不做 SDK 隐式重试")
+    void serverErrorsAreNotRetriedBySdk() {
+        var requests = new java.util.concurrent.atomic.AtomicInteger();
+        server.removeContext("/");
+        server.createContext("/", exchange -> {
+            requests.incrementAndGet();
+            byte[] body = "{\"error\":{\"message\":\"unavailable\",\"type\":\"server_error\"}}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(500, body.length);
+            try (var output = exchange.getResponseBody()) { output.write(body); }
+        });
+        var model = factory().create(stubBaseUrl(), "test-key", "test-model", null, null);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> model.call("hi"))
+                .isInstanceOf(RuntimeException.class);
+        assertThat(requests.get()).isEqualTo(1);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> model.stream(
+                new org.springframework.ai.chat.prompt.Prompt("hi")).blockLast(java.time.Duration.ofSeconds(3)))
+                .isInstanceOf(RuntimeException.class);
+        assertThat(requests.get()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("启动期公共/聊天/嵌入配置都关闭 SDK 默认的三次重试")
+    void startupConfigurationDisablesSdkRetries() throws IOException {
+        var source = new org.springframework.boot.env.YamlPropertySourceLoader().load("application",
+                new org.springframework.core.io.ClassPathResource("application.yml")).getFirst();
+        var binder = new org.springframework.boot.context.properties.bind.Binder(
+                org.springframework.boot.context.properties.source.ConfigurationPropertySources.from(source));
+        assertThat(binder.bind("spring.ai.openai",
+                org.springframework.ai.model.openai.autoconfigure.OpenAiCommonProperties.class).get().getMaxRetries()).isZero();
+        assertThat(binder.bind("spring.ai.openai.chat",
+                org.springframework.ai.model.openai.autoconfigure.OpenAiChatProperties.class).get().getMaxRetries()).isZero();
+        assertThat(binder.bind("spring.ai.openai.embedding",
+                org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingProperties.class).get().getMaxRetries()).isZero();
+    }
+
     /**
      * 最重要的回归：**模型名绝不能出现在 Authorization 头里**。
      *

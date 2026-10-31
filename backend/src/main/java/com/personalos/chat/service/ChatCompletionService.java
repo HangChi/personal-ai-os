@@ -123,6 +123,8 @@ public class ChatCompletionService {
      * <p>用 {@link ConcurrentHashMap#putIfAbsent} 做原子抢占。进程内有效——
      * 单用户自托管单实例，不需要分布式锁；进程重启后内存锁自然清空。
      */
+    private final com.personalos.common.ai.AgentExecutionProperties agentProperties;
+
     private final ConcurrentHashMap<String, Boolean> activeStreams = new ConcurrentHashMap<>();
 
     public ChatCompletionService(AiChatClientProvider aiProvider,
@@ -134,7 +136,9 @@ public class ChatCompletionService {
                                  SseHeartbeatScheduler heartbeatScheduler,
                                  ChatAttachmentContextBuilder attachmentContextBuilder,
                                  @Value("${app.chat.stream-timeout:120s}") Duration baseStreamTimeout,
-                                 TokenUsageRecorder usageRecorder) {
+                                 TokenUsageRecorder usageRecorder,
+                                 com.personalos.common.ai.AgentExecutionProperties agentProperties) {
+        this.agentProperties = agentProperties;
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
         this.promptAssembler = promptAssembler;
@@ -215,6 +219,7 @@ public class ChatCompletionService {
             throw new BusinessException(ErrorCode.BUSINESS_CONFLICT, "该会话正在生成回复，请稍候");
         }
 
+        var executionBudget = new com.personalos.common.ai.AgentTurnBudget(agentProperties);
         long streamTimeout = timeoutFor(thinkingLevel);
         // emitter 自带的超时只作兜底：它比我们自己的看门狗晚 5 秒。
         // 真正给客户端发 error 帧的是下面那个 scheduledTimeout ——
@@ -295,7 +300,8 @@ public class ChatCompletionService {
                     // 工具调用时需要的上下文：工具方法通过 ToolContext 参数读取
                     .toolContext(Map.of(
                             ToolContextKeys.CONVERSATION_ID, conversationId,
-                            ToolContextKeys.TURN_ID, turnId));
+                            ToolContextKeys.TURN_ID, turnId,
+                            ToolContextKeys.EXECUTION_BUDGET, executionBudget));
 
             // 思考程度（阶段 22）：由 provider 门面在模型默认选项上合并，
             // 非 OpenAI 系模型时原样返回，此处无需判断 provider 类型。

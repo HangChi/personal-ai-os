@@ -37,6 +37,7 @@ public final class ContextGuardChatModel implements ChatModel {
             Prompt prepared = prepare(prompt, attempt, previous == null ? Integer.MAX_VALUE : Math.max(1, (int) (count(previous) * 0.65)));
             if (previous != null && count(prepared) >= count(previous)) throw tooLarge();
             try {
+                AgentTurnBudget.beforeModel(prepared.getOptions());
                 ChatResponse response = delegate.call(prepared);
                 recordAccepted(prepared, response);
                 return response;
@@ -60,7 +61,10 @@ public final class ContextGuardChatModel implements ChatModel {
             if (previous != null && count(prepared) >= count(previous)) return Flux.error(tooLarge());
             AtomicBoolean emitted = new AtomicBoolean();
             java.util.concurrent.atomic.AtomicReference<ChatResponse> usage = new java.util.concurrent.atomic.AtomicReference<>();
-            return Flux.defer(() -> delegate.stream(prepared))
+            return Flux.defer(() -> {
+                        AgentTurnBudget.beforeModel(prepared.getOptions());
+                        return delegate.stream(prepared);
+                    })
                     .doOnNext(response -> {
                         emitted.set(true);
                         if (actualInputTokens(response) > 0) usage.set(response);

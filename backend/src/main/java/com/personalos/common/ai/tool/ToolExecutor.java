@@ -1,6 +1,7 @@
 package com.personalos.common.ai.tool;
 
 import com.personalos.common.ai.ToolContextKeys;
+import com.personalos.common.ai.AgentTurnBudget;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.idempotency.IdempotencyOutcome;
@@ -80,6 +81,10 @@ public class ToolExecutor {
         String turnId = contextValue(toolContext, ToolContextKeys.TURN_ID);
         String digest = jsonCodec.digestOf(arguments);
 
+        AgentTurnBudget budget = AgentTurnBudget.from(toolContext == null ? null : toolContext.getContext());
+        String fingerprint = toolName + ":" + digest;
+        if (budget != null) budget.beforeTool(fingerprint);
+
         IdempotencyRequest request = new IdempotencyRequest(key, OperationSource.TOOL, toolName,
                 digest, conversationId, turnId);
 
@@ -91,12 +96,20 @@ public class ToolExecutor {
                 } catch (BusinessException ex) {
                     // 业务校验失败：作为 REJECTED 返回给模型，而不是抛异常打断工具循环。
                     // 这样审计记录里的状态也是 REJECTED（说明"没执行"），而不是 FAILED。
-                    execution = ToolExecutionResult.rejected(appendFailureHint(conversationId, toolName, ex.getMessage()));
+                    execution = ToolExecutionResult.rejected(ex.getMessage());
                 } catch (RuntimeException ex) {
                     log.error("工具执行异常 tool={}", toolName, ex);
                     execution = ToolExecutionResult.error(
-                            appendFailureHint(conversationId, toolName, "工具执行失败，请稍后重试"));
+                            "工具执行失败，请检查原因；本轮不要用相同参数重试");
                 }
+                if ("ERROR".equals(execution.status()) || "REJECTED".equals(execution.status())) {
+                    execution = new ToolExecutionResult(execution.status(),
+                            appendFailureHint(conversationId, toolName, execution.message()),
+                            execution.data(), execution.confirmationId());
+                }
+                if (budget != null) budget.record(fingerprint, execution);
+                log.info("工具执行 turnId={} conversationId={} tool={} outcome={} argumentsDigest={}",
+                        turnId, conversationId, toolName, execution.status(), digest);
                 // 只有真正产生了结果才通知旁路：DUPLICATE 是回放，重复归集会把同一次调用记两遍
                 if (ToolExecutionResult.ToolStatus.OK.name().equals(execution.status())
                         || ToolExecutionResult.ToolStatus.REQUIRES_CONFIRMATION.name().equals(execution.status())) {
@@ -115,8 +128,10 @@ public class ToolExecutor {
             return result.responsePayload();
         } catch (BusinessException ex) {
             // 例如同一幂等键对应了不同参数
+            if (budget != null) budget.record(fingerprint, ToolExecutionResult.rejected(ex.getMessage()));
             return jsonCodec.toJson(ToolExecutionResult.rejected(ex.getMessage()));
         } catch (RuntimeException ex) {
+            if (budget != null) budget.record(fingerprint, ToolExecutionResult.error("工具外壳执行失败"));
             log.error("工具外壳执行失败 tool={}", toolName, ex);
             return jsonCodec.toJson(ToolExecutionResult.error("工具执行失败，请稍后重试"));
         }

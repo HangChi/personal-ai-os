@@ -1,5 +1,7 @@
 # 检索评测（R@1/3/5 · MRR · 多样性）
 
+Agent 工具选择、落库、确认与长对话评测另见 [Agent 执行边界与评测](../../docs/agent-reliability.md)。
+
 > 建立时间：2026-10-25。动机见下 —— **没有这个之前，任何调参都无法验证是否真的变好。**
 
 ## 为什么需要它
@@ -261,8 +263,7 @@ python3 scripts/eval/noise-floor.py
 | 组件 | 职责 |
 |---|---|
 | `KeywordExtractor` | 从查询提取英文/数字 token（≤3 个），过滤停用词；**数字开头要保留**（`2PC` 不能被截成 `PC`） |
-| `VectorStoreInspector.searchByKeyword` | 单 token 子串检索（`ILIKE` + `ESCAPE`） |
-| `VectorStoreInspector.countBySubstring` | df 统计，**口径与检索一致** |
+| `VectorStoreInspector.searchByKeywords` | 一次查询返回各 token 的独立候选、完整 df 与总分块数（`ILIKE` + `ESCAPE`） |
 | `KnowledgeRetrievalService` | 每 token 一路通道，`1/(k+rank) × IDF × 通道权重` 累加后融合 |
 
 **为什么每个 token 单独一路**：拼成一条 OR 查询会丢失「哪个 token 命中」的信息，

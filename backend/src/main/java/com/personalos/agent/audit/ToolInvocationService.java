@@ -72,6 +72,6 @@ public class ToolInvocationService {
     private static ToolInvocationDto toDto(OperationRecordEntity record) {
         return new ToolInvocationDto(record.getId(), record.getOperation(), record.getSource().name(),
                 record.getOutcome().name(), record.getDurationMs(), record.getConversationId(),
-                record.getCreatedAt());
+                record.getCreatedAt(), record.getTurnId(), record.getRequestDigest());
     }
 }

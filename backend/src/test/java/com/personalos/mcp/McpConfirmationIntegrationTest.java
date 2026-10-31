@@ -111,7 +111,7 @@ class McpConfirmationIntegrationTest {
     }
 
     private McpToolCallbackProvider provider() {
-        return McpToolCallbackProvider.create(registry.clients(), mcpProperties,
+        return McpToolCallbackProvider.create(registry, mcpProperties,
                 toolExecutor, new McpConfirmationService(confirmationService), jsonCodec);
     }
 
@@ -122,6 +122,27 @@ class McpConfirmationIntegrationTest {
             }
         }
         throw new IllegalStateException("provider 里没有工具：" + assembledName);
+    }
+
+    @Test
+    @DisplayName("已装配的 AUTO 工具断连后更新状态，重连后同一回调使用新客户端")
+    void existingCallbackRecoversAfterReconnect() {
+        var callback = find(provider(), "mcp_test_echo");
+        var previous = registry.clients().get("test");
+        previous.close();
+        try {
+            assertThat(callback.call("{\"text\":\"lost\"}", null)).contains("ERROR");
+            assertThat(registry.isAvailable("test")).isFalse();
+            registry.reconnect("test");
+            var current = registry.clients().get("test");
+            assertThat(current).isNotSameAs(previous);
+            // 旧连接的迟到错误不会关闭新连接。
+            registry.markUnavailable("test", previous, "迟到错误");
+            assertThat(registry.isAvailable("test")).isTrue();
+            assertThat(callback.call("{\"text\":\"recovered\"}", null)).contains("OK", "echo:recovered");
+        } finally {
+            if (!registry.isAvailable("test")) registry.reconnect("test");
+        }
     }
 
     @Test

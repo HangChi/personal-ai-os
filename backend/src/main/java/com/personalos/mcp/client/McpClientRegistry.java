@@ -12,7 +12,7 @@ import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.spec.McpSchema;
 import jakarta.annotation.PostConstruct;
 import java.time.Duration;
-import java.util.LinkedHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -58,10 +58,10 @@ public class McpClientRegistry implements DisposableBean {
     private final AppProperties appProperties;
 
     /** server 名 → 已连接客户端（按配置顺序，保证日志与状态可读） */
-    private final Map<String, McpSyncClient> clients = new LinkedHashMap<>();
+    private final Map<String, McpSyncClient> clients = new ConcurrentHashMap<>();
 
     /** server 名 → 状态（含不可用的） */
-    private final Map<String, McpServerStatus> statuses = new LinkedHashMap<>();
+    private final Map<String, McpServerStatus> statuses = new ConcurrentHashMap<>();
 
     public McpClientRegistry(McpProperties properties, McpConfigValidator configValidator,
                              AppProperties appProperties) {
@@ -88,13 +88,14 @@ public class McpClientRegistry implements DisposableBean {
     }
 
     private void connect(String name, McpProperties.ServerConfig config) {
+        McpSyncClient client = null;
         try {
             ServerParameters parameters = ServerParameters.builder(config.command())
                     .args(config.args())
                     .env(config.env())
                     .build();
             Duration timeout = config.connectTimeout();
-            McpSyncClient client = McpClient.sync(new StdioClientTransport(parameters, JSON_MAPPER))
+            client = McpClient.sync(new StdioClientTransport(parameters, JSON_MAPPER))
                     // 2 参构造器自 mcp-core 2.0 起已过时（record 增加了 title/description/icons
                     // 等字段）。builder 的 (name, version) 就是原来的语义，其余字段留空。
                     //
@@ -114,6 +115,9 @@ public class McpClientRegistry implements DisposableBean {
             statuses.put(name, McpServerStatus.available(name, tools.size()));
             log.info("MCP server 已连接：name={}, tools={}", name, tools.size());
         } catch (Exception ex) {
+            if (client != null) {
+                try { client.close(); } catch (RuntimeException closeError) { log.debug("清理 MCP 连接失败 name={}", name); }
+            }
             clients.remove(name);
             statuses.put(name, McpServerStatus.unavailable(name, ex.getMessage()));
             log.warn("MCP server 连接失败，已标记不可用：name={}, reason={}", name, ex.getMessage());
@@ -148,6 +152,12 @@ public class McpClientRegistry implements DisposableBean {
      * @param reason 失败原因（用于状态页展示）
      */
     public void markUnavailable(String name, String reason) {
+        markUnavailable(name, clients.get(name), reason);
+    }
+
+    /** 旧连接的迟到异常不得关闭已经重连的新客户端。 */
+    public synchronized void markUnavailable(String name, McpSyncClient failedClient, String reason) {
+        if (clients.get(name) != failedClient) return;
         statuses.put(name, McpServerStatus.unavailable(name, reason));
         McpSyncClient client = clients.remove(name);
         if (client != null) {
@@ -166,13 +176,17 @@ public class McpClientRegistry implements DisposableBean {
      * <p>与 {@link #connect} 不同：这里在重连前先清掉旧状态，避免「旧失败原因」残留在状态页。
      * 失败时同样只标记不可用，不抛出。
      */
-    public void reconnect(String name) {
+    public synchronized void reconnect(String name) {
         McpProperties.ServerConfig config = properties.servers().get(name);
         if (config == null) {
             log.warn("重连未知的 MCP server：name={}", name);
             return;
         }
-        clients.remove(name);
+        McpSyncClient previous = clients.remove(name);
+        if (previous != null) {
+            try { previous.close(); }
+            catch (RuntimeException ex) { log.debug("关闭旧 MCP 连接失败 name={}", name); }
+        }
         statuses.remove(name);
         connect(name, config);
     }

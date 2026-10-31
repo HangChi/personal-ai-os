@@ -3,6 +3,7 @@ package com.personalos.mcp.tool;
 import com.personalos.common.ai.tool.ToolExecutor;
 import com.personalos.common.json.JsonCodec;
 import com.personalos.mcp.config.McpProperties;
+import com.personalos.mcp.client.McpClientRegistry;
 import com.personalos.mcp.confirmation.McpConfirmationService;
 import io.modelcontextprotocol.client.McpSyncClient;
 import java.util.ArrayList;
@@ -40,19 +41,19 @@ public class McpToolCallbackProvider implements ToolCallbackProvider {
     /**
      * 从已连接的客户端构建工具提供者。
      *
-     * @param clients            已连接的 MCP 客户端（来自 {@code McpClientRegistry}，只含可用的）
+     * @param registry           MCP 注册表；回调每次调用从中解析当前客户端
      * @param properties         配置（autoTools 策略清单来源）
      * @param toolExecutor       幂等 + 审计外壳
      * @param confirmationService 变更类工具的确认申请入口
      * @param jsonCodec          JSON 编解码（schema 自检用）
      */
-    public static McpToolCallbackProvider create(Map<String, McpSyncClient> clients,
+    public static McpToolCallbackProvider create(McpClientRegistry registry,
                                                  McpProperties properties,
                                                  ToolExecutor toolExecutor,
                                                  McpConfirmationService confirmationService,
                                                  JsonCodec jsonCodec) {
         List<McpToolCallback> wrapped = new ArrayList<>();
-        for (Map.Entry<String, McpSyncClient> entry : clients.entrySet()) {
+        for (Map.Entry<String, McpSyncClient> entry : registry.clients().entrySet()) {
             String serverName = entry.getKey();
             McpProperties.ServerConfig config = properties.servers().get(serverName);
             Set<String> autoTools = config == null ? Set.of() : config.autoTools();
@@ -74,7 +75,7 @@ public class McpToolCallbackProvider implements ToolCallbackProvider {
                 }
                 McpToolPolicy policy = McpToolPolicy.resolve(originalName, autoTools);
                 wrapped.add(new McpToolCallback(raw, serverName, originalName, policy,
-                        toolExecutor, confirmationService, jsonCodec));
+                        toolExecutor, confirmationService, jsonCodec, registry));
                 log.info("MCP 工具已装配：{}（策略 {}）",
                         McpToolNaming.prefixedName(serverName, originalName), policy);
             }

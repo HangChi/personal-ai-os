@@ -169,6 +169,14 @@ public class AgentPlanService {
         if (step.getStatus() == StepStatus.SKIPPED) {
             throw new BusinessException(ErrorCode.BUSINESS_CONFLICT, "步骤 " + seq + " 已被跳过，不能再标记完成");
         }
+        int nextSeq = firstOpenSeq(plan);
+        if (seq != nextSeq) {
+            throw new BusinessException(ErrorCode.BUSINESS_CONFLICT,
+                    "计划必须按序推进：请先完成第 " + nextSeq + " 步，不能直接完成第 " + seq + " 步");
+        }
+        if (step.getStatus() == StepStatus.FAILED) {
+            throw new BusinessException(ErrorCode.BUSINESS_CONFLICT, "失败步骤必须先重启或显式跳过，不能直接标记完成");
+        }
         if (step.getStatus() == StepStatus.PENDING) {
             // 允许但不推荐：模型可能跳过 start 直接 complete。补一个 startedAt，
             // 让「耗时」这个字段不会出现「有结束没开始」的缺口
@@ -361,7 +369,7 @@ public class AgentPlanService {
             planRepository.save(plan.get());
             log.info("计划 {} 步骤 {} 因工具 {} 失败而标记失败", plan.get().getId(), step.getSeq(), toolName);
             return Optional.of("步骤 " + step.getSeq() + " 已标记为失败。"
-                    + "可以调用 startPlanStep 重试这一步，或调用 revisePlan 换一条路线。");
+                    + "修正参数后调用 startPlanStep 重启这一步，或调用 revisePlan 换路线；不要重复同参数失败调用。");
         } catch (RuntimeException ex) {
             log.debug("工具失败回写计划步骤失败（忽略）：{}", ex.toString());
             return Optional.empty();

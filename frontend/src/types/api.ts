@@ -320,6 +320,10 @@ export type ToolInvocationOutcome =
  * 与「执行了但耗时 0」是两回事，界面上要区分显示。
  */
 export interface ToolInvocation {
+  /** 用于关联模型请求与工具日志的轮次标识 */
+  turnId?: string | null
+  /** 参数摘要，不返回原始敏感参数 */
+  argumentsDigest?: string | null
   id: number
   operation: string
   source: 'TOOL' | 'HTTP'

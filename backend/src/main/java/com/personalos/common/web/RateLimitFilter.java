@@ -8,14 +8,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
@@ -25,10 +23,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * 只拦会触发模型调用的写接口：
  * <ul>
  *   <li>{@code POST /chat/sessions/*}{@code /stream} —— 对话，最贵的那个；</li>
- *   <li>{@code POST /chat/uploads} —— 附件上传，读图会调多模态模型；</li>
- *   <li>{@code POST /knowledge/documents} —— 文档入库，逐块调嵌入模型。</li>
+ *   <li>附件、语音转写、模型探测 —— 都可能产生模型请求；</li>
+ *   <li>知识库入库、替换、检索与问答 —— 嵌入或生成模型调用。</li>
  * </ul>
- * 其余接口（查询、日程、任务、导出）都是本地数据库操作，不产生外部成本，
+ * 路径统一由 ModelRequestPaths 定义；任务、日程列表等本地数据库查询不产生外部成本，
  * 拦它们只会在用户翻页翻快了的时候制造莫名其妙的 429。
  *
  * <h2>为什么不按 IP 或用户分桶</h2>
@@ -45,15 +43,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(RateLimitFilter.class);
 
-    /** 受保护的路径模式（相对 context path）。改这里等于改「什么算贵」。 */
-    private static final List<String> GUARDED_PATHS = List.of(
-            "/api/v1/chat/sessions/*/stream",
-            "/api/v1/chat/uploads",
-            "/api/v1/knowledge/documents");
-
     private final TokenBucketRateLimiter limiter;
     private final JsonCodec jsonCodec;
-    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public RateLimitFilter(TokenBucketRateLimiter limiter, JsonCodec jsonCodec) {
         this.limiter = limiter;
@@ -62,12 +53,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        // 只限 POST：GET 不会触发模型调用，且对 SSE 之外的端点做方法判断成本更低
-        if (!"POST".equalsIgnoreCase(request.getMethod())) {
-            return true;
-        }
-        String path = request.getRequestURI().substring(request.getContextPath().length());
-        return GUARDED_PATHS.stream().noneMatch(pattern -> pathMatcher.match(pattern, path));
+        return !ModelRequestPaths.matches(request);
     }
 
     @Override

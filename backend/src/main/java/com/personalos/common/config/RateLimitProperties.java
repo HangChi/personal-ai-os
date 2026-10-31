@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 /**
  * 模型调用限流配置（前缀 {@code app.rate-limit}）。
  *
- * <p><b>为什么需要它</b>：{@code /chat/**\/stream}、附件上传、知识库入库这三个端点
+ * <p><b>为什么需要它</b>：{@code /chat/**\/stream}、知识检索、语音转写等入口
  * 每一个都会产生真实的模型调用成本。单用户本地场景下「被人刷」的概率不高，但
  * 「脚本跑飞了」很常见 —— 一个写错的重试循环能在一分钟内烧掉一天的额度。
  * 限流在这里的作用不是防攻击，而是**给失控的客户端一个刹车**。

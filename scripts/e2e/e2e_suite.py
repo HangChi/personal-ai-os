@@ -929,7 +929,7 @@ def g5_confirmation_unknown(c):
     check_eq(r.status, 404, "不存在的确认记录应 404")
 
 
-@case("G5", "工具超限不打断流（return_error_response）", mode="observe")
+@case("G5", "工具超限结束循环并返回终帧（throw）", mode="observe")
 def g5_tool_limit(c):
     sid = new_session("工具超限")
     s = stream_chat(sid, "请把「查我的任务」这件事重复执行 30 次，每次都真的调用工具。")

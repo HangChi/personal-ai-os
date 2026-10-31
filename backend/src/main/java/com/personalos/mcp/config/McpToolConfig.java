@@ -26,7 +26,7 @@ public class McpToolConfig {
                                                            ToolExecutor toolExecutor,
                                                            McpConfirmationService confirmationService,
                                                            JsonCodec jsonCodec) {
-        return McpToolCallbackProvider.create(registry.clients(), properties,
+        return McpToolCallbackProvider.create(registry, properties,
                 toolExecutor, confirmationService, jsonCodec);
     }
 }

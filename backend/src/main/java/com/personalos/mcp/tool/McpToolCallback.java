@@ -5,6 +5,8 @@ import com.personalos.common.ai.tool.ToolExecutor;
 import com.personalos.common.confirmation.ConfirmationDto;
 import com.personalos.common.json.JsonCodec;
 import com.personalos.mcp.confirmation.McpConfirmationService;
+import com.personalos.mcp.client.McpClientRegistry;
+import io.modelcontextprotocol.spec.McpSchema;
 import java.util.Map;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.ToolCallback;
@@ -30,6 +32,7 @@ import org.springframework.ai.tool.definition.ToolDefinition;
  */
 public class McpToolCallback implements ToolCallback {
 
+    private final McpClientRegistry registry;
     private final ToolCallback delegate;
     private final String serverName;
     private final String originalToolName;
@@ -45,7 +48,8 @@ public class McpToolCallback implements ToolCallback {
                            McpToolPolicy policy,
                            ToolExecutor toolExecutor,
                            McpConfirmationService confirmationService,
-                           JsonCodec jsonCodec) {
+                           JsonCodec jsonCodec, McpClientRegistry registry) {
+        this.registry = registry;
         this.delegate = delegate;
         this.serverName = serverName;
         this.originalToolName = originalToolName;
@@ -94,15 +98,21 @@ public class McpToolCallback implements ToolCallback {
         }
 
         return toolExecutor.read(assembledName, arguments, toolContext, () -> {
+            // 每次解析当前客户端：重连后已装配的回调也必须使用新连接。
+            var client = registry.clients().get(serverName);
+            if (client == null) return ToolExecutionResult.error("MCP server 不可用，请在设置中重连：" + serverName);
             try {
-                String raw = delegate.call(toolInput, toolContext);
+                var result = client.callTool(McpSchema.CallToolRequest.builder(originalToolName)
+                        .arguments(arguments).build());
+                String raw = jsonCodec.toJson(result);
+                if (Boolean.TRUE.equals(result.isError())) {
+                    // 工具业务失败不等于连接已断开，不关闭仍然健康的客户端。
+                    return ToolExecutionResult.error("MCP server 执行失败：" + raw);
+                }
                 return ToolExecutionResult.ok(raw, raw);
             } catch (RuntimeException ex) {
-                // 就地转成错误结果而不是抛给 ToolExecutor 的通用兜底：
-                // 通用兜底会丢掉 server 的原始原因（FR-014 要求审计里能区分
-                // 「server 挂了」与「参数不对」）。server 错误文本是用户自己系统的信息，
-                // 不含密钥（密钥经 env 进 server，不出现在错误文本里）。
-                return ToolExecutionResult.error("MCP server 执行失败：" + ex.getMessage());
+                registry.markUnavailable(serverName, client, ex.getMessage());
+                return ToolExecutionResult.error("MCP server 连接失败，请重连后重试：" + serverName);
             }
         });
     }

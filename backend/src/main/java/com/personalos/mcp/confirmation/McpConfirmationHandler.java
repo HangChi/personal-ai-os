@@ -69,7 +69,7 @@ public class McpConfirmationHandler implements ConfirmationActionHandler {
         } catch (RuntimeException ex) {
             // 子进程可能在启动后崩溃：这次调用失败要回写 registry 状态（审查 P2），
             // 否则 isAvailable 仍读内存里那份「可用」快照，后续调用继续白等超时
-            registry.markUnavailable(payload.server(), ex.getMessage());
+            registry.markUnavailable(payload.server(), client, ex.getMessage());
             throw ex;
         }
         if (Boolean.TRUE.equals(result.isError())) {

@@ -46,8 +46,8 @@ public class OpenAiChatModelFactory {
      */
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
-    /** 与 application.yml 的 {@code spring.ai.retry.max-attempts} 默认值对齐 */
-    private static final int MAX_RETRIES = 2;
+    /** SDK 的 retries 不含首次请求；禁用隐式重试，避免与 Agent 重试叠加。 */
+    private static final int MAX_RETRIES = 0;
 
     private final ToolCallingManager toolCallingManager;
 

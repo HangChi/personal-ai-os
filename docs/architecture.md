@@ -385,8 +385,9 @@ AiChatClientProvider 收集 ToolCallbackProvider → 挂到 ChatClient（对话�
 ### 16.2 模型调用限流
 
 令牌桶（自实现，未引 Bucket4j）：单用户进程内场景，`synchronized` + 两个字段足够。
-只拦三个会真实产生模型成本的 POST：`/chat/**/stream`、`/chat/uploads`、
-`/knowledge/documents`。查询类一律不限 —— 翻页翻快了不该 429。
+模型入口由 `ModelRequestPaths` 统一识别，覆盖对话、知识检索/问答/上传/替换、语音转写和模型探测。
+任务与日程列表等本地查询不限流。额外的并发准入默认允许 4 个在途请求，SSE 完成后释放许可。
+工具循环与模型请求使用独立预算，详见 [Agent 执行边界](agent-reliability.md)。
 
 选桶而不是固定窗口计数：后者存在「窗口末尾打满 + 下一窗口开头打满」的两倍速率问题。
 配置非法时构造即抛，避免「配错了等于没限流」。

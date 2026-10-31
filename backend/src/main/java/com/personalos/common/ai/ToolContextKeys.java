@@ -20,6 +20,8 @@ public final class ToolContextKeys {
      */
     public static final String TURN_ID = "turnId";
 
+    public static final String EXECUTION_BUDGET = "agentExecutionBudget";
+
     private ToolContextKeys() {
     }
 }

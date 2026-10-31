@@ -24,8 +24,9 @@
 **分页**：统一用 `page`（从 0 开始）+ `size`，返回
 `{ items, total, page, size }`（`PageDto`）。
 
-**限流**：仅 `chat/sessions/*/stream`、`chat/uploads`、`knowledge/documents` 三个 POST 受限，
-默认 60 次/分钟，超出返回 `429` + `code=42900`。
+**限流与并发**：覆盖对话、附件、语音转写、知识检索/问答/上传/替换及模型探测入口。
+默认 60 次/分钟、最多 4 个在途请求，超出返回 `429` + `code=42900`；SSE 直到异步结束才释放并发许可。
+Agent 每轮预算、错误码 `50203` 与追踪字段见 [执行边界说明](agent-reliability.md)。
 
 ---
 

@@ -89,6 +89,25 @@ class AgentPlanServiceTest {
         return step;
     }
 
+    @Test
+    void cannotCompleteLaterStepOrSkipFailedStepWithoutRestart() {
+        var plan = activePlan("顺序");
+        var first = step(planId, 1, StepStatus.PENDING);
+        var second = step(planId, 2, StepStatus.PENDING);
+        given(planRepository.findFirstByConversationIdAndStatusOrderByCreatedAtDesc("conv-1", PlanStatus.ACTIVE))
+                .willReturn(Optional.of(plan));
+        given(stepRepository.findByPlanIdAndSeq(planId, 2)).willReturn(Optional.of(second));
+        given(stepRepository.findByPlanIdAndSeq(planId, 1)).willReturn(Optional.of(first));
+        given(stepRepository.findByPlanIdOrderBySeqAsc(planId)).willReturn(List.of(first, second));
+        assertThatThrownBy(() -> service.completeStep("conv-1", 2, "声称完成"))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("按序");
+        assertThat(second.getStatus()).isEqualTo(StepStatus.PENDING);
+        first.fail("工具失败", Instant.now());
+        assertThatThrownBy(() -> service.completeStep("conv-1", 1, "声称恢复"))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("先重启");
+        verify(stepRepository, never()).save(any());
+    }
+
     // ------------------------------------------------------------ 创建
 
     @Test
@@ -245,6 +264,7 @@ class AgentPlanServiceTest {
         given(planRepository.findFirstByConversationIdAndStatusOrderByCreatedAtDesc("conv-1", PlanStatus.ACTIVE))
                 .willReturn(Optional.of(plan));
         given(stepRepository.findByPlanIdAndSeq(planId, 1)).willReturn(Optional.of(running));
+        given(stepRepository.findByPlanIdOrderBySeqAsc(planId)).willReturn(List.of(running));
 
         assertThatThrownBy(() -> service.completeStep("conv-1", 1, "   "))
                 .isInstanceOf(BusinessException.class)
