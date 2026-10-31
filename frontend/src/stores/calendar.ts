@@ -93,7 +93,10 @@ export const useCalendarStore = defineStore('calendar', () => {
    * 这条归零规则最初只在注释里成立、代码没实现——是
    * test/calendar-store.test.mjs 抓出来的（文档与实现漂移的典型）。
    */
+  let loadOccurrencesRequestSeq = 0
+
   async function loadOccurrences(from?: string, to?: string, nextPage?: number, sizeOverride?: number): Promise<void> {
+    const requestSeq = ++loadOccurrencesRequestSeq
     loadingOccurrences.value = true
     error.value = null
     const windowChanged = from !== undefined || to !== undefined
@@ -106,16 +109,18 @@ export const useCalendarStore = defineStore('calendar', () => {
     const targetSize = sizeOverride ?? size.value
     try {
       const result = await listOccurrences(windowFrom.value, windowTo.value, targetPage, targetSize)
+      if (requestSeq !== loadOccurrencesRequestSeq) return
       occurrences.value = result.items
       total.value = result.total
       page.value = result.page
       size.value = result.size
     } catch (cause) {
+      if (requestSeq !== loadOccurrencesRequestSeq) return
       occurrences.value = []
       total.value = 0
       error.value = cause instanceof Error ? cause.message : '加载日程失败'
     } finally {
-      loadingOccurrences.value = false
+      if (requestSeq === loadOccurrencesRequestSeq) loadingOccurrences.value = false
     }
   }
 

@@ -84,11 +84,13 @@ public class ReminderScanner {
         int created = 0;
         int skipped = 0;
 
-        // ⓪ 先清理孤儿提醒：来源已被删除的提醒（例如任务被删，而 task 模块并不知道提醒的存在）。
-        //    放在物化之前，避免「先补上、再删掉」的无谓往返。
-        int pruned = reminderRepository.pruneOrphans(toOffset(windowEnd));
+        // ⓪ 同步任务快照并清理失效来源；task 模块无需反向依赖提醒模块。
+        //    放在物化之前，改期后的新提醒可以在同一轮扫描中重建。
+        int pruned = reminderRepository.pruneInvalidTaskReminders();
+        pruned += reminderRepository.pruneOrphans(toOffset(windowEnd));
+        reminderRepository.refreshTaskTitles();
         if (pruned > 0) {
-            log.info("清理孤儿提醒 {} 条（来源已不存在）", pruned);
+            log.info("清理失效提醒 {} 条", pruned);
         }
 
         // ① 日程：窗口内每一次发生都物化（含尚未到点的，便于用户提前看到「接下来会提醒什么」）

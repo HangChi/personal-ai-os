@@ -137,17 +137,19 @@ public class KnowledgeRetrievalService implements KnowledgeSearchPort {
             return List.of();
         }
 
-        long total = inspector.countAllChunks();
-        if (total <= 0) {
-            return List.of();
+        Map<String, List<VectorStoreInspector.KeywordMatch>> grouped = new LinkedHashMap<>();
+        for (VectorStoreInspector.KeywordMatch match : inspector.searchByKeywords(tokens, fetchLimit)) {
+            grouped.computeIfAbsent(match.token(), ignored -> new ArrayList<>()).add(match);
         }
         List<KeywordChannel> channels = new ArrayList<>(tokens.size());
         for (String token : tokens) {
-            List<VectorStoreInspector.KeywordChunk> chunks = inspector.searchByKeyword(token, fetchLimit);
-            if (chunks.isEmpty()) {
+            List<VectorStoreInspector.KeywordMatch> matches = grouped.get(token);
+            if (matches == null) {
                 continue;
             }
-            channels.add(new KeywordChannel(token, idf(token, total), chunks));
+            VectorStoreInspector.KeywordMatch first = matches.getFirst();
+            channels.add(new KeywordChannel(token, idf(first.totalChunks(), first.matchedCount()),
+                    matches.stream().map(VectorStoreInspector.KeywordMatch::chunk).toList()));
         }
         return channels;
     }
@@ -163,8 +165,7 @@ public class KnowledgeRetrievalService implements KnowledgeSearchPort {
      * <p>为什么必须归一化：RRF 里向量通道的贡献是 {@code 1/(k+rank)}，量级约 0.016。
      * 关键词通道要能与它并置比较，权重就必须落在同一量纲（0~1）。
      */
-    private double idf(String token, long total) {
-        long df = inspector.countBySubstring(token);
+    private double idf(long total, long df) {
         if (total <= 1) {
             return 1.0;
         }

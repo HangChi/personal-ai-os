@@ -6,7 +6,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 跨模块搜索聚合服务。
@@ -31,8 +30,8 @@ public class GlobalSearchService {
      * <p><b>故障隔离</b>：单个贡献者抛异常时记 warn 并跳过该模块，请求仍返回 200。
      * 聚合查询最坏的失败模式是「一个模块挂 → 整个搜索白屏」，
      * 而用户此时最需要的是其他模块的结果。
+     * 各贡献者自行开启只读事务；聚合层不共享事务，避免 SQL 错误污染后续查询。
      */
-    @Transactional(readOnly = true)
     public GlobalSearchResult search(String keyword, int limit) {
         List<SearchContributor> ordered = contributors.stream()
                 .sorted(Comparator.comparing(SearchContributor::moduleName))

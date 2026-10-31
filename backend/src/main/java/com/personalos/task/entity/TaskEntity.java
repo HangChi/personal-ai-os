@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.hibernate.annotations.BatchSize;
 
 /**
  * 个人任务。
@@ -83,6 +84,8 @@ public class TaskEntity {
      * <p>归一化（去空白/去空/去重/校验上限）由 {@code TaskTags} 负责，实体不重复校验。
      */
     @ElementCollection
+    // 先分页加载任务，再批量读取当前页标签，避免集合 join fetch 改变分页语义。
+    @BatchSize(size = 100)
     @CollectionTable(name = "task_tag", joinColumns = @JoinColumn(name = "task_id"))
     @OrderColumn(name = "tag_index")
     @Column(name = "tag", length = 20, nullable = false)

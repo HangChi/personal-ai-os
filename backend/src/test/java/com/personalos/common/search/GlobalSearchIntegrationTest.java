@@ -18,6 +18,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -51,8 +53,32 @@ class GlobalSearchIntegrationTest {
     @TestConfiguration
     static class StubConfiguration {
         @Bean
+        SearchContributor failingContributor(JdbcTemplate jdbc) {
+            return new FailingContributor(jdbc);
+        }
+
+        @Bean
         EmbeddingModel deterministicEmbeddingModel() {
             return new DeterministicEmbeddingModel(1024);
+        }
+    }
+
+    static class FailingContributor implements SearchContributor {
+        private final JdbcTemplate jdbc;
+
+        FailingContributor(JdbcTemplate jdbc) {
+            this.jdbc = jdbc;
+        }
+
+        public String moduleName() { return "000故障模块"; }
+        public String kind() { return "failure"; }
+
+        @Transactional(readOnly = true)
+        public List<SearchHit> search(String keyword, int limit) {
+            if (keyword.equals("数据库故障隔离")) {
+                jdbc.execute("SELECT 1 / 0");
+            }
+            return List.of();
         }
     }
 
@@ -290,14 +316,11 @@ class GlobalSearchIntegrationTest {
     }
 
     @Test
-    @DisplayName("单模块故障不影响其他模块：这里用一个必然失败的排序字段验证隔离")
+    @DisplayName("单模块真实 SQL 故障回滚后，其余模块仍能查询并返回 200")
     void shouldIsolateModuleFailures() throws Exception {
-        seedAllModules();
-
-        // 不制造真故障（那需要改代码），改为验证：正常路径下 HTTP 200 且结构完整。
-        // 真正的故障隔离由 GlobalSearchService 的 try-catch 保证，单元层面见其注释。
-        JsonNode result = search(KEYWORD, "");
-        assertThat(result.path("keyword").asString()).isEqualTo(KEYWORD);
-        assertThat(result.path("groups")).hasSize(5);
+        assertThat(http.post("/api/v1/tasks", "{\"title\":\"数据库故障隔离\"}").status())
+                .isEqualTo(201);
+        JsonNode result = search("数据库故障隔离", "");
+        assertThat(findGroup(result, "任务").path("hits")).hasSize(1);
     }
 }

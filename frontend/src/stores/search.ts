@@ -20,13 +20,18 @@ export const useSearchStore = defineStore('search', () => {
   /** 最近一次是否真的发过请求（用于区分「还没搜」与「搜了没结果」） */
   const searched = ref(false)
 
+  let searchRequestSeq = 0
+
   async function search(term: string): Promise<void> {
+    const requestSeq = ++searchRequestSeq
     keyword.value = term
     const trimmed = term.trim()
     if (!trimmed) {
       groups.value = []
       totalHits.value = 0
       searched.value = false
+      error.value = null
+      loading.value = false
       return
     }
 
@@ -34,16 +39,18 @@ export const useSearchStore = defineStore('search', () => {
     error.value = null
     try {
       const result = await globalSearch(trimmed)
+      if (requestSeq !== searchRequestSeq) return
       groups.value = result.groups
       totalHits.value = result.totalHits
       searched.value = true
     } catch (cause) {
+      if (requestSeq !== searchRequestSeq) return
       groups.value = []
       totalHits.value = 0
       searched.value = true
       error.value = cause instanceof Error ? cause.message : '搜索失败'
     } finally {
-      loading.value = false
+      if (requestSeq === searchRequestSeq) loading.value = false
     }
   }
 

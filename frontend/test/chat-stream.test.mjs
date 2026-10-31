@@ -152,3 +152,16 @@ try {
 }
 check('主动停止时向上抛 AbortError（由 store 静默处理）', aborted)
 check('主动停止不产生超时提示', stopped.log.error === null)
+
+// 提前 EOF 与损坏的结束帧都不能当作正常完成。
+for (const frames of [[], ['event: delta\ndata: {"content":"半截回答"}\n\n'], ['event: done\ndata: broken-json\n\n']]) {
+  fetchImpl = () => responseOf(frames)
+  const interrupted = recorder()
+  await streamChat('interrupted', 'hi', interrupted.handlers)
+  check('提前 EOF 给出中断提示', interrupted.log.error?.includes('中断'))
+  eq('提前 EOF 不调用完成回调', interrupted.log.done, null)
+}
+fetchImpl = () => responseOf(['event: error\ndata: {"message":"上游错误"}\n\n'])
+const serverError = recorder()
+await streamChat('error', 'hi', serverError.handlers)
+eq('已收到服务端错误时保留原始错误', serverError.log.error, '上游错误')

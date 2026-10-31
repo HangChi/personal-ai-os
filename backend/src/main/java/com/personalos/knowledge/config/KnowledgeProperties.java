@@ -55,7 +55,7 @@ public record KnowledgeProperties(
      *   子串 + IDF + 权重 1.0 → R@1 86.0%、未中 4
      * </pre>
      * 压权重把「本该被关键词救回」的查询也一起压没了。真正的噪声抑制手段是 IDF
-     * （见 {@code countBySubstring}），而不是整体降权。
+     * （见 {@code VectorStoreInspector.searchByKeywords}），而不是整体降权。
      */
     private static final double DEFAULT_KEYWORD_CHANNEL_WEIGHT = 1.0;
 

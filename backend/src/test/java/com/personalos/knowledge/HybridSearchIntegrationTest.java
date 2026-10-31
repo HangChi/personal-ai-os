@@ -116,6 +116,32 @@ class HybridSearchIntegrationTest {
     }
 
     @Test
+    @DisplayName("批量关键词查询保留每词上限、完整 df 与字面通配符匹配")
+    void batchedKeywordStatisticsAreComputedBeforeLimit(
+            @Autowired com.personalos.knowledge.service.VectorStoreInspector inspector) {
+        jdbcTemplate.update("UPDATE vector_store SET content = content || ' sharedtoken'");
+        injectRareToken("rare_token 100%");
+        long total = jdbcTemplate.queryForObject("SELECT count(*) FROM vector_store", Long.class);
+        assertThat(total).isGreaterThan(1);
+        var matches = inspector.searchByKeywords(List.of("sharedtoken", "rare_token", "%", "absenttoken"), 1);
+        assertThat(matches).hasSize(3);
+        assertThat(matches).extracting(m -> m.token())
+                .containsExactlyInAnyOrder("sharedtoken", "rare_token", "%");
+        for (var match : matches) {
+            long expectedDf = jdbcTemplate.queryForObject(
+                    "SELECT count(*) FROM vector_store WHERE content ILIKE ? ESCAPE '\\'", Long.class,
+                    com.personalos.common.search.SearchPatterns.likePattern(match.token()));
+            assertThat(match.totalChunks()).isEqualTo(total);
+            assertThat(match.matchedCount()).isEqualTo(expectedDf);
+        }
+        assertThat(matches.stream().filter(m -> m.token().equals("sharedtoken")).findFirst().orElseThrow()
+                .matchedCount()).isEqualTo(total);
+        assertThat(matches.stream().filter(m -> m.token().equals("%")).findFirst().orElseThrow()
+                .chunk().content()).contains("100%");
+        assertThat(inspector.searchByKeywords(List.of(), 5)).isEmpty();
+    }
+
+    @Test
     @DisplayName("关键词通道能把向量完全没命中的精确标识符捞回来")
     void keywordChannelRescuesRareToken() {
         injectRareToken(RARE_TOKEN);

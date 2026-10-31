@@ -51,7 +51,10 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
 
   const isEmpty = computed(() => documents.value.length === 0)
 
+  let loadDocumentsRequestSeq = 0
+
   async function loadDocuments(targetPage: number = page.value): Promise<void> {
+    const requestSeq = ++loadDocumentsRequestSeq
     loadingDocuments.value = true
     error.value = null
     try {
@@ -60,16 +63,18 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
         page: targetPage,
         size: size.value,
       })
+      if (requestSeq !== loadDocumentsRequestSeq) return
       documents.value = result.items
       page.value = result.page
       size.value = result.size
       total.value = result.total
     } catch (cause) {
+      if (requestSeq !== loadDocumentsRequestSeq) return
       documents.value = []
       total.value = 0
       error.value = cause instanceof Error ? cause.message : '加载文档列表失败'
     } finally {
-      loadingDocuments.value = false
+      if (requestSeq === loadDocumentsRequestSeq) loadingDocuments.value = false
     }
   }
 
@@ -137,31 +142,43 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     }
   }
 
+  let searchRequestSeq = 0
+
   async function search(query: string, topK?: number): Promise<void> {
+    const requestSeq = ++searchRequestSeq
     searching.value = true
     searchError.value = null
     try {
-      hits.value = (await searchKnowledge(query, topK)).hits
+      const result = await searchKnowledge(query, topK)
+      if (requestSeq !== searchRequestSeq) return
+      hits.value = result.hits
       searched.value = true
     } catch (cause) {
+      if (requestSeq !== searchRequestSeq) return
       hits.value = []
       searched.value = true
       searchError.value = cause instanceof Error ? cause.message : '检索失败'
     } finally {
-      searching.value = false
+      if (requestSeq === searchRequestSeq) searching.value = false
     }
   }
 
+  let askRequestSeq = 0
+
   async function ask(question: string, topK?: number): Promise<void> {
+    const requestSeq = ++askRequestSeq
     asking.value = true
     askError.value = null
     try {
-      answer.value = await askKnowledge(question, topK)
+      const result = await askKnowledge(question, topK)
+      if (requestSeq !== askRequestSeq) return
+      answer.value = result
     } catch (cause) {
+      if (requestSeq !== askRequestSeq) return
       answer.value = null
       askError.value = cause instanceof Error ? cause.message : '问答失败'
     } finally {
-      asking.value = false
+      if (requestSeq === askRequestSeq) asking.value = false
     }
   }
 

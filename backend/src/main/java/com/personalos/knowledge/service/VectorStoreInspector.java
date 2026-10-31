@@ -5,7 +5,6 @@ import com.personalos.knowledge.config.KnowledgeProperties;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -114,83 +113,39 @@ public class VectorStoreInspector {
     }
 
     /**
-     * 关键词通道：分块内容命中任一 token 的片段（2026-10-26，混合检索用）。
+     * 一次查询返回全部关键词的候选与 IDF 统计。
      *
-     * <h2>为什么是 ILIKE 子串匹配，而不是 tsvector 全文索引</h2>
-     * <ul>
-     *   <li>PostgreSQL 的 {@code simple} 配置只按空格/标点切词，**中文整句会变成一个 token**，
-     *       中文查询在 tsvector 上直接失效；{@code zhparser} 需要额外扩展与词典。</li>
-     *   <li>要救的是精确标识符（{@code 3PC} / {@code ip_hash} / {@code unknown}），
-     *       子串匹配对这类 token 是最准的。</li>
-     *   <li>语料 233 个分块，全表 ILIKE 扫描是毫秒级 —— 加 GIN/pg_trgm 索引带来的
-     *       迁移与扩展依赖，收益不足以抵消复杂度。</li>
-     * </ul>
-     *
-     * <h2>为什么是子串匹配，而不是词首正则</h2>
-     * 子串匹配确实会捞进「看起来像但无关」的片段：233 个片段里 {@code ILIKE '%io%'}
-     * 命中 118 个（51%），因为 {@code version}、{@code configuration} 里都含 {@code io}。
-     *
-     * <p>但试过改用词首正则（{@code ~* '\mio'}，只命中 7 个）后，**指标反而更差**
-     * （R@1 85.3% → 82.9%）：词首锚定把召回也一起砍掉了，正确答案的片段常拿不到关键词加分。
-     *
-     * <p>正确做法不是收紧匹配，而是**让噪声不占权重** —— 见 {@link #countBySubstring}
-     * 与 IDF 加权：{@code io} 这种命中 51% 片段的 token，IDF 接近 0，贡献可忽略。
-     * 宽召回 + IDF 抑制，比窄召回更稳。
-     *
-     * <h2>为什么一次只查一个 token</h2>
-     * 每个 token 单独检索、在融合时按 IDF 加权，而不是把多个 token 拼成一条 OR 查询。
-     * 拼在一起会丢掉「哪个 token 命中了」的信息，而 {@code unknown}（罕见，df=8）
-     * 与 {@code ip}（常见，df=13）的可信度本就不同 —— 分开查才能区别对待。
-     *
-     * @param token 单个关键词 token
-     * @param limit 返回条数上限
-     * @return 命中片段，按片段长度升序
+     * <p>窗口统计先于每词截断，确保 df 是全部命中数而非候选条数。
+     * 仍使用转义后的 ILIKE 子串匹配，排序按长度与 id，保持既有召回口径。
+     * 每词保留独立排名和命中数，融合时仍由 IDF 抑制常见子串的噪声。
      */
-    public List<KeywordChunk> searchByKeyword(String token, int limit) {
-        if (token == null || token.isBlank() || limit <= 0) {
+    public List<KeywordMatch> searchByKeywords(List<String> tokens, int limit) {
+        if (tokens.isEmpty() || limit <= 0) {
             return List.of();
         }
-        String sql = "SELECT id::text, content, metadata::text"
-                + " FROM " + qualifiedTable()
-                + " WHERE content ILIKE ? ESCAPE '\\'"
-                // 子串匹配没有相关性分数，用片段长度兜底：同等条件下短片段信息密度更高。
-                // 但 length 大量并列（同一篇文档的分块长度相近），此时返回哪几行由
-                // PostgreSQL 自行决定 —— 评测因此不可复现：同一份语料两次跑出不同 R@1。
-                // 补 id 兜底保证确定性；它没有语义含义，纯粹把「并列」变成一个全序。
-                + " ORDER BY length(content) ASC, id ASC"
-                + " LIMIT ?";
-
-        List<KeywordChunk> result = new ArrayList<>();
-        for (Map<String, Object> row : jdbcTemplate.queryForList(
-                sql, SearchPatterns.likePattern(token), limit)) {
-            String id = asText(row.get("id"));
-            if (id == null) {
-                continue;
-            }
-            result.add(new KeywordChunk(id, asText(row.get("content")), asText(row.get("metadata"))));
+        String values = String.join(", ", java.util.Collections.nCopies(tokens.size(), "(?, ?)"));
+        String sql = "WITH tokens(token, pattern) AS (VALUES " + values + "), ranked AS ("
+                + " SELECT t.token, v.id, v.content, v.metadata,"
+                + " count(*) OVER (PARTITION BY t.token) AS matched_count,"
+                + " row_number() OVER (PARTITION BY t.token ORDER BY length(v.content), v.id) AS rank"
+                + " FROM " + qualifiedTable() + " v CROSS JOIN tokens t"
+                + " WHERE v.content ILIKE t.pattern ESCAPE '\\'"
+                + ") SELECT token, id::text, content, metadata::text, matched_count,"
+                + " (SELECT count(*) FROM " + qualifiedTable() + ") AS total_chunks"
+                + " FROM ranked WHERE rank <= ? ORDER BY token, rank";
+        List<Object> parameters = new ArrayList<>();
+        for (String token : tokens) {
+            parameters.add(token);
+            parameters.add(SearchPatterns.likePattern(token));
         }
-        return result;
+        parameters.add(limit);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new KeywordMatch(
+                rs.getString("token"),
+                new KeywordChunk(rs.getString("id"), rs.getString("content"), rs.getString("metadata")),
+                rs.getLong("matched_count"), rs.getLong("total_chunks")), parameters.toArray());
     }
 
-    /**
-     * 该 token 命中的片段数（df） —— IDF 权重的依据。
-     *
-     * <p><b>统计口径必须与 {@link #searchByKeyword} 完全一致</b>（都用子串 ILIKE）。
-     * 曾试过「检索用子串、df 用词首」，结果 IDF 严重低估了 {@code io} 的普遍程度
-     * （词首 7 个 vs 子串 118 个），噪声没被压住，指标反而变差。
-     */
-    public long countBySubstring(String token) {
-        Long count = jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM " + qualifiedTable() + " WHERE content ILIKE ? ESCAPE '\\'",
-                Long.class, SearchPatterns.likePattern(token));
-        return count == null ? 0L : count;
-    }
-
-    /** 片段总数 —— IDF 的分母 */
-    public long countAllChunks() {
-        Long count = jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM " + qualifiedTable(), Long.class);
-        return count == null ? 0L : count;
+    public record KeywordMatch(String token, KeywordChunk chunk, long matchedCount, long totalChunks) {
     }
 
     /**
@@ -202,10 +157,6 @@ public class VectorStoreInspector {
     static String wordStartPattern(String token) {
         String escaped = token.replaceAll("([\\\\^$.|?*+()\\[\\]{}])", "\\\\$1");
         return "\\m" + escaped;
-    }
-
-    private static String asText(Object value) {
-        return value == null ? null : value.toString();
     }
 
     /**

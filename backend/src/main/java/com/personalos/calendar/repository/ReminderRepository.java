@@ -89,6 +89,28 @@ public interface ReminderRepository extends JpaRepository<ReminderEntity, UUID> 
     int deleteBySource(@Param("sourceType") ReminderSource sourceType,
                        @Param("sourceId") UUID sourceId);
 
+    /** 清理已完成、清除截止时间或改期任务的待提醒，保留已读历史。 */
+    @Modifying(flushAutomatically = true)
+    @Query(value = """
+            DELETE FROM reminder r
+            WHERE r.source_type = 'TASK' AND r.status = 'PENDING'
+              AND NOT EXISTS (
+                  SELECT 1 FROM task t WHERE t.id = r.source_id
+                    AND t.status <> 'DONE' AND t.due_at = r.occurrence_at
+              )
+            """, nativeQuery = true)
+    int pruneInvalidTaskReminders();
+
+    /** 标题只更新快照，不删除重建，以免遗漏扫描回看窗口之外的逾期提醒。 */
+    @Modifying(flushAutomatically = true)
+    @Query(value = """
+            UPDATE reminder r SET title = t.title
+            FROM task t
+            WHERE r.source_type = 'TASK' AND r.status = 'PENDING'
+              AND r.source_id = t.id AND r.title IS DISTINCT FROM t.title
+            """, nativeQuery = true)
+    int refreshTaskTitles();
+
     /**
      * 清理「来源已不存在」的提醒 —— 自愈式兜底。
      *

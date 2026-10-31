@@ -53,7 +53,10 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
+  let loadRequestSeq = 0
+
   async function load(): Promise<void> {
+    const requestSeq = ++loadRequestSeq
     loading.value = true
     error.value = null
     try {
@@ -64,14 +67,16 @@ export const useTaskStore = defineStore('task', () => {
         page: page.value,
         size: size.value,
       })
+      if (requestSeq !== loadRequestSeq) return
       tasks.value = result.items
       total.value = result.total
     } catch (cause) {
+      if (requestSeq !== loadRequestSeq) return
       tasks.value = []
       total.value = 0
       error.value = cause instanceof Error ? cause.message : '加载任务失败'
     } finally {
-      loading.value = false
+      if (requestSeq === loadRequestSeq) loading.value = false
     }
   }
 

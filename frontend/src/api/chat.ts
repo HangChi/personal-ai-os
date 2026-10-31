@@ -257,11 +257,12 @@ export async function streamChat(
     const decoder = new TextDecoder('utf-8')
     let buffer = ''
     let currentEvent = ''
+    let terminalEventReceived = false
     const dataLines: string[] = []
 
     const flush = (): void => {
       if (dataLines.length > 0) {
-        dispatchEvent(currentEvent, dataLines.join('\n'), handlers)
+        terminalEventReceived = dispatchEvent(currentEvent, dataLines.join('\n'), handlers) || terminalEventReceived
         dataLines.length = 0
       }
       currentEvent = ''
@@ -293,6 +294,9 @@ export async function streamChat(
       }
     }
     flush()
+    if (!terminalEventReceived && !signal?.aborted) {
+      handlers.onError('回答生成中断：连接提前关闭，请重试')
+    }
   } catch (cause) {
     if (idleTimedOut) {
       // 是我们自己掐断的：转成可读文案，不把 AbortError 抛给调用方
@@ -306,13 +310,13 @@ export async function streamChat(
   }
 }
 
-function dispatchEvent(eventName: string, payload: string, handlers: StreamHandlers): void {
+function dispatchEvent(eventName: string, payload: string, handlers: StreamHandlers): boolean {
   let parsed: Record<string, unknown>
   try {
     parsed = JSON.parse(payload) as Record<string, unknown>
   } catch {
-    // 非法帧直接丢弃，不因单帧损坏中断整个流
-    return
+    // 非法帧直接丢弃；损坏的结束帧不能算成功。
+    return false
   }
 
   switch (eventName) {
@@ -333,13 +337,14 @@ function dispatchEvent(eventName: string, payload: string, handlers: StreamHandl
       handlers.onDone(String(parsed.content ?? ''), {
         promptTokens: Number(parsed.promptTokens ?? 0),
       })
-      break
+      return true
     case 'error':
       handlers.onError(String(parsed.message ?? 'AI 服务调用失败'))
-      break
+      return true
     default:
       break
   }
+  return false
 }
 
 /**

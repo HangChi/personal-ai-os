@@ -94,6 +94,30 @@ class ListSearchIntegrationTest {
         }
     }
 
+    @Test
+    @DisplayName("分页取任务标签用批量查询，查询数不随当前页任务数线性增长")
+    void taskTagsAreBatchLoaded(
+            @Autowired com.personalos.task.service.TaskService service,
+            @Autowired jakarta.persistence.EntityManagerFactory factory) throws Exception {
+        for (int i = 0; i < 25; i++) {
+            assertThat(http.post("/api/v1/tasks", "{\"title\":\"批量标签-" + i
+                    + "\",\"tags\":[\"先\",\"后\"]}").status()).isEqualTo(201);
+        }
+        var statistics = factory.unwrap(org.hibernate.SessionFactory.class).getStatistics();
+        boolean previous = statistics.isStatisticsEnabled();
+        statistics.setStatisticsEnabled(true);
+        statistics.clear();
+        try {
+            var page = service.search(com.personalos.task.dto.TaskQuery.all());
+            assertThat(page.items()).hasSize(20);
+            assertThat(page.total()).isEqualTo(25);
+            assertThat(page.items()).allSatisfy(task -> assertThat(task.tags()).containsExactly("先", "后"));
+            assertThat(statistics.getPrepareStatementCount()).isLessThanOrEqualTo(3);
+        } finally {
+            statistics.setStatisticsEnabled(previous);
+        }
+    }
+
     // ---------------- 会话 ----------------
 
     @Test

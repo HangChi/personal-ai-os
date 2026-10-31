@@ -145,6 +145,47 @@ class CalendarReminderIntegrationTest {
         model.reset();
     }
 
+    @Test
+    @DisplayName("任务完成、清除截止时间和改期会清理旧待提醒，已读历史保留")
+    void taskChangesInvalidatePendingReminders() {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        Instant due = now.plus(30, ChronoUnit.MINUTES);
+        TaskDto completed = taskService.create(new CreateTaskRequest("完成", null, null, due, null));
+        TaskDto cleared = taskService.create(new CreateTaskRequest("清空", null, null, due, null));
+        TaskDto moved = taskService.create(new CreateTaskRequest("改期", null, null, due, null));
+        TaskDto read = taskService.create(new CreateTaskRequest("历史", null, null, due, null));
+        scanner.scan(now);
+        var history = reminderService.list(null, false, null).stream()
+                .filter(r -> r.sourceId().equals(read.id())).findFirst().orElseThrow();
+        reminderService.markRead(history.id());
+        taskService.setCompleted(read.id(), true);
+        taskService.setCompleted(completed.id(), true);
+        taskService.reschedule(cleared.id(), null);
+        taskService.reschedule(moved.id(), due.plus(1, ChronoUnit.HOURS));
+        scanner.scan(now);
+        assertThat(reminderService.list(null, false, null)).singleElement().satisfies(r -> {
+            assertThat(r.sourceId()).isEqualTo(moved.id());
+            assertThat(r.occurrenceAt()).isEqualTo(due.plus(1, ChronoUnit.HOURS));
+        });
+        assertThat(reminderRepository.findById(history.id())).isPresent();
+    }
+
+    @Test
+    @DisplayName("改标题同步已有待提醒，包括回看窗口外的逾期记录")
+    void taskTitleRefreshKeepsOverdueReminder() {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        TaskDto task = taskService.create(new CreateTaskRequest("旧标题", null, null, now, null));
+        scanner.scan(now);
+        var before = reminderService.list(null, false, null).getFirst();
+        taskService.update(task.id(), new com.personalos.task.dto.UpdateTaskRequest(
+                "新标题", null, null, null, null, null, null));
+        scanner.scan(now.plus(properties.scanLookback()).plus(1, ChronoUnit.DAYS));
+        assertThat(reminderService.list(null, false, null)).singleElement().satisfies(r -> {
+            assertThat(r.id()).isEqualTo(before.id());
+            assertThat(r.title()).isEqualTo("新标题");
+        });
+    }
+
     // ------------------------------------------------------------------ 日程 CRUD 与重复展开
 
     @Test

@@ -31,7 +31,7 @@ watch(
   () => route.query.q,
   (query) => {
     const q = typeof query === 'string' ? query : ''
-    if (q && q !== searchStore.keyword) {
+    if (q !== searchStore.keyword) {
       void searchStore.search(q)
     }
   },
