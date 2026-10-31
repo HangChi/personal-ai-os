@@ -207,6 +207,7 @@ public class AiChatClientProvider {
      * 也应该调它，而不是各自去 {@code namedBundles.clear()}。
      */
     public void invalidateNamedBundles() {
+        contextBudget.evidence().reset();
         this.generation = this.generation + 1;
         if (!namedBundles.isEmpty()) {
             log.debug("按模型名缓存的聊天客户端已作废（数量={}）", namedBundles.size());
@@ -263,6 +264,11 @@ public class AiChatClientProvider {
 
     /** 解析出「该用哪个 Bundle」：空名走默认，同名复用，否则按名造并缓存 */
     private Bundle bundleFor(String modelName) {
+        return bundleFor(modelName, 0);
+    }
+
+    private Bundle bundleFor(String modelName, int retry) {
+        int requestedGeneration = generation;
         Bundle current = this.bundle;
         if (current == null) {
             throw new BusinessException(ErrorCode.AI_NOT_CONFIGURED);
@@ -276,7 +282,7 @@ public class AiChatClientProvider {
             return current;
         }
 
-        String key = generation + "|" + trimmed;
+        String key = requestedGeneration + "|" + trimmed;
         Bundle cached = namedBundles.get(key);
         if (cached != null) {
             return cached;
@@ -304,8 +310,12 @@ public class AiChatClientProvider {
             log.debug("按模型名缓存达到上限 {}，清空重来", NAMED_CACHE_LIMIT);
             namedBundles.clear();
         }
+        // A config switch may have happened while the resolver built its HTTP client. Do not
+        // cache the old endpoint under the new generation or attach new evidence to it.
+        if (requestedGeneration != generation) return retry == 0 ? bundleFor(modelName, 1) : this.bundle;
         Bundle built = buildBundle(model);
-        Bundle existing = namedBundles.putIfAbsent(generation + "|" + trimmed, built);
+        if (requestedGeneration != generation) return retry == 0 ? bundleFor(modelName, 1) : this.bundle;
+        Bundle existing = namedBundles.putIfAbsent(key, built);
         return existing == null ? built : existing;
     }
 

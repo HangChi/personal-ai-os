@@ -175,11 +175,13 @@ public class ChatSessionController {
         int promptTokens = actual.isPresent() ? actual.getAsInt()
                 : conversationId == null ? 0 : completionService.estimatePromptTokens(conversationId);
         int reserve = contextBudget.outputReserveForWindow(window.tokens(), com.personalos.chat.dto.ThinkingLevel.fromCode(thinkingLevel).budget());
-        int inputLimit = Math.max(1, window.tokens() - reserve - contextBudget.safetyMarginForWindow(window.tokens()));
+        int inputLimit = contextBudget.inputLimitForModel(model, reserve);
+        var observed = contextBudget.evidence().snapshot(window.modelName());
         return new ChatContextUsageDto(promptTokens, Math.min(contextBudget.budgetTokensForWindow(window.tokens()), inputLimit),
                 window.tokens(), actual.isEmpty(), window.modelName(), window.source(),
                 inputLimit, reserve,
-                contextBudget.safetyMarginForWindow(window.tokens()));
+                contextBudget.safetyMarginForWindow(window.tokens()), observed.verifiedInputTokens(),
+                contextBudget.inputLimitSource(model), observed.tokenRatio());
     }
 
     public record ContextBudgetRequest(Integer tokens, String conversationId, String thinkingLevel) {

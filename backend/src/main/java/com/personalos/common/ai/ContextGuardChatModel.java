@@ -4,7 +4,6 @@ import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
@@ -20,10 +19,12 @@ import reactor.core.publisher.Flux;
 public final class ContextGuardChatModel implements ChatModel {
     private final ChatModel delegate;
     private final ContextBudgetService budget;
+    private final long evidenceGeneration;
 
     public ContextGuardChatModel(ChatModel delegate, ContextBudgetService budget) {
         this.delegate = delegate;
         this.budget = budget;
+        this.evidenceGeneration = budget.evidence().generation();
     }
 
     @Override
@@ -36,9 +37,12 @@ public final class ContextGuardChatModel implements ChatModel {
             Prompt prepared = prepare(prompt, attempt, previous == null ? Integer.MAX_VALUE : Math.max(1, (int) (count(previous) * 0.65)));
             if (previous != null && count(prepared) >= count(previous)) throw tooLarge();
             try {
-                return delegate.call(prepared);
+                ChatResponse response = delegate.call(prepared);
+                recordAccepted(prepared, response);
+                return response;
             } catch (RuntimeException error) {
                 if (!isContextOverflow(error)) throw error;
+                budget.evidence().rejected(evidenceGeneration, model(prepared), error, count(prepared));
                 if (attempt >= budget.protection().maxRetries()) throw tooLarge();
                 previous = prepared;
             }
@@ -55,10 +59,16 @@ public final class ContextGuardChatModel implements ChatModel {
             Prompt prepared = prepare(prompt, attempt, previous == null ? Integer.MAX_VALUE : Math.max(1, (int) (count(previous) * 0.65)));
             if (previous != null && count(prepared) >= count(previous)) return Flux.error(tooLarge());
             AtomicBoolean emitted = new AtomicBoolean();
+            java.util.concurrent.atomic.AtomicReference<ChatResponse> usage = new java.util.concurrent.atomic.AtomicReference<>();
             return Flux.defer(() -> delegate.stream(prepared))
-                    .doOnNext(response -> emitted.set(true))
+                    .doOnNext(response -> {
+                        emitted.set(true);
+                        if (actualInputTokens(response) > 0) usage.set(response);
+                    })
+                    .doOnComplete(() -> recordAccepted(prepared, usage.get()))
                     .onErrorResume(error -> {
                         if (!isContextOverflow(error)) return Flux.error(error);
+                        budget.evidence().rejected(evidenceGeneration, model(prepared), error, count(prepared));
                         // Never restart after any response chunk: text or tool calls may already
                         // have reached the caller. Only the failed raw model request is retried.
                         if (emitted.get() || attempt >= budget.protection().maxRetries()) return Flux.error(tooLarge());
@@ -74,7 +84,26 @@ public final class ContextGuardChatModel implements ChatModel {
     }
 
     private int count(Prompt prompt) {
+        int estimate = baseCount(prompt);
+        double ratio = budget.evidence().snapshot(evidenceGeneration, model(prompt)).tokenRatio();
+        return (int) Math.min(Integer.MAX_VALUE, Math.ceil(estimate * ratio));
+    }
+
+    private int baseCount(Prompt prompt) {
         return PromptTokenCounter.count(prompt, model(prompt), budget.protection().imageReserveTokens());
+    }
+
+    private static int actualInputTokens(ChatResponse response) {
+        if (response == null || response.getMetadata() == null || response.getMetadata().getUsage() == null) return 0;
+        Integer tokens = response.getMetadata().getUsage().getPromptTokens();
+        return tokens == null ? 0 : tokens;
+    }
+
+    private void recordAccepted(Prompt prompt, ChatResponse response) {
+        // Image allowance error says nothing about the text tokenizer; retain only verified usage.
+        boolean hasMedia = prompt.getInstructions().stream().anyMatch(message ->
+                message instanceof org.springframework.ai.content.MediaContent media && !media.getMedia().isEmpty());
+        budget.evidence().accepted(evidenceGeneration, model(prompt), hasMedia ? 0 : baseCount(prompt), actualInputTokens(response));
     }
 
     /** Retains system instructions, the current user message and complete tool call/result pairs. */
@@ -99,7 +128,7 @@ public final class ContextGuardChatModel implements ChatModel {
                 if (output + budget.safetyMarginForWindow(window) >= window) throw tooLarge();
             }
         }
-        int cap = Math.min(budget.budgetTokensFor(model), window - output - budget.safetyMarginForWindow(window));
+        int cap = Math.min(budget.budgetTokensFor(model), budget.inputLimitForModel(model, output));
         cap = Math.min(retryInputLimit, Math.max(1, (int) (cap * Math.pow(0.65, attempt))));
         // Preserve provider-specific settings and tool callbacks/context through mutate().
         ChatOptions protectedOptions = options.mutate().maxTokens(output).build();
@@ -156,14 +185,7 @@ public final class ContextGuardChatModel implements ChatModel {
     }
 
     static boolean isContextOverflow(Throwable error) {
-        for (Throwable cause = error; cause != null; cause = cause.getCause() == cause ? null : cause.getCause()) {
-            String message = String.valueOf(cause.getMessage()).toLowerCase(Locale.ROOT);
-            if (message.contains("context_length_exceeded") || message.contains("maximum context length")
-                    || message.contains("context window exceeded") || message.contains("prompt is too long")
-                    || message.contains("input is too long") || message.contains("input length should be")
-                    || message.contains("exceeds the context window") || message.contains("too many input tokens")) return true;
-        }
-        return false;
+        return ContextWindowEvidence.isOverflow(error);
     }
 
     private static BusinessException tooLarge() {

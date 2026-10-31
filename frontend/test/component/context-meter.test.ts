@@ -17,7 +17,7 @@ describe('ContextMeter', () => {
       },
     })
     expect(wrapper.find('.context-meter__value').text()).toBe('≈4K / 32K')
-    expect(wrapper.find('.context-meter__limit').text()).toContain('上限')
+    expect(wrapper.find('.context-meter__limit').text()).toContain('配置')
     const title = wrapper.find('button').attributes('title')
     expect(title).toContain('custom-model')
     expect(title).toContain('128,000 token')
@@ -59,5 +59,27 @@ describe('ContextMeter', () => {
     })
     expect(wrapper.find('button').attributes('title')).toContain('预留回复：4,096 token')
     expect(wrapper.find('button').attributes('title')).toContain('安全余量：512 token')
+  })
+  it('成功用量只标为输入下限，端点声明与配置窗口分别显示', () => {
+    const wrapper = mount(ContextMeter, {
+      props: {
+        usage: {
+          promptTokens: 4096,
+          budgetTokens: 5632,
+          contextWindow: 8192,
+          estimated: false,
+          verifiedInputTokens: 4096,
+          windowSource: 'endpoint',
+          inputLimitSource: 'endpoint',
+          tokenEstimateRatio: 1.25,
+          modelName: 'custom',
+        },
+      },
+    })
+    expect(wrapper.find('.context-meter__limit').text()).toBe('端点 8K')
+    const title = wrapper.find('button').attributes('title')
+    expect(title).toContain('已验证输入至少 4,096 token')
+    expect(title).toContain('不是最大容量')
+    expect(title).toContain('×1.25')
   })
 })

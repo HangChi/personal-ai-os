@@ -377,4 +377,34 @@ class AiChatClientProviderModelSelectionTest {
     private static <T> ObjectProvider<T> emptyProvider() {
         return new StaticObjectProvider<>(List.of());
     }
+    @Test
+    void replacingRuntimeModelClearsPreviousEndpointEvidence() {
+        var budget = new ContextBudgetService(new AiProperties(null, null));
+        AiChatClientProvider provider = new AiChatClientProvider(
+                providerOf(new FakeModel("default-model", "sk-test")),
+                emptyProvider(), emptyProvider(), emptyProvider(), mock(ChatMemory.class), new AiProperties(null, null), budget);
+        budget.evidence().accepted(0, "default-model", 1000, 1500);
+        provider.replaceModel(new FakeModel("default-model", "sk-test"));
+        assertThat(budget.evidence().snapshot("default-model").verifiedInputTokens()).isZero();
+        assertThat(budget.evidence().generation()).isEqualTo(1);
+    }
+    @Test
+    void concurrentConfigSwitchCannotCacheOldEndpointUnderNewGeneration() {
+        var stale = new FakeModel("qwen-max", "sk-old");
+        var fresh = new FakeModel("qwen-max", "sk-new");
+        var calls = new java.util.concurrent.atomic.AtomicInteger();
+        provider.setModelResolver(new RuntimeChatModelResolver() {
+            @Override public ChatModel resolve(String name) {
+                if (calls.getAndIncrement() == 0) {
+                    provider.replaceModel(new FakeModel("new-default", "sk-new"));
+                    return stale;
+                }
+                return fresh;
+            }
+            @Override public String defaultChatModel() { return "new-default"; }
+        });
+        assertThat(provider.targetFor("qwen-max").model()).isSameAs(fresh);
+        assertThat(provider.targetFor("qwen-max").model()).isSameAs(fresh);
+        assertThat(calls).hasValue(2);
+    }
 }

@@ -459,7 +459,11 @@ export interface ContextUsage {
   /** 实际使用的模型；空会话也会解析默认模型 */
   modelName?: string | null
   /** fallback 只是默认保护值，不能当作已识别的模型上限 */
-  windowSource?: 'configured' | 'catalog' | 'fallback'
+  windowSource?: 'configured' | 'catalog' | 'fallback' | 'endpoint'
+  /** 本次运行中，由成功请求的真实 usage 验证的输入下限；不是模型容量 */
+  verifiedInputTokens?: number
+  inputLimitSource?: 'configured' | 'catalog' | 'fallback' | 'endpoint' | 'adaptive'
+  tokenEstimateRatio?: number
   /** 已扣除回复空间和安全余量的输入上限 */
   inputLimitTokens?: number
   outputReserveTokens?: number

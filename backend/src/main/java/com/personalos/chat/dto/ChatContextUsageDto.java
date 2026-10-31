@@ -6,5 +6,6 @@ package com.personalos.chat.dto;
  */
 public record ChatContextUsageDto(int promptTokens, int budgetTokens, int contextWindow, boolean estimated,
                                  String modelName, String windowSource, int inputLimitTokens,
-                                 int outputReserveTokens, int safetyMarginTokens) {
+                                 int outputReserveTokens, int safetyMarginTokens, int verifiedInputTokens,
+                                 String inputLimitSource, double tokenEstimateRatio) {
 }

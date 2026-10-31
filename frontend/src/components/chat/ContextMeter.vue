@@ -11,7 +11,9 @@ const unknownWindow = computed(() => props.usage.windowSource === 'fallback')
 const sourceLabel = computed(() => {
   switch (props.usage.windowSource) {
     case 'configured':
-      return '模型配置'
+      return '模型配置，尚未验证最大容量'
+    case 'endpoint':
+      return '端点超限响应声明（当前运行配置）'
     case 'catalog':
       return '内置参考，可能与端点部署不同'
     case 'fallback':
@@ -23,8 +25,13 @@ const sourceLabel = computed(() => {
 const limitText = computed(() =>
   unknownWindow.value
     ? '窗口未知'
-    : `${props.usage.windowSource === 'catalog' ? '参考' : '上限'} ${formatTokens(props.usage.contextWindow)}`,
+    : `${props.usage.windowSource === 'catalog' ? '参考' : props.usage.windowSource === 'endpoint' ? '端点' : '配置'} ${formatTokens(props.usage.contextWindow)}`,
 )
+const calibrationLabel = computed(() => {
+  if (props.usage.inputLimitSource === 'adaptive') return '超限后保守校准的输入预算，仍是估算'
+  if (props.usage.inputLimitSource === 'endpoint') return '输入预算已按端点限制收紧'
+  return ''
+})
 const budgetPresets = computed(() =>
   [...new Set([...budgetPresetsFor(props.usage.contextWindow, props.usage.inputLimitTokens), props.usage.budgetTokens])]
     .filter((value) => value > 0 && value <= (props.usage.inputLimitTokens ?? props.usage.contextWindow))
@@ -39,6 +46,11 @@ const meterTitle = computed(() => {
     ...(u.inputLimitTokens ? [`安全输入上限：${u.inputLimitTokens.toLocaleString()} token`] : []),
     unknownWindow.value ? '模型上限：未知' : `模型上限：${u.contextWindow.toLocaleString()} token`,
     `来源：${sourceLabel.value}`,
+    ...(calibrationLabel.value ? [calibrationLabel.value] : []),
+    (u.verifiedInputTokens ?? 0) > 0
+      ? `本次运行已验证输入至少 ${u.verifiedInputTokens!.toLocaleString()} token；这是成功请求的下限，不是最大容量`
+      : '本次运行尚无真实输入用量证据',
+    ...((u.tokenEstimateRatio ?? 1) > 1 ? [`token 估算已按真实用量上调 ×${u.tokenEstimateRatio!.toFixed(2)}`] : []),
     ...(u.outputReserveTokens
       ? [
           `预留回复：${u.outputReserveTokens.toLocaleString()} token；安全余量：${(u.safetyMarginTokens ?? 0).toLocaleString()} token`,
@@ -72,6 +84,10 @@ const meterTitle = computed(() => {
           <span class="context-meter__model">{{ usage.modelName || '当前模型' }}</span>
           <span>{{ unknownWindow ? '模型窗口未知' : `模型上限 ${usage.contextWindow.toLocaleString()} token` }}</span>
           <span class="context-meter__source">{{ sourceLabel }}</span>
+          <span v-if="calibrationLabel" class="context-meter__source">{{ calibrationLabel }}</span>
+          <span v-if="(usage.verifiedInputTokens ?? 0) > 0" class="context-meter__source"
+            >已验证输入 ≥ {{ formatTokens(usage.verifiedInputTokens!) }}（非最大容量）</span
+          >
           <span v-if="usage.outputReserveTokens" class="context-meter__source"
             >预留回复 {{ formatTokens(usage.outputReserveTokens) }} · 安全余量
             {{ formatTokens(usage.safetyMarginTokens ?? 0) }}</span

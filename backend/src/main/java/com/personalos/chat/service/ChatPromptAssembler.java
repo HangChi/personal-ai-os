@@ -116,7 +116,7 @@ public class ChatPromptAssembler {
                 + ContextBudgetService.toTokens(toolSchemaOverhead.chars())
                 + imageCount * contextBudget.protection().imageReserveTokens() + 128;
         int window = contextBudget.contextWindowTokens(model);
-        int inputLimit = window - contextBudget.outputReserveForWindow(window, thinkingBudget) - contextBudget.safetyMarginForWindow(window);
+        int inputLimit = contextBudget.inputLimitForModel(model, contextBudget.outputReserveForWindow(window, thinkingBudget));
         int historyBudget = Math.max(0, (int) (Math.min(contextBudget.budgetTokensFor(model), inputLimit) * 0.85) - fixed);
         List<ChatMessageEntity> recent = messageRepository.findRecentByConversationId(
                 conversationId, PageRequest.of(0, aiProperties.memory().maxMessages()));

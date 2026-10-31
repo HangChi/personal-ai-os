@@ -41,6 +41,29 @@ public class ContextBudgetService {
     public static final double CHARS_PER_TOKEN = TokenEstimation.CJK_CHARS_PER_TOKEN;
 
     private final AiProperties aiProperties;
+    private final ContextWindowEvidence evidence = new ContextWindowEvidence();
+
+    public ContextWindowEvidence evidence() { return evidence; }
+
+    /** Endpoint input limits include their own accounting rules: retain reply headroom conservatively. */
+    public int inputLimitForModel(String modelName, int outputReserve) {
+        ModelWindow window = modelWindow(modelName);
+        int margin = safetyMarginForWindow(window.tokens());
+        int limit = Math.max(1, window.tokens() - outputReserve - margin);
+        var observed = evidence.snapshot(window.modelName());
+        if (observed.inputTokens() != null) {
+            int headroom = observed.explicitInputLimit() ? outputReserve + margin : margin;
+            limit = Math.min(limit, Math.max(1, observed.inputTokens() - headroom));
+        }
+        return limit;
+    }
+
+    public String inputLimitSource(String modelName) {
+        var observed = evidence.snapshot(effectiveModelName(modelName));
+        if (observed.inputTokens() != null) return observed.explicitInputLimit() ? "endpoint" : "adaptive";
+        return modelWindow(modelName).source();
+    }
+
     private ContextProtectionProperties protection = ContextProtectionProperties.defaults();
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -152,6 +175,15 @@ public class ContextBudgetService {
     }
 
     public ModelWindow modelWindow(String modelName) {
+        ModelWindow configured = configuredModelWindow(modelName);
+        Integer reported = evidence.snapshot(configured.modelName()).contextTokens();
+        if (reported != null && reported <= configured.tokens()) {
+            return new ModelWindow(configured.modelName(), reported, "endpoint");
+        }
+        return configured;
+    }
+
+    private ModelWindow configuredModelWindow(String modelName) {
         String name = effectiveModelName(modelName);
         if (name != null) {
             try {
@@ -222,7 +254,8 @@ public class ContextBudgetService {
      * @param modelName 当前会话使用的模型
      */
     public int budgetTokensFor(String modelName) {
-        return budgetTokensForWindow(contextWindowTokens(modelName));
+        int window = contextWindowTokens(modelName);
+        return Math.min(budgetTokensForWindow(window), inputLimitForModel(modelName, outputReserveForWindow(window)));
     }
 
     public int budgetTokensForWindow(int window) {

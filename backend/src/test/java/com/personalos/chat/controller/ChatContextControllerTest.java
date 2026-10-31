@@ -42,5 +42,13 @@ class ChatContextControllerTest {
         assertThat(deep.outputReserveTokens()).isEqualTo(9216);
         assertThat(deep.inputLimitTokens()).isEqualTo(1_990_272);
         assertThat(deep.budgetTokens()).isEqualTo(deep.inputLimitTokens());
+        budget.evidence().rejected(0, "large-custom", new IllegalStateException("maximum context length is 8192"), 12000);
+        budget.evidence().accepted(0, "large-custom", 1000, 1500);
+        var calibrated = controller.contextUsage("current", "off").data();
+        assertThat(calibrated.windowSource()).isEqualTo("endpoint");
+        assertThat(calibrated.contextWindow()).isEqualTo(8192);
+        assertThat(calibrated.inputLimitTokens()).isEqualTo(5632);
+        assertThat(calibrated.verifiedInputTokens()).isEqualTo(1500);
+        assertThat(calibrated.tokenEstimateRatio()).isEqualTo(1.5);
     }
 }

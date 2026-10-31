@@ -197,4 +197,69 @@ class ContextGuardChatModelTest {
         assertThat(((org.springframework.ai.openai.OpenAiChatOptions) sent.getOptions()).getMaxCompletionTokens()).isEqualTo(9216);
         assertThat(PromptTokenCounter.count(sent, "custom", 4096)).isGreaterThanOrEqualTo(4096);
     }
+    private static ChatResponse withUsage(int promptTokens) {
+        return new ChatResponse(List.of(new Generation(new AssistantMessage("ok"))),
+                org.springframework.ai.chat.metadata.ChatResponseMetadata.builder()
+                        .usage(new org.springframework.ai.chat.metadata.DefaultUsage(promptTokens, 1)).build());
+    }
+
+    @Test
+    void explicitEndpointWindowLimitsCorrectFollowingRequests() {
+        var raw = new RecordingModel(); raw.failures = 1;
+        raw.error = new IllegalStateException("This model's maximum context length is 8192 tokens; requested 14000 tokens");
+        var budget = budget(32768, 32768);
+        var guard = new ContextGuardChatModel(raw, budget);
+        guard.call(longHistory());
+        assertThat(budget.contextWindowTokens("custom")).isEqualTo(8192);
+        assertThat(budget.modelWindow("custom").source()).isEqualTo("endpoint");
+        assertThat(budget.inputLimitForModel("custom", 2048)).isEqualTo(5632);
+        guard.call(longHistory());
+        Prompt last = raw.received.get(raw.received.size() - 1);
+        assertThat(last.getOptions().getMaxTokens()).isEqualTo(2048);
+        assertThat(PromptTokenCounter.count(last, "custom", 4096) + 2048 + 512).isLessThanOrEqualTo(8192);
+    }
+
+    @Test
+    void explicitInputRangeLimitsBudgetWithoutInventingATotalWindow() {
+        var raw = new RecordingModel(); raw.failures = 1;
+        raw.error = new IllegalStateException("Range of input length should be [1, 8192]");
+        var budget = budget(32768, 32768);
+        new ContextGuardChatModel(raw, budget).call(longHistory());
+        assertThat(budget.contextWindowTokens("custom")).isEqualTo(32768);
+        assertThat(budget.inputLimitForModel("custom", 4096)).isEqualTo(3584);
+        assertThat(budget.budgetTokensFor("custom")).isEqualTo(3584);
+        assertThat(budget.inputLimitSource("custom")).isEqualTo("endpoint");
+    }
+
+    @Test
+    void actualUsageCalibratesTokenizerEstimatesForSubsequentRequests() {
+        var raw = new RecordingModel() {
+            @Override public ChatResponse call(Prompt prompt) {
+                received.add(prompt);
+                return withUsage(2 * PromptTokenCounter.count(prompt, "custom", 4096));
+            }
+        };
+        var budget = budget(32768, 6000);
+        var guard = new ContextGuardChatModel(raw, budget);
+        guard.call(longHistory());
+        var observed = budget.evidence().snapshot("custom");
+        assertThat(observed.tokenRatio()).isEqualTo(2.0);
+        assertThat(observed.verifiedInputTokens()).isGreaterThan(6000);
+        assertThat(budget.contextWindowTokens("custom")).isEqualTo(32768);
+        guard.call(longHistory());
+        assertThat(raw.received.get(1).getInstructions()).hasSizeLessThan(raw.received.get(0).getInstructions().size());
+    }
+
+    @Test
+    void failedStreamCannotCreateSuccessfulUsageEvidence() {
+        var raw = new RecordingModel() {
+            @Override public Flux<ChatResponse> stream(Prompt prompt) {
+                return Flux.concat(Flux.just(withUsage(5000)), Flux.error(new IllegalStateException("network failure")));
+            }
+        };
+        var budget = budget(32768, 6000);
+        assertThatThrownBy(() -> new ContextGuardChatModel(raw, budget).stream(longHistory()).blockLast())
+                .hasMessageContaining("network failure");
+        assertThat(budget.evidence().snapshot("custom").verifiedInputTokens()).isZero();
+    }
 }
