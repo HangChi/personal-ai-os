@@ -247,6 +247,16 @@ public class AiChatClientProvider {
     }
 
     /**
+     * 取指定模型的无状态单轮客户端；{@code null}/{@code blank} 时用当前生效模型。
+     *
+     * <p>知识库问答、摘要和视觉文本提取等场景也必须经过同一个模型解析入口，
+     * 否则会出现「对话切到了 A，但增强能力仍然请求默认模型」的隐性分叉。
+     */
+    public ChatClient plainChatClientFor(String modelName) {
+        return targetFor(modelName).plainChatClient();
+    }
+
+    /**
      * 取「模型 + 客户端」这一对；会话级选模型的主入口。
      *
      * <p>把模型本身也交出去，是因为 {@link #applyThinkingOptions} 需要它
@@ -259,7 +269,7 @@ public class AiChatClientProvider {
      */
     public ChatTarget targetFor(String modelName) {
         Bundle resolved = bundleFor(modelName);
-        return new ChatTarget(resolved.model(), resolved.chatClient());
+        return new ChatTarget(resolved.model(), resolved.chatClient(), resolved.plainChatClient());
     }
 
     /** 解析出「该用哪个 Bundle」：空名走默认，同名复用，否则按名造并缓存 */
@@ -283,49 +293,55 @@ public class AiChatClientProvider {
         }
 
         String key = requestedGeneration + "|" + trimmed;
-        Bundle cached = namedBundles.get(key);
-        if (cached != null) {
-            return cached;
-        }
+        /*
+         * 模型集合的首次解析需要 single-flight 语义：两个会话同时第一次选中同一模型时，
+         * 只允许一个线程创建 HTTP 客户端和 Advisor。原来的 putIfAbsent 只能避免覆盖，
+         * 不能避免重复构造，连接池仍然会被重复打开。
+         */
+        synchronized (namedBundles) {
+            Bundle cached = namedBundles.get(key);
+            if (cached != null) {
+                return cached;
+            }
 
-        RuntimeChatModelResolver resolver = this.modelResolver;
-        if (resolver == null) {
-            // 没有按名造模型的能力时，退回默认模型而不是报错：
-            // 「用默认模型回答」比「这个会话打不开」好得多。
-            log.debug("没有 RuntimeChatModelResolver，模型 {} 无法按名生效，改用当前默认模型", trimmed);
-            return current;
-        }
+            RuntimeChatModelResolver resolver = this.modelResolver;
+            if (resolver == null) {
+                // 没有按名造模型的能力时，退回默认模型而不是报错：
+                // 「用默认模型回答」比「这个会话打不开」好得多。
+                log.debug("没有 RuntimeChatModelResolver，模型 {} 无法按名生效，改用当前默认模型", trimmed);
+                return current;
+            }
 
-        ChatModel model;
-        try {
-            model = resolver.resolve(trimmed);
-        } catch (RuntimeException cause) {
-            log.warn("按模型名构造聊天模型失败，改用当前默认模型：model={}", trimmed, cause);
-            return current;
-        }
+            ChatModel model;
+            try {
+                model = resolver.resolve(trimmed);
+            } catch (RuntimeException cause) {
+                log.warn("按模型名构造聊天模型失败，改用当前默认模型：model={}", trimmed, cause);
+                return current;
+            }
 
-        // 缓存可能被别的线程同时写入 —— putIfAbsent 后以先入者为准，
-        // 避免两个线程各自 buildBundle 又各自覆盖（多造一份连接池）
-        if (namedBundles.size() >= NAMED_CACHE_LIMIT) {
-            log.debug("按模型名缓存达到上限 {}，清空重来", NAMED_CACHE_LIMIT);
-            namedBundles.clear();
+            if (namedBundles.size() >= NAMED_CACHE_LIMIT) {
+                log.debug("按模型名缓存达到上限 {}，清空重来", NAMED_CACHE_LIMIT);
+                namedBundles.clear();
+            }
+            // A config switch may have happened while the resolver built its HTTP client. Do not
+            // cache the old endpoint under the new generation or attach new evidence to it.
+            if (requestedGeneration != generation) return retry == 0 ? bundleFor(modelName, 1) : this.bundle;
+            Bundle built = buildBundle(model);
+            if (requestedGeneration != generation) return retry == 0 ? bundleFor(modelName, 1) : this.bundle;
+            namedBundles.put(key, built);
+            return built;
         }
-        // A config switch may have happened while the resolver built its HTTP client. Do not
-        // cache the old endpoint under the new generation or attach new evidence to it.
-        if (requestedGeneration != generation) return retry == 0 ? bundleFor(modelName, 1) : this.bundle;
-        Bundle built = buildBundle(model);
-        if (requestedGeneration != generation) return retry == 0 ? bundleFor(modelName, 1) : this.bundle;
-        Bundle existing = namedBundles.putIfAbsent(key, built);
-        return existing == null ? built : existing;
     }
 
     /**
      * 「模型 + 客户端」的一对（V23）。
      *
      * @param model      模型实例，{@code applyThinkingOptions} 要用它取默认选项
-     * @param chatClient 已装配系统提示、记忆与工具的客户端
+     * @param chatClient      已装配系统提示、记忆与工具的客户端
+     * @param plainChatClient 已装配系统提示、但不挂记忆与工具的单轮客户端
      */
-    public record ChatTarget(ChatModel model, ChatClient chatClient) {
+    public record ChatTarget(ChatModel model, ChatClient chatClient, ChatClient plainChatClient) {
     }
 
     /** 判断某个 Bundle 里装的模型是否就是给定名字（名字取自模型的默认选项） */

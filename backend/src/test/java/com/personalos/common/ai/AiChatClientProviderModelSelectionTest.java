@@ -14,6 +14,8 @@ import com.personalos.common.exception.BusinessException;
 import com.personalos.support.StaticObjectProvider;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -100,6 +102,51 @@ class AiChatClientProviderModelSelectionTest {
         assertThat(resolver.calls.get())
                 .as("同一模型名必须复用，否则每个会话各自开一份连接池")
                 .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("并发首次选中同一模型时只构造一次运行时模型")
+    void concurrentFirstLookupUsesSingleFlight() throws Exception {
+        AtomicInteger calls = new AtomicInteger();
+        provider.setModelResolver(new RuntimeChatModelResolver() {
+            @Override
+            public ChatModel resolve(String modelName) {
+                calls.incrementAndGet();
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException(ex);
+                }
+                return new FakeModel(modelName, "sk-test");
+            }
+
+            @Override
+            public String defaultChatModel() {
+                return "default-model";
+            }
+        });
+
+        CompletableFuture<ChatModel> first = CompletableFuture.supplyAsync(
+                () -> provider.targetFor("qwen-max").model());
+        CompletableFuture<ChatModel> second = CompletableFuture.supplyAsync(
+                () -> provider.targetFor("qwen-max").model());
+
+        ChatModel firstModel = first.get(2, TimeUnit.SECONDS);
+        ChatModel secondModel = second.get(2, TimeUnit.SECONDS);
+
+        assertThat(secondModel).isSameAs(firstModel);
+        assertThat(calls).as("同一模型的首次解析必须合并，避免重复创建连接池").hasValue(1);
+    }
+
+    @Test
+    @DisplayName("按模型解析时同时返回带记忆客户端和纯文本客户端")
+    void targetContainsBothClientVariants() {
+        AiChatClientProvider.ChatTarget target = provider.targetFor("qwen-max");
+
+        assertThat(target.chatClient()).isNotNull();
+        assertThat(target.plainChatClient()).isNotNull();
+        assertThat(provider.plainChatClientFor("qwen-max")).isSameAs(target.plainChatClient());
     }
 
     @Test

@@ -9,6 +9,7 @@
  * <p>布局：全高对话列——消息区撑满可滚动，输入区停靠底部（不再有断裂空白带）。
  * 阶段 19 功能全保留：知识库增强（会话级开关）、引用区、工具轨迹、待确认。
  */
+import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
@@ -469,33 +470,39 @@ async function jumpToMatch(step: number): Promise<void> {
                 v-model="searchKeyword"
                 size="small"
                 clearable
+                :prefix-icon="Search"
                 class="chat__search-input"
-                placeholder="在已加载的消息中查找"
-                aria-label="在已加载的消息中查找"
+                placeholder="查找消息"
+                aria-label="查找已加载的消息"
                 @keyup.enter="jumpToMatch(1)"
+                @keyup.esc="searchKeyword = ''"
               />
               <template v-if="searchKeyword.trim()">
                 <span class="chat__search-count">
                   {{ matchIds.length ? `${matchCursor + 1}/${matchIds.length}` : '无匹配' }}
                 </span>
                 <el-button
-                  link
+                  text
+                  circle
+                  class="chat__search-nav"
                   size="small"
                   :disabled="matchIds.length === 0"
                   aria-label="上一处匹配"
+                  title="上一处匹配"
+                  :icon="ArrowUp"
                   @click="jumpToMatch(-1)"
-                >
-                  ↑
-                </el-button>
+                />
                 <el-button
-                  link
+                  text
+                  circle
+                  class="chat__search-nav"
                   size="small"
                   :disabled="matchIds.length === 0"
                   aria-label="下一处匹配"
+                  title="下一处匹配"
+                  :icon="ArrowDown"
                   @click="jumpToMatch(1)"
-                >
-                  ↓
-                </el-button>
+                />
               </template>
             </div>
             <el-tag v-if="streaming" type="warning" size="small" effect="plain" role="status">生成中</el-tag>
@@ -780,16 +787,52 @@ async function jumpToMatch(step: number): Promise<void> {
   display: flex;
   align-items: center;
   gap: var(--os-space-2);
+  min-width: 0;
 }
 
 .chat__search {
   display: flex;
   align-items: center;
-  gap: 4px;
+  min-width: 0;
+  gap: var(--os-space-1);
+  padding: 2px 4px 2px 8px;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--os-radius-md);
+  background: var(--el-fill-color-lighter);
+  transition:
+    border-color var(--os-duration-fast) var(--os-ease),
+    background var(--os-duration-fast) var(--os-ease);
+}
+
+.chat__search:focus-within {
+  border-color: var(--el-color-primary-light-3);
+  background: var(--el-bg-color);
 }
 
 .chat__search-input {
-  width: 200px;
+  width: 210px;
+  min-width: 0;
+}
+
+.chat__search-input :deep(.el-input__wrapper) {
+  min-height: 28px;
+  padding: 0 4px 0 0;
+  border: 0;
+  border-radius: var(--os-radius-sm);
+  background: transparent;
+  box-shadow: none;
+}
+
+.chat__search-input :deep(.el-input__wrapper.is-focus) {
+  box-shadow: none;
+}
+
+.chat__search-input :deep(.el-input__prefix) {
+  color: var(--el-text-color-placeholder);
+}
+
+.chat__search-input :deep(.el-input__inner) {
+  font-size: var(--os-font-sm);
 }
 
 @media (max-width: 600px) {
@@ -809,6 +852,10 @@ async function jumpToMatch(step: number): Promise<void> {
     min-width: 0;
     width: auto;
   }
+
+  .chat__search {
+    width: 100%;
+  }
 }
 
 /* 计数用等宽数字：切换匹配时宽度不跳，视线不会被带着走 */
@@ -818,6 +865,19 @@ async function jumpToMatch(step: number): Promise<void> {
   font-variant-numeric: tabular-nums;
   min-width: 34px;
   text-align: right;
+}
+
+.chat__search-nav {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  color: var(--el-text-color-secondary);
+}
+
+.chat__search-nav:hover:not(:disabled) {
+  color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
 }
 
 /* 命中定位：只在跳转后短暂描边，不改变消息本身的排版 */
