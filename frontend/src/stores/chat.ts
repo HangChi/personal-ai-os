@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 import {
   createSession as createSessionApi,
@@ -25,6 +25,8 @@ import type {
   ToolInvocation,
 } from '@/types/api'
 import type { ThinkingLevel } from '@/lib/settings'
+import { useModelProfileStore } from '@/stores/model-profile'
+import { budgetPresetsFor } from '@/lib/context-meter'
 
 /**
  * 首屏与每次「加载更早」的消息条数（阶段 21）。
@@ -118,8 +120,25 @@ export const useChatStore = defineStore('chat', () => {
     const id = currentConversationId.value
     const sessionSeq = sessionReqSeq
     const seq = ++contextReqSeq
+    const previous = contextUsage.value
     try {
-      const next = await fetchContextUsage(id, contextThinkingLevel)
+      let next = await fetchContextUsage(id, contextThinkingLevel)
+      // 模型容量改动后沿用所选档位，而不是沿用旧容量下的绝对 token 数。
+      // 仅迁移同一个模型的标准档位；自定义预算与切换模型保持原有行为。
+      if (
+        seq === contextReqSeq &&
+        sessionSeq === sessionReqSeq &&
+        id === currentConversationId.value &&
+        previous.modelName &&
+        previous.modelName === next.modelName &&
+        previous.contextWindow !== next.contextWindow
+      ) {
+        const tier = budgetPresetsFor(previous.contextWindow, previous.inputLimitTokens).indexOf(previous.budgetTokens)
+        const tokens = budgetPresetsFor(next.contextWindow, next.inputLimitTokens)[tier]
+        if (tokens !== undefined && tokens !== next.budgetTokens) {
+          next = await setContextBudget(tokens, id, contextThinkingLevel)
+        }
+      }
       if (seq === contextReqSeq && sessionSeq === sessionReqSeq && id === currentConversationId.value) {
         contextUsage.value = next
       }
@@ -150,6 +169,27 @@ export const useChatStore = defineStore('chat', () => {
    * 自增序号 + await 后校验，只有「仍是最新一次请求」的那轮才有资格写回状态。
    */
   let sessionReqSeq = 0
+
+  // 配置在设置页保存时，对话页已经卸载。由 store 持续监听，避免保留旧窗口快照。
+  const modelProfileStore = useModelProfileStore()
+  let pendingContextRefresh = false
+  watch(
+    () => modelProfileStore.activeProfile,
+    () => {
+      if (streaming.value) {
+        pendingContextRefresh = true
+      } else {
+        void refreshContextUsage()
+      }
+    },
+    { deep: true },
+  )
+  watch(streaming, (running) => {
+    if (!running && pendingContextRefresh) {
+      pendingContextRefresh = false
+      void refreshContextUsage()
+    }
+  })
 
   async function loadSessions(targetPage: number = sessionsPage.value): Promise<void> {
     loadingSessions.value = true

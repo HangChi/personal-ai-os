@@ -17,35 +17,22 @@
  * 三条断言全部失效。纯函数没有任何渲染依赖，改起来也没有心理负担。
  */
 
-/** 档位候选的固定值：整齐、好认，覆盖主流模型的窗口尺寸 */
-const BASE_PRESETS = [32_768, 65_536, 131_072, 262_144, 524_288, 1_048_576]
-
-/** 预算下限，与后端 `ContextBudgetService` 的 `>= 1` 与窗口 CHECK 的 1024 对齐 */
-const MIN_PRESET = 1024
-
 /**
- * 该模型窗口下可选的预算档位（升序）。
- *
- * <h3>为什么补一档「窗口的一半」</h3>
- * 窗口是 128K 时，固定档位里天生就有 32K/64K/128K 三档，够用。
- * 但窗口变成每个模型各自之后，切到 32K 的模型（`qwen-max`）时候选只剩
- * 「32K」一项 —— 菜单弹出来只有一个数字，点它等于什么都不做，看起来像坏了。
- *
- * <p>补一半而不再往下细分：预算的意义是「留出回复空间」，一半已经足够保守；
- * 再列 8K/4K 会让菜单变成一份需要思考的列表，而用户通常只要「默认」或「用满」。
- *
- * @param contextWindow 模型窗口（token）；<= 0 表示未知，返回空数组
- * @returns 升序、去重、全部 <= 窗口的档位
+ * 每个模型统一提供精简、均衡、完整三档。
+ * 前两档按模型窗口的 1/4、1/2 取整到 K；完整档保留安全输入上限。
+ * 端点限制低于半窗时，按实际可用上限重新分档，避免重复或越界。
  */
 export function budgetPresetsFor(contextWindow: number, inputLimit: number = contextWindow): number[] {
-  if (!Number.isFinite(contextWindow) || contextWindow <= 0) {
-    return []
-  }
-  // 满窗保留精确值（例如 128000），不能悄悄丢掉零头。
+  if (!Number.isFinite(contextWindow) || !Number.isFinite(inputLimit)) return []
   const full = Math.floor(Math.min(contextWindow, inputLimit))
-  const half = Math.floor(contextWindow / 2 / MIN_PRESET) * MIN_PRESET
-  const candidates = [...BASE_PRESETS, full, half]
-  return [...new Set(candidates)].filter((value) => value >= MIN_PRESET && value <= full).sort((a, b) => a - b)
+  if (full <= 0) return []
+
+  const rounded = (value: number): number =>
+    value >= 1024 ? Math.floor(value / 1024) * 1024 : Math.max(1, Math.floor(value))
+  const basis = rounded(contextWindow / 2) < full ? contextWindow : full
+  return [...new Set([rounded(basis / 4), rounded(basis / 2), full])]
+    .filter((value) => value <= full)
+    .sort((a, b) => a - b)
 }
 
 /**

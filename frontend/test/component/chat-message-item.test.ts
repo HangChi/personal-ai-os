@@ -129,24 +129,8 @@ describe('助手头像：用品牌标记而不是通用图标', () => {
   })
 })
 
-/**
- * 气泡宽度的角色分工。
- *
- * <p>守的是一个**用户直接看出来的问题**：「有些框宽度很大，有些很小」。
- *
- * <p>根因：助手气泡用了 `width: fit-content`，而 fit-content 的宽度
- * = **这条消息里最长那一行 + 2×内边距**。「最长一行」由内容换行位置决定，
- * 于是每条回答各自算出一个与别人无关的数 —— 实测同屏 5 个会话分别是
- * 455 / 469 / 622 / 842px。
- *
- * <p>更关键的是：那个 842 不是「内容需要 842」——把 455 的那个会话加宽到 842 后，
- * 行数**一条都没变**（34→34、46→46、31→31、18→18、23→23）。原先的窄宽度
- * 纯粹是 fit-content 算窄了。所以修法是让助手侧定宽 `100%`。
- *
- * <p>happy-dom 不算布局，所以这里断言的是「宽度策略写在哪一侧」，
- * 而不是具体像素。真实像素靠浏览器实测（1440 下全部 842、1280 下 682、1024 下 426）。
- */
-describe('气泡宽度：助手定宽铺满，用户按内容收缩', () => {
+/** 短回答按内容收缩，长回答受阅读栏约束，避免空白气泡铺满整行。 */
+describe('气泡宽度：随内容收缩', () => {
   const SOURCE = readFileSync(resolve(process.cwd(), 'src/components/chat/ChatMessageItem.vue'), 'utf8')
   /**
    * 取某条规则的属性体。
@@ -161,12 +145,11 @@ describe('气泡宽度：助手定宽铺满，用户按内容收缩', () => {
     return raw.replace(/\/\*[\s\S]*?\*\//g, '')
   }
 
-  it('助手气泡必须是 width: 100%，不能是 fit-content', () => {
+  it('助手气泡按内容收缩，不强制铺满', () => {
     const rule = ruleOf('.chat-msg__bubble--assistant')
 
-    expect(rule).toContain('width: 100%')
-    // fit-content 是已修掉的病根，重新出现就是回退
-    expect(rule).not.toContain('fit-content')
+    expect(rule).toContain('width: fit-content')
+    expect(ruleOf('.chat-msg__bubble')).toContain('max-width: 100%')
   })
 
   it('用户气泡必须显式保留 fit-content —— 它不再从通用类继承', () => {

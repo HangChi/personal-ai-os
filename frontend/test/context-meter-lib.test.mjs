@@ -30,30 +30,30 @@ const { budgetPresetsFor, formatTokens, meterLevelOf, meterPercentOf } = await i
    *
    * 改造前档位表是硬编码的 [32K,64K,128K,...]，过滤后只剩「32K」一项：
    * 菜单点开只有一个数字，点它等于什么都不做，看起来像控件坏了。
-   * 补一档「窗口的一半」后变成 16K/32K，至少可选。
+   * 现在小窗口同样按四分之一、二分之一和完整容量提供三档。
    */
-  eq('32K 窗口补出 16K 档', budgetPresetsFor(32768).map(formatTokens).join(','), '16K,32K')
+  eq('32K 模型也提供三档', budgetPresetsFor(32768).map(formatTokens).join(','), '8K,16K,32K')
 
   // 超过窗口的档位绝不能出现：后端会静默收敛，界面选的和生效的不一致
   check('32K 窗口不含 64K', !budgetPresetsFor(32768).includes(65536))
   check('32K 窗口不含 128K', !budgetPresetsFor(32768).includes(131072))
 
   /*
-   * 1M 模型（deepseek-v4-pro 手填 1000000）：529 档来自固定表，
+   * 1M 模型（手填 1000000）：只显示三档，
    * 满窗档保留 1000000 的精确值。
    */
   const big = budgetPresetsFor(1_000_000)
   eq('1M 窗口最高档保留精确值', big[big.length - 1], 1_000_000)
-  check('1M 窗口含 512K', big.includes(524288))
+  eq('1M 窗口只提供三档', big.length, 3)
 
   // 未知窗口（<=0）不给任何档位：此时分母都不知道，列档位没有意义
   eq('未知窗口返回空', budgetPresetsFor(0).length, 0)
   eq('负数窗口返回空', budgetPresetsFor(-1).length, 0)
   eq('NaN 窗口返回空', budgetPresetsFor(Number.NaN).length, 0)
 
-  // 极端小窗口：1024 的一半是 512（低于下限被剔除），只剩一项
-  eq('1024 窗口只剩一项', budgetPresetsFor(1024).length, 1)
-  eq('1024 窗口那一项是 1K', budgetPresetsFor(1024)[0], 1024)
+  // 极端小窗口也提供三档，完整档保留精确容量
+  eq('1024 窗口仍提供三档', budgetPresetsFor(1024).length, 3)
+  eq('1024 窗口完整档是 1K', budgetPresetsFor(1024).at(-1), 1024)
 
   // 升序、无重复：菜单按顺序读，乱序会让人以为漏了档
   const sorted = budgetPresetsFor(131072)
@@ -106,3 +106,23 @@ const { budgetPresetsFor, formatTokens, meterLevelOf, meterPercentOf } = await i
   check('半窗档仍为 64K，避免多出 61K 这类重复档位', options.includes(65536) && !options.includes(62464))
   check('1M 模型包含 256K 中间档位', budgetPresetsFor(1048576).includes(262144))
 }
+
+// 每种模型容量和端点限制下均保持三档，且不超安全上限。
+for (const [window, limit] of [
+  [131072, 126464],
+  [1048576, 1043968],
+  [128000, 123392],
+  [32768, 28160],
+  [131072, 8192],
+  [8192, 1024],
+]) {
+  const presets = budgetPresetsFor(window, limit)
+  eq(`窗口 ${window} / 限制 ${limit} 始终三档`, presets.length, 3)
+  check(
+    '三档严格递增且不越界',
+    presets.every((v, i) => v > 0 && v <= limit && (i === 0 || v > presets[i - 1])),
+  )
+  eq('完整档保留精确输入上限', presets.at(-1), limit)
+}
+eq('非法输入限制返回空', budgetPresetsFor(131072, Number.NaN).length, 0)
+eq('负数输入限制返回空', budgetPresetsFor(131072, -1).length, 0)

@@ -17,7 +17,7 @@ describe('ContextMeter', () => {
       },
     })
     expect(wrapper.find('.context-meter__value').text()).toBe('≈4K / 32K')
-    expect(wrapper.find('.context-meter__limit').text()).toContain('配置')
+    expect(wrapper.find('.context-meter__limit').text()).toBe('上限 125K')
     const title = wrapper.find('button').attributes('title')
     expect(title).toContain('custom-model')
     expect(title).toContain('128,000 token')
@@ -76,10 +76,44 @@ describe('ContextMeter', () => {
         },
       },
     })
-    expect(wrapper.find('.context-meter__limit').text()).toBe('端点 8K')
+    expect(wrapper.find('.context-meter__limit').text()).toBe('上限 8K')
     const title = wrapper.find('button').attributes('title')
     expect(title).toContain('已验证输入至少 4,096 token')
     expect(title).toContain('不是最大容量')
     expect(title).toContain('×1.25')
+  })
+})
+
+describe('上下文三档菜单', () => {
+  it('三档显示总容量，命令仍使用安全输入预算', async () => {
+    const wrapper = mount(ContextMeter, {
+      props: {
+        usage: {
+          promptTokens: 4096,
+          budgetTokens: 65536,
+          contextWindow: 1048576,
+          inputLimitTokens: 1043968,
+          estimated: true,
+          modelName: 'large-model',
+          windowSource: 'configured',
+        },
+      },
+      global: {
+        stubs: {
+          ElDropdown: { template: '<div><slot /><slot name="dropdown" /></div>' },
+          ElDropdownMenu: { template: '<ul><slot /></ul>' },
+          ElDropdownItem: {
+            props: ['command'],
+            template: '<li class="preset-item" :data-budget="command"><slot /></li>',
+          },
+        },
+      },
+    })
+    expect(wrapper.findAll('.preset-item').map((item) => item.text())).toEqual(['精简256K', '均衡512K', '完整1M'])
+    expect(wrapper.findAll('.preset-item')[2].attributes('data-budget')).toBe('1043968')
+    expect(wrapper.find('.context-meter__head').text()).toContain('当前 64K')
+    expect(wrapper.find('.context-meter__head').text()).not.toContain('尚未验证')
+    await wrapper.setProps({ usage: { ...wrapper.props('usage'), budgetTokens: 1043968 } })
+    expect(wrapper.find('.context-meter__value').text()).toBe('≈4K / 1M')
   })
 })
