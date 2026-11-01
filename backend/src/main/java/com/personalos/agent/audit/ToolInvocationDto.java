@@ -21,5 +21,6 @@ public record ToolInvocationDto(Long id,
                                String conversationId,
                                Instant createdAt,
                                String turnId,
-                               String argumentsDigest) {
+                               String argumentsDigest,
+                               String confirmationStatus) {
 }

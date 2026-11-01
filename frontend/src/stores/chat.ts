@@ -341,16 +341,25 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   /** 拉取当前会话的待确认操作 */
+  let confirmationReqSeq = 0
   async function loadConfirmations(): Promise<void> {
-    if (!currentConversationId.value) {
+    const id = currentConversationId.value
+    const sessionSeq = sessionReqSeq
+    const seq = ++confirmationReqSeq
+    if (!id) {
       pendingConfirmations.value = []
       return
     }
     try {
-      pendingConfirmations.value = await listConfirmations(currentConversationId.value)
+      const items = await listConfirmations(id)
+      if (seq === confirmationReqSeq && sessionSeq === sessionReqSeq && id === currentConversationId.value) {
+        pendingConfirmations.value = items
+      }
     } catch {
       // 待确认列表拉取失败不应影响对话本身
-      pendingConfirmations.value = []
+      if (seq === confirmationReqSeq && sessionSeq === sessionReqSeq && id === currentConversationId.value) {
+        pendingConfirmations.value = []
+      }
     }
   }
 
@@ -360,9 +369,11 @@ export const useChatStore = defineStore('chat', () => {
    * 与 loadConfirmations 同款容错：失败静默留空。
    * 拉最近 20 条足够覆盖「本轮助手做了什么」。
    */
+  let toolTrailReqSeq = 0
   async function loadToolTrail(): Promise<void> {
     const id = currentConversationId.value
     const sessionSeq = sessionReqSeq
+    const seq = ++toolTrailReqSeq
     if (!id) {
       toolTrail.value = []
       return
@@ -372,14 +383,15 @@ export const useChatStore = defineStore('chat', () => {
         conversationId: id,
         size: 20,
       })
-      if (sessionSeq !== sessionReqSeq || id !== currentConversationId.value) return
+      if (seq !== toolTrailReqSeq || sessionSeq !== sessionReqSeq || id !== currentConversationId.value) return
       const lastUser = [...messages.value].reverse().find((message) => message.role === 'USER')
       const startedAt = lastUser ? Date.parse(lastUser.createdAt) : Number.NaN
       const items = result.items.filter((item) => Date.parse(item.createdAt) >= startedAt)
       const turnId = items.find((item) => item.turnId)?.turnId
       toolTrail.value = turnId ? items.filter((item) => item.turnId === turnId) : items
     } catch {
-      if (sessionSeq === sessionReqSeq && id === currentConversationId.value) toolTrail.value = []
+      if (seq === toolTrailReqSeq && sessionSeq === sessionReqSeq && id === currentConversationId.value)
+        toolTrail.value = []
     }
   }
 
@@ -390,6 +402,8 @@ export const useChatStore = defineStore('chat', () => {
    * @returns 执行结果描述，失败时返回 null
    */
   async function resolveConfirmation(confirmation: TaskConfirmation, approve: boolean): Promise<string | null> {
+    const id = currentConversationId.value
+    const sessionSeq = sessionReqSeq
     error.value = null
     try {
       if (!approve) {
@@ -399,10 +413,14 @@ export const useChatStore = defineStore('chat', () => {
       const result = await confirmOperation(confirmation.id, confirmation.token)
       return result.summary
     } catch (cause) {
-      error.value = cause instanceof Error ? cause.message : '处理确认失败'
+      if (id === currentConversationId.value && sessionSeq === sessionReqSeq) {
+        error.value = cause instanceof Error ? cause.message : '处理确认失败'
+      }
       return null
     } finally {
-      await loadConfirmations()
+      if (id === currentConversationId.value && sessionSeq === sessionReqSeq) {
+        await Promise.all([loadConfirmations(), loadToolTrail()])
+      }
     }
   }
 

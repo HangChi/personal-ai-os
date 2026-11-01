@@ -27,6 +27,23 @@ function invocation(overrides: Partial<ToolInvocation> = {}): ToolInvocation {
 }
 
 describe('ChatToolTrail', () => {
+  it('根据人工确认结果更新徽标，失败归入汇总，不再停在初次申请的待确认状态', () => {
+    for (const [status, label, color] of [
+      ['CONFIRMED', '已确认', 'success'],
+      ['CANCELLED', '已取消', 'info'],
+      ['EXPIRED', '已过期', 'info'],
+      ['FAILED', '失败', 'danger'],
+    ] as const) {
+      const wrapper = mount(ChatToolTrail, {
+        props: { items: [invocation({ outcome: 'REQUIRES_CONFIRMATION', confirmationStatus: status })] },
+      })
+      expect(wrapper.text()).toContain(label)
+      expect(wrapper.text()).not.toContain('待确认')
+      expect(wrapper.get('.chat-trail__dot').classes()).toContain(`chat-trail__dot--${color}`)
+      if (status === 'FAILED') expect(wrapper.text()).toContain('1 个失败')
+      wrapper.unmount()
+    }
+  })
   it('没有调用记录时整块不渲染（避免留下一根空的分隔线）', () => {
     const wrapper = mount(ChatToolTrail, { props: { items: [] } })
 

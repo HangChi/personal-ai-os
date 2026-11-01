@@ -295,6 +295,61 @@ handlers.clear()
 }
 
 // 编辑验证必须在破坏性回退之前完成；回退失败不能丢掉原消息。
+// 确认、取消和失败后都重新关联工具状态；迟到的旧请求不能恢复「待确认」。
+for (const decision of ['confirm', 'cancel', 'fail']) {
+  const store = fresh()
+  store.currentConversationId = 'confirmation'
+  store.messages = [{ role: 'USER', createdAt: '2026-11-01T06:00:00Z' }]
+  const oldTrail = deferred()
+  handlers.set('/agent/tool-invocations', () => oldTrail.promise)
+  const oldRequest = store.loadToolTrail()
+  const status = decision === 'confirm' ? 'CONFIRMED' : decision === 'cancel' ? 'CANCELLED' : 'FAILED'
+  handlers.set('/agent/tool-invocations', () =>
+    Promise.resolve({
+      items: [
+        {
+          id: 'audit',
+          outcome: 'REQUIRES_CONFIRMATION',
+          confirmationStatus: status,
+          createdAt: '2026-11-01T06:00:01Z',
+        },
+      ],
+    }),
+  )
+  handlers.set('/agent/confirmations', () => Promise.resolve([]))
+  handlers.set('/agent/confirmations/check/confirm', () =>
+    decision === 'fail' ? Promise.reject(new Error('执行失败')) : Promise.resolve({ summary: '处理成功' }),
+  )
+  handlers.set('/agent/confirmations/check/cancel', () => Promise.resolve())
+  const result = await store.resolveConfirmation({ id: 'check', token: 'test' }, decision !== 'cancel')
+  eq(`${decision} 后工具状态刷新`, store.toolTrail[0].confirmationStatus, status)
+  eq(`${decision} 后移除待确认卡片`, store.pendingConfirmations.length, 0)
+  eq(`${decision} 返回对应结果`, result, decision === 'fail' ? null : decision === 'cancel' ? '已取消' : '处理成功')
+  oldTrail.resolve({
+    items: [
+      { id: 'old', outcome: 'REQUIRES_CONFIRMATION', confirmationStatus: 'PENDING', createdAt: '2026-11-01T06:00:01Z' },
+    ],
+  })
+  await oldRequest
+  eq(`${decision} 迟到请求不覆盖已处理状态`, store.toolTrail[0].confirmationStatus, status)
+}
+
+{
+  const store = fresh()
+  store.currentConversationId = 'old-confirmation'
+  const slow = deferred()
+  handlers.set('/agent/confirmations/check/confirm', () => slow.promise)
+  const pending = store.resolveConfirmation({ id: 'check', token: 'test' }, true)
+  store.currentConversationId = 'new-conversation'
+  store.pendingConfirmations = [{ id: 'new' }]
+  store.toolTrail = [{ id: 'new' }]
+  slow.resolve({ summary: '旧会话处理完成' })
+  await pending
+  eq('确认完成时已切会话，不改新会话的待确认列表', store.pendingConfirmations[0].id, 'new')
+  eq('确认完成时已切会话，不改新会话的工具列表', store.toolTrail[0].id, 'new')
+}
+
+// 编辑验证必须在破坏性回退之前完成；回退失败不能丢掉原消息。
 {
   const store = fresh()
   store.currentConversationId = 'edit'

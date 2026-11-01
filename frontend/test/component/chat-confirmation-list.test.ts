@@ -41,6 +41,8 @@ describe('ChatConfirmationList', () => {
       await button.trigger('click')
     }
     expect(wrapper.emitted('resolve')).toBeUndefined()
+    expect(wrapper.findAll('button')[1].text()).toBe('正在处理')
+    expect(wrapper.findAll('button')[1].attributes('aria-busy')).toBe('true')
     expect(wrapper.findAll('button')[3].text()).toBe('确认执行')
     wrapper.unmount()
   })

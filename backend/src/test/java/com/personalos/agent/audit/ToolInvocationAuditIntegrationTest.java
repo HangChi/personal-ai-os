@@ -37,6 +37,63 @@ import tools.jackson.databind.ObjectMapper;
 @Testcontainers
 class ToolInvocationAuditIntegrationTest {
 
+    @Autowired com.personalos.common.confirmation.ConfirmationRepository confirmations;
+
+    @Test
+    void returnsCurrentConfirmationDecisionWithoutChangingOriginalToolResult() throws Exception {
+        var now = Instant.now();
+        for (var status : com.personalos.common.confirmation.ConfirmationStatus.values()) {
+            var confirmation = new com.personalos.common.confirmation.ConfirmationEntity(
+                    "private-token-" + status, "audit-confirmation", com.personalos.common.confirmation.ConfirmationAction.DELETE_TASK,
+                    "删除测试任务", "{}", 1, now, now.plusSeconds(600));
+            if (status != com.personalos.common.confirmation.ConfirmationStatus.PENDING) {
+                confirmation.markResolved(status, now);
+            }
+            confirmation = confirmations.saveAndFlush(confirmation);
+            var record = new OperationRecordEntity("confirmation-" + status, OperationSource.TOOL,
+                    "deleteTask", "digest", "audit-confirmation", "turn-1", now);
+            var payload = "{\"status\":\"REQUIRES_CONFIRMATION\",\"message\":\"需要确认\",\"data\":null,\"confirmationId\":\""
+                    + confirmation.getId() + "\"}";
+            record.complete(IdempotencyOutcome.REQUIRES_CONFIRMATION, payload, 12);
+            record = repository.saveAndFlush(record);
+            var id = record.getId();
+
+            var data = getData("/api/v1/agent/tool-invocations?conversationId=audit-confirmation&outcome=REQUIRES_CONFIRMATION");
+            var item = java.util.stream.StreamSupport.stream(data.path("items").spliterator(), false)
+                    .filter(value -> value.path("id").asLong() == id).findFirst().orElseThrow();
+            assertThat(item.path("confirmationStatus").asString()).isEqualTo(status.name());
+            assertThat(item.path("outcome").asString()).isEqualTo("REQUIRES_CONFIRMATION");
+            assertThat(item.toString()).doesNotContain("private-token");
+            var saved = repository.findById(id).orElseThrow();
+            assertThat(saved.getResponsePayload()).isEqualTo(payload);
+            assertThat(saved.getOutcome()).isEqualTo(IdempotencyOutcome.REQUIRES_CONFIRMATION);
+        }
+    }
+
+    @Test
+    void expiredPendingAndMalformedHistoricalResponsesDoNotBreakAudit() throws Exception {
+        var now = Instant.now();
+        var expired = confirmations.saveAndFlush(new com.personalos.common.confirmation.ConfirmationEntity(
+                "private-token", "expired-audit", com.personalos.common.confirmation.ConfirmationAction.DELETE_TASK,
+                "删除测试任务", "{}", 1, now.minusSeconds(600), now.minusSeconds(1)));
+        var record = new OperationRecordEntity("expired-confirmation", OperationSource.TOOL,
+                "deleteTask", "digest", "expired-audit", "turn-1", now);
+        record.complete(IdempotencyOutcome.REQUIRES_CONFIRMATION,
+                "{\"confirmationId\":\"" + expired.getId() + "\"}", 12);
+        repository.saveAndFlush(record);
+        var malformed = new OperationRecordEntity("malformed-confirmation", OperationSource.TOOL,
+                "deleteTask", "digest", "expired-audit", "turn-1", now);
+        malformed.complete(IdempotencyOutcome.REQUIRES_CONFIRMATION, "not json", 12);
+        repository.saveAndFlush(malformed);
+
+        var data = getData("/api/v1/agent/tool-invocations?conversationId=expired-audit");
+        assertThat(data.path("total").asInt()).isEqualTo(2);
+        assertThat(data.path("items").get(0).path("confirmationStatus").isNull()).isTrue();
+        assertThat(data.path("items").get(1).path("confirmationStatus").asString()).isEqualTo("EXPIRED");
+        assertThat(confirmations.findById(expired.getId()).orElseThrow().getStatus())
+                .isEqualTo(com.personalos.common.confirmation.ConfirmationStatus.PENDING);
+    }
+
     @Container
     @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
@@ -57,6 +114,7 @@ class ToolInvocationAuditIntegrationTest {
     @BeforeEach
     void cleanUp() {
         repository.deleteAll();
+        confirmations.deleteAll();
     }
 
     private void record(String key, OperationSource source, IdempotencyOutcome outcome,

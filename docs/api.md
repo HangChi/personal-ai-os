@@ -149,6 +149,10 @@ Header: Idempotency-Key?   ← 同一键重试时，模型重复发出的工具�
 | POST | `/agent/confirmations/{id}/confirm` | 确认并执行 |
 | POST | `/agent/confirmations/{id}/cancel` | 取消 |
 
+工具轨迹的 `outcome` 保留初次调用结果，参与原有结果筛选。对于 `REQUIRES_CONFIRMATION`，
+另附 `confirmationStatus`（`PENDING` / `CONFIRMED` / `CANCELLED` / `EXPIRED` / `FAILED`），
+聊天轨迹与活动页按该字段展示当前人工确认状态。已有历史会关联确认记录，无需重新执行操作。
+
 > **确认接口只对前端开放，工具集合中不存在任何「确认」类工具** ——
 > 模型无法自行批准自己发起的破坏性操作。这是结构性约束，不依赖令牌保密。
 

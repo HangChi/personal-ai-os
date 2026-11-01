@@ -20,12 +20,13 @@ import { computed } from 'vue'
 
 import StatusTag from '@/components/StatusTag.vue'
 import { relativeTime } from '@/lib/relative-time'
+import { TOOL_STATUS_META, toolInvocationMeta, toolInvocationStatus } from '@/lib/tool-invocation-status'
 import type { ToolInvocation } from '@/types/api'
 
 const props = defineProps<{ items: ToolInvocation[] }>()
 
 /** 汇总行要能一眼看出「有没有失败的」：失败数是唯一需要主动提醒的信号 */
-const failedCount = computed(() => props.items.filter((item) => item.outcome === 'FAILED').length)
+const failedCount = computed(() => props.items.filter((item) => toolInvocationStatus(item) === 'FAILED').length)
 
 /**
  * 汇总文案：带上工具名，最多 3 个。
@@ -39,26 +40,6 @@ const summaryText = computed(() => {
   const suffix = names.length > 3 ? ` 等 ${names.length} 项` : ''
   return `${shown}${suffix}`
 })
-
-/** 工具调用结果徽标映射（StatusTag 的 map） */
-const OUTCOME_MAP: Record<string, { label: string; type: 'success' | 'danger' | 'warning' | 'info' }> = {
-  SUCCESS: { label: '成功', type: 'success' },
-  FAILED: { label: '失败', type: 'danger' },
-  REJECTED: { label: '被拒绝', type: 'warning' },
-  REQUIRES_CONFIRMATION: { label: '待确认', type: 'warning' },
-  DUPLICATE: { label: '已去重', type: 'info' },
-  IN_PROGRESS: { label: '执行中', type: 'info' },
-}
-
-/** 状态色点配色：与 OUTCOME_MAP 的语义色一一对应（成功绿 / 失败红 / 等待与拒绝琥珀 / 其余灰蓝） */
-const OUTCOME_DOT: Record<string, string> = {
-  SUCCESS: 'success',
-  FAILED: 'danger',
-  REJECTED: 'warning',
-  REQUIRES_CONFIRMATION: 'warning',
-  DUPLICATE: 'info',
-  IN_PROGRESS: 'info',
-}
 
 /** 工具耗时可读化：null 表示未真正执行（待确认），与 0ms 区分开 */
 function formatDuration(durationMs: number | null): string {
@@ -89,9 +70,9 @@ function formatDuration(durationMs: number | null): string {
       </template>
       <ul class="chat-trail__list">
         <li v-for="item in items" :key="item.id" class="chat-trail__item">
-          <span class="chat-trail__dot" :class="`chat-trail__dot--${OUTCOME_DOT[item.outcome] ?? 'info'}`" />
+          <span class="chat-trail__dot" :class="`chat-trail__dot--${toolInvocationMeta(item).type}`" />
           <span class="chat-trail__operation">{{ item.operation }}</span>
-          <StatusTag :status="item.outcome" :map="OUTCOME_MAP" />
+          <StatusTag :status="toolInvocationStatus(item)" :map="TOOL_STATUS_META" />
           <span class="chat-trail__duration">{{ formatDuration(item.durationMs) }}</span>
           <span class="chat-trail__time">{{ relativeTime(item.createdAt) }}</span>
         </li>

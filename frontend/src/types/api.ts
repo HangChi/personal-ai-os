@@ -320,6 +320,8 @@ export type ToolInvocationOutcome =
  * 与「执行了但耗时 0」是两回事，界面上要区分显示。
  */
 export interface ToolInvocation {
+  /** 最初申请确认的工具结果不变，另附人工确认的当前状态。 */
+  confirmationStatus?: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED' | 'FAILED' | null
   /** 用于关联模型请求与工具日志的轮次标识 */
   turnId?: string | null
   /** 参数摘要，不返回原始敏感参数 */

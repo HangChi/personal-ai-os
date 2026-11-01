@@ -5,6 +5,7 @@ import { computed, onMounted, ref } from 'vue'
 import AppPagination from '@/components/AppPagination.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { formatDateTime } from '@/lib/format'
+import { toolInvocationMeta } from '@/lib/tool-invocation-status'
 import { useActivityStore } from '@/stores/activity'
 import type { ToolInvocationOutcome } from '@/types/api'
 
@@ -15,19 +16,9 @@ const OUTCOME_OPTIONS: { value: ToolInvocationOutcome; label: string }[] = [
   { value: 'SUCCESS', label: '成功' },
   { value: 'FAILED', label: '失败' },
   { value: 'REJECTED', label: '被拒绝' },
-  { value: 'REQUIRES_CONFIRMATION', label: '待确认' },
+  { value: 'REQUIRES_CONFIRMATION', label: '需人工确认' },
   { value: 'DUPLICATE', label: '已去重' },
 ]
-
-const OUTCOME_META: Record<ToolInvocationOutcome, { label: string; type: 'success' | 'danger' | 'warning' | 'info' }> =
-  {
-    SUCCESS: { label: '成功', type: 'success' },
-    FAILED: { label: '失败', type: 'danger' },
-    REJECTED: { label: '被拒绝', type: 'warning' },
-    REQUIRES_CONFIRMATION: { label: '待确认', type: 'warning' },
-    DUPLICATE: { label: '已去重', type: 'info' },
-    IN_PROGRESS: { label: '执行中', type: 'info' },
-  }
 
 onMounted(async () => {
   await store.loadInvocations(0)
@@ -38,10 +29,6 @@ onMounted(async () => {
  * 筛选后仍说「还没有调用过工具」会让人以为审计坏了，而实际只是过滤条件太窄。
  */
 const emptyText = computed(() => (outcome.value === null ? '助手还没有调用过工具' : '没有符合筛选条件的记录'))
-
-function outcomeMeta(value: ToolInvocationOutcome) {
-  return OUTCOME_META[value] ?? { label: value, type: 'info' as const }
-}
 
 /**
  * 时间：走 lib/format 的统一入口。
@@ -152,8 +139,8 @@ function handleOutcome(value: string): void {
           <el-table-column prop="operation" label="工具" min-width="190" show-overflow-tooltip />
           <el-table-column label="结果" min-width="150" align="center">
             <template #default="{ row }">
-              <el-tag :type="outcomeMeta(row.outcome).type" size="small">
-                {{ outcomeMeta(row.outcome).label }}
+              <el-tag :type="toolInvocationMeta(row).type" size="small">
+                {{ toolInvocationMeta(row).label }}
               </el-tag>
             </template>
           </el-table-column>
@@ -180,11 +167,11 @@ function handleOutcome(value: string): void {
                 <span class="activity__timeline-time">{{ formatTime(item.createdAt).slice(11) }}</span>
                 <span
                   class="activity__timeline-dot"
-                  :class="`activity__timeline-dot--${outcomeMeta(item.outcome).type}`"
+                  :class="`activity__timeline-dot--${toolInvocationMeta(item).type}`"
                 />
                 <span class="activity__timeline-operation">{{ item.operation }}</span>
-                <el-tag :type="outcomeMeta(item.outcome).type" size="small" effect="plain">
-                  {{ outcomeMeta(item.outcome).label }}
+                <el-tag :type="toolInvocationMeta(item).type" size="small" effect="plain">
+                  {{ toolInvocationMeta(item).label }}
                 </el-tag>
                 <span class="activity__timeline-duration">{{ formatDuration(item.durationMs) }}</span>
                 <el-tooltip v-if="item.conversationId" :content="item.conversationId" placement="top">
