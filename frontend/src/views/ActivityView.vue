@@ -16,7 +16,7 @@ const OUTCOME_OPTIONS: { value: ToolInvocationOutcome; label: string }[] = [
   { value: 'SUCCESS', label: '成功' },
   { value: 'FAILED', label: '失败' },
   { value: 'REJECTED', label: '被拒绝' },
-  { value: 'REQUIRES_CONFIRMATION', label: '需人工确认' },
+  { value: 'REQUIRES_CONFIRMATION', label: '申请过确认' },
   { value: 'DUPLICATE', label: '已去重' },
 ]
 
@@ -96,11 +96,13 @@ function handleOutcome(value: string): void {
               />
             </el-select>
             <!-- 时间线视图（T036）：审计记录按天分组，比平铺表格更适合「回顾哪天发生了什么」 -->
-            <el-radio-group v-model="viewMode" size="small">
+            <el-radio-group v-model="viewMode" size="small" class="activity__view-switch">
               <el-radio-button value="table">表格</el-radio-button>
               <el-radio-button value="timeline">时间线</el-radio-button>
             </el-radio-group>
-            <el-button :loading="loading" @click="store.loadInvocations()">刷新</el-button>
+            <el-button class="activity__refresh" size="small" :loading="loading" @click="store.loadInvocations()"
+              >刷新</el-button
+            >
           </div>
         </div>
       </template>
@@ -226,7 +228,29 @@ function handleOutcome(value: string): void {
 }
 
 .activity__filter {
-  width: 130px;
+  width: 116px;
+}
+
+.activity__filter :deep(.el-select__wrapper),
+.activity .activity__refresh.el-button,
+.activity__view-switch :deep(.el-radio-button__inner) {
+  height: 28px;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: var(--os-font-xs);
+}
+
+.activity__view-switch :deep(.el-radio-button__inner) {
+  width: 58px;
+}
+
+@media (pointer: coarse) {
+  .activity__filter :deep(.el-select__wrapper),
+  .activity .activity__refresh.el-button,
+  .activity__view-switch :deep(.el-radio-button__inner) {
+    height: 36px;
+    min-height: 36px;
+  }
 }
 
 /* ---- 时间线视图（T036）---- */

@@ -87,6 +87,39 @@ function handleCurrentChange(next: number): void {
   font-size: var(--os-font-xs);
 }
 
+/* Non-chat pages share a smaller 28px pager. The session-list variant stays unchanged. */
+.app-pagination:not(.app-pagination--compact) :deep(.el-pagination) {
+  --el-pagination-button-width: 28px;
+  --el-pagination-button-height: 28px;
+  --el-pagination-font-size: var(--os-font-xs);
+}
+
+.app-pagination:not(.app-pagination--compact) :deep(.el-pager li),
+.app-pagination:not(.app-pagination--compact) :deep(.btn-prev),
+.app-pagination:not(.app-pagination--compact) :deep(.btn-next) {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  line-height: 28px;
+  padding: 0;
+}
+
+@media (pointer: coarse) {
+  .app-pagination:not(.app-pagination--compact) :deep(.el-pagination) {
+    gap: 4px;
+  }
+  .app-pagination:not(.app-pagination--compact) :deep(.el-pager li),
+  .app-pagination:not(.app-pagination--compact) :deep(.btn-prev),
+  .app-pagination:not(.app-pagination--compact) :deep(.btn-next) {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    line-height: 36px;
+  }
+}
+
 /*
  * 紧凑变体：居中。
  *
