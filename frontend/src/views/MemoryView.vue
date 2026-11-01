@@ -227,8 +227,6 @@ function formatTime(value: string): string {
   display: flex;
   flex-direction: column;
   gap: var(--os-space-5);
-  max-width: 900px;
-  margin: 0 auto;
   width: 100%;
 }
 

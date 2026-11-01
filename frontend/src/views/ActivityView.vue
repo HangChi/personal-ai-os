@@ -203,8 +203,6 @@ function handleOutcome(value: string): void {
 
 <style scoped>
 .activity {
-  max-width: 1080px;
-  margin: 0 auto;
   width: 100%;
   display: flex;
   flex-direction: column;
