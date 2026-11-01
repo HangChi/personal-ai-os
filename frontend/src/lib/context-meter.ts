@@ -19,7 +19,7 @@
 
 /**
  * 每个模型统一提供精简、均衡、完整三档。
- * 前两档按模型窗口的 1/4、1/2 取整到 K；完整档保留安全输入上限。
+ * 前两档按模型窗口的 1/4、1/2 对齐到最近的常见二进制档位；完整档保留安全输入上限。
  * 端点限制低于半窗时，按实际可用上限重新分档，避免重复或越界。
  */
 export function budgetPresetsFor(contextWindow: number, inputLimit: number = contextWindow): number[] {
@@ -27,8 +27,12 @@ export function budgetPresetsFor(contextWindow: number, inputLimit: number = con
   const full = Math.floor(Math.min(contextWindow, inputLimit))
   if (full <= 0) return []
 
-  const rounded = (value: number): number =>
-    value >= 1024 ? Math.floor(value / 1024) * 1024 : Math.max(1, Math.floor(value))
+  const rounded = (value: number): number => {
+    if (value < 1024) return Math.max(1, Math.floor(value))
+    const lower = 2 ** Math.floor(Math.log2(value))
+    const upper = lower * 2
+    return value - lower < upper - value ? lower : upper
+  }
   const basis = rounded(contextWindow / 2) < full ? contextWindow : full
   return [...new Set([rounded(basis / 4), rounded(basis / 2), full])]
     .filter((value) => value <= full)

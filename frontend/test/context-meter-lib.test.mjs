@@ -46,6 +46,9 @@ const { budgetPresetsFor, formatTokens, meterLevelOf, meterPercentOf } = await i
   eq('1M 窗口最高档保留精确值', big[big.length - 1], 1_000_000)
   eq('1M 窗口只提供三档', big.length, 3)
 
+  // 非整 1M 窗口也沿用常见的 256K / 512K 档位，避免出现 240K 这种难以理解的值。
+  eq('960.6K 窗口使用常见二进制档位', budgetPresetsFor(983616, 979008).map(formatTokens).join(','), '256K,512K,956.1K')
+
   // 未知窗口（<=0）不给任何档位：此时分母都不知道，列档位没有意义
   eq('未知窗口返回空', budgetPresetsFor(0).length, 0)
   eq('负数窗口返回空', budgetPresetsFor(-1).length, 0)

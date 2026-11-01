@@ -123,7 +123,7 @@ export const useChatStore = defineStore('chat', () => {
     const previous = contextUsage.value
     try {
       let next = await fetchContextUsage(id, contextThinkingLevel)
-      // 模型容量改动后沿用所选档位，而不是沿用旧容量下的绝对 token 数。
+      // 模型容量或安全输入上限改动后沿用所选档位，而不是沿用旧容量下的绝对 token 数。
       // 仅迁移同一个模型的标准档位；自定义预算与切换模型保持原有行为。
       if (
         seq === contextReqSeq &&
@@ -131,7 +131,7 @@ export const useChatStore = defineStore('chat', () => {
         id === currentConversationId.value &&
         previous.modelName &&
         previous.modelName === next.modelName &&
-        previous.contextWindow !== next.contextWindow
+        (previous.contextWindow !== next.contextWindow || previous.inputLimitTokens !== next.inputLimitTokens)
       ) {
         const tier = budgetPresetsFor(previous.contextWindow, previous.inputLimitTokens).indexOf(previous.budgetTokens)
         const tokens = budgetPresetsFor(next.contextWindow, next.inputLimitTokens)[tier]

@@ -85,14 +85,14 @@ describe('ContextMeter', () => {
 })
 
 describe('上下文三档菜单', () => {
-  it('保留自定义预算的选中状态，三档与实际输入预算使用同一口径', async () => {
+  it('960.6K 窗口的菜单包含当前 256K，完整档保留精确输入上限', async () => {
     const wrapper = mount(ContextMeter, {
       props: {
         usage: {
           promptTokens: 4096,
           budgetTokens: 65536,
-          contextWindow: 1048576,
-          inputLimitTokens: 1043968,
+          contextWindow: 983616,
+          inputLimitTokens: 979008,
           estimated: true,
           modelName: 'large-model',
           windowSource: 'configured',
@@ -109,13 +109,17 @@ describe('上下文三档菜单', () => {
         },
       },
     })
-    expect(wrapper.findAll('.preset-item').map((item) => item.text())).toEqual(['精简256K', '均衡512K', '完整1019.5K'])
-    expect(wrapper.findAll('.preset-item')[2].attributes('data-budget')).toBe('1043968')
+    expect(wrapper.findAll('.preset-item').map((item) => item.text())).toEqual(['精简256K', '均衡512K', '完整956.1K'])
+    expect(wrapper.findAll('.preset-item')[2].attributes('data-budget')).toBe('979008')
     expect(wrapper.find('.context-meter__current').text()).toBe('当前预算64K')
     expect(wrapper.find('.context-meter__head').text()).not.toContain('尚未验证')
-    await wrapper.setProps({ usage: { ...wrapper.props('usage'), budgetTokens: 1043968 } })
-    expect(wrapper.find('.context-meter__value').text()).toBe('≈4K / 1019.5K')
+    await wrapper.setProps({ usage: { ...wrapper.props('usage'), budgetTokens: 262144 } })
+    expect(wrapper.find('.context-meter__value').text()).toBe('≈4K / 256K')
+    expect(wrapper.find('.context-meter__current').text()).toBe('当前预算256K')
+    expect(wrapper.find('.context-meter__item--on').text()).toBe('精简256K')
+    await wrapper.setProps({ usage: { ...wrapper.props('usage'), budgetTokens: 979008 } })
+    expect(wrapper.find('.context-meter__value').text()).toBe('≈4K / 956.1K')
     expect(wrapper.findAll('.preset-item')).toHaveLength(3)
-    expect(wrapper.find('.context-meter__item--on').text()).toBe('完整1019.5K')
+    expect(wrapper.find('.context-meter__item--on').text()).toBe('完整956.1K')
   })
 })

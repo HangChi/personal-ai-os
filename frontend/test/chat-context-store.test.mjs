@@ -169,4 +169,63 @@ function deferred() {
   eq('自定义预算不自动迁移档位', selectedBudget, null)
   store.$dispose()
 }
+
+// 非整 1M 窗口保留常用 256K 档位，无需额外写预算。
+{
+  const store = fresh()
+  store.currentConversationId = 'a'
+  store.contextUsage = {
+    ...usage('custom', 1_048_576),
+    budgetTokens: 262_144,
+    inputLimitTokens: 1_043_968,
+  }
+  let budgetWrites = 0
+  handlers.set('/chat/sessions/a/context', () =>
+    Promise.resolve({ ...usage('custom', 983_616), budgetTokens: 262_144, inputLimitTokens: 979_008 }),
+  )
+  handlers.set('/chat/context-budget', () => {
+    budgetWrites++
+    throw new Error('256K 档位未变，不应修改预算')
+  })
+  await store.refreshContextUsage()
+  eq('非整 1M 窗口保留当前 256K 档', store.contextUsage.budgetTokens, 262_144)
+  eq('档位值未变不重复写入预算', budgetWrites, 0)
+  store.$dispose()
+}
+
+// 端点重新声明安全输入上限后，旧模型的标准档要跟随到新档位，
+// 不能继续显示一个菜单里不存在的绝对值。
+{
+  const store = fresh()
+  store.currentConversationId = 'a'
+  const oldWindow = 1_048_576
+  const oldLimit = 614_400
+  const nextWindow = oldWindow
+  const nextLimit = 512_000
+  store.contextUsage = {
+    ...usage('custom', oldWindow),
+    budgetTokens: 524_288,
+    inputLimitTokens: oldLimit,
+  }
+  let selectedBudget
+  handlers.set('/chat/sessions/a/context', () =>
+    Promise.resolve({
+      ...usage('custom', nextWindow),
+      budgetTokens: 524_288,
+      inputLimitTokens: nextLimit,
+    }),
+  )
+  handlers.set('/chat/context-budget', (config) => {
+    selectedBudget = config.data.tokens
+    return Promise.resolve({
+      ...usage('custom', nextWindow),
+      budgetTokens: selectedBudget,
+      inputLimitTokens: nextLimit,
+    })
+  })
+  await store.refreshContextUsage()
+  eq('安全上限变化后标准档跟随新档位', store.contextUsage.budgetTokens, 262_144)
+  eq('同步保存新的标准档', selectedBudget, 262_144)
+  store.$dispose()
+}
 handlers.clear()
