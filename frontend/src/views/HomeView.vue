@@ -338,7 +338,7 @@ const overviewLine = computed(() => {
     <!-- 能力入口：替代原版的纯文字 bullet list -->
     <el-card shadow="never">
       <template #header>
-        <PageHeader title="已有能力" description="点击卡片进入对应模块" />
+        <PageHeader title="快捷入口" />
       </template>
       <div class="home__capabilities">
         <button
@@ -357,10 +357,6 @@ const overviewLine = computed(() => {
           </div>
         </button>
       </div>
-      <p class="home__hint">
-        助手内置工具共 15 个（任务 8 + 知识库 1 + 日程提醒 5 + 长期记忆 1），另可经 MCP 接入外部工具； 其中删除类操作与
-        MCP 变更类工具只会生成「待确认事项」，必须由你在界面上确认后才会真正生效。
-      </p>
     </el-card>
 
     <el-card shadow="never">
@@ -419,23 +415,7 @@ const overviewLine = computed(() => {
         </PageHeader>
       </template>
 
-      <p class="home__hint home__hint--top">
-        把全部任务、日程、记忆、知识库与对话历史导出为一个 JSON 文件。
-        这是一次性快照，不包含向量索引（可由分块文本重建）。
-      </p>
-
-      <p class="home__hint">
-        导入用于「换机器」或「从备份恢复」：<strong>只支持空库</strong>， 目标库已有数据时会被拒绝（不做覆盖或合并 ——
-        合并策略做错就是静默的数据损坏）。 知识库会按分块文本重建向量，原始文件需要重新上传。
-      </p>
-
-      <el-alert
-        type="info"
-        :closable="false"
-        show-icon
-        title="知识库导出的是分块文本，不含原始文件"
-        description="上传的 PDF / Word / 图片本身不落库（只保留解析出的分块）。分块文本足以重建检索，但原始文件需要重新上传。"
-      />
+      <p class="home__hint home__hint--top">备份不含原始文档；导入仅支持空库。</p>
 
       <el-alert
         v-if="exportError"

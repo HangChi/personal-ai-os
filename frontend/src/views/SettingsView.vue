@@ -10,7 +10,7 @@ import { downloadExport } from '@/api/export'
 import PageHeader from '@/components/PageHeader.vue'
 import McpSettingsPanel from '@/components/settings/McpSettingsPanel.vue'
 import { confirmAction } from '@/lib/confirm-box'
-import { THINKING_HINTS, THINKING_LABELS } from '@/lib/settings'
+import { THINKING_LABELS } from '@/lib/settings'
 import { useAppStore } from '@/stores/app'
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
@@ -20,7 +20,7 @@ const settingsStore = useSettingsStore()
 const uiStore = useUiStore()
 const appStore = useAppStore()
 const { settings } = storeToRefs(settingsStore)
-const { theme, navCollapsed, resolvedTheme } = storeToRefs(uiStore)
+const { theme, navCollapsed } = storeToRefs(uiStore)
 const { health, loading: healthLoading, error: healthError } = storeToRefs(appStore)
 
 type SectionId = 'model' | 'mcp' | 'appearance' | 'chat' | 'calendar' | 'data' | 'about'
@@ -28,23 +28,17 @@ type SectionId = 'model' | 'mcp' | 'appearance' | 'chat' | 'calendar' | 'data' |
 interface NavItem {
   id: SectionId
   label: string
-  hint: string
 }
 
-/**
- * 导航项。
- *
- * <p>`hint` 是右侧的一句话说明：用户不必点进去就知道这一组管什么。
- * 六个标签里「对话」「数据」这类词单看含义太泛，需要一句补充。
- */
+/** 设置分组。 */
 const navItems: NavItem[] = [
-  { id: 'model', label: '模型配置', hint: '供应商、端点、密钥与模型切换' },
-  { id: 'mcp', label: 'MCP', hint: '外部连接与本系统服务' },
-  { id: 'appearance', label: '外观', hint: '主题与侧边栏' },
-  { id: 'chat', label: '对话', hint: '知识库增强、发送方式与思考程度' },
-  { id: 'calendar', label: '日程', hint: '默认提醒时间' },
-  { id: 'data', label: '数据', hint: '导出与重置偏好' },
-  { id: 'about', label: '关于', hint: '后端状态与版本' },
+  { id: 'model', label: '模型配置' },
+  { id: 'mcp', label: 'MCP' },
+  { id: 'appearance', label: '外观' },
+  { id: 'chat', label: '对话' },
+  { id: 'calendar', label: '日程' },
+  { id: 'data', label: '数据' },
+  { id: 'about', label: '关于' },
 ]
 
 const route = useRoute()
@@ -98,7 +92,7 @@ async function handleReset(): Promise<void> {
   const ok = await confirmAction({
     title: '重置全部偏好',
     message:
-      '将清除全部本地偏好（主题、侧栏、各页视图模式、会话级知识库开关等），并恢复默认值。不影响任何业务数据，也不影响模型配置（它存在服务端）。',
+      '将清除全部本地偏好（主题、侧栏、各页视图模式、会话级知识库开关等），并恢复默认值。业务数据和模型配置不受影响。',
     confirmText: '重置',
   })
   if (!ok) {
@@ -110,11 +104,7 @@ async function handleReset(): Promise<void> {
 
 <template>
   <div class="settings">
-    <PageHeader
-      size="page"
-      title="设置"
-      description="模型配置存在服务端数据库里、跨设备一致；其余偏好只保存在此浏览器（localStorage），换设备不会同步。"
-    />
+    <PageHeader size="page" title="设置" />
 
     <div class="settings__layout">
       <!-- 左侧子导航 -->
@@ -136,7 +126,6 @@ async function handleReset(): Promise<void> {
       <section class="settings__panel">
         <header class="settings__panel-head">
           <h2 class="settings__panel-title">{{ activeItem.label }}</h2>
-          <p class="settings__panel-hint">{{ activeItem.hint }}</p>
         </header>
 
         <!-- 模型配置 -->
@@ -149,9 +138,6 @@ async function handleReset(): Promise<void> {
           <div class="settings__row">
             <div class="settings__row-text">
               <span class="settings__row-label">主题</span>
-              <span class="settings__row-hint">
-                当前：{{ resolvedTheme === 'dark' ? '深色' : '浅色' }}；「跟随系统」会随操作系统的深浅色自动切换
-              </span>
             </div>
             <el-radio-group v-model="theme">
               <el-radio-button v-for="option in themeOptions" :key="option.value" :value="option.value">
@@ -162,7 +148,6 @@ async function handleReset(): Promise<void> {
           <div class="settings__row">
             <div class="settings__row-text">
               <span class="settings__row-label">收起侧边栏</span>
-              <span class="settings__row-hint">折叠为纯图标模式，随时可展开</span>
             </div>
             <el-switch v-model="navCollapsed" />
           </div>
@@ -173,14 +158,12 @@ async function handleReset(): Promise<void> {
           <div class="settings__row">
             <div class="settings__row-text">
               <span class="settings__row-label">新会话默认开启知识库增强</span>
-              <span class="settings__row-hint"> 开启后每条消息先检索知识库，回答带 [n] 引用；单个会话可随时覆盖 </span>
             </div>
             <el-switch v-model="settings.knowledgeDefaultOn" />
           </div>
           <div class="settings__row">
             <div class="settings__row-text">
               <span class="settings__row-label">默认检索条数</span>
-              <span class="settings__row-hint">每轮送入模型的片段数，1~20</span>
             </div>
             <el-input-number v-model="settings.knowledgeTopK" :min="1" :max="20" />
           </div>
@@ -194,9 +177,6 @@ async function handleReset(): Promise<void> {
           <div class="settings__row">
             <div class="settings__row-text">
               <span class="settings__row-label">默认思考程度</span>
-              <span class="settings__row-hint">
-                {{ THINKING_HINTS[settings.thinkingLevel] }}；输入框上可随时临时切换
-              </span>
             </div>
             <el-radio-group v-model="settings.thinkingLevel">
               <el-radio-button v-for="level in thinkingLevels" :key="level" :value="level">
@@ -211,7 +191,6 @@ async function handleReset(): Promise<void> {
           <div class="settings__row">
             <div class="settings__row-text">
               <span class="settings__row-label">默认提前提醒</span>
-              <span class="settings__row-hint">新建日程时「提前 N 分钟提醒」的默认值</span>
             </div>
             <div class="settings__inline">
               <el-input-number v-model="settings.reminderLead" :min="0" :max="10080" :step="5" />
@@ -225,7 +204,7 @@ async function handleReset(): Promise<void> {
           <div class="settings__row">
             <div class="settings__row-text">
               <span class="settings__row-label">导出数据</span>
-              <span class="settings__row-hint"> 全部任务、日程、记忆、知识库与对话历史导出为一个 JSON 文件 </span>
+              <span class="settings__row-hint"> 任务、日程、记忆、知识库与对话历史（JSON） </span>
             </div>
             <el-button :loading="exporting" @click="handleExport">
               <el-icon><Download /></el-icon>
@@ -368,12 +347,6 @@ async function handleReset(): Promise<void> {
   font-size: var(--os-font-lg);
   font-weight: 600;
   color: var(--el-text-color-primary);
-}
-
-.settings__panel-hint {
-  margin: var(--os-space-1) 0 0;
-  font-size: var(--os-font-xs);
-  color: var(--el-text-color-secondary);
 }
 
 .settings__row {

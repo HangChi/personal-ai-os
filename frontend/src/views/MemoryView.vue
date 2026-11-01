@@ -123,11 +123,7 @@ function formatTime(value: string): string {
 
 <template>
   <div class="memory-page">
-    <PageHeader
-      size="page"
-      title="长期记忆"
-      description="这里的内容会注入每一次对话（最多 30 条）。设为常驻的条目无条件注入且优先占预算，其余按与本轮问题的相关度排序后依次填入。"
-    >
+    <PageHeader size="page" title="长期记忆">
       <el-button type="primary" @click="openCreate">
         <el-icon><Plus /></el-icon>
         新增记忆
@@ -160,9 +156,6 @@ function formatTime(value: string): string {
           :description="memoryKeyword ? '没有匹配的记忆' : '还没有长期记忆'"
           :image-size="70"
         >
-          <p v-if="!memoryKeyword" class="memory__empty-tip">
-            在对话里说「记住：我偏好先看结论，再看细节」，也会出现在这里。
-          </p>
         </el-empty>
 
         <ul v-else class="memory__list">
@@ -274,12 +267,6 @@ function formatTime(value: string): string {
 
 .memory__content {
   min-height: 120px;
-}
-
-.memory__empty-tip {
-  margin-top: var(--os-space-2);
-  font-size: var(--os-font-xs);
-  color: var(--el-text-color-secondary);
 }
 
 .memory__list {

@@ -32,7 +32,7 @@ async function handleSearch(): Promise<void> {
 <template>
   <el-card shadow="never">
     <template #header>
-      <PageHeader title="检索" description="不经过模型，直接看检索到了什么" />
+      <PageHeader title="检索" />
     </template>
 
     <div class="ks__query">

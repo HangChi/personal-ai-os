@@ -136,13 +136,8 @@ function blockedReason(id: string): string | null {
 <template>
   <section class="model-profiles">
     <header class="model-profiles__head">
-      <div>
-        <p class="model-profiles__lead">
-          可以并存多套供应商配置，点「启用」即时切换，不用重启。当前生效的那套同时用于对话、工具调用与知识库问答。
-        </p>
-      </div>
       <div class="model-profiles__head-actions">
-        <el-tooltip content="用当前生效的配置真发一次最小请求" placement="top">
+        <el-tooltip content="测试当前配置" placement="top">
           <el-button :loading="testing" :disabled="store.isEmpty" @click="handleTest">
             <el-icon><VideoPlay /></el-icon>
             测试连通性
@@ -186,9 +181,6 @@ function blockedReason(id: string): string | null {
     <!-- 空态：引导从预设库加第一套 -->
     <div v-else-if="store.isEmpty && !store.loadError" class="model-profiles__empty">
       <p class="model-profiles__empty-title">还没有任何模型配置</p>
-      <p class="model-profiles__empty-hint">
-        从下面选一个供应商，填上你的 API Key 就能开始用。也可以先用环境变量里的配置。
-      </p>
       <ProviderPresetPicker @pick="handlePickPreset" />
     </div>
 
@@ -220,11 +212,6 @@ function blockedReason(id: string): string | null {
           <ProviderPresetPicker @pick="handlePickPreset" />
         </el-collapse-item>
       </el-collapse>
-
-      <p class="model-profiles__foot">
-        提示：配置里留空的项（端点 / 模型 / 密钥）会回落到 .env 中的同名变量，
-        因此可以只填想覆盖的那几项。删除当前生效的配置前需要先切换到别的配置。
-      </p>
     </template>
 
     <ModelProfileDialog
@@ -250,14 +237,6 @@ function blockedReason(id: string): string | null {
   justify-content: space-between;
   gap: var(--os-space-4);
   flex-wrap: wrap;
-}
-
-.model-profiles__lead {
-  margin: 0;
-  max-width: 72ch;
-  font-size: var(--os-font-xs);
-  line-height: 1.6;
-  color: var(--el-text-color-secondary);
 }
 
 .model-profiles__head-actions {
@@ -299,13 +278,6 @@ function blockedReason(id: string): string | null {
   color: var(--el-text-color-primary);
 }
 
-.model-profiles__empty-hint {
-  margin: 0;
-  font-size: var(--os-font-xs);
-  line-height: 1.6;
-  color: var(--el-text-color-secondary);
-}
-
 /*
  * 单列而非多列栅格。
  *
@@ -332,12 +304,5 @@ function blockedReason(id: string): string | null {
   gap: var(--os-space-2);
   font-size: var(--os-font-sm);
   color: var(--el-text-color-regular);
-}
-
-.model-profiles__foot {
-  margin: 0;
-  font-size: var(--os-font-xs);
-  line-height: 1.6;
-  color: var(--el-text-color-placeholder);
 }
 </style>

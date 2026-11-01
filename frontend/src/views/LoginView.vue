@@ -66,7 +66,6 @@ async function submit(): Promise<void> {
       </div>
 
       <h1 class="login__heading">登录</h1>
-      <p class="login__hint">这个实例已开启访问控制，请先登录后继续。</p>
 
       <el-form label-position="top" size="large" @submit.prevent="submit">
         <el-form-item label="用户名">
@@ -96,8 +95,6 @@ async function submit(): Promise<void> {
              两者并存会一次点击发两次登录请求（审查 P2） -->
         <el-button class="login__submit" type="primary" :loading="loading" native-type="submit"> 登录 </el-button>
       </el-form>
-
-      <p class="login__footnote">本地单用户实例 · 凭据只保存在本机</p>
     </el-card>
   </div>
 </template>
@@ -205,13 +202,6 @@ async function submit(): Promise<void> {
   letter-spacing: -0.2px;
 }
 
-.login__hint {
-  margin: var(--os-space-2) 0 var(--os-space-5);
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-sm);
-  line-height: 1.6;
-}
-
 .login__error {
   margin-bottom: var(--os-space-3);
 }
@@ -221,14 +211,5 @@ async function submit(): Promise<void> {
   height: 42px;
   margin-top: var(--os-space-2);
   font-size: var(--os-font-md);
-}
-
-.login__footnote {
-  margin: var(--os-space-5) 0 0;
-  padding-top: var(--os-space-4);
-  border-top: 1px solid var(--el-border-color-lighter);
-  color: var(--el-text-color-placeholder);
-  font-size: var(--os-font-xs);
-  text-align: center;
 }
 </style>

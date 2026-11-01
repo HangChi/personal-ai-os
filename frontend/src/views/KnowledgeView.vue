@@ -21,11 +21,7 @@ const { knowledgeTab } = storeToRefs(uiStore)
 
 <template>
   <div class="knowledge">
-    <PageHeader
-      size="page"
-      title="知识库"
-      description="上传文档建立向量索引；检索与问答都基于同一批分块，回答会标注引用来源。"
-    />
+    <PageHeader size="page" title="知识库" />
 
     <el-tabs v-model="knowledgeTab" class="knowledge__tabs">
       <el-tab-pane label="文档" name="documents">

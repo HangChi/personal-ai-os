@@ -211,11 +211,7 @@ function onDrop(event: DragEvent): void {
         <el-button type="primary" :loading="uploading" @click="handleUpload">上传并建立索引</el-button>
       </div>
 
-      <p class="kd__hint">
-        支持 .md / .markdown / .txt（需 UTF-8）、.pdf（文本层，扫描件需 OCR 暂不支持）、 .docx（段落与表格）、以及 .png
-        / .jpg / .jpeg / .webp / .gif（需配置可用的视觉模型）。 单文件不超过 5
-        MiB；上传会触发解析、分块与向量化，时长取决于文档大小。
-      </p>
+      <p class="kd__hint">单文件最大 5 MiB；扫描版 PDF 暂不支持。</p>
     </el-card>
 
     <el-alert v-if="error" type="error" :closable="false" show-icon :title="error" />

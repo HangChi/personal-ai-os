@@ -135,11 +135,7 @@ function labelX(index: number): number {
 
 <template>
   <div class="usage">
-    <PageHeader
-      size="page"
-      title="用量"
-      description="按天汇总模型 token 消耗。数字来自上游返回的真实 usage，取不到时按字符估算并标注。"
-    >
+    <PageHeader size="page" title="用量">
       <el-radio-group :model-value="days" size="small" @change="handleRangeChange">
         <el-radio-button v-for="option in RANGE_OPTIONS" :key="option.value" :value="option.value">
           {{ option.label }}
@@ -154,10 +150,7 @@ function labelX(index: number): number {
     <template v-else>
       <el-skeleton v-if="loading && !stats" :rows="4" animated />
 
-      <el-empty
-        v-else-if="stats && !stats.hasData"
-        :description="`最近 ${days} 天还没有用量记录 —— 去对话页聊几轮就会出现在这里`"
-      />
+      <el-empty v-else-if="stats && !stats.hasData" :description="`最近 ${days} 天暂无用量记录`" />
 
       <template v-else-if="stats">
         <!-- 估算说明放在最上面：用户第一眼就该知道手上的数字能不能对账 -->
@@ -167,7 +160,7 @@ function labelX(index: number): number {
           :closable="false"
           show-icon
           title="部分数字为估算值"
-          :description="`共 ${formatTokens(stats.estimatedTokens)} token（占 ${estimatedShare}%）来自按字符折算的估算，非上游计费口径。通常因为当前模型不返回 usage。`"
+          :description="`共 ${formatTokens(stats.estimatedTokens)} token（${estimatedShare}%）为估算，不代表实际计费用量。`"
         />
 
         <div class="usage__stats">
@@ -179,12 +172,10 @@ function labelX(index: number): number {
           <el-card class="usage__stat" shadow="never">
             <div class="usage__stat-label">输入</div>
             <div class="usage__stat-value">{{ formatTokens(stats.totalPrompt) }}</div>
-            <div class="usage__stat-hint">送入模型的上下文</div>
           </el-card>
           <el-card class="usage__stat" shadow="never">
             <div class="usage__stat-label">输出</div>
             <div class="usage__stat-value">{{ formatTokens(stats.totalCompletion) }}</div>
-            <div class="usage__stat-hint">模型生成（含思考）</div>
           </el-card>
           <el-card class="usage__stat" shadow="never">
             <div class="usage__stat-label">日均</div>
@@ -194,7 +185,6 @@ function labelX(index: number): number {
           <el-card class="usage__stat" shadow="never">
             <div class="usage__stat-label">每轮平均</div>
             <div class="usage__stat-value">{{ formatTokens(averagePerTurn) }}</div>
-            <div class="usage__stat-hint">单轮上下文 + 生成</div>
           </el-card>
         </div>
 

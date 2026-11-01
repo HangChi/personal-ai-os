@@ -31,26 +31,21 @@ const emit = defineEmits<{ (e: 'enable'): void }>()
       <template v-if="permission === 'granted'">
         <!-- 已授权时折叠为一行小条：不再占半屏（T032） -->
         <el-tag size="small" type="success" effect="plain">通知已开启</el-tag>
-        <span class="cal-notify__compact">{{
-          pushSubscribed
-            ? '后台推送已订阅，关闭页面后也可提醒（后端和浏览器需正常运行）'
-            : '切到其他功能页也能收到提醒；关闭页面后的提醒需要订阅后台推送'
-        }}</span>
+        <span class="cal-notify__compact">{{ pushSubscribed ? '后台推送已订阅' : '页面关闭后停止提醒' }}</span>
       </template>
       <template v-else-if="permission === 'default'">
         <el-tag size="small" type="info" effect="plain">通知未开启</el-tag>
-        <span>开启后即使切到别的页面也能收到提醒。</span>
         <el-button size="small" type="primary" :loading="requesting" @click="emit('enable')">
           开启浏览器通知
         </el-button>
       </template>
       <template v-else-if="permission === 'denied'">
         <el-tag size="small" type="warning" effect="plain">通知被阻止</el-tag>
-        <span>提醒只会在本页显示。恢复方法：点地址栏左侧的站点图标 → 通知 → 允许，然后刷新页面。</span>
+        <span>请在浏览器站点设置中允许通知。</span>
       </template>
       <template v-else>
         <el-tag size="small" type="info" effect="plain">不支持通知</el-tag>
-        <span>当前浏览器不支持系统通知，提醒只会在本页显示。</span>
+        <span>提醒仅在页面内显示。</span>
       </template>
     </div>
     <div v-if="pushEnabled && supportsPush()" class="cal-notify__row">
@@ -58,7 +53,6 @@ const emit = defineEmits<{ (e: 'enable'): void }>()
         订阅后台推送
       </el-button>
       <el-button v-else size="small" :loading="pushBusy" @click="unsubscribePush">取消后台推送</el-button>
-      <span>由浏览器推送服务送达，无需一直打开页面。</span>
     </div>
     <p v-if="pushError" role="status">{{ pushError }}</p>
   </el-card>

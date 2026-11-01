@@ -191,11 +191,7 @@ function switchView(next: 'table' | 'board'): void {
 
 <template>
   <div class="tasks">
-    <PageHeader
-      size="page"
-      title="任务"
-      description="表格与看板两种视图，数据同一份；也可以在对话里用自然语言增删改。"
-    />
+    <PageHeader size="page" title="任务" />
 
     <TaskCreateForm
       ref="createForm"

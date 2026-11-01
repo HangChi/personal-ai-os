@@ -32,7 +32,7 @@ async function handleAsk(): Promise<void> {
 <template>
   <el-card shadow="never">
     <template #header>
-      <PageHeader title="问答" description="基于知识库生成回答，附带引用来源" />
+      <PageHeader title="问答" />
     </template>
 
     <div class="ka__query">

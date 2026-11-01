@@ -16,7 +16,6 @@ const emit = defineEmits<{ (e: 'pick', suggestion: string): void }>()
   <div class="chat-welcome">
     <span class="chat-welcome__badge">AI</span>
     <h2 class="chat-welcome__title">有什么可以帮你？</h2>
-    <p class="chat-welcome__hint">可以让我记任务、查知识库、安排日程，或者只是聊聊。</p>
     <!--
       双列网格而不是一排 flex-wrap：原来几条建议挤在中间一小撮，
       左右各空一大片。网格把可用宽度用起来，每条建议也更容易点中。
@@ -76,13 +75,6 @@ const emit = defineEmits<{ (e: 'pick', suggestion: string): void }>()
   font-size: var(--os-font-lg);
   font-weight: 500;
   color: var(--el-text-color-primary);
-}
-
-.chat-welcome__hint {
-  margin: var(--os-space-2) 0 0;
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
-  line-height: 1.6;
 }
 
 /*

@@ -229,7 +229,7 @@ async function acknowledgeAll(): Promise<void> {
 
 <template>
   <div class="calendar">
-    <PageHeader size="page" title="日程" description="支持重复规则与到点提醒；月视图里点格子空白处可快速新建。" />
+    <PageHeader size="page" title="日程" />
 
     <CalendarNotifyBanner
       :permission="notificationPermission"
