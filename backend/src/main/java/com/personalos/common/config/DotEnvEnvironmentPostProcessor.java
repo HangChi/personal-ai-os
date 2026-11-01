@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.SystemEnvironmentPropertySource;
 
 /**
  * 从项目根目录的 {@code .env} 读入变量，作为 Spring 的 lowest-priority 属性源。
@@ -32,7 +32,7 @@ import org.springframework.core.env.MapPropertySource;
  * 「密钥真丢了」还是「环境变量根本没被读到」。
  *
  * <h2>为什么是「最低优先级」而不是覆盖</h2>
- * 用 {@link MapPropertySource} 追加到 {@code propertySources} 的**末尾**，
+ * 用 {@link SystemEnvironmentPropertySource} 追加到 {@code propertySources} 的**末尾**，
  * 于是命令行参数、系统环境变量、{@code application.yml} 都仍然可以覆盖它。
  * 这符合「{@code .env} 是开发期默认值、不是最终真相」的定位：
  * <pre>
@@ -56,7 +56,8 @@ public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor 
     private static final Logger log = LoggerFactory.getLogger(DotEnvEnvironmentPostProcessor.class);
 
     /** 属性源名字，便于在 {@code /actuator/env} 里辨认 */
-    private static final String SOURCE_NAME = "dotenv";
+    // Spring Boot 只对这个后缀启用环境变量的 map 枚举与 relaxed binding。
+    private static final String SOURCE_NAME = "dotenv-systemEnvironment";
 
     /** 从当前工作目录往上找的层数上限（mvn 在 backend/ 下跑，.env 在上一层） */
     private static final int MAX_PARENT_LOOKUPS = 3;
@@ -88,7 +89,9 @@ public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor 
         if (values.isEmpty()) {
             return;
         }
-        environment.getPropertySources().addLast(new MapPropertySource(SOURCE_NAME, values));
+        // 保留环境变量的 relaxed binding：MCP_SERVERS_* 等动态 map 配置没有 YAML 占位符。
+        // 普通 MapPropertySource 只能解析 ${MCP_ENABLED}，无法绑定 mcp.enabled 与 servers。
+        environment.getPropertySources().addLast(new SystemEnvironmentPropertySource(SOURCE_NAME, values));
         log.info("已加载 {} 中的 {} 个变量（最低优先级，可被系统环境变量覆盖）",
                 dotEnv.toAbsolutePath().normalize(), values.size());
     }

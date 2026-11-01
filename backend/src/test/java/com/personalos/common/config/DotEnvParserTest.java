@@ -2,10 +2,12 @@ package com.personalos.common.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * {@link DotEnvEnvironmentPostProcessor#parse(List)} 的单元测试。
@@ -16,6 +18,31 @@ import org.junit.jupiter.api.Test;
  */
 @DisplayName(".env 解析")
 class DotEnvParserTest {
+
+    @Test
+    void bindsMcpEnvironmentVariablesFromDotEnv(@TempDir Path dir) throws Exception {
+        java.nio.file.Files.writeString(dir.resolve(".env"), """
+                MCP_ENABLED=true
+                MCP_SERVERS_FETCH_COMMAND=uvx
+                MCP_SERVERS_FETCH_ARGS=mcp-server-fetch
+                MCP_SERVERS_FETCH_AUTO_TOOLS=fetch
+                MCP_SERVERS_FETCH_CONNECT_TIMEOUT=30s
+                """);
+        var env = new org.springframework.core.env.StandardEnvironment();
+        env.getPropertySources().remove("systemEnvironment");
+        env.getPropertySources().addFirst(new org.springframework.core.env.MapPropertySource("test",
+                Map.of("app.dotenv.enabled", true)));
+        new DotEnvEnvironmentPostProcessor(dir).postProcessEnvironment(env, null);
+        var properties = org.springframework.boot.context.properties.bind.Binder.get(env)
+                .bind("mcp", com.personalos.mcp.config.McpProperties.class).get();
+        assertThat(properties.enabled()).isTrue();
+        assertThat(properties.servers()).containsKey("fetch");
+        var fetch = properties.servers().get("fetch");
+        assertThat(fetch.command()).isEqualTo("uvx");
+        assertThat(fetch.args()).containsExactly("mcp-server-fetch");
+        assertThat(fetch.autoTools()).containsExactly("fetch");
+        assertThat(fetch.connectTimeout()).isEqualTo(java.time.Duration.ofSeconds(30));
+    }
 
     @Test
     @DisplayName("基本键值对与空行注释混排")
@@ -123,7 +150,7 @@ class DotEnvParserTest {
         env.getPropertySources().addFirst(new org.springframework.core.env.MapPropertySource("test",
                 Map.of("app.dotenv.enabled", false)));
         new DotEnvEnvironmentPostProcessor(dir).postProcessEnvironment(env, null);
-        assertThat(env.getPropertySources().contains("dotenv")).isFalse();
+        assertThat(env.getPropertySources().contains("dotenv-systemEnvironment")).isFalse();
         assertThat(env.getProperty("PRIVATE_TEST_KEY")).isNull();
     }
 
@@ -135,7 +162,7 @@ class DotEnvParserTest {
         env.getPropertySources().addFirst(new org.springframework.core.env.MapPropertySource("test",
                 Map.of("app.dotenv.enabled", true, "LOCAL_TEST_KEY", "override")));
         new DotEnvEnvironmentPostProcessor(child).postProcessEnvironment(env, null);
-        assertThat(env.getPropertySources().get("dotenv").getProperty("LOCAL_TEST_KEY")).isEqualTo("from-file");
+        assertThat(env.getPropertySources().get("dotenv-systemEnvironment").getProperty("LOCAL_TEST_KEY")).isEqualTo("from-file");
         assertThat(env.getProperty("LOCAL_TEST_KEY")).isEqualTo("override");
         new DotEnvEnvironmentPostProcessor(dir.resolve("missing/deep/directory/more"))
                 .postProcessEnvironment(new org.springframework.core.env.StandardEnvironment(), null);
