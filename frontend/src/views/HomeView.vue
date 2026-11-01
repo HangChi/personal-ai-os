@@ -254,7 +254,7 @@ const capabilities = [
   {
     route: '/activity',
     icon: DataLine,
-    title: '活动',
+    title: '活动与 MCP',
     description: '查看助手调用过哪些工具、每个 MCP server 当前是否连上',
   },
 ]

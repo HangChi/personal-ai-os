@@ -53,7 +53,7 @@ const router = createRouter({
       path: '/activity',
       name: 'activity',
       component: () => import('@/views/ActivityView.vue'),
-      meta: { title: '活动' },
+      meta: { title: '活动与 MCP' },
     },
     {
       path: '/usage',

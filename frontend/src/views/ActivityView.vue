@@ -98,7 +98,7 @@ async function handleReconnect(name: string): Promise<void> {
   reconnectingServer.value = name
   try {
     await store.reconnectServer(name)
-    ElMessage.success(`${name} 已完成重连检查`)
+    ElMessage.success(`${name} 已连接`)
   } catch (cause) {
     ElMessage.error(cause instanceof Error ? cause.message : 'MCP server 重连失败')
   } finally {
@@ -134,7 +134,7 @@ function handleOutcome(value: string): void {
   <div class="activity">
     <PageHeader
       size="page"
-      title="活动"
+      title="活动与 MCP"
       description="助手调用过哪些工具、每个 MCP server 当前是否连上 —— 审计与接入状态都在这一页。"
     />
 
@@ -274,6 +274,7 @@ function handleOutcome(value: string): void {
                 link
                 type="primary"
                 :loading="reconnectingServer === row.name"
+                :disabled="reconnectingServer !== null"
                 @click="handleReconnect(row.name)"
               >
                 重连
@@ -281,6 +282,9 @@ function handleOutcome(value: string): void {
             </template>
           </el-table-column>
         </el-table>
+        <p v-if="mcp.enabled" class="activity__muted">
+          可在此查看连接状态并重连；新增、删除或修改连接，请编辑项目根目录 .env 并重启后端。
+        </p>
       </template>
     </el-card>
 

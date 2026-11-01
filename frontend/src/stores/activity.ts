@@ -95,6 +95,9 @@ export const useActivityStore = defineStore('activity', () => {
   async function reconnectServer(name: string): Promise<void> {
     await reconnectMcpServer(name)
     await loadMcp()
+    if (mcpError.value) throw new Error(mcpError.value)
+    const server = mcp.value?.servers.find((item) => item.name === name)
+    if (!server?.available) throw new Error(server?.failureReason || `${name} 尚未连接`)
   }
 
   return {

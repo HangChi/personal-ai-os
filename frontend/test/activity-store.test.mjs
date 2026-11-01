@@ -1,4 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
+import { rejects } from 'node:assert/strict'
 
 import { eq } from './assert.mjs'
 import { handlers } from './stub-api.mjs'
@@ -143,4 +144,35 @@ function invocation(id, outcome = 'SUCCESS') {
   eq('mcpError 有值', store.mcpError, '502 Bad Gateway')
   eq('审计 error 不受影响', store.error, null)
   eq('mcpLoading 复位', store.mcpLoading, false)
+}
+
+// HTTP 200 只表示重连请求处理完成；工具服务仍不可用时必须反馈失败。
+{
+  handlers.set('/mcp/servers/fetch/reconnect', () => Promise.resolve(null))
+  handlers.set('/mcp/servers', () => Promise.resolve({
+    enabled: true,
+    servers: [{ name: 'fetch', available: false, failureReason: '连接超时', toolCount: 0, autoTools: [] }],
+  }))
+  freshStore()
+  const store = useActivityStore()
+  await rejects(() => store.reconnectServer('fetch'), /连接超时/)
+  eq('重连失败保留真实状态', store.mcp.servers[0].available, false)
+}
+
+{
+  handlers.set('/mcp/servers', () => Promise.resolve({
+    enabled: true,
+    servers: [{ name: 'fetch', available: true, failureReason: null, toolCount: 1, autoTools: ['fetch'] }],
+  }))
+  freshStore()
+  const store = useActivityStore()
+  await store.reconnectServer('fetch')
+  eq('重连成功刷新工具状态', store.mcp.servers[0].toolCount, 1)
+}
+
+{
+  handlers.set('/mcp/servers', () => Promise.reject(new Error('状态查询失败')))
+  freshStore()
+  const store = useActivityStore()
+  await rejects(() => store.reconnectServer('fetch'), /状态查询失败/)
 }
