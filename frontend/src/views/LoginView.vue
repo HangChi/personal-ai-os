@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import AppLogo from '@/components/AppLogo.vue'
 import { useAuthStore } from '@/stores/auth'
 
 /**
@@ -58,7 +59,7 @@ async function submit(): Promise<void> {
     <el-card class="login__card" shadow="always">
       <!-- 品牌区（阶段 18，T038）：与全站令牌一致的 Logo + 名称 + 一句定位 -->
       <div class="login__brand">
-        <span class="login__logo">AI</span>
+        <AppLogo class="login__logo" :size="42" />
         <div class="login__brand-text">
           <span class="login__title">Personal AI OS</span>
           <span class="login__tagline">对话 · 任务 · 知识库 · 日程 · 记忆</span>
@@ -163,17 +164,6 @@ async function submit(): Promise<void> {
 }
 
 .login__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: var(--os-radius-lg);
-  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-dark-2) 100%);
-  box-shadow: 0 2px 8px 0 rgb(79 70 229 / 32%);
-  color: #fff;
-  font-size: var(--os-font-md);
-  font-weight: 700;
   flex: none;
 }
 
