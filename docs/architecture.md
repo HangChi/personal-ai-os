@@ -15,7 +15,8 @@ Personal AI OS 是一个开源、自托管、可扩展的**个人智能操作系
 6. 通过 MCP 扩展外部工具
 7. 未来扩展 Coding Agent、资讯 Agent 等独立模块
 
-**范围边界**：第一版仅**本地单用户**，不含多租户、支付与复杂权限。若需对公网开放，必须先完成身份认证设计。
+**范围边界**：系统仍是**单用户、自托管**，不含多租户、支付与复杂权限。公网入口由独立生产 Compose
+提供认证、CSRF、HTTPS 和内部网络隔离；这不改变单用户模型。
 
 ## 2. 总体结构
 
@@ -80,7 +81,7 @@ controller  →  service  →  repository  →  database
 1. **模型不得直接访问数据库、文件系统或执行任意代码。** 所有副作用必须经由 `agent` 模块暴露的、参数类型明确的 Java 接口。
 2. **破坏性操作必须有人工确认环节。** 例如删除任务、覆盖知识文档，应由前端确认后再执行，而不是模型「说到就做到」。
 3. **密钥只经环境变量注入**，仓库中只保留 `.env.example`。
-4. 对公网开放之前，必须先设计身份认证。
+4. 公网部署必须使用生产 Compose，启用认证、CSRF 和 HTTPS；本地 Compose 只绑定回环地址。
 
 ## 5. 数据与迁移
 
@@ -107,7 +108,8 @@ controller  →  service  →  repository  →  database
 
 - 开发期：Vite 把 `/api` 代理到 `http://localhost:8080`，因此**无需 CORS 配置**，前端代码也不感知后端地址。
 - 前端所有请求经 `src/api/http.ts` 的统一 Axios 实例；`code != 0` 会被转成 rejected Promise。
-- 生产期：由反向代理把静态产物与 `/api` 收敛到同一来源。
+- 生产期：Caddy 只发布 80/443，把 `/api/*` 转发到内部 backend，把其他路径转发到 frontend；
+  PostgreSQL、backend、frontend 不发布宿主机端口。
 
 ## 8. 技术栈与版本
 

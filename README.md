@@ -4,8 +4,8 @@
 
 用自然语言和个人 AI 助手交互，让它帮你管理任务、检索自己的知识库、安排日程与提醒——全部跑在你自己的机器上。
 
-> **当前状态**：功能开发到阶段 26（侧栏拖拽调宽），之后做了一轮工程质量加固
-> （P0 缺陷修复、可观测性、可维护性重构、无障碍、部署产物）。
+> **当前状态**：功能开发到阶段 26（侧栏拖拽调宽），之后完成运行可靠性优化与生产安全加固
+> （数据备份、保留策略、流式导出、Web Push、模型密钥加密、CSRF、HTTPS 部署入口和本地端口隔离）。
 > 五个内置模块可用：对话、任务、知识库、日程与提醒、长期记忆；助手内置 15 个工具，
 > 并可经 MCP 接入外部工具 server（只读直行 / 变更类需人工确认）。
 > 「活动」页可查助手调用过哪些工具、以及每个 MCP server 当前是否连上。
@@ -21,7 +21,7 @@
 7. 未来扩展 Coding Agent、资讯 Agent 等独立模块
 
 **明确不做**（第一版）：多租户 SaaS、支付系统、复杂权限管理。
-第一版只支持**本地单用户**；若需对公网开放，必须先完成身份认证设计。
+系统仍是**单用户、自托管**模型；需要公网访问时使用已提供的生产 Compose、认证、CSRF 和 HTTPS 配置。
 
 ## 技术栈
 
@@ -79,6 +79,14 @@ personal-ai-os/
 ├── .env.example                环境变量模板
 └── LICENSE                     Apache-2.0
 ```
+
+常用文档入口：
+
+- [本地开发指南](docs/development.md)：启动、测试、环境变量和数据库迁移。
+- [运维手册](docs/operations.md)：生产部署、备份恢复、保留策略、Web Push 和指标。
+- [接口清单](docs/api.md)：HTTP、SSE、认证和 CSRF 约定。
+- [安全策略](SECURITY.md)：公网部署前的强制检查与威胁边界。
+- [架构说明](docs/architecture.md)：模块边界、数据流和部署拓扑。
 
 ## 快速开始
 
@@ -169,8 +177,12 @@ cd frontend && npm run lint && npm run format:check && npm run type-check \
 | 24 | 聊天气泡重做（助手浅底+边框、用户浅主色，靠色相区分说话人） | ✅ |
 | 25 | 气泡纠错（补「元素底 vs 容器底」与视觉重量的审计口径） | ✅ |
 | 26 | 侧栏拖拽调宽（指针 + 键盘双通道，宽度按视口二次收敛） | ✅ |
+| 27 | 运行可靠性与规模优化（备份、保留策略、流式导出、Web Push、指标、密钥加密） | ✅ |
+| 28 | 生产安全加固（CSRF、Secure Cookie、生产 Compose、HTTPS 反代、内部网络） | ✅ |
 
-> 阶段 21 起是体验优化轮次，`specs/` 目录只有 001–020；21 以后的改动以提交历史为准。
+> 阶段 21 起是体验与工程质量轮次；阶段 27–28 的设计记录分别位于
+> [`specs/023-operational-optimization`](specs/023-operational-optimization) 和
+> [`specs/025-production-security`](specs/025-production-security)。
 
 > 编号 5 空置：原定的「Docker 部署与开源发布」不在当前规划内，暂不实施。
 > 阶段 6 保留既有编号，避免重编号导致 `specs/` 目录、迁移与提交历史错位。
@@ -215,8 +227,8 @@ MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,list_directory,directory_tree
 
 送达分两条通道：页面切到后台且**已授权通知**时弹浏览器通知，页面可见时用站内提示；
 未授权或被阻止时，日程页会明确写出当前状态与恢复方法。
-**限制（已在界面上写明）**：应用完全关闭时收不到 —— 真正的后台送达需要 Service Worker + Web Push，
-不在当前规划内。
+**限制（已在界面上写明）**：后台送达需要显式配置 Service Worker + Web Push；该通道默认关闭，
+启用方法见 [`docs/operations.md`](docs/operations.md) 第 7 节。
 
 ```bash
 AI_CALENDAR_SCAN_ENABLED=true        # 定时扫描开关
@@ -234,8 +246,7 @@ AI_CALENDAR_DEFAULT_LEAD=15m         # 任务提醒的默认提前量（日程�
   后者兜住那些不经过清理的删除路径（典型是任务删除：`task` 模块并不知道提醒的存在）。
 
 > **「到点提醒」的送达方式**：页面轮询 + 浏览器通知。页面在后台且已授权时弹系统通知，
-> 页面可见时用站内提示；**应用完全关闭时收不到**（真后台送达需要 Service Worker + Web Push，
-> 不在当前规划内）。
+> 页面可见时用站内提示；后台送达需要显式启用 Web Push。默认关闭和完整配置见运维手册第 7 节。
 
 ## 知识库配置
 
@@ -313,6 +324,10 @@ AUTH_USERNAME=admin          # 默认 admin
 AUTH_PASSWORD=<你的密码>      # 开启时必填
 ```
 
+公网部署请直接使用 `compose.production.yml`，并将 `AUTH_PASSWORD` 设置为至少 16 字节的唯一密码。
+生产 profile 会强制启用 HTTPS 场景的 Secure Cookie、CSRF 令牌和内部网络隔离；本地 `compose.yml`
+仍默认只绑定 127.0.0.1，方便开发而不会监听所有网卡。
+
 三条与安全直接相关的行为：
 
 - `AUTH_ENABLED=true` 但没配密码 → **应用启动失败**并指出缺哪个变量。
@@ -324,19 +339,11 @@ AUTH_PASSWORD=<你的密码>      # 开启时必填
 **健康检查始终放行**（`/api/v1/health`、`/actuator/health`）：监控探针不该持有凭据，
 否则「服务挂了」与「探针没登录」会混成同一个告警。
 
-### 一个必须说清楚的取舍：CSRF
+### CSRF 与登录保护
 
-本项目**关闭了 CSRF 校验**，改用 `SameSite=Lax` 的会话 cookie。理由：
-
-- 所有写接口都要求 `Content-Type: application/json`，跨站表单无法构造这种请求；
-- 跨站 `fetch` 会先被 CORS 预检拦下（本应用没有开放 CORS）；
-- `SameSite=Lax` 让浏览器在跨站 POST 时**不携带**会话 cookie，这是目前的主要防线。
-
-**残余风险**：同站子域（`evil.example.com` 对 `app.example.com`）不受 SameSite 保护。
-若你的部署环境存在不受信任的同站子域，应启用 CSRF token，而不是维持现状。
-
-另外两条刻意不做的：**不做登录失败次数限制**（公网暴露时应由反向代理的 fail2ban / WAF 承担）、
-**不做「记住我」**（单用户多打一次密码的成本，低于长期 cookie 被盗的代价）。
+本地开发默认关闭 CSRF 以保持 `http://localhost` 的兼容性。生产 profile 会强制开启会话 CSRF：
+前端从 `/api/v1/auth/csrf` 获取令牌，并在所有写请求中发送 `X-CSRF-TOKEN`；缺失或错误令牌返回 403。
+登录失败锁定默认是 5 次 / 60 秒，成功登录会轮换会话并刷新 CSRF 令牌。
 
 ## 数据备份
 

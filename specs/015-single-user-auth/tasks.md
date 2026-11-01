@@ -19,7 +19,7 @@ description: "Task list for 阶段 15 — 单用户认证"
 ## Phase 2: 安全链
 
 - [x] T006 `SecurityConfig`：`SecurityFilterChain`
-      —— 关闭 CSRF（理由见 plan R-02）、`IF_REQUIRED` 会话、关闭 formLogin/httpBasic、
+      —— 阶段 15 默认关闭 CSRF（理由见 plan R-02）、`IF_REQUIRED` 会话、关闭 formLogin/httpBasic、
       放行 `/api/v1/auth/login|me|logout` + `/api/v1/health` + `/actuator/health` + 静态资源
 - [x] T007 `authenticationEntryPoint`：401 + 统一 JSON 信封（不是 302）
 - [x] T008 `PasswordEncoder` Bean（BCrypt）
@@ -57,13 +57,15 @@ description: "Task list for 阶段 15 — 单用户认证"
 
 - [x] T025 真机：`AUTH_ENABLED=true` 启动 → 打开页面被带到登录页 → 登录 → 正常操作 → 登出 → 再被拦截
 - [x] T026 真机：默认配置（关闭）启动 → 不出现登录页、顶栏无用户名、所有功能照常
-- [x] T027 README：新增「开启访问控制」一节，**明确写出关闭 CSRF 的权衡与残余风险**
+- [x] T027 README：新增「开启访问控制」一节，明确写出阶段 15 关闭 CSRF 的权衡与残余风险
 - [x] T028 `.env.example` 加 `AUTH_ENABLED` / `AUTH_USERNAME` / `AUTH_PASSWORD` 说明
 - [x] T029 提交：`docs(auth): 阶段 15 规格` + `feat(auth): 阶段 15 实现`
 
 ## 完成记录
 
 **提交**：`87028fd` feat(auth): 阶段 15 单用户认证（T001-T028）
+
+后续生产 CSRF、Secure Cookie 和生产部署入口见 `specs/025-production-security`，不回写本阶段的历史提交记录。
 
 **测试**
 - 后端 `./mvnw -B verify`：**264** 通过（原 249 + 新增 15），**原有 249 个零改动通过**

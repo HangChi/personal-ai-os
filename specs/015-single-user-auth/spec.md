@@ -1,5 +1,9 @@
 # Feature Specification: 阶段 15 — 单用户认证
 
+> 历史规格说明：本阶段最初为本地兼容性关闭 CSRF；后续生产安全加固已在
+> [`specs/025-production-security`](../025-production-security) 中补上会话 CSRF、Secure Cookie
+> 和生产 fail-closed 校验。以下“关闭 CSRF”的原始决策只描述阶段 15 当时的边界。
+
 **Feature Branch**: `015-single-user-auth`
 
 **Created**: 2026-10-25
@@ -121,7 +125,7 @@ Session Cookie 是这四者里唯一「零新概念」的：浏览器自己管 c
 
 ## Assumptions
 
-- **关闭 CSRF，改用 `SameSite=Lax` 的会话 cookie**。这是本阶段最需要解释的一个取舍：
+- **本地阶段关闭 CSRF，改用 `SameSite=Lax` 的会话 cookie**。这是本阶段最需要解释的一个取舍：
   - CSRF 保护在有 cookie 认证时确实是标准做法，但 Spring Security 6+ 的 SPA 场景需要
     `SpaCsrfTokenRequestHandler` + 前端读 `XSRF-TOKEN` 才能正确工作，否则会出现
     「cookie 里的 token 与校验用的 token 不一致」的隐性 403；
@@ -132,5 +136,5 @@ Session Cookie 是这四者里唯一「零新概念」的：浏览器自己管 c
     若要彻底消除，需要启用 CSRF token 或把应用部署在独立域名的根路径下。
   - **这个权衡必须写进 README**，而不是埋在代码注释里。
 - 不做「记住我」：单用户场景下多打一次密码的成本，低于长期 cookie 被盗的代价。
-- 不做登录失败次数限制：本地/单用户部署下，暴力破解的收益远低于维护限流状态的复杂度。
-  公网暴露时应由反向代理（fail2ban / WAF）承担。
+- 登录失败锁定不属于本阶段原始范围；后续实现默认为连续 5 次失败锁定 60 秒，生产部署仍应配合
+  HTTPS、反向代理和网络层限流。

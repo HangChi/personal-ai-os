@@ -25,6 +25,7 @@ docker compose exec postgres psql -U personalos -d personal_ai_os -c '\dx'
 ```
 
 > **端口说明**：默认把容器内 5432 映射到宿主机的 **55432**，以避开本机常见的 5432/5433 占用。
+> 本地 Compose 现在只绑定 `127.0.0.1`，局域网其他设备默认无法访问这些端口。
 > 如需修改，编辑 `.env` 中的 `POSTGRES_PORT`；本机 5432 空闲时也可以改回 5432。
 
 停止（保留数据）：
@@ -75,6 +76,12 @@ curl -s http://localhost:8080/actuator/health
 | `OPENAI_API_KEY` | （空） | 仅 `AI_CHAT_PROVIDER=openai` 时需要 |
 | `OPENAI_BASE_URL` | https://api.openai.com | 可指向任意 OpenAI 兼容服务 |
 | `OPENAI_CHAT_MODEL` | gpt-4o-mini | 模型名 |
+| `AUTH_ENABLED` | false | 本地认证开关；公网请使用生产 Compose |
+| `APP_SECURITY_CSRF_ENABLED` | false | 本地默认关闭；生产 profile 强制开启 |
+| `TOKEN_USAGE_RETENTION_DAYS` | 0 | 用量保留天数，0 表示永久 |
+| `OPERATION_RECORD_RETENTION_DAYS` | 0 | 操作记录保留天数，0 表示永久 |
+| `WEB_PUSH_ENABLED` | false | 后台推送开关，需同时配置 VAPID 密钥 |
+| `MODEL_KEY_ENCRYPTION_KEY` | （空） | 可选 AES-256-GCM 模型密钥主密钥 |
 
 > `docker compose` 会自动读取根目录 `.env`；如需让后端也读取这些变量，
 > 在 shell 中 `set -a && source .env && set +a` 后再启动，或直接使用默认值（默认值与 `.env.example` 一致）。
@@ -163,6 +170,18 @@ CI（`.github/workflows/ci.yml`）会在每次 push / PR 上把这些加上后�
 本地跑过就不会在 PR 里才发现。
 
 开发期 `/api` 由 Vite 代理到 `http://localhost:8080`（见 `vite.config.ts`），因此不需要配置 CORS。
+
+### 生产配置检查
+
+生产环境不要复用本地 `compose.yml`。复制 `.env.production.example` 后使用：
+
+```bash
+docker compose --env-file .env.production -f compose.production.yml config --quiet
+docker compose --env-file .env.production -f compose.production.yml up -d --build
+```
+
+生产配置要求非默认数据库密码、至少 16 字节登录密码、Secure Cookie 和 CSRF；域名 DNS
+指向服务器后由 Caddy 申请证书。详见 [`operations.md`](operations.md) 和 [`SECURITY.md`](../SECURITY.md)。
 
 ### 前端逻辑测试（零依赖）
 

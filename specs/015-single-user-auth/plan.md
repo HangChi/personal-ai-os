@@ -63,7 +63,7 @@ frontend/test/auth-store.test.mjs 新
 却要带来：token 存哪（localStorage 会被 XSS 读）、怎么撤销（需要黑名单表）、怎么刷新。
 `HttpSession` 过期即失效，登出就是 `invalidate()`，没有额外的表与状态。
 
-### R-02 关闭 CSRF 并用 SameSite=Lax（显式权衡）
+### R-02 阶段 15 关闭 CSRF 并用 SameSite=Lax（显式权衡）
 
 Spring Security 6+ 在 SPA 场景下要正确工作，需要 `SpaCsrfTokenRequestHandler`
 加前端读取 `XSRF-TOKEN` cookie —— 而它们的默认 handler 每次请求都会生成新 token，
@@ -72,8 +72,8 @@ Spring Security 6+ 在 SPA 场景下要正确工作，需要 `SpaCsrfTokenReques
 对当前 API 的实际情况：所有写接口都要求 `Content-Type: application/json`，
 跨站表单无法构造；跨站 `fetch` 先被 CORS 预检拦下；`SameSite=Lax` 让跨站 POST 不带 cookie。
 
-残余风险（同站子域）写在 README，不藏在注释里。若将来要彻底消除，正确的做法是
-启用 CSRF token，而不是维持现状。
+残余风险（同站子域）写在 README，不藏在注释里。后续生产安全加固已采用本节最后建议的
+CSRF token 方案；本阶段文档保留原决策作为历史记录。
 
 ### R-03 默认关闭
 

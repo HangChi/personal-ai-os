@@ -16,7 +16,9 @@
 `code == 0` 为成功；非 0 见 `common/api/ErrorCode.java`。错误响应**不含堆栈、类名或 SQL**。
 
 **认证**：`AUTH_ENABLED=true` 时，除 `health`、`auth/*`、`/error` 外的全部端点都要求
-会话 Cookie。未登录返回 `401` + 统一信封（见 `SecurityConfig`）。
+会话 Cookie。未登录返回 `401` + 统一信封（见 `SecurityConfig`）。生产 profile 还要求
+CSRF 令牌：先 `GET /auth/csrf`，再把返回的 token 放到 `X-CSRF-TOKEN` 请求头；缺失或错误时返回
+`403` + 统一信封。登录成功会轮换会话，客户端必须重新获取令牌。
 
 **请求链路**：任意请求可带 `X-Request-Id`（`[A-Za-z0-9._-]{1,64}`），
 响应会回显；不传则服务端生成。报障时提供它，一条 `grep` 就能定位全部相关日志。
@@ -38,6 +40,7 @@ Agent 每轮预算、错误码 `50203` 与追踪字段见 [执行边界说明](a
 | POST | `/auth/login` | 登录，成功后下发会话 Cookie |
 | POST | `/auth/logout` | 登出并作废当前会话 |
 | GET | `/auth/me` | 当前用户；**未登录也返回 200**（`data: null`），便于前端静默探测 |
+| GET | `/auth/csrf` | 返回当前会话的 CSRF token 和请求头名称；生产写请求前调用 |
 
 ## 对话
 
@@ -109,6 +112,14 @@ Header: Idempotency-Key?   ← 同一键重试时，模型重复发出的工具�
 | POST | `/reminders/{id}/read` | 标记已读 |
 | POST | `/reminders/scan` | 手动触发一次扫描（调试用；定时扫描同一入口） |
 
+### 后台推送
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/reminders/push` | 读取 Web Push 是否启用及公开 VAPID key |
+| POST | `/reminders/push/subscriptions` | 保存当前浏览器订阅 |
+| DELETE | `/reminders/push/subscriptions` | 删除当前浏览器订阅 |
+
 ## 知识库
 
 | 方法 | 路径 | 说明 |
@@ -155,6 +166,7 @@ Header: Idempotency-Key?   ← 同一键重试时，模型重复发出的工具�
 |---|---|---|
 | 400 / `40000` | 参数校验失败 | `@Valid` 未通过 |
 | 401 / `40100` | 未登录或会话过期 | 前端据此跳登录页 |
+| 403 / `40300` | CSRF 令牌缺失/错误或请求被拒绝 | 生产写请求未带有效 `X-CSRF-TOKEN` |
 | 404 / `40004` | 资源不存在 | 会话 / 任务不存在 |
 | 409 / `40900` | 业务规则冲突 | 状态不允许的流转 |
 | 429 / `42900` | 模型调用被限流 | 见「通用约定」 |
