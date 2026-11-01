@@ -66,6 +66,7 @@ const {
 const { settings } = storeToRefs(settingsStore)
 
 const draft = ref('')
+const changingModel = ref(false)
 const messageArea = ref<HTMLElement | null>(null)
 const resolvingId = ref<string | null>(null)
 
@@ -128,7 +129,7 @@ function onSessionPanelResizeKeydown(event: KeyboardEvent): void {
 
 onBeforeUnmount(() => setResizeCursor(false))
 
-const canSend = computed(() => draft.value.trim().length > 0 && !streaming.value)
+const canSend = computed(() => draft.value.trim().length > 0 && !streaming.value && !changingModel.value)
 
 const currentTitle = computed(() => {
   const current = sessions.value.find((item) => item.conversationId === currentConversationId.value)
@@ -353,12 +354,20 @@ watch(
  * 失败必须提示 —— 界面还显示着旧值，不说一声用户会以为已经切了。
  */
 async function handleModelChange(model: string | null): Promise<void> {
-  if (!currentConversationId.value) {
-    return
-  }
-  const success = await chatStore.setModel(currentConversationId.value, model)
-  if (!success && chatStore.error) {
-    ElMessage.error(chatStore.error)
+  if (streaming.value || changingModel.value) return
+  changingModel.value = true
+  try {
+    // 首次使用还没有会话，先创建再保存选择，避免点击模型后静默失效。
+    if (!currentConversationId.value) await chatStore.createSession()
+    const id = currentConversationId.value
+    if (!id) {
+      ElMessage.error(chatStore.error || '创建会话失败，请重试')
+      return
+    }
+    const success = await chatStore.setModel(id, model)
+    if (!success) ElMessage.error(chatStore.error || '切换模型失败，请重试')
+  } finally {
+    changingModel.value = false
   }
 }
 
@@ -655,6 +664,7 @@ async function jumpToMatch(step: number): Promise<void> {
           :thinking-level="settings.thinkingLevel"
           :enter-send="settings.enterSend"
           :session-model="sessionModel"
+          :changing-model="changingModel"
           :chat-models="availableChatModels"
           :default-model="activeDefaultModel"
           :context-usage="contextUsage"

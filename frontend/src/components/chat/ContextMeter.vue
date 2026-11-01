@@ -32,14 +32,8 @@ const calibrationLabel = computed(() => {
 const budgetPresets = computed(() =>
   budgetPresetsFor(props.usage.contextWindow, props.usage.inputLimitTokens).map((tokens, index) => ({
     tokens,
-    totalTokens: budgetPresetsFor(props.usage.contextWindow)[index] ?? tokens,
     label: ['精简', '均衡', '完整'][index]!,
   })),
-)
-const displayedBudget = computed(
-  () =>
-    budgetPresets.value.find((preset) => preset.tokens === props.usage.budgetTokens)?.totalTokens ??
-    props.usage.budgetTokens,
 )
 const customBudget = computed(() => !budgetPresets.value.some((preset) => preset.tokens === props.usage.budgetTokens))
 const meterTitle = computed(() => {
@@ -79,29 +73,39 @@ const meterTitle = computed(() => {
       </span>
       <span class="context-meter__value"
         >{{ usage.estimated ? '≈' : '' }}{{ formatTokens(usage.promptTokens) }} /
-        {{ formatTokens(displayedBudget) }}</span
+        {{ formatTokens(usage.budgetTokens) }}</span
       >
       <span class="context-meter__limit">{{ limitText }}</span>
     </button>
     <template #dropdown>
       <el-dropdown-menu class="context-meter__menu">
         <div class="context-meter__head">
-          <span class="context-meter__model">{{ usage.modelName || '当前模型' }}</span>
-          <span class="context-meter__source"
-            >{{ limitText
-            }}<template v-if="customBudget"> · 当前 {{ formatTokens(usage.budgetTokens) }}</template></span
-          >
+          <span class="context-meter__model">上下文预算</span>
+          <span class="context-meter__source">当前 {{ formatTokens(usage.budgetTokens) }} · {{ limitText }}</span>
         </div>
+        <el-dropdown-item
+          v-if="customBudget"
+          :command="usage.budgetTokens"
+          class="context-meter__item--on"
+          :aria-label="`当前预算，${formatTokens(usage.budgetTokens)}`"
+        >
+          <span class="context-meter__option">
+            <span>当前预算</span>
+            <span class="context-meter__tokens">{{ formatTokens(usage.budgetTokens) }}</span>
+            <el-icon class="context-meter__check is-current"><Check /></el-icon>
+          </span>
+        </el-dropdown-item>
         <el-dropdown-item
           v-for="preset in budgetPresets"
           :key="preset.tokens"
           :command="preset.tokens"
+          :divided="customBudget && preset === budgetPresets[0]"
           :class="{ 'context-meter__item--on': preset.tokens === usage.budgetTokens }"
-          :aria-label="`${preset.label}，上下文 ${formatTokens(preset.totalTokens)}${preset.tokens === usage.budgetTokens ? '，当前' : ''}`"
+          :aria-label="`${preset.label}，输入预算 ${formatTokens(preset.tokens)}${preset.tokens === usage.budgetTokens ? '，当前' : ''}`"
         >
           <span class="context-meter__option">
             <span>{{ preset.label }}</span>
-            <span class="context-meter__tokens">{{ formatTokens(preset.totalTokens) }}</span>
+            <span class="context-meter__tokens">{{ formatTokens(preset.tokens) }}</span>
             <el-icon class="context-meter__check" :class="{ 'is-current': preset.tokens === usage.budgetTokens }"
               ><Check
             /></el-icon>
@@ -113,7 +117,7 @@ const meterTitle = computed(() => {
   <div v-else-if="usage.budgetTokens > 0" class="context-meter context-meter--static" :title="meterTitle">
     <span class="context-meter__value"
       >{{ usage.estimated ? '≈' : '' }}{{ formatTokens(usage.promptTokens) }} /
-      {{ formatTokens(displayedBudget) }}</span
+      {{ formatTokens(usage.budgetTokens) }}</span
     >
     <span class="context-meter__limit">{{ limitText }}</span>
   </div>

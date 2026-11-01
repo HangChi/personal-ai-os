@@ -73,6 +73,14 @@ describe('ChatComposer', () => {
     expect(wrapper.emitted('send')).toBeUndefined()
   })
 
+  it('保存模型选择期间禁止切换和发送，Enter 也不能清空草稿', async () => {
+    const wrapper = mount(ChatComposer, { props: baseProps({ changingModel: true, modelValue: '保留草稿' }) })
+    expect(wrapper.find('.model-picker').attributes('disabled')).toBeDefined()
+    expect(buttonByText(wrapper, '发送')!.attributes('disabled')).toBeDefined()
+    await wrapper.find('textarea').trigger('keydown', { key: 'Enter' })
+    expect(wrapper.emitted('send')).toBeUndefined()
+  })
+
   it('输入为空时发送按钮不可点（避免发出空消息）', () => {
     const wrapper = mount(ChatComposer, { props: baseProps({ modelValue: '   ' }) })
 

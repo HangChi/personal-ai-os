@@ -85,7 +85,7 @@ describe('ContextMeter', () => {
 })
 
 describe('上下文三档菜单', () => {
-  it('三档显示总容量，命令仍使用安全输入预算', async () => {
+  it('保留自定义预算的选中状态，三档与实际输入预算使用同一口径', async () => {
     const wrapper = mount(ContextMeter, {
       props: {
         usage: {
@@ -109,11 +109,18 @@ describe('上下文三档菜单', () => {
         },
       },
     })
-    expect(wrapper.findAll('.preset-item').map((item) => item.text())).toEqual(['精简256K', '均衡512K', '完整1M'])
-    expect(wrapper.findAll('.preset-item')[2].attributes('data-budget')).toBe('1043968')
+    expect(wrapper.findAll('.preset-item').map((item) => item.text())).toEqual([
+      '当前预算64K',
+      '精简256K',
+      '均衡512K',
+      '完整1019.5K',
+    ])
+    expect(wrapper.findAll('.preset-item')[3].attributes('data-budget')).toBe('1043968')
     expect(wrapper.find('.context-meter__head').text()).toContain('当前 64K')
     expect(wrapper.find('.context-meter__head').text()).not.toContain('尚未验证')
     await wrapper.setProps({ usage: { ...wrapper.props('usage'), budgetTokens: 1043968 } })
-    expect(wrapper.find('.context-meter__value').text()).toBe('≈4K / 1M')
+    expect(wrapper.find('.context-meter__value').text()).toBe('≈4K / 1019.5K')
+    expect(wrapper.findAll('.preset-item')).toHaveLength(3)
+    expect(wrapper.find('.context-meter__item--on').text()).toBe('完整1019.5K')
   })
 })

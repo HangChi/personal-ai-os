@@ -35,6 +35,8 @@ const props = defineProps<{
   enterSend: boolean
   /** 本会话选中的模型；null = 跟随生效配置 */
   sessionModel: string | null
+  /** 保存模型选择期间禁止重复切换和发送 */
+  changingModel?: boolean
   /** 可选模型（生效配置的对话模型清单） */
   chatModels: string[]
   /** 生效配置的默认模型名（供「跟随配置」提示） */
@@ -179,6 +181,7 @@ function removeAttachment(id: string): void {
 
 /** 发送后由父组件回调这里清空（父组件持有 draft，清空也归它） */
 function handleSend(): void {
+  if (props.changingModel) return
   /*
    * 上传未完成时不允许发送。
    *
@@ -399,7 +402,7 @@ onBeforeUnmount(() => {
             :model-value="sessionModel"
             :models="chatModels"
             :default-model="defaultModel"
-            :disabled="streaming"
+            :disabled="streaming || !!changingModel"
             @update:model-value="(value: string | null) => emit('update:sessionModel', value)"
           />
           <el-dropdown
@@ -448,7 +451,7 @@ onBeforeUnmount(() => {
             type="primary"
             class="chat-composer__submit"
             round
-            :disabled="modelValue.trim().length === 0 || uploading"
+            :disabled="modelValue.trim().length === 0 || uploading || changingModel"
             :loading="uploading"
             :title="sendTooltip"
             @click="handleSend"
