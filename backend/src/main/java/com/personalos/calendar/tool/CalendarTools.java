@@ -53,7 +53,9 @@ public class CalendarTools {
 
     @Tool(name = "createCalendarEvent",
             description = "创建一个日程（会议、约会、待办时间段等）。"
-                    + "当用户说「记一下明天下午三点开会」「每周一早上九点站会」时调用。")
+                    + "当用户说「记一下明天下午三点开会」「每周一早上九点站会」时调用。"
+                    + "相对日期以系统提示中的当前时间为准，无需联网校时或读取文件时间。"
+                    + "信息齐全时直接创建，不必先反复查询日程。返回成功即已创建，不要重复创建。")
     public String createCalendarEvent(
             @ToolParam(description = "日程标题，1~200 字") String title,
             @ToolParam(description = "开始时间，ISO-8601，例如 2026-10-15T15:00:00Z 或 2026-10-15") String startsAt,
@@ -104,7 +106,8 @@ public class CalendarTools {
 
     @Tool(name = "findCalendarEvents",
             description = "查询某个时间区间内的日程安排（重复日程会展开成一次次的发生）。"
-                    + "用户问「我今天有什么安排」「这周忙不忙」时调用。")
+                    + "用户问「我今天有什么安排」「这周忙不忙」时调用。"
+                    + "当前日期已在系统提示中提供，不要用本工具推断今天的日期。")
     public String findCalendarEvents(
             @ToolParam(required = false, description = "区间起点，ISO-8601；省略表示从今天 00:00 开始")
             String from,

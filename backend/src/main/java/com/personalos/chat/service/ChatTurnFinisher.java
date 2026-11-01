@@ -4,6 +4,7 @@ import com.personalos.chat.dto.ChatAttachmentDto;
 import com.personalos.chat.entity.MessageRole;
 import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.common.ai.PostTurnContributor;
+import com.personalos.common.api.ErrorCode;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import java.util.List;
 import org.slf4j.Logger;
@@ -99,8 +100,14 @@ public class ChatTurnFinisher {
      *                     否则悬空的提问仍在上下文里
      */
     public void recordInterruptedReply(String conversationId, String partialReply) {
+        recordInterruptedReply(conversationId, partialReply, null);
+    }
+
+    public void recordInterruptedReply(String conversationId, String partialReply, ErrorCode errorCode) {
         String body = partialReply == null ? "" : partialReply.strip();
-        String content = body.isEmpty() ? INTERRUPTED_MARKER : body + "\n\n" + INTERRUPTED_MARKER;
+        String marker = errorCode == ErrorCode.AGENT_EXECUTION_LIMIT
+                ? "（" + errorCode.getDefaultMessage() + "）" : INTERRUPTED_MARKER;
+        String content = body.isEmpty() ? marker : body + "\n\n" + marker;
         try {
             chatMemory.add(conversationId, List.of(new AssistantMessage(content)));
         } catch (RuntimeException ex) {

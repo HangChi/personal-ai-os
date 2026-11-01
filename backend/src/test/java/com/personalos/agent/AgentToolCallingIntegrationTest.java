@@ -357,6 +357,44 @@ class AgentToolCallingIntegrationTest {
         assertThat(response.body()).doesNotContain("\"success\"");
     }
 
+    @Test
+    @DisplayName("当前时间上下文实际进入模型请求，无需额外时间工具")
+    void modelReceivesCalendarTimeContext() throws Exception {
+        model.enqueueText("收到");
+
+        stream(createSession(), "明天是哪一天");
+
+        assertThat(model.receivedInstructions()).hasSize(1);
+        assertThat(model.receivedInstructions().get(0))
+                .filteredOn(message -> message.getMessageType() == org.springframework.ai.chat.messages.MessageType.SYSTEM)
+                .singleElement().satisfies(message -> assertThat(message.getText())
+                        .contains("[系统时间]", "当前日期：", "日历时区：", "明天日期：", "不要联网校时"));
+        assertThat(operationRecordRepository.count()).isZero();
+    }
+
+    @Test
+    @DisplayName("同工具超限通过 SSE 中文错误结束、保存停止原因，并允许下一轮继续")
+    void frameworkToolLimitUsesApplicationErrorAndReleasesStream() throws Exception {
+        String conversationId = createSession();
+        for (int i = 0; i < 4; i++) {
+            model.enqueueToolCall("findTasks", "{\"keyword\":\"查询" + i + "\"}");
+        }
+
+        List<SseEvent> events = stream(conversationId, "查询多组任务");
+
+        assertThat(events).extracting(SseEvent::name).contains("error").doesNotContain("done");
+        assertThat(events).filteredOn(event -> event.name().equals("error"))
+                .singleElement().satisfies(event -> assertThat(event.data())
+                        .contains("50203", "已完成的操作不会撤销").doesNotContain("Tool call limit"));
+        assertThat(operationRecordsOf("findTasks")).hasSize(3);
+        assertThat(http.get("/api/v1/chat/sessions/" + conversationId + "/messages").body())
+                .contains("工具调用已停止").doesNotContain("连接中断", "Tool call limit");
+
+        model.enqueueText("下一轮正常");
+        assertThat(stream(conversationId, "继续聊天")).extracting(SseEvent::name)
+                .contains("done").doesNotContain("error");
+    }
+
     // ---------------------------------------------------------------- 工具方法本身
 
     @Test

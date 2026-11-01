@@ -359,7 +359,7 @@ public class ChatCompletionService {
                 send(emitter, EVENT_ERROR,
                         new ChatStreamEvents.Error(errorCode.getCode(), errorCode.getDefaultMessage()));
             }
-            finisher.recordInterruptedReply(conversationId, fullContent.toString());
+            finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode);
             emitter.complete();
         });
 
@@ -432,7 +432,7 @@ public class ChatCompletionService {
                     ErrorCode errorCode = classify(error);
                     send(emitter, EVENT_ERROR,
                             new ChatStreamEvents.Error(errorCode.getCode(), errorCode.getDefaultMessage()));
-                    finisher.recordInterruptedReply(conversationId, fullContent.toString());
+                    finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode);
                     emitter.complete();
                 }),
                 () -> runWithRequestId(requestId, () -> {

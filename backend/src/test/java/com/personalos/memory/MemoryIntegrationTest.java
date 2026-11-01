@@ -208,13 +208,15 @@ class MemoryIntegrationTest {
     }
 
     @Test
-    @DisplayName("无记忆时：系统提示与阶段 1 逐字符相同（不出现空标题或空行）")
-    void noMemoryKeepsSystemPromptUnchanged() throws Exception {
+    @DisplayName("无记忆时：保留基础人设和系统时间，不出现空记忆标题")
+    void noMemoryKeepsBasePromptAndCurrentTime() throws Exception {
         model.enqueueText("收到");
 
         chatOnce("你好");
 
-        assertThat(systemPromptOfLastCall()).isEqualTo(aiProperties.systemPrompt());
+        assertThat(systemPromptOfLastCall()).startsWith(aiProperties.systemPrompt())
+                .contains("[系统时间]", "当前日期：", "日历时区：")
+                .doesNotContain("## 长期记忆");
     }
 
     @Test

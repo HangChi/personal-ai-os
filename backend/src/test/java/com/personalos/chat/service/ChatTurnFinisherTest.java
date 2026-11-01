@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import com.personalos.chat.dto.ChatAttachmentDto;
 import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.common.ai.PostTurnContributor;
+import com.personalos.common.api.ErrorCode;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import com.personalos.support.StaticObjectProvider;
 import java.util.List;
@@ -189,6 +190,17 @@ class ChatTurnFinisherTest {
 
         String content = capturedMessages().get(0).getText();
         assertThat(content).isNotBlank().contains("中断");
+    }
+
+    @Test
+    @DisplayName("工具超限保留实际停止原因，提醒已完成操作不会撤销")
+    void recordsExecutionLimitInsteadOfConnectionInterruption() {
+        finisher.recordInterruptedReply(CONVERSATION, "已创建日程", ErrorCode.AGENT_EXECUTION_LIMIT);
+
+        String content = capturedMessages().get(0).getText();
+        assertThat(content).startsWith("已创建日程\n\n")
+                .contains(ErrorCode.AGENT_EXECUTION_LIMIT.getDefaultMessage())
+                .doesNotContain("连接中断");
     }
 
     @Test

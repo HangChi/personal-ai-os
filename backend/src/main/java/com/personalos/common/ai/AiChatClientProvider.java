@@ -107,7 +107,8 @@ public class AiChatClientProvider {
         this.chatMemory = chatMemory;
         this.aiProperties = aiProperties;
         this.contextBudget = contextBudget;
-        this.toolCallingManager = toolCallingManagers.getIfAvailable();
+        this.toolCallingManager = new AgentToolCallingManager(
+                toolCallingManagers.getIfAvailable(() -> ToolCallingManager.builder().build()));
 
         // 工具集合在构造期固定：它们由各业务模块的 Bean 贡献，不随模型切换而变。
         // 先收集一次存下来，重建时直接复用 —— 每次切换都重新遍历 ObjectProvider
