@@ -52,6 +52,23 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>nl.martijndwars</groupId>
+            <artifactId>web-push</artifactId>
+            <version>5.1.2</version>
+            <exclusions>
+                <exclusion><groupId>com.beust</groupId><artifactId>jcommander</artifactId></exclusion>
+                <exclusion><groupId>org.apache.httpcomponents</groupId><artifactId>httpasyncclient</artifactId></exclusion>
+                <exclusion><groupId>org.asynchttpclient</groupId><artifactId>async-http-client</artifactId></exclusion>
+                <exclusion><groupId>org.bitbucket.b_c</groupId><artifactId>jose4j</artifactId></exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId><artifactId>bcprov-jdk18on</artifactId><version>1.86</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bitbucket.b_c</groupId><artifactId>jose4j</artifactId><version>0.9.7</version>
+        </dependency>
         <!-- Web：Spring Web MVC + 内嵌 Tomcat -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -200,6 +217,16 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!-- 测试不可读取开发者的数据库、模型密钥、认证配置。 -->
+                        <app.dotenv.enabled>false</app.dotenv.enabled>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

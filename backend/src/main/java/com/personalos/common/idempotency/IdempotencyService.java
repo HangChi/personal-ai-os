@@ -9,9 +9,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 两层幂等的统一实现。
@@ -38,9 +36,6 @@ public class IdempotencyService {
      * 5 分钟远超任何一次正常执行（最慢的是模型调用，也远不到 5 分钟）。
      */
     static final long IN_PROGRESS_STALE_SECONDS = 300;
-
-    /** 幂等记录的保留期：审计价值会随时间衰减，无限堆积会拖慢按键查询 */
-    private static final int RETENTION_DAYS = 30;
 
     private final OperationRecordRepository repository;
 
@@ -129,22 +124,6 @@ public class IdempotencyService {
                     "该操作之前执行失败，请更换幂等键后重试：" + request.key());
         }
         return new IdempotentResult(record.getResponsePayload(), record.getOutcome(), true);
-    }
-
-    /**
-     * 定期清理过期幂等记录（审查 P2）。
-     *
-     * <p>操作记录承担审计，但「几个月前建了哪个任务」的审计价值已归零，而无限堆积
-     * 会让按键查询（唯一索引）变慢。保留 30 天，之后可安全删除。
-     */
-    @Scheduled(cron = "0 30 4 * * *")
-    @Transactional
-    public void cleanupExpiredRecords() {
-        Instant threshold = Instant.now().minusSeconds((long) RETENTION_DAYS * 24 * 3600);
-        int deleted = repository.deleteByCreatedAtBefore(threshold);
-        if (deleted > 0) {
-            log.info("清理过期幂等记录 {} 条（早于 {}）", deleted, threshold);
-        }
     }
 
     /** 崩溃残留判定：IN_PROGRESS 且超过废弃阈值 */

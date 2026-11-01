@@ -1,21 +1,25 @@
 package com.personalos.task;
 
 import com.personalos.export.ExportContributor;
+import com.personalos.export.ExportWriter;
+import tools.jackson.core.JsonGenerator;
 import com.personalos.task.service.TaskService;
-import java.util.List;
 import org.springframework.stereotype.Component;
 
 /**
  * 任务导出（键 {@code tasks}）。
  *
- * <p>用 {@link TaskService#listAll()} 而不是分页查询：分页上限 100 会让任务多时静默少导。
+ * <p>逐批读取全部记录，不受界面查询页数限制。
  */
 @Component
 public class TaskExportContributor implements ExportContributor {
 
+    private final ExportWriter writer;
+
     private final TaskService taskService;
 
-    public TaskExportContributor(TaskService taskService) {
+    public TaskExportContributor(TaskService taskService, ExportWriter writer) {
+        this.writer = writer;
         this.taskService = taskService;
     }
 
@@ -25,7 +29,8 @@ public class TaskExportContributor implements ExportContributor {
     }
 
     @Override
-    public List<?> snapshot() {
-        return taskService.listAll();
+    public long writeTo(JsonGenerator json) {
+        return writer.array(json, page -> taskService.exportBatch(page,
+                ExportWriter.BATCH_SIZE));
     }
 }

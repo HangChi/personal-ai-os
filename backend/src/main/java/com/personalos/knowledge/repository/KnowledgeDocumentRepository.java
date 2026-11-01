@@ -13,6 +13,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  */
 public interface KnowledgeDocumentRepository extends JpaRepository<KnowledgeDocumentEntity, UUID>,
         JpaSpecificationExecutor<KnowledgeDocumentEntity> {
+    java.util.List<KnowledgeDocumentEntity> findAllBy(org.springframework.data.domain.Pageable pageable);
+
 
     /**
      * @return 全部文档，按上传时间倒序

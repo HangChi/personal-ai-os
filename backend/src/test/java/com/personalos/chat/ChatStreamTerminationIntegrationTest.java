@@ -177,12 +177,20 @@ class ChatStreamTerminationIntegrationTest {
         this.messageRepository = messageRepository;
     }
 
+    @Autowired io.micrometer.core.instrument.MeterRegistry registry;
+
+    private long terminalCount(String outcome) {
+        return registry.find("personalos.chat.duration").tag("outcome", outcome).timers().stream()
+                .mapToLong(io.micrometer.core.instrument.Timer::count).sum();
+    }
+
     private record SseEvent(String name, String data) {
     }
 
     @Test
     @DisplayName("超时 → 必须发 error(50202) 而不是静默关流，且把半截回答落库")
     void timeoutEmitsErrorEventAndKeepsPartialReply() throws Exception {
+        long before = terminalCount("timeout");
         stub.slowTail(true);
         String conversationId = createSession();
 
@@ -196,6 +204,7 @@ class ChatStreamTerminationIntegrationTest {
                 .as("超时应映射为 50202（AI_TIMEOUT），而不是含混的内部错误")
                 .isEqualTo(50202);
         assertThat(events).extracting(SseEvent::name).doesNotContain("done");
+        assertThat(terminalCount("timeout") - before).isEqualTo(1);
 
         // 用户消息由 Advisor 在订阅时写入；助手消息原本只在正常结束才写。
         // 超时若不补写，历史里就留下一条「只有提问没有回答」的记录。
@@ -217,12 +226,14 @@ class ChatStreamTerminationIntegrationTest {
     @Test
     @DisplayName("正常完成 → 只有 done，没有 error，回答不带中断标记（回归）")
     void normalCompletionIsUnaffected() throws Exception {
+        long before = terminalCount("success");
         stub.slowTail(false);
         String conversationId = createSession();
 
         List<SseEvent> events = streamEvents(conversationId, "正常一轮");
 
         assertThat(events).extracting(SseEvent::name).contains("done").doesNotContain("error");
+        assertThat(terminalCount("success") - before).isEqualTo(1);
 
         List<ChatMessageEntity> messages = messageRepository.findAll().stream()
                 .filter(message -> message.getConversationId().equals(conversationId))

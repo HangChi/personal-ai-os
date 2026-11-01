@@ -26,9 +26,12 @@ public class ChatStreamMetrics {
 
     private static final String ACTIVE_STREAMS = "personalos.chat.streams.active";
 
+    private final MeterRegistry registry;
+
     private final AtomicInteger active = new AtomicInteger();
 
     public ChatStreamMetrics(ObjectProvider<MeterRegistry> registries) {
+        this.registry = registries.getIfAvailable();
         registries.ifAvailable(registry -> Gauge.builder(ACTIVE_STREAMS, active::get)
                 .description("当前活跃的流式对话数（含等待首 token 的）")
                 .register(registry));
@@ -43,5 +46,26 @@ public class ChatStreamMetrics {
     public void streamClosed() {
         // 下限钳到 0：多条终止路径可能重复回调，宁可少算也不能变负数
         active.updateAndGet(current -> current > 0 ? current - 1 : 0);
+    }
+
+    /** 模型名和提供商来自已选定的配置，不含端点、密钥或会话 id。 */
+    public void completed(String provider, String model, String outcome, long nanos) {
+        if (registry == null) return;
+        io.micrometer.core.instrument.Timer.builder("personalos.chat.duration")
+                .tags("provider", label(provider), "model", label(model), "outcome", outcome)
+                .publishPercentileHistogram()
+                .register(registry).record(nanos, java.util.concurrent.TimeUnit.NANOSECONDS);
+    }
+
+    public void usage(com.personalos.chat.support.StreamUsage usage) {
+        if (registry == null || usage == null || !usage.isMeaningful()) return;
+        registry.counter("personalos.chat.tokens", "model", label(usage.model()),
+                "source", usage.source().name(), "direction", "input").increment(usage.promptTokens());
+        registry.counter("personalos.chat.tokens", "model", label(usage.model()),
+                "source", usage.source().name(), "direction", "output").increment(usage.completionTokens());
+    }
+
+    private String label(String value) {
+        return value == null || value.isBlank() ? "unknown" : value.substring(0, Math.min(value.length(), 120));
     }
 }

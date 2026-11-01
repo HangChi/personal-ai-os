@@ -215,4 +215,19 @@ class DataExportIntegrationTest {
         // 分块文本在，向量不在
         assertThat(response.body()).contains("绿萝喜欢散射光");
     }
+
+    @Test
+    void streamsMultipleBatchesIncludingOneLongConversation() throws Exception {
+        jdbcTemplate.execute("INSERT INTO task(title) SELECT 'task-' || i FROM generate_series(1, 425) i");
+        jdbcTemplate.execute("INSERT INTO chat_session(conversation_id, title) VALUES ('long-export', 'long')");
+        jdbcTemplate.execute("INSERT INTO chat_message(conversation_id, message_type, content, sequence_no) "
+                + "SELECT 'long-export', 'USER', 'message-' || i, i FROM generate_series(1, 425) i");
+        JsonNode body = export();
+        assertThat(body.path("tasks").size()).isEqualTo(425);
+        assertThat(body.path("counts").path("tasks").asInt()).isEqualTo(425);
+        JsonNode messages = body.path("sessions").get(0).path("messages");
+        assertThat(messages.size()).isEqualTo(425);
+        assertThat(messages.get(0).path("sequenceNo").asInt()).isEqualTo(1);
+        assertThat(messages.get(424).path("sequenceNo").asInt()).isEqualTo(425);
+    }
 }

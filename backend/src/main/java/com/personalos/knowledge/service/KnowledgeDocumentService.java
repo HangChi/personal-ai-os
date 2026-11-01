@@ -63,6 +63,8 @@ import static com.personalos.knowledge.service.DocumentFilenameSupport.truncateT
 @Service
 public class KnowledgeDocumentService {
 
+
+
     private static final Logger log = LoggerFactory.getLogger(KnowledgeDocumentService.class);
 
     private final KnowledgeDocumentRepository repository;
@@ -93,6 +95,14 @@ public class KnowledgeDocumentService {
         this.readerFactory = readerFactory;
         this.writeLock = writeLock;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
+    }
+
+    /** 导出专用有界读取；稳定排序与外层一致性快照共同保证不截断。 */
+    @Transactional(readOnly = true)
+    public List<KnowledgeDocumentDto> exportBatch(int page, int size) {
+        return repository.findAllBy(org.springframework.data.domain.PageRequest.of(page, size,
+                org.springframework.data.domain.Sort.by("id"))).stream()
+                .map(entity -> toDto(entity)).toList();
     }
 
     /** 取事务模板。方法名直白，是为了在调用点一眼看出「这里开事务了」 */

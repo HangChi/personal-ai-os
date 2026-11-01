@@ -15,6 +15,9 @@ import org.springframework.data.repository.query.Param;
  * <p>所有排序一律基于 {@code sequenceNo}，不依赖 {@code createdAt}（FR-018）。
  */
 public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, Long> {
+    java.util.List<ChatMessageEntity> findByConversationIdOrderBySequenceNoAsc(
+            String conversationId, org.springframework.data.domain.Pageable pageable);
+
 
     /**
      * 按会话查询全部消息，正序。

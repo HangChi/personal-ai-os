@@ -250,6 +250,11 @@ public class ChatCompletionService {
         // 计入活跃流：从这一刻起，模型可能一直不出字，HTTP 指标却是安静的白板，
         // 只有这个数字能说明「有一条流在跑」
         metrics.streamOpened();
+        long metricStarted = System.nanoTime();
+        AtomicReference<String> metricOutcome = new AtomicReference<>("cancelled");
+        String metricModel = target.model().getOptions() == null ? null
+                : target.model().getOptions().getModel();
+        String metricProvider = target.model().getClass().getSimpleName();
         // 终止路径有四条（done / error / 超时 / 客户端断开），彼此可能重叠触发，
         // 用独立的原子标记保证活跃数只减一次 —— 负数比不准确更糟，它会让人以为指标坏了
         AtomicBoolean streamClosed = new AtomicBoolean(false);
@@ -259,6 +264,7 @@ public class ChatCompletionService {
                 // streamClosed 保证只执行一次，因此锁恰好释放一次
                 activeStreams.remove(conversationId);
                 metrics.streamClosed();
+                metrics.completed(metricProvider, metricModel, metricOutcome.get(), System.nanoTime() - metricStarted);
             }
         };
         // 心跳紧跟 start：模型的静默期正是从这一刻开始的，
@@ -346,6 +352,7 @@ public class ChatCompletionService {
             if (!terminated.compareAndSet(false, true)) {
                 return; // 已有别的路径收过尾，不能重复写消息
             }
+            metricOutcome.set(errorCode == ErrorCode.AI_TIMEOUT ? "timeout" : notifyClient ? "error" : "cancelled");
             stopEverything.run();
             if (notifyClient) {
                 // 发送失败（客户端已断开）无需再通知，但收尾必须照做
@@ -378,6 +385,7 @@ public class ChatCompletionService {
             // 此时响应已被容器判为结束，只能做清理，发不出任何事件。
             log.warn("SSE 异步请求超时（兜底路径） conversationId={}", conversationId);
             if (terminated.compareAndSet(false, true)) {
+                metricOutcome.set("timeout");
                 stopEverything.run();
                 finisher.recordInterruptedReply(conversationId, fullContent.toString());
             }
@@ -390,7 +398,7 @@ public class ChatCompletionService {
         emitter.onCompletion(() -> {
             // 正常结束时 terminated 已为 true，这里什么都不做；
             // 只有「客户端提前断连」才会走到这里且仍未终止 —— 此时必须取消上游
-            if (!terminated.get()) {
+            if (terminated.compareAndSet(false, true)) {
                 stopEverything.run();
             }
         });
@@ -418,6 +426,7 @@ public class ChatCompletionService {
                     if (!terminated.compareAndSet(false, true)) {
                         return;
                     }
+                    metricOutcome.set(classify(error) == ErrorCode.AI_TIMEOUT ? "timeout" : "error");
                     stopEverything.run();
                     log.warn("流式对话失败 conversationId={}", conversationId, error);
                     ErrorCode errorCode = classify(error);
@@ -437,6 +446,7 @@ public class ChatCompletionService {
                     // 而是**每条正常结束的对话都会在超时时限之后刷一条假的「流式对话超时」警告**
                     // （2026-10-27 真机日志实测踩到）。虚假告警会让真超时被淹没。
                     heartbeatScheduler.stop(watchdogRef.get());
+                    metricOutcome.set("success");
                     closeStream.run();
 
                     // 引用挂载必须**先于** done 事件（2026-10-26 调整）：
@@ -460,6 +470,7 @@ public class ChatCompletionService {
 
                     // 记账放在 complete 之后：统计失败或慢都不该影响「回答已结束」这个事实
                     usageRecorder.record(conversationId, usage);
+                    metrics.usage(usage);
 
                     // done 之后：摘要刷新、轮末钩子（都只影响下一轮或仅用于展示）
                     finisher.afterDone(conversationId, userContent, reply);

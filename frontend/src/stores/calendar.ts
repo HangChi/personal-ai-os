@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { createEvent, deleteEvent, getEvent, listOccurrences, updateEvent } from '@/api/calendar'
 import { groupByLocalDay } from '@/lib/calendar-dates'
 import { listReminders, markReminderRead, scanReminders } from '@/api/reminders'
+import { pushSubscribed } from '@/notifications/web-push'
 import { readPermission, requestPermission } from '@/notifications/permission'
 import { createBrowserNotify, ReminderNotifier } from '@/notifications/reminder-notifier'
 import type { CreateEventPayload, UpdateEventPayload } from '@/api/calendar'
@@ -209,12 +210,18 @@ export const useCalendarStore = defineStore('calendar', () => {
    * <b>失败时静默</b>：轮询是后台行为，后端短暂不可用时弹一堆错误只会干扰用户。
    * 真正的错误由用户主动操作（创建/删除）时的那条路径暴露。
    */
+  let refreshingReminders = false
   async function refreshReminders(): Promise<void> {
+    if (refreshingReminders) return
+    refreshingReminders = true
     try {
+      notificationPermission.value = readPermission()
       dueReminders.value = await listReminders(undefined, true)
       deliverReminders()
     } catch {
       // 保持上一轮结果，不打断用户
+    } finally {
+      refreshingReminders = false
     }
   }
 
@@ -225,7 +232,9 @@ export const useCalendarStore = defineStore('calendar', () => {
    * 其余情况什么都不发（用站内提示冒充送达会制造"系统说提醒了、用户没感知"的假象）。
    */
   function deliverReminders(): void {
-    const result = notifier.dispatch(dueReminders.value, notificationPermission.value, pageIsVisible())
+    // 已订阅时后台系统通知由推送负责，前台仍显示站内提示。
+    const permission = pushSubscribed.value && !pageIsVisible() ? 'default' : notificationPermission.value
+    const result = notifier.dispatch(dueReminders.value, permission, pageIsVisible())
     if (result.channel === 'inline' && result.notices.length > 0) {
       inlineNotices.value = [...inlineNotices.value, ...result.notices]
     }

@@ -71,7 +71,8 @@ public class AiModelProfileEntity {
     private String protocol;
 
     /** API 密钥明文；null 表示沿用环境变量。接口层必须掩码后再返回 */
-    @Column(name = "api_key", length = 500)
+    @jakarta.persistence.Convert(converter = ModelKeyConverter.class)
+    @Column(name = "api_key", length = 3000)
     private String apiKey;
 
     @Column(name = "chat_model", length = 120)

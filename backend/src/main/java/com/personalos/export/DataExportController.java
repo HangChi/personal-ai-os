@@ -3,7 +3,7 @@ package com.personalos.export;
 import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,11 +42,11 @@ public class DataExportController {
      * @return JSON 文件（附件形式），含各模块快照与计数
      */
     @GetMapping("/export")
-    public ResponseEntity<Map<String, Object>> export() {
+    public ResponseEntity<StreamingResponseBody> export() {
         String filename = "personal-ai-os-export-" + FILENAME_TIME.format(clock.instant()) + ".json";
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .body(exportService.export());
+                .body(output -> exportService.writeTo(output));
     }
 }

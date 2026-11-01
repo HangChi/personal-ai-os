@@ -115,4 +115,29 @@ class DotEnvParserTest {
 
         assertThat(values).containsEntry("OPENAI_API_KEY", "");
     }
+
+    @Test
+    void testEnvironmentMustNotReadLocalSecrets(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
+        java.nio.file.Files.writeString(dir.resolve(".env"), "AUTH_ENABLED=true\nPRIVATE_TEST_KEY=secret");
+        var env = new org.springframework.core.env.StandardEnvironment();
+        env.getPropertySources().addFirst(new org.springframework.core.env.MapPropertySource("test",
+                Map.of("app.dotenv.enabled", false)));
+        new DotEnvEnvironmentPostProcessor(dir).postProcessEnvironment(env, null);
+        assertThat(env.getPropertySources().contains("dotenv")).isFalse();
+        assertThat(env.getProperty("PRIVATE_TEST_KEY")).isNull();
+    }
+
+    @Test
+    void localStartupKeepsFallbackAndEnvironmentPriority(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
+        java.nio.file.Files.writeString(dir.resolve(".env"), "LOCAL_TEST_KEY=from-file");
+        java.nio.file.Path child = java.nio.file.Files.createDirectory(dir.resolve("backend"));
+        var env = new org.springframework.core.env.StandardEnvironment();
+        env.getPropertySources().addFirst(new org.springframework.core.env.MapPropertySource("test",
+                Map.of("app.dotenv.enabled", true, "LOCAL_TEST_KEY", "override")));
+        new DotEnvEnvironmentPostProcessor(child).postProcessEnvironment(env, null);
+        assertThat(env.getPropertySources().get("dotenv").getProperty("LOCAL_TEST_KEY")).isEqualTo("from-file");
+        assertThat(env.getProperty("LOCAL_TEST_KEY")).isEqualTo("override");
+        new DotEnvEnvironmentPostProcessor(dir.resolve("missing/deep/directory/more"))
+                .postProcessEnvironment(new org.springframework.core.env.StandardEnvironment(), null);
+    }
 }

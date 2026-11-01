@@ -29,45 +29,33 @@ public class DataExportService {
     private final AppProperties appProperties;
     private final List<ExportContributor> contributors;
     private final Clock clock;
+    private final tools.jackson.databind.ObjectMapper mapper;
 
     public DataExportService(AppProperties appProperties,
                              List<ExportContributor> contributors,
-                             Clock clock) {
+                             Clock clock, tools.jackson.databind.ObjectMapper mapper) {
+        this.mapper = mapper;
         this.appProperties = appProperties;
         this.contributors = contributors;
         this.clock = clock;
     }
 
-    /**
-     * 生成导出内容。
-     *
-     * <p>只读事务保证单表内读一致性（个人量级下跨表严格一致没有实际意义，
-     * 也不值得为它加全局锁）。
-     *
-     * @return 可直接序列化为 JSON 的有序 Map
-     */
-    @Transactional(readOnly = true)
-    public Map<String, Object> export() {
-        // 按 key 排序：不依赖 Spring 注入 List 的顺序，输出文件稳定可比对
-        List<ExportContributor> ordered = contributors.stream()
-                .sorted(Comparator.comparing(ExportContributor::key))
-                .toList();
-
-        Map<String, Integer> counts = new LinkedHashMap<>();
-        Map<String, Object> sections = new LinkedHashMap<>();
-        for (ExportContributor contributor : ordered) {
-            List<?> data = contributor.snapshot();
-            sections.put(contributor.key(), data);
-            counts.put(contributor.key(), data.size());
+    /** 事务在异步响应线程内打开；所有分批查询共享同一个 PostgreSQL 快照。 */
+    @Transactional(readOnly = true, isolation = org.springframework.transaction.annotation.Isolation.REPEATABLE_READ)
+    public void writeTo(java.io.OutputStream output) {
+        try (var json = mapper.createGenerator(output)) {
+            json.writeStartObject();
+            json.writeStringProperty("application", appProperties.name());
+            json.writeStringProperty("version", appProperties.version());
+            json.writeStringProperty("formatVersion", FORMAT_VERSION);
+            json.writePOJOProperty("exportedAt", clock.instant());
+            Map<String, Long> counts = new LinkedHashMap<>();
+            for (var contributor : contributors.stream().sorted(Comparator.comparing(ExportContributor::key)).toList()) {
+                json.writeName(contributor.key());
+                counts.put(contributor.key(), contributor.writeTo(json));
+            }
+            json.writePOJOProperty("counts", counts);
+            json.writeEndObject();
         }
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("application", appProperties.name());
-        body.put("version", appProperties.version());
-        body.put("formatVersion", FORMAT_VERSION);
-        body.put("exportedAt", clock.instant());
-        body.put("counts", counts);
-        body.putAll(sections);
-        return body;
     }
 }

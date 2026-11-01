@@ -37,6 +37,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @Service
 public class ChatSessionService {
 
+
+
     private static final Logger log = LoggerFactory.getLogger(ChatSessionService.class);
 
     /** 新建会话的默认标题 */
@@ -64,6 +66,18 @@ public class ChatSessionService {
         this.sessionRepository = sessionRepository;
         this.messageRepository = messageRepository;
         this.attachmentService = attachmentService;
+    }
+
+    /** 导出专用有界读取；稳定排序与外层一致性快照共同保证不截断。 */
+    @Transactional(readOnly = true)
+    public List<ChatSessionDto> exportBatch(int page, int size) {
+        var sessions = sessionRepository.findAllBy(org.springframework.data.domain.PageRequest.of(page, size,
+                org.springframework.data.domain.Sort.by("conversationId")));
+        if (sessions.isEmpty()) return List.of();
+        var ids = sessions.stream().map(ChatSessionEntity::getConversationId).toList();
+        Map<String, Long> counts = messageRepository.countGroupedByConversationId(ids).stream()
+                .collect(Collectors.toMap(row -> (String) row[0], row -> ((Number) row[1]).longValue()));
+        return sessions.stream().map(entity -> toDto(entity, counts.getOrDefault(entity.getConversationId(), 0L))).toList();
     }
 
     /**

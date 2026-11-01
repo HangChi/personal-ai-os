@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -56,6 +57,9 @@ public interface TokenUsageRepository extends JpaRepository<TokenUsageEntity, Lo
                                   @Param("zone") String zone);
 
     /** 删除早于某个时刻的记录（保留期清理用） */
+    @Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("delete from TokenUsageEntity e where e.createdAt < ?1")
     int deleteByCreatedAtBefore(Instant threshold);
 
     /**

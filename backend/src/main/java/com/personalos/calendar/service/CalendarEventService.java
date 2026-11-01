@@ -37,6 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CalendarEventService {
 
+
+
     private static final Logger log = LoggerFactory.getLogger(CalendarEventService.class);
 
     /** 默认查询跨度（天） */
@@ -58,6 +60,14 @@ public class CalendarEventService {
         this.calculator = calculator;
         this.properties = properties;
         this.zone = zone;
+    }
+
+    /** 导出专用有界读取；稳定排序与外层一致性快照共同保证不截断。 */
+    @Transactional(readOnly = true)
+    public List<CalendarEventDto> exportBatch(int page, int size) {
+        return eventRepository.findAllBy(org.springframework.data.domain.PageRequest.of(page, size,
+                org.springframework.data.domain.Sort.by("id"))).stream()
+                .map(entity -> toDto(entity)).toList();
     }
 
     // ------------------------------------------------------------------ 写

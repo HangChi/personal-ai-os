@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 /**
  * 操作记录仓储。
@@ -26,5 +27,7 @@ public interface OperationRecordRepository extends JpaRepository<OperationRecord
 
     /** 删除早于某时刻的记录（保留期清理，审查 P2）。批量删除必须标 @Modifying */
     @Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("delete from OperationRecordEntity e where e.createdAt < ?1")
     int deleteByCreatedAtBefore(java.time.Instant threshold);
 }

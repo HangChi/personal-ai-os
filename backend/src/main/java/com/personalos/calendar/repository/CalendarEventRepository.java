@@ -17,6 +17,8 @@ import org.springframework.data.repository.query.Param;
  */
 public interface CalendarEventRepository extends JpaRepository<CalendarEventEntity, UUID>,
         JpaSpecificationExecutor<CalendarEventEntity> {
+    java.util.List<CalendarEventEntity> findAllBy(org.springframework.data.domain.Pageable pageable);
+
 
     /**
      * 取出可能与 {@code [from, to]} 有交集的日程（**原始定义**，不是展开后的实例）。

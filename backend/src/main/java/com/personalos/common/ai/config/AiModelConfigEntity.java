@@ -22,10 +22,8 @@ import java.time.Instant;
  * 从没在设置页碰过这一项的用户应当跟着变成 B；
  * 只有真正覆盖过的人才该保持自己的值。
  *
- * <h2>为什么 api_key 存明文</h2>
- * 见迁移脚本头部的取舍说明。简言之：本机自托管 + 库不对外 + 单用户，
- * 加密的密钥本身仍要放在 .env 里，攻击面只是从「读库」挪到「读 .env」。
- * 真正防的是截屏与日志泄露，那由接口层的掩码返回解决。
+ * <p>配置 MODEL_KEY_ENCRYPTION_KEY 后数据库写入 AES-GCM 密文，旧明文兼容读取。
+ * 主密钥应独立保管，不随数据库或备份一起存储。
  */
 @Entity
 @Table(name = "ai_model_config")
@@ -42,8 +40,9 @@ public class AiModelConfigEntity {
     @Column(name = "base_url", length = 500)
     private String baseUrl;
 
-    /** API 密钥明文；null 表示沿用环境变量 OPENAI_API_KEY */
-    @Column(name = "api_key", length = 500)
+    /** API 密钥；数据库可选 AES-GCM 加密，null 表示沿用环境变量。 */
+    @jakarta.persistence.Convert(converter = ModelKeyConverter.class)
+    @Column(name = "api_key", length = 3000)
     private String apiKey;
 
     /** 对话模型名；null 表示沿用环境变量 OPENAI_CHAT_MODEL */

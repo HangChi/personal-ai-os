@@ -17,6 +17,8 @@ import org.springframework.data.repository.query.Param;
  * Specification 是类型安全的，条件按需拼装。
  */
 public interface TaskRepository extends JpaRepository<TaskEntity, UUID>, JpaSpecificationExecutor<TaskEntity> {
+    java.util.List<TaskEntity> findAllBy(org.springframework.data.domain.Pageable pageable);
+
 
     /**
      * 全部标签（去重、字典序），供筛选下拉使用。

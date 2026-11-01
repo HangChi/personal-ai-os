@@ -18,6 +18,8 @@ import org.springframework.data.repository.query.Param;
  */
 public interface ChatSessionRepository extends JpaRepository<ChatSessionEntity, String>,
         JpaSpecificationExecutor<ChatSessionEntity> {
+    java.util.List<ChatSessionEntity> findAllBy(org.springframework.data.domain.Pageable pageable);
+
 
     /**
      * @return 全部会话，按最近活动时间倒序（FR-002）

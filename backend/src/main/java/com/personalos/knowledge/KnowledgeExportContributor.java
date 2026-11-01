@@ -1,10 +1,10 @@
 package com.personalos.knowledge;
 
 import com.personalos.export.ExportContributor;
-import com.personalos.knowledge.dto.KnowledgeDocumentDto;
+import com.personalos.export.ExportWriter;
+import tools.jackson.core.JsonGenerator;
 import com.personalos.knowledge.service.KnowledgeDocumentService;
 import com.personalos.knowledge.service.VectorStoreInspector;
-import java.util.List;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,20 +21,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class KnowledgeExportContributor implements ExportContributor {
 
-    /**
-     * 一个文档及其分块文本。
-     *
-     * @param document 文档元数据
-     * @param chunks   分块文本，按分块序号升序；异常数据下可能为空
-     */
-    public record DocumentExport(KnowledgeDocumentDto document, List<String> chunks) {
-    }
+    private final ExportWriter writer;
 
     private final KnowledgeDocumentService documentService;
     private final VectorStoreInspector inspector;
 
     public KnowledgeExportContributor(KnowledgeDocumentService documentService,
-                                      VectorStoreInspector inspector) {
+                                      VectorStoreInspector inspector, ExportWriter writer) {
+        this.writer = writer;
         this.documentService = documentService;
         this.inspector = inspector;
     }
@@ -45,9 +39,15 @@ public class KnowledgeExportContributor implements ExportContributor {
     }
 
     @Override
-    public List<?> snapshot() {
-        return documentService.list().stream()
-                .map(document -> new DocumentExport(document, inspector.chunksByDocumentId(document.id())))
-                .toList();
+    public long writeTo(JsonGenerator json) {
+        return writer.array(json, page -> documentService.exportBatch(page,
+                ExportWriter.BATCH_SIZE), (out, document) -> {
+            out.writeStartObject();
+            out.writePOJOProperty("document", document);
+            out.writeName("chunks");
+            writer.array(out, page -> inspector.exportChunks(document.id(), page,
+                    ExportWriter.BATCH_SIZE));
+            out.writeEndObject();
+        });
     }
 }

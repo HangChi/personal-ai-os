@@ -61,8 +61,17 @@ public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor 
     /** 从当前工作目录往上找的层数上限（mvn 在 backend/ 下跑，.env 在上一层） */
     private static final int MAX_PARENT_LOOKUPS = 3;
 
+    private final Path startDirectory;
+
+    public DotEnvEnvironmentPostProcessor() { this(Path.of("").toAbsolutePath()); }
+
+    DotEnvEnvironmentPostProcessor(Path startDirectory) { this.startDirectory = startDirectory; }
+
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        if (!environment.getProperty("app.dotenv.enabled", Boolean.class, true)) {
+            return;
+        }
         Path dotEnv = locate();
         if (dotEnv == null) {
             log.debug("未找到 .env，跳过；将以系统环境变量与 application.yml 为准");
@@ -92,7 +101,7 @@ public class DotEnvEnvironmentPostProcessor implements EnvironmentPostProcessor 
      * 「从根起」两种方式行为不一致 —— 这类环境相关的差异最难排查。
      */
     private Path locate() {
-        Path dir = Path.of("").toAbsolutePath();
+        Path dir = startDirectory;
         for (int i = 0; i <= MAX_PARENT_LOOKUPS && dir != null; i++) {
             Path candidate = dir.resolve(".env");
             if (Files.isRegularFile(candidate)) {

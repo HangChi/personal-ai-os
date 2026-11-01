@@ -26,6 +26,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ChatMessageService {
 
+    @Transactional(readOnly = true)
+    public List<ChatMessageDto> exportBatch(String id, int page, int size) {
+        return toDtos(messageRepository.findByConversationIdOrderBySequenceNoAsc(id,
+                org.springframework.data.domain.PageRequest.of(page, size)));
+    }
+
     private static final Logger log = LoggerFactory.getLogger(ChatMessageService.class);
 
     /** 单次分页上限。超过它的请求多半是「想拿全量」，那就该用显式的全量路径。 */

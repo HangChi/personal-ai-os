@@ -41,6 +41,8 @@ import org.springframework.util.StringUtils;
 @Service
 public class TaskService {
 
+
+
     private static final Logger log = LoggerFactory.getLogger(TaskService.class);
 
     /** 单次批量操作上限（FR-006）。超过则要求拆分，而不是静默截断 */
@@ -64,6 +66,14 @@ public class TaskService {
 
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
+    }
+
+    /** 导出专用有界读取；稳定排序与外层一致性快照共同保证不截断。 */
+    @Transactional(readOnly = true)
+    public List<TaskDto> exportBatch(int page, int size) {
+        return taskRepository.findAllBy(org.springframework.data.domain.PageRequest.of(page, size,
+                org.springframework.data.domain.Sort.by("id"))).stream()
+                .map(entity -> toDto(entity, java.time.Instant.now())).toList();
     }
 
     @Transactional

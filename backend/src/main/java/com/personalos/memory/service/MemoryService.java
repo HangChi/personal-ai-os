@@ -58,6 +58,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 public class MemoryService {
 
+
+
     private static final Logger log = LoggerFactory.getLogger(MemoryService.class);
 
     /** 单条记忆的长度上限（归一后字符数） */
@@ -119,6 +121,14 @@ public class MemoryService {
         // 显式模板而不是 @Transactional：create 里要「先事务外算向量」，
         // 注解只能把整个方法包进事务，做不到这种分段（且同类自调用会静默失效）。
         this.writeTransaction = new TransactionTemplate(transactionManager);
+    }
+
+    /** 导出专用有界读取；稳定排序与外层一致性快照共同保证不截断。 */
+    @Transactional(readOnly = true)
+    public List<MemoryDto> exportBatch(int page, int size) {
+        return repository.findAllBy(org.springframework.data.domain.PageRequest.of(page, size,
+                org.springframework.data.domain.Sort.by("id"))).stream()
+                .map(entity -> toDto(entity)).toList();
     }
 
     /**

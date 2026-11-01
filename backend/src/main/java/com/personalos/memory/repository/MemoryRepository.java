@@ -15,6 +15,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  */
 public interface MemoryRepository extends JpaRepository<MemoryEntity, UUID>,
         JpaSpecificationExecutor<MemoryEntity> {
+    java.util.List<MemoryEntity> findAllBy(org.springframework.data.domain.Pageable pageable);
+
 
     /**
      * 全部记忆，按最近修改倒序。

@@ -6,9 +6,9 @@
  * 滚动过去」这条跨组件链路。具体的通知条、到点提醒、新建表单、月网格、列表、编辑弹窗
  * 各自成组件（`components/calendar/`）。
  */
-import { ElMessage, ElNotification } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 
 import CalendarCreateForm from '@/components/calendar/CalendarCreateForm.vue'
 import CalendarDayList from '@/components/calendar/CalendarDayList.vue'
@@ -30,7 +30,6 @@ const {
   dueReminders,
   notificationPermission,
   requestingPermission,
-  inlineNotices,
   loadingOccurrences,
   creating,
   error,
@@ -43,34 +42,7 @@ const {
 
 onMounted(() => {
   void calendarStore.loadOccurrences()
-  // 轮询是提醒的「送达」方式：本地单机没有推送通道，靠页面定时拉取。
-  // 轮询失败在 store 里被静默处理，不打扰用户。
-  calendarStore.startReminderPolling()
 })
-
-/**
- * 站内提示：store 只负责决定「该提示什么」，渲染留给视图。
- *
- * 提示内容与系统通知完全一致（同样来自 `NoticePayload`），
- * 这样"在页面里看到"与"在通知中心看到"不会是两套说法。
- */
-watch(
-  inlineNotices,
-  () => {
-    const notices = calendarStore.consumeInlineNotices()
-    for (const notice of notices) {
-      ElNotification({
-        title: notice.title,
-        message: notice.body,
-        type: 'warning',
-        duration: 6000,
-        position: 'bottom-right',
-      })
-    }
-  },
-  // 不加 deep：store 每次都是整体替换数组，引用变化即可触发；
-  // deep 会在「回调里写回同一状态」时把自反馈放大成递归更新
-)
 
 async function enableNotifications(): Promise<void> {
   await calendarStore.enableNotifications()
@@ -80,10 +52,6 @@ async function enableNotifications(): Promise<void> {
     ElMessage.warning('浏览器拒绝了通知权限，可在站点设置里手动允许')
   }
 }
-
-onUnmounted(() => {
-  calendarStore.stopReminderPolling()
-})
 
 // ------------------------------------------------------------------ 视图切换与月网格
 

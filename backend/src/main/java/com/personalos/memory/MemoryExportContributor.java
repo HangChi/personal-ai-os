@@ -1,8 +1,9 @@
 package com.personalos.memory;
 
 import com.personalos.export.ExportContributor;
+import com.personalos.export.ExportWriter;
+import tools.jackson.core.JsonGenerator;
 import com.personalos.memory.service.MemoryService;
-import java.util.List;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,9 +15,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class MemoryExportContributor implements ExportContributor {
 
+    private final ExportWriter writer;
+
     private final MemoryService memoryService;
 
-    public MemoryExportContributor(MemoryService memoryService) {
+    public MemoryExportContributor(MemoryService memoryService, ExportWriter writer) {
+        this.writer = writer;
         this.memoryService = memoryService;
     }
 
@@ -26,7 +30,8 @@ public class MemoryExportContributor implements ExportContributor {
     }
 
     @Override
-    public List<?> snapshot() {
-        return memoryService.list();
+    public long writeTo(JsonGenerator json) {
+        return writer.array(json, page -> memoryService.exportBatch(page,
+                ExportWriter.BATCH_SIZE));
     }
 }

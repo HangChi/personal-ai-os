@@ -1,11 +1,10 @@
 package com.personalos.chat;
 
-import com.personalos.chat.dto.ChatMessageDto;
-import com.personalos.chat.dto.ChatSessionDto;
 import com.personalos.chat.service.ChatMessageService;
 import com.personalos.chat.service.ChatSessionService;
 import com.personalos.export.ExportContributor;
-import java.util.List;
+import com.personalos.export.ExportWriter;
+import tools.jackson.core.JsonGenerator;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,19 +16,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class ChatExportContributor implements ExportContributor {
 
-    /**
-     * 一个会话及其全部消息。
-     *
-     * @param session  会话元数据
-     * @param messages 消息，按对话顺序正序
-     */
-    public record SessionExport(ChatSessionDto session, List<ChatMessageDto> messages) {
-    }
+    private final ExportWriter writer;
 
     private final ChatSessionService sessionService;
     private final ChatMessageService messageService;
 
-    public ChatExportContributor(ChatSessionService sessionService, ChatMessageService messageService) {
+    public ChatExportContributor(ChatSessionService sessionService, ChatMessageService messageService, ExportWriter writer) {
+        this.writer = writer;
         this.sessionService = sessionService;
         this.messageService = messageService;
     }
@@ -40,9 +33,15 @@ public class ChatExportContributor implements ExportContributor {
     }
 
     @Override
-    public List<?> snapshot() {
-        return sessionService.list().stream()
-                .map(session -> new SessionExport(session, messageService.list(session.conversationId())))
-                .toList();
+    public long writeTo(JsonGenerator json) {
+        return writer.array(json, page -> sessionService.exportBatch(page,
+                ExportWriter.BATCH_SIZE), (out, session) -> {
+            out.writeStartObject();
+            out.writePOJOProperty("session", session);
+            out.writeName("messages");
+            writer.array(out, page -> messageService.exportBatch(session.conversationId(), page,
+                    ExportWriter.BATCH_SIZE));
+            out.writeEndObject();
+        });
     }
 }

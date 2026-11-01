@@ -43,6 +43,8 @@ export default tseslint.config(
     },
   },
 
+  { files: ['public/sw.js'], languageOptions: { globals: globals.serviceworker } },
+
   // 构建配置与测试脚本跑在 Node 里
   {
     files: ['*.config.{js,ts}', 'test/**/*.mjs', 'scripts/**/*.js'],

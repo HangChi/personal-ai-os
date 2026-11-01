@@ -31,6 +31,10 @@ spring:
       max-file-size: 8MB
       max-request-size: 10MB
 
+  mvc:
+    async:
+      request-timeout: ${ASYNC_REQUEST_TIMEOUT:10m}
+
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:55432}/${POSTGRES_DB:personal_ai_os}
     username: ${POSTGRES_USER:personalos}
@@ -152,6 +156,18 @@ spring:
 
 # 应用自身元信息，供健康检查接口读取
 app:
+  security:
+    production-mode: ${APP_SECURITY_PRODUCTION_MODE:false}
+    csrf-enabled: ${APP_SECURITY_CSRF_ENABLED:false}
+  model-key-encryption-key: ${MODEL_KEY_ENCRYPTION_KEY:}
+  web-push:
+    enabled: ${WEB_PUSH_ENABLED:false}
+    public-key: ${WEB_PUSH_PUBLIC_KEY:}
+    private-key: ${WEB_PUSH_PRIVATE_KEY:}
+    subject: ${WEB_PUSH_SUBJECT:}
+  retention:
+    token-usage-days: ${TOKEN_USAGE_RETENTION_DAYS:0}
+    operation-record-days: ${OPERATION_RECORD_RETENTION_DAYS:0}
   name: personal-ai-os
   # 由 Maven 资源过滤在构建时替换为 pom 中的 version
   version: @project.version@

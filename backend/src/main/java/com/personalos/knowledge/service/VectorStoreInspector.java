@@ -188,6 +188,16 @@ public class VectorStoreInspector {
         return jdbcTemplate.queryForList(sql, String.class, documentId.toString());
     }
 
+    /** 导出分块时也限制批大小，单篇大文档不会整篇进入内存。 */
+    public List<String> exportChunks(UUID id, int page, int size) {
+        String sql = "SELECT content FROM " + qualifiedTable()
+                + " WHERE metadata->>'document_id' = ?"
+                + " ORDER BY CASE WHEN metadata->>'chunk_index' ~ '^[0-9]+$'"
+                + " THEN (metadata->>'chunk_index')::numeric ELSE 2147483647 END, id"
+                + " LIMIT ? OFFSET ?";
+        return jdbcTemplate.queryForList(sql, String.class, id.toString(), size, (long) page * size);
+    }
+
     /**
      * 统计整张向量表的行数（测试与排错用）。
      */

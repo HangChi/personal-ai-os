@@ -207,4 +207,30 @@ class TokenUsageIntegrationTest {
             Thread.currentThread().interrupt();
         }
     }
+
+    @Test
+    void bulkRetentionPreservesExactBoundaryAndNewerRecords() {
+        Instant cutoff = Instant.parse("2026-06-01T00:00:00Z");
+        repository.saveAll(List.of(
+                new TokenUsageEntity("old", "model", 1, 2, TokenUsageSource.ACTUAL, cutoff.minusSeconds(1)),
+                new TokenUsageEntity("boundary", "model", 1, 2, TokenUsageSource.ACTUAL, cutoff),
+                new TokenUsageEntity("new", "model", 1, 2, TokenUsageSource.ACTUAL, cutoff.plusSeconds(1))));
+        assertThat(repository.deleteByCreatedAtBefore(cutoff)).isEqualTo(1);
+        assertThat(repository.findAll()).extracting(TokenUsageEntity::getConversationId)
+                .containsExactlyInAnyOrder("boundary", "new");
+    }
+
+    @Autowired com.personalos.common.idempotency.OperationRecordRepository operations;
+
+    @Test void operationRetentionUsesBulkDeleteAndStrictBoundary() {
+        Instant cutoff = Instant.parse("2026-06-01T00:00:00Z");
+        jdbc.execute("DELETE FROM operation_record");
+        for (int seconds : new int[] {-1, 0, 1}) {
+            jdbc.update("INSERT INTO operation_record(idempotency_key, source, operation, request_digest, outcome, created_at) "
+                    + "VALUES (?, 'HTTP', 'test', 'digest', 'SUCCESS', ?)",
+                    "retention-" + seconds, cutoff.plusSeconds(seconds).atOffset(java.time.ZoneOffset.UTC));
+        }
+        assertThat(operations.deleteByCreatedAtBefore(cutoff)).isEqualTo(1);
+        assertThat(operations.count()).isEqualTo(2);
+    }
 }

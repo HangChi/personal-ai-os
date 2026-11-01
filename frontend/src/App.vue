@@ -28,9 +28,12 @@ import {
   User,
 } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { ElNotification } from 'element-plus'
+import { useCalendarStore } from '@/stores/calendar'
+import { refreshPushState } from '@/notifications/web-push'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 
@@ -49,6 +52,34 @@ const { authEnabled, username } = storeToRefs(authStore)
 const { navCollapsed, sidebarWidth } = storeToRefs(uiStore)
 const route = useRoute()
 const router = useRouter()
+
+// 提醒属于应用全局，离开日程页后仍持续轮询；登录页停止轮询。
+const calendarStore = useCalendarStore()
+watch(
+  () => authStore.ready && (!authStore.authEnabled || authStore.isAuthenticated),
+  (active) => {
+    if (active) {
+      calendarStore.startReminderPolling()
+      void refreshPushState()
+    } else calendarStore.stopReminderPolling()
+  },
+  { immediate: true },
+)
+watch(
+  () => calendarStore.inlineNotices,
+  () => {
+    for (const notice of calendarStore.consumeInlineNotices()) {
+      ElNotification({
+        title: notice.title,
+        message: notice.body,
+        type: 'warning',
+        duration: 6000,
+        position: 'bottom-right',
+      })
+    }
+  },
+)
+onBeforeUnmount(() => calendarStore.stopReminderPolling())
 
 /** 登录页不显示导航：点任何一个都会立刻被守卫弹回登录页，只是噪音 */
 const isLoginPage = computed(() => route.name === 'login')

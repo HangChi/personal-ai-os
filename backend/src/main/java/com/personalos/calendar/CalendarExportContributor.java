@@ -2,7 +2,8 @@ package com.personalos.calendar;
 
 import com.personalos.calendar.service.CalendarEventService;
 import com.personalos.export.ExportContributor;
-import java.util.List;
+import com.personalos.export.ExportWriter;
+import tools.jackson.core.JsonGenerator;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,9 +19,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class CalendarExportContributor implements ExportContributor {
 
+    private final ExportWriter writer;
+
     private final CalendarEventService eventService;
 
-    public CalendarExportContributor(CalendarEventService eventService) {
+    public CalendarExportContributor(CalendarEventService eventService, ExportWriter writer) {
+        this.writer = writer;
         this.eventService = eventService;
     }
 
@@ -30,7 +34,8 @@ public class CalendarExportContributor implements ExportContributor {
     }
 
     @Override
-    public List<?> snapshot() {
-        return eventService.listAll();
+    public long writeTo(JsonGenerator json) {
+        return writer.array(json, page -> eventService.exportBatch(page,
+                ExportWriter.BATCH_SIZE));
     }
 }
