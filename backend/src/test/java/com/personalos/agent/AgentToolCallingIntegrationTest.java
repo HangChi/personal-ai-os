@@ -60,6 +60,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 class AgentToolCallingIntegrationTest {
 
+    @Autowired com.personalos.calendar.repository.CalendarEventRepository calendarEvents;
+    @Autowired com.personalos.chat.repository.ChatMessageRepository chatMessages;
+
     @Container
     @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
@@ -107,7 +110,54 @@ class AgentToolCallingIntegrationTest {
         confirmationRepository.deleteAll();
         taskRepository.deleteAll();
         operationRecordRepository.deleteAll();
+        calendarEvents.deleteAll();
         model.reset();
+    }
+
+    @Test
+    void missingCalendarToolCallIsRepairedBeforeStreamingOrSavingFalseSuccess() throws Exception {
+        String conversationId = createSession();
+        model.enqueueText("记下了明天的日期。");
+        stream(conversationId, "我明天下午14.30要开组会，在A座706会议室");
+        model.enqueueText("时间是两小时。");
+        stream(conversationId, "组会时间改成2小时吧");
+        model.enqueueText("已创建 ✅（错误的未执行回复）");
+        model.enqueueToolCall("createCalendarEvent", """
+                {"title":"党支部第二次集中大课","startsAt":"2026-11-02T19:00:00+08:00",
+                 "endsAt":"2026-11-02T21:00:00+08:00","location":"B501教室","reminderLeadMinutes":15}
+                """);
+        model.enqueueText("已创建：11月2日19–21点，B501教室。");
+
+        var events = stream(conversationId, "晚上19.-21.党支部第二次集中大课，在B501教室");
+
+        assertThat(events).extracting(SseEvent::name).contains("done").doesNotContain("error");
+        assertThat(events.toString()).doesNotContain("错误的未执行回复");
+        assertThat(calendarEvents.findAll()).singleElement().satisfies(event -> {
+            assertThat(event.getTitle()).isEqualTo("党支部第二次集中大课");
+            assertThat(event.getLocation()).isEqualTo("B501教室");
+            assertThat(event.getStartsAt()).isEqualTo(java.time.Instant.parse("2026-11-02T11:00:00Z"));
+            assertThat(event.getEndsAt()).isEqualTo(java.time.Instant.parse("2026-11-02T13:00:00Z"));
+        });
+        assertThat(operationRecordsOf("createCalendarEvent")).hasSize(1);
+        assertThat(chatMessages.findByConversationIdOrderBySequenceNoAsc(conversationId))
+                .hasSize(6).noneMatch(message -> message.getContent().contains("错误的未执行回复"));
+        assertThat(model.receivedInstructions().get(3)).anyMatch(message ->
+                message.getText() != null && message.getText().contains("我明天下午14.30"));
+        assertThat(model.receivedInstructions().get(3)).anyMatch(message ->
+                message.getText() != null && message.getText().contains("应承接前文用户明确指定"));
+    }
+
+    @Test
+    void repeatedUnsupportedCalendarSuccessBecomesHonestIncompleteReply() throws Exception {
+        String conversationId = createSession();
+        model.enqueueText("已创建 ✅（第一次虚报）");
+        model.enqueueText("已创建 ✅（第二次虚报）");
+        var events = stream(conversationId, "添加明天19–21点的大课日程，B501教室");
+        assertThat(events.toString()).contains("尚未创建").doesNotContain("虚报");
+        assertThat(calendarEvents.count()).isZero();
+        assertThat(model.receivedInstructions()).hasSize(2);
+        assertThat(chatMessages.findByConversationIdOrderBySequenceNoAsc(conversationId))
+                .hasSize(2).last().satisfies(message -> assertThat(message.getContent()).contains("尚未创建"));
     }
 
     // ---------------------------------------------------------------- SC-001

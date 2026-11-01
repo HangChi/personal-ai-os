@@ -60,7 +60,7 @@ public class ToolExecutor {
         String turnId = contextValue(toolContext, ToolContextKeys.TURN_ID);
         String digest = jsonCodec.digestOf(arguments);
         String key = IdempotencyService.toolKey(conversationId, turnId, toolName, digest);
-        return execute(toolName, arguments, toolContext, key, action);
+        return execute(toolName, arguments, toolContext, key, true, action);
     }
 
     /**
@@ -72,11 +72,11 @@ public class ToolExecutor {
      */
     public String read(String toolName, Map<String, Object> arguments, ToolContext toolContext,
                        Supplier<ToolExecutionResult> action) {
-        return execute(toolName, arguments, toolContext, UUID.randomUUID().toString(), action);
+        return execute(toolName, arguments, toolContext, UUID.randomUUID().toString(), false, action);
     }
 
     private String execute(String toolName, Map<String, Object> arguments, ToolContext toolContext,
-                           String key, Supplier<ToolExecutionResult> action) {
+                           String key, boolean write, Supplier<ToolExecutionResult> action) {
         String conversationId = contextValue(toolContext, ToolContextKeys.CONVERSATION_ID);
         String turnId = contextValue(toolContext, ToolContextKeys.TURN_ID);
         String digest = jsonCodec.digestOf(arguments);
@@ -118,9 +118,9 @@ public class ToolExecutor {
                 return IdempotentResult.of(jsonCodec.toJson(execution), toOutcome(execution));
             });
 
+            ToolExecutionResult original = jsonCodec.fromJson(result.responsePayload(), ToolExecutionResult.class);
+            if (budget != null && write) budget.recordWrite(toolName, original);
             if (result.replayed()) {
-                ToolExecutionResult original =
-                        jsonCodec.fromJson(result.responsePayload(), ToolExecutionResult.class);
                 return jsonCodec.toJson(ToolExecutionResult.duplicate(
                         "该操作在本轮已执行过，未重复执行。首次结果：" + original.message(),
                         original.data()));

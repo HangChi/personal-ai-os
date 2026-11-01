@@ -13,7 +13,8 @@ class CurrentTimePromptContributorTest {
         Clock clock = Clock.fixed(Instant.parse("2026-10-31T17:30:00Z"), ZoneOffset.UTC);
         String prompt = new CurrentTimePromptContributor(clock, ZoneId.of("Asia/Shanghai")).contribute();
         assertThat(prompt).contains("2026-11-01T01:30:00+08:00", "2026-11-01 星期日",
-                "Asia/Shanghai", "明天日期：2026-11-02", "不要联网校时", "带时区偏移");
+                "Asia/Shanghai", "明天日期：2026-11-02", "不要联网校时", "带时区偏移",
+                "应承接前文用户明确指定", "仍指明天", "不要仅因今天该时段已过而自行顺延日期");
     }
 
     @Test

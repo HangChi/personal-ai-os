@@ -17,6 +17,8 @@ public final class AgentTurnBudget {
     private int modelCalls;
     private int consecutiveFailures;
     private boolean stopped;
+    private final Set<String> successfulWrites = new HashSet<>();
+    private boolean calendarRepairAttempted;
 
     public AgentTurnBudget(AgentExecutionProperties properties) {
         maxModelCalls = properties.maxModelCalls();
@@ -61,6 +63,21 @@ public final class AgentTurnBudget {
     }
 
     public synchronized int modelCalls() { return modelCalls; }
+
+    /** Only committed tool results count as evidence; reads and pending approvals do not. */
+    public synchronized void recordWrite(String toolName, ToolExecutionResult result) {
+        if ("OK".equals(result.status())) successfulWrites.add(toolName);
+    }
+
+    public synchronized boolean hasSuccessfulWrite(String toolName) {
+        return successfulWrites.contains(toolName);
+    }
+
+    public synchronized boolean claimCalendarRepair() {
+        if (calendarRepairAttempted) return false;
+        calendarRepairAttempted = true;
+        return true;
+    }
 
     private void stop() {
         stopped = true;

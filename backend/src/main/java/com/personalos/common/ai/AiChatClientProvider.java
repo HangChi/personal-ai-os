@@ -153,7 +153,7 @@ public class AiChatClientProvider {
         // 模型正常返回工具调用、对话正常结束、日志零报错，只是**工具从不执行**。
         // 复用自动配置的 Builder 则要赌「当前配置下它是否存在」，这条不确定性不值得保留：
         // 显式装配后，行为只取决于本方法，与自动配置的启用条件无关。
-        ChatClient.Builder builder = ChatClient.builder(guarded)
+        ChatClient.Builder builder = ChatClient.builder(new CalendarWriteGuardChatModel(guarded))
                 .defaultSystem(aiProperties.systemPrompt())
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build());
 
