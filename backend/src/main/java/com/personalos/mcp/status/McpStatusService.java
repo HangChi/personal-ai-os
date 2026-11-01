@@ -8,8 +8,9 @@ import com.personalos.mcp.client.McpServerStatus;
 import com.personalos.mcp.config.McpProperties;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,6 +35,7 @@ public class McpStatusService {
     private final String personalServerVersion;
     private final String personalServerEndpoint;
 
+    @Autowired
     public McpStatusService(McpProperties properties, ObjectProvider<McpClientRegistry> registryProvider,
                             @Value("${spring.ai.mcp.server.enabled:false}") boolean personalServerEnabled,
                             @Value("${spring.ai.mcp.server.name:personal-ai-os}") String personalServerName,

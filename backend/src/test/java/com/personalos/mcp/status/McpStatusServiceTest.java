@@ -13,6 +13,7 @@ import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -23,6 +24,25 @@ import tools.jackson.databind.ObjectMapper;
  * 状态查询端点如果直接依赖它，默认配置下应用会起不来。
  */
 class McpStatusServiceTest {
+
+    @Test
+    @DisplayName("容器能选择带配置参数的构造器，对外 MCP 状态读取实际配置")
+    void shouldWireStatusServiceWithConfiguredPersonalServer() {
+        new ApplicationContextRunner()
+                .withBean(McpProperties.class, () -> properties(false))
+                .withBean(McpStatusService.class)
+                .withPropertyValues("spring.ai.mcp.server.enabled=true",
+                        "spring.ai.mcp.server.name=test-personal-server",
+                        "spring.ai.mcp.server.streamable-http.mcp-endpoint=/custom-mcp")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    PersonalMcpStatusDto status = context.getBean(McpStatusService.class).personalServer();
+                    assertThat(status.enabled()).isTrue();
+                    assertThat(status.name()).isEqualTo("test-personal-server");
+                    assertThat(status.endpoint()).isEqualTo("/custom-mcp");
+                    assertThat(status.tools()).hasSize(4);
+                });
+    }
 
     private static McpProperties properties(boolean enabled) {
         return new McpProperties(enabled, Map.of(

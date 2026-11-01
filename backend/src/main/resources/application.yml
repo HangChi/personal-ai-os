@@ -63,6 +63,10 @@ spring:
     mcp:
       server:
         enabled: ${PERSONAL_MCP_SERVER_ENABLED:false}
+        # 对外只注册 @McpTool，禁止将聊天使用的 ToolCallbackProvider 再次导出。
+        # expose-mcp-client-tools=false 只能识别框架原生 provider，无法识别项目的装饰器。
+        tool-callback-converter: false
+        expose-mcp-client-tools: false
         name: ${PERSONAL_MCP_SERVER_NAME:personal-ai-os}
         version: ${PERSONAL_MCP_SERVER_VERSION:0.1.0}
         protocol: ${PERSONAL_MCP_SERVER_PROTOCOL:streamable}

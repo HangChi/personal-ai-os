@@ -38,6 +38,8 @@ public class PersonalMcpTools {
     }
 
     @McpTool(name = "personal_list_tasks",
+            annotations = @McpTool.McpAnnotations(readOnlyHint = true, destructiveHint = false,
+                    idempotentHint = true, openWorldHint = false),
             description = "查询个人任务，可按状态和关键词筛选，并返回分页结果。")
     public PageDto<TaskDto> listTasks(
             @McpToolParam(description = "状态：TODO、DOING 或 DONE；留空表示全部", required = false)
@@ -55,6 +57,8 @@ public class PersonalMcpTools {
     }
 
     @McpTool(name = "personal_search_knowledge",
+            annotations = @McpTool.McpAnnotations(readOnlyHint = true, destructiveHint = false,
+                    idempotentHint = true, openWorldHint = false),
             description = "在个人知识库中进行混合检索，返回相关文档片段及来源。")
     public List<KnowledgeHitDto> searchKnowledge(
             @McpToolParam(description = "要检索的问题或关键词") String query,
@@ -64,6 +68,8 @@ public class PersonalMcpTools {
     }
 
     @McpTool(name = "personal_list_calendar",
+            annotations = @McpTool.McpAnnotations(readOnlyHint = true, destructiveHint = false,
+                    idempotentHint = true, openWorldHint = false),
             description = "查询个人日程发生实例，时间使用 ISO-8601 格式。")
     public PageDto<CalendarOccurrenceDto> listCalendar(
             @McpToolParam(description = "区间起点，例如 2026-11-01T00:00:00Z；留空表示今天开始", required = false)
@@ -78,6 +84,8 @@ public class PersonalMcpTools {
     }
 
     @McpTool(name = "personal_list_memories",
+            annotations = @McpTool.McpAnnotations(readOnlyHint = true, destructiveHint = false,
+                    idempotentHint = true, openWorldHint = false),
             description = "读取个人长期记忆，包括内容、来源、置顶状态和更新时间。")
     public List<MemoryDto> listMemories() {
         return memoryService.list();
