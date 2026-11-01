@@ -55,7 +55,7 @@ personal-ai-os/
 │       │   ├── task/           阶段 2：任务
 │       │   ├── knowledge/      阶段 3：知识库与 RAG
 │       │   ├── calendar/       阶段 4：日程与提醒
-│       │   ├── mcp/            阶段 6：MCP 客户端（阶段 11 加状态查询）
+│       │   ├── mcp/            MCP 客户端 + Personal AI OS MCP Server
 │       │   └── export/         阶段 12：数据导出（SPI + 组装）
 │       ├── main/resources/
 │       │   ├── application.yml
@@ -219,6 +219,23 @@ MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,list_directory,directory_tree
   （令牌 / 有效期 / 单次性），摘要由服务端依据参数生成，不采信模型文本。
 - **沙箱是 server 自己的事**：filesystem server 只访问启动参数里声明的目录，
   所以 `ARGS` 里务必写专用目录（如 `./mcp-sandbox`），不要开放 home 或整个磁盘。
+
+### 让其他 AI 调用 Personal AI OS
+
+项目也可以作为 MCP Server，对外提供个人数据工具。第一版默认关闭，启用后提供只读工具：
+查询任务、检索知识库、查询日程和读取长期记忆；不提供绕过确认机制的写入工具。
+
+```bash
+PERSONAL_MCP_SERVER_ENABLED=true
+```
+
+本地启动后，Streamable HTTP 地址是 `http://localhost:8080/mcp`。在 Cursor、Claude Desktop
+或其他 MCP 客户端中配置这个地址即可。公网使用时必须放在 HTTPS 反向代理之后，并启用认证；
+不要把未认证的 MCP 端点直接暴露到公网。
+
+服务端工具名为 `personal_list_tasks`、`personal_search_knowledge`、
+`personal_list_calendar` 和 `personal_list_memories`。详细配置见
+[`docs/development.md`](docs/development.md) 的 MCP Server 小节。
 
 ## 日程与提醒
 

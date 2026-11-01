@@ -146,6 +146,25 @@ npm run dev                  # http://localhost:5173
 首页会实时调用后端 `/api/v1/health` 并展示状态。
 **后端未启动时，页面会给出可读的错误提示，而不是白屏。**
 
+### MCP Server（供外部 AI 调用）
+
+项目同时支持作为 MCP Server 对外提供个人数据工具。默认关闭；开启后复用当前后端进程，
+无需新增数据库或端口：
+
+```bash
+PERSONAL_MCP_SERVER_ENABLED=true ./mvnw spring-boot:run
+```
+
+Streamable HTTP 端点为 `http://localhost:8080/mcp`。当前只读工具包括：
+
+- `personal_list_tasks`：分页查询任务；
+- `personal_search_knowledge`：检索知识库片段；
+- `personal_list_calendar`：按 ISO-8601 时间区间查询日程；
+- `personal_list_memories`：读取长期记忆。
+
+写入工具暂未开放，避免外部客户端绕过系统已有的人工确认机制。公网部署时必须使用 HTTPS、
+认证和反向代理；MCP Server 默认关闭，不会影响现有本地启动方式。
+
 其他命令：
 
 ```bash

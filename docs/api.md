@@ -157,6 +157,7 @@ Header: Idempotency-Key?   ← 同一键重试时，模型重复发出的工具�
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | GET | `/mcp/servers` | 各 server 的连接状态与工具数（活动页用） |
+| POST/GET | `/mcp` | 可选的 Personal AI OS MCP Server（Streamable HTTP，默认关闭） |
 | GET | `/search` | 跨模块全局搜索，按模块分组 |
 | GET | `/export` | 导出全部业务数据；**直接返回文件**，不套信封 |
 

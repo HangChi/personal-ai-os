@@ -60,6 +60,15 @@ spring:
     baseline-on-migrate: true
 
   ai:
+    mcp:
+      server:
+        enabled: ${PERSONAL_MCP_SERVER_ENABLED:false}
+        name: ${PERSONAL_MCP_SERVER_NAME:personal-ai-os}
+        version: ${PERSONAL_MCP_SERVER_VERSION:0.1.0}
+        protocol: ${PERSONAL_MCP_SERVER_PROTOCOL:streamable}
+        instructions: ${PERSONAL_MCP_SERVER_INSTRUCTIONS:Personal AI OS personal assistant data tools. Read-only tools are enabled by default.}
+        streamable-http:
+          mcp-endpoint: ${PERSONAL_MCP_SERVER_ENDPOINT:/mcp}
     tools:
       # 每轮同工具最多 3 次、合计 12 次。超限直接结束工具循环，禁止错误回传后继续空转。
       # 模型请求次数与连续失败另由 app.agent 限制；同参数失败本轮不再执行。

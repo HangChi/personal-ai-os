@@ -83,7 +83,10 @@ public class SecurityConfig {
                         csrf.disable();
                     } else {
                         csrf.csrfTokenRepository(new HttpSessionCsrfTokenRepository())
-                                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler());
+                                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                                // MCP clients are protocol clients rather than browser forms;
+                                // authentication still applies when AUTH_ENABLED=true.
+                                .ignoringRequestMatchers("/mcp", "/mcp/**");
                     }
                 })
                 // 不用 Spring 自带的表单登录与 Basic：前端是 SPA，需要 JSON 接口
