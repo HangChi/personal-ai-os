@@ -39,7 +39,7 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 </script>
 
 <template>
-  <div>
+  <div class="cal-month">
     <div class="cal-month__bar">
       <el-button size="small" @click="emit('prev')">上一月</el-button>
       <span class="cal-month__title">{{ title }}</span>
@@ -48,62 +48,72 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
       <span v-if="overflow > 0" class="cal-month__warn">另有 {{ overflow }} 条未显示</span>
     </div>
 
-    <div v-loading="loading" class="cal-month__grid">
-      <div v-for="weekday in WEEKDAYS" :key="weekday" class="cal-month__weekday">{{ weekday }}</div>
+    <div class="cal-month__scroll" tabindex="0" aria-label="月历，可左右滚动">
+      <div v-loading="loading" class="cal-month__grid">
+        <div v-for="weekday in WEEKDAYS" :key="weekday" class="cal-month__weekday">{{ weekday }}</div>
 
-      <div
-        v-for="cell in cells"
-        :key="cell.key"
-        class="cal-month__cell"
-        :class="{ 'cal-month__cell--muted': !cell.inMonth, 'cal-month__cell--today': cell.isToday }"
-      >
-        <div class="cal-month__cell-head">
-          <span class="cal-month__cell-day">{{ cell.day }}</span>
-          <el-button class="cal-month__cell-add" link type="primary" size="small" @click="emit('create-on', cell.date)">
-            +
-          </el-button>
-        </div>
-
-        <!-- 日程条目同样是可点击的，必须键盘可达：月视图里用户主要的操作就是点开一条改它 -->
         <div
-          v-for="(item, index) in itemsOf(itemsByDay, cell.key).slice(0, CELL_VISIBLE_LIMIT)"
-          :key="`${item.eventId}-${index}`"
-          class="cal-month__cell-item"
-          :title="item.title"
-          tabindex="0"
-          role="button"
-          @click="emit('open-edit', item)"
-          @keydown.enter.prevent="emit('open-edit', item)"
-          @keydown.space.prevent="emit('open-edit', item)"
+          v-for="cell in cells"
+          :key="cell.key"
+          class="cal-month__cell"
+          :class="{ 'cal-month__cell--muted': !cell.inMonth, 'cal-month__cell--today': cell.isToday }"
         >
-          <span class="cal-month__cell-dot" :class="{ 'cal-month__cell-dot--recurring': item.recurring }" />
-          <span class="cal-month__cell-time">{{ item.allDay ? '全天' : shortTime(item.startsAt) }}</span>
-          <span class="cal-month__cell-title">{{ item.title }}</span>
-          <span v-if="isCrossDay(item)" class="cal-month__cell-cross">跨天</span>
-        </div>
+          <div class="cal-month__cell-head">
+            <span class="cal-month__cell-day">{{ cell.day }}</span>
+            <el-button
+              class="cal-month__cell-add"
+              link
+              type="primary"
+              size="small"
+              :aria-label="`在 ${cell.key} 创建日程`"
+              @click="emit('create-on', cell.date)"
+            >
+              +
+            </el-button>
+          </div>
 
-        <el-popover
-          v-if="itemsOf(itemsByDay, cell.key).length > CELL_VISIBLE_LIMIT"
-          placement="bottom-start"
-          :width="260"
-          trigger="click"
-        >
-          <template #reference>
-            <button type="button" class="cal-month__cell-more">
-              还有 {{ itemsOf(itemsByDay, cell.key).length - CELL_VISIBLE_LIMIT }} 条
-            </button>
-          </template>
+          <!-- 日程条目同样是可点击的，必须键盘可达：月视图里用户主要的操作就是点开一条改它 -->
           <div
-            v-for="(item, index) in itemsOf(itemsByDay, cell.key).slice(CELL_VISIBLE_LIMIT)"
-            :key="`more-${item.eventId}-${index}`"
-            class="cal-month__cell-more-item"
+            v-for="(item, index) in itemsOf(itemsByDay, cell.key).slice(0, CELL_VISIBLE_LIMIT)"
+            :key="`${item.eventId}-${index}`"
+            class="cal-month__cell-item"
+            :title="item.title"
+            tabindex="0"
+            role="button"
             @click="emit('open-edit', item)"
+            @keydown.enter.prevent="emit('open-edit', item)"
+            @keydown.space.prevent="emit('open-edit', item)"
           >
             <span class="cal-month__cell-dot" :class="{ 'cal-month__cell-dot--recurring': item.recurring }" />
             <span class="cal-month__cell-time">{{ item.allDay ? '全天' : shortTime(item.startsAt) }}</span>
-            <span>{{ item.title }}</span>
+            <span class="cal-month__cell-title">{{ item.title }}</span>
+            <span v-if="isCrossDay(item)" class="cal-month__cell-cross">跨天</span>
           </div>
-        </el-popover>
+
+          <el-popover
+            v-if="itemsOf(itemsByDay, cell.key).length > CELL_VISIBLE_LIMIT"
+            placement="bottom-start"
+            :width="260"
+            trigger="click"
+          >
+            <template #reference>
+              <button type="button" class="cal-month__cell-more">
+                还有 {{ itemsOf(itemsByDay, cell.key).length - CELL_VISIBLE_LIMIT }} 条
+              </button>
+            </template>
+            <button
+              v-for="(item, index) in itemsOf(itemsByDay, cell.key).slice(CELL_VISIBLE_LIMIT)"
+              :key="`more-${item.eventId}-${index}`"
+              type="button"
+              class="cal-month__cell-more-item"
+              @click="emit('open-edit', item)"
+            >
+              <span class="cal-month__cell-dot" :class="{ 'cal-month__cell-dot--recurring': item.recurring }" />
+              <span class="cal-month__cell-time">{{ item.allDay ? '全天' : shortTime(item.startsAt) }}</span>
+              <span class="cal-month__more-title">{{ item.title }}</span>
+            </button>
+          </el-popover>
+        </div>
       </div>
     </div>
   </div>
@@ -116,14 +126,23 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
   display: flex;
   align-items: center;
   gap: var(--os-space-2);
+  flex-wrap: wrap;
   margin-bottom: var(--os-space-3);
 }
 
 .cal-month__title {
-  min-width: 110px;
-  font-size: var(--os-font-md);
+  flex: none;
+  width: 108px;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--os-font-sm);
   text-align: center;
   font-weight: 600;
+}
+
+.cal-month__bar > .el-button.el-button--small {
+  min-height: 28px;
+  height: 28px;
+  padding-inline: var(--os-space-3);
 }
 
 .cal-month__warn {
@@ -135,11 +154,27 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 /*
  * 7 列 × 6 行。行数固定是刻意的：让不同月份的高度一致，切月时下方内容不会被顶来顶去。
  */
+.cal-month__scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--os-radius-md);
+}
+
 .cal-month__grid {
+  --cal-cell-height: 224px;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  border-top: 1px solid var(--el-border-color-lighter);
-  border-left: 1px solid var(--el-border-color-lighter);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: 32px repeat(6, var(--cal-cell-height));
+  min-width: 672px;
+}
+
+.cal-month__grid > :nth-child(7n) {
+  border-right: 0;
+}
+
+.cal-month__cell:nth-last-child(-n + 7) {
+  border-bottom: 0;
 }
 
 .cal-month__weekday {
@@ -157,7 +192,8 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
   display: flex;
   flex-direction: column;
   gap: var(--os-space-1);
-  min-height: 96px;
+  min-width: 0;
+  overflow: hidden;
   padding: var(--os-space-1) var(--os-space-2);
   border-right: 1px solid var(--el-border-color-lighter);
   border-bottom: 1px solid var(--el-border-color-lighter);
@@ -203,6 +239,10 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
   opacity: 1;
 }
 
+.cal-month__cell:focus-within .cal-month__cell-add {
+  opacity: 1;
+}
+
 /* 触屏：没有 hover，必须常驻；同时撑大点击热区到可手指点中的尺寸 */
 @media (hover: none) {
   .cal-month__cell-add {
@@ -234,10 +274,16 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 }
 
 .cal-month__cell-item {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  padding: 1px 4px;
+  display: grid;
+  grid-template-columns: 6px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 4px;
+  flex: none;
+  min-width: 0;
+  padding: 2px 4px;
+  min-height: 24px;
+  line-height: 16px;
+  background: var(--el-color-primary-light-9);
   border-radius: var(--os-radius-sm);
   font-size: var(--os-font-xs);
   cursor: pointer;
@@ -262,19 +308,26 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 }
 
 .cal-month__cell-title {
-  flex: 1;
+  grid-column: 2 / -1;
+  grid-row: 2;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .cal-month__cell-cross {
+  grid-column: 3;
+  grid-row: 1;
   flex: none;
   font-size: var(--os-font-xs);
   color: var(--el-color-warning);
 }
 
 .cal-month__cell-more {
+  flex: none;
   margin-top: 2px;
   padding: 0;
   border: none;
@@ -286,11 +339,34 @@ function itemsOf(map: Map<string, CalendarOccurrence[]>, key: string): CalendarO
 }
 
 .cal-month__cell-more-item {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: var(--el-text-color-regular);
+  text-align: left;
   display: flex;
+  align-items: baseline;
   gap: var(--os-space-2);
   padding: var(--os-space-1) 0;
   font-size: var(--os-font-xs);
   cursor: pointer;
+}
+
+.cal-month__more-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (pointer: coarse) {
+  .cal-month__grid {
+    --cal-cell-height: 240px;
+  }
+
+  .cal-month__bar > .el-button.el-button--small,
+  .cal-month__cell-more,
+  .cal-month__cell-more-item {
+    min-height: 32px;
+  }
 }
 
 .cal-month__cell-more-item:hover {

@@ -168,10 +168,17 @@ defineExpose({ fillSlot, reset })
       <div class="cal-create__footer">
         <div class="cal-create__lead">
           <label class="cal-create__label" :for="`${formId}-lead`">提前提醒</label>
-          <el-input-number :id="`${formId}-lead`" v-model="leadMinutes" :min="0" :max="10080" :step="5" />
+          <el-input-number :id="`${formId}-lead`" v-model="leadMinutes" size="small" :min="0" :max="10080" :step="5" />
           <span class="cal-create__unit">分钟</span>
         </div>
-        <el-button type="primary" native-type="submit" :icon="Plus" :loading="creating" :disabled="creating">
+        <el-button
+          type="primary"
+          size="small"
+          native-type="submit"
+          :icon="Plus"
+          :loading="creating"
+          :disabled="creating"
+        >
           创建日程
         </el-button>
       </div>
@@ -270,12 +277,30 @@ defineExpose({ fillSlot, reset })
 }
 
 .cal-create__lead :deep(.el-input-number) {
-  width: 112px;
+  width: 104px;
+  --el-input-number-controls-width: 24px;
+}
+
+.cal-create__lead :deep(.el-input__wrapper) {
+  padding-left: 25px;
+  padding-right: 25px;
 }
 
 .cal-create__unit {
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
+}
+
+.cal-create__footer > .el-button.el-button--small {
+  min-height: 28px;
+  height: 28px;
+  padding-inline: var(--os-space-3);
+}
+
+@media (pointer: coarse) {
+  .cal-create__footer > .el-button.el-button--small {
+    min-height: 32px;
+  }
 }
 
 @media (max-width: 600px) {

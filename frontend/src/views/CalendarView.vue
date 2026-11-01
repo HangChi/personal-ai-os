@@ -259,17 +259,18 @@ async function acknowledgeAll(): Promise<void> {
         <div class="calendar__header">
           <div class="calendar__view">
             <span class="calendar__card-title">{{ viewMode === 'month' ? '月视图' : '日程列表' }}</span>
-            <el-radio-group :model-value="viewMode" size="small" @change="handleViewChange">
+            <el-radio-group
+              class="calendar__switch"
+              :model-value="viewMode"
+              size="small"
+              aria-label="日程视图"
+              @change="handleViewChange"
+            >
               <el-radio-button value="list">列表</el-radio-button>
               <el-radio-button value="month">月</el-radio-button>
             </el-radio-group>
           </div>
-          <!--
-            去掉 size="small"：同一个「刷新」动作在任务、知识库、活动、首页
-            都是 32px 常规按钮，此前只有这里与设置页用了 24px 小号。
-            同一个动作在不同页面两种大小，是「界面像拼起来的」最直接的来源之一。
-          -->
-          <el-button v-if="viewMode === 'list'" :loading="loadingOccurrences" @click="calendarStore.loadOccurrences()">
+          <el-button size="small" :loading="loadingOccurrences" @click="calendarStore.loadOccurrences()">
             刷新
           </el-button>
         </div>
@@ -311,6 +312,7 @@ async function acknowledgeAll(): Promise<void> {
 
 <style scoped>
 .calendar {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--os-space-5);
@@ -334,7 +336,36 @@ async function acknowledgeAll(): Promise<void> {
 }
 
 .calendar__card-title {
-  font-size: var(--os-font-xl);
+  flex: none;
+  width: 4em;
+  white-space: nowrap;
+  font-size: var(--os-font-md);
   font-weight: 600;
+}
+
+.calendar__switch {
+  flex: none;
+}
+
+.calendar__switch :deep(.el-radio-button__inner) {
+  min-width: 44px;
+  min-height: 28px;
+  height: 28px;
+  padding: 5px 10px;
+  font-size: var(--os-font-xs);
+  line-height: 14px;
+}
+
+.calendar__header > .el-button.el-button--small {
+  min-height: 28px;
+  height: 28px;
+  padding-inline: var(--os-space-3);
+}
+
+@media (pointer: coarse) {
+  .calendar__switch :deep(.el-radio-button__inner),
+  .calendar__header > .el-button.el-button--small {
+    min-height: 32px;
+  }
 }
 </style>
