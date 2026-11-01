@@ -1,8 +1,11 @@
 package com.personalos.common.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 import java.util.Map;
+import java.util.OptionalInt;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +19,33 @@ import org.junit.jupiter.api.Test;
  */
 @DisplayName("ContextBudgetService 的按模型窗口")
 class ContextBudgetServiceTest {
+
+    @Test
+    void restoresChosenBudgetWithoutClampingItToStartupWindow() {
+        var preferences = mock(ContextBudgetPreferenceRepository.class);
+        when(preferences.findBudgetTokens()).thenReturn(OptionalInt.of(979_008));
+        var service = new ContextBudgetService(props(32_768), preferences);
+        service.registerWindowLookup(name -> 983_616);
+
+        assertThat(service.budgetTokens()).isEqualTo(979_008);
+        assertThat(service.budgetTokensFor("custom-large")).isEqualTo(979_008);
+        service.setBudgetTokens(524_288);
+        verify(preferences).saveBudgetTokens(524_288);
+        assertThat(service.budgetTokens()).isEqualTo(524_288);
+    }
+
+    @Test
+    void failedPersistenceKeepsPreviousBudget() {
+        var preferences = mock(ContextBudgetPreferenceRepository.class);
+        when(preferences.findBudgetTokens()).thenReturn(OptionalInt.empty());
+        var service = new ContextBudgetService(props(131_072), preferences);
+        doThrow(new org.springframework.dao.DataAccessResourceFailureException("offline"))
+                .when(preferences).saveBudgetTokens(524_288);
+
+        assertThatThrownBy(() -> service.setBudgetTokens(524_288))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class);
+        assertThat(service.budgetTokens()).isEqualTo(32_768);
+    }
 
     /** 测试用配置：全局窗口 128K，与 {@code AiProperties.Memory} 的默认一致 */
     private static AiProperties props(int globalWindow) {

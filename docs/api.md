@@ -52,7 +52,7 @@ Agent 每轮预算、错误码 `50203` 与追踪字段见 [执行边界说明](a
 | GET | `/chat/sessions/{id}/messages` | 消息，正序。`limit` + `beforeSeq` 用于「加载更早」；不带参数返回全部 |
 | POST | `/chat/sessions/{id}/stream` | **SSE 流式对话**，见下 |
 | GET | `/chat/sessions/{id}/context` | 上下文用量（token 口径，估算值） |
-| PUT | `/chat/context-budget` | 设置上下文预算；同时是窗口裁剪阈值，故必须落服务端 |
+| PUT | `/chat/context-budget` | 设置上下文预算并持久保存，重启后恢复；实际窗口裁剪仍受当前模型输入上限约束 |
 | PATCH | `/chat/sessions/{id}` | 重命名（部分更新） |
 | DELETE | `/chat/sessions/{id}` | 删除会话及其全部消息 |
 

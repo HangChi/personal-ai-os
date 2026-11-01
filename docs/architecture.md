@@ -342,7 +342,9 @@ AiChatClientProvider 收集 ToolCallbackProvider → 挂到 ChatClient（对话�
 | 4 | 知识库片段 | topK ≤20 | 仅 `useKnowledge=true`，带 `[n]` 编号 |
 
 窗口是**双约束**：条数（`max-messages`，粗筛）+ token 预算（用户可选、默认 32K，
-由 `ContextBudgetService` 持有）。从新往旧累加，超预算整体停 —— 不切半条消息。
+由 `ContextBudgetService` 持有，选择保存到 `chat_context_preference`，服务重启后恢复）。
+32K 是尚未选择预算时的兼容默认值，不是模型窗口，也不会因为聊天变多而自动缩小。
+模型较小时只收敛实际可用预算，不覆盖已保存的选择。从新往旧累加，超预算整体停 —— 不切半条消息。
 
 > 早先还有一个 `max-context-chars` 字符阈值，重构后没有消费方，代码与文档一并删掉 ——
 > 留着它会让人以为改它能影响窗口。

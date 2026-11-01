@@ -18,7 +18,7 @@ package com.personalos.common.ai;
  * 放服务端才能让「仪表盘显示的分母」与「实际裁剪阈值」是同一个数 ——
  *否则就是给用户看一个假数字。
  *
- * <p>代价是重启后回到默认值。本地单用户场景可接受；要多端一致再加持久化。
+ * <p>用户选择保存在数据库中，重启后恢复；模型切换只影响实际可用预算，不覆盖偏好。
  */
 @org.springframework.stereotype.Component
 public class ContextBudgetService {
@@ -41,6 +41,7 @@ public class ContextBudgetService {
     public static final double CHARS_PER_TOKEN = TokenEstimation.CJK_CHARS_PER_TOKEN;
 
     private final AiProperties aiProperties;
+    private final ContextBudgetPreferenceRepository preferences;
     private final ContextWindowEvidence evidence = new ContextWindowEvidence();
 
     public ContextWindowEvidence evidence() { return evidence; }
@@ -146,13 +147,20 @@ public class ContextBudgetService {
      */
     private static final int MIN_HISTORY_TOKENS = 1_024;
 
-    /** 默认预算：32K（前端档位里的最小档）。原来是拿 max-context-chars 折算成 7.5K，     结果不在任何档位里，仪表盘显示「158 / 7.3K」却没有对应选项可点 */
+    /** 未设置偏好时保留原有 32K 默认值，避免升级时擅自提高请求用量。 */
     private static final int DEFAULT_BUDGET_TOKENS = 32_768;
 
     public ContextBudgetService(AiProperties aiProperties) {
+        this(aiProperties, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ContextBudgetService(AiProperties aiProperties, ContextBudgetPreferenceRepository preferences) {
         this.aiProperties = aiProperties;
-        int window = contextWindowTokens();
-        this.budgetTokens = Math.min(DEFAULT_BUDGET_TOKENS, window);
+        this.preferences = preferences;
+        int defaultBudget = Math.min(DEFAULT_BUDGET_TOKENS, contextWindowTokens());
+        this.budgetTokens = preferences == null ? defaultBudget
+                : preferences.findBudgetTokens().orElse(defaultBudget);
     }
 
     /**
@@ -267,14 +275,14 @@ public class ContextBudgetService {
     /**
      * 设置预算（token）。
      *
-     * <p>收敛到 {@code [1, 模型窗口]}：超过模型窗口的预算没有意义
-     * （模型根本吃不下），小于 1 会让窗口永远为空。
-     *
      * <p>保存用户选择，不用写死的 1M 上限截断；实际预算由模型窗口收敛。
      * 这样 2M 等大窗口模型可以使用完整预算。
      */
-    public void setBudgetTokens(int tokens) {
-        this.budgetTokens = Math.max(tokens, 1);
+    public synchronized void setBudgetTokens(int tokens) {
+        int selected = Math.max(tokens, 1);
+        // 写入失败时保留旧预算，不能让接口报错但内存里的裁剪阈值已改变。
+        if (preferences != null) preferences.saveBudgetTokens(selected);
+        this.budgetTokens = selected;
     }
 
     /** 折算成字符预算 —— 窗口裁剪用的就是这个数 */
