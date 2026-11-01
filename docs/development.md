@@ -165,6 +165,10 @@ Streamable HTTP 端点为 `http://localhost:8080/mcp`。当前只读工具包括
 写入工具暂未开放，避免外部客户端绕过系统已有的人工确认机制。公网部署时必须使用 HTTPS、
 认证和反向代理；MCP Server 默认关闭，不会影响现有本地启动方式。
 
+这个端点是给 MCP 客户端使用的协议入口，不是前端管理页面。前端「活动」页显示的是外部
+MCP Client 的连接状态；要验证本系统作为 Server，请在 Cursor、Claude Desktop 或其他 MCP
+客户端中配置 `http://127.0.0.1:8080/mcp`。完整的双向配置、认证和排错见 [`mcp.md`](mcp.md)。
+
 其他命令：
 
 ```bash

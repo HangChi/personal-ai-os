@@ -4,10 +4,9 @@
 
 用自然语言和个人 AI 助手交互，让它帮你管理任务、检索自己的知识库、安排日程与提醒——全部跑在你自己的机器上。
 
-> **当前状态**：功能开发到阶段 26（侧栏拖拽调宽），之后完成运行可靠性优化与生产安全加固
-> （数据备份、保留策略、流式导出、Web Push、模型密钥加密、CSRF、HTTPS 部署入口和本地端口隔离）。
+> **当前状态**：功能开发到阶段 28（生产安全加固），包含运行可靠性优化、生产 Compose、CSRF、Secure Cookie、HTTPS 反向代理入口和本地端口隔离。
 > 五个内置模块可用：对话、任务、知识库、日程与提醒、长期记忆；助手内置 15 个工具，
-> 并可经 MCP 接入外部工具 server（只读直行 / 变更类需人工确认）。
+> 支持 MCP 双向接入：既能连接外部 MCP Server，也能作为 MCP Server 向其他 AI 提供个人数据查询工具。
 > 「活动」页可查助手调用过哪些工具、以及每个 MCP server 当前是否连上。
 
 ## 这个项目要做什么
@@ -87,6 +86,7 @@ personal-ai-os/
 - [接口清单](docs/api.md)：HTTP、SSE、认证和 CSRF 约定。
 - [安全策略](SECURITY.md)：公网部署前的强制检查与威胁边界。
 - [架构说明](docs/architecture.md)：模块边界、数据流和部署拓扑。
+- [MCP 指南](docs/mcp.md)：MCP Client 与 MCP Server 的配置、验证和安全边界。
 
 ## 快速开始
 
@@ -188,7 +188,18 @@ cd frontend && npm run lint && npm run format:check && npm run type-check \
 > 阶段 6 保留既有编号，避免重编号导致 `specs/` 目录、迁移与提交历史错位。
 > 后续功能阶段从新编号继续。
 
-## MCP 外部工具接入
+## MCP 集成
+
+Personal AI OS 支持两种 MCP 用法，两个开关相互独立，默认都关闭：
+
+| 模式 | 用途 | 配置 | 入口 |
+|---|---|---|---|
+| MCP Client | 让助手调用外部工具，例如文件系统或 GitHub | `MCP_ENABLED=true` 和 `MCP_SERVERS_<NAME>_*` | 对话中的工具调用；状态见「活动」页 |
+| MCP Server | 让 Cursor、Claude 等外部 AI 查询 Personal AI OS 数据 | `PERSONAL_MCP_SERVER_ENABLED=true` | `http://localhost:8080/mcp` |
+
+详细配置与排错见 [`docs/mcp.md`](docs/mcp.md)。
+
+### 作为 MCP Client：接入外部工具
 
 在 `.env` 里声明 server 即可让助手获得外部工具（默认不启用任何 server）：
 
@@ -220,9 +231,9 @@ MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,list_directory,directory_tree
 - **沙箱是 server 自己的事**：filesystem server 只访问启动参数里声明的目录，
   所以 `ARGS` 里务必写专用目录（如 `./mcp-sandbox`），不要开放 home 或整个磁盘。
 
-### 让其他 AI 调用 Personal AI OS
+### 作为 MCP Server：让其他 AI 调用 Personal AI OS
 
-项目也可以作为 MCP Server，对外提供个人数据工具。第一版默认关闭，启用后提供只读工具：
+项目也可以作为 MCP Server，对外提供个人数据工具。默认关闭，启用后提供只读工具：
 查询任务、检索知识库、查询日程和读取长期记忆；不提供绕过确认机制的写入工具。
 
 ```bash
@@ -230,12 +241,14 @@ PERSONAL_MCP_SERVER_ENABLED=true
 ```
 
 本地启动后，Streamable HTTP 地址是 `http://localhost:8080/mcp`。在 Cursor、Claude Desktop
-或其他 MCP 客户端中配置这个地址即可。公网使用时必须放在 HTTPS 反向代理之后，并启用认证；
-不要把未认证的 MCP 端点直接暴露到公网。
+或其他 MCP 客户端中配置这个地址即可。该端点复用后端认证；`AUTH_ENABLED=true` 时，客户端必须
+使用已登录会话访问。公网使用时必须放在 HTTPS 反向代理之后，并启用认证；不要把未认证的 MCP
+端点直接暴露到公网。
 
 服务端工具名为 `personal_list_tasks`、`personal_search_knowledge`、
 `personal_list_calendar` 和 `personal_list_memories`。详细配置见
-[`docs/development.md`](docs/development.md) 的 MCP Server 小节。
+[`docs/mcp.md`](docs/mcp.md)。前端「活动」页显示的是**外部 MCP Client** 的连接状态；
+本系统作为 Server 时没有单独的管理页面，使用 MCP 客户端连接 `http://localhost:8080/mcp` 验证。
 
 ## 日程与提醒
 
