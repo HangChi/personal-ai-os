@@ -77,7 +77,7 @@ function formatDuration(durationMs: number | null): string {
       <template #title>
         <span class="chat-trail__summary">
           <el-icon :size="12"><Operation /></el-icon>
-          <span class="chat-trail__summary-label">已调用 {{ items.length }} 个工具</span>
+          <span class="chat-trail__summary-label">本轮调用 {{ items.length }} 次工具</span>
           <span class="chat-trail__summary-names">{{ summaryText }}</span>
           <span v-if="failedCount > 0" class="chat-trail__summary-fail">{{ failedCount }} 个失败</span>
           <!--

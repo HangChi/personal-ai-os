@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import { acceptHMRUpdate, defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
 import {
@@ -244,6 +244,7 @@ export const useChatStore = defineStore('chat', () => {
     // 那样挡不住「A→B→A」这种绕一圈回来的情况（id 相同但已是不同一轮）。
     const reqSeq = ++sessionReqSeq
     currentConversationId.value = conversationId
+    toolTrail.value = []
     contextUsage.value = emptyContext()
     loadingMessages.value = true
     error.value = null
@@ -517,6 +518,7 @@ export const useChatStore = defineStore('chat', () => {
       attachments: options?.attachments ?? [],
     }
     messages.value = [...messages.value, optimisticUserMessage]
+    toolTrail.value = []
     streamingContent.value = ''
     liveCitations.value = []
     retrievalState.value = options?.useKnowledge ? 'searching' : 'idle'
@@ -682,3 +684,8 @@ export const useChatStore = defineStore('chat', () => {
     resolveConfirmation,
   }
 })
+
+// 开发热更新保留会话数据，同时替换 action，避免页面仍执行旧的工具统计逻辑。
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useChatStore, import.meta.hot))
+}

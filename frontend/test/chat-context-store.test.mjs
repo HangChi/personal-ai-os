@@ -321,21 +321,25 @@ handlers.clear()
   store.currentConversationId = 'edit-first'
   const original = { id: 1, role: 'USER', content: '原提问', sequenceNo: 1 }
   store.messages = [original, { id: 2, role: 'ASSISTANT', content: '旧回答', sequenceNo: 2 }]
+  store.toolTrail = [{ id: 'old-failure', outcome: 'FAILED' }]
   handlers.set('/chat/sessions/edit-first/rewind', () => Promise.resolve({ deleted: 2 }))
   handlers.set('/chat/sessions/edit-first/messages', () => Promise.resolve([]))
   handlers.set('/chat/sessions/search', () => Promise.resolve({ items: [], total: 0, page: 0, size: 20 }))
   handlers.set('/chat/sessions/edit-first/context', () => Promise.resolve(usage('edit', 131072)))
   handlers.set('/agent/tool-invocations', () => Promise.resolve({ items: [] }))
   let contentsDuringStream
+  let toolCountDuringStream
   const savedFetch = globalThis.fetch
   globalThis.fetch = async (url) => {
     if (url.endsWith('/auth/csrf')) return Response.json({ data: { token: '' } })
     contentsDuringStream = store.messages.map((item) => item.content).join(',')
+    toolCountDuringStream = store.toolTrail.length
     return new Response('event: done\ndata: {"content":"已重发"}\n\n')
   }
   try {
     eq('首条编辑成功重发', await store.editAndResend(original, '新提问'), true)
     eq('重发期间只有修改后的提问', contentsDuringStream, '新提问')
+    eq('重试开始就清空旧轮次失败，不等待回复结束', toolCountDuringStream, 0)
   } finally {
     globalThis.fetch = savedFetch
   }

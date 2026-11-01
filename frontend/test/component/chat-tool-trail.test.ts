@@ -39,7 +39,7 @@ describe('ChatToolTrail', () => {
     })
 
     const text = wrapper.text()
-    expect(text).toContain('已调用 2 个工具')
+    expect(text).toContain('本轮调用 2 次工具')
     expect(text).toContain('createTask、findTasks')
   })
 
