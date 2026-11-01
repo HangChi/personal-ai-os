@@ -835,6 +835,7 @@ html.os-resizing .chat {
 .chat__messages {
   flex: 1;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   min-height: 0;
   display: flex;
   flex-direction: column;
