@@ -30,7 +30,7 @@ vi.mock('@/api/chat', () => ({
   transcribeAudio: vi.fn(),
 }))
 
-/** budgetTokens 为 0 时不渲染仪表盘，多数用例不需要它 */
+/** 多数用例使用无预算数据的占位状态。 */
 const contextUsage: ContextUsage = {
   promptTokens: 0,
   budgetTokens: 0,
@@ -188,10 +188,12 @@ describe('ChatComposer', () => {
     expect(actionGroup.find('.model-picker').exists()).toBe(true)
   })
 
-  it('budgetTokens=0 时不渲染上下文读数（未产生用量时不留空壳）', () => {
+  it('预算不可用时保留占位，避免读取模型配置时整行移动', () => {
     const wrapper = mount(ChatComposer, { props: baseProps() })
 
-    expect(wrapper.find('.context-meter').exists()).toBe(false)
+    expect(wrapper.find('.context-meter--static').exists()).toBe(true)
+    expect(wrapper.find('.context-meter__value').text()).toBe('— / —')
+    expect(wrapper.find('.context-meter').attributes('title')).toBe('上下文预算暂不可用')
   })
 
   it('有预算时上下文读数渲染在读数行，与字数同组', async () => {

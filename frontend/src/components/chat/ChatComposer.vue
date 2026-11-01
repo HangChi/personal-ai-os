@@ -467,11 +467,7 @@ onBeforeUnmount(() => {
         enterSend ? 'Enter 发送 · Shift + Enter 换行' : 'Ctrl / ⌘ + Enter 发送'
       }}</span>
       <span class="chat-composer__readings">
-        <ContextMeter
-          v-if="contextUsage.budgetTokens > 0"
-          :usage="contextUsage"
-          @change-budget="(tokens: number) => emit('change-budget', tokens)"
-        />
+        <ContextMeter :usage="contextUsage" @change-budget="(tokens: number) => emit('change-budget', tokens)" />
         <span class="chat-composer__count" :class="{ 'chat-composer__count--warn': countNearLimit }">
           {{ modelValue.length }} / {{ MAX_LENGTH }}
         </span>
@@ -526,6 +522,8 @@ onBeforeUnmount(() => {
 
 .chat-composer__count {
   flex: none;
+  width: 10ch;
+  text-align: right;
   color: var(--el-text-color-placeholder);
   font-size: var(--os-font-xs);
   font-variant-numeric: tabular-nums;

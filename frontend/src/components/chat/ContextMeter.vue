@@ -8,6 +8,10 @@ const props = defineProps<{ usage: ContextUsage }>()
 const emit = defineEmits<{ (e: 'change-budget', tokens: number): void }>()
 const meterPercent = computed(() => meterPercentOf(props.usage.promptTokens, props.usage.budgetTokens))
 const meterLevel = computed(() => `context-meter__fill--${meterLevelOf(meterPercent.value)}`)
+const usedText = computed(() =>
+  props.usage.budgetTokens > 0 ? `${props.usage.estimated ? '≈' : ''}${formatTokens(props.usage.promptTokens)}` : '—',
+)
+const budgetText = computed(() => (props.usage.budgetTokens > 0 ? formatTokens(props.usage.budgetTokens) : '—'))
 const unknownWindow = computed(() => props.usage.windowSource === 'fallback')
 const sourceLabel = computed(() => {
   switch (props.usage.windowSource) {
@@ -35,7 +39,6 @@ const budgetPresets = computed(() =>
     label: ['精简', '均衡', '完整'][index]!,
   })),
 )
-const customBudget = computed(() => !budgetPresets.value.some((preset) => preset.tokens === props.usage.budgetTokens))
 const meterTitle = computed(() => {
   const u = props.usage
   return [
@@ -71,35 +74,31 @@ const meterTitle = computed(() => {
       <span class="context-meter__track" aria-hidden="true">
         <span class="context-meter__fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
       </span>
-      <span class="context-meter__value"
-        >{{ usage.estimated ? '≈' : '' }}{{ formatTokens(usage.promptTokens) }} /
-        {{ formatTokens(usage.budgetTokens) }}</span
-      >
+      <span class="context-meter__value">
+        <span class="context-meter__used">{{ usedText }}</span>
+        <span class="context-meter__separator"> / </span>
+        <span class="context-meter__budget">{{ budgetText }}</span>
+      </span>
       <span class="context-meter__limit">{{ limitText }}</span>
     </button>
     <template #dropdown>
       <el-dropdown-menu class="context-meter__menu">
         <div class="context-meter__head">
           <span class="context-meter__model">上下文预算</span>
-          <span class="context-meter__source">当前 {{ formatTokens(usage.budgetTokens) }} · {{ limitText }}</span>
+          <span class="context-meter__source">{{ limitText }}</span>
         </div>
-        <el-dropdown-item
-          v-if="customBudget"
-          :command="usage.budgetTokens"
-          class="context-meter__item--on"
-          :aria-label="`当前预算，${formatTokens(usage.budgetTokens)}`"
-        >
+        <li class="context-meter__current" role="presentation">
           <span class="context-meter__option">
             <span>当前预算</span>
             <span class="context-meter__tokens">{{ formatTokens(usage.budgetTokens) }}</span>
-            <el-icon class="context-meter__check is-current"><Check /></el-icon>
+            <span class="context-meter__check" aria-hidden="true" />
           </span>
-        </el-dropdown-item>
+        </li>
         <el-dropdown-item
           v-for="preset in budgetPresets"
           :key="preset.tokens"
           :command="preset.tokens"
-          :divided="customBudget && preset === budgetPresets[0]"
+          :divided="preset === budgetPresets[0]"
           :class="{ 'context-meter__item--on': preset.tokens === usage.budgetTokens }"
           :aria-label="`${preset.label}，输入预算 ${formatTokens(preset.tokens)}${preset.tokens === usage.budgetTokens ? '，当前' : ''}`"
         >
@@ -114,21 +113,31 @@ const meterTitle = computed(() => {
       </el-dropdown-menu>
     </template>
   </el-dropdown>
-  <div v-else-if="usage.budgetTokens > 0" class="context-meter context-meter--static" :title="meterTitle">
-    <span class="context-meter__value"
-      >{{ usage.estimated ? '≈' : '' }}{{ formatTokens(usage.promptTokens) }} /
-      {{ formatTokens(usage.budgetTokens) }}</span
-    >
-    <span class="context-meter__limit">{{ limitText }}</span>
+  <div
+    v-else
+    class="context-meter context-meter--static"
+    :title="usage.budgetTokens > 0 ? meterTitle : '上下文预算暂不可用'"
+  >
+    <span class="context-meter__track" aria-hidden="true">
+      <span class="context-meter__fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
+    </span>
+    <span class="context-meter__value">
+      <span class="context-meter__used">{{ usedText }}</span>
+      <span class="context-meter__separator"> / </span>
+      <span class="context-meter__budget">{{ budgetText }}</span>
+    </span>
+    <span class="context-meter__limit">{{ usage.budgetTokens > 0 ? limitText : '—' }}</span>
   </div>
 </template>
 
 <style scoped>
 .context-meter {
-  display: inline-flex;
+  display: inline-grid;
+  grid-template-columns: var(--os-space-6) minmax(0, 1fr) 7em;
   align-items: center;
   flex: none;
-  gap: var(--os-space-2);
+  gap: var(--os-space-1);
+  width: 21em;
   height: var(--os-space-6);
   padding: 0 var(--os-space-1);
   box-sizing: border-box;
@@ -138,6 +147,7 @@ const meterTitle = computed(() => {
   color: var(--el-text-color-secondary);
   font-family: inherit;
   font-size: var(--os-font-xs);
+  line-height: 1.5;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   cursor: pointer;
@@ -158,7 +168,7 @@ const meterTitle = computed(() => {
 }
 .context-meter__track {
   flex: none;
-  width: var(--os-space-7);
+  width: 100%;
   height: var(--os-space-1);
   border-radius: var(--os-radius-sm);
   background: var(--el-fill-color);
@@ -176,15 +186,40 @@ const meterTitle = computed(() => {
 .context-meter__fill--over {
   background: var(--el-color-danger);
 }
+.context-meter__value,
 .context-meter__limit {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.context-meter__value {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) 0.75em minmax(0, 1fr);
+  align-items: center;
+  text-align: right;
+}
+.context-meter__used,
+.context-meter__budget {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.context-meter__separator {
+  text-align: center;
+}
+.context-meter__limit {
+  text-align: left;
   padding-left: var(--os-space-2);
   border-left: 1px solid var(--el-border-color);
+}
+.context-meter__menu {
+  width: 240px;
+  max-width: calc(100vw - var(--os-space-7));
 }
 .context-meter__head {
   display: grid;
   gap: var(--os-space-1);
-  width: 220px;
-  max-width: calc(100vw - var(--os-space-8));
+  width: 100%;
   padding: var(--os-space-2) var(--os-space-3);
   color: var(--el-text-color-regular);
   font-size: var(--os-font-xs);
@@ -198,6 +233,13 @@ const meterTitle = computed(() => {
 .context-meter__source {
   color: var(--el-text-color-secondary);
 }
+.context-meter__current {
+  padding: var(--os-space-1) var(--os-space-4);
+  color: var(--el-color-primary);
+  font-size: var(--os-font-sm);
+  font-weight: 600;
+  list-style: none;
+}
 .context-meter__option {
   display: flex;
   align-items: center;
@@ -206,12 +248,17 @@ const meterTitle = computed(() => {
   min-height: var(--os-button-height-inline);
 }
 .context-meter__tokens {
+  flex: none;
+  width: 4.5em;
   margin-left: auto;
+  text-align: right;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
   font-variant-numeric: tabular-nums;
 }
 .context-meter__check {
+  flex: none;
+  width: 14px;
   visibility: hidden;
 }
 .context-meter__check.is-current {
@@ -220,6 +267,21 @@ const meterTitle = computed(() => {
 .context-meter__item--on {
   color: var(--el-color-primary);
   font-weight: 600;
+}
+@container (max-width: 360px) {
+  .context-meter {
+    width: 18em;
+    grid-template-columns: minmax(0, 1fr) 7em;
+    padding: 0;
+  }
+  .context-meter__track {
+    display: none;
+  }
+}
+@container (max-width: 320px) {
+  .context-meter {
+    width: 15em;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .context-meter {

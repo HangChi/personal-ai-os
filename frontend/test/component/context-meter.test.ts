@@ -109,14 +109,9 @@ describe('上下文三档菜单', () => {
         },
       },
     })
-    expect(wrapper.findAll('.preset-item').map((item) => item.text())).toEqual([
-      '当前预算64K',
-      '精简256K',
-      '均衡512K',
-      '完整1019.5K',
-    ])
-    expect(wrapper.findAll('.preset-item')[3].attributes('data-budget')).toBe('1043968')
-    expect(wrapper.find('.context-meter__head').text()).toContain('当前 64K')
+    expect(wrapper.findAll('.preset-item').map((item) => item.text())).toEqual(['精简256K', '均衡512K', '完整1019.5K'])
+    expect(wrapper.findAll('.preset-item')[2].attributes('data-budget')).toBe('1043968')
+    expect(wrapper.find('.context-meter__current').text()).toBe('当前预算64K')
     expect(wrapper.find('.context-meter__head').text()).not.toContain('尚未验证')
     await wrapper.setProps({ usage: { ...wrapper.props('usage'), budgetTokens: 1043968 } })
     expect(wrapper.find('.context-meter__value').text()).toBe('≈4K / 1019.5K')
