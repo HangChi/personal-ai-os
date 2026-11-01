@@ -71,13 +71,15 @@ const meterTitle = computed(() => {
     @command="(value: number) => emit('change-budget', value)"
   >
     <button type="button" class="context-meter" :title="meterTitle" :aria-label="meterTitle">
-      <span class="context-meter__track" aria-hidden="true">
-        <span class="context-meter__fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
-      </span>
-      <span class="context-meter__value">
-        <span class="context-meter__used">{{ usedText }}</span>
-        <span class="context-meter__separator"> / </span>
-        <span class="context-meter__budget">{{ budgetText }}</span>
+      <span class="context-meter__reading">
+        <span class="context-meter__track" aria-hidden="true">
+          <span class="context-meter__fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
+        </span>
+        <span class="context-meter__value">
+          <span class="context-meter__used">{{ usedText }}</span>
+          <span class="context-meter__separator"> / </span>
+          <span class="context-meter__budget">{{ budgetText }}</span>
+        </span>
       </span>
       <span class="context-meter__limit">{{ limitText }}</span>
     </button>
@@ -118,13 +120,15 @@ const meterTitle = computed(() => {
     class="context-meter context-meter--static"
     :title="usage.budgetTokens > 0 ? meterTitle : '上下文预算暂不可用'"
   >
-    <span class="context-meter__track" aria-hidden="true">
-      <span class="context-meter__fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
-    </span>
-    <span class="context-meter__value">
-      <span class="context-meter__used">{{ usedText }}</span>
-      <span class="context-meter__separator"> / </span>
-      <span class="context-meter__budget">{{ budgetText }}</span>
+    <span class="context-meter__reading">
+      <span class="context-meter__track" aria-hidden="true">
+        <span class="context-meter__fill" :class="meterLevel" :style="{ width: meterPercent + '%' }" />
+      </span>
+      <span class="context-meter__value">
+        <span class="context-meter__used">{{ usedText }}</span>
+        <span class="context-meter__separator"> / </span>
+        <span class="context-meter__budget">{{ budgetText }}</span>
+      </span>
     </span>
     <span class="context-meter__limit">{{ usage.budgetTokens > 0 ? limitText : '—' }}</span>
   </div>
@@ -133,7 +137,7 @@ const meterTitle = computed(() => {
 <style scoped>
 .context-meter {
   display: inline-grid;
-  grid-template-columns: var(--os-space-6) minmax(0, 1fr) 7em;
+  grid-template-columns: minmax(0, 1fr) 7em;
   align-items: center;
   flex: none;
   gap: var(--os-space-1);
@@ -166,9 +170,16 @@ const meterTitle = computed(() => {
 .context-meter--static:hover {
   background: transparent;
 }
+.context-meter__reading {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--os-space-2);
+  min-width: 0;
+}
 .context-meter__track {
   flex: none;
-  width: 100%;
+  width: var(--os-space-6);
   height: var(--os-space-1);
   border-radius: var(--os-radius-sm);
   background: var(--el-fill-color);
@@ -193,9 +204,10 @@ const meterTitle = computed(() => {
   text-overflow: ellipsis;
 }
 .context-meter__value {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) 0.75em minmax(0, 1fr);
+  display: flex;
+  flex: 0 1 auto;
   align-items: center;
+  gap: var(--os-space-1);
   text-align: right;
 }
 .context-meter__used,
@@ -204,7 +216,12 @@ const meterTitle = computed(() => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.context-meter__budget {
+  flex: none;
+  text-align: left;
+}
 .context-meter__separator {
+  flex: none;
   text-align: center;
 }
 .context-meter__limit {
@@ -271,7 +288,6 @@ const meterTitle = computed(() => {
 @container (max-width: 360px) {
   .context-meter {
     width: 18em;
-    grid-template-columns: minmax(0, 1fr) 7em;
     padding: 0;
   }
   .context-meter__track {
