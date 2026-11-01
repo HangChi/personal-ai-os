@@ -25,6 +25,7 @@ MCP_SERVERS_FETCH_AUTO_TOOLS=fetch
 ```
 
 `MCP_SERVERS_<NAME>_ARGS` 的最后一个目录是 filesystem server 的访问边界，应使用专用目录，不能直接开放 home 目录或整个磁盘。
+目录必须已存在；相对路径以实际后端进程的工作目录解析。为兼容从 `backend/` 或项目根目录启动，建议填写专用目录的绝对路径。
 
 策略规则如下：
 
@@ -91,5 +92,46 @@ MCP Server 复用后端的认证配置。启用 `AUTH_ENABLED=true` 时，客户
 - **看不到 MCP 菜单**：MCP 管理集中在前端「设置 → MCP」；页面会展示外部 MCP Client 状态、重连操作和本系统对外的 4 个工具目录。
 - **启用后仍然连接不上**：确认后端已重启，且 `PERSONAL_MCP_SERVER_ENABLED=true` 来自实际运行进程的环境变量。
 - **浏览器打开返回 401**：这是认证拦截，不代表 MCP 未注册；先登录或在 MCP 客户端配置认证会话。
+
+## 3. 如何新增
+
+### 新增外部连接
+
+当前设置页支持查看状态、查看自动执行工具和重连，尚不支持在页面新增、编辑或删除连接。
+外部接入目前只支持 **stdio**：后端启动一个本地进程并通过标准输入输出连接它，不能直接填入远程 HTTP MCP 地址。
+
+以接入自己编写的 Python MCP Server 为例，在项目根目录 `.env` 追加：
+
+```bash
+MCP_ENABLED=true
+MCP_SERVERS_MYTOOLS_COMMAND=python3
+MCP_SERVERS_MYTOOLS_ARGS=/absolute/path/my_mcp_server.py
+MCP_SERVERS_MYTOOLS_AUTO_TOOLS=
+```
+
+示例中的脚本需要先实现 MCP stdio 服务，路径应替换成实际文件路径；`COMMAND` 和 `ARGS` 以该服务的启动说明为准。
+每个服务使用不同的名称，例如 `MYTOOLS`、`FILESYSTEM`。需要传递服务专用环境变量时使用
+`MCP_SERVERS_MYTOOLS_ENV_<变量名>`，连接超时可设置 `MCP_SERVERS_MYTOOLS_CONNECT_TIMEOUT=10s`。
+后端运行在容器中时，启动命令、依赖和脚本也必须在容器内可用。
+
+保存后重启后端，在「设置 → MCP」检查新连接。页面上的“刷新状态”和“重连”都不会重新读取 `.env`。
+默认将 `AUTO_TOOLS` 留空，全部工具需要确认；确认哪些工具适合直接执行后，再填写它们的原始工具名并重启。
+
+### 扩展本系统服务
+
+“本系统服务”代表 Personal AI OS 自己的一个 `/mcp` 端点，四个目录项是它提供的工具。
+如果要加入另一个独立的 MCP Server，即使它也是自己开发的，也按上面的“外部连接”接入。
+如果要让其他 AI 查询本系统更多业务能力，则在现有端点中扩展工具：
+
+1. 在 [`PersonalMcpTools.java`](../backend/src/main/java/com/personalos/mcp/server/PersonalMcpTools.java)
+   中新增带 `@McpTool` 的公开方法，用 `@McpToolParam` 描述参数，复用对应的业务 Service。
+2. 在 [`McpStatusService.java`](../backend/src/main/java/com/personalos/mcp/status/McpStatusService.java)
+   的 `personalServer()` 中同步维护工具名称、描述和只读属性，设置页才会显示新工具。
+3. 更新 [`PersonalMcpExposureTest.java`](../backend/src/test/java/com/personalos/mcp/server/PersonalMcpExposureTest.java)
+   的对外工具清单和相关业务测试，重新构建并重启后端，再用 MCP 客户端核对工具目录。
+
+前端会直接显示新工具的原始名称；如需中文标题和专用图标，可在
+[`McpSettingsPanel.vue`](../frontend/src/components/settings/McpSettingsPanel.vue) 的 `toolPresentation` 中补充映射。
+当前对外工具均为只读；新增写入能力需要接入系统现有的人工确认流程，不能只改只读标记。
 
 HTTP 路径和通用响应约定见 [`api.md`](api.md)，本地启动与生产部署见 [`development.md`](development.md) 和 [`operations.md`](operations.md)。
