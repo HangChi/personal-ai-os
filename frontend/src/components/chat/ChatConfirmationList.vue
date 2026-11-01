@@ -3,9 +3,10 @@
  * 待确认的高风险操作（从 ChatView 拆出，2026-10-26）。
  *
  * <p>助手只能「申请」执行；真正生效必须在这里由人点确认。
- * 二次确认（删除类）仍由父组件负责 —— 它需要弹窗与错误提示，属于交互编排，
- * 不是这块列表的职责。
+ * 删除任务的二次确认与处理结果由父组件负责。
  */
+import { Lock } from '@element-plus/icons-vue'
+
 import type { TaskConfirmation } from '@/types/api'
 
 defineProps<{
@@ -37,33 +38,39 @@ function actionLabel(action: string): string {
 
 <template>
   <div class="chat-confirmations">
-    <el-alert type="warning" :closable="false" show-icon title="助手申请执行高风险操作，需要你确认后才会真正生效" />
-    <div v-for="confirmation in items" :key="confirmation.id" class="chat-confirmations__item">
+    <section
+      v-for="confirmation in items"
+      :key="confirmation.id"
+      class="chat-confirmations__item"
+      :aria-label="`待确认：${actionLabel(confirmation.action)}`"
+    >
+      <el-icon class="chat-confirmations__icon" aria-hidden="true"><Lock /></el-icon>
       <div class="chat-confirmations__body">
-        <el-tag type="warning" size="small" effect="plain">
-          {{ actionLabel(confirmation.action) }}
-        </el-tag>
-        <span class="chat-confirmations__summary">{{ confirmation.summary }}</span>
-        <span class="chat-confirmations__meta">影响 {{ confirmation.affectedCount }} 项</span>
+        <div class="chat-confirmations__heading">
+          <span class="chat-confirmations__title">{{ actionLabel(confirmation.action) }}</span>
+          <span class="chat-confirmations__status">等待确认</span>
+        </div>
+        <p class="chat-confirmations__summary">{{ confirmation.summary }}</p>
+        <div class="chat-confirmations__footer">
+          <span class="chat-confirmations__meta">涉及 {{ confirmation.affectedCount }} 项</span>
+          <div class="chat-confirmations__actions">
+            <el-button size="small" text :disabled="resolvingId !== null" @click="emit('resolve', confirmation, false)">
+              取消
+            </el-button>
+            <el-button
+              size="small"
+              :type="confirmation.action.startsWith('DELETE_') ? 'danger' : 'primary'"
+              plain
+              :loading="resolvingId === confirmation.id"
+              :disabled="resolvingId !== null"
+              @click="emit('resolve', confirmation, true)"
+            >
+              {{ confirmation.action.startsWith('DELETE_') ? '确认删除' : '确认执行' }}
+            </el-button>
+          </div>
+        </div>
       </div>
-      <div class="chat-confirmations__actions">
-        <el-button
-          size="small"
-          :loading="resolvingId === confirmation.id"
-          @click="emit('resolve', confirmation, false)"
-        >
-          取消
-        </el-button>
-        <el-button
-          size="small"
-          type="danger"
-          :loading="resolvingId === confirmation.id"
-          @click="emit('resolve', confirmation, true)"
-        >
-          确认执行
-        </el-button>
-      </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -76,27 +83,58 @@ function actionLabel(action: string): string {
 
 .chat-confirmations__item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: var(--os-space-3);
-  padding: var(--os-space-2) var(--os-space-3);
-  border: 1px solid var(--el-color-warning-light-5);
+  width: 100%;
+  max-width: 720px;
+  padding: var(--os-space-3) var(--os-space-4);
+  border: 1px solid var(--el-border-color);
   border-radius: var(--os-radius-md);
-  background: var(--el-color-warning-light-9);
+  background: var(--el-bg-color);
+}
+
+.chat-confirmations__icon {
+  flex: none;
+  margin-top: 3px;
+  color: var(--el-text-color-secondary);
 }
 
 .chat-confirmations__body {
-  display: flex;
-  align-items: center;
-  gap: var(--os-space-2);
+  flex: 1;
   min-width: 0;
 }
 
-.chat-confirmations__summary {
+.chat-confirmations__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  flex-wrap: wrap;
+}
+
+.chat-confirmations__title {
+  font-size: var(--os-font-sm);
+  font-weight: 500;
+}
+
+.chat-confirmations__status {
+  color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.chat-confirmations__summary {
+  margin: var(--os-space-2) 0 var(--os-space-3);
+  color: var(--el-text-color-regular);
+  font-size: var(--os-font-sm);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.chat-confirmations__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--os-space-2);
 }
 
 .chat-confirmations__meta {
@@ -106,6 +144,13 @@ function actionLabel(action: string): string {
 }
 
 .chat-confirmations__actions {
+  display: flex;
+  gap: var(--os-space-2);
   flex: none;
+  margin-left: auto;
+}
+
+.chat-confirmations__actions > .el-button {
+  margin: 0;
 }
 </style>

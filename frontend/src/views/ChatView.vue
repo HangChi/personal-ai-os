@@ -171,6 +171,7 @@ const suggestions = [
  * 这里再确认一次是为了防止误点，而不是替代服务端的确认流程。
  */
 async function handleConfirmation(confirmation: TaskConfirmation, approve: boolean): Promise<void> {
+  if (resolvingId.value !== null) return
   if (approve && confirmation.action === 'DELETE_TASK') {
     // 删除类走危险确认；「再想想」比「取消」更能表达「这不是拒绝执行，只是先别动」
     const ok = await confirmDanger({
@@ -594,7 +595,6 @@ async function jumpToMatch(step: number): Promise<void> {
                 />
               </template>
             </div>
-            <el-tag v-if="streaming" type="warning" size="small" effect="plain" role="status">生成中</el-tag>
           </div>
         </div>
       </template>
@@ -833,8 +833,11 @@ html.os-resizing .chat {
 /* ---- 消息滚动区 ---- */
 
 .chat__messages {
+  /* 约束隐藏辅助文字和 loading 遮罩的绝对定位，避免撑长外层页面。 */
+  position: relative;
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   scrollbar-gutter: stable;
   min-height: 0;
   display: flex;
@@ -843,6 +846,10 @@ html.os-resizing .chat {
   gap: var(--os-space-3);
   /* 与输入区共用固定边距，收起会话栏后内容也跟随扩展。 */
   padding: var(--os-space-3) var(--os-chat-gutter);
+}
+
+.chat__messages > * {
+  flex-shrink: 0;
 }
 
 .chat__error {
@@ -856,13 +863,12 @@ html.os-resizing .chat {
   padding-bottom: var(--os-space-2);
 }
 
-/* ---- 窄屏：单列，高度不强行全高 ---- */
+/* 窄屏保持视口内布局，会话列表与消息区分别滚动。 */
 
 @media (max-width: 900px) {
   .chat {
-    grid-template-columns: 1fr;
-    height: auto;
-    flex: none;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(100px, 16dvh) minmax(0, 1fr);
     /*
      * 窄屏没有过渡：这里列宽固定 `1fr`（单列上下堆叠），
      * 折叠与否都不改变布局方向 —— 留着过渡只会在切态时让整页闪一下。
@@ -874,22 +880,8 @@ html.os-resizing .chat {
     display: none;
   }
 
-  /*
-   * 会话栏限高：不限制时它会把会话列表全部展开（实测 860px 视口里占 300px），
-   * 把对话区挤到下半屏。卡片内部本来就会滚动，限高后对话区立刻回到首屏。
-   * 200px 是量出来的：再高就把空态的输入框顶出首屏（手机上第一件事是打字）。
-   */
-  .chat-sessions {
-    max-height: 200px;
-  }
-
-  /*
-   * 消息区在窄屏的最小高度。
-   * 50vh 会把空态欢迎区撑得很高，输入框被顶出首屏 —— 手机上第一件事是打字，
-   * 看不到输入框等于空转。收到 30vh：有消息时靠内容自然撑高，空态时输入框紧跟其后。
-   */
   .chat__messages {
-    min-height: 30vh;
+    min-height: 0;
   }
 }
 /* ---- 会话内搜索 ---- */

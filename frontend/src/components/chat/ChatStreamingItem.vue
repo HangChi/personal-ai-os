@@ -58,11 +58,6 @@ onBeforeUnmount(() => {
     </span>
     <div class="chat-streaming__content">
       <!--
-        读屏提示（P3）：三点动画是纯视觉的，没有可读文本 —— 不补这一句的话，
-        读屏用户只会察觉到「页面上多了一块东西」却不知道是什么。
-      -->
-      <span class="sr-only">助手正在回复</span>
-      <!--
         首 token 前：三点打字动画装在同一个气泡里（阶段 24）。
         改造前它裸露在页面上，与首 token 到达后的助手气泡形态不一致 ——
         生成开始的一瞬间会「跳」一下。现在两者共用同一套气泡外观。
@@ -72,7 +67,7 @@ onBeforeUnmount(() => {
           <span class="chat-streaming__dot" />
           <span class="chat-streaming__dot" />
           <span class="chat-streaming__dot" />
-          <span v-if="hint" class="chat-streaming__hint">{{ hint }}</span>
+          <span class="chat-streaming__hint" role="status">{{ hint || '正在回复' }}</span>
         </div>
       </div>
       <template v-else>
@@ -85,7 +80,7 @@ onBeforeUnmount(() => {
           -->
           <MarkdownRenderer :content="renderedContent" streaming />
         </div>
-        <div v-if="hint" class="chat-streaming__hint chat-streaming__hint--below">{{ hint }}</div>
+        <div class="chat-streaming__hint chat-streaming__hint--below" role="status">{{ hint || '正在回复' }}</div>
       </template>
     </div>
   </div>
@@ -93,6 +88,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .chat-streaming {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--os-space-3);
