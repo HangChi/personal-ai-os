@@ -295,6 +295,31 @@ handlers.clear()
 }
 
 // 编辑验证必须在破坏性回退之前完成；回退失败不能丢掉原消息。
+{
+  const store = fresh()
+  store.currentConversationId = 'history-pages'
+  store.messages = [{ role: 'USER', createdAt: '2026-11-01T06:00:00Z' }]
+  const pages = []
+  const all = Array.from({ length: 120 }, (_, index) => ({
+    id: 120 - index,
+    turnId: index < 5 ? 'new' : 'old',
+    createdAt: `2026-11-01T06:${index < 100 ? '10' : '01'}:00Z`,
+  }))
+  handlers.set('/agent/tool-invocations', (config) => {
+    pages.push(config.params.page)
+    eq('历史工具查询使用100条分页，避免只显示最近20条', config.params.size, 100)
+    return Promise.resolve({ items: all.slice(config.params.page * 100, (config.params.page + 1) * 100), total: 120 })
+  })
+  await store.loadToolTrail()
+  eq('历史记录超过一页时继续读取', pages.join(','), '0,1')
+  eq('完整保留已加载消息对应的历史轨迹', store.toolHistory.length, 120)
+  eq('当前轮摘要仍然不混入其他轮次', store.toolTrail.length, 5)
+  handlers.set('/agent/tool-invocations', () => Promise.reject(new Error('暂时断网')))
+  await store.loadToolTrail()
+  eq('辅助审计请求失败不清空已有历史轨迹', store.toolHistory.length, 120)
+}
+
+// 编辑验证必须在破坏性回退之前完成；回退失败不能丢掉原消息。
 // 确认、取消和失败后都重新关联工具状态；迟到的旧请求不能恢复「待确认」。
 for (const decision of ['confirm', 'cancel', 'fail']) {
   const store = fresh()

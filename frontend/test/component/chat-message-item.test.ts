@@ -5,7 +5,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
-import type { ChatMessage } from '@/types/api'
+import type { ChatMessage, ToolInvocation } from '@/types/api'
 
 /**
  * 消息操作区与气泡结构。
@@ -63,6 +63,25 @@ function mountItem(overrides: Partial<ChatMessage> = {}) {
 }
 
 describe('消息操作区：纯图标按钮必须有可读名称', () => {
+  it('人工确认反馈随实时状态更新，旧回复不再成为当前状态的唯一展示', async () => {
+    const wrapper = mountItem({ content: '这项操作需要确认' })
+    const record = {
+      id: 1,
+      operation: 'deleteCalendarEvent',
+      outcome: 'REQUIRES_CONFIRMATION',
+      confirmationStatus: 'PENDING',
+      createdAt: '2026-11-02T00:00:00Z',
+      durationMs: 1,
+    } as ToolInvocation
+    await wrapper.setProps({ toolTrail: [record] })
+    expect(wrapper.find('.chat-msg__approval-feedback').exists()).toBe(false)
+    await wrapper.setProps({ toolTrail: [{ ...record, confirmationStatus: 'CONFIRMED' }] })
+    expect(wrapper.get('.chat-msg__approval-feedback').text()).toBe('人工确认已完成')
+    await wrapper.setProps({ toolTrail: [{ ...record, confirmationStatus: 'FAILED' }] })
+    expect(wrapper.get('.chat-msg__approval-feedback').text()).toBe('执行失败 1 项')
+    expect(wrapper.text()).not.toContain('人工确认已完成')
+    wrapper.unmount()
+  })
   it('助手消息的复制/重新生成都带 aria-label 与 title，且不显示文字', () => {
     const wrapper = mountItem()
     const buttons = wrapper.findAll('.chat-msg__action')

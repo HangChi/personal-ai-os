@@ -218,6 +218,18 @@ class AgentToolCallingIntegrationTest {
         assertThat(taskRepository.existsById(task.id())).isFalse();
         assertThat(confirmationRepository.findById(pending.get(0).getId()).orElseThrow().getStatus())
                 .isEqualTo(ConfirmationStatus.CONFIRMED);
+
+        // The next turn still has the old "needs approval" assistant message in memory,
+        // but must receive fresh database state instead of inferring pending work from it.
+        model.enqueueText("已确认，当前没有待确认操作。");
+        stream(conversationId, "刚才已经全部确认了，还有待确认的吗？");
+        var nextPrompt = model.receivedInstructions().get(model.receivedInstructions().size() - 1);
+        assertThat(nextPrompt).anyMatch(message -> message.getText() != null
+                && message.getText().contains("删除需要你在界面上确认"));
+        assertThat(nextPrompt).anyMatch(message -> message.getText() != null
+                && message.getText().contains("当前会话尚待人工确认：0 项")
+                && message.getText().contains("CONFIRMED"));
+        assertThat(nextPrompt.toString()).doesNotContain(pending.get(0).getToken());
     }
 
     @Test

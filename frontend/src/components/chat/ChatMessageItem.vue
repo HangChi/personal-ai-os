@@ -18,21 +18,24 @@
  * 一直没人发现。合并成一条 import 也顺带修掉原先分散的两处 Document 导入。
  */
 import { CopyDocument, Document, EditPen, RefreshRight, User } from '@element-plus/icons-vue'
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { relativeTime } from '@/lib/relative-time'
+import { confirmationFeedback } from '@/lib/chat-tool-history'
 import ChatToolTrail from '@/components/chat/ChatToolTrail.vue'
 import type { ChatAttachment, ChatMessage, ToolInvocation } from '@/types/api'
 
 const props = defineProps<{
   message: ChatMessage
-  /** 本消息产生的工具调用轨迹（仅最后一条助手消息会传）；空数组不渲染 */
+  /** 本条回答对应的工具调用轨迹；空数组不渲染 */
   toolTrail: ToolInvocation[]
   editing?: boolean
   editContent?: string
   busy?: boolean
 }>()
+
+const approvalFeedback = computed(() => confirmationFeedback(props.toolTrail))
 
 const editor = ref<HTMLTextAreaElement | null>(null)
 
@@ -103,6 +106,7 @@ function submitEdit(): void {
           改造前它在气泡下方，读起来像「补充说明」。
         -->
         <ChatToolTrail v-if="props.toolTrail.length > 0" :items="props.toolTrail" class="chat-msg__trail" />
+        <p v-if="approvalFeedback" class="chat-msg__approval-feedback" role="status">{{ approvalFeedback }}</p>
 
         <div class="chat-msg__bubble chat-msg__bubble--assistant">
           <MarkdownRenderer :content="message.content" />
@@ -243,6 +247,12 @@ function submitEdit(): void {
 </template>
 
 <style scoped>
+.chat-msg__approval-feedback {
+  margin: 0 0 var(--os-space-2);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+  line-height: 1.5;
+}
 .chat-msg__content--editing {
   width: 32rem;
 }

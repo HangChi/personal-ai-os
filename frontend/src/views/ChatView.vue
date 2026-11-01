@@ -16,6 +16,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { downloadSessionMarkdown } from '@/api/chat'
 import { matchMessageIds, nextMatchCursor } from '@/lib/chat-search'
+import { toolInvocationsByMessage } from '@/lib/chat-tool-history'
 import { isNearBottom as isNearBottomOf, scrollDeltaForPrepend } from '@/lib/chat-scroll'
 import { confirmDanger } from '@/lib/confirm-box'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
@@ -58,7 +59,7 @@ const {
   loadingMessages,
   error,
   pendingConfirmations,
-  toolTrail,
+  toolHistory,
   liveCitations,
   retrievalState,
   contextUsage,
@@ -176,18 +177,7 @@ const currentTitle = computed(() => {
   return current ? current.title : '新对话'
 })
 
-/**
- * 是否「最后一条助手消息」—— 工具轨迹只挂在这一条上。
- *
- * 审计记录只有会话维度、没有消息维度，无法精确知道哪次调用属于哪条消息；
- * 挂在最新一条助手消息下是最接近事实的做法（用户刚看到的回复就是它产生的）。
- */
-function isLastAssistant(index: number): boolean {
-  if (index !== messages.value.length - 1) {
-    return false
-  }
-  return messages.value[index]?.role === 'ASSISTANT'
-}
+const messageToolTrails = computed(() => toolInvocationsByMessage(messages.value, toolHistory.value))
 
 /** 空态建议问题：点击只填输入框，不自动发送（用户还要改） */
 const suggestions = [
@@ -696,12 +686,12 @@ async function jumpToMatch(step: number): Promise<void> {
             <el-button text size="small" :loading="loadingOlder" @click="handleLoadOlder"> 加载更早的消息 </el-button>
           </div>
 
-          <!-- 消息流：工具轨迹内联在最后一条助手消息里，不单独占一行 -->
+          <!-- 各轮工具调用挂在对应回答上，继续聊天也保留历史轨迹。 -->
           <ChatMessageItem
-            v-for="(message, index) in messages"
+            v-for="message in messages"
             :key="message.id"
             :message="message"
-            :tool-trail="isLastAssistant(index) ? toolTrail : []"
+            :tool-trail="messageToolTrails.get(message.id) ?? []"
             :editing="editingMessageId === message.id"
             :edit-content="editDraft"
             :busy="streaming || changingModel || submittingEdit"

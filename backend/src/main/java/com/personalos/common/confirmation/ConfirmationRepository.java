@@ -19,6 +19,9 @@ public interface ConfirmationRepository extends JpaRepository<ConfirmationEntity
     List<ConfirmationEntity> findByStatusAndConversationIdOrderByCreatedAtDesc(ConfirmationStatus status,
                                                                                   String conversationId);
 
+    List<ConfirmationEntity> findByConversationIdOrderByCreatedAtDesc(
+            String conversationId, org.springframework.data.domain.Pageable pageable);
+
     Optional<ConfirmationEntity> findByIdAndStatus(UUID id, ConfirmationStatus status);
 
     /**

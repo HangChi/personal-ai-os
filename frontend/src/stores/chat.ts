@@ -97,6 +97,8 @@ export const useChatStore = defineStore('chat', () => {
    * 失败时静默留空：轨迹是增强信息，不该阻塞对话本身。
    */
   const toolTrail = ref<ToolInvocation[]>([])
+  /** Records for loaded historical replies; a new message must not erase previous turns. */
+  const toolHistory = ref<ToolInvocation[]>([])
 
   /**
    * 最近一轮的上下文用量（阶段 22 仪表盘，token 口径）。
@@ -245,6 +247,7 @@ export const useChatStore = defineStore('chat', () => {
     const reqSeq = ++sessionReqSeq
     currentConversationId.value = conversationId
     toolTrail.value = []
+    toolHistory.value = []
     contextUsage.value = emptyContext()
     loadingMessages.value = true
     error.value = null
@@ -312,6 +315,7 @@ export const useChatStore = defineStore('chat', () => {
       }
       messages.value = [...older, ...messages.value]
       hasOlderMessages.value = older.length === MESSAGE_PAGE_SIZE
+      await loadToolTrail()
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '加载更早消息失败'
     } finally {
@@ -364,10 +368,8 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   /**
-   * 拉取当前会话最新一轮的工具调用轨迹。
-   *
-   * 与 loadConfirmations 同款容错：失败静默留空。
-   * 拉最近 20 条足够覆盖「本轮助手做了什么」。
+   * Load audit pages covering the loaded message window, including earlier replies.
+   * Keep latest-turn statistics separate from historical records.
    */
   let toolTrailReqSeq = 0
   async function loadToolTrail(): Promise<void> {
@@ -376,17 +378,30 @@ export const useChatStore = defineStore('chat', () => {
     const seq = ++toolTrailReqSeq
     if (!id) {
       toolTrail.value = []
+      toolHistory.value = []
       return
     }
     try {
-      const result = await listToolInvocations({
-        conversationId: id,
-        size: 20,
-      })
+      const oldestUser = messages.value.find((message) => message.role === 'USER')
+      const from = oldestUser ? Date.parse(oldestUser.createdAt) : Number.NaN
+      const records = new Map<number, ToolInvocation>()
+      for (let page = 0; ; page++) {
+        const result = await listToolInvocations({ conversationId: id, size: 100, page })
+        if (seq !== toolTrailReqSeq || sessionSeq !== sessionReqSeq || id !== currentConversationId.value) return
+        for (const item of result.items) if (!records.has(item.id)) records.set(item.id, item)
+        if (
+          !result.items.length ||
+          !Number.isFinite(from) ||
+          result.items.some((item) => Date.parse(item.createdAt) < from) ||
+          (page + 1) * 100 >= (result.total ?? result.items.length)
+        )
+          break
+      }
       if (seq !== toolTrailReqSeq || sessionSeq !== sessionReqSeq || id !== currentConversationId.value) return
+      toolHistory.value = [...records.values()]
       const lastUser = [...messages.value].reverse().find((message) => message.role === 'USER')
       const startedAt = lastUser ? Date.parse(lastUser.createdAt) : Number.NaN
-      const items = result.items.filter((item) => Date.parse(item.createdAt) >= startedAt)
+      const items = toolHistory.value.filter((item) => Date.parse(item.createdAt) >= startedAt)
       const turnId = items.find((item) => item.turnId)?.turnId
       toolTrail.value = turnId ? items.filter((item) => item.turnId === turnId) : items
     } catch {
@@ -679,6 +694,7 @@ export const useChatStore = defineStore('chat', () => {
     error,
     pendingConfirmations,
     toolTrail,
+    toolHistory,
     contextUsage,
     refreshContextUsage,
     changeContextBudget,
