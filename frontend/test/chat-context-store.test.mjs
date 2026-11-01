@@ -229,3 +229,114 @@ function deferred() {
   store.$dispose()
 }
 handlers.clear()
+
+// 当前回复的工具记录不能混入历史轮次，闲聊也不能沿用上轮统计。
+{
+  const store = fresh()
+  store.currentConversationId = 'trail'
+  store.messages = [{ role: 'USER', createdAt: '2026-11-01T06:00:00Z' }]
+  handlers.set('/agent/tool-invocations', () =>
+    Promise.resolve({
+      items: [
+        { id: 'new-2', turnId: 'new', createdAt: '2026-11-01T06:00:02Z' },
+        { id: 'new-1', turnId: 'new', createdAt: '2026-11-01T06:00:01Z' },
+        { id: 'other-turn', turnId: 'old', createdAt: '2026-11-01T06:00:00Z' },
+        { id: 'old', turnId: 'old', createdAt: '2026-11-01T05:00:00Z' },
+      ],
+    }),
+  )
+  await store.loadToolTrail()
+  eq('仅保留最新轮次的工具记录', store.toolTrail.map((item) => item.id).join(','), 'new-2,new-1')
+  store.messages.push({ role: 'USER', createdAt: '2026-11-01T07:00:00Z' })
+  await store.loadToolTrail()
+  eq('本轮未调工具不能显示上轮统计', store.toolTrail.length, 0)
+  store.messages = []
+  await store.loadToolTrail()
+  eq('无用户消息不显示历史工具记录', store.toolTrail.length, 0)
+}
+{
+  const store = fresh()
+  store.currentConversationId = 'legacy'
+  store.messages = [{ role: 'USER', createdAt: '2026-11-01T06:00:00+08:00' }]
+  handlers.set('/agent/tool-invocations', () =>
+    Promise.resolve({
+      items: [
+        { id: 'legacy-new', createdAt: '2026-10-31T22:00:01Z' },
+        { id: 'legacy-old', createdAt: '2026-10-31T21:59:59Z' },
+      ],
+    }),
+  )
+  await store.loadToolTrail()
+  eq(
+    '无 turnId 的旧记录按用户消息时间过滤并正确处理时区',
+    store.toolTrail.map((item) => item.id).join(','),
+    'legacy-new',
+  )
+  const slow = deferred()
+  handlers.set('/agent/tool-invocations', () => slow.promise)
+  const pending = store.loadToolTrail()
+  store.currentConversationId = 'other'
+  store.toolTrail = [{ id: 'other-turn' }]
+  slow.resolve({ items: [{ id: 'late', createdAt: '2026-11-01T06:00:00Z' }] })
+  await pending
+  eq('迟到审计结果不能覆盖新会话', store.toolTrail[0].id, 'other-turn')
+  const failure = deferred()
+  handlers.set('/agent/tool-invocations', () =>
+    failure.promise.then(() => {
+      throw new Error('offline')
+    }),
+  )
+  const failed = store.loadToolTrail()
+  store.currentConversationId = 'third'
+  store.toolTrail = [{ id: 'third-turn' }]
+  failure.resolve()
+  await failed
+  eq('旧会话审计失败不能清空新会话', store.toolTrail[0].id, 'third-turn')
+}
+
+// 编辑验证必须在破坏性回退之前完成；回退失败不能丢掉原消息。
+{
+  const store = fresh()
+  store.currentConversationId = 'edit'
+  const original = { id: 1, role: 'USER', content: '原消息', sequenceNo: 1 }
+  store.messages = [original]
+  let rewinds = 0
+  handlers.set('/chat/sessions/edit/rewind', () => {
+    rewinds++
+    return Promise.reject(new Error('回退失败'))
+  })
+  eq('空白编辑不回退', await store.editAndResend(original, '   '), false)
+  eq('超长编辑不回退', await store.editAndResend(original, '字'.repeat(4001)), false)
+  eq('助手消息不允许编辑', await store.editAndResend({ ...original, role: 'ASSISTANT' }, '修改'), false)
+  eq('验证失败未请求回退', rewinds, 0)
+  eq('回退失败明确返回 false', await store.editAndResend(original, '修改'), false)
+  eq('只尝试一次回退', rewinds, 1)
+  eq('回退失败保留原消息', store.messages[0].content, '原消息')
+  eq('回退失败保留错误原因', store.error, '回退失败')
+}
+
+// 编辑首条消息时，空尾页不能让已删除的原提问和回答继续留在流式界面。
+{
+  const store = fresh()
+  store.currentConversationId = 'edit-first'
+  const original = { id: 1, role: 'USER', content: '原提问', sequenceNo: 1 }
+  store.messages = [original, { id: 2, role: 'ASSISTANT', content: '旧回答', sequenceNo: 2 }]
+  handlers.set('/chat/sessions/edit-first/rewind', () => Promise.resolve({ deleted: 2 }))
+  handlers.set('/chat/sessions/edit-first/messages', () => Promise.resolve([]))
+  handlers.set('/chat/sessions/search', () => Promise.resolve({ items: [], total: 0, page: 0, size: 20 }))
+  handlers.set('/chat/sessions/edit-first/context', () => Promise.resolve(usage('edit', 131072)))
+  handlers.set('/agent/tool-invocations', () => Promise.resolve({ items: [] }))
+  let contentsDuringStream
+  const savedFetch = globalThis.fetch
+  globalThis.fetch = async (url) => {
+    if (url.endsWith('/auth/csrf')) return Response.json({ data: { token: '' } })
+    contentsDuringStream = store.messages.map((item) => item.content).join(',')
+    return new Response('event: done\ndata: {"content":"已重发"}\n\n')
+  }
+  try {
+    eq('首条编辑成功重发', await store.editAndResend(original, '新提问'), true)
+    eq('重发期间只有修改后的提问', contentsDuringStream, '新提问')
+  } finally {
+    globalThis.fetch = savedFetch
+  }
+}

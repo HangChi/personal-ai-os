@@ -18,6 +18,7 @@
  * 一直没人发现。合并成一条 import 也顺带修掉原先分散的两处 Document 导入。
  */
 import { CopyDocument, Document, EditPen, RefreshRight, User } from '@element-plus/icons-vue'
+import { nextTick, ref, watch } from 'vue'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { relativeTime } from '@/lib/relative-time'
@@ -28,7 +29,20 @@ const props = defineProps<{
   message: ChatMessage
   /** 本消息产生的工具调用轨迹（仅最后一条助手消息会传）；空数组不渲染 */
   toolTrail: ToolInvocation[]
+  editing?: boolean
+  editContent?: string
+  busy?: boolean
 }>()
+
+const editor = ref<HTMLTextAreaElement | null>(null)
+watch(
+  () => props.editing,
+  async (editing) => {
+    if (!editing) return
+    await nextTick()
+    editor.value?.focus()
+  },
+)
 
 /** 附件内容地址：后端给的是相对路径，这里拼 API 基路径 */
 function attachmentUrl(item: ChatAttachment): string {
@@ -41,7 +55,16 @@ const emit = defineEmits<{
   (e: 'regenerate'): void
   /** 仅用户消息：编辑后重发 */
   (e: 'edit', message: ChatMessage): void
+  (e: 'update:editContent', content: string): void
+  (e: 'cancel-edit'): void
+  (e: 'submit-edit', message: ChatMessage): void
 }>()
+
+function submitEdit(): void {
+  if (!props.busy && props.editContent?.trim() && props.editContent.trim().length <= 4000) {
+    emit('submit-edit', props.message)
+  }
+}
 </script>
 
 <template>
@@ -113,7 +136,7 @@ const emit = defineEmits<{
 
     <!-- 用户：右侧主色气泡 -->
     <template v-else>
-      <div class="chat-msg__content chat-msg__content--user">
+      <div class="chat-msg__content chat-msg__content--user" :class="{ 'chat-msg__content--editing': editing }">
         <!-- 附件渲染在气泡**上方**：它是用户带过来的材料，先于文字被读到 -->
         <div v-if="message.attachments.length > 0" class="chat-msg__attachments">
           <a
@@ -136,10 +159,32 @@ const emit = defineEmits<{
             <span class="chat-msg__attachment-name">{{ item.filename }}</span>
           </a>
         </div>
-        <div class="chat-msg__bubble chat-msg__bubble--user">
+        <form v-if="editing" class="chat-msg__editor" aria-label="编辑消息" @submit.prevent="submitEdit">
+          <textarea
+            ref="editor"
+            class="chat-msg__edit-input"
+            :value="editContent"
+            :disabled="busy"
+            rows="4"
+            maxlength="4000"
+            aria-label="消息内容"
+            @input="emit('update:editContent', ($event.target as HTMLTextAreaElement).value)"
+            @keydown.esc.prevent="!busy && emit('cancel-edit')"
+            @keydown.ctrl.enter.prevent="submitEdit"
+            @keydown.meta.enter.prevent="submitEdit"
+          />
+          <p class="chat-msg__edit-hint">重发将替换这条消息及后续对话。</p>
+          <div class="chat-msg__edit-actions">
+            <el-button :disabled="busy" @click="emit('cancel-edit')">取消</el-button>
+            <el-button native-type="submit" type="primary" :disabled="busy || !editContent?.trim()">
+              保存并重发
+            </el-button>
+          </div>
+        </form>
+        <div v-else class="chat-msg__bubble chat-msg__bubble--user">
           <MarkdownRenderer :content="message.content" />
         </div>
-        <div class="chat-msg__actions chat-msg__actions--user">
+        <div v-if="!editing" class="chat-msg__actions chat-msg__actions--user">
           <span class="chat-msg__time">{{ relativeTime(message.createdAt) }}</span>
           <button
             type="button"
@@ -155,6 +200,7 @@ const emit = defineEmits<{
             class="chat-msg__action"
             title="编辑并重发"
             aria-label="编辑并重发这条消息"
+            :disabled="busy"
             @click="emit('edit', message)"
           >
             <el-icon :size="13"><EditPen /></el-icon>
@@ -169,6 +215,51 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
+.chat-msg__content--editing {
+  width: 36rem;
+}
+.chat-msg__editor {
+  width: 100%;
+  padding: var(--os-space-3);
+  border: 1px solid var(--el-color-primary-light-5);
+  border-radius: var(--os-radius-xl);
+  background: var(--el-bg-color);
+}
+.chat-msg__edit-input {
+  display: block;
+  width: 100%;
+  min-height: 6em;
+  max-height: 24em;
+  padding: var(--os-space-2);
+  resize: vertical;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--os-radius-sm);
+  background: var(--el-fill-color-blank);
+  color: var(--el-text-color-primary);
+  font: inherit;
+  line-height: 1.6;
+}
+.chat-msg__edit-input:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 1px;
+}
+.chat-msg__edit-hint {
+  margin: var(--os-space-2) 0;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+.chat-msg__edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--os-space-2);
+}
+.chat-msg__edit-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+.chat-msg__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 .chat-msg {
   display: flex;
   align-items: flex-start;

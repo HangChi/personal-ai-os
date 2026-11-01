@@ -354,24 +354,31 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   /**
-   * 拉取当前会话的工具调用轨迹（阶段 18）。
+   * 拉取当前会话最新一轮的工具调用轨迹。
    *
    * 与 loadConfirmations 同款容错：失败静默留空。
    * 拉最近 20 条足够覆盖「本轮助手做了什么」。
    */
   async function loadToolTrail(): Promise<void> {
-    if (!currentConversationId.value) {
+    const id = currentConversationId.value
+    const sessionSeq = sessionReqSeq
+    if (!id) {
       toolTrail.value = []
       return
     }
     try {
       const result = await listToolInvocations({
-        conversationId: currentConversationId.value,
+        conversationId: id,
         size: 20,
       })
-      toolTrail.value = result.items
+      if (sessionSeq !== sessionReqSeq || id !== currentConversationId.value) return
+      const lastUser = [...messages.value].reverse().find((message) => message.role === 'USER')
+      const startedAt = lastUser ? Date.parse(lastUser.createdAt) : Number.NaN
+      const items = result.items.filter((item) => Date.parse(item.createdAt) >= startedAt)
+      const turnId = items.find((item) => item.turnId)?.turnId
+      toolTrail.value = turnId ? items.filter((item) => item.turnId === turnId) : items
     } catch {
-      toolTrail.value = []
+      if (sessionSeq === sessionReqSeq && id === currentConversationId.value) toolTrail.value = []
     }
   }
 
@@ -600,20 +607,34 @@ export const useChatStore = defineStore('chat', () => {
   /**
    * 编辑用户消息后重发：回退到该消息（含）并删除其后所有内容，再用新内容发送。
    */
-  async function editAndResend(message: ChatMessage, newContent: string): Promise<void> {
+  async function editAndResend(message: ChatMessage, newContent: string): Promise<boolean> {
     const conversationId = currentConversationId.value
     const content = newContent.trim()
-    if (!conversationId || streaming.value || content.length === 0) {
-      return
+    if (!conversationId || streaming.value || message.role !== 'USER' || content.length === 0) {
+      return false
     }
+    if (content.length > 4000) {
+      error.value = '消息不能超过 4000 字'
+      return false
+    }
+    const sessionSeq = sessionReqSeq
     try {
       await rewindMessages(conversationId, message.sequenceNo)
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '重发失败'
-      return
+      return false
     }
-    await refreshTail(conversationId)
+    if (sessionSeq !== sessionReqSeq || conversationId !== currentConversationId.value) return false
+    // 回退成功后立即移除已删除内容；回退到首条时尾页为空，通用合并逻辑会保留旧消息。
+    messages.value = messages.value.filter((item) => item.sequenceNo < message.sequenceNo)
+    try {
+      await refreshTail(conversationId)
+    } catch {
+      // 回退已经完成，沿用本地保留的历史发送；流结束后再从服务端刷新。
+    }
+    if (sessionSeq !== sessionReqSeq || conversationId !== currentConversationId.value) return false
     await send(content)
+    return true
   }
 
   /** 停止生成（客户端断开，服务端会取消上游订阅） */

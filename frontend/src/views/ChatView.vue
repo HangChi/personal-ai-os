@@ -3,14 +3,14 @@
  * 对话页（阶段 20 重设计；2026-10-26 按职责拆分为子组件）。
  *
  * <p>本文件只保留「编排」：会话与消息来自 store，滚动与键盘行为、
- * 二次确认弹窗在这里；具体的会话列表、消息气泡、流式占位、工具轨迹、
+ * 编辑状态在这里；具体的会话列表、消息气泡、流式占位、工具轨迹、
  * 待确认卡片、输入区各自成组件（`components/chat/`）。
  *
  * <p>布局：全高对话列——消息区撑满可滚动，输入区停靠底部（不再有断裂空白带）。
  * 阶段 19 功能全保留：知识库增强（会话级开关）、引用区、工具轨迹、待确认。
  */
 import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
@@ -67,6 +67,13 @@ const { settings } = storeToRefs(settingsStore)
 
 const draft = ref('')
 const changingModel = ref(false)
+const editingMessageId = ref<number | null>(null)
+const editDraft = ref('')
+const submittingEdit = ref(false)
+watch(currentConversationId, () => {
+  editingMessageId.value = null
+  editDraft.value = ''
+})
 const messageArea = ref<HTMLElement | null>(null)
 const resolvingId = ref<string | null>(null)
 
@@ -414,33 +421,29 @@ async function handleRemove(conversationId: string): Promise<void> {
   await chatStore.removeSession(conversationId)
 }
 
-/**
- * 导出单个会话为 Markdown。
- *
- * <p>不弹二次确认：导出是只读操作，没有破坏性，多一次弹窗只增加摩擦。
- * 失败时提示文案直接来自后端（如会话已不存在）。
- */
-/**
- * 编辑用户消息后重发。
- *
- * <p>用 prompt 而不是行内编辑：行内编辑要处理「保存 vs 取消」「失焦」「Enter 换行」
- * 一整套边界，与重命名输入框同一量级。这一版先保证能力可用；
- * 交互形式可以后续照搬重命名的行内做法。
- */
-async function handleEditMessage(message: ChatMessage): Promise<void> {
+/** 在原消息位置开始编辑，提交失败时保留草稿。 */
+function handleEditMessage(message: ChatMessage): void {
+  if (message.role !== 'USER' || streaming.value || changingModel.value || submittingEdit.value) return
+  editingMessageId.value = message.id
+  editDraft.value = message.content
+}
+
+async function submitMessageEdit(message: ChatMessage): Promise<void> {
+  if (message.id !== editingMessageId.value || submittingEdit.value || streaming.value || changingModel.value) return
+  submittingEdit.value = true
   try {
-    const result = await ElMessageBox.prompt('修改后将从这条消息重新开始，其后的对话会被删除。', '编辑并重发', {
-      inputValue: message.content,
-      inputType: 'textarea',
-      confirmButtonText: '重发',
-      cancelButtonText: '取消',
-    })
-    await chatStore.editAndResend(message, result.value ?? '')
-  } catch {
-    // 取消编辑不是错误
+    if (await chatStore.editAndResend(message, editDraft.value)) {
+      editingMessageId.value = null
+      editDraft.value = ''
+    }
+  } catch (cause) {
+    ElMessage.error(cause instanceof Error ? cause.message : '重发失败，请稍后重试')
+  } finally {
+    submittingEdit.value = false
   }
 }
 
+/** 导出单个会话为 Markdown；只读操作无需二次确认。 */
 async function handleExportSession(session: ChatSession): Promise<void> {
   try {
     const filename = await downloadSessionMarkdown(session.conversationId)
@@ -638,9 +641,15 @@ async function jumpToMatch(step: number): Promise<void> {
             :key="message.id"
             :message="message"
             :tool-trail="isLastAssistant(index) ? toolTrail : []"
+            :editing="editingMessageId === message.id"
+            :edit-content="editDraft"
+            :busy="streaming || changingModel || submittingEdit"
             @copy="copyMessage"
             @regenerate="chatStore.regenerate()"
             @edit="handleEditMessage"
+            @update:edit-content="editDraft = $event"
+            @cancel-edit="editingMessageId = null"
+            @submit-edit="submitMessageEdit"
           />
 
           <!-- 流式中的助手消息 -->
