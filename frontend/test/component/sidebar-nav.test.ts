@@ -47,18 +47,13 @@ describe('侧栏折叠：分组标签必须保留占位', () => {
     expect(APP_SRC).toMatch(/<span v-if="!navCollapsed">/)
   })
 
-  it('折叠态的分隔线样式存在，且组间空档大于组内间距', () => {
-    // 判据来自实测：组内相邻项间隔 42px（40 高 + 2 外边距），项间只空 2px。
-    // 所以「分组」只能靠组间更大的空档表达 —— 第一版给 8px/8px 时组间空档 17px，
-    // 比组内 42px 还紧，读起来是「这里塞了条线」而不是「这里换了一组」。
+  it('折叠态的分隔线只改变外观，不覆盖分组占位', () => {
     const dividerBlock = APP_SRC.match(
       /\.app-shell__nav\.el-menu--collapse > \.app-shell__group-label--divider \{([^}]*)\}/,
     )?.[1]
 
     expect(dividerBlock).toBeTruthy()
-    // 上下各 12px → 组间空档 25px = 组内 2px 的 12 倍
-    expect(dividerBlock).toContain('var(--os-space-3)')
-    // 高度必须是 1px 的纯占位，不能再用展开态的行高
-    expect(dividerBlock).toContain('height: 1px')
+    // 两种状态共用标题高度与边距，避免切换时整组图标上下跳动。
+    expect(dividerBlock).not.toMatch(/(?:height|margin|padding):/)
   })
 })

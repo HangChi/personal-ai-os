@@ -322,30 +322,19 @@ async function handleLogout(): Promise<void> {
         @dblclick="resetResize"
         @keydown="onResizeKeydown"
       />
-      <router-link
-        to="/"
-        class="app-shell__brand"
-        :class="{ 'app-shell__brand--collapsed': navCollapsed }"
-        title="返回总览"
-      >
+      <router-link to="/" class="app-shell__brand" title="返回总览">
         <AppLogo :size="30" />
         <span v-show="!navCollapsed" class="app-shell__title">Personal AI OS</span>
       </router-link>
 
-      <el-menu class="app-shell__nav" :collapse="navCollapsed" :default-active="route.path" :router="true">
-        <!--
-          分组标题：展开态是文字，折叠态**降级成一条分隔线**，而不是直接 v-show 掉。
-
-          <p>改造前写的是 `v-show="!navCollapsed"`，折叠时这个 <li> 变成 display:none，
-          它的高度与外边距**一起从布局里被抽走** —— 实测第一项 y 从 93 跳到 70
-          （整列图标上移 23px，紧贴品牌区只剩 10px），而且「工作区 / 系统」两组之间
-          再无任何分界，九个图标变成等距 42px 的一条直线，分组信息完全丢失。
-
-          <p>64px 宽确实放不下「工作区」三个字（这是当初 v-show 的理由），
-          但**放不下的是文字，不是分组本身**。折叠态用一条 1px 横线替代，
-          占位从 33px 收到 13px：既留住层级，也把上移压到 10px 以内。
-          具体样式见 `.app-shell__nav.el-menu--collapse > .app-shell__group-label`。
-        -->
+      <el-menu
+        class="app-shell__nav"
+        :collapse="navCollapsed"
+        :collapse-transition="false"
+        :default-active="route.path"
+        :router="true"
+      >
+        <!-- 分组标题与折叠态分隔线共用相同占位，避免整组图标在切换时上下跳动。 -->
         <template v-for="group in navGroups" :key="group.key">
           <li
             class="app-shell__group-label"
@@ -514,6 +503,7 @@ async function handleLogout(): Promise<void> {
  * 但同时会裁掉菜单——菜单自己需要滚动，所以把滚动下沉到 .app-shell__nav。
  */
 .app-shell__aside {
+  --sidebar-icon-center: calc((var(--os-sidebar-width-collapsed) - 1px) / 2);
   position: sticky;
   top: 0;
   display: flex;
@@ -621,16 +611,9 @@ html.os-resizing .app-shell__aside {
   border-bottom: none;
 }
 
-/*
- * 折叠态的 logo 必须居中：`padding: 0 16` 是为「logo + 文字」留的左边距，
- * 折叠后文字消失，16px 左内边距就把 30px 的 logo 推到 16~46 之间，
- * 中心落在 31 而不是侧栏中心 32 —— 与菜单图标（修好后正好 32）
- * 差 1px。1px 单独看不明显，但**与下方一排图标并排**时会被读成
- * 「上面的 logo 比下面的图标偏左一点」，正是用户说的「图标有点偏右」。
- */
-.app-shell__brand--collapsed {
-  justify-content: center;
-  padding: 0;
+/* Logo 始终固定在折叠侧栏的中心轴，宽度动画期间不跟随侧栏重新居中。 */
+.app-shell__aside .app-shell__brand {
+  padding-left: calc(var(--sidebar-icon-center) - 15px);
 }
 
 /*
@@ -648,7 +631,11 @@ html.os-resizing .app-shell__aside {
 
 /* 垂直菜单：铺满侧栏中部，可滚动；EP 默认底色去掉，用侧栏自己的 */
 .app-shell__nav {
+  --el-menu-base-level-padding: calc(var(--sidebar-icon-center) - var(--os-space-2) - 12px);
   flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-x: hidden;
   overflow-y: auto;
   border-right: none;
   background: transparent;
@@ -657,6 +644,9 @@ html.os-resizing .app-shell__aside {
 
 /* 分组标题：小号、全大写间距、不可点 —— 只做视觉分隔 */
 .app-shell__group-label {
+  flex: none;
+  height: 18px;
+  line-height: 18px;
   margin: var(--os-space-3) 0 var(--os-space-1);
   padding: 0 var(--os-space-2) 0 calc(var(--os-space-4) + var(--os-space-2));
   color: var(--el-text-color-placeholder);
@@ -672,88 +662,20 @@ html.os-resizing .app-shell__aside {
   margin-top: var(--os-space-1);
 }
 
-/*
- * 折叠态的分组标签：文字放不下，就降级成一条分隔线。
- *
- * <h3>为什么不保留文字（哪怕竖排 / 缩写）</h3>
- * 侧栏折叠后内容区只有 63px，去掉左右 8px 外边距还剩 47px。
- * 「工作区」竖排要 3 个字高 = 51px，比一个导航项（40px）还高，
- * 会把 9 个图标推到首屏之外；缩写（「工」「系」）则既不可读也不美观。
- * **放不下的是文字，不是分组** —— 分组的视觉作用是一条分界，
- * 一条 1px 横线就足以承担，不需要占文字那么高的位置。
- *
- * <h3>为什么必须保留这个 <li>（不能 v-show 掉）</h3>
- * 它一消失，`margin-top: 12px + 高 17px + margin-bottom: 4px` 共 33px
- * **整块从布局里被抽走**：实测第一项 y 从 93 跳到 70，整列图标上移 23px，
- * 紧贴品牌区只剩 10px —— 这正是「图标会往上挤」的量化原因。
- *
- * <h3>间距的判据：组间空档必须大于组内间距</h3>
- * 组内相邻项是 42px（40 高 + 2 外边距），项与项之间只空 2px。
- * 所以「分组」这件事只能靠**组间更大的空档**表达，不能靠线条本身 ——
- * 第一版给的是 `8px / 8px`（组间空档 17px），比组内 42px 还紧，
- * 读起来是「这里塞了条线」而不是「这里换了一组」。
- * 现在上下各 12px → 组间空档 25px，是组内 2px 的 12 倍，层级才立得住。
- *
- * <p>上边距 12px 与展开态第一组标签的 `margin-top` 对齐（那里被
- * `:first-child` 覆盖成 4px，是**展开态特有的**「品牌区下方已有呼吸」的补偿）；
- * 折叠态第一组上方是空的 60px 品牌区，需要完整的 12px。
- */
+/* 分隔线只改变内容，不改变标题的高度和边距。 */
 .app-shell__nav.el-menu--collapse > .app-shell__group-label--divider {
-  /* 从 33px（12 + 17 + 4）压到 25px（12 + 1 + 12）：留住层级，又比展开态紧凑 */
   position: relative;
-  height: 1px;
-  margin: var(--os-space-3) var(--os-space-3);
-  padding: 0;
 }
-
-/* 折叠态第一组：展开态的 `margin-top: 4px` 不适用，这里要完整的 12px */
-.app-shell__nav.el-menu--collapse > .app-shell__group-label--divider:first-child {
-  margin-top: var(--os-space-3);
-}
-
-/*
- * 线条本身：宽度收到 24px 居中（47px 满宽会顶到两侧，太像分割整块的硬线）。
- *
- * <h3>颜色为什么不用 --el-border-color</h3>
- * 实测对比度：`--el-border-color`(#d8dce4) 对白底只有 **1.37**，
- * 而暗色下同一 token 对侧栏底是 1.60 —— 亮色反而比暗色更看不见，
- * 一条 1px 的 1.37 线在实际屏幕上接近「似有似无」。
- * 分组线不是装饰画，它承担「这里换了一组」的信息，弱到看不见就等于没修。
- *
- * <p>改用文字色 + 透明度：`currentColor` 取到的是标签自身的
- * `--el-text-color-placeholder`（与展开态分组标题同一个色），
- * 再用 opacity 调轻重，亮暗两套各自落在 **1.8 / 2.0** 附近，
- * 比 border 明确、又不会强到像一条真正的分割框。
- * 用 opacity 而非 rgba 字面量，是为了**两套主题共用一个声明**，
- * 不必在 html.dark 里再抄一遍色值。
- */
-/*
- * 暗色下调低透明度。
- *
- * <p>⚠️ 这条规则**必须放在非 scoped 的样式块里**（见文件末尾的第二个 <style>）。
- * 试过两种写法都不行：
- * <ul>
- *   <li>`html.dark .xxx`（scoped 内）→ 编译成 `html.dark .xxx[data-v-x]`，
- *       `html` 在组件外拿不到 data-v，规则静默失效；</li>
- *   <li>`:global(html.dark) .xxx` → 只有 `html.dark` 被脱出 scope，
- *       后面的 `.xxx` 仍带 data-v，但 `html.dark` 与它之间成了**后代关系**，
- *       而实际是同一棵树的祖先-后代没错…… 实测仍不生效，不再依赖这个写法。</li>
- * </ul>
- */
 
 .app-shell__nav.el-menu--collapse > .app-shell__group-label--divider::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 50%;
+  top: 50%;
+  left: var(--sidebar-icon-center);
   width: 24px;
   height: 1px;
   margin-left: -12px;
   background: currentColor;
-  /*
-   * 亮色 0.45 / 暗色 0.30：暗底上浅色更显眼，同一 alpha 会明显偏重
-   * （实测 0.45 时亮色 1.80、暗色 2.93）。两套值不同才是「看起来一样」。
-   */
   opacity: 0.45;
 }
 
@@ -776,40 +698,7 @@ html.os-resizing .app-shell__aside {
   font-weight: 500;
 }
 
-/*
- * 折叠态：图标必须落在侧栏的几何中心。
- *
- * <h3>为什么光去外边距不够（原有实现漏了 padding）</h3>
- * EP 的 `.el-menu-item` 在非折叠态带 `padding: 0 20px`（给「图标 + 文字」
- * 留出左内边距）。折叠时文字消失了，但**这条 padding 仍然生效** ——
- * 于是图标的盒子从 20px 处开始，图标中心落在
- *
- *   8(margin) + 20(padding) + 12(图标半径) = 40
- *
- * 而 64px 侧栏的几何中心是 32，**偏右 8px**。用户截图里的表现正是
- * 「图标贴着右边、左边空一大块」。
- *
- * <p>折叠态必须把左右 padding 显式归零，只留 8px 外边距 + 48px 宽的项，
- * 图标 24px 居中后中心正好 32。这一点不能靠 `align-items` 或 `text-align`
- * 修正：偏的是**盒子的位置**，不是盒内内容的对齐。
- *
- * <h3>真正的偏移源是 EP 的 tooltip 包装层，不是 `<li>`</h3>
- * 折叠态下 EP 会把内容再包一层 `<div class="el-menu-tooltip__trigger">`
- * —— 它 `position: absolute; width: 48px; padding: 0 20px`，**自己就带
- * 20px 内边距**。所以只给 `<li>` 清 padding 完全没用：图标被这个绝对定位的
- * 包装层推到 20px 处，实测 cx 仍是 40（侧栏中心 32，偏右 8px）。
- *
- * <p>必须同时把这个包装层的 padding 归零，并让它撑满 `<li>`（`left/right: 0`）
- * 后按 `justify-content: center` 居中图标。
- *
- * <h3>选择器为什么是 `.app-shell__nav.el-menu--collapse`（同一元素）</h3>
- * EP 在 `:collapse="true"` 时把 `el-menu--collapse` 加在**菜单根元素**上，
- * 而根元素正是我们自己的 `.app-shell__nav` —— 两者是同一个 `<ul>`。
- * 写成 `.app-shell__nav :deep(.el-menu--collapse .el-menu-item)`（带空格）
- * 等于要求「一个后代元素同时是 .el-menu--collapse」，永远不匹配。
- * 这正好解释了改造前那条 margin 规则为什么从未生效（当时被
- * `.app-shell__nav :deep(.el-menu-item)` 的 `2px 8px` 遮过去了，看不出问题）。
- */
+/* 展开和折叠都沿同一条图标轴对齐，菜单宽度仅跟随外层侧栏。 */
 .app-shell__nav.el-menu--collapse :deep(.el-menu-item) {
   margin-left: var(--os-space-2);
   margin-right: var(--os-space-2);
@@ -818,18 +707,11 @@ html.os-resizing .app-shell__aside {
   justify-content: center;
 }
 
-/* 折叠态的真实容器：归零它自带的 20px 内边距，并撑满整项 */
+/* tooltip 包装层固定在图标栏内，避免随整项宽度重新居中。 */
 .app-shell__nav.el-menu--collapse :deep(.el-menu-tooltip__trigger) {
-  /*
-   * 右边界要减 1px：`el-aside` 的 64px 是 border-box，其中 1px 是右边框，
-   * 内容区实际只有 63px。直接 `right: 0` 会让图标落在 32（相对 64 居中），
-   * 而侧栏**可见内容**的中心是 31.5 —— 与 logo、底部折叠图标（都是 31.5）
-   * 差 0.5px。单看 0.5px 无意义，但九个图标与上下两个元素并排成一条竖轴时，
-   * 这一列会被读成「比 logo 略偏右」。
-   */
   left: 0;
-  right: 1px;
-  width: auto;
+  right: auto;
+  width: calc(var(--os-sidebar-width-collapsed) - 1px - var(--os-space-2) * 2);
   padding: 0;
   justify-content: center;
 }
@@ -848,7 +730,9 @@ html.os-resizing .app-shell__aside {
 .app-shell__collapse {
   width: 100%;
   min-height: 28px;
-  justify-content: center;
+  padding-left: calc(var(--sidebar-icon-center) - var(--os-space-2) - 8px);
+  justify-content: flex-start;
+  white-space: nowrap;
   gap: var(--os-space-2);
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
