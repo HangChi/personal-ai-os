@@ -1,0 +1,29 @@
+server:
+  forward-headers-strategy: framework
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: strict
+        http-only: true
+
+app:
+  security:
+    production-mode: true
+    csrf-enabled: true
+  auth:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never

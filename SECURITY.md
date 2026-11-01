@@ -26,9 +26,9 @@ Personal AI OS 是**单用户、自托管**应用：一个进程、一个使用�
 
 | # | 检查项 | 不做会怎样 |
 |---|---|---|
-| 1 | `AUTH_ENABLED=true` 且 `AUTH_PASSWORD` 足够长 | **任何人**能读写你的全部数据：对话、任务、日程、知识库 |
-| 2 | 置于 HTTPS 反代之后，且 `SESSION_COOKIE_SECURE=true` | `JSESSIONID` 明文传输，同网络即可接管会话 |
-| 3 | 不要把 PostgreSQL（默认映射 55432）暴露到公网 | 绕过应用直接读写库；容器端口发布**不经过** UFW |
+| 1 | 使用 `compose.production.yml`，并设置 `AUTH_ENABLED=true`、16 字节以上 `AUTH_PASSWORD` | **任何人**能读写你的全部数据：对话、任务、日程、知识库 |
+| 2 | 置于 Caddy HTTPS 反代之后，且 `SESSION_COOKIE_SECURE=true` | `JSESSIONID` 明文传输，同网络即可接管会话 |
+| 3 | 生产 Compose 不发布 PostgreSQL、后端、前端端口 | 绕过应用直接读写库或绕过反代访问内部服务 |
 | 4 | `/actuator/health` 只给探针用；详情默认 `when_authorized` | 未认证调用方拿到数据库厂商、连接池、磁盘水位 |
 | 5 | 反代设 `proxy_read_timeout` ≥ 300s 或与 SSE 心跳对齐 | 思考型模型首 token 前静默 60s，网关会单方面掐断流 |
 
@@ -39,17 +39,11 @@ Personal AI OS 是**单用户、自托管**应用：一个进程、一个使用�
 
 这些是**有意的选择**，不是待修的漏洞。改动它们之前请先读对应代码注释里的理由。
 
-### CSRF 保护被关闭
+### CSRF 保护
 
-`SecurityConfig` 显式 `csrf.disable()`。当前拦住跨站写操作的是：
-
-- 会话 Cookie `SameSite=Lax`（跨站 POST 不带 Cookie）
-- 所有写接口要求 `Content-Type: application/json`（跨站表单无法构造）
-- 未开放 CORS
-
-**残余风险**：同站子域不受 `SameSite` 保护。若你把应用放在
-`app.example.com` 而同站还有别人控制的 `evil.example.com`，该子域可发起带凭据的请求。
-彻底消除需要启用 CSRF token —— 单机自托管的收益比不足，因此未做，但风险写在这里。
+本地开发默认关闭，以保持 `http://localhost` 的开箱体验。生产 profile 强制开启会话 CSRF，
+前端先请求 `/api/v1/auth/csrf`，随后在所有写请求中发送 `X-CSRF-TOKEN`；登录成功后会话轮换，
+前端会丢弃旧令牌并重新获取。缺失或错误令牌返回统一的 HTTP 403 JSON。
 
 ### 登录锁定的副作用
 

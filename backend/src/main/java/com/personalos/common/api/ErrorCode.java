@@ -43,6 +43,9 @@ public enum ErrorCode {
     /** 未登录或会话已过期（阶段 15）。 */
     UNAUTHORIZED(40100, "未登录或登录已过期", HttpStatus.UNAUTHORIZED),
 
+    /** 已登录但没有执行该操作的权限，或 CSRF 校验失败。 */
+    FORBIDDEN(40300, "请求被拒绝", HttpStatus.FORBIDDEN),
+
     /** 业务规则冲突（如状态不允许的流转）。 */
     BUSINESS_CONFLICT(40900, "业务规则冲突", HttpStatus.CONFLICT),
 

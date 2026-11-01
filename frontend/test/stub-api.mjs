@@ -41,6 +41,8 @@ export function resetUnauthorized() {
   unauthorizedCount = 0
 }
 
+export function invalidateCsrfToken() {}
+
 export class ApiBusinessError extends Error {
   constructor(code, message) {
     super(message)

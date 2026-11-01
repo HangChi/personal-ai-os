@@ -38,7 +38,7 @@ services:
       # 与后端保持一致的时区，避免时间戳歧义
       TZ: UTC
     ports:
-      - "${POSTGRES_PORT:-55432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-55432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -67,13 +67,16 @@ services:
       # 容器内走 compose 网络，端口是 5432（不是宿主机的 55432）。
       # environment 优先级高于 env_file —— 否则 .env 里的 localhost 会带进来，
       # 表现为「数据库明明起来了，后端一直在重连超时」。
+      AI_CHAT_UPLOAD_DIR: /app/data/uploads
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: ${POSTGRES_DB:-personal_ai_os}
       POSTGRES_USER: ${POSTGRES_USER:-personalos}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-personalos}
+    volumes:
+      - ./backend/data/uploads:/app/data/uploads
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -96,7 +99,7 @@ services:
     restart: unless-stopped
     ports:
       # 8088 而不是 80：80 在多数机器上已被占用，且与后端 8080 相邻好记
-      - "8088:80"
+      - "127.0.0.1:8088:80"
     depends_on:
       # 用 service_started 而不是 healthy：nginx 只在启动时解析一次 backend
       # 这个主机名（容器一创建 DNS 就存在），应用没起来时它返回 502，

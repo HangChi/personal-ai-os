@@ -17,6 +17,7 @@ import { dirname, join } from 'node:path'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const SRC = join(HERE, '..', 'src')
 const STUB = pathToFileURL(join(HERE, 'stub-api.mjs')).href
+const CSRF_STUB = pathToFileURL(join(HERE, 'stub-csrf.mjs')).href
 
 function resolveFile(basePath) {
   const candidates = [basePath, `${basePath}.ts`, join(basePath, 'index.ts')]
@@ -38,6 +39,9 @@ export async function resolve(specifier, context, next) {
     // 加载带类型注解的源文件会直接 SyntaxError。格式交给 Node 按扩展名判断
     // （frontend/package.json 是 "type": "module"，.ts 即 ESM + 类型剥离）。
     return { url: STUB, shortCircuit: true }
+  }
+  if (specifier === '@/api/csrf') {
+    return { url: CSRF_STUB, shortCircuit: true }
   }
   if (specifier.startsWith('@/')) {
     const url = resolveFile(join(SRC, specifier.slice(2)))

@@ -2,6 +2,7 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
 
 import { ApiBusinessError, interpretAxiosError, toBusinessError } from '@/api/envelope'
 import { type ApiResponse } from '@/types/api'
+import { csrfToken, invalidateCsrfToken } from '@/api/csrf'
 
 /**
  * 后端 API 基路径；开发期由 Vite 代理转发到 http://localhost:8080。
@@ -20,6 +21,14 @@ export const http = axios.create({
   // axios 会为普通对象自动设置 application/json，而写死它会让 FormData 上传带上错误的
   // Content-Type（缺少 multipart 的 boundary），服务端直接解析失败。
   // 上传场景需要由浏览器/axios 自行计算带 boundary 的头。
+})
+
+http.interceptors.request.use(async (config) => {
+  const method = (config.method ?? 'get').toLowerCase()
+  if (!['get', 'head', 'options'].includes(method) && !String(config.url ?? '').includes('/auth/csrf')) {
+    config.headers.set('X-CSRF-TOKEN', await csrfToken(apiBaseUrl))
+  }
+  return config
 })
 
 export { ApiBusinessError }
@@ -50,6 +59,8 @@ export function setUnauthorizedHandler(handler: () => void): void {
 export function notifyUnauthorized(): void {
   unauthorizedHandler?.()
 }
+
+export { invalidateCsrfToken }
 
 /**
  * 探测类请求的 401 不应触发跳转。

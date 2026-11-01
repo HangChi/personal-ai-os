@@ -1,4 +1,4 @@
-import { requestData } from '@/api/http'
+import { invalidateCsrfToken, requestData } from '@/api/http'
 
 /** 当前登录状态（对应后端 CurrentUserDto） */
 export interface CurrentUser {
@@ -19,14 +19,17 @@ export function fetchCurrentUser(): Promise<CurrentUser> {
   return requestData<CurrentUser>({ url: '/auth/me', method: 'get' })
 }
 
-export function login(username: string, password: string): Promise<CurrentUser> {
-  return requestData<CurrentUser>({
+export async function login(username: string, password: string): Promise<CurrentUser> {
+  const result = await requestData<CurrentUser>({
     url: '/auth/login',
     method: 'post',
     data: { username, password },
   })
+  invalidateCsrfToken()
+  return result
 }
 
-export function logout(): Promise<void> {
-  return requestData<void>({ url: '/auth/logout', method: 'post' })
+export async function logout(): Promise<void> {
+  await requestData<void>({ url: '/auth/logout', method: 'post' })
+  invalidateCsrfToken()
 }

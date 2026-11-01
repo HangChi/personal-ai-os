@@ -1,0 +1,76 @@
+name: personal-ai-os-production
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      TZ: UTC
+    volumes:
+      - production-postgres-data:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: [.env.production]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      APP_SECURITY_PRODUCTION_MODE: "true"
+      APP_SECURITY_CSRF_ENABLED: "true"
+      AUTH_ENABLED: "true"
+      SESSION_COOKIE_SECURE: "true"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      AI_CHAT_UPLOAD_DIR: /app/data/uploads
+    volumes:
+      - production-uploads:/app/data/uploads
+    expose: ["8080"]
+    networks: [internal]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    expose: ["80"]
+    networks: [internal]
+    depends_on: [backend]
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - production-caddy-data:/data
+      - production-caddy-config:/config
+    networks: [internal]
+    depends_on: [frontend, backend]
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  production-postgres-data:
+  production-uploads:
+  production-caddy-data:
+  production-caddy-config:

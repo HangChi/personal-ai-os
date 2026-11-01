@@ -1,4 +1,5 @@
 import { apiBaseUrl, notifyUnauthorized, requestData } from '@/api/http'
+import { csrfToken } from '@/api/csrf'
 import { resolveFilename, triggerBlobDownload } from '@/api/export'
 import type { ApiResponse } from '@/types/api'
 import type {
@@ -233,7 +234,12 @@ export async function streamChat(
   try {
     const response = await fetch(streamUrl(conversationId), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream',
+        'X-CSRF-TOKEN': await csrfToken(apiBaseUrl),
+      },
+      credentials: 'same-origin',
       body: JSON.stringify(payload),
       signal: idleController.signal,
     })
