@@ -123,8 +123,8 @@ async function handleReset(): Promise<void> {
       </nav>
 
       <!-- 右侧内容 -->
-      <section class="settings__panel">
-        <header class="settings__panel-head">
+      <section class="settings__panel" :class="{ 'settings__panel--mcp': activeSection === 'mcp' }">
+        <header v-if="activeSection !== 'mcp'" class="settings__panel-head">
           <h2 class="settings__panel-title">{{ activeItem.label }}</h2>
         </header>
 
@@ -337,6 +337,12 @@ async function handleReset(): Promise<void> {
   border-radius: var(--os-radius-lg);
 }
 
+.settings__panel--mcp {
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
 .settings__panel-head {
   padding-bottom: var(--os-space-2);
   border-bottom: 1px solid var(--el-border-color-lighter);
@@ -418,7 +424,7 @@ async function handleReset(): Promise<void> {
     align-items: flex-start;
   }
 
-  .settings__panel {
+  .settings__panel:not(.settings__panel--mcp) {
     padding: var(--os-space-4);
   }
 }
