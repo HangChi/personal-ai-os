@@ -35,14 +35,34 @@ const props = defineProps<{
 }>()
 
 const editor = ref<HTMLTextAreaElement | null>(null)
+
+function resizeEditor(): void {
+  const element = editor.value
+  if (!element) return
+  element.style.height = '0px'
+  element.style.height = `${element.scrollHeight}px`
+}
+
 watch(
-  () => props.editing,
-  async (editing) => {
+  () => [props.editing, props.editContent] as const,
+  async ([editing], [wasEditing]) => {
     if (!editing) return
     await nextTick()
-    editor.value?.focus()
+    resizeEditor()
+    if (!wasEditing) editor.value?.focus()
   },
 )
+watch(editor, (element, _, onCleanup) => {
+  if (!element || typeof ResizeObserver === 'undefined') return
+  let width = 0
+  const observer = new ResizeObserver(([entry]) => {
+    if (!entry || entry.contentRect.width === width) return
+    width = entry.contentRect.width
+    resizeEditor()
+  })
+  observer.observe(element)
+  onCleanup(() => observer.disconnect())
+})
 
 /** 附件内容地址：后端给的是相对路径，这里拼 API 基路径 */
 function attachmentUrl(item: ChatAttachment): string {
@@ -165,7 +185,7 @@ function submitEdit(): void {
             class="chat-msg__edit-input"
             :value="editContent"
             :disabled="busy"
-            rows="4"
+            rows="2"
             maxlength="4000"
             aria-label="消息内容"
             @input="emit('update:editContent', ($event.target as HTMLTextAreaElement).value)"
@@ -173,12 +193,20 @@ function submitEdit(): void {
             @keydown.ctrl.enter.prevent="submitEdit"
             @keydown.meta.enter.prevent="submitEdit"
           />
-          <p class="chat-msg__edit-hint">重发将替换这条消息及后续对话。</p>
-          <div class="chat-msg__edit-actions">
-            <el-button :disabled="busy" @click="emit('cancel-edit')">取消</el-button>
-            <el-button native-type="submit" type="primary" :disabled="busy || !editContent?.trim()">
-              保存并重发
-            </el-button>
+          <div class="chat-msg__edit-footer">
+            <p class="chat-msg__edit-hint">重发后替换后续对话</p>
+            <div class="chat-msg__edit-actions">
+              <button type="button" class="chat-msg__edit-button" :disabled="busy" @click="emit('cancel-edit')">
+                取消
+              </button>
+              <button
+                type="submit"
+                class="chat-msg__edit-button chat-msg__edit-button--save"
+                :disabled="busy || !editContent?.trim()"
+              >
+                {{ busy ? '正在重发…' : '保存并重发' }}
+              </button>
+            </div>
           </div>
         </form>
         <div v-else class="chat-msg__bubble chat-msg__bubble--user">
@@ -216,45 +244,92 @@ function submitEdit(): void {
 
 <style scoped>
 .chat-msg__content--editing {
-  width: 36rem;
+  width: 32rem;
 }
 .chat-msg__editor {
   width: 100%;
-  padding: var(--os-space-3);
-  border: 1px solid var(--el-color-primary-light-5);
-  border-radius: var(--os-radius-xl);
-  background: var(--el-bg-color);
+  padding: var(--os-space-3) var(--os-space-4);
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--os-radius-2xl);
+  background: var(--el-fill-color-light);
+  transition: border-color var(--os-duration-fast) var(--os-ease);
+}
+/* 输入区与容器共享一条轮廓，键盘焦点落在外框，避免嵌套描边。 */
+.chat-msg__editor:has(.chat-msg__edit-input:focus-visible) {
+  border-color: var(--el-color-primary);
 }
 .chat-msg__edit-input {
   display: block;
   width: 100%;
-  min-height: 6em;
-  max-height: 24em;
-  padding: var(--os-space-2);
-  resize: vertical;
-  border: 1px solid var(--el-border-color);
-  border-radius: var(--os-radius-sm);
-  background: var(--el-fill-color-blank);
+  min-height: 3.3em;
+  max-height: 16em;
+  padding: var(--os-space-1) 0;
+  resize: none;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
   color: var(--el-text-color-primary);
   font: inherit;
-  line-height: 1.6;
+  line-height: 1.65;
 }
-.chat-msg__edit-input:focus-visible {
-  outline: 2px solid var(--el-color-primary);
-  outline-offset: 1px;
+.chat-msg__edit-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--os-space-2) var(--os-space-3);
+  margin-top: var(--os-space-2);
 }
 .chat-msg__edit-hint {
-  margin: var(--os-space-2) 0;
+  margin: 0;
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
 }
 .chat-msg__edit-actions {
   display: flex;
   justify-content: flex-end;
+  margin-left: auto;
   gap: var(--os-space-2);
 }
-.chat-msg__edit-actions :deep(.el-button + .el-button) {
-  margin-left: 0;
+.chat-msg__edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--os-space-7);
+  padding: 0 var(--os-space-3);
+  border: 0;
+  border-radius: var(--os-radius-md);
+  background: transparent;
+  color: var(--el-text-color-regular);
+  font: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.chat-msg__edit-button:hover:not(:disabled) {
+  background: var(--el-fill-color);
+}
+.chat-msg__edit-button--save {
+  background: var(--el-color-primary);
+  color: var(--os-on-primary);
+}
+.chat-msg__edit-button--save:hover:not(:disabled) {
+  background: var(--el-color-primary-dark-2);
+}
+.chat-msg__edit-button:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 2px;
+}
+.chat-msg__edit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+@media (pointer: coarse) {
+  .chat-msg__edit-button {
+    min-height: calc(var(--os-space-7) + var(--os-space-3));
+  }
 }
 .chat-msg__action:disabled {
   cursor: not-allowed;
