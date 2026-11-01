@@ -83,8 +83,8 @@ curl -s http://localhost:8080/actuator/health
 | `WEB_PUSH_ENABLED` | false | 后台推送开关，需同时配置 VAPID 密钥 |
 | `MODEL_KEY_ENCRYPTION_KEY` | （空） | 可选 AES-256-GCM 模型密钥主密钥 |
 
-> `docker compose` 会自动读取根目录 `.env`；如需让后端也读取这些变量，
-> 在 shell 中 `set -a && source .env && set +a` 后再启动，或直接使用默认值（默认值与 `.env.example` 一致）。
+> `docker compose` 会自动读取根目录 `.env`。通过 Maven 或 JAR 从仓库根目录、`backend/` 启动后端时，
+> 后端也会自动查找并读取 `.env`，包括 `MCP_SERVERS_*` 这类动态配置；系统环境变量优先于 `.env`。
 
 ### 可观测性（2026-10-27 起）
 
