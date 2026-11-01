@@ -1,18 +1,9 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { rejects } from 'node:assert/strict'
 
 import { eq } from './assert.mjs'
 import { handlers } from './stub-api.mjs'
 
-/**
- * 活动页 store（阶段 11）。
- *
- * 重点在两件容易做错的事：
- * 1. 切换结果筛选必须把页码归零 —— 否则用户会停在越界的页码上看到空表，
- *    误以为「这个结果没有记录」，实际是翻过头了。
- * 2. MCP 状态失败不能污染审计状态。MCP 默认就不启用，这是常态而非故障；
- *    两者共用一个 error 会让「没配 MCP」看起来像「审计加载失败」。
- */
+/** 工具调用记录的分页、筛选与错误反馈。 */
 
 function freshStore() {
   setActivePinia(createPinia())
@@ -118,61 +109,4 @@ function invocation(id, outcome = 'SUCCESS') {
 
   eq('错误文案透传', store.error, '后端不可达')
   eq('失败后 loading 复位', store.loading, false)
-}
-
-// ---- MCP 未启用：是正常状态，不是错误 ----
-
-{
-  handlers.set('/mcp/servers', () => Promise.resolve({ enabled: false, servers: [] }))
-  freshStore()
-  const store = useActivityStore()
-  await store.loadMcp()
-
-  eq('未启用标记正确', store.mcp.enabled, false)
-  eq('未启用时 server 列表为空', store.mcp.servers.length, 0)
-  eq('未启用不是错误', store.mcpError, null)
-}
-
-// ---- MCP 失败不污染审计 ----
-
-{
-  handlers.set('/mcp/servers', () => Promise.reject(new Error('502 Bad Gateway')))
-  freshStore()
-  const store = useActivityStore()
-  await store.loadMcp()
-
-  eq('mcpError 有值', store.mcpError, '502 Bad Gateway')
-  eq('审计 error 不受影响', store.error, null)
-  eq('mcpLoading 复位', store.mcpLoading, false)
-}
-
-// HTTP 200 只表示重连请求处理完成；工具服务仍不可用时必须反馈失败。
-{
-  handlers.set('/mcp/servers/fetch/reconnect', () => Promise.resolve(null))
-  handlers.set('/mcp/servers', () => Promise.resolve({
-    enabled: true,
-    servers: [{ name: 'fetch', available: false, failureReason: '连接超时', toolCount: 0, autoTools: [] }],
-  }))
-  freshStore()
-  const store = useActivityStore()
-  await rejects(() => store.reconnectServer('fetch'), /连接超时/)
-  eq('重连失败保留真实状态', store.mcp.servers[0].available, false)
-}
-
-{
-  handlers.set('/mcp/servers', () => Promise.resolve({
-    enabled: true,
-    servers: [{ name: 'fetch', available: true, failureReason: null, toolCount: 1, autoTools: ['fetch'] }],
-  }))
-  freshStore()
-  const store = useActivityStore()
-  await store.reconnectServer('fetch')
-  eq('重连成功刷新工具状态', store.mcp.servers[0].toolCount, 1)
-}
-
-{
-  handlers.set('/mcp/servers', () => Promise.reject(new Error('状态查询失败')))
-  freshStore()
-  const store = useActivityStore()
-  await rejects(() => store.reconnectServer('fetch'), /状态查询失败/)
 }

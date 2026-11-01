@@ -1,21 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-import {
-  fetchMcpStatus,
-  fetchPersonalMcpStatus,
-  listToolInvocations,
-  reconnectMcpServer,
-  type ToolInvocationQuery,
-} from '@/api/activity'
-import type { McpStatus, PersonalMcpStatus, ToolInvocation, ToolInvocationOutcome } from '@/types/api'
+import { listToolInvocations, type ToolInvocationQuery } from '@/api/activity'
+import type { ToolInvocation, ToolInvocationOutcome } from '@/types/api'
 
-/**
- * 观测状态（阶段 11）：工具调用审计 + MCP 接入状态。
- *
- * 两块数据**各自独立的 loading / error**：MCP 没配或连不上是常态（默认就不启用），
- * 不能因此把审计列表也标成「加载失败」——那会把两个互不相关的事实绑在一起。
- */
 export const useActivityStore = defineStore('activity', () => {
   const invocations = ref<ToolInvocation[]>([])
   const page = ref(0)
@@ -24,13 +12,6 @@ export const useActivityStore = defineStore('activity', () => {
   const outcome = ref<ToolInvocationOutcome | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
-
-  const mcp = ref<McpStatus | null>(null)
-  const mcpLoading = ref(false)
-  const mcpError = ref<string | null>(null)
-  const personalMcp = ref<PersonalMcpStatus | null>(null)
-  const personalMcpLoading = ref(false)
-  const personalMcpError = ref<string | null>(null)
 
   async function loadInvocations(targetPage: number = page.value): Promise<void> {
     loading.value = true
@@ -68,38 +49,6 @@ export const useActivityStore = defineStore('activity', () => {
     await loadInvocations(target)
   }
 
-  async function loadMcp(): Promise<void> {
-    mcpLoading.value = true
-    mcpError.value = null
-    try {
-      mcp.value = await fetchMcpStatus()
-    } catch (cause) {
-      mcpError.value = cause instanceof Error ? cause.message : '加载 MCP 状态失败'
-    } finally {
-      mcpLoading.value = false
-    }
-  }
-
-  async function loadPersonalMcp(): Promise<void> {
-    personalMcpLoading.value = true
-    personalMcpError.value = null
-    try {
-      personalMcp.value = await fetchPersonalMcpStatus()
-    } catch (cause) {
-      personalMcpError.value = cause instanceof Error ? cause.message : '加载 Personal AI OS MCP Server 失败'
-    } finally {
-      personalMcpLoading.value = false
-    }
-  }
-
-  async function reconnectServer(name: string): Promise<void> {
-    await reconnectMcpServer(name)
-    await loadMcp()
-    if (mcpError.value) throw new Error(mcpError.value)
-    const server = mcp.value?.servers.find((item) => item.name === name)
-    if (!server?.available) throw new Error(server?.failureReason || `${name} 尚未连接`)
-  }
-
   return {
     invocations,
     page,
@@ -108,17 +57,8 @@ export const useActivityStore = defineStore('activity', () => {
     outcome,
     loading,
     error,
-    mcp,
-    mcpLoading,
-    mcpError,
-    personalMcp,
-    personalMcpLoading,
-    personalMcpError,
     loadInvocations,
     setOutcome,
     setPage,
-    loadMcp,
-    loadPersonalMcp,
-    reconnectServer,
   }
 })

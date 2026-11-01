@@ -108,7 +108,7 @@ const navGroups = [
     label: '系统',
     items: [
       { index: '/memory', label: '记忆', icon: Memo },
-      { index: '/activity', label: '活动与 MCP', icon: DataLine },
+      { index: '/activity', label: '活动', icon: DataLine },
       { index: '/usage', label: '用量', icon: TrendCharts },
       { index: '/settings', label: '设置', icon: Setting },
     ],

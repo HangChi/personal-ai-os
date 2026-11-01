@@ -1,29 +1,14 @@
 <script setup lang="ts">
-/**
- * 设置页：左侧子导航 + 右侧内容。
- *
- * <h2>为什么从「长滚动卡片」改成子导航</h2>
- * 改造前是两张卡片串起来的单列布局，实测文档高度 1856px —— 一屏放不下，
- * 找「日程」要滚两屏。子导航把六个分组变成平级入口，每屏只看一组。
- *
- * <h2>分组层级为什么重新划分</h2>
- * 改造前的层级是矛盾的：「大模型 API」独占一张卡片当老大，
- * 「外观 / 对话 / 日程 / 数据 / 关于」全塞进第二张卡片当小标题 ——
- * 视觉上暗示「模型配置」比其余五项加起来还重要。现在六组平级。
- *
- * <h2>主题为什么只在这里出现</h2>
- * 改造前顶栏有个月亮图标、设置页外观里又有主题选择，两个入口且都表达不了
- * 「跟随系统」。现在顶栏那个只做**快速切换**（浅/深两态循环），
- * 设置页这里是唯一的**完整**入口（三态含跟随系统）。
- * 两者共享同一个 store，不会不一致。
- */
+/** 设置分组通过 query 保存，支持刷新与直接访问。 */
 import { Download, RefreshLeft } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { downloadExport } from '@/api/export'
 import PageHeader from '@/components/PageHeader.vue'
+import McpSettingsPanel from '@/components/settings/McpSettingsPanel.vue'
 import { confirmAction } from '@/lib/confirm-box'
 import { THINKING_HINTS, THINKING_LABELS } from '@/lib/settings'
 import { useAppStore } from '@/stores/app'
@@ -38,7 +23,7 @@ const { settings } = storeToRefs(settingsStore)
 const { theme, navCollapsed, resolvedTheme } = storeToRefs(uiStore)
 const { health, loading: healthLoading, error: healthError } = storeToRefs(appStore)
 
-type SectionId = 'model' | 'appearance' | 'chat' | 'calendar' | 'data' | 'about'
+type SectionId = 'model' | 'mcp' | 'appearance' | 'chat' | 'calendar' | 'data' | 'about'
 
 interface NavItem {
   id: SectionId
@@ -54,6 +39,7 @@ interface NavItem {
  */
 const navItems: NavItem[] = [
   { id: 'model', label: '模型配置', hint: '供应商、端点、密钥与模型切换' },
+  { id: 'mcp', label: 'MCP', hint: '外部连接与本系统服务' },
   { id: 'appearance', label: '外观', hint: '主题与侧边栏' },
   { id: 'chat', label: '对话', hint: '知识库增强、发送方式与思考程度' },
   { id: 'calendar', label: '日程', hint: '默认提醒时间' },
@@ -61,7 +47,14 @@ const navItems: NavItem[] = [
   { id: 'about', label: '关于', hint: '后端状态与版本' },
 ]
 
-const activeSection = ref<SectionId>('model')
+const route = useRoute()
+const router = useRouter()
+const activeSection = computed<SectionId>({
+  get: () => navItems.find((item) => item.id === route.query.section)?.id ?? 'model',
+  set: (section) => {
+    void router.replace({ query: { ...route.query, section: section === 'model' ? undefined : section } })
+  },
+})
 
 const activeItem = computed(() => navItems.find((item) => item.id === activeSection.value) ?? navItems[0])
 
@@ -148,6 +141,8 @@ async function handleReset(): Promise<void> {
 
         <!-- 模型配置 -->
         <ModelProfilesPanel v-if="activeSection === 'model'" />
+
+        <McpSettingsPanel v-else-if="activeSection === 'mcp'" />
 
         <!-- 外观 -->
         <template v-else-if="activeSection === 'appearance'">

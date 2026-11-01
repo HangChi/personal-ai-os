@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
 
 import AppPagination from '@/components/AppPagination.vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -9,32 +8,8 @@ import { formatDateTime } from '@/lib/format'
 import { useActivityStore } from '@/stores/activity'
 import type { ToolInvocationOutcome } from '@/types/api'
 
-/**
- * 活动页（阶段 11）。
- *
- * 两件事放在一页，因为它们回答的是同一类问题：「系统现在到底在干什么」。
- * 上半 MCP 接入状态（本来只出现在启动日志里，降级等于静默失效），
- * 下半工具调用记录（本来只有接口没有入口）。
- *
- * 刻意**不做轮询**：MCP 状态在进程生命周期内基本不变，刷新按钮足够；
- * 审计记录由用户主动查看，自动刷新只会把正在读的行顶走。
- */
 const store = useActivityStore()
-const {
-  invocations,
-  page,
-  size,
-  total,
-  outcome,
-  loading,
-  error,
-  mcp,
-  mcpLoading,
-  mcpError,
-  personalMcp,
-  personalMcpLoading,
-  personalMcpError,
-} = storeToRefs(store)
+const { invocations, page, size, total, outcome, loading, error } = storeToRefs(store)
 
 const OUTCOME_OPTIONS: { value: ToolInvocationOutcome; label: string }[] = [
   { value: 'SUCCESS', label: '成功' },
@@ -55,8 +30,7 @@ const OUTCOME_META: Record<ToolInvocationOutcome, { label: string; type: 'succes
   }
 
 onMounted(async () => {
-  // 三块互不依赖，各自失败不影响另一块
-  await Promise.all([store.loadInvocations(0), store.loadMcp(), store.loadPersonalMcp()])
+  await store.loadInvocations(0)
 })
 
 /**
@@ -92,20 +66,6 @@ function shortConversationId(id: string | null): string {
 
 /** 视图模式：表格 / 时间线（阶段 18，T036） */
 const viewMode = ref<'table' | 'timeline'>('table')
-const reconnectingServer = ref<string | null>(null)
-
-async function handleReconnect(name: string): Promise<void> {
-  reconnectingServer.value = name
-  try {
-    await store.reconnectServer(name)
-    ElMessage.success(`${name} 已连接`)
-  } catch (cause) {
-    ElMessage.error(cause instanceof Error ? cause.message : 'MCP server 重连失败')
-  } finally {
-    reconnectingServer.value = null
-  }
-}
-
 /** 时间线按天分组（当天日期作键，组内保持接口顺序） */ const timelineGroups = computed(() => {
   const groups = new Map<string, typeof invocations.value>()
   for (const item of invocations.value) {
@@ -132,161 +92,7 @@ function handleOutcome(value: string): void {
 
 <template>
   <div class="activity">
-    <PageHeader
-      size="page"
-      title="活动与 MCP"
-      description="助手调用过哪些工具、每个 MCP server 当前是否连上 —— 审计与接入状态都在这一页。"
-    />
-
-    <el-card class="activity__card" shadow="never">
-      <template #header>
-        <div class="activity__card-header">
-          <span class="activity__card-title">Personal AI OS MCP Server</span>
-          <el-button :loading="personalMcpLoading" @click="store.loadPersonalMcp()">刷新</el-button>
-        </div>
-      </template>
-
-      <el-alert
-        v-if="personalMcpError"
-        type="error"
-        :closable="false"
-        show-icon
-        title="无法读取 Personal AI OS MCP Server"
-        :description="personalMcpError"
-      />
-
-      <el-skeleton v-else-if="personalMcpLoading && !personalMcp" :rows="3" animated />
-
-      <template v-else-if="personalMcp">
-        <el-alert
-          v-if="!personalMcp.enabled"
-          type="info"
-          :closable="false"
-          show-icon
-          title="对外 MCP Server 未启用"
-          description="在根目录 .env 设置 PERSONAL_MCP_SERVER_ENABLED=true，然后重启后端。"
-        />
-
-        <template v-else>
-          <div class="activity__server-summary">
-            <div>
-              <span class="activity__muted">连接地址</span>
-              <code class="activity__endpoint">http://127.0.0.1:8080{{ personalMcp.endpoint }}</code>
-            </div>
-            <div>
-              <span class="activity__muted">版本</span>
-              <span>{{ personalMcp.version }}</span>
-            </div>
-            <el-tag type="success" size="small">已启用</el-tag>
-          </div>
-          <div class="activity__tool-catalog">
-            <div v-for="tool in personalMcp.tools" :key="tool.name" class="activity__tool-card">
-              <div class="activity__tool-card-head">
-                <code>{{ tool.name }}</code>
-                <el-tag v-if="tool.readOnly" type="success" effect="plain" size="small">只读</el-tag>
-              </div>
-              <span class="activity__muted">{{ tool.description }}</span>
-            </div>
-          </div>
-        </template>
-      </template>
-    </el-card>
-
-    <el-card class="activity__card" shadow="never">
-      <template #header>
-        <div class="activity__card-header">
-          <span class="activity__card-title">MCP 接入状态</span>
-          <el-button :loading="mcpLoading" @click="store.loadMcp()">刷新</el-button>
-        </div>
-      </template>
-
-      <el-alert
-        v-if="mcpError"
-        type="error"
-        :closable="false"
-        show-icon
-        title="无法读取 MCP 状态"
-        :description="mcpError"
-      />
-
-      <el-skeleton v-else-if="mcpLoading && !mcp" :rows="2" animated />
-
-      <template v-else-if="mcp">
-        <el-alert
-          v-if="!mcp.enabled"
-          type="info"
-          :closable="false"
-          show-icon
-          title="MCP 未启用"
-          description="需要接入外部工具时，在 .env 里设置 MCP_ENABLED=true 并按 README 声明 server，然后重启后端。"
-        />
-
-        <el-alert
-          v-else-if="mcp.servers.length === 0"
-          type="warning"
-          :closable="false"
-          show-icon
-          title="已启用，但没有配置任何 server"
-          description="MCP_SERVERS_<名字>_COMMAND 等配置项为空，助手暂时拿不到外部工具。"
-        />
-
-        <el-table v-else :data="mcp.servers">
-          <!--
-            列宽：只让「说明」吸收剩余空间。
-            「只读直行」原先也是 min-width，与「说明」平分富余 —— 但它装的是
-            一小组标签，宽度再多也只是把标签之间的空白拉大；而「说明」装的是
-            失败原因这类长文本，多给它的每一像素都能减少截断。
-          -->
-          <el-table-column prop="name" label="Server" width="150" show-overflow-tooltip />
-          <el-table-column label="状态" width="80">
-            <template #default="{ row }">
-              <el-tag :type="row.available ? 'success' : 'danger'" size="small">
-                {{ row.available ? '可用' : '不可用' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="toolCount" label="工具数" width="76" align="right" />
-          <el-table-column label="只读直行" width="240">
-            <template #default="{ row }">
-              <div v-if="row.autoTools.length === 0" class="activity__muted">无（全部需确认）</div>
-              <div v-else class="activity__tool-tags">
-                <el-tag
-                  v-for="tool in row.autoTools"
-                  :key="tool"
-                  class="activity__tool-tag"
-                  size="small"
-                  effect="plain"
-                >
-                  {{ tool }}
-                </el-tag>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="说明" min-width="180" show-overflow-tooltip>
-            <template #default="{ row }">
-              <span v-if="row.failureReason" class="activity__reason">{{ row.failureReason }}</span>
-              <span v-else class="activity__muted">—</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="100" align="right">
-            <template #default="{ row }">
-              <el-button
-                link
-                type="primary"
-                :loading="reconnectingServer === row.name"
-                :disabled="reconnectingServer !== null"
-                @click="handleReconnect(row.name)"
-              >
-                重连
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <p v-if="mcp.enabled" class="activity__muted">
-          可在此查看连接状态并重连；新增、删除或修改连接，请编辑项目根目录 .env 并重启后端。
-        </p>
-      </template>
-    </el-card>
+    <PageHeader size="page" title="活动" />
 
     <el-card class="activity__card" shadow="never">
       <template #header>
@@ -438,56 +244,6 @@ function handleOutcome(value: string): void {
   width: 130px;
 }
 
-.activity__server-summary {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--os-space-4);
-  margin-bottom: var(--os-space-4);
-}
-
-.activity__server-summary > div:first-child {
-  display: flex;
-  flex-direction: column;
-  gap: var(--os-space-1);
-  margin-right: auto;
-}
-
-.activity__endpoint {
-  color: var(--el-color-primary);
-  font-size: var(--os-font-xs);
-}
-
-.activity__tool-catalog {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--os-space-3);
-}
-
-.activity__tool-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--os-space-2);
-  min-height: 76px;
-  padding: var(--os-space-3);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: var(--el-border-radius-base);
-  background: var(--el-fill-color-lighter);
-}
-
-.activity__tool-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--os-space-2);
-}
-
-.activity__tool-card-head code {
-  overflow-wrap: anywhere;
-  color: var(--el-text-color-primary);
-  font-size: var(--os-font-xs);
-}
-
 /* ---- 时间线视图（T036）---- */
 
 .activity__timeline {
@@ -559,29 +315,8 @@ function handleOutcome(value: string): void {
   color: var(--el-text-color-secondary);
 }
 
-/*
- * 标签容器用 flex + gap 统一间距。
- * 原先每个 tag 自带 margin，最后一个会在右侧多留一段空隙，与单元格内边距叠加后
- * 显得右边界不齐；交给容器的 gap 就没有"尾部余量"这个问题。
- */
-.activity__tool-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--os-space-1);
-}
-
-.activity__tool-tag {
-  margin: 0;
-}
-
 .activity__muted {
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
-}
-
-.activity__reason {
-  color: var(--el-color-danger);
-  font-size: var(--os-font-xs);
-  word-break: break-all;
 }
 </style>

@@ -1,12 +1,5 @@
 import { requestData } from '@/api/http'
-import type { McpStatus, PageDto, PersonalMcpStatus, ToolInvocation, ToolInvocationOutcome } from '@/types/api'
-
-/**
- * 观测类接口客户端（阶段 11）。
- *
- * 全部只读：审计与 MCP 状态都没有写入口。审计不提供删除是刻意的 ——
- * 能被删掉的审计不能作为「助手到底做了什么」的证据。
- */
+import type { PageDto, ToolInvocation, ToolInvocationOutcome } from '@/types/api'
 
 /** 审计查询参数；不传则取默认（第 1 页、每页 20 条、不筛选） */
 export interface ToolInvocationQuery {
@@ -23,24 +16,4 @@ export function listToolInvocations(params: ToolInvocationQuery = {}): Promise<P
     method: 'get',
     params,
   })
-}
-
-/**
- * MCP 接入状态。
- *
- * 未启用时后端返回 `{ enabled: false, servers: [] }` 而不是 404 ——
- * 调用方据此区分「没开这个功能」与「接口挂了」。
- */
-export function fetchMcpStatus(): Promise<McpStatus> {
-  return requestData<McpStatus>({ url: '/mcp/servers', method: 'get' })
-}
-
-/** Personal AI OS 对外 MCP Server 的工具目录与运行配置。 */
-export function fetchPersonalMcpStatus(): Promise<PersonalMcpStatus> {
-  return requestData<PersonalMcpStatus>({ url: '/mcp/server', method: 'get' })
-}
-
-/** 重新连接一个外部 MCP Server。 */
-export function reconnectMcpServer(name: string): Promise<void> {
-  return requestData<void>({ url: `/mcp/servers/${encodeURIComponent(name)}/reconnect`, method: 'post' })
 }

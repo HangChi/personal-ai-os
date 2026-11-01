@@ -81,6 +81,7 @@ declare module 'vue' {
     KnowledgeHitList: typeof import('./src/components/knowledge/KnowledgeHitList.vue')['default']
     KnowledgeSearchTab: typeof import('./src/components/knowledge/KnowledgeSearchTab.vue')['default']
     MarkdownRenderer: typeof import('./src/components/MarkdownRenderer.vue')['default']
+    McpSettingsPanel: typeof import('./src/components/settings/McpSettingsPanel.vue')['default']
     ModelProfileCard: typeof import('./src/components/settings/ModelProfileCard.vue')['default']
     ModelProfileDialog: typeof import('./src/components/settings/ModelProfileDialog.vue')['default']
     ModelProfilesPanel: typeof import('./src/components/settings/ModelProfilesPanel.vue')['default']

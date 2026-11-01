@@ -7,7 +7,7 @@
 > **当前状态**：功能开发到阶段 28（生产安全加固），包含运行可靠性优化、生产 Compose、CSRF、Secure Cookie、HTTPS 反向代理入口和本地端口隔离。
 > 五个内置模块可用：对话、任务、知识库、日程与提醒、长期记忆；助手内置 15 个工具，
 > 支持 MCP 双向接入：既能连接外部 MCP Server，也能作为 MCP Server 向其他 AI 提供个人数据查询工具。
-> 「活动与 MCP」页可查助手调用过哪些工具、以及每个 MCP server 当前是否连上。
+> 「活动」页查看工具调用记录；「设置 → MCP」查看和管理 MCP 连接。
 
 ## 这个项目要做什么
 
@@ -161,7 +161,7 @@ cd frontend && npm run lint && npm run format:check && npm run type-check \
 | 8 | 长期记忆（显式写入 + 每次对话注入 + 管理页） | ✅ |
 | 9 | 可靠提醒（浏览器通知 + 站内降级 + 权限状态可见） | ✅ |
 | 10 | 富文档解析（PDF 文本层 / Word docx / 图片走视觉模型） | ✅ |
-| 11 | 工具审计与 MCP 状态（活动页：调用记录分页筛选 + server 可用性） | ✅ |
+| 11 | 工具审计与 MCP 状态（活动页审计 + 设置页 MCP 管理） | ✅ |
 | 12 | 数据导出（全部业务数据 → 单个 JSON 文件，首页一键下载） | ✅ |
 | 13 | 日历月视图（7×6 网格、切月、按本地时区归属修复） | ✅ |
 | 14 | 任务标签（0–5 个自由文本、按标签筛选、工具同步支持） | ✅ |
@@ -194,7 +194,7 @@ Personal AI OS 支持两种 MCP 用法，两个开关相互独立，默认都关
 
 | 模式 | 用途 | 配置 | 入口 |
 |---|---|---|---|
-| MCP Client | 让助手调用外部工具，例如文件系统或 GitHub | `MCP_ENABLED=true` 和 `MCP_SERVERS_<NAME>_*` | 对话中的工具调用；状态见「活动与 MCP」页 |
+| MCP Client | 让助手调用外部工具，例如文件系统或 GitHub | `MCP_ENABLED=true` 和 `MCP_SERVERS_<NAME>_*` | 对话中的工具调用；状态见「设置 → MCP」 |
 | MCP Server | 让 Cursor、Claude 等外部 AI 查询 Personal AI OS 数据 | `PERSONAL_MCP_SERVER_ENABLED=true` | `http://localhost:8080/mcp` |
 
 详细配置与排错见 [`docs/mcp.md`](docs/mcp.md)。
@@ -216,7 +216,7 @@ MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,list_directory,directory_tree
 - 其余全部按**变更类**处理，生成「待确认事项」，你在界面上确认后才会真正执行；
 - 漏配的代价是多弹一次确认，而不是一次未授权的写入。
 
-**运行期状态在「活动与 MCP」页可查**：每个 server 是否连上、暴露几个工具、哪些是只读直行，
+**运行期状态在「设置 → MCP」可查**：每个 server 是否连上、暴露几个工具、哪些是只读直行，
 连不上时给出原因。这是刻意补上的一块 —— server 连不上只降级不阻断启动（见下条），
 代价是这个故障原本**只出现在启动那一瞬间的日志里**，没有查询入口就等于静默失效。
 
@@ -247,7 +247,7 @@ PERSONAL_MCP_SERVER_ENABLED=true
 
 服务端工具名为 `personal_list_tasks`、`personal_search_knowledge`、
 `personal_list_calendar` 和 `personal_list_memories`。详细配置见
-[`docs/mcp.md`](docs/mcp.md)。前端「活动与 MCP」页现在同时显示外部 MCP Client 的连接状态、重连操作，
+[`docs/mcp.md`](docs/mcp.md)。前端「设置 → MCP」现在同时显示外部 MCP Client 的连接状态、重连操作，
 以及本系统作为 MCP Server 对外提供的 4 个工具目录。
 
 ## 日程与提醒

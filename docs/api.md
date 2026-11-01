@@ -156,7 +156,7 @@ Header: Idempotency-Key?   ← 同一键重试时，模型重复发出的工具�
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| GET | `/mcp/servers` | 各 server 的连接状态与工具数（活动与 MCP 页用） |
+| GET | `/mcp/servers` | 各 server 的连接状态与工具数（设置 → MCP） |
 | POST | `/mcp/servers/{name}/reconnect` | 重连指定外部 MCP Server |
 | GET | `/mcp/server` | Personal AI OS 对外 MCP Server 的启用状态和工具目录 |
 | POST/GET | `/mcp` | 可选的 Personal AI OS MCP Server（Streamable HTTP，默认关闭；复用后端认证） |
