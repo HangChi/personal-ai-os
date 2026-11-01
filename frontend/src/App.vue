@@ -286,9 +286,14 @@ async function handleLogout(): Promise<void> {
   <!--
     app-shell--fixed：对话页专用。外壳锁死为视口高且不滚动，
     于是「长高」的压力全部传给消息区内部的 overflow-y —— 页面本身永远不出现滚动条。
-    其他页面（任务/知识库/设置）不加这个类，保持整页滚动。
+    任务、知识库等页面保持整页滚动；设置页单独固定外壳，各分组内容内部滚动。
   -->
-  <el-container :class="['app-shell', { 'app-shell--fixed': route.meta.fullWidth }]">
+  <el-container
+    :class="[
+      'app-shell',
+      { 'app-shell--fixed': route.meta.fullWidth, 'app-shell--settings': route.name === 'settings' },
+    ]"
+  >
     <!-- 侧栏：宽屏主导航；登录页不渲染 -->
     <el-aside v-if="!isLoginPage" class="app-shell__aside" :width="asideWidth">
       <!--
@@ -482,6 +487,17 @@ async function handleLogout(): Promise<void> {
  */
 .app-shell--fixed {
   height: 100dvh;
+  overflow: hidden;
+}
+
+/* 设置页固定外层尺寸，各分组只在自己的内容区内滚动。 */
+.app-shell--settings {
+  min-height: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.app-shell--settings .app-shell__main {
   overflow: hidden;
 }
 

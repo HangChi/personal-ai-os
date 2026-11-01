@@ -3,7 +3,7 @@
 import { Download, RefreshLeft } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { downloadExport } from '@/api/export'
@@ -50,7 +50,9 @@ const activeSection = computed<SectionId>({
   },
 })
 
-const activeItem = computed(() => navItems.find((item) => item.id === activeSection.value) ?? navItems[0])
+// 首次访问时才挂载；切回时保留已加载的数据、展开项和各分组的滚动位置。
+const visitedSections = ref(new Set<SectionId>([activeSection.value]))
+watch(activeSection, (section) => visitedSections.value.add(section))
 
 const themeOptions: Array<{ label: string; value: ThemePreference }> = [
   { label: '浅色', value: 'light' },
@@ -122,124 +124,134 @@ async function handleReset(): Promise<void> {
         </button>
       </nav>
 
-      <!-- 右侧内容 -->
-      <section class="settings__panel" :class="{ 'settings__panel--mcp': activeSection === 'mcp' }">
-        <header v-if="activeSection !== 'mcp'" class="settings__panel-head">
-          <h2 class="settings__panel-title">{{ activeItem.label }}</h2>
-        </header>
+      <!-- 每组保留自己的滚动容器，异步加载和分组切换都不改变外层布局。 -->
+      <div class="settings__content">
+        <template v-for="item in navItems" :key="item.id">
+          <section
+            v-if="visitedSections.has(item.id)"
+            v-show="item.id === activeSection"
+            class="settings__panel"
+            :class="{ 'settings__panel--mcp': item.id === 'mcp' }"
+            :aria-label="item.label"
+          >
+            <header v-if="item.id !== 'mcp'" class="settings__panel-head">
+              <h2 class="settings__panel-title">{{ item.label }}</h2>
+            </header>
 
-        <!-- 模型配置 -->
-        <ModelProfilesPanel v-if="activeSection === 'model'" />
+            <!-- 模型配置 -->
+            <ModelProfilesPanel v-if="item.id === 'model'" :active="item.id === activeSection" />
 
-        <McpSettingsPanel v-else-if="activeSection === 'mcp'" />
+            <McpSettingsPanel v-else-if="item.id === 'mcp'" :active="item.id === activeSection" />
 
-        <!-- 外观 -->
-        <template v-else-if="activeSection === 'appearance'">
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">主题</span>
-            </div>
-            <el-radio-group v-model="theme">
-              <el-radio-button v-for="option in themeOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </el-radio-button>
-            </el-radio-group>
-          </div>
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">收起侧边栏</span>
-            </div>
-            <el-switch v-model="navCollapsed" />
-          </div>
+            <!-- 外观 -->
+            <template v-else-if="item.id === 'appearance'">
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">主题</span>
+                </div>
+                <el-radio-group v-model="theme">
+                  <el-radio-button v-for="option in themeOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </el-radio-button>
+                </el-radio-group>
+              </div>
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">收起侧边栏</span>
+                </div>
+                <el-switch v-model="navCollapsed" />
+              </div>
+            </template>
+
+            <!-- 对话 -->
+            <template v-else-if="item.id === 'chat'">
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">新会话默认开启知识库增强</span>
+                </div>
+                <el-switch v-model="settings.knowledgeDefaultOn" />
+              </div>
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">默认检索条数</span>
+                </div>
+                <el-input-number v-model="settings.knowledgeTopK" :min="1" :max="20" />
+              </div>
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">Enter 直接发送</span>
+                  <span class="settings__row-hint">关闭后 Enter 换行、Ctrl + Enter 发送</span>
+                </div>
+                <el-switch v-model="settings.enterSend" />
+              </div>
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">默认思考程度</span>
+                </div>
+                <el-radio-group v-model="settings.thinkingLevel">
+                  <el-radio-button v-for="level in thinkingLevels" :key="level" :value="level">
+                    {{ THINKING_LABELS[level] }}
+                  </el-radio-button>
+                </el-radio-group>
+              </div>
+            </template>
+
+            <!-- 日程 -->
+            <template v-else-if="item.id === 'calendar'">
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">默认提前提醒</span>
+                </div>
+                <div class="settings__inline">
+                  <el-input-number v-model="settings.reminderLead" :min="0" :max="10080" :step="5" />
+                  <span class="settings__unit">分钟</span>
+                </div>
+              </div>
+            </template>
+
+            <!-- 数据 -->
+            <template v-else-if="item.id === 'data'">
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">导出数据</span>
+                  <span class="settings__row-hint"> 任务、日程、记忆、知识库与对话历史（JSON） </span>
+                </div>
+                <el-button :loading="exporting" @click="handleExport">
+                  <el-icon><Download /></el-icon>
+                  导出
+                </el-button>
+              </div>
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">重置全部偏好</span>
+                  <span class="settings__row-hint">清除本浏览器保存的全部界面偏好（不影响任何业务数据）</span>
+                </div>
+                <el-button type="danger" plain @click="handleReset">
+                  <el-icon><RefreshLeft /></el-icon>
+                  重置
+                </el-button>
+              </div>
+            </template>
+
+            <!-- 关于 -->
+            <template v-else-if="item.id === 'about'">
+              <div class="settings__row">
+                <div class="settings__row-text">
+                  <span class="settings__row-label">后端状态</span>
+                  <span class="settings__row-hint">
+                    <template v-if="healthError">无法连接后端服务：{{ healthError }}</template>
+                    <template v-else-if="health">
+                      {{ health.status }} · 版本 {{ health.version }} · 服务端时间 {{ health.timestamp }}
+                    </template>
+                    <template v-else>加载中…</template>
+                  </span>
+                </div>
+                <el-button :loading="healthLoading" @click="appStore.loadHealth()">刷新</el-button>
+              </div>
+            </template>
+          </section>
         </template>
-
-        <!-- 对话 -->
-        <template v-else-if="activeSection === 'chat'">
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">新会话默认开启知识库增强</span>
-            </div>
-            <el-switch v-model="settings.knowledgeDefaultOn" />
-          </div>
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">默认检索条数</span>
-            </div>
-            <el-input-number v-model="settings.knowledgeTopK" :min="1" :max="20" />
-          </div>
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">Enter 直接发送</span>
-              <span class="settings__row-hint">关闭后 Enter 换行、Ctrl + Enter 发送</span>
-            </div>
-            <el-switch v-model="settings.enterSend" />
-          </div>
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">默认思考程度</span>
-            </div>
-            <el-radio-group v-model="settings.thinkingLevel">
-              <el-radio-button v-for="level in thinkingLevels" :key="level" :value="level">
-                {{ THINKING_LABELS[level] }}
-              </el-radio-button>
-            </el-radio-group>
-          </div>
-        </template>
-
-        <!-- 日程 -->
-        <template v-else-if="activeSection === 'calendar'">
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">默认提前提醒</span>
-            </div>
-            <div class="settings__inline">
-              <el-input-number v-model="settings.reminderLead" :min="0" :max="10080" :step="5" />
-              <span class="settings__unit">分钟</span>
-            </div>
-          </div>
-        </template>
-
-        <!-- 数据 -->
-        <template v-else-if="activeSection === 'data'">
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">导出数据</span>
-              <span class="settings__row-hint"> 任务、日程、记忆、知识库与对话历史（JSON） </span>
-            </div>
-            <el-button :loading="exporting" @click="handleExport">
-              <el-icon><Download /></el-icon>
-              导出
-            </el-button>
-          </div>
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">重置全部偏好</span>
-              <span class="settings__row-hint">清除本浏览器保存的全部界面偏好（不影响任何业务数据）</span>
-            </div>
-            <el-button type="danger" plain @click="handleReset">
-              <el-icon><RefreshLeft /></el-icon>
-              重置
-            </el-button>
-          </div>
-        </template>
-
-        <!-- 关于 -->
-        <template v-else-if="activeSection === 'about'">
-          <div class="settings__row">
-            <div class="settings__row-text">
-              <span class="settings__row-label">后端状态</span>
-              <span class="settings__row-hint">
-                <template v-if="healthError">无法连接后端服务：{{ healthError }}</template>
-                <template v-else-if="health">
-                  {{ health.status }} · 版本 {{ health.version }} · 服务端时间 {{ health.timestamp }}
-                </template>
-                <template v-else>加载中…</template>
-              </span>
-            </div>
-            <el-button :loading="healthLoading" @click="appStore.loadHealth()">刷新</el-button>
-          </div>
-        </template>
-      </section>
+      </div>
     </div>
   </div>
 </template>
@@ -250,6 +262,8 @@ async function handleReset(): Promise<void> {
   flex-direction: column;
   gap: var(--os-space-5);
   width: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 /*
@@ -261,15 +275,19 @@ async function handleReset(): Promise<void> {
   display: grid;
   grid-template-columns: 176px minmax(0, 1fr);
   gap: var(--os-space-5);
-  align-items: start;
+  grid-template-rows: minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
 }
 
 .settings__nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  position: sticky;
-  top: calc(var(--os-header-height) + var(--os-space-4));
+  align-self: start;
+  max-height: 100%;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .settings__nav-item {
@@ -326,15 +344,32 @@ async function handleReset(): Promise<void> {
   outline-offset: 1px;
 }
 
+.settings__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+}
+
 .settings__panel {
   display: flex;
   flex-direction: column;
   gap: var(--os-space-3);
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding: var(--os-space-4) var(--os-space-5) var(--os-space-5);
   background: var(--el-bg-color);
   border: 1px solid var(--el-border-color-lighter);
   border-radius: var(--os-radius-lg);
+}
+
+/* 子内容保持自然高度，剩余高度由设置容器承担。 */
+.settings__panel > * {
+  flex-shrink: 0;
 }
 
 .settings__panel--mcp {
@@ -403,14 +438,16 @@ async function handleReset(): Promise<void> {
 @media (max-width: 900px) {
   .settings__layout {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     gap: var(--os-space-3);
   }
 
   .settings__nav {
     flex-direction: row;
-    position: static;
     gap: var(--os-space-1);
     overflow-x: auto;
+    overflow-y: hidden;
+    max-height: none;
     padding-bottom: var(--os-space-1);
   }
 

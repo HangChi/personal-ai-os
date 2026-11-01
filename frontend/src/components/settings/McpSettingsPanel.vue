@@ -14,14 +14,22 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useMcpStore } from '@/stores/mcp'
+
+const props = withDefaults(defineProps<{ active?: boolean }>(), { active: true })
 
 const store = useMcpStore()
 const { mcp, loading, error, personalMcp, personalLoading, personalError } = storeToRefs(store)
 const reconnecting = ref<string | null>(null)
 const toolDrawerOpen = ref(false)
 const selectedServerName = ref<string | null>(null)
+watch(
+  () => props.active,
+  (active) => {
+    if (!active) toolDrawerOpen.value = false
+  },
+)
 const selectedServer = computed(() => mcp.value?.servers.find((server) => server.name === selectedServerName.value))
 const busy = computed(() => loading.value || personalLoading.value || reconnecting.value !== null)
 const connectedCount = computed(() => mcp.value?.servers.filter((server) => server.available).length ?? 0)

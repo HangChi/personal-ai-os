@@ -19,7 +19,7 @@
  */
 import { Plus, Refresh, VideoPlay } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import { confirmDanger } from '@/lib/confirm-box'
 import { deleteBlockedReason, testResultSummary } from '@/lib/model-profile'
@@ -27,9 +27,17 @@ import type { ProviderPreset } from '@/lib/provider-presets'
 import { useModelProfileStore } from '@/stores/model-profile'
 import type { ModelConnectionTestResult, SaveModelProfilePayload } from '@/types/api'
 
+const props = withDefaults(defineProps<{ active?: boolean }>(), { active: true })
+
 const store = useModelProfileStore()
 
 const dialogVisible = ref(false)
+watch(
+  () => props.active,
+  (active) => {
+    if (!active) dialogVisible.value = false
+  },
+)
 const editingId = ref<string | null>(null)
 const pickedPreset = ref<ProviderPreset | null>(null)
 const dialogRef = ref<{ finish: () => void } | null>(null)
