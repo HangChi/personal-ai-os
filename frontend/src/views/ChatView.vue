@@ -76,6 +76,39 @@ watch(currentConversationId, () => {
 })
 const messageArea = ref<HTMLElement | null>(null)
 const resolvingId = ref<string | null>(null)
+const atTop = ref(true)
+const atBottom = ref(true)
+let scrollSessionVersion = 0
+
+function updateScrollPosition(): void {
+  const element = messageArea.value
+  if (!element) return
+  atTop.value = element.scrollTop <= 8
+  atBottom.value = element.scrollHeight - element.clientHeight - element.scrollTop <= 8
+}
+
+async function jumpToEdge(edge: 'top' | 'bottom'): Promise<void> {
+  const version = scrollSessionVersion
+  await nextTick()
+  const element = messageArea.value
+  if (!element || version !== scrollSessionVersion) return
+  element.scrollTop = edge === 'top' ? 0 : element.scrollHeight
+  updateScrollPosition()
+}
+
+watch(
+  currentConversationId,
+  () => {
+    scrollSessionVersion++
+  },
+  { flush: 'sync' },
+)
+watch([currentConversationId, loadingMessages], async ([, loading]) => {
+  if (!loading && !streaming.value) await jumpToEdge('top')
+})
+watch(streaming, (active) => {
+  if (active) void jumpToEdge('bottom')
+})
 
 /* ---- 会话栏拖拽调宽 ---- */
 const resizingSessionPanel = ref(false)
@@ -245,12 +278,16 @@ function isNearBottom(): boolean {
  * 更新后 scrollHeight 已经变大，`scrollHeight - scrollTop - clientHeight` 会失真。
  */
 async function autoScrollToBottom(): Promise<void> {
+  if (loadingMessages.value) return
+  const version = scrollSessionVersion
   const element = messageArea.value
   const shouldScroll = element ? isNearBottom() : true
   await nextTick()
+  if (version !== scrollSessionVersion || loadingMessages.value) return
   if (element && shouldScroll) {
     element.scrollTop = element.scrollHeight
   }
+  updateScrollPosition()
 }
 
 watch([lastMessageKey, streamingContent], () => {
@@ -264,12 +301,14 @@ watch([lastMessageKey, streamingContent], () => {
  * 用户会看到内容「突然跳走」，还得自己滚回去找刚才看到哪了。
  */
 async function handleLoadOlder(): Promise<void> {
+  const version = scrollSessionVersion
   const element = messageArea.value
   const prevHeight = element?.scrollHeight ?? 0
   await chatStore.loadOlderMessages()
   await nextTick()
-  if (element) {
+  if (element && version === scrollSessionVersion) {
     element.scrollTop += scrollDeltaForPrepend(prevHeight, element.scrollHeight)
+    updateScrollPosition()
   }
 }
 
@@ -323,6 +362,7 @@ const retrievalHint = computed(() => {
 })
 
 onMounted(async () => {
+  void jumpToEdge('top')
   loadKnowledgePref()
   // 模型清单来自生效配置：只有生效那套的端点与密钥是真在用的。
   // 不 await：它只影响顶栏那个下拉的选项，拿不到也只是「暂时没得选」，
@@ -555,6 +595,26 @@ async function jumpToMatch(step: number): Promise<void> {
             -->
           </div>
           <div class="chat__header-actions">
+            <div class="chat__scroll-nav" role="group" aria-label="消息滚动">
+              <button
+                type="button"
+                aria-label="到顶部"
+                title="到已加载消息顶部"
+                :disabled="atTop || loadingMessages"
+                @click="jumpToEdge('top')"
+              >
+                <el-icon><ArrowUp /></el-icon>
+              </button>
+              <button
+                type="button"
+                aria-label="到底部"
+                title="到最新消息"
+                :disabled="atBottom || loadingMessages"
+                @click="jumpToEdge('bottom')"
+              >
+                <el-icon><ArrowDown /></el-icon>
+              </button>
+            </div>
             <div class="chat__search">
               <el-input
                 v-model="searchKeyword"
@@ -617,6 +677,7 @@ async function jumpToMatch(step: number): Promise<void> {
           aria-relevant="additions"
           aria-label="对话消息"
           :aria-busy="streaming"
+          @scroll.passive="updateScrollPosition"
         >
           <el-alert v-if="error" class="chat__error" type="error" :closable="false" show-icon :title="error" />
 
@@ -890,6 +951,42 @@ html.os-resizing .chat {
   align-items: center;
   gap: var(--os-space-2);
   min-width: 0;
+}
+
+.chat__scroll-nav {
+  display: flex;
+  flex: none;
+  gap: 2px;
+}
+
+.chat__scroll-nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--os-radius-sm);
+  background: transparent;
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+}
+
+.chat__scroll-nav button:hover:not(:disabled) {
+  background: var(--el-fill-color);
+}
+
+.chat__scroll-nav button:disabled {
+  color: var(--el-text-color-placeholder);
+  cursor: default;
+}
+
+@media (pointer: coarse) {
+  .chat__scroll-nav button {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 .chat__search {
