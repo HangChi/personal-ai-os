@@ -10,7 +10,8 @@ import {
   UploadFilled,
   VideoPause,
 } from '@element-plus/icons-vue'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import type { InputInstance } from 'element-plus'
 import { uploadAttachment } from '@/api/chat'
 import { ElMessage } from 'element-plus'
 import ChatModelPicker from '@/components/chat/ChatModelPicker.vue'
@@ -247,6 +248,9 @@ const TOP_K_OPTIONS = [2, 4, 6, 8, 12, 20]
 /** 思考档位（顺序即展示顺序） */
 const THINKING_LEVELS: ThinkingLevel[] = ['off', 'standard', 'deep']
 
+const input = ref<InputInstance | null>(null)
+let inputResizeObserver: ResizeObserver | undefined
+
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key !== 'Enter' || event.isComposing) {
     // isComposing：中文输入法选词期间的 Enter 不触发发送
@@ -263,40 +267,23 @@ function handleKeydown(event: KeyboardEvent): void {
   }
 }
 
-/**
- * 输入框随内容长高（上限 160px）。
- *
- * <p>固定行数有两个问题：短消息时输入框显得空荡，长消息时行数装不下、
- * 中途还得手动拖（已禁用 resize）。改成 2 行起步、按 scrollHeight 增长，
- * 超过上限后再内部滚动 —— 与主流聊天工具的手感一致。
- */
-const root = ref<HTMLElement | null>(null)
-
-function autosize(): void {
-  const element = root.value?.querySelector('textarea')
-  if (!element) {
-    return
-  }
-  element.style.height = 'auto'
-  element.style.height = `${Math.min(element.scrollHeight, 160)}px`
-}
-
-watch(
-  () => props.modelValue,
-  async () => {
-    await nextTick()
-    autosize()
-  },
-)
-
-// 挂载时也算一次：从「点击建议问题」进来的内容可能一进来就不止两行
 onMounted(() => {
-  autosize()
+  // 由组件统一计算高度；列宽或手机字号变化时也刷新，避免等下次输入才突然变高。
+  if (input.value?.textarea && typeof ResizeObserver !== 'undefined') {
+    let width = 0
+    inputResizeObserver = new ResizeObserver(([entry]) => {
+      if (!entry || entry.contentRect.width === width) return
+      width = entry.contentRect.width
+      input.value?.resizeTextarea()
+    })
+    inputResizeObserver.observe(input.value.textarea)
+  }
   document.addEventListener('dragover', guardDocumentDrop)
   document.addEventListener('drop', guardDocumentDrop)
 })
 
 onBeforeUnmount(() => {
+  inputResizeObserver?.disconnect()
   document.removeEventListener('dragover', guardDocumentDrop)
   document.removeEventListener('drop', guardDocumentDrop)
 })
@@ -311,7 +298,7 @@ onBeforeUnmount(() => {
     @dragleave="onDragLeave"
     @drop="onDrop"
   >
-    <div ref="root" class="chat-composer__box">
+    <div class="chat-composer__box">
       <div v-if="attachments.length > 0" class="chat-composer__attachments">
         <div v-for="item in attachments" :key="item.id" class="chat-composer__attachment">
           <el-image
@@ -343,10 +330,12 @@ onBeforeUnmount(() => {
         @change="pickFiles(($event.target as HTMLInputElement).files)"
       />
       <el-input
+        ref="input"
         :model-value="modelValue"
         class="chat-composer__textarea"
         type="textarea"
-        :rows="1"
+        :rows="2"
+        :autosize="{ minRows: 2, maxRows: 6 }"
         aria-label="消息内容"
         maxlength="4000"
         resize="none"
@@ -781,7 +770,6 @@ onBeforeUnmount(() => {
   box-shadow: none;
   font-size: var(--os-font-md);
   line-height: 1.65;
-  min-height: 52px;
 }
 
 .chat-composer__action-group :deep(.el-button + .el-button) {
