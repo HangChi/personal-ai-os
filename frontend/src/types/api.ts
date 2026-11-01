@@ -348,6 +348,21 @@ export interface McpStatus {
   servers: McpServerStatus[]
 }
 
+/** Personal AI OS 对外 MCP Server 的配置与工具目录 */
+export interface PersonalMcpTool {
+  name: string
+  description: string
+  readOnly: boolean
+}
+
+export interface PersonalMcpStatus {
+  enabled: boolean
+  name: string
+  version: string
+  endpoint: string
+  tools: PersonalMcpTool[]
+}
+
 /**
  * 配置项的来源（与后端 `ModelConfigService.ConfigSource` 对齐）。
  *

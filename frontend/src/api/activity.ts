@@ -1,5 +1,5 @@
 import { requestData } from '@/api/http'
-import type { McpStatus, PageDto, ToolInvocation, ToolInvocationOutcome } from '@/types/api'
+import type { McpStatus, PageDto, PersonalMcpStatus, ToolInvocation, ToolInvocationOutcome } from '@/types/api'
 
 /**
  * 观测类接口客户端（阶段 11）。
@@ -33,4 +33,14 @@ export function listToolInvocations(params: ToolInvocationQuery = {}): Promise<P
  */
 export function fetchMcpStatus(): Promise<McpStatus> {
   return requestData<McpStatus>({ url: '/mcp/servers', method: 'get' })
+}
+
+/** Personal AI OS 对外 MCP Server 的工具目录与运行配置。 */
+export function fetchPersonalMcpStatus(): Promise<PersonalMcpStatus> {
+  return requestData<PersonalMcpStatus>({ url: '/mcp/server', method: 'get' })
+}
+
+/** 重新连接一个外部 MCP Server。 */
+export function reconnectMcpServer(name: string): Promise<void> {
+  return requestData<void>({ url: `/mcp/servers/${encodeURIComponent(name)}/reconnect`, method: 'post' })
 }

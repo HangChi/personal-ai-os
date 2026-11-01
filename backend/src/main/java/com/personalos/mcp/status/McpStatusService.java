@@ -8,6 +8,7 @@ import com.personalos.mcp.client.McpServerStatus;
 import com.personalos.mcp.config.McpProperties;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +29,28 @@ public class McpStatusService {
 
     private final McpProperties properties;
     private final ObjectProvider<McpClientRegistry> registryProvider;
+    private final boolean personalServerEnabled;
+    private final String personalServerName;
+    private final String personalServerVersion;
+    private final String personalServerEndpoint;
 
-    public McpStatusService(McpProperties properties, ObjectProvider<McpClientRegistry> registryProvider) {
+    public McpStatusService(McpProperties properties, ObjectProvider<McpClientRegistry> registryProvider,
+                            @Value("${spring.ai.mcp.server.enabled:false}") boolean personalServerEnabled,
+                            @Value("${spring.ai.mcp.server.name:personal-ai-os}") String personalServerName,
+                            @Value("${spring.ai.mcp.server.version:0.1.0}") String personalServerVersion,
+                            @Value("${spring.ai.mcp.server.streamable-http.mcp-endpoint:/mcp}")
+                            String personalServerEndpoint) {
         this.properties = properties;
         this.registryProvider = registryProvider;
+        this.personalServerEnabled = personalServerEnabled;
+        this.personalServerName = personalServerName;
+        this.personalServerVersion = personalServerVersion;
+        this.personalServerEndpoint = personalServerEndpoint;
+    }
+
+    /** Convenience constructor retained for focused unit tests of external-client status. */
+    public McpStatusService(McpProperties properties, ObjectProvider<McpClientRegistry> registryProvider) {
+        this(properties, registryProvider, false, "personal-ai-os", "0.1.0", "/mcp");
     }
 
     /**
@@ -83,5 +102,19 @@ public class McpStatusService {
             throw new ResourceNotFoundException("未知的 MCP server：" + name);
         }
         registry.reconnect(name);
+    }
+
+    /**
+     * Lists the built-in server and its public read-only tool catalog.
+     * The catalog is intentionally explicit so the UI does not need to scrape MCP protocol traffic.
+     */
+    public PersonalMcpStatusDto personalServer() {
+        List<PersonalMcpToolDto> tools = List.of(
+                new PersonalMcpToolDto("personal_list_tasks", "按状态和关键词分页查询个人任务", true),
+                new PersonalMcpToolDto("personal_search_knowledge", "检索个人知识库片段", true),
+                new PersonalMcpToolDto("personal_list_calendar", "按 ISO-8601 时间区间查询个人日程", true),
+                new PersonalMcpToolDto("personal_list_memories", "读取个人长期记忆", true));
+        return new PersonalMcpStatusDto(personalServerEnabled, personalServerName, personalServerVersion,
+                personalServerEndpoint, tools);
     }
 }

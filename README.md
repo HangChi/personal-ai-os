@@ -247,8 +247,8 @@ PERSONAL_MCP_SERVER_ENABLED=true
 
 服务端工具名为 `personal_list_tasks`、`personal_search_knowledge`、
 `personal_list_calendar` 和 `personal_list_memories`。详细配置见
-[`docs/mcp.md`](docs/mcp.md)。前端「活动」页显示的是**外部 MCP Client** 的连接状态；
-本系统作为 Server 时没有单独的管理页面，使用 MCP 客户端连接 `http://localhost:8080/mcp` 验证。
+[`docs/mcp.md`](docs/mcp.md)。前端「活动」页现在同时显示外部 MCP Client 的连接状态、重连操作，
+以及本系统作为 MCP Server 对外提供的 4 个工具目录。
 
 ## 日程与提醒
 

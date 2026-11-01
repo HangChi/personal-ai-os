@@ -34,6 +34,12 @@ public class McpStatusController {
         return ApiResponse.ok(statusService.status());
     }
 
+    /** Built-in Personal AI OS MCP Server configuration and public tool catalog. */
+    @GetMapping("/server")
+    public ApiResponse<PersonalMcpStatusDto> server() {
+        return ApiResponse.ok(statusService.personalServer());
+    }
+
     /**
      * 重连指定 server（审查 P2）。
      *

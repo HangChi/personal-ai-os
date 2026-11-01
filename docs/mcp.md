@@ -13,6 +13,14 @@ MCP_SERVERS_FILESYSTEM_ARGS=-y,@modelcontextprotocol/server-filesystem,./mcp-san
 MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,list_directory,directory_tree
 ```
 
+也可以接入无需密钥的网页抓取 server：
+
+```bash
+MCP_SERVERS_FETCH_COMMAND=uvx
+MCP_SERVERS_FETCH_ARGS=mcp-server-fetch
+MCP_SERVERS_FETCH_AUTO_TOOLS=fetch
+```
+
 `MCP_SERVERS_<NAME>_ARGS` 的最后一个目录是 filesystem server 的访问边界，应使用专用目录，不能直接开放 home 目录或整个磁盘。
 
 策略规则如下：
@@ -23,6 +31,8 @@ MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,list_directory,directory_tree
 - server 连接失败只会让该 server 标记为不可用，不会阻止应用启动；工具名冲突会阻止启动。
 
 启动后进入前端「活动」页，可以查看外部 server 的连接状态、工具数、只读工具和失败原因。
+页面上的“重连”只重启指定 server 的连接，不会重启整个后端；新增、删除或修改 server 仍通过
+`.env` 完成，修改后重启后端才会生效。
 
 ## 2. 作为 MCP Server
 
@@ -72,7 +82,7 @@ MCP Server 复用后端的认证配置。启用 `AUTH_ENABLED=true` 时，客户
 
 ### 常见误区
 
-- **看不到 MCP 菜单**：MCP Server 没有单独的前端菜单；「活动」页展示的是外部 MCP Client 状态。
+- **看不到 MCP 菜单**：MCP 管理集中在前端「活动」页；页面会展示外部 MCP Client 状态、重连操作和本系统对外的 4 个工具目录。
 - **启用后仍然连接不上**：确认后端已重启，且 `PERSONAL_MCP_SERVER_ENABLED=true` 来自实际运行进程的环境变量。
 - **浏览器打开返回 401**：这是认证拦截，不代表 MCP 未注册；先登录或在 MCP 客户端配置认证会话。
 

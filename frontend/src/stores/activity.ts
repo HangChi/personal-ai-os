@@ -1,8 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-import { fetchMcpStatus, listToolInvocations, type ToolInvocationQuery } from '@/api/activity'
-import type { McpStatus, ToolInvocation, ToolInvocationOutcome } from '@/types/api'
+import {
+  fetchMcpStatus,
+  fetchPersonalMcpStatus,
+  listToolInvocations,
+  reconnectMcpServer,
+  type ToolInvocationQuery,
+} from '@/api/activity'
+import type { McpStatus, PersonalMcpStatus, ToolInvocation, ToolInvocationOutcome } from '@/types/api'
 
 /**
  * 观测状态（阶段 11）：工具调用审计 + MCP 接入状态。
@@ -22,6 +28,9 @@ export const useActivityStore = defineStore('activity', () => {
   const mcp = ref<McpStatus | null>(null)
   const mcpLoading = ref(false)
   const mcpError = ref<string | null>(null)
+  const personalMcp = ref<PersonalMcpStatus | null>(null)
+  const personalMcpLoading = ref(false)
+  const personalMcpError = ref<string | null>(null)
 
   async function loadInvocations(targetPage: number = page.value): Promise<void> {
     loading.value = true
@@ -71,6 +80,23 @@ export const useActivityStore = defineStore('activity', () => {
     }
   }
 
+  async function loadPersonalMcp(): Promise<void> {
+    personalMcpLoading.value = true
+    personalMcpError.value = null
+    try {
+      personalMcp.value = await fetchPersonalMcpStatus()
+    } catch (cause) {
+      personalMcpError.value = cause instanceof Error ? cause.message : '加载 Personal AI OS MCP Server 失败'
+    } finally {
+      personalMcpLoading.value = false
+    }
+  }
+
+  async function reconnectServer(name: string): Promise<void> {
+    await reconnectMcpServer(name)
+    await loadMcp()
+  }
+
   return {
     invocations,
     page,
@@ -82,9 +108,14 @@ export const useActivityStore = defineStore('activity', () => {
     mcp,
     mcpLoading,
     mcpError,
+    personalMcp,
+    personalMcpLoading,
+    personalMcpError,
     loadInvocations,
     setOutcome,
     setPage,
     loadMcp,
+    loadPersonalMcp,
+    reconnectServer,
   }
 })

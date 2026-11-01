@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 
 import AppPagination from '@/components/AppPagination.vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -19,7 +20,21 @@ import type { ToolInvocationOutcome } from '@/types/api'
  * 审计记录由用户主动查看，自动刷新只会把正在读的行顶走。
  */
 const store = useActivityStore()
-const { invocations, page, size, total, outcome, loading, error, mcp, mcpLoading, mcpError } = storeToRefs(store)
+const {
+  invocations,
+  page,
+  size,
+  total,
+  outcome,
+  loading,
+  error,
+  mcp,
+  mcpLoading,
+  mcpError,
+  personalMcp,
+  personalMcpLoading,
+  personalMcpError,
+} = storeToRefs(store)
 
 const OUTCOME_OPTIONS: { value: ToolInvocationOutcome; label: string }[] = [
   { value: 'SUCCESS', label: '成功' },
@@ -40,8 +55,8 @@ const OUTCOME_META: Record<ToolInvocationOutcome, { label: string; type: 'succes
   }
 
 onMounted(async () => {
-  // 两块互不依赖，各自失败不影响另一块
-  await Promise.all([store.loadInvocations(0), store.loadMcp()])
+  // 三块互不依赖，各自失败不影响另一块
+  await Promise.all([store.loadInvocations(0), store.loadMcp(), store.loadPersonalMcp()])
 })
 
 /**
@@ -77,6 +92,19 @@ function shortConversationId(id: string | null): string {
 
 /** 视图模式：表格 / 时间线（阶段 18，T036） */
 const viewMode = ref<'table' | 'timeline'>('table')
+const reconnectingServer = ref<string | null>(null)
+
+async function handleReconnect(name: string): Promise<void> {
+  reconnectingServer.value = name
+  try {
+    await store.reconnectServer(name)
+    ElMessage.success(`${name} 已完成重连检查`)
+  } catch (cause) {
+    ElMessage.error(cause instanceof Error ? cause.message : 'MCP server 重连失败')
+  } finally {
+    reconnectingServer.value = null
+  }
+}
 
 /** 时间线按天分组（当天日期作键，组内保持接口顺序） */ const timelineGroups = computed(() => {
   const groups = new Map<string, typeof invocations.value>()
@@ -109,6 +137,60 @@ function handleOutcome(value: string): void {
       title="活动"
       description="助手调用过哪些工具、每个 MCP server 当前是否连上 —— 审计与接入状态都在这一页。"
     />
+
+    <el-card class="activity__card" shadow="never">
+      <template #header>
+        <div class="activity__card-header">
+          <span class="activity__card-title">Personal AI OS MCP Server</span>
+          <el-button :loading="personalMcpLoading" @click="store.loadPersonalMcp()">刷新</el-button>
+        </div>
+      </template>
+
+      <el-alert
+        v-if="personalMcpError"
+        type="error"
+        :closable="false"
+        show-icon
+        title="无法读取 Personal AI OS MCP Server"
+        :description="personalMcpError"
+      />
+
+      <el-skeleton v-else-if="personalMcpLoading && !personalMcp" :rows="3" animated />
+
+      <template v-else-if="personalMcp">
+        <el-alert
+          v-if="!personalMcp.enabled"
+          type="info"
+          :closable="false"
+          show-icon
+          title="对外 MCP Server 未启用"
+          description="在根目录 .env 设置 PERSONAL_MCP_SERVER_ENABLED=true，然后重启后端。"
+        />
+
+        <template v-else>
+          <div class="activity__server-summary">
+            <div>
+              <span class="activity__muted">连接地址</span>
+              <code class="activity__endpoint">http://127.0.0.1:8080{{ personalMcp.endpoint }}</code>
+            </div>
+            <div>
+              <span class="activity__muted">版本</span>
+              <span>{{ personalMcp.version }}</span>
+            </div>
+            <el-tag type="success" size="small">已启用</el-tag>
+          </div>
+          <div class="activity__tool-catalog">
+            <div v-for="tool in personalMcp.tools" :key="tool.name" class="activity__tool-card">
+              <div class="activity__tool-card-head">
+                <code>{{ tool.name }}</code>
+                <el-tag v-if="tool.readOnly" type="success" effect="plain" size="small">只读</el-tag>
+              </div>
+              <span class="activity__muted">{{ tool.description }}</span>
+            </div>
+          </div>
+        </template>
+      </template>
+    </el-card>
 
     <el-card class="activity__card" shadow="never">
       <template #header>
@@ -184,6 +266,18 @@ function handleOutcome(value: string): void {
             <template #default="{ row }">
               <span v-if="row.failureReason" class="activity__reason">{{ row.failureReason }}</span>
               <span v-else class="activity__muted">—</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="100" align="right">
+            <template #default="{ row }">
+              <el-button
+                link
+                type="primary"
+                :loading="reconnectingServer === row.name"
+                @click="handleReconnect(row.name)"
+              >
+                重连
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -338,6 +432,56 @@ function handleOutcome(value: string): void {
 
 .activity__filter {
   width: 130px;
+}
+
+.activity__server-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--os-space-4);
+  margin-bottom: var(--os-space-4);
+}
+
+.activity__server-summary > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: var(--os-space-1);
+  margin-right: auto;
+}
+
+.activity__endpoint {
+  color: var(--el-color-primary);
+  font-size: var(--os-font-xs);
+}
+
+.activity__tool-catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--os-space-3);
+}
+
+.activity__tool-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--os-space-2);
+  min-height: 76px;
+  padding: var(--os-space-3);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--el-border-radius-base);
+  background: var(--el-fill-color-lighter);
+}
+
+.activity__tool-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--os-space-2);
+}
+
+.activity__tool-card-head code {
+  overflow-wrap: anywhere;
+  color: var(--el-text-color-primary);
+  font-size: var(--os-font-xs);
 }
 
 /* ---- 时间线视图（T036）---- */
