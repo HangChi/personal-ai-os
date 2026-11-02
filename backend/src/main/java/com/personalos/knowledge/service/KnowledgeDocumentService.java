@@ -126,7 +126,10 @@ public class KnowledgeDocumentService {
      * @param bytes            文件字节
      * @return 入库后的文档视图
      */
-    public KnowledgeDocumentDto ingest(String originalFilename, String title, byte[] bytes) {
+    public record PreparedUpload(String title, String filename, String contentType, long sizeBytes,
+                                 int charCount, List<Document> parsed) { }
+
+    public PreparedUpload prepareUpload(String originalFilename, String title, byte[] bytes) {
         String filename = sanitizeFilename(originalFilename);
         String extension = extensionOf(filename);
         if (!properties.isExtensionAllowed(extension)) {
@@ -143,7 +146,6 @@ public class KnowledgeDocumentService {
                     "文件过大（%d 字节），上限为 %d 字节", bytes.length, properties.maxFileSizeBytes()));
         }
 
-        Instant now = Instant.now();
         String contentType = contentTypeOf(extension);
         String documentTitle = (title == null || title.isBlank()) ? stripExtension(filename) : title.strip();
         documentTitle = truncateTitle(documentTitle);
@@ -167,6 +169,22 @@ public class KnowledgeDocumentService {
                     "解析后内容仅 " + parsedChars + " 字符，少于 "
                             + properties.minChunkSizeChars() + "，无法形成有效分块");
         }
+
+        return new PreparedUpload(documentTitle, filename, contentType, bytes.length, parsedChars, parsed);
+    }
+
+    public List<Document> chunksFor(PreparedUpload upload, UUID documentId) {
+        return chunk(upload.parsed(), documentId);
+    }
+
+    public KnowledgeDocumentDto ingest(String originalFilename, String title, byte[] bytes) {
+        PreparedUpload prepared = prepareUpload(originalFilename, title, bytes);
+        String documentTitle = prepared.title();
+        String filename = prepared.filename();
+        String contentType = prepared.contentType();
+        int parsedChars = prepared.charCount();
+        List<Document> parsed = prepared.parsed();
+        Instant now = Instant.now();
 
         // 短事务 1：先落文档记录以取得 id —— 向量元数据与检索过滤都依赖它
         String finalTitle = documentTitle;

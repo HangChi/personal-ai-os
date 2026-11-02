@@ -184,3 +184,18 @@ Header: Idempotency-Key?   ← 同一键重试时，模型重复发出的工具�
 | 429 / `42900` | 模型调用被限流 | 见「通用约定」 |
 | 502 / `50200` | AI 上游失败 | 模型不可达、密钥错误 |
 | 503 / `50300` | 模型未配置 | `AI_CHAT_PROVIDER=none` |
+
+## 知识库异步索引
+
+`POST /api/v1/knowledge/jobs` 接受 multipart 文件，返回 `202 + ApiResponse<Job>`。
+可选 `documentId` 指定替换目标；可选 `title` 指定标题；`Idempotency-Key` 使用 UUID。
+任务状态为 PENDING / RUNNING / SUCCEEDED / FAILED。
+通过 `GET /api/v1/knowledge/jobs/{id}` 读取进度，或 `GET /api/v1/knowledge/jobs` 读取最近 20 项。
+`result` 在成功时为知识文档 DTO 的 JSON 文本，失败时 `error` 为可展示的通用错误。
+任务输入不对外返回。原 `POST/PUT /knowledge/documents` 同步接口保留。
+
+## 后台对话事件流
+
+`GET /api/v1/chat/sessions/{conversationId}/runs/{id}/events?after={cursor}` 返回 SSE，
+`event:run` 的 data 是 ChatRunDto，事件游标沿用数据库序号。重连重复事件由客户端按 id 去重。
+浏览器断开只结束读取，停止执行仍需显式调用 stop 接口。

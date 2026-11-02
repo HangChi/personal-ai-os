@@ -101,3 +101,37 @@ export function askKnowledge(question: string, topK?: number): Promise<Knowledge
     timeout: 120_000,
   })
 }
+
+/** 后台索引任务；提交成功仅表示已入队，完成状态由任务列表给出。 */
+export interface KnowledgeIndexJob {
+  id: string
+  documentId: string
+  replacing: boolean
+  filename: string
+  status: 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'FAILED'
+  attempts: number
+  progress: number
+  stage: string
+  error: string | null
+}
+export function submitIndexJob(
+  file: File,
+  title?: string,
+  documentId?: string,
+  key: string = crypto.randomUUID(),
+): Promise<KnowledgeIndexJob> {
+  const data = new FormData()
+  data.append('file', file)
+  if (title) data.append('title', title)
+  if (documentId) data.append('documentId', documentId)
+  return requestData({
+    url: '/knowledge/jobs',
+    method: 'post',
+    data,
+    headers: { 'Idempotency-Key': key },
+    timeout: 30_000,
+  })
+}
+export function listIndexJobs(): Promise<KnowledgeIndexJob[]> {
+  return requestData({ url: '/knowledge/jobs', method: 'get' })
+}

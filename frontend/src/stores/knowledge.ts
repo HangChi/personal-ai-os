@@ -6,14 +6,49 @@ import {
   deleteDocument,
   listDocuments,
   searchKnowledge,
-  updateDocument,
-  uploadDocument,
+  listIndexJobs,
+  submitIndexJob,
+  type KnowledgeIndexJob,
 } from '@/api/knowledge'
 import type { KnowledgeAskResponse, KnowledgeDocument, KnowledgeHit } from '@/types/api'
 
 /** 知识库状态 */
 export const useKnowledgeStore = defineStore('knowledge', () => {
   const documents = ref<KnowledgeDocument[]>([])
+  const indexJobs = ref<KnowledgeIndexJob[]>([])
+  const jobsError = ref<string | null>(null)
+  const loadingJobs = ref(false)
+  let submitAttempt: { signature: string; key: string } | null = null
+  async function loadJobs(): Promise<void> {
+    if (loadingJobs.value) return
+    loadingJobs.value = true
+    try {
+      const items = await listIndexJobs()
+      const previous = new Map(indexJobs.value.map((job) => [job.id, job.status]))
+      const completed = items.some(
+        (job) => job.status === 'SUCCEEDED' && previous.has(job.id) && previous.get(job.id) !== 'SUCCEEDED',
+      )
+      indexJobs.value = items
+      jobsError.value = null
+      if (completed) {
+        hits.value = []
+        answer.value = null
+        await loadDocuments()
+      }
+    } catch (cause) {
+      jobsError.value = cause instanceof Error ? cause.message : '加载后台进度失败，可点击刷新重试'
+    } finally {
+      loadingJobs.value = false
+    }
+  }
+  async function enqueue(file: File, title?: string, documentId?: string): Promise<void> {
+    const signature = JSON.stringify([file.name, file.size, file.lastModified, title, documentId])
+    if (submitAttempt?.signature !== signature) submitAttempt = { signature, key: crypto.randomUUID() }
+    const job = await submitIndexJob(file, title, documentId, submitAttempt.key)
+    submitAttempt = null
+    indexJobs.value = [job, ...indexJobs.value.filter((item) => item.id !== job.id)].slice(0, 20)
+  }
+
   /** 符合条件的文档总数（分页响应带来） */
   const total = ref(0)
   /** 当前页码，从 0 开始 */
@@ -92,8 +127,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     uploading.value = true
     error.value = null
     try {
-      await uploadDocument(file, title)
-      await loadDocuments()
+      await enqueue(file, title)
       return true
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '上传失败'
@@ -113,8 +147,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     replacing.value = true
     error.value = null
     try {
-      await updateDocument(id, file)
-      await loadDocuments()
+      await enqueue(file, undefined, id)
       // 内容变了，上一轮的检索/问答结果已经过时
       hits.value = []
       answer.value = null
@@ -183,6 +216,10 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   }
 
   return {
+    indexJobs,
+    jobsError,
+    loadingJobs,
+    loadJobs,
     documents,
     total,
     page,

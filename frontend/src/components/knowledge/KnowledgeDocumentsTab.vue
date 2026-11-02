@@ -8,7 +8,7 @@
  */
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 import AppPagination from '@/components/AppPagination.vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -17,8 +17,20 @@ import { formatBytes, formatDateTime } from '@/lib/format'
 import { useKnowledgeStore } from '@/stores/knowledge'
 
 const knowledgeStore = useKnowledgeStore()
-const { documents, total, page, size, keyword, loadingDocuments, uploading, error, isEmpty } =
-  storeToRefs(knowledgeStore)
+const {
+  documents,
+  total,
+  page,
+  size,
+  keyword,
+  loadingDocuments,
+  uploading,
+  error,
+  isEmpty,
+  indexJobs,
+  jobsError,
+  loadingJobs,
+} = storeToRefs(knowledgeStore)
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFile = ref<File | null>(null)
@@ -27,9 +39,16 @@ const uploadTitle = ref('')
 const ACCEPT = '.md,.markdown,.txt,.pdf,.docx,.png,.jpg,.jpeg,.webp,.gif'
 const MAX_BYTES = 5 * 1024 * 1024
 
+let jobPolling: ReturnType<typeof setInterval> | undefined
 onMounted(() => {
   void knowledgeStore.loadDocuments()
+  void knowledgeStore.loadJobs()
+  jobPolling = setInterval(() => {
+    if (indexJobs.value.some((job) => job.status === 'PENDING' || job.status === 'RUNNING'))
+      void knowledgeStore.loadJobs()
+  }, 2000)
 })
+onUnmounted(() => clearInterval(jobPolling))
 
 function pickFile(): void {
   fileInput.value?.click()
@@ -70,7 +89,7 @@ async function handleUpload(): Promise<void> {
   }
   const ok = await knowledgeStore.upload(selectedFile.value, uploadTitle.value)
   if (ok) {
-    ElMessage.success('已上传并建立索引')
+    ElMessage.success('已加入后台索引队列，可以离开此页面')
     selectedFile.value = null
     uploadTitle.value = ''
     if (fileInput.value) {
@@ -118,7 +137,7 @@ async function onReplaceFileChange(event: Event): Promise<void> {
   }
   const replaced = await knowledgeStore.replace(id, file)
   if (replaced) {
-    ElMessage.success('已替换文档内容，向量已重建')
+    ElMessage.success('已加入替换队列，完成后将更新文档内容')
   }
 }
 
@@ -208,13 +227,41 @@ function onDrop(event: DragEvent): void {
           {{ selectedFile ? selectedFile.name : '未选择文件（也可直接拖到这里）' }}
         </span>
         <el-input v-model="uploadTitle" class="kd__title" placeholder="文档标题（可选）" />
-        <el-button type="primary" :loading="uploading" @click="handleUpload">上传并建立索引</el-button>
+        <el-button type="primary" :loading="uploading" @click="handleUpload">提交后台索引</el-button>
       </div>
 
       <p class="kd__hint">单文件最大 5 MiB；扫描版 PDF 暂不支持。</p>
     </el-card>
 
     <el-alert v-if="error" type="error" :closable="false" show-icon :title="error" />
+
+    <el-card v-if="indexJobs.length || jobsError" shadow="never" aria-label="后台索引任务">
+      <template #header>
+        <div class="job-header">
+          <span>后台索引任务</span>
+          <el-button :loading="loadingJobs" @click="knowledgeStore.loadJobs()">刷新进度</el-button>
+        </div>
+      </template>
+      <el-alert v-if="jobsError" type="warning" :title="jobsError" :closable="false" show-icon />
+      <p class="job-hint">离开页面后任务继续执行；失败后请检查文件或模型配置，再重新提交。</p>
+      <ul class="index-jobs" aria-live="polite" aria-relevant="text additions">
+        <li v-for="job in indexJobs" :key="job.id">
+          <div class="job-header">
+            <span class="job-filename">{{ job.filename }}</span>
+            <span
+              >{{ job.stage }}<template v-if="job.attempts > 1"> · 第 {{ job.attempts }} 次尝试</template></span
+            >
+          </div>
+          <el-progress
+            :percentage="job.progress"
+            :show-text="false"
+            :status="job.status === 'FAILED' ? 'exception' : job.status === 'SUCCEEDED' ? 'success' : undefined"
+            :aria-label="`${job.filename}：${job.stage}`"
+          />
+          <p v-if="job.status === 'FAILED'" class="job-error">{{ job.error }}</p>
+        </li>
+      </ul>
+    </el-card>
 
     <el-card shadow="never">
       <template #header>
@@ -409,4 +456,36 @@ function onDrop(event: DragEvent): void {
 }
 
 /* 操作列样式见 theme.css 的 `.os-table-actions`（与任务表格共用同一份） */
+</style>
+
+<style scoped>
+.job-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.job-filename {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.job-hint {
+  color: var(--el-text-color-secondary);
+  margin-bottom: 16px;
+}
+.index-jobs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 16px;
+}
+.index-jobs .el-progress {
+  margin-top: 8px;
+}
+.job-error {
+  color: var(--el-color-danger);
+  margin-top: 8px;
+}
 </style>

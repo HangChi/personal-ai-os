@@ -224,6 +224,60 @@
         },
         "overrides": []
       }
+    },
+    {
+      "id": 9,
+      "title": "待处理索引任务",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "personalos_knowledge_jobs_pending"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "title": "索引尝试结果",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (outcome) (rate(personalos_knowledge_jobs_attempts_total[5m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
     }
   ]
 }

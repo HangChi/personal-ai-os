@@ -221,6 +221,11 @@ public class VectorStoreInspector {
                 });
     }
 
+    /** 后台替换在同一个短事务内删除旧代并写入新代。 */
+    public void deleteChunks(UUID documentId) {
+        jdbcTemplate.update("DELETE FROM " + qualifiedTable() + " WHERE metadata->>'document_id' = ?", documentId.toString());
+    }
+
     /**
      * 逐行校验所有向量的维度，返回不等于期望维度的行数。
      *

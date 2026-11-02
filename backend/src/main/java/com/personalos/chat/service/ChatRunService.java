@@ -29,6 +29,8 @@ public class ChatRunService {
     private final ChatSessionService sessions;
     private final JsonCodec json;
     private final AgentInteractionService interactions;
+    private volatile boolean queuedWork;
+    private final Map<String, String> deferredRecovery = new ConcurrentHashMap<>();
     private final Map<String, RunEmitter> workers = new ConcurrentHashMap<>();
 
     public ChatRunService(ChatRunRepository repository, ChatCompletionService completion,
@@ -130,10 +132,35 @@ public class ChatRunService {
             } else if (repository.pending(run.conversationId())) {
                 repository.transition(run.id(), "INTERRUPTED", "WAITING_CONFIRMATION");
             } else if (!repository.uncertain(run.id())) {
-                resume(run.conversationId(), run.id());
+                try { resume(run.conversationId(), run.id()); }
+                catch (BusinessException ex) {
+                    if (ex.getErrorCode()!=ErrorCode.RATE_LIMITED) throw ex;
+                    deferredRecovery.put(run.id(),run.conversationId());
+                }
             }
         }
-        interactions.queuedConversations().forEach(this::dispatchQueued);
+        queuedWork = true;
+        dispatchWaiting();
+    }
+
+    /** 额度暂满时保持数据库队列，下一次调度继续；启动恢复也不能因额度不足使应用启动失败。 */
+    @org.springframework.scheduling.annotation.Scheduled(fixedDelay=1000, initialDelay=1000)
+    public synchronized void dispatchWaiting() {
+        if (!queuedWork && deferredRecovery.isEmpty()) return;
+        for (var entry : deferredRecovery.entrySet()) {
+            var run=repository.find(entry.getValue(),entry.getKey());
+            if (run.isEmpty() || !"INTERRUPTED".equals(run.get().status()) || repository.uncertain(entry.getKey())) {
+                deferredRecovery.remove(entry.getKey()); continue;
+            }
+            try { resume(entry.getValue(),entry.getKey()); deferredRecovery.remove(entry.getKey()); }
+            catch (BusinessException ex) { if (ex.getErrorCode()!=ErrorCode.RATE_LIMITED) deferredRecovery.remove(entry.getKey()); }
+        }
+        var conversations = interactions.queuedConversations();
+        queuedWork = !conversations.isEmpty();
+        for (String conversation : conversations) {
+            try { dispatchQueued(conversation); }
+            catch (BusinessException ex) { if (ex.getErrorCode()!=ErrorCode.RATE_LIMITED) throw ex; }
+        }
     }
 
     public synchronized ChatRunDto answer(String conversationId, String id, String questionId, String answer) {
@@ -159,6 +186,7 @@ public class ChatRunService {
         String inputId = key == null || key.isBlank() ? UUID.randomUUID().toString() : key;
         if (inputId.length() > 64) throw conflict("跟进标识过长");
         interactions.submit(new AgentFollowup(inputId, id, conversationId, mode, request, "PENDING"));
+        if ("QUEUE".equals(mode)) queuedWork = true;
         if ("RUNNING".equals(run.status())) return get(conversationId, id, 0);
         if ("STEER".equals(mode) && List.of("COMPLETED", "INTERRUPTED").contains(run.status())
                 && interactions.pendingQuestion(id) == null && !repository.pending(conversationId)) {
@@ -219,7 +247,10 @@ public class ChatRunService {
             String status = repository.pending(run.conversationId()) ? "WAITING_CONFIRMATION"
                     : yielded || repository.unfinishedPlan(run.conversationId()) ? "INTERRUPTED" : "COMPLETED";
             repository.transition(run.id(), "RUNNING", status);
-            if ("COMPLETED".equals(status)) dispatchQueued(run.conversationId());
+            if ("COMPLETED".equals(status)) {
+                try { dispatchQueued(run.conversationId()); }
+                catch (BusinessException ex) { if (ex.getErrorCode()!=ErrorCode.RATE_LIMITED) throw ex; }
+            }
         }
     }
 
