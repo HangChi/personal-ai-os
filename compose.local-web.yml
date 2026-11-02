@@ -1,0 +1,12 @@
+# 先 npm --prefix frontend run build，再启动。适用于 Docker Desktop + 宿主机后端。
+name: personal-ai-os-local-web
+services:
+  web:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    read_only: true
+    ports: ["127.0.0.1:8088:80"]
+    volumes:
+      - ./frontend/dist:/srv:ro
+      - ./deploy/Caddyfile.local:/etc/caddy/Caddyfile:ro
+    tmpfs: [/data, /config, /tmp]

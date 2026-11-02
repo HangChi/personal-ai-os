@@ -396,3 +396,8 @@ OpenSearch 每次启用启动会重新排队当前片段，避免新索引或恢
 
 百炼原生重排支持 `RAG_RERANKER_PROTOCOL=dashscope`；请求采用 input/parameters，
 结果取 output.results。`cohere` 仍为兼容默认协议。模型和可用性以实际服务端响应为准。
+
+本地前端可用 `npm --prefix frontend run build` 后执行
+`docker compose -f compose.local-web.yml up -d`，访问 `http://127.0.0.1:8088`。
+它只托管静态产物并代理宿主机 8080 的 `/api/*`，不代理管理端口。
+这套配置面向 Docker Desktop 的本机使用，不替代公网生产配置。
