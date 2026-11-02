@@ -1,0 +1,1212 @@
+{
+  "createdAt": "2026-11-02T13:46:20.288786+00:00",
+  "commit": "20b3b8b19cb3d3f53a814c7d452c97631a7f1b72",
+  "corpusCommit": "91210edb08df19578e245c3f631388e7a92fc6e1",
+  "corpusHashes": {
+    "docs/agent-reliability.md": "ff9fa90a5faa42d9adf84798f083cd23fea885e233f7d73a74d58a28e153826f",
+    "docs/architecture.md": "d3590c65b95a19f7c402b4c6f8c44043463154b7217d73846cb6e879f186112d",
+    "docs/mcp.md": "5fb0a1174bbada8be293c5548f9eecfb7b9c00c347bf7b2d26826655a6b4ad55",
+    "docs/operations.md": "420012e1ba76784c2d53b1181f66a211d8396621a9f193a4d01f9d5667da1f24",
+    "specs/003-task-agent/spec.md": "9dc03cb2344c04a0489fbedaa39e3e4197558eb3c6a46a2ce83a2eba4bfc5edb",
+    "specs/010-rich-document-parsing/spec.md": "b43c00008eeec34909cfb8d5162c76b4eebb2a28b7c34f2adb2065db25d00441",
+    "specs/013-calendar-month-view/spec.md": "dc12adb791b206c37ec6dcbf3e4d06bfefb12d0f92678c0feb1da471daa8a9e9",
+    "specs/014-task-tags/spec.md": "d144947990c926611cf8b16ceeb912ccf19263da0d55f41cec37d2fa0dfabd1a",
+    "specs/015-single-user-auth/spec.md": "ec81bd88c7315adf384b734ca6dfa88ef7aaed1263d27eb662345992ad3c495c",
+    "specs/021-memory-layering/spec.md": "f16417d0b0c75f476d6f2b1c059c5a6d28d007c2e91f5b4006ad2c45dec1630d",
+    "specs/025-production-security/spec.md": "8ee298e6b83f835dbb84474860063abaaa7e98cdd7072965f854eebf5605be84",
+    "specs/026-durable-agent-execution/spec.md": "ee6a21edd563dcba3ddc56c519fed6687b6b7747e642a93bef1932aa3fa55885",
+    "specs/027-agent-user-interaction/spec.md": "3913bb38b1abf8e58fb3dd6ffb6bc157989f11709096317efe373eb3ab6aeeb7",
+    "specs/029-rag-infrastructure/spec.md": "a922c3124eeb10526f9c91c6369a5435bfb052002e8e609632f7ba1e5cd9743a"
+  },
+  "scope": "Project documents; not private user knowledge; same corpus and embedding model for both modes",
+  "summary": {
+    "baseline": {
+      "count": 18,
+      "recallAt1": 0.9444444444444444,
+      "recallAt3": 1.0,
+      "recallAt5": 1.0,
+      "mrr": 0.9722222222222222,
+      "p50Ms": 16.5,
+      "p95Ms": 251,
+      "statusCounts": {
+        "READY": 18
+      }
+    },
+    "enhanced": {
+      "count": 18,
+      "recallAt1": 1.0,
+      "recallAt3": 1.0,
+      "recallAt5": 1.0,
+      "mrr": 1.0,
+      "p50Ms": 7421.5,
+      "p95Ms": 11214,
+      "statusCounts": {
+        "READY": 18
+      }
+    }
+  },
+  "tokens": {
+    "baseline": {},
+    "enhanced": {
+      "personalos_knowledge_rag_rerank_tokens_total": 351564.0,
+      "personalos_knowledge_rag_tokens_total{kind=\"input\"}": 142223.0,
+      "personalos_knowledge_rag_tokens_total{kind=\"output\"}": 7910.0
+    }
+  },
+  "rows": [
+    {
+      "mode": "baseline",
+      "id": "backup-drill",
+      "rank": 1,
+      "durationMs": 251,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/operations.md",
+        "docs/agent-reliability.md",
+        "specs/026-durable-agent-execution/spec.md",
+        "docs/mcp.md",
+        "specs/003-task-agent/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "backup-consistency",
+      "rank": 1,
+      "durationMs": 136,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/operations.md",
+        "specs/003-task-agent/spec.md",
+        "docs/architecture.md",
+        "docs/agent-reliability.md",
+        "specs/015-single-user-auth/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "host-monitoring",
+      "rank": 1,
+      "durationMs": 127,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/operations.md",
+        "docs/architecture.md",
+        "docs/mcp.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "knowledge-disagreement",
+      "rank": 1,
+      "durationMs": 173,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/operations.md",
+        "docs/architecture.md",
+        "specs/021-memory-layering/spec.md",
+        "docs/agent-reliability.md",
+        "specs/010-rich-document-parsing/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "unknown-side-effect",
+      "rank": 1,
+      "durationMs": 134,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "specs/026-durable-agent-execution/spec.md",
+        "docs/agent-reliability.md",
+        "specs/003-task-agent/spec.md",
+        "docs/mcp.md",
+        "docs/architecture.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "followup-wait",
+      "rank": 1,
+      "durationMs": 148,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "specs/027-agent-user-interaction/spec.md",
+        "specs/003-task-agent/spec.md",
+        "specs/026-durable-agent-execution/spec.md",
+        "docs/architecture.md",
+        "docs/operations.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "scanned-pdf",
+      "rank": 1,
+      "durationMs": 13,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "specs/010-rich-document-parsing/spec.md",
+        "docs/architecture.md",
+        "docs/operations.md",
+        "specs/021-memory-layering/spec.md",
+        "specs/029-rag-infrastructure/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "login-errors",
+      "rank": 1,
+      "durationMs": 13,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "specs/015-single-user-auth/spec.md",
+        "specs/010-rich-document-parsing/spec.md",
+        "docs/operations.md",
+        "docs/architecture.md",
+        "specs/003-task-agent/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "repeat-calendar",
+      "rank": 1,
+      "durationMs": 9,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "specs/013-calendar-month-view/spec.md",
+        "docs/architecture.md",
+        "docs/agent-reliability.md",
+        "specs/021-memory-layering/spec.md",
+        "docs/operations.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "pinned-memory",
+      "rank": 1,
+      "durationMs": 17,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "specs/021-memory-layering/spec.md",
+        "docs/architecture.md",
+        "docs/operations.md",
+        "specs/010-rich-document-parsing/spec.md",
+        "docs/agent-reliability.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "mcp-directions",
+      "rank": 1,
+      "durationMs": 18,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/mcp.md",
+        "docs/architecture.md",
+        "docs/agent-reliability.md",
+        "docs/operations.md",
+        "specs/015-single-user-auth/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "human-delete",
+      "rank": 2,
+      "durationMs": 16,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/architecture.md",
+        "specs/003-task-agent/spec.md",
+        "specs/027-agent-user-interaction/spec.md",
+        "docs/operations.md",
+        "specs/026-durable-agent-execution/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "monolith",
+      "rank": 1,
+      "durationMs": 11,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/architecture.md",
+        "docs/mcp.md",
+        "specs/015-single-user-auth/spec.md",
+        "docs/operations.md",
+        "docs/agent-reliability.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "queue-failure",
+      "rank": 1,
+      "durationMs": 10,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/operations.md",
+        "specs/029-rag-infrastructure/spec.md",
+        "specs/010-rich-document-parsing/spec.md",
+        "docs/architecture.md",
+        "specs/021-memory-layering/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "redis-failure",
+      "rank": 1,
+      "durationMs": 11,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/operations.md",
+        "specs/029-rag-infrastructure/spec.md",
+        "specs/021-memory-layering/spec.md",
+        "docs/architecture.md",
+        "specs/010-rich-document-parsing/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "vector-dimension",
+      "rank": 1,
+      "durationMs": 14,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/operations.md",
+        "specs/029-rag-infrastructure/spec.md",
+        "docs/architecture.md",
+        "specs/021-memory-layering/spec.md",
+        "specs/010-rich-document-parsing/spec.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "production-csrf",
+      "rank": 1,
+      "durationMs": 23,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "docs/operations.md",
+        "specs/025-production-security/spec.md",
+        "specs/015-single-user-auth/spec.md",
+        "docs/mcp.md",
+        "docs/agent-reliability.md"
+      ]
+    },
+    {
+      "mode": "baseline",
+      "id": "task-tags",
+      "rank": 1,
+      "durationMs": 8,
+      "status": "READY",
+      "warnings": [],
+      "stages": [],
+      "realRerank": false,
+      "titles": [
+        "specs/014-task-tags/spec.md",
+        "specs/003-task-agent/spec.md",
+        "docs/operations.md",
+        "docs/agent-reliability.md",
+        "specs/026-durable-agent-execution/spec.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "backup-drill",
+      "rank": 1,
+      "durationMs": 10483,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 117,
+          "inputCount": 1,
+          "outputCount": 53
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1114,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 4329,
+          "inputCount": 69,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 4510,
+          "inputCount": 16,
+          "outputCount": 2
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "docs/operations.md",
+        "docs/operations.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "backup-consistency",
+      "rank": 1,
+      "durationMs": 6872,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 56,
+          "inputCount": 1,
+          "outputCount": 56
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1331,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 221,
+          "inputCount": 68,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 4945,
+          "inputCount": 16,
+          "outputCount": 2
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "docs/operations.md",
+        "docs/operations.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "host-monitoring",
+      "rank": 1,
+      "durationMs": 11214,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 66,
+          "inputCount": 1,
+          "outputCount": 53
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 5809,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 209,
+          "inputCount": 70,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 4718,
+          "inputCount": 13,
+          "outputCount": 2
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "docs/operations.md",
+        "docs/operations.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "knowledge-disagreement",
+      "rank": 1,
+      "durationMs": 6801,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 122,
+          "inputCount": 1,
+          "outputCount": 57
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 898,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 216,
+          "inputCount": 74,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5178,
+          "inputCount": 16,
+          "outputCount": 3
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "specs/029-rag-infrastructure/spec.md",
+        "docs/operations.md",
+        "docs/operations.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "unknown-side-effect",
+      "rank": 1,
+      "durationMs": 7080,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 74,
+          "inputCount": 1,
+          "outputCount": 50
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 2035,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 260,
+          "inputCount": 63,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 4319,
+          "inputCount": 14,
+          "outputCount": 5
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "specs/026-durable-agent-execution/spec.md",
+        "docs/agent-reliability.md",
+        "docs/architecture.md",
+        "docs/agent-reliability.md",
+        "docs/architecture.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "followup-wait",
+      "rank": 1,
+      "durationMs": 6329,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 67,
+          "inputCount": 1,
+          "outputCount": 50
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1079,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 219,
+          "inputCount": 69,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 4651,
+          "inputCount": 14,
+          "outputCount": 2
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "specs/027-agent-user-interaction/spec.md",
+        "specs/026-durable-agent-execution/spec.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "scanned-pdf",
+      "rank": 1,
+      "durationMs": 7280,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 191,
+          "inputCount": 1,
+          "outputCount": 58
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 934,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 229,
+          "inputCount": 77,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5687,
+          "inputCount": 16,
+          "outputCount": 3
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "specs/010-rich-document-parsing/spec.md",
+        "docs/architecture.md",
+        "specs/010-rich-document-parsing/spec.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "login-errors",
+      "rank": 1,
+      "durationMs": 6761,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 237,
+          "inputCount": 1,
+          "outputCount": 58
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1347,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 197,
+          "inputCount": 71,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 4612,
+          "inputCount": 14,
+          "outputCount": 2
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "specs/015-single-user-auth/spec.md",
+        "specs/015-single-user-auth/spec.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "repeat-calendar",
+      "rank": 1,
+      "durationMs": 7558,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 186,
+          "inputCount": 1,
+          "outputCount": 56
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1450,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 249,
+          "inputCount": 72,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5291,
+          "inputCount": 16,
+          "outputCount": 2
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "specs/013-calendar-month-view/spec.md",
+        "specs/013-calendar-month-view/spec.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "pinned-memory",
+      "rank": 1,
+      "durationMs": 8173,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 225,
+          "inputCount": 1,
+          "outputCount": 59
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1588,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 199,
+          "inputCount": 77,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5768,
+          "inputCount": 16,
+          "outputCount": 4
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "specs/021-memory-layering/spec.md",
+        "docs/architecture.md",
+        "docs/agent-reliability.md",
+        "specs/021-memory-layering/spec.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "mcp-directions",
+      "rank": 1,
+      "durationMs": 7719,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 182,
+          "inputCount": 1,
+          "outputCount": 56
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1545,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 242,
+          "inputCount": 66,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5320,
+          "inputCount": 14,
+          "outputCount": 4
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "docs/mcp.md",
+        "docs/agent-reliability.md",
+        "docs/architecture.md",
+        "docs/mcp.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "human-delete",
+      "rank": 1,
+      "durationMs": 8004,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 209,
+          "inputCount": 1,
+          "outputCount": 49
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1682,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 326,
+          "inputCount": 63,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5419,
+          "inputCount": 15,
+          "outputCount": 9
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "specs/003-task-agent/spec.md",
+        "docs/architecture.md",
+        "docs/mcp.md",
+        "specs/027-agent-user-interaction/spec.md",
+        "docs/agent-reliability.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "monolith",
+      "rank": 1,
+      "durationMs": 6453,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 180,
+          "inputCount": 1,
+          "outputCount": 55
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1206,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 204,
+          "inputCount": 70,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 4480,
+          "inputCount": 15,
+          "outputCount": 2
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "docs/architecture.md",
+        "docs/agent-reliability.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "queue-failure",
+      "rank": 1,
+      "durationMs": 7120,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 202,
+          "inputCount": 1,
+          "outputCount": 54
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 912,
+          "inputCount": 1,
+          "outputCount": 2
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 223,
+          "inputCount": 66,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5597,
+          "inputCount": 16,
+          "outputCount": 3
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "docs/operations.md",
+        "specs/029-rag-infrastructure/spec.md",
+        "docs/operations.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "redis-failure",
+      "rank": 1,
+      "durationMs": 7988,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 159,
+          "inputCount": 1,
+          "outputCount": 53
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1362,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 228,
+          "inputCount": 65,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5908,
+          "inputCount": 16,
+          "outputCount": 3
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "docs/operations.md",
+        "specs/029-rag-infrastructure/spec.md",
+        "docs/operations.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "vector-dimension",
+      "rank": 1,
+      "durationMs": 8069,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 170,
+          "inputCount": 1,
+          "outputCount": 53
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1450,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 199,
+          "inputCount": 68,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5864,
+          "inputCount": 16,
+          "outputCount": 3
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "docs/operations.md",
+        "docs/architecture.md",
+        "specs/029-rag-infrastructure/spec.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "production-csrf",
+      "rank": 1,
+      "durationMs": 8410,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 187,
+          "inputCount": 1,
+          "outputCount": 50
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1808,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 220,
+          "inputCount": 65,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5857,
+          "inputCount": 14,
+          "outputCount": 6
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "docs/operations.md",
+        "specs/025-production-security/spec.md",
+        "docs/mcp.md",
+        "specs/015-single-user-auth/spec.md",
+        "docs/operations.md"
+      ]
+    },
+    {
+      "mode": "enhanced",
+      "id": "task-tags",
+      "rank": 1,
+      "durationMs": 7285,
+      "status": "READY",
+      "warnings": [],
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 150,
+          "inputCount": 1,
+          "outputCount": 55
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 1302,
+          "inputCount": 1,
+          "outputCount": 3
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 233,
+          "inputCount": 68,
+          "outputCount": 40
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 5224,
+          "inputCount": 16,
+          "outputCount": 5
+        }
+      ],
+      "realRerank": true,
+      "titles": [
+        "specs/014-task-tags/spec.md",
+        "specs/003-task-agent/spec.md",
+        "docs/mcp.md",
+        "specs/014-task-tags/spec.md",
+        "specs/003-task-agent/spec.md"
+      ]
+    }
+  ],
+  "corpusStats": {
+    "documents": 14,
+    "chunks": 83,
+    "projectionPending": 0,
+    "embeddingDimensions": 1024
+  },
+  "conflictCases": [
+    {
+      "case": "sameScope",
+      "expected": "CONFLICT",
+      "status": "CONFLICT",
+      "answered": false,
+      "citations": 2,
+      "hasBothSources": true,
+      "durationMs": 14186
+    },
+    {
+      "case": "ambiguous",
+      "expected": "CONFLICT",
+      "status": "CONFLICT",
+      "answered": false,
+      "citations": 2,
+      "hasBothSources": true,
+      "durationMs": 11184
+    },
+    {
+      "case": "differentPeriods",
+      "expected": "CLARIFY",
+      "status": "CLARIFY",
+      "answered": false,
+      "citations": 2,
+      "hasBothSources": true,
+      "durationMs": 11838
+    }
+  ],
+  "ingestionReview": {
+    "checkedSources": 2,
+    "states": [
+      "CHECKED_CANDIDATES",
+      "CHECKED_CANDIDATES"
+    ],
+    "openConflicts": 1,
+    "retriedSources": 0,
+    "passed": true
+  },
+  "regression": {
+    "backendTests": 1113,
+    "pythonBackupTests": 8,
+    "frontendLogicAssertions": 1133,
+    "frontendComponentTests": 169,
+    "coveragePercent": {
+      "BRANCH": 70.24,
+      "LINE": 86.22
+    }
+  }
+}

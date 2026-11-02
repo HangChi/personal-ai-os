@@ -312,3 +312,11 @@ python3 scripts/eval/rag-live-eval.py restart-enhanced --jar /修订包.jar
 ```
 
 重启增强评测实例会保留同一语料；报告记录语料原始提交与逐文件 SHA-256，正文快照保存在 `.cache/rag-live-eval/corpus/`。
+
+`rag-live-ingestion.py` 在同一隔离库中清理评测语料自己的待审查任务，添加两份临时同范围矛盾政策，
+重启增强评测实例并启用后台审查，验证它能自动生成待核对记录和完成候选审查。失败最多手动重排一次，
+不等待无限重试；结束时删除本轮文档。应在排序对照评测结束后执行，再统一 cleanup。
+
+```bash
+python3 scripts/eval/rag-live-ingestion.py
+```
