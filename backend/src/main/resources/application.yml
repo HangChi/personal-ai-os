@@ -379,3 +379,11 @@ logging:
   # 注意两者互斥：一旦启用结构化格式，上面的 pattern.console 不再生效
   # （结构化的字段里已包含 requestId，因为 ECS 会读取整个 MDC）。
 
+
+---
+# 只观测重复比例；明确启用后才保存向量。模型实例变化自动隔离旧缓存。
+app:
+  embedding-cache:
+    enabled: ${EMBEDDING_CACHE_ENABLED:false}
+    capacity: ${EMBEDDING_CACHE_CAPACITY:1000}
+    ttl: ${EMBEDDING_CACHE_TTL:10m}

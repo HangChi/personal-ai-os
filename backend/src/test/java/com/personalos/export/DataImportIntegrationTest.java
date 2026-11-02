@@ -51,10 +51,9 @@ class DataImportIntegrationTest {
     @TestConfiguration
     static class StubConfiguration {
 
+        final EmbeddingModel model = org.mockito.Mockito.spy(new com.personalos.support.DeterministicEmbeddingModel(1024));
         @Bean
-        EmbeddingModel deterministicEmbeddingModel() {
-            return new com.personalos.support.DeterministicEmbeddingModel(1024);
-        }
+        EmbeddingModel deterministicEmbeddingModel() { return model; }
     }
 
     private static final UUID TASK_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -71,7 +70,8 @@ class DataImportIntegrationTest {
     @Autowired
     private com.personalos.common.json.JsonCodec jsonCodec;
 
-    @org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+    @Autowired
+    private StubConfiguration embeddingConfiguration;
     private EmbeddingModel embeddingModel;
 
     @Autowired
@@ -82,6 +82,8 @@ class DataImportIntegrationTest {
 
     @BeforeEach
     void cleanUp() {
+        embeddingModel = embeddingConfiguration.model;
+        org.mockito.Mockito.reset(embeddingModel);
         // 护栏：确认连的是 Testcontainers 的临时库。库名不是 test 就直接失败 ——
         // 宁可整个测试红，也不能把清表语句跑在开发者的真实数据上。
         String database = jdbc.queryForObject("select current_database()", String.class);
@@ -241,9 +243,7 @@ class DataImportIntegrationTest {
                     .isActualTransactionActive()).isFalse();
             assertThat(jdbc.queryForObject("select count(*) from chat_session", Integer.class)).isZero();
             return invocation.callRealMethod();
-        }).when(embeddingModel).embed(org.mockito.ArgumentMatchers.anyList(),
-                org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.EmbeddingOptions.class),
-                org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.BatchingStrategy.class));
+        }).when(embeddingModel).call(org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.EmbeddingRequest.class));
 
         assertThat(importService.importAll(fullPayload()).vectors()).isEqualTo(2);
         assertThat(inspector.chunksByDocumentId(DOC_ID)).containsExactly("第一段内容", "第二段内容");
@@ -253,9 +253,7 @@ class DataImportIntegrationTest {
     @DisplayName("嵌入失败不留下业务记录或向量")
     void embeddingFailureLeavesDatabaseEmpty() {
         org.mockito.Mockito.doThrow(new IllegalStateException("模拟嵌入服务失败"))
-                .when(embeddingModel).embed(org.mockito.ArgumentMatchers.anyList(),
-                        org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.EmbeddingOptions.class),
-                        org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.BatchingStrategy.class));
+                .when(embeddingModel).call(org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.EmbeddingRequest.class));
 
         assertThatThrownBy(() -> importService.importAll(fullPayload()))
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("模拟嵌入服务失败");
@@ -288,9 +286,7 @@ class DataImportIntegrationTest {
                             + "values (?, ?, ?, now(), now(), 'MANUAL')", UUID.randomUUID(), "并发写入",
                     com.personalos.common.json.JsonCodec.sha256Hex("并发写入"));
             return invocation.callRealMethod();
-        }).when(embeddingModel).embed(org.mockito.ArgumentMatchers.anyList(),
-                org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.EmbeddingOptions.class),
-                org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.BatchingStrategy.class));
+        }).when(embeddingModel).call(org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.EmbeddingRequest.class));
 
         assertThatThrownBy(() -> importService.importAll(fullPayload()))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("导入只支持空库");

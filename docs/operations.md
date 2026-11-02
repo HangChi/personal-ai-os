@@ -265,3 +265,13 @@ Prometheus 每 15 秒从 backend:9091 采集，数据最多保留 15 天或约 2
 正文增量最多缓冲 100ms 或 2048 字符，控制事件与终态先刷完正文，再持久化。
 浏览器通过 `GET /api/v1/chat/sessions/{conversationId}/runs/{id}/events?after={cursor}` 读取 SSE，
 断线后只重连读取，后台任务继续运行。数据库保留事件与单调游标；无事件时发送心跳并每 2 秒兜底检查状态。
+
+### 嵌入缓存的观测与启用
+
+默认 `EMBEDDING_CACHE_ENABLED=false`：只保存有界、过期的文本/选项摘要，统计重复比例，模型仍照常调用。
+在看板观察真实使用的「重复嵌入观测比例」和 `personalos.embedding.duration` 后，再决定是否开启。
+设置 `EMBEDDING_CACHE_ENABLED=true` 并重启后，Caffeine 保存成功的向量；默认最多 1000 条、10 分钟过期，
+可用 `EMBEDDING_CACHE_CAPACITY`、`EMBEDDING_CACHE_TTL` 调整。没有实际使用数据时不预设收益或自动开启。
+缓存按模型实例及完整请求选项隔离，重启清空；失败不缓存，返回向量为副本；批量请求仅对缺失项调用模型。
+缓存不覆盖聊天回答、知识库检索结果或人工确认状态，因此修改文档后检索仍读取最新内容。
+看板中的观测重复率与真实命中率是两个指标，不应混算；缓存后的响应 usage 仅反映实际发起的嵌入调用。

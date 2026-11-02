@@ -170,6 +170,60 @@
         },
         "overrides": []
       }
+    },
+    {
+      "id": 7,
+      "title": "重复嵌入观测比例",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(personalos_embedding_cache_requests_total{result=\"observed_repeat\"}[15m])) / sum(rate(personalos_embedding_cache_requests_total{result=~\"observed_.*\"}[15m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "title": "嵌入缓存命中率",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(personalos_embedding_cache_requests_total{result=\"hit\"}[15m])) / sum(rate(personalos_embedding_cache_requests_total{result=~\"hit|miss\"}[15m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      }
     }
   ]
 }
