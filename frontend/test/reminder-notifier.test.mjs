@@ -137,6 +137,30 @@ function recorder() {
 // ---- 恰好等于阈值：逐条发 ----
 
 {
+  const notifier = new ReminderNotifier(() => {})
+  const many = ['a', 'b', 'c', 'd'].map((id) => reminder(id, id))
+  const result = notifier.dispatch(many, 'granted', true)
+  eq('前台超过阈值仍逐条展示', result.notices.length, 4)
+  eq(
+    '前台每个弹框只有一条可确认提醒',
+    result.notices.every((notice) => notice.reminderIds.length === 1),
+    true,
+  )
+  eq('前台逐条保持原顺序', result.notices.map((notice) => notice.reminderIds[0]).join(','), 'a,b,c,d')
+}
+
+{
+  const notifier = new ReminderNotifier(() => {
+    throw new Error('系统通知不可用')
+  })
+  const many = ['a', 'b', 'c', 'd'].map((id) => reminder(id, id))
+  const result = notifier.dispatch(many, 'granted', false)
+  eq('系统汇总发送失败降级为前台', result.channel, 'inline')
+  eq('降级后拆成单条弹框', result.notices.length, 4)
+  eq('降级后每个弹框只确认自身', result.notices.map((notice) => notice.reminderIds.join(',')).join(';'), 'a;b;c;d')
+}
+
+{
   const { sent, notify } = recorder()
   const notifier = new ReminderNotifier(notify)
   const three = [reminder('r-1', '一'), reminder('r-2', '二'), reminder('r-3', '三')]

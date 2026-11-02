@@ -36,7 +36,7 @@ export interface DispatchResult {
   skipped: number
 }
 
-/** 超过这个条数就合并为一条汇总通知，避免通知风暴 */
+/** 后台系统通知超过这个条数时汇总；站内弹框始终逐条处理。 */
 export const SUMMARY_THRESHOLD = 3
 
 /** 可注入的通知函数：默认发系统通知，测试里替换为记录器 */
@@ -100,7 +100,9 @@ export class ReminderNotifier {
     }
 
     const notices =
-      fresh.length > SUMMARY_THRESHOLD ? [summaryNotice(fresh)] : fresh.map((reminder) => singleNotice(reminder))
+      channel === 'browser' && fresh.length > SUMMARY_THRESHOLD
+        ? [summaryNotice(fresh)]
+        : fresh.map((reminder) => singleNotice(reminder))
 
     // 先记账再发送：即使发送抛异常，也不该在下一轮重复打扰同一条提醒
     for (const reminder of fresh) {
@@ -119,7 +121,7 @@ export class ReminderNotifier {
       } catch (error) {
         // 构造通知可能因系统策略直接抛异常；一条送不出去不能拖垮整个轮询
         console.warn('浏览器通知发送失败，降级为站内提示', error)
-        return { channel: 'inline', notices: notices.slice(sent), skipped }
+        return { channel: 'inline', notices: fresh.slice(sent).map(singleNotice), skipped }
       }
     }
     return { channel, notices: [], skipped }

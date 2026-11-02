@@ -9,29 +9,25 @@ const emit = defineEmits<{ close: []; open: [] }>()
 const calendarStore = useCalendarStore()
 const saving = ref(false)
 const error = ref('')
-const remainingIds = computed(() => {
-  const dueIds = new Set(calendarStore.dueReminders.map((reminder) => reminder.id))
-  return props.notice.reminderIds.filter((id) => dueIds.has(id))
-})
+const reminderId = computed(() => props.notice.reminderIds[0])
+const pending = computed(() => calendarStore.dueReminders.some((reminder) => reminder.id === reminderId.value))
 
 // 日程页确认或其他窗口已读后，轮询也会收起对应弹框。
 watch(
-  remainingIds,
-  (ids) => {
-    if (ids.length === 0) emit('close')
+  pending,
+  (value) => {
+    if (!value) emit('close')
   },
   { immediate: true },
 )
 
 async function acknowledge(): Promise<void> {
-  if (saving.value) return
+  if (saving.value || !reminderId.value) return
   saving.value = true
   error.value = ''
   try {
-    const results = await Promise.all(remainingIds.value.map((id) => calendarStore.acknowledge({ id })))
-    const failed = results.filter((ok) => !ok).length
-    if (failed > 0) {
-      error.value = `${failed} 条提醒确认失败，请重试`
+    if (!(await calendarStore.acknowledge({ id: reminderId.value }))) {
+      error.value = '确认提醒失败，请重试'
     } else {
       emit('close')
     }
@@ -47,9 +43,7 @@ async function acknowledge(): Promise<void> {
     <p v-if="error" class="reminder-notice__error" role="alert">{{ error }}</p>
     <div class="reminder-notice__actions">
       <el-button text @click="emit('open')">查看日程</el-button>
-      <el-button type="primary" :loading="saving" @click="acknowledge">
-        {{ notice.reminderIds.length > 1 ? '全部知道了' : '知道了' }}
-      </el-button>
+      <el-button type="primary" :loading="saving" @click="acknowledge">知道了</el-button>
     </div>
   </div>
 </template>
