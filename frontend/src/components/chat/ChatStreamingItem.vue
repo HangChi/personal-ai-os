@@ -9,6 +9,8 @@
  */
 import { onBeforeUnmount, ref, watch } from 'vue'
 
+import ChatExecutionTrail from '@/components/chat/ChatExecutionTrail.vue'
+import type { RunActivity } from '@/api/chat-runs'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { createThrottle } from '@/lib/throttle'
 
@@ -17,6 +19,8 @@ const props = defineProps<{
   content: string
   /** 检索状态提示；null 表示没有提示可显示 */
   hint: string | null
+  activities?: RunActivity[]
+  reconnecting?: boolean
 }>()
 
 /**
@@ -57,20 +61,23 @@ onBeforeUnmount(() => {
       <AppLogo variant="mark" :size="22" />
     </span>
     <div class="chat-streaming__content">
+      <ChatExecutionTrail v-if="activities" :items="activities" :reconnecting="reconnecting" :generating="!!content" />
       <!--
         首 token 前：三点打字动画装在同一个气泡里（阶段 24）。
         改造前它裸露在页面上，与首 token 到达后的助手气泡形态不一致 ——
         生成开始的一瞬间会「跳」一下。现在两者共用同一套气泡外观。
       -->
-      <div v-if="!content" class="chat-streaming__bubble">
+      <div v-if="!content && (!activities || hint)" class="chat-streaming__bubble">
         <div class="chat-streaming__typing">
           <span class="chat-streaming__dot" />
           <span class="chat-streaming__dot" />
           <span class="chat-streaming__dot" />
-          <span class="chat-streaming__hint" role="status">{{ hint || '正在回复' }}</span>
+          <span class="chat-streaming__hint" role="status">{{
+            hint || (content ? '正在生成回答' : '正在处理请求')
+          }}</span>
         </div>
       </div>
-      <template v-else>
+      <template v-else-if="content">
         <div class="chat-streaming__bubble">
           <!--
             必须绑 renderedContent（节流后的值），不能绑 content（原始 delta 流）。
@@ -80,7 +87,9 @@ onBeforeUnmount(() => {
           -->
           <MarkdownRenderer :content="renderedContent" streaming />
         </div>
-        <div class="chat-streaming__hint chat-streaming__hint--below" role="status">{{ hint || '正在回复' }}</div>
+        <div class="chat-streaming__hint chat-streaming__hint--below" role="status">
+          {{ hint || (content ? '正在生成回答' : '正在处理请求') }}
+        </div>
       </template>
     </div>
   </div>

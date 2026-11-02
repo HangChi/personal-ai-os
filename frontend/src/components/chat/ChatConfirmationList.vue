@@ -1,41 +1,55 @@
 <script setup lang="ts">
-/**
- * 待确认的高风险操作（从 ChatView 拆出，2026-10-26）。
- *
- * <p>助手只能「申请」执行；真正生效必须在这里由人点确认。
- * 删除任务的二次确认与处理结果由父组件负责。
- */
+/** 单次决定的内联授权卡片；所有影响信息直接可见，不再弹二次确认。 */
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { TaskConfirmation } from '@/types/api'
-
-defineProps<{
+const props = defineProps<{
   items: TaskConfirmation[]
-  /** 正在处理的那一条（按钮显示 loading，防止重复点击） */
   resolvingId: string | null
+  busy?: boolean
+  error?: string | null
 }>()
-
 const emit = defineEmits<{ (e: 'resolve', confirmation: TaskConfirmation, approve: boolean): void }>()
-
-/** 高风险操作的中文名；未识别时直接展示原始动作码，避免「未知操作」这类无用提示 */
+const now = ref(Date.now())
+const submittedId = ref<string | null>(null)
+const resolving = computed(() => props.resolvingId ?? submittedId.value)
+const timer = setInterval(() => {
+  now.value = Date.now()
+}, 1000)
+onBeforeUnmount(() => clearInterval(timer))
+watch(
+  () => props.resolvingId,
+  (id, previous) => {
+    if (id === null && previous !== null) submittedId.value = null
+  },
+)
+watch(
+  () => props.items,
+  (items) => {
+    if (submittedId.value && !items.some((item) => item.id === submittedId.value)) submittedId.value = null
+  },
+)
+function expired(item: TaskConfirmation): boolean {
+  return Date.parse(item.expiresAt) <= now.value
+}
+function decide(item: TaskConfirmation, approve: boolean): void {
+  if (resolving.value || props.busy || expired(item)) return
+  submittedId.value = item.id
+  emit('resolve', item, approve)
+}
 function actionLabel(action: string): string {
-  switch (action) {
-    case 'DELETE_TASK':
-      return '删除任务'
-    case 'SCHEDULE_TASK':
-      return '修改截止时间'
-    case 'SET_PRIORITY':
-      return '修改优先级'
-    case 'DELETE_CALENDAR_EVENT':
-      return '删除日程'
-    case 'MCP_TOOL_CALL':
-      return '调用外部工具'
-    default:
-      return action
+  const labels: Record<string, string> = {
+    DELETE_TASK: '删除任务',
+    SCHEDULE_TASK: '修改截止时间',
+    SET_PRIORITY: '修改优先级',
+    DELETE_CALENDAR_EVENT: '删除日程',
+    MCP_TOOL_CALL: '调用外部工具',
   }
+  return labels[action] ?? action
 }
 </script>
-
 <template>
   <div class="chat-confirmations">
+    <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
     <section
       v-for="confirmation in items"
       :key="confirmation.id"
@@ -44,37 +58,40 @@ function actionLabel(action: string): string {
     >
       <div class="chat-confirmations__body">
         <div class="chat-confirmations__heading">
-          <span class="chat-confirmations__title">{{ actionLabel(confirmation.action) }}</span>
-          <span class="chat-confirmations__status">需要确认</span>
+          <span class="chat-confirmations__title">是否允许{{ actionLabel(confirmation.action) }}？</span>
+          <span class="chat-confirmations__status">{{ expired(confirmation) ? '已过期' : '等待你的决定' }}</span>
         </div>
         <p class="chat-confirmations__summary">{{ confirmation.summary }}</p>
+        <div class="chat-confirmations__facts">
+          <span>涉及 {{ confirmation.affectedCount }} 项</span>
+          <span>有效至 {{ new Date(confirmation.expiresAt).toLocaleString('zh-CN') }}</span>
+        </div>
+        <p v-if="confirmation.action.startsWith('DELETE_')" class="chat-confirmations__risk">删除后无法撤销。</p>
+        <p v-if="expired(confirmation)" class="chat-confirmations__note" role="status">
+          确认已过期，请让助手重新申请。
+        </p>
+        <p v-else class="chat-confirmations__note">只授权这一次操作。暂不选择会保留待确认；全部处理后任务继续。</p>
         <div class="chat-confirmations__footer">
-          <span class="chat-confirmations__meta">涉及 {{ confirmation.affectedCount }} 项</span>
+          <span v-if="busy" class="chat-confirmations__meta">本轮结束后可确认</span>
           <div class="chat-confirmations__actions">
             <button
               type="button"
               class="chat-confirmations__cancel"
-              :disabled="resolvingId !== null"
-              @click="emit('resolve', confirmation, false)"
+              :disabled="resolving !== null || busy || expired(confirmation)"
+              @click="decide(confirmation, false)"
             >
-              取消
+              拒绝
             </button>
             <button
               type="button"
               class="chat-confirmations__approve"
               :class="{ 'chat-confirmations__approve--danger': confirmation.action.startsWith('DELETE_') }"
-              :disabled="resolvingId !== null"
-              :aria-busy="resolvingId === confirmation.id"
-              @click="emit('resolve', confirmation, true)"
+              :disabled="resolving !== null || busy || expired(confirmation)"
+              :aria-busy="resolving === confirmation.id"
+              @click="decide(confirmation, true)"
             >
-              <span v-if="resolvingId === confirmation.id" class="chat-confirmations__spinner" aria-hidden="true" />
-              {{
-                resolvingId === confirmation.id
-                  ? '正在处理'
-                  : confirmation.action.startsWith('DELETE_')
-                    ? '确认删除'
-                    : '确认执行'
-              }}
+              <span v-if="resolving === confirmation.id" class="chat-confirmations__spinner" aria-hidden="true" />
+              {{ resolving === confirmation.id ? '正在处理' : '允许本次操作' }}
             </button>
           </div>
         </div>
@@ -82,8 +99,29 @@ function actionLabel(action: string): string {
     </section>
   </div>
 </template>
-
 <style scoped>
+.chat-confirmations__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--os-space-1) var(--os-space-3);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+.chat-confirmations__note {
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+  line-height: 1.6;
+  margin: var(--os-space-2) 0;
+}
+.chat-confirmations__risk {
+  color: var(--el-color-danger);
+  font-size: var(--os-font-xs);
+  margin: var(--os-space-2) 0;
+}
+.chat-confirmations__actions > button:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 2px;
+}
 .chat-confirmations {
   display: flex;
   flex-direction: column;
@@ -209,6 +247,12 @@ function actionLabel(action: string): string {
   border-right-color: transparent;
   border-radius: 50%;
   animation: confirmation-spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-confirmations__spinner {
+    animation: none;
+  }
 }
 
 @keyframes confirmation-spin {

@@ -65,12 +65,34 @@ describe('ChatComposer', () => {
     const wrapper = mount(ChatComposer, { props: baseProps({ streaming: true, modelValue: '内容' }) })
 
     expect(buttonByText(wrapper, '停止')).toBeTruthy()
-    expect(buttonByText(wrapper, '发送')).toBeFalsy()
+    expect(buttonByText(wrapper, '发送')).toBeTruthy()
 
     await buttonByText(wrapper, '停止')!.trigger('click')
 
     expect(wrapper.emitted('stop')).toHaveLength(1)
     expect(wrapper.emitted('send')).toBeUndefined()
+  })
+
+  it('执行中直接发送跟进，不在发送框选择排队或引导', async () => {
+    const wrapper = mount(ChatComposer, { props: baseProps({ streaming: true, modelValue: '补充问题' }) })
+    expect(wrapper.find('.chat-composer__followup-mode').exists()).toBe(false)
+    await wrapper.get('textarea').trigger('keydown', { key: 'Enter' })
+    expect(wrapper.emitted('followup')?.[0]?.[0]).toEqual([])
+    expect(wrapper.emitted('followup')?.[0]?.[1]).toBeTypeOf('function')
+    expect(wrapper.emitted('send')).toBeUndefined()
+    await flushPromises()
+    wrapper.unmount()
+  })
+
+  it('提交跟进期间阻止重复发送且保留输入', async () => {
+    const wrapper = mount(ChatComposer, {
+      props: baseProps({ streaming: true, submitting: true, modelValue: '保留补充要求' }),
+    })
+    await wrapper.get('textarea').trigger('keydown', { key: 'Enter' })
+    expect(wrapper.emitted('followup')).toBeUndefined()
+    expect(buttonByText(wrapper, '发送')!.attributes('disabled')).toBeDefined()
+    await flushPromises()
+    wrapper.unmount()
   })
 
   it('保存模型选择期间禁止切换和发送，Enter 也不能清空草稿', async () => {
@@ -271,6 +293,25 @@ describe('ChatComposer 拖拽上传', () => {
     expect(wrapper.find('.chat-composer__drop-mask').exists()).toBe(false)
   })
 
+  it('跟进发送失败保留附件，成功回执后才清空', async () => {
+    const wrapper = mount(ChatComposer, { props: baseProps({ streaming: true, modelValue: '补充要求' }) })
+    const file = new File(['内容'], '参考.txt', { type: 'text/plain' })
+    const drop = new Event('drop', { bubbles: true, cancelable: true })
+    Object.assign(drop, { dataTransfer: { files: [file] } })
+    wrapper.find('.chat-composer').element.dispatchEvent(drop)
+    await flushPromises()
+    await buttonByText(wrapper, '发送')!.trigger('click')
+    const first = wrapper.emitted('followup')![0]
+    ;(first[1] as (success: boolean) => void)(false)
+    await nextTick()
+    expect(wrapper.find('.chat-composer__attachment').exists()).toBe(true)
+    await buttonByText(wrapper, '发送')!.trigger('click')
+    ;(wrapper.emitted('followup')![1][1] as (success: boolean) => void)(true)
+    await flushPromises()
+    expect(wrapper.find('.chat-composer__attachment').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('粘贴剪贴板里的文件同样走上传（截图后 Ctrl+V 的路径）', async () => {
     const wrapper = mount(ChatComposer, { props: baseProps() })
     const file = new File(['图'], 'shot.png', { type: 'image/png' })
@@ -304,7 +345,7 @@ describe('ChatComposer 拖拽上传', () => {
     expect(drop.defaultPrevented).toBe(true)
   })
 
-  it('卸载时摘掉页面级监听：别在别的页面留副作用', () => {
+  it('卸载时摘掉页面级监听：别在别的页面留副作用', async () => {
     const wrapper = mount(ChatComposer, { props: baseProps() })
 
     /*
@@ -314,6 +355,7 @@ describe('ChatComposer 拖拽上传', () => {
      * spy 断言「注销调用发生过」，不受全局监听状态影响。
      */
     const removeSpy = vi.spyOn(document, 'removeEventListener')
+    await flushPromises()
     wrapper.unmount()
 
     expect(removeSpy).toHaveBeenCalledWith('drop', expect.any(Function))

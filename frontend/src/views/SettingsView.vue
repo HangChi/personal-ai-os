@@ -186,6 +186,20 @@ async function handleReset(): Promise<void> {
               </div>
               <div class="settings__row">
                 <div class="settings__row-text">
+                  <span class="settings__row-label">执行中发送消息</span>
+                  <span class="settings__row-hint">{{
+                    settings.followupMode === 'STEER'
+                      ? '直接补充当前对话；正在执行的工具会先完成。'
+                      : '当前任务完成后，按发送顺序处理新消息。'
+                  }}</span>
+                </div>
+                <el-radio-group v-model="settings.followupMode" aria-label="执行中发送消息的处理方式">
+                  <el-radio-button value="QUEUE">排队处理</el-radio-button>
+                  <el-radio-button value="STEER">引导当前对话</el-radio-button>
+                </el-radio-group>
+              </div>
+              <div class="settings__row">
+                <div class="settings__row-text">
                   <span class="settings__row-label">默认思考程度</span>
                 </div>
                 <el-radio-group v-model="settings.thinkingLevel">

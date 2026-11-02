@@ -409,18 +409,43 @@ for (const decision of ['confirm', 'cancel', 'fail']) {
   handlers.set('/agent/tool-invocations', () => Promise.resolve({ items: [] }))
   let contentsDuringStream
   let toolCountDuringStream
-  const savedFetch = globalThis.fetch
-  globalThis.fetch = async (url) => {
-    if (url.endsWith('/auth/csrf')) return Response.json({ data: { token: '' } })
+  handlers.set('/chat/sessions/edit-first/runs', () => {
     contentsDuringStream = store.messages.map((item) => item.content).join(',')
     toolCountDuringStream = store.toolTrail.length
-    return new Response('event: done\ndata: {"content":"已重发"}\n\n')
-  }
-  try {
-    eq('首条编辑成功重发', await store.editAndResend(original, '新提问'), true)
-    eq('重发期间只有修改后的提问', contentsDuringStream, '新提问')
-    eq('重试开始就清空旧轮次失败，不等待回复结束', toolCountDuringStream, 0)
-  } finally {
-    globalThis.fetch = savedFetch
-  }
+    return Promise.resolve({ id: 'run-edit', conversationId: 'edit-first', status: 'COMPLETED', events: [] })
+  })
+  eq('首条编辑成功重发', await store.editAndResend(original, '新提问'), true)
+  eq('重发期间只有修改后的提问', contentsDuringStream, '新提问')
+  eq('重试开始就清空旧轮次失败，不等待回复结束', toolCountDuringStream, 0)
+}
+
+// 流式中跟进不另起任务；网络失败重试同一消息复用标识，避免重复排队。
+{
+  const store = fresh()
+  store.currentConversationId = 'followup'
+  store.activeRun = { id: 'running', conversationId: 'followup', status: 'RUNNING', events: [] }
+  store.streaming = true
+  const attempts = []
+  handlers.set('/chat/sessions/followup/runs/running/followups', (config) => {
+    attempts.push(config)
+    return Promise.reject(new Error('连接中断'))
+  })
+  eq('跟进请求失败返回 false', await store.sendFollowup('之后生成摘要', 'QUEUE'), false)
+  eq('相同消息可重试', await store.sendFollowup('之后生成摘要', 'QUEUE'), false)
+  eq('跟进重试复用幂等标识', attempts[0].headers['Idempotency-Key'], attempts[1].headers['Idempotency-Key'])
+  eq('跟进请求明确排队模式', attempts[0].data.mode, 'QUEUE')
+  eq('失败后解除提交锁', store.submittingInput, false)
+  handlers.set('/chat/sessions/followup/runs/running/followups', () =>
+    Promise.resolve({
+      id: 'running',
+      conversationId: 'followup',
+      status: 'RUNNING',
+      events: [],
+      followups: [{ id: 'new', mode: 'STEER', request: { content: '改用表格' }, status: 'PENDING' }],
+    }),
+  )
+  eq('引导可在流式期间提交', await store.sendFollowup('改用表格', 'STEER'), true)
+  eq('引导不停止当前执行', store.streaming, true)
+  eq('界面保留服务端跟进记录', store.activeRun.followups[0].mode, 'STEER')
+  store.streaming = false
 }

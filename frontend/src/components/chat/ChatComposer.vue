@@ -26,6 +26,7 @@ const props = defineProps<{
   modelValue: string
   /** 是否正在生成：决定显示「停止」还是「发送」 */
   streaming: boolean
+  submitting?: boolean
   /** 知识库增强开关 */
   knowledgeOn: boolean
   /** 检索条数 */
@@ -54,6 +55,7 @@ const emit = defineEmits<{
   (e: 'toggle-knowledge', next: boolean): void
   (e: 'send', attachments: ChatAttachment[]): void
   (e: 'stop'): void
+  (e: 'followup', attachments: ChatAttachment[], done: (success: boolean) => void): void
   /** 改上下文预算（转发给 ContextMeter 的父级处理） */
   (e: 'change-budget', tokens: number): void
 }>()
@@ -182,7 +184,7 @@ function removeAttachment(id: string): void {
 
 /** 发送后由父组件回调这里清空（父组件持有 draft，清空也归它） */
 function handleSend(): void {
-  if (props.changingModel) return
+  if (props.changingModel || props.submitting || !props.modelValue.trim()) return
   /*
    * 上传未完成时不允许发送。
    *
@@ -199,8 +201,15 @@ function handleSend(): void {
     ElMessage.warning('附件还在上传，请稍候再发送')
     return
   }
-  emit('send', attachments.value)
-  attachments.value = []
+  if (props.streaming) {
+    const sent = new Set(attachments.value.map((item) => item.id))
+    emit('followup', attachments.value, (success) => {
+      if (success) attachments.value = attachments.value.filter((item) => !sent.has(item.id))
+    })
+  } else {
+    emit('send', attachments.value)
+    attachments.value = []
+  }
 }
 
 /** 附件内容地址：后端给的是相对路径，这里拼上 API 基路径 */
@@ -225,7 +234,9 @@ const thinkingTooltip = computed(
 )
 
 /** 开启知识库时提示回答将使用检索内容。 */
-const inputPlaceholder = computed(() => (props.knowledgeOn ? '输入消息，将基于知识库回答' : '输入消息'))
+const inputPlaceholder = computed(() =>
+  props.streaming ? '补充要求或输入下一条问题…' : props.knowledgeOn ? '输入消息，将基于知识库回答' : '输入消息',
+)
 
 /**
  * 字数是否逼近上限（≥90% 转预警色）。
@@ -436,12 +447,11 @@ onBeforeUnmount(() => {
             停止
           </el-button>
           <el-button
-            v-else
             type="primary"
             class="chat-composer__submit"
             round
-            :disabled="modelValue.trim().length === 0 || uploading || changingModel"
-            :loading="uploading"
+            :disabled="modelValue.trim().length === 0 || uploading || changingModel || submitting"
+            :loading="uploading || submitting"
             :title="sendTooltip"
             @click="handleSend"
           >
@@ -814,6 +824,7 @@ onBeforeUnmount(() => {
 /* Keep model and thinking adjacent; wrap them together when sidebars reduce the column. */
 @container (max-width: 560px) {
   .chat-composer__action-group {
+    flex-wrap: wrap;
     flex: 1 1 100%;
     justify-content: flex-end;
   }

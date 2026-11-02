@@ -10,9 +10,22 @@ import {
   listSessions,
   renameSession as renameSessionApi,
   setSessionModel as setSessionModelApi,
-  streamChat,
   rewindMessages,
 } from '@/api/chat'
+import {
+  answerQuestion,
+  submitFollowup,
+  cancelFollowup,
+  editFollowup as editFollowupApi,
+  steerFollowup as steerFollowupApi,
+  followRun,
+  latestRun,
+  startRun,
+  resumeRun,
+  stopRun,
+  type ChatRun,
+  type RunActivity,
+} from '@/api/chat-runs'
 import { listToolInvocations } from '@/api/activity'
 import { cancelOperation, confirmOperation, listConfirmations } from '@/api/confirmations'
 import type { ContextUsage } from '@/api/chat'
@@ -59,6 +72,11 @@ export const useChatStore = defineStore('chat', () => {
   const loadingOlder = ref(false)
   const streamingContent = ref('')
   const streaming = ref(false)
+  const activeRun = ref<ChatRun | null>(null)
+  const liveActivities = ref<RunActivity[]>([])
+  const reconnecting = ref(false)
+  const submittingInput = ref(false)
+  let followupAttempt: { signature: string; key: string } | null = null
   const loadingSessions = ref(false)
   const loadingMessages = ref(false)
   const error = ref<string | null>(null)
@@ -86,16 +104,7 @@ export const useChatStore = defineStore('chat', () => {
    */
   const retrievalState = ref<'idle' | 'searching' | 'done'>('idle')
 
-  /**
-   * 当前会话的工具调用轨迹（阶段 18，User Story 3 / T014）。
-   *
-   * 数据源是审计接口的 conversationId 过滤——该参数后端一直支持，
-   * 只是活动页没用过。消息体本身不带工具字段（ChatMessage 只有
-   * role/content/sequenceNo），SSE 也只有 start/delta/done/error 四种帧，
-   * 所以这是**不新增接口**能拿到真实轨迹的唯一途径。
-   *
-   * 失败时静默留空：轨迹是增强信息，不该阻塞对话本身。
-   */
+  /** 历史工具轨迹来自审计接口；执行中的活动由持久化事件即时展示。 */
   const toolTrail = ref<ToolInvocation[]>([])
   /** Records for loaded historical replies; a new message must not erase previous turns. */
   const toolHistory = ref<ToolInvocation[]>([])
@@ -246,6 +255,8 @@ export const useChatStore = defineStore('chat', () => {
     // 那样挡不住「A→B→A」这种绕一圈回来的情况（id 相同但已是不同一轮）。
     const reqSeq = ++sessionReqSeq
     currentConversationId.value = conversationId
+    activeRun.value = null
+    liveActivities.value = []
     toolTrail.value = []
     toolHistory.value = []
     contextUsage.value = emptyContext()
@@ -270,6 +281,14 @@ export const useChatStore = defineStore('chat', () => {
       }
       await loadConfirmations()
       await loadToolTrail()
+      try {
+        const run = await latestRun(conversationId)
+        if (reqSeq !== sessionReqSeq) return
+        activeRun.value = run
+        if (run?.status === 'RUNNING') void trackRun(run)
+      } catch {
+        /* 执行记录查询失败不清空已加载的消息 */
+      }
     } catch (cause) {
       if (reqSeq !== sessionReqSeq) {
         return
@@ -419,13 +438,16 @@ export const useChatStore = defineStore('chat', () => {
   async function resolveConfirmation(confirmation: TaskConfirmation, approve: boolean): Promise<string | null> {
     const id = currentConversationId.value
     const sessionSeq = sessionReqSeq
+    let resolved = false
     error.value = null
     try {
       if (!approve) {
         await cancelOperation(confirmation.id, confirmation.token)
+        resolved = true
         return '已取消'
       }
       const result = await confirmOperation(confirmation.id, confirmation.token)
+      resolved = true
       return result.summary
     } catch (cause) {
       if (id === currentConversationId.value && sessionSeq === sessionReqSeq) {
@@ -435,6 +457,9 @@ export const useChatStore = defineStore('chat', () => {
     } finally {
       if (id === currentConversationId.value && sessionSeq === sessionReqSeq) {
         await Promise.all([loadConfirmations(), loadToolTrail()])
+        if (resolved && !pendingConfirmations.value.length && activeRun.value?.status === 'WAITING_CONFIRMATION') {
+          void continueRun()
+        }
       }
     }
   }
@@ -530,6 +555,10 @@ export const useChatStore = defineStore('chat', () => {
     if (trimmed.length === 0 || streaming.value) {
       return
     }
+    if (activeRun.value?.status === 'WAITING_USER' && activeRun.value.question) {
+      await respondToQuestion(trimmed)
+      return
+    }
     if (!currentConversationId.value) {
       await createSession()
       if (!currentConversationId.value) {
@@ -557,13 +586,46 @@ export const useChatStore = defineStore('chat', () => {
     retrievalState.value = options?.useKnowledge ? 'searching' : 'idle'
     streaming.value = true
     error.value = null
-    abortController = new AbortController()
-
+    liveActivities.value = []
     try {
-      await streamChat(
-        conversationId,
-        trimmed,
+      const run = await startRun(conversationId, trimmed, options)
+      await trackRun(run)
+    } catch (cause) {
+      streaming.value = false
+      error.value = cause instanceof Error ? cause.message : '发送失败'
+    }
+  }
+
+  async function trackRun(run: ChatRun): Promise<void> {
+    const conversationId = run.conversationId
+    const controller = new AbortController()
+    abortController = controller
+    activeRun.value = run
+    streaming.value = true
+    reconnecting.value = false
+    streamingContent.value = ''
+    liveActivities.value = []
+    try {
+      await followRun(
+        run,
         {
+          onRun: (value) => {
+            activeRun.value = value
+          },
+          onConnection: (value) => {
+            reconnecting.value = value
+          },
+          onReset: () => {
+            streamingContent.value = ''
+            liveActivities.value = []
+            error.value = null
+          },
+          onActivity: (activity) => {
+            const index = liveActivities.value.findIndex((item) => item.id === activity.id)
+            if (index < 0) liveActivities.value.push(activity)
+            else liveActivities.value[index] = activity
+            if (activity.status === 'REQUIRES_CONFIRMATION') void loadConfirmations()
+          },
           onCitations: (citations) => {
             liveCitations.value = citations
             retrievalState.value = 'done'
@@ -572,44 +634,145 @@ export const useChatStore = defineStore('chat', () => {
             streamingContent.value += chunk
           },
           onDone: (_content, context) => {
-            // done 事件只带本轮用量；预算与模型窗口以选中会话时查到的为准
-            if (context && context.promptTokens >= 0 && contextUsage.value.contextWindow > 0) {
-              contextUsage.value = { ...contextUsage.value, promptTokens: context.promptTokens }
-            }
-            // 清空临时内容，随后由服务端数据接管，避免出现重复渲染
-            streamingContent.value = ''
+            if (context) contextUsage.value = { ...contextUsage.value, promptTokens: context.promptTokens }
           },
           onError: (message) => {
             error.value = message
-            streamingContent.value = ''
           },
         },
-        abortController.signal,
-        options,
+        controller.signal,
       )
     } catch (cause) {
-      // abort 也会走到这里；若已主动停止则不再报错
-      if (!(cause instanceof DOMException && cause.name === 'AbortError')) {
-        error.value = cause instanceof Error ? cause.message : '发送失败'
-      }
-      streamingContent.value = ''
+      if (!controller.signal.aborted)
+        error.value = cause instanceof Error ? cause.message : '连接中断，可重新打开会话查看后台进度'
     } finally {
-      streaming.value = false
-      abortController = null
-      retrievalState.value = 'idle'
-      if (conversationId) {
+      if (abortController === controller) {
+        streaming.value = false
+        reconnecting.value = false
+        abortController = null
+        retrievalState.value = 'idle'
         try {
           await refreshTail(conversationId)
+          streamingContent.value = ''
         } catch {
-          // 刷新失败不影响本轮已展示的内容
+          /* 保留已收到的内容，刷新后可重新读取执行记录 */
         }
-        await loadSessions()
-        await refreshContextUsage()
-        // 助手可能刚生成了待确认操作，本轮结束后立即拉一次
-        await loadConfirmations()
-        // 本轮助手可能调了工具，轨迹一起刷新
-        await loadToolTrail()
+        await Promise.all([loadSessions(), refreshContextUsage(), loadConfirmations(), loadToolTrail()])
+        try {
+          const next = await latestRun(conversationId)
+          if (currentConversationId.value === conversationId && next) {
+            activeRun.value = next
+            if (next.id !== run.id && next.status === 'RUNNING') void trackRun(next)
+          }
+        } catch {
+          /* 重新打开会话可追赶已持久化的排队任务 */
+        }
       }
+    }
+  }
+
+  async function respondToQuestion(answer: string): Promise<boolean> {
+    const run = activeRun.value
+    if (!run?.question || streaming.value || submittingInput.value || !answer.trim()) return false
+    submittingInput.value = true
+    error.value = null
+    try {
+      const next = await answerQuestion(run.conversationId, run.id, run.question.id, answer)
+      activeRun.value = next
+      void trackRun(next)
+      return true
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '提交回答失败'
+      return false
+    } finally {
+      submittingInput.value = false
+    }
+  }
+
+  async function sendFollowup(
+    content: string,
+    mode: 'QUEUE' | 'STEER',
+    options?: import('@/api/chat').StreamChatOptions,
+  ): Promise<boolean> {
+    const run = activeRun.value
+    if (!run || !content.trim() || submittingInput.value) return false
+    submittingInput.value = true
+    error.value = null
+    try {
+      const signature = JSON.stringify([run.id, mode, content.trim(), options])
+      if (followupAttempt?.signature !== signature) followupAttempt = { signature, key: crypto.randomUUID() }
+      const next = await submitFollowup(run.conversationId, run.id, mode, content.trim(), options, followupAttempt.key)
+      followupAttempt = null
+      activeRun.value = next
+      if (!streaming.value) {
+        const latest = await latestRun(run.conversationId)
+        if (latest && ['RUNNING', 'COMPLETED'].includes(latest.status)) void trackRun(latest)
+      }
+      return true
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '跟进消息发送失败'
+      return false
+    } finally {
+      submittingInput.value = false
+    }
+  }
+
+  async function removeFollowup(inputId: string): Promise<void> {
+    const run = activeRun.value
+    if (!run || submittingInput.value) return
+    submittingInput.value = true
+    try {
+      activeRun.value = await cancelFollowup(run.conversationId, run.id, inputId)
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '移除失败'
+    } finally {
+      submittingInput.value = false
+    }
+  }
+
+  async function editFollowup(inputId: string, content: string): Promise<boolean> {
+    const run = activeRun.value
+    if (!run || submittingInput.value || !content.trim()) return false
+    submittingInput.value = true
+    error.value = null
+    try {
+      activeRun.value = await editFollowupApi(run.conversationId, run.id, inputId, content.trim())
+      return true
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '编辑失败'
+      return false
+    } finally {
+      submittingInput.value = false
+    }
+  }
+
+  async function steerFollowup(inputId: string): Promise<void> {
+    const run = activeRun.value
+    if (!run || submittingInput.value) return
+    submittingInput.value = true
+    error.value = null
+    try {
+      const next = await steerFollowupApi(run.conversationId, run.id, inputId)
+      activeRun.value = next
+      if (next.status === 'RUNNING' && (!streaming.value || next.id !== run.id)) {
+        abortController?.abort()
+        void trackRun(next)
+      }
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '引导失败'
+    } finally {
+      submittingInput.value = false
+    }
+  }
+
+  async function continueRun(): Promise<void> {
+    const run = activeRun.value
+    if (!run || streaming.value) return
+    error.value = null
+    try {
+      await trackRun(await resumeRun(run.conversationId, run.id))
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '继续执行失败'
     }
   }
 
@@ -673,8 +836,16 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   /** 停止生成（客户端断开，服务端会取消上游订阅） */
-  function stopStreaming(): void {
-    abortController?.abort()
+  async function stopStreaming(): Promise<void> {
+    const run = activeRun.value
+    if (!run) return
+    try {
+      await stopRun(run.conversationId, run.id)
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : '停止失败'
+      return
+    }
+    // 先接收终态并刷新服务端消息，由 trackRun 统一收尾。
   }
 
   return {
@@ -687,6 +858,16 @@ export const useChatStore = defineStore('chat', () => {
     messages,
     hasOlderMessages,
     loadingOlder,
+    activeRun,
+    submittingInput,
+    respondToQuestion,
+    sendFollowup,
+    removeFollowup,
+    editFollowup,
+    steerFollowup,
+    liveActivities,
+    reconnecting,
+    continueRun,
     streamingContent,
     streaming,
     loadingSessions,

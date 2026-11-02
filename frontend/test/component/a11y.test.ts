@@ -61,7 +61,7 @@ describe('无障碍契约', () => {
     })
 
     const status = wrapper.get('[role="status"]')
-    expect(status.text()).toBe('正在回复')
+    expect(status.text()).toBe('正在处理请求')
     expect(status.classes()).not.toContain('sr-only')
     wrapper.unmount()
   })

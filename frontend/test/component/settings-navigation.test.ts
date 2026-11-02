@@ -3,6 +3,7 @@ import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { defineComponent, onMounted, ref } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import { useSettingsStore } from '@/stores/settings'
 import SettingsView from '@/views/SettingsView.vue'
 
 vi.mock('@/api/health', () => ({ fetchHealthStatus: vi.fn().mockResolvedValue({ status: 'UP' }) }))
@@ -86,5 +87,17 @@ describe('设置分组切换', () => {
     expect(wrapper.find('.settings__nav-item[aria-current="page"]').text()).toBe('日程')
     expect(wrapper.find('.settings__panel[aria-label="日程"]').isVisible()).toBe(true)
     expect(wrapper.find('.settings__panel[aria-label="模型配置"]').isVisible()).toBe(false)
+  })
+  it('对话设置保存执行中的消息处理方式，重新打开后保留', async () => {
+    const { wrapper } = await open('/settings?section=chat')
+    const group = wrapper.get('[aria-label="执行中发送消息的处理方式"]')
+    expect(group.text()).toContain('排队处理')
+    expect(group.text()).toContain('引导当前对话')
+    await group.get('input[value="STEER"]').setValue(true)
+    await flushPromises()
+    expect(useSettingsStore().settings.followupMode).toBe('STEER')
+    expect(localStorage.getItem('os.settings.followupMode')).toBe('STEER')
+    const reopened = await open('/settings?section=chat')
+    expect((reopened.wrapper.get('input[value="STEER"]').element as HTMLInputElement).checked).toBe(true)
   })
 })

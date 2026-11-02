@@ -16,6 +16,8 @@ export interface SettingsState {
   knowledgeTopK: number
   /** Enter 直接发送（false 时 Ctrl/Cmd+Enter 发送） */
   enterSend: boolean
+  /** Agent 执行中发送消息的处理方式 */
+  followupMode: FollowupMode
   /** 日程新建表单的默认提前提醒分钟数 */
   reminderLead: number
   /** 模型思考程度：off=不思考（默认），standard/deep 对应 DashScope 的思考预算 */
@@ -23,6 +25,8 @@ export interface SettingsState {
 }
 
 /** 思考程度取值（与后端 chat.dto.ThinkingLevel 对齐） */
+export type FollowupMode = 'QUEUE' | 'STEER'
+
 export type ThinkingLevel = 'off' | 'standard' | 'deep'
 
 /** 思考程度的中文标签（UI 与测试共用一处，避免两处文案漂移） */
@@ -43,6 +47,7 @@ export const SETTINGS_DEFAULTS: SettingsState = {
   knowledgeDefaultOn: false,
   knowledgeTopK: 4,
   enterSend: true,
+  followupMode: 'QUEUE',
   reminderLead: 15,
   thinkingLevel: 'off',
 }
@@ -59,6 +64,7 @@ export const SETTINGS_KEYS = {
   knowledgeDefaultOn: 'os.settings.knowledgeDefaultOn',
   knowledgeTopK: 'os.settings.knowledgeTopK',
   enterSend: 'os.settings.enterSend',
+  followupMode: 'os.settings.followupMode',
   reminderLead: 'os.settings.reminderLead',
   thinkingLevel: 'os.settings.thinkingLevel',
 } as const
@@ -88,6 +94,10 @@ export function clampTopK(value: unknown): number {
  * <p>刻意不做大小写归一：合法值由前端自己产生，出现 'OFF' 这类值说明存储被手改过，
  * 此时按默认处理比「猜测用户想开思考」更安全。
  */
+export function clampFollowupMode(value: unknown): FollowupMode {
+  return value === 'STEER' ? 'STEER' : SETTINGS_DEFAULTS.followupMode
+}
+
 export function clampThinkingLevel(value: unknown): ThinkingLevel {
   return value === 'standard' || value === 'deep' ? value : SETTINGS_DEFAULTS.thinkingLevel
 }
@@ -107,6 +117,7 @@ export function mergeSettings(stored: Partial<Record<keyof SettingsState, unknow
     knowledgeDefaultOn: clampBoolean(stored.knowledgeDefaultOn, SETTINGS_DEFAULTS.knowledgeDefaultOn),
     knowledgeTopK: clampTopK(stored.knowledgeTopK),
     enterSend: clampBoolean(stored.enterSend, SETTINGS_DEFAULTS.enterSend),
+    followupMode: clampFollowupMode(stored.followupMode),
     reminderLead: clampLead(stored.reminderLead),
     thinkingLevel: clampThinkingLevel(stored.thinkingLevel),
   }

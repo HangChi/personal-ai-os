@@ -18,7 +18,8 @@ import { downloadSessionMarkdown } from '@/api/chat'
 import { matchMessageIds, nextMatchCursor } from '@/lib/chat-search'
 import { toolInvocationsByMessage } from '@/lib/chat-tool-history'
 import { isNearBottom as isNearBottomOf, scrollDeltaForPrepend } from '@/lib/chat-scroll'
-import { confirmDanger } from '@/lib/confirm-box'
+import ChatUserQuestion from '@/components/chat/ChatUserQuestion.vue'
+import ChatFollowupQueue from '@/components/chat/ChatFollowupQueue.vue'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
@@ -53,6 +54,10 @@ const {
   messages,
   hasOlderMessages,
   loadingOlder,
+  activeRun,
+  submittingInput,
+  liveActivities,
+  reconnecting,
   streamingContent,
   streaming,
   loadingSessions,
@@ -190,23 +195,10 @@ const suggestions = [
 /**
  * 处理待确认操作。
  *
- * 删除类操作额外弹一次二次确认 —— 服务端的确认接口是「人做出的决定」，
- * 这里再确认一次是为了防止误点，而不是替代服务端的确认流程。
+ * 内联卡片上的单次点击就是人类决定，不再额外弹出二次确认。
  */
 async function handleConfirmation(confirmation: TaskConfirmation, approve: boolean): Promise<void> {
   if (resolvingId.value !== null) return
-  if (approve && confirmation.action === 'DELETE_TASK') {
-    // 删除类走危险确认；「再想想」比「取消」更能表达「这不是拒绝执行，只是先别动」
-    const ok = await confirmDanger({
-      title: '高风险操作确认',
-      message: `确认执行「${confirmation.summary}」？该操作不可撤销。`,
-      confirmText: '确认执行',
-      cancelText: '再想想',
-    })
-    if (!ok) {
-      return
-    }
-  }
 
   resolvingId.value = confirmation.id
   try {
@@ -414,6 +406,11 @@ async function handleSend(attachments: ChatAttachment[] = []): Promise<void> {
     return
   }
   const content = draft.value
+  if (activeRun.value?.status === 'WAITING_USER' && activeRun.value.question) {
+    const success = await chatStore.respondToQuestion(content)
+    if (success && draft.value === content) draft.value = ''
+    return
+  }
   draft.value = ''
   await chatStore.send(content, {
     useKnowledge: knowledgeOn.value,
@@ -421,6 +418,30 @@ async function handleSend(attachments: ChatAttachment[] = []): Promise<void> {
     thinkingLevel: settings.value.thinkingLevel,
     attachments,
   })
+}
+
+async function handleFollowup(attachments: ChatAttachment[], done: (success: boolean) => void): Promise<void> {
+  const content = draft.value
+  if (!content.trim()) {
+    done(false)
+    return
+  }
+  const mode = settings.value.followupMode
+  const success = await chatStore.sendFollowup(content, mode, {
+    useKnowledge: knowledgeOn.value,
+    topK: topK.value,
+    thinkingLevel: settings.value.thinkingLevel,
+    attachments,
+  })
+  done(success)
+  if (success) {
+    if (draft.value === content) draft.value = ''
+    ElMessage.success(mode === 'QUEUE' ? '已加入队列，当前任务完成后处理' : '引导已提交，将在安全边界生效')
+  }
+}
+
+async function handleEditFollowup(id: string, content: string, done: (success: boolean) => void): Promise<void> {
+  done(await chatStore.editFollowup(id, content))
 }
 
 async function handleNewSession(): Promise<void> {
@@ -704,21 +725,63 @@ async function jumpToMatch(step: number): Promise<void> {
           />
 
           <!-- 流式中的助手消息 -->
-          <ChatStreamingItem v-if="streaming" :content="streamingContent" :hint="retrievalHint" />
+          <ChatStreamingItem
+            v-if="streaming || streamingContent"
+            :content="streamingContent"
+            :hint="retrievalHint"
+            :activities="liveActivities"
+            :reconnecting="reconnecting"
+          />
+          <el-alert
+            v-if="
+              !streaming &&
+              activeRun &&
+              (['RUNNING', 'INTERRUPTED', 'STOPPED'].includes(activeRun.status) ||
+                (activeRun.status === 'WAITING_CONFIRMATION' && !pendingConfirmations.length) ||
+                (activeRun.status === 'WAITING_USER' && !activeRun.question))
+            "
+            type="warning"
+            :closable="false"
+            show-icon
+            :title="activeRun.status === 'RUNNING' ? '连接已断开，任务仍在后台执行' : '任务已暂停，已保存执行进度'"
+          >
+            <p>继续时会核对已完成操作，从剩余步骤推进。</p>
+            <el-button size="small" @click="chatStore.continueRun()">{{
+              activeRun.status === 'RUNNING' ? '重新连接' : '继续任务'
+            }}</el-button>
+          </el-alert>
 
+          <ChatUserQuestion
+            v-if="activeRun?.question"
+            :question="activeRun.question"
+            :busy="streaming || submittingInput"
+            :error="error"
+            @answer="chatStore.respondToQuestion($event)"
+          />
           <!-- 待确认操作（阶段 2） -->
           <ChatConfirmationList
             v-if="pendingConfirmations.length > 0"
             :items="pendingConfirmations"
             :resolving-id="resolvingId"
+            :busy="streaming"
+            :error="error"
             @resolve="handleConfirmation"
           />
         </div>
 
+        <ChatFollowupQueue
+          :items="activeRun?.followups ?? []"
+          :busy="submittingInput"
+          :error="error"
+          @remove="chatStore.removeFollowup($event)"
+          @edit="handleEditFollowup"
+          @steer="chatStore.steerFollowup($event)"
+        />
         <!-- ============ 停靠输入区 ============ -->
         <ChatComposer
           v-model="draft"
           :streaming="streaming"
+          :submitting="submittingInput"
           :knowledge-on="knowledgeOn"
           :top-k="topK"
           :thinking-level="settings.thinkingLevel"
@@ -734,6 +797,7 @@ async function jumpToMatch(step: number): Promise<void> {
           @update:session-model="handleModelChange"
           @change-budget="chatStore.changeContextBudget"
           @send="handleSend"
+          @followup="handleFollowup"
           @stop="chatStore.stopStreaming()"
         />
       </div>

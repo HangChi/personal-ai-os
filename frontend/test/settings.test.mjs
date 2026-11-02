@@ -10,6 +10,7 @@ const {
   clampTopK,
   clampLead,
   clampThinkingLevel,
+  clampFollowupMode,
   mergeSettings,
   conversationKnowledgeKey,
 } = await import('@/lib/settings')
@@ -102,3 +103,10 @@ eq('超长 id → null', conversationKnowledgeKey('a'.repeat(65)), null)
 // 键数不写死：与「设置项个数」对齐，将来加设置项不用回来改这条
 check('设置键互不相同', new Set(Object.values(SETTINGS_KEYS)).size === Object.keys(SETTINGS_DEFAULTS).length)
 check('会话键前缀不与设置键相同', !Object.values(SETTINGS_KEYS).some((key) => key.startsWith('os.chat.knowledge.')))
+
+eq('执行中默认排队', SETTINGS_DEFAULTS.followupMode, 'QUEUE')
+eq('引导偏好原样保留', clampFollowupMode('STEER'), 'STEER')
+eq('排队偏好原样保留', clampFollowupMode('QUEUE'), 'QUEUE')
+eq('非法跟进偏好回落排队', clampFollowupMode('steer'), 'QUEUE')
+eq('旧设置缺少跟进偏好时默认排队', mergeSettings({}).followupMode, 'QUEUE')
+eq('已保存的引导偏好加载成功', mergeSettings({ followupMode: 'STEER' }).followupMode, 'STEER')
