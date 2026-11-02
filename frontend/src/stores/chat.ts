@@ -16,6 +16,7 @@ import {
   answerQuestion,
   submitFollowup,
   cancelFollowup,
+  finishConfirmations,
   editFollowup as editFollowupApi,
   steerFollowup as steerFollowupApi,
   followRun,
@@ -458,7 +459,20 @@ export const useChatStore = defineStore('chat', () => {
       if (id === currentConversationId.value && sessionSeq === sessionReqSeq) {
         await Promise.all([loadConfirmations(), loadToolTrail()])
         if (resolved && !pendingConfirmations.value.length && activeRun.value?.status === 'WAITING_CONFIRMATION') {
-          void continueRun()
+          const run = activeRun.value
+          try {
+            const finished = await finishConfirmations(run.conversationId, run.id)
+            if (id === currentConversationId.value && sessionSeq === sessionReqSeq) {
+              activeRun.value = finished
+              const next = await latestRun(run.conversationId)
+              if (id === currentConversationId.value && sessionSeq === sessionReqSeq && next) {
+                activeRun.value = next
+                if (next.id !== run.id && next.status === 'RUNNING') void trackRun(next)
+              }
+            }
+          } catch {
+            // 人工操作已成功；状态刷新失败不改写操作结果，也不再次请求模型。
+          }
         }
       }
     }
@@ -835,7 +849,7 @@ export const useChatStore = defineStore('chat', () => {
     return true
   }
 
-  /** 停止生成（客户端断开，服务端会取消上游订阅） */
+  /** 显式停止后台任务，由服务端取消上游输出；单纯断开页面不会停止任务。 */
   async function stopStreaming(): Promise<void> {
     const run = activeRun.value
     if (!run) return

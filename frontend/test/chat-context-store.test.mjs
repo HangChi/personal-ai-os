@@ -359,6 +359,42 @@ for (const decision of ['confirm', 'cancel', 'fail']) {
   eq(`${decision} 迟到请求不覆盖已处理状态`, store.toolTrail[0].confirmationStatus, status)
 }
 
+// 人工决定只执行操作并更新任务状态，不发送合成消息或请求模型续跑。
+for (const decision of ['confirm', 'cancel']) {
+  const store = fresh()
+  const conversationId = `approval-${decision}`
+  store.currentConversationId = conversationId
+  store.messages = [
+    { role: 'USER', content: '修改组会时间' },
+    { role: 'ASSISTANT', content: '请确认删除旧日程' },
+  ]
+  store.activeRun = { id: 'approval-run', conversationId, status: 'WAITING_CONFIRMATION', events: [] }
+  const completed = { ...store.activeRun, status: 'COMPLETED' }
+  let finishes = 0
+  let modelRequests = 0
+  handlers.set('/agent/confirmations', () => Promise.resolve([]))
+  handlers.set('/agent/tool-invocations', () => Promise.resolve({ items: [] }))
+  handlers.set('/agent/confirmations/check/confirm', () => Promise.resolve({ summary: '操作完成' }))
+  handlers.set('/agent/confirmations/check/cancel', () => Promise.resolve())
+  handlers.set(`/chat/sessions/${conversationId}/runs/approval-run/confirmations/finish`, () => {
+    finishes++
+    return Promise.resolve(completed)
+  })
+  handlers.set(`/chat/sessions/${conversationId}/runs/latest`, () => Promise.resolve(completed))
+  for (const path of ['runs', 'runs/approval-run/resume']) {
+    handlers.set(`/chat/sessions/${conversationId}/${path}`, () => {
+      modelRequests++
+      return Promise.reject(new Error('人工决定不能调用模型'))
+    })
+  }
+  await store.resolveConfirmation({ id: 'check', token: 'test' }, decision === 'confirm')
+  eq(`${decision} 只更新一次等待状态`, finishes, 1)
+  eq(`${decision} 不调用模型`, modelRequests, 0)
+  eq(`${decision} 不追加聊天消息`, store.messages.length, 2)
+  eq(`${decision} 不改写原回答`, store.messages[1].content, '请确认删除旧日程')
+  eq(`${decision} 结束等待人工确认`, store.activeRun.status, 'COMPLETED')
+}
+
 {
   const store = fresh()
   store.currentConversationId = 'old-confirmation'

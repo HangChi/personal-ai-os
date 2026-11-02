@@ -64,13 +64,17 @@ describe('ChatComposer', () => {
   it('正在生成时按钮变成「停止」，点击只发 stop', async () => {
     const wrapper = mount(ChatComposer, { props: baseProps({ streaming: true, modelValue: '内容' }) })
 
-    expect(buttonByText(wrapper, '停止')).toBeTruthy()
-    expect(buttonByText(wrapper, '发送')).toBeTruthy()
+    expect(wrapper.findAll('.chat-composer__submit')).toHaveLength(1)
+    expect(buttonByText(wrapper, '发送')).toBeUndefined()
 
-    await buttonByText(wrapper, '停止')!.trigger('click')
+    await wrapper.get('[aria-label="停止生成"]').trigger('click')
 
     expect(wrapper.emitted('stop')).toHaveLength(1)
     expect(wrapper.emitted('send')).toBeUndefined()
+    expect(wrapper.emitted('followup')).toBeUndefined()
+    await wrapper.setProps({ streaming: false })
+    expect(wrapper.find('[aria-label="停止生成"]').exists()).toBe(false)
+    expect(buttonByText(wrapper, '发送')).toBeTruthy()
   })
 
   it('执行中直接发送跟进，不在发送框选择排队或引导', async () => {
@@ -90,7 +94,9 @@ describe('ChatComposer', () => {
     })
     await wrapper.get('textarea').trigger('keydown', { key: 'Enter' })
     expect(wrapper.emitted('followup')).toBeUndefined()
-    expect(buttonByText(wrapper, '发送')!.attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[aria-label="停止生成"]').attributes('disabled')).toBeUndefined()
+    await wrapper.get('[aria-label="停止生成"]').trigger('click')
+    expect(wrapper.emitted('stop')).toHaveLength(1)
     await flushPromises()
     wrapper.unmount()
   })
@@ -300,12 +306,12 @@ describe('ChatComposer 拖拽上传', () => {
     Object.assign(drop, { dataTransfer: { files: [file] } })
     wrapper.find('.chat-composer').element.dispatchEvent(drop)
     await flushPromises()
-    await buttonByText(wrapper, '发送')!.trigger('click')
+    await wrapper.get('textarea').trigger('keydown', { key: 'Enter' })
     const first = wrapper.emitted('followup')![0]
     ;(first[1] as (success: boolean) => void)(false)
     await nextTick()
     expect(wrapper.find('.chat-composer__attachment').exists()).toBe(true)
-    await buttonByText(wrapper, '发送')!.trigger('click')
+    await wrapper.get('textarea').trigger('keydown', { key: 'Enter' })
     ;(wrapper.emitted('followup')![1][1] as (success: boolean) => void)(true)
     await flushPromises()
     expect(wrapper.find('.chat-composer__attachment').exists()).toBe(false)
@@ -376,7 +382,7 @@ describe('ChatComposer 视觉规格', () => {
     expect(buttonByText(sending, '发送')!.find('.el-icon').exists()).toBe(true)
 
     const stopping = mount(ChatComposer, { props: baseProps({ streaming: true, modelValue: '内容' }) })
-    expect(buttonByText(stopping, '停止')!.find('.el-icon').exists()).toBe(true)
+    expect(stopping.get('[aria-label="停止生成"]').find('.chat-composer__stop-icon').exists()).toBe(true)
   })
 
   it('字数 ≥90% 时挂预警类（maxlength 是硬截断，超出的字直接消失）', () => {

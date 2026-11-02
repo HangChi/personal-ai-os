@@ -70,7 +70,9 @@ function actionLabel(action: string): string {
         <p v-if="expired(confirmation)" class="chat-confirmations__note" role="status">
           确认已过期，请让助手重新申请。
         </p>
-        <p v-else class="chat-confirmations__note">只授权这一次操作。暂不选择会保留待确认；全部处理后任务继续。</p>
+        <p v-else class="chat-confirmations__note">
+          只授权这一次操作。暂不选择会保留待确认；确认后直接执行，不再发送消息。
+        </p>
         <div class="chat-confirmations__footer">
           <span v-if="busy" class="chat-confirmations__meta">本轮结束后可确认</span>
           <div class="chat-confirmations__actions">

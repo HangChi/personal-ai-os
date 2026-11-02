@@ -89,6 +89,18 @@ public class ChatRunService {
         repository.transition(id, "INTERRUPTED", "STOPPED");
     }
 
+    /** 人工决定已由确认服务执行；只结束等待，不再向原任务发送续跑消息。 */
+    public synchronized ChatRunDto finishConfirmations(String conversationId, String id) {
+        var run = require(conversationId, id);
+        if ("COMPLETED".equals(run.status())) return get(conversationId, id, 0);
+        if (!"WAITING_CONFIRMATION".equals(run.status())) throw conflict("当前任务未在等待人工确认");
+        if (repository.pending(conversationId)) throw conflict("仍有待处理的人工确认操作");
+        repository.transition(id, "WAITING_CONFIRMATION", "COMPLETED");
+        // 仅用户明确排队的新消息可以继续调度，原任务不会再次调用模型。
+        dispatchQueued(conversationId);
+        return get(conversationId, id, 0);
+    }
+
     /** 重启后仅恢复结果确定的任务；外部副作用结果不明时保留人工核对入口。 */
     @EventListener(ApplicationReadyEvent.class)
     public void recover() {

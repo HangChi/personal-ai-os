@@ -737,7 +737,6 @@ async function jumpToMatch(step: number): Promise<void> {
               !streaming &&
               activeRun &&
               (['RUNNING', 'INTERRUPTED', 'STOPPED'].includes(activeRun.status) ||
-                (activeRun.status === 'WAITING_CONFIRMATION' && !pendingConfirmations.length) ||
                 (activeRun.status === 'WAITING_USER' && !activeRun.question))
             "
             type="warning"

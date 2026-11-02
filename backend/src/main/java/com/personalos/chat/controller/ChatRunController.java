@@ -36,6 +36,10 @@ public class ChatRunController {
         service.stop(conversationId, id);
         return ApiResponse.ok(null);
     }
+    @PostMapping("/{id}/confirmations/finish")
+    public ApiResponse<ChatRunDto> finishConfirmations(@PathVariable String conversationId, @PathVariable String id) {
+        return ApiResponse.ok(service.finishConfirmations(conversationId, id));
+    }
     public record Answer(@jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max=4000) String answer) { }
     public record Followup(@jakarta.validation.constraints.Pattern(regexp="QUEUE|STEER") @jakarta.validation.constraints.NotNull String mode,
                            @Valid @jakarta.validation.constraints.NotNull StreamChatRequest request) { }

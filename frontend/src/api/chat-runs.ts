@@ -38,6 +38,8 @@ export interface RunHandlers extends StreamHandlers {
   onConnection: (reconnecting: boolean) => void
 }
 const base = (conversationId: string) => `/chat/sessions/${conversationId}/runs`
+export const finishConfirmations = (conversationId: string, id: string): Promise<ChatRun> =>
+  requestData({ url: `${base(conversationId)}/${id}/confirmations/finish`, method: 'post' })
 export const latestRun = (conversationId: string): Promise<ChatRun | null> =>
   requestData({ url: `${base(conversationId)}/latest`, method: 'get' })
 export const resumeRun = (conversationId: string, id: string): Promise<ChatRun> =>

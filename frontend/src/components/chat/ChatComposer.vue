@@ -1,15 +1,6 @@
 <script setup lang="ts">
 /** 对话输入区：输入与工具栏在框内，快捷键和用量读数在框下。 */
-import {
-  Close,
-  Document,
-  MagicStick,
-  Paperclip,
-  Promotion,
-  Reading,
-  UploadFilled,
-  VideoPause,
-} from '@element-plus/icons-vue'
+import { Close, Document, MagicStick, Paperclip, Promotion, Reading, UploadFilled } from '@element-plus/icons-vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { InputInstance } from 'element-plus'
 import { uploadAttachment } from '@/api/chat'
@@ -442,11 +433,19 @@ onBeforeUnmount(() => {
             :disabled="streaming"
             @update:draft="(value: string) => emit('update:modelValue', value)"
           />
-          <el-button v-if="streaming" class="chat-composer__submit" type="danger" round @click="emit('stop')">
-            <el-icon :size="12"><VideoPause /></el-icon>
-            停止
+          <el-button
+            v-if="streaming"
+            class="chat-composer__submit"
+            type="primary"
+            round
+            title="停止生成"
+            aria-label="停止生成"
+            @click="emit('stop')"
+          >
+            <span class="chat-composer__stop-icon" aria-hidden="true" />
           </el-button>
           <el-button
+            v-else
             type="primary"
             class="chat-composer__submit"
             round
@@ -813,6 +812,12 @@ onBeforeUnmount(() => {
 }
 .chat-composer__submit {
   gap: var(--os-space-1);
+}
+.chat-composer__stop-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: currentColor;
 }
 .chat-composer__shortcut {
   white-space: nowrap;

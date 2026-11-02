@@ -43,6 +43,10 @@ class AgentInteractionIntegrationTest {
     @Autowired ScriptedToolCallingChatModel model;
     @Autowired JsonCodec json;
     @Autowired com.personalos.common.confirmation.ConfirmationService confirmations;
+    @Autowired com.personalos.chat.repository.ChatMessageRepository messages;
+    @Autowired com.personalos.task.service.TaskService tasks;
+    @Autowired com.personalos.task.confirmation.TaskConfirmationService taskConfirmations;
+    @Autowired com.personalos.task.repository.TaskRepository taskRepository;
     @Autowired SlowTools slow;
     static class SlowTools implements ToolContributor {
         final ToolExecutor executor;
@@ -94,6 +98,28 @@ class AgentInteractionIntegrationTest {
         runs.answer(c,first.id(),waiting.question().id(),"按项目，保留风险说明");
         assertThat(model.receivedInstructions()).hasSize(2);
         assertThatThrownBy(() -> runs.answer(c,first.id(),waiting.question().id(),"覆盖答案")).hasMessageContaining("已经回答");
+    }
+    @Test void humanDecisionExecutesOnlyTheApprovedActionWithoutAnotherMessageOrModelCall() throws Exception {
+        for (boolean approve : List.of(true, false)) {
+            model.reset();
+            model.enqueueText("请确认删除任务");
+            String c=sessions.create("人工决定不续跑").conversationId();
+            var task=tasks.create(new com.personalos.task.dto.CreateTaskRequest("待确认任务",null,null,null,null));
+            var approval=taskConfirmations.requestDeleteTasks(List.of(task.id()),List.of(task.title()),c);
+            var run=runs.start(c,key(),request("删除任务"));
+            await(c,run.id(),"WAITING_CONFIRMATION");
+            long messageCount=messages.countByConversationId(c);
+            assertThat(model.receivedInstructions()).hasSize(1);
+            assertThatThrownBy(() -> runs.finishConfirmations(c,run.id())).hasMessageContaining("仍有待处理");
+            if (approve) confirmations.confirm(approval.id(),approval.token());
+            else confirmations.cancel(approval.id(),approval.token());
+            assertThat(taskRepository.findById(task.id()).isEmpty()).isEqualTo(approve);
+            assertThat(runs.finishConfirmations(c,run.id()).status()).isEqualTo("COMPLETED");
+            assertThat(runs.finishConfirmations(c,run.id()).status()).isEqualTo("COMPLETED");
+            assertThat(model.receivedInstructions()).hasSize(1);
+            assertThat(messages.countByConversationId(c)).isEqualTo(messageCount);
+            assertThat(runs.get(c,run.id(),0).events()).extracting(ChatRunDto.Event::name).doesNotContain("reset");
+        }
     }
     @Test void queuedMessagesExecuteInOrderAndDuplicateSubmissionIsNotDuplicated() throws Exception {
         model.delayStreamBy(Duration.ofMillis(400));
