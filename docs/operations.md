@@ -343,3 +343,14 @@ Redis 故障在短超时后回到上游模型，错误记录在 `personalos.embe
 故障明确失败，不静默改写到另一位置。`S3_CLEANUP_ENABLED` 默认关闭；开启后每轮最多扫描 100 项，
 只删除本命名空间、带归属标记、超过 24 小时且数据库未引用的对象。不同数据库使用不同命名空间。
 数据库和对象卷需配套备份。真实容器验证了上传、读取、大小、归属隔离、清理和旧文件兼容。
+
+## 可选 OpenSearch 混合召回
+
+`compose.integrations.yml --profile search` 提供 OpenSearch 3.9.0，单节点、512MB JVM 堆，9200 只绑定回环。
+本地配置关闭安全插件；生产需单独配置 TLS、认证与网络隔离，不要将本地端口配置改为公网绑定。
+设置 `OPENSEARCH_ENABLED=true` 后，新 RAG 管线使用 CJK/BM25 和 HNSW 向量两路召回，以 RRF 融合排名。
+PostgreSQL 保存原文与向量，触发器在同一业务事务写 chunk outbox，异步投影使用递增外部版本和条件 ACK。
+删除也进入 outbox，旧通知不能覆盖更新后的索引；外部结果仅提供 ID，正文回 PostgreSQL 校验。
+搜索服务故障或 outbox 尚未清空时退回 PostgreSQL 召回。`GET /api/v1/knowledge/search-index` 查看积压；
+`POST /api/v1/knowledge/search-index/reindex` 排队重建当前所有片段。换向量维度应使用新索引名。
+索引是可重建投影；删除索引卷不会删除 PostgreSQL 资料。`personalos.knowledge.search.pending/projections` 记录积压与同步结果。

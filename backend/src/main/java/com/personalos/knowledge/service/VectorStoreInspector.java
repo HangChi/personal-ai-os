@@ -239,6 +239,21 @@ public class VectorStoreInspector {
         return count == null ? 0 : count;
     }
 
+    /** External index IDs are resolved against current authoritative rows, never external text. */
+    public List<IndexedChunk> projectionChunks(List<UUID> ids) {
+        if(ids.isEmpty()) return List.of();
+        String placeholders=String.join(",",java.util.Collections.nCopies(ids.size(),"?"));
+        return jdbcTemplate.query("SELECT v.id,v.content,v.metadata::text,v.embedding::text FROM "+qualifiedTable()
+                +" v JOIN knowledge_document d ON d.id::text=v.metadata->>'document_id' WHERE v.id IN ("+placeholders+")",
+                (rs,n)->new IndexedChunk(rs.getObject(1,UUID.class),rs.getString(2),rs.getString(3),parseVector(rs.getString(4))),ids.toArray());
+    }
+    private static float[] parseVector(String text) {
+        if(text==null) return new float[0];
+        String[] parts=text.substring(1,text.length()-1).split(","); float[] vector=new float[parts.length];
+        for(int i=0;i<parts.length;i++) vector[i]=Float.parseFloat(parts[i]);
+        return vector;
+    }
+
     private String qualifiedTable() {
         return schemaName + "." + tableName;
     }

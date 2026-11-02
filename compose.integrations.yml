@@ -30,7 +30,19 @@ services:
       S3_BUCKET: personalos
     ports: ["127.0.0.1:8333:8333"]
     volumes: [s3-data:/data]
+  opensearch:
+    profiles: [search]
+    image: opensearchproject/opensearch:3.9.0
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: "true"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+    ports: ["127.0.0.1:9200:9200"]
+    volumes: [search-data:/usr/share/opensearch/data]
 volumes:
+  search-data:
   s3-data:
   rabbitmq-data:
   redis-data:

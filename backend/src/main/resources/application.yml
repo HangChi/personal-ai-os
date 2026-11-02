@@ -415,3 +415,13 @@ app:
       bucket: ${S3_BUCKET:personalos}
       namespace: ${S3_NAMESPACE:}
       cleanup: ${S3_ORPHAN_CLEANUP_ENABLED:false}
+
+---
+app:
+  knowledge:
+    search:
+      enabled: ${OPENSEARCH_ENABLED:false}
+      endpoint: ${OPENSEARCH_ENDPOINT:http://localhost:9200}
+      index: ${OPENSEARCH_INDEX:personalos-chunks-v1}
+      username: ${OPENSEARCH_USERNAME:}
+      password: ${OPENSEARCH_PASSWORD:}
