@@ -409,3 +409,23 @@ OpenSearch 每次启用启动会重新排队当前片段，避免新索引或恢
 对象读取、分页或校验失败时不发布备份；仍需先停止应用写入以保证数据库和附件一致。
 恢复出的 `uploads/` 可按原流程放回本地目录，应用优先读取这些文件，无需先向 S3 重传。
 只读快照支持静态凭据和 AWS 环境临时凭据；仅配置 IAM 角色而无可读备份凭据时会明确失败，不能静默漏掉对象。
+
+### 当前本机统一 Docker 分组
+
+完成分组合并后，统一使用以下入口管理 8 个服务，不再分别运行旧的三个独立项目：
+
+```bash
+./scripts/dev/local-stack.sh ps
+./scripts/dev/local-stack.sh up -d
+./scripts/dev/local-stack.sh stop
+./scripts/dev/local-stack.sh logs --tail 100
+```
+
+`compose.local.yml` 把数据库、中间件、监控和前端归入 `personal-ai-os`，Java 后端仍由
+`local-runtime.py` 管理。它复用原来的 7 个持久数据卷，均声明为 external；不要手工删除或改名。
+端口和现有 `.env`、`.env.integrations.local`、`.env.monitoring.local` 中的凭据保持一致。
+
+迁移时额外保存 `.env.local-stack` 中的 `LOCAL_RABBITMQ_HOSTNAME`，其值取自原 RabbitMQ
+容器的 hostname，以继续使用同一节点的持久数据。此文件须随本地部署配置保管，不能重新随机生成。
+切换前暂停应用写入，执行完整备份和恢复演练；停旧容器后才可启动新分组，避免端口冲突或同时挂载数据库。
+确认数据、认证和历史指标正常后，删除旧项目的已停止容器和空网络；不要删除数据卷。

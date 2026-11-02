@@ -1,0 +1,64 @@
+# 当前宿主机 JAR 部署的统一分组。通过 scripts/dev/local-stack.sh 调用。
+# 复用已部署的数据卷；external 防止 down -v 误删这些持久数据。
+name: personal-ai-os
+services:
+  postgres:
+    extends:
+      file: compose.yml
+      service: postgres
+  redis:
+    extends:
+      file: compose.integrations.yml
+      service: redis
+    profiles: !reset []
+  rabbitmq:
+    extends:
+      file: compose.integrations.yml
+      service: rabbitmq
+    profiles: !reset []
+    # RabbitMQ 默认以 hostname 组成节点名；迁移时必须保留原节点身份。
+    hostname: ${LOCAL_RABBITMQ_HOSTNAME:?set LOCAL_RABBITMQ_HOSTNAME in .env.local-stack}
+  s3:
+    extends:
+      file: compose.integrations.yml
+      service: s3
+    profiles: !reset []
+  opensearch:
+    extends:
+      file: compose.integrations.yml
+      service: opensearch
+    profiles: !reset []
+  prometheus:
+    extends:
+      file: compose.monitoring.local.yml
+      service: prometheus
+  grafana:
+    extends:
+      file: compose.monitoring.local.yml
+      service: grafana
+  web:
+    extends:
+      file: compose.local-web.yml
+      service: web
+volumes:
+  postgres-data:
+    external: true
+    name: personal-ai-os-postgres-data
+  redis-data:
+    external: true
+    name: personal-ai-os-integrations_redis-data
+  rabbitmq-data:
+    external: true
+    name: personal-ai-os-integrations_rabbitmq-data
+  s3-data:
+    external: true
+    name: personal-ai-os-integrations_s3-data
+  search-data:
+    external: true
+    name: personal-ai-os-integrations_search-data
+  prometheus-data:
+    external: true
+    name: personal-ai-os-monitoring_prometheus-data
+  grafana-data:
+    external: true
+    name: personal-ai-os-monitoring_grafana-data
