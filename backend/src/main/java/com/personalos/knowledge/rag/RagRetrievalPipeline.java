@@ -31,6 +31,11 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         this.recall=recall;this.model=model;this.review=review;this.properties=properties;this.json=json;this.meters=meters;
         this.enabled=enabled;this.budget=Math.max(1000,Math.min(60000,budget));
     }
+    private long evidenceTimeout=12000;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureEvidenceTimeout(@Value("${app.knowledge.rag.evidence-timeout-ms:12000}") long timeout) {
+        evidenceTimeout=Math.max(1000,Math.min(30000,timeout));
+    }
     private CrossEncoderReranker crossEncoder;
     @org.springframework.beans.factory.annotation.Autowired
     void configureReranker(org.springframework.beans.factory.ObjectProvider<CrossEncoderReranker> provider){this.crossEncoder=provider.getIfAvailable();}
@@ -83,7 +88,7 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         start=System.nanoTime();
         String status="UNVERIFIED",clarification=""; List<RagResult.Disagreement> conflicts=List.of(); List<KnowledgeHitDto> selected=pool;
         try {
-            var assessed=review.review(query,pool,remaining(deadline));conflicts=assessed.conflicts();clarification=assessed.clarification();
+            var assessed=review.review(query,pool,remaining(deadline,evidenceTimeout));conflicts=assessed.conflicts();clarification=assessed.clarification();
             if(governance!=null) {assessed=governance.applyDecisions(assessed,pool,warnings);governance.record(assessed.conflicts());}
             conflicts=assessed.conflicts();
             selected=assessed.relevant();status=!conflicts.isEmpty()?"CONFLICT":!clarification.isBlank()?"CLARIFY":selected.isEmpty()?"INSUFFICIENT":"READY";
@@ -98,7 +103,8 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         for(var hit:selected)scores.put(key(hit),new RagResult.RankingScores(rrf.getOrDefault(key(hit),0.0),rerankScores.get(key(hit))));
         return new RagResult(selected,List.copyOf(queries),List.copyOf(stages),List.copyOf(warnings),status,conflicts,clarification,Map.copyOf(scores));
     }
-    private static long remaining(long deadline){return Math.min(8000,TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime()));}
+    private static long remaining(long deadline){return remaining(deadline,8000);}
+    private static long remaining(long deadline,long maximum){return Math.min(maximum,TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime()));}
     private void stage(List<RagResult.Stage> stages,String name,long start,int in,int out,String result) {
         long nanos=System.nanoTime()-start;stages.add(new RagResult.Stage(name,result,TimeUnit.NANOSECONDS.toMillis(nanos),in,out));
         meters.timer("personalos.knowledge.rag.stage","stage",name,"result",result).record(nanos,TimeUnit.NANOSECONDS);

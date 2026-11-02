@@ -140,7 +140,7 @@ def start(jar):
                                         '--server.address=127.0.0.1', '--management.server.address=127.0.0.1', '--management.server.port=' + str(management),
                                         '--app.knowledge.jobs.enabled=false', '--app.knowledge.rag.ingestion-review-enabled=false'],
                                        cwd=ROOT, env=env, stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
-        state['processes'].append({'name': name, 'pid': process.pid, 'port': port, 'management': management, 'log': str(log)})
+        state['processes'].append({'name': name, 'pid': process.pid, 'port': port, 'management': management, 'log': str(log), 'jar': str(jar.resolve())})
         private_json(STATE, state)
         ready(management, process)
         print('Evaluation app ready: ' + name, flush=True)
@@ -162,6 +162,45 @@ def start(jar):
     if enhanced.request('/knowledge/search-index')['pending']:
         raise RuntimeError('Projection has not caught up')
     print('Isolated corpus ready; production knowledge untouched', flush=True)
+
+
+def restart_enhanced(jar):
+    state = json.loads(STATE.read_text())
+    process = next(value for value in state['processes'] if value['name'] == 'enhanced')
+    old_jar = process.get('jar', state['jar'])
+    command = subprocess.run(['ps', '-p', str(process['pid']), '-o', 'command='], capture_output=True, text=True).stdout
+    if old_jar not in command or '--management.server.port=18092' not in command:
+        raise ValueError('Refusing to replace an unowned process')
+    os.kill(process['pid'], signal.SIGTERM)
+    deadline = time.monotonic() + 45
+    while time.monotonic() < deadline:
+        command = subprocess.run(['ps', '-p', str(process['pid']), '-o', 'command='], capture_output=True, text=True).stdout
+        if old_jar not in command:
+            break
+        time.sleep(.25)
+    else:
+        raise RuntimeError('Evaluation process is still stopping')
+    module = runtime()
+    values = os.environ.copy()
+    values.update(module.env_file(ROOT / '.env'))
+    values.update(module.env_file(ROOT / '.env.integrations.local'))
+    profile = json.loads(sql('personal_ai_os', "SELECT row_to_json(t) FROM (SELECT api_key,chat_model FROM ai_model_profile WHERE active LIMIT 1)t"))
+    values.update(OPENAI_API_KEY=profile['api_key'], OPENAI_CHAT_MODEL=profile['chat_model'], POSTGRES_DB=state['database'],
+                  SERVER_PORT='18082', RABBITMQ_ENABLED='false', S3_ENABLED='false', RAG_ENABLED='true',
+                  OPENSEARCH_ENABLED='true', OPENSEARCH_INDEX=state['index'], REDIS_NAMESPACE='personal-ai-os-eval-' + state['createdAt'],
+                  AI_CHAT_UPLOAD_DIR=str(WORK / 'uploads'), APP_RATE_LIMIT_ENABLED='false')
+    log = WORK / ('enhanced-revised-' + datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S') + '.log')
+    fd = os.open(log, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, 'w') as output:
+        launched = subprocess.Popen([module.JAVA, '-Xmx512m', '-jar', str(jar.resolve()), '--spring.profiles.active=monitoring',
+                                     '--server.address=127.0.0.1', '--management.server.address=127.0.0.1', '--management.server.port=18092',
+                                     '--app.knowledge.jobs.enabled=false', '--app.knowledge.rag.ingestion-review-enabled=false'],
+                                    cwd=ROOT, env=values, stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
+    process.update(pid=launched.pid, jar=str(jar.resolve()), log=str(log))
+    state['commit'] = subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()
+    private_json(STATE, state)
+    ready(18092, launched)
+    print('Revised enhanced evaluator ready; same corpus retained', flush=True)
 
 
 def counters(port):
@@ -229,13 +268,13 @@ def cleanup():
         raise ValueError('Refusing non-evaluation resources')
     for process in state['processes']:
         command = subprocess.run(['ps', '-p', str(process['pid']), '-o', 'command='], capture_output=True, text=True).stdout
-        if state['jar'] in command and '--management.server.port=' + str(process['management']) in command:
+        if process.get('jar', state['jar']) in command and '--management.server.port=' + str(process['management']) in command:
             os.kill(process['pid'], signal.SIGTERM)
     deadline = time.monotonic() + 45
     for process in state['processes']:
         while time.monotonic() < deadline:
             command = subprocess.run(['ps', '-p', str(process['pid']), '-o', 'command='], capture_output=True, text=True).stdout
-            if state['jar'] not in command:
+            if process.get('jar', state['jar']) not in command:
                 break
             time.sleep(.25)
         else:
@@ -255,7 +294,7 @@ def cleanup():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['start', 'evaluate', 'cleanup'])
+    parser.add_argument('command', choices=['start', 'restart-enhanced', 'evaluate', 'cleanup'])
     parser.add_argument('--jar', type=Path)
     parser.add_argument('--limit', type=int, default=0)
     args = parser.parse_args()
@@ -263,6 +302,10 @@ def main():
         if not args.jar:
             parser.error('start requires --jar')
         start(args.jar)
+    elif args.command == 'restart-enhanced':
+        if not args.jar:
+            parser.error('restart-enhanced requires --jar')
+        restart_enhanced(args.jar)
     elif args.command == 'evaluate':
         evaluate(args.limit)
     else:
