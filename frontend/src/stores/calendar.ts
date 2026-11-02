@@ -7,16 +7,14 @@ import { listReminders, markReminderRead, scanReminders } from '@/api/reminders'
 import { pushSubscribed } from '@/notifications/web-push'
 import { readPermission, requestPermission } from '@/notifications/permission'
 import { createBrowserNotify, ReminderNotifier } from '@/notifications/reminder-notifier'
+import { subscribeReminders } from '@/notifications/reminder-stream'
 import type { CreateEventPayload, UpdateEventPayload } from '@/api/calendar'
 import type { NotificationPermissionState } from '@/notifications/permission'
 import type { NoticePayload } from '@/notifications/reminder-notifier'
 import type { CalendarEvent, CalendarOccurrence, Reminder } from '@/types/api'
 
 /**
- * 提醒轮询间隔（毫秒）。
- *
- * 比服务端扫描间隔（默认 60 秒）稍快：轮询比扫描更频繁没有意义，
- * 但两者相等时最坏情况要等两个周期才能看到新提醒。
+ * SSE 断线或浏览器不支持 SSE 时的补查间隔（毫秒）。
  */
 const REMINDER_POLL_INTERVAL_MS = 30_000
 
@@ -63,6 +61,11 @@ export const useCalendarStore = defineStore('calendar', () => {
   const error = ref<string | null>(null)
 
   let pollTimer: ReturnType<typeof setInterval> | null = null
+  let stopStream: (() => void) | undefined
+  let streamConnected = false
+  let reminderRevision = 0
+  let subscriptionGeneration = 0
+  let lastReconciledAt = 0
 
   /**
    * 当前查询窗口（上次显式传入的 from/to）。
@@ -210,24 +213,37 @@ export const useCalendarStore = defineStore('calendar', () => {
    * <b>失败时静默</b>：轮询是后台行为，后端短暂不可用时弹一堆错误只会干扰用户。
    * 真正的错误由用户主动操作（创建/删除）时的那条路径暴露。
    */
-  let refreshingReminders = false
+  let refreshingReminders: Promise<void> | undefined
   // 已读是单向状态；过滤确认期间返回的旧轮询响应，避免提醒重新出现。
   const acknowledgedIds = new Set<string>()
   const acknowledgements = new Map<string, Promise<boolean>>()
-  async function refreshReminders(): Promise<void> {
-    if (refreshingReminders) return
-    refreshingReminders = true
-    try {
-      notificationPermission.value = readPermission()
-      dueReminders.value = (await listReminders(undefined, true)).filter(
-        (reminder) => !acknowledgedIds.has(reminder.id),
-      )
-      deliverReminders()
-    } catch {
-      // 保持上一轮结果，不打断用户
-    } finally {
-      refreshingReminders = false
-    }
+  function acceptReminders(reminders: Reminder[]): void {
+    reminderRevision += 1
+    notificationPermission.value = readPermission()
+    dueReminders.value = reminders.filter((reminder) => !acknowledgedIds.has(reminder.id))
+    deliverReminders()
+  }
+
+  function refreshReminders(): Promise<void> {
+    if (refreshingReminders) return refreshingReminders
+    const revision = reminderRevision
+    const generation = subscriptionGeneration
+    const request = (async () => {
+      try {
+        const reminders = await listReminders(undefined, true, 500)
+        // 晚到的 HTTP 响应不能覆盖更新的 SSE 快照，登出后的请求也不能重新弹提醒。
+        if (revision !== reminderRevision || generation !== subscriptionGeneration) return
+        acceptReminders(reminders)
+        lastReconciledAt = Date.now()
+      } catch {
+        // 保持上一轮结果，不打断用户；401 仍由 HTTP 层处理。
+      }
+    })()
+    refreshingReminders = request
+    void request.finally(() => {
+      if (refreshingReminders === request) refreshingReminders = undefined
+    })
+    return request
   }
 
   /**
@@ -312,16 +328,42 @@ export const useCalendarStore = defineStore('calendar', () => {
       return
     }
     void refreshReminders()
+    const generation = subscriptionGeneration
+    stopStream = subscribeReminders(
+      (reminders) => {
+        if (generation === subscriptionGeneration) acceptReminders(reminders)
+      },
+      (connected) => {
+        if (generation !== subscriptionGeneration) return
+        streamConnected = connected
+        if (!connected) void refreshReminders()
+      },
+    )
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibilityChange)
     pollTimer = setInterval(() => {
-      void refreshReminders()
+      // SSE 正常时每两分钟校准一次；不支持 SSE 或断线时恢复原 30 秒轮询。
+      if (!streamConnected || Date.now() - lastReconciledAt >= 120_000) void refreshReminders()
     }, REMINDER_POLL_INTERVAL_MS)
   }
 
   function stopReminderPolling(): void {
+    subscriptionGeneration += 1
+    stopStream?.()
+    stopStream = undefined
+    streamConnected = false
+    refreshingReminders = undefined
+    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisibilityChange)
     if (pollTimer !== null) {
       clearInterval(pollTimer)
       pollTimer = null
     }
+    dueReminders.value = []
+    inlineNotices.value = []
+    notifier.reset()
+  }
+
+  function onVisibilityChange(): void {
+    if (pageIsVisible()) void refreshReminders()
   }
 
   return {

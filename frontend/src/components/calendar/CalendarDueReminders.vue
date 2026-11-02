@@ -22,7 +22,7 @@ const emit = defineEmits<{
   <el-card class="cal-reminders" shadow="never">
     <template #header>
       <div class="cal-reminders__header">
-        <span>到点提醒（页面每 30 秒自动刷新）</span>
+        <span>到点提醒</span>
         <div class="cal-reminders__actions">
           <span class="cal-reminders__stat">{{ reminders.length }} 条待处理</span>
           <el-button size="small" type="primary" :loading="acknowledgingAll" @click="emit('acknowledge-all')">

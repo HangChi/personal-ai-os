@@ -53,7 +53,7 @@ const { navCollapsed, sidebarWidth } = storeToRefs(uiStore)
 const route = useRoute()
 const router = useRouter()
 
-// 提醒属于应用全局，离开日程页后仍持续轮询；登录页停止轮询。
+// 提醒属于应用全局，离开日程页后仍保持订阅和断线补查；登录页停止。
 const calendarStore = useCalendarStore()
 watch(
   () => authStore.ready && (!authStore.authEnabled || authStore.isAuthenticated),
