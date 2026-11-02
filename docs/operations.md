@@ -293,3 +293,25 @@ Prometheus 每 15 秒从 backend:9091 采集，数据最多保留 15 天或约 2
 
 指标新增 `personalos.knowledge.jobs.pending/active/attempts/duration`，看板可查看等待数与尝试结果。
 全局额度暂满时，聊天跟进队列和启动恢复会保留进度，后续调度继续尝试，不因一次限流丢弃。
+
+### 宿主机 JAR 的本地监控
+
+若数据库运行在 Docker、后端直接运行在 macOS 宿主机，可使用独立本地监控栈，不必启动生产 Compose。
+
+后端使用已构建的 JAR，并开启独立回环采集端口：
+
+```bash
+java -jar backend/target/personal-ai-os-backend-0.1.0-SNAPSHOT.jar \
+  --spring.profiles.active=monitoring --management.server.address=127.0.0.1
+```
+
+首次启动需在被 Git 忽略的 `.env.monitoring.local` 中保存 `GRAFANA_ADMIN_PASSWORD`（建议随机生成并设文件权限 600），然后运行：
+
+```bash
+docker compose --env-file .env.monitoring.local -f compose.monitoring.local.yml up -d
+```
+
+此配置面向 Docker Desktop，通过 `host.docker.internal:9091` 采集宿主机后端；不修改或重建原数据库。
+Grafana：`http://127.0.0.1:3000/d/personalos-runtime`，用户 admin，密码在本地环境文件中。
+Prometheus：`http://127.0.0.1:9090`，Targets 中 personal-ai-os 应显示 UP。
+停止监控可将上述 `up -d` 改为 `down`；不加 `-v` 时保留历史指标与看板数据。
