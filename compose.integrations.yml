@@ -5,28 +5,32 @@ services:
     profiles: [cache]
     image: redis:8.2.1-alpine
     restart: unless-stopped
-    command: [sh, -c, 'exec redis-server --requirepass "$$REDIS_PASSWORD" --maxmemory 128mb --maxmemory-policy allkeys-lru']
+    entrypoint: [/bin/sh, -ec]
+    command: [': "$${REDIS_PASSWORD:?set REDIS_PASSWORD}"; exec docker-entrypoint.sh redis-server --requirepass "$$REDIS_PASSWORD" --maxmemory 128mb --maxmemory-policy allkeys-lru']
     environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     ports: ["127.0.0.1:6379:6379"]
     volumes: [redis-data:/data]
   rabbitmq:
     profiles: [queue]
     image: rabbitmq:4.4.0-management
+    entrypoint: [/bin/sh, -ec]
+    command: [': "$${RABBITMQ_DEFAULT_PASS:?set RABBITMQ_PASSWORD}"; exec docker-entrypoint.sh rabbitmq-server']
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: personalos
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-}
     ports: ["127.0.0.1:5672:5672", "127.0.0.1:15672:15672"]
     volumes: [rabbitmq-data:/var/lib/rabbitmq]
   s3:
     profiles: [storage]
     image: chrislusf/seaweedfs:4.51
     restart: unless-stopped
-    command: [mini, -dir=/data]
+    entrypoint: [/bin/sh, -ec]
+    command: [': "$${AWS_ACCESS_KEY_ID:?set S3_ACCESS_KEY}"; : "$${AWS_SECRET_ACCESS_KEY:?set S3_SECRET_KEY}"; exec /entrypoint.sh mini -dir=/data']
     environment:
-      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?set S3_ACCESS_KEY}
-      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?set S3_SECRET_KEY}
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-}
       S3_BUCKET: personalos
     ports: ["127.0.0.1:8333:8333"]
     volumes: [s3-data:/data]

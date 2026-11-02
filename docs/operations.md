@@ -380,3 +380,6 @@ CHECKED_CANDIDATES 只表示候选审查完成，不表示穷尽知识库或不�
 `rankingScores` 分开返回 fusion 和 rerank，原 `hit.score` 保持向量余弦口径；这些分数不表示事实真实性。
 导出现在保留知识库名称与来源适用条件，恢复时重新排队审查；冲突处理审计需通过 PostgreSQL 备份保留。
 OpenSearch 每次启用启动会重新排队当前片段，避免新索引或恢复后的索引被误判为空且已同步。
+
+基础设施 Compose 的 cache / queue / storage / search 可分别启用。只有启动对应服务时才校验它的凭据；
+例如 search profile 不要求 Redis、RabbitMQ 或 S3 密码。启用缓存和队列时，应用 URI 也必须包含相同的账号密码。
