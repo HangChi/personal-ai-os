@@ -22,6 +22,10 @@ public final class ToolContextKeys {
 
     public static final String EXECUTION_BUDGET = "agentExecutionBudget";
 
+    public static final String PROGRESS = "toolProgress";
+
+    public static final String CONTROL = "agentControl";
+
     private ToolContextKeys() {
     }
 }

@@ -60,7 +60,8 @@ public class IdempotencyService {
             OperationRecordEntity record = existing.get();
             // 崩溃残留：占位后进程死掉，记录永久停在 IN_PROGRESS。超阈值则废弃重来，
             // 否则这个键永远「正在处理中」，既不能重试也不能复用（审查 P2）
-            if (record.getOutcome() == IdempotencyOutcome.IN_PROGRESS && isStale(record)) {
+            if (record.getOutcome() == IdempotencyOutcome.IN_PROGRESS && isStale(record)
+                    && record.getSource() != OperationSource.TOOL) {
                 log.warn("清理崩溃残留的 IN_PROGRESS 幂等记录：key={} createdAt={}",
                         record.getIdempotencyKey(), record.getCreatedAt());
                 repository.delete(record);
@@ -115,7 +116,7 @@ public class IdempotencyService {
         if (record.getOutcome() == IdempotencyOutcome.IN_PROGRESS) {
             // 并发窗口内：另一个请求正在执行同一操作
             log.debug("命中进行中的幂等记录：key={}", request.key());
-            return IdempotentResult.of(record.getResponsePayload(), IdempotencyOutcome.DUPLICATE);
+            throw new BusinessException(ErrorCode.BUSINESS_CONFLICT, "该操作的执行结果尚未确定，请核对后再继续，系统不会重复执行");
         }
         if (record.getOutcome() == IdempotencyOutcome.FAILED) {
             // 之前执行失败：responsePayload 是 null，原样回放会让调用方拿到「成功但空响应」，

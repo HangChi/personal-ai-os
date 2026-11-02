@@ -99,6 +99,11 @@ public class ChatTurnFinisher {
      * @param partialReply 已经推给客户端的增量；为空时写入纯标记文案，
      *                     否则悬空的提问仍在上下文里
      */
+    public void recordYieldedReply(String conversationId, String partialReply) {
+        String body = partialReply == null || partialReply.isBlank() ? "已保存进度，等待用户输入或应用补充要求。" : partialReply.strip();
+        chatMemory.add(conversationId, List.of(new AssistantMessage(body)));
+    }
+
     public void recordInterruptedReply(String conversationId, String partialReply) {
         recordInterruptedReply(conversationId, partialReply, null);
     }

@@ -32,6 +32,7 @@ public final class AgentTurnBudget {
 
     public static void beforeModel(ChatOptions options) {
         if (options instanceof ToolCallingChatOptions tools) {
+            AgentControlSignal.checkpoint(tools.getToolContext());
             AgentTurnBudget budget = from(tools.getToolContext());
             if (budget != null) {
                 budget.beforeModel();

@@ -201,6 +201,12 @@ public class ChatCompletionService {
                              List<ChatAttachmentDto> requestAttachments) {
         // 先把 requestId 抓成局部变量：回调可能跑在第四个、第五个池化线程上，
         // 那时请求线程早被回收、MDC 也清空了。见 runWithRequestId 的说明。
+        return stream(conversationId, userContent, turnId, useKnowledge, topK, thinkingLevel, requestAttachments, null);
+    }
+
+    public SseEmitter stream(String conversationId, String userContent, String turnId,
+                            boolean useKnowledge, int topK, ThinkingLevel thinkingLevel,
+                            List<ChatAttachmentDto> requestAttachments, RunEmitter background) {
         String requestId = MDC.get(RequestIdFilter.MDC_KEY);
         ChatSessionEntity session = sessionService.requireSession(conversationId);
         // 会话级选模型（V23）：会话自己选过就用它的，否则沿用生效配置的默认模型。
@@ -224,7 +230,7 @@ public class ChatCompletionService {
         // emitter 自带的超时只作兜底：它比我们自己的看门狗晚 5 秒。
         // 真正给客户端发 error 帧的是下面那个 scheduledTimeout ——
         // servlet 异步超时一旦触发，容器已经判定响应结束，再写什么都到不了客户端。
-        SseEmitter emitter = new SseEmitter(streamTimeout + 5_000L);
+        SseEmitter emitter = background == null ? new SseEmitter(streamTimeout + 5_000L) : background;
         StringBuilder fullContent = new StringBuilder();
         // 终止标记：保证 done / error 只发一次，并让 onCompletion 能区分
         // 「正常结束」与「客户端断连」
@@ -279,6 +285,10 @@ public class ChatCompletionService {
             ChatAttachmentContext attachmentContext = attachmentContextBuilder.build(requestAttachments);
             String systemPrompt = promptAssembler.prepare(hits, userContent, conversationId,
                     attachmentContext.textBlock(), attachmentContext.images().size(), session.getChatModel(), thinkingLevel.budget());
+            if (background != null && !background.recoveryContext().isEmpty()) {
+                systemPrompt += background.recoveryContext();
+            }
+            final String effectiveSystemPrompt = systemPrompt;
             // 上下文用量：本轮系统提示 + 本条用户消息 + 窗口内历史（后两项为估算）。
             // 历史由 Advisor 在请求链路里装载，这里拿不到原文，
             // 因此用「窗口条数 × 已存消息的平均长度」逼近并在事件里如实标注为估算值。
@@ -293,7 +303,7 @@ public class ChatCompletionService {
             ChatClient.ChatClientRequestSpec request = chatClient.prompt()
                     // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                     // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
-                    .system(systemPrompt)
+                    .system(effectiveSystemPrompt)
                     // 图片作为多模态媒体挂在用户消息上；无图片时退化成纯文本（行为与之前一致）
                     .user(user -> {
                         user.text(userContent);
@@ -307,7 +317,12 @@ public class ChatCompletionService {
                     .toolContext(Map.of(
                             ToolContextKeys.CONVERSATION_ID, conversationId,
                             ToolContextKeys.TURN_ID, turnId,
-                            ToolContextKeys.EXECUTION_BUDGET, executionBudget));
+                            ToolContextKeys.EXECUTION_BUDGET, executionBudget,
+                            ToolContextKeys.CONTROL, (Runnable) () -> { if (background != null) background.checkpoint(); },
+                            ToolContextKeys.PROGRESS, (com.personalos.common.ai.tool.ToolProgress) (id, tool, status, duration) -> {
+                                if (!terminated.get()) send(emitter, "activity", Map.of(
+                                        "id", id, "tool", tool, "status", status, "durationMs", duration));
+                            }));
 
             // 思考程度（阶段 22）：由 provider 门面在模型默认选项上合并，
             // 非 OpenAI 系模型时原样返回，此处无需判断 provider 类型。
@@ -341,7 +356,7 @@ public class ChatCompletionService {
         };
 
         /**
-         * 失败收尾：先按需发 error 帧，再把已产生的半截回答落库，最后关闭。
+         * 失败收尾：先把已产生的半截回答落库，再按需发 error 帧并关闭。
          *
          * <p><b>为什么必须落半截回答</b>：用户消息由 Advisor 在订阅时就写了，
          * 而助手消息要等流正常终止才写。失败时若什么都不写，历史里就留下一条
@@ -354,14 +369,16 @@ public class ChatCompletionService {
             }
             metricOutcome.set(errorCode == ErrorCode.AI_TIMEOUT ? "timeout" : notifyClient ? "error" : "cancelled");
             stopEverything.run();
+            finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode);
             if (notifyClient) {
                 // 发送失败（客户端已断开）无需再通知，但收尾必须照做
                 send(emitter, EVENT_ERROR,
                         new ChatStreamEvents.Error(errorCode.getCode(), errorCode.getDefaultMessage()));
             }
-            finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode);
             emitter.complete();
         });
+
+        if (background != null) background.onCancel(() -> failWith.accept(ErrorCode.INTERNAL_ERROR, true));
 
         // 自己的看门狗：到点先发 error 帧再关流。必须在订阅之前就位 ——
         // 模型「连上了但一个字节也不出」正是需要它的场景。
@@ -403,6 +420,7 @@ public class ChatCompletionService {
             }
         });
 
+        if (background != null) contentFlux = contentFlux.doOnNext(response -> background.checkpoint());
         Disposable subscription = contentFlux.subscribe(
                 response -> {
                     // 用量块（choices 为空）没有正文，但必须在这里被采集 ——
@@ -426,13 +444,21 @@ public class ChatCompletionService {
                     if (!terminated.compareAndSet(false, true)) {
                         return;
                     }
+                    if (background != null && com.personalos.common.ai.AgentControlSignal.causedBy(error)) {
+                        metricOutcome.set("yielded");
+                        stopEverything.run();
+                        finisher.recordYieldedReply(conversationId, fullContent.toString());
+                        send(emitter, "yield", Map.of("message", "已保存进度，正在等待输入或应用引导"));
+                        emitter.complete();
+                        return;
+                    }
                     metricOutcome.set(classify(error) == ErrorCode.AI_TIMEOUT ? "timeout" : "error");
                     stopEverything.run();
                     log.warn("流式对话失败 conversationId={}", conversationId, error);
                     ErrorCode errorCode = classify(error);
+                    finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode);
                     send(emitter, EVENT_ERROR,
                             new ChatStreamEvents.Error(errorCode.getCode(), errorCode.getDefaultMessage()));
-                    finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode);
                     emitter.complete();
                 }),
                 () -> runWithRequestId(requestId, () -> {
@@ -662,7 +688,8 @@ public class ChatCompletionService {
      */
     private boolean send(SseEmitter emitter, String eventName, Object payload) {
         try {
-            emitter.send(SseEmitter.event().name(eventName).data(payload, MediaType.APPLICATION_JSON));
+            if (emitter instanceof RunEmitter run) run.publish(eventName, payload);
+            else emitter.send(SseEmitter.event().name(eventName).data(payload, MediaType.APPLICATION_JSON));
             return true;
         } catch (IOException | IllegalStateException ex) {
             log.debug("SSE 事件发送失败，客户端可能已断开：event={}", eventName, ex);

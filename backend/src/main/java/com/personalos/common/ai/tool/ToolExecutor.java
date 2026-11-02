@@ -52,14 +52,16 @@ public class ToolExecutor {
     /**
      * 执行一个**写**工具：带工具层幂等。
      *
-     * <p>幂等键包含轮次标识，因此只有「同一轮内的同工具同参数」才会被判为重复。
+     * <p>幂等键包含执行标识；后台任务恢复时沿用标识，复用同工具同参数的成功结果。
      */
     public String write(String toolName, Map<String, Object> arguments, ToolContext toolContext,
                         Supplier<ToolExecutionResult> action) {
         String conversationId = contextValue(toolContext, ToolContextKeys.CONVERSATION_ID);
         String turnId = contextValue(toolContext, ToolContextKeys.TURN_ID);
         String digest = jsonCodec.digestOf(arguments);
-        String key = IdempotencyService.toolKey(conversationId, turnId, toolName, digest);
+        // 开始步骤是状态控制，失败步骤在恢复时需要再次转为 RUNNING。
+        String key = "startPlanStep".equals(toolName) ? UUID.randomUUID().toString()
+                : IdempotencyService.toolKey(conversationId, turnId, toolName, digest);
         return execute(toolName, arguments, toolContext, key, true, action);
     }
 
@@ -81,6 +83,7 @@ public class ToolExecutor {
         String turnId = contextValue(toolContext, ToolContextKeys.TURN_ID);
         String digest = jsonCodec.digestOf(arguments);
 
+        com.personalos.common.ai.AgentControlSignal.checkpoint(toolContext == null ? null : toolContext.getContext());
         AgentTurnBudget budget = AgentTurnBudget.from(toolContext == null ? null : toolContext.getContext());
         String fingerprint = toolName + ":" + digest;
         if (budget != null) budget.beforeTool(fingerprint);
@@ -88,6 +91,9 @@ public class ToolExecutor {
         IdempotencyRequest request = new IdempotencyRequest(key, OperationSource.TOOL, toolName,
                 digest, conversationId, turnId);
 
+        String activityId = UUID.randomUUID().toString();
+        long activityStarted = System.nanoTime();
+        progress(toolContext, activityId, toolName, "RUNNING", 0);
         try {
             IdempotentResult result = idempotencyService.execute(request, () -> {
                 ToolExecutionResult execution;
@@ -120,20 +126,33 @@ public class ToolExecutor {
 
             ToolExecutionResult original = jsonCodec.fromJson(result.responsePayload(), ToolExecutionResult.class);
             if (budget != null && write) budget.recordWrite(toolName, original);
+            progress(toolContext, activityId, toolName, result.replayed() ? "DUPLICATE" : original.status(),
+                    (System.nanoTime() - activityStarted) / 1_000_000);
             if (result.replayed()) {
                 return jsonCodec.toJson(ToolExecutionResult.duplicate(
-                        "该操作在本轮已执行过，未重复执行。首次结果：" + original.message(),
+                        "该操作已执行过，已复用结果。首次结果：" + original.message(),
                         original.data()));
             }
             return result.responsePayload();
         } catch (BusinessException ex) {
+            progress(toolContext, activityId, toolName, "REJECTED", (System.nanoTime() - activityStarted) / 1_000_000);
             // 例如同一幂等键对应了不同参数
             if (budget != null) budget.record(fingerprint, ToolExecutionResult.rejected(ex.getMessage()));
             return jsonCodec.toJson(ToolExecutionResult.rejected(ex.getMessage()));
         } catch (RuntimeException ex) {
+            progress(toolContext, activityId, toolName, "ERROR", (System.nanoTime() - activityStarted) / 1_000_000);
             if (budget != null) budget.record(fingerprint, ToolExecutionResult.error("工具外壳执行失败"));
             log.error("工具外壳执行失败 tool={}", toolName, ex);
             return jsonCodec.toJson(ToolExecutionResult.error("工具执行失败，请稍后重试"));
+        }
+    }
+
+    private void progress(ToolContext context, String id, String tool, String status, long duration) {
+        if (context == null || context.getContext() == null) return;
+        Object listener = context.getContext().get(ToolContextKeys.PROGRESS);
+        if (listener instanceof ToolProgress progress) {
+            try { progress.publish(id, tool, status, duration); }
+            catch (RuntimeException ex) { log.debug("工具活动推送失败", ex); }
         }
     }
 
