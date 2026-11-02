@@ -220,7 +220,7 @@ docker exec personal-ai-os-postgres psql -U personalos -d personal_ai_os \
 
 ## 7. 默认关闭的 Web Push 后台提醒
 
-本地页面打开时，登录后的所有功能页都会轮询提醒，每个标签页内去重，切换功能页不再停止。后台推送是独立的可选通道；默认 `WEB_PUSH_ENABLED=false`，不影响现在的本地使用。
+本地页面打开时，登录后的所有功能页通过 SSE 接收提醒，每个标签页内去重并逐条确认，切换功能页不停止订阅。断线后立即补查并退避重连，每 30 秒轮询兜底；连接正常时每两分钟校准一次，回到前台时立即补查。SSE 和 RabbitMQ 的职责、连接限制及扩展建议见 [提醒实时同步与消息队列](reminder-stream-and-queue.md)。后台推送是独立的可选通道；默认 `WEB_PUSH_ENABLED=false`，不影响现在的本地使用。
 
 启用步骤：
 
