@@ -211,12 +211,17 @@ export const useCalendarStore = defineStore('calendar', () => {
    * 真正的错误由用户主动操作（创建/删除）时的那条路径暴露。
    */
   let refreshingReminders = false
+  // 已读是单向状态；过滤确认期间返回的旧轮询响应，避免提醒重新出现。
+  const acknowledgedIds = new Set<string>()
+  const acknowledgements = new Map<string, Promise<boolean>>()
   async function refreshReminders(): Promise<void> {
     if (refreshingReminders) return
     refreshingReminders = true
     try {
       notificationPermission.value = readPermission()
-      dueReminders.value = await listReminders(undefined, true)
+      dueReminders.value = (await listReminders(undefined, true)).filter(
+        (reminder) => !acknowledgedIds.has(reminder.id),
+      )
       deliverReminders()
     } catch {
       // 保持上一轮结果，不打断用户
@@ -281,14 +286,25 @@ export const useCalendarStore = defineStore('calendar', () => {
     return notices
   }
 
-  async function acknowledge(reminder: Reminder): Promise<void> {
-    // 先从列表里移除，让点击立刻有反馈；标记失败时下一轮轮询会把它带回来
-    dueReminders.value = dueReminders.value.filter((item) => item.id !== reminder.id)
-    try {
-      await markReminderRead(reminder.id)
-    } catch {
-      await refreshReminders()
-    }
+  function acknowledge(reminder: Pick<Reminder, 'id'>): Promise<boolean> {
+    if (acknowledgedIds.has(reminder.id)) return Promise.resolve(true)
+    const pending = acknowledgements.get(reminder.id)
+    if (pending) return pending
+    const request = (async () => {
+      try {
+        await markReminderRead(reminder.id)
+        acknowledgedIds.add(reminder.id)
+        dueReminders.value = dueReminders.value.filter((item) => item.id !== reminder.id)
+        return true
+      } catch {
+        // 失败时保留待处理状态，调用方展示错误并允许重试。
+        return false
+      } finally {
+        acknowledgements.delete(reminder.id)
+      }
+    })()
+    acknowledgements.set(reminder.id, request)
+    return request
   }
 
   function startReminderPolling(): void {

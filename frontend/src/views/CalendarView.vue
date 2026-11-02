@@ -203,24 +203,26 @@ async function handleDelete(eventId: string, eventTitle: string): Promise<void> 
 // ------------------------------------------------------------------ 提醒确认
 
 async function acknowledge(reminder: Reminder): Promise<void> {
-  await calendarStore.acknowledge(reminder)
+  if (!(await calendarStore.acknowledge(reminder))) {
+    ElMessage.error('确认提醒失败，请重试')
+  }
 }
 
-/**
- * 批量确认到点提醒（阶段 18，T030）。
- *
- * 8 条提醒逐条点「知道了」是明确的重复劳动。逐条调用现有 acknowledge
- * （纯前端不新增接口），汇总报告成败；acknowledge 内部先乐观移除再请求，
- * 失败的下一轮轮询会带回来，所以这里数不出失败也不误导——提示只说成功数。
- */
+/** 批量确认只统计服务端已确认的成功数，失败项保留供重试。 */
 const acknowledgingAll = ref(false)
 
 async function acknowledgeAll(): Promise<void> {
-  const count = dueReminders.value.length
+  if (acknowledgingAll.value) return
+  const reminders = [...dueReminders.value]
   acknowledgingAll.value = true
   try {
-    await Promise.allSettled(dueReminders.value.map((reminder) => calendarStore.acknowledge(reminder)))
-    ElMessage.success(`已确认 ${count} 条提醒`)
+    const results = await Promise.all(reminders.map((reminder) => calendarStore.acknowledge(reminder)))
+    const succeeded = results.filter(Boolean).length
+    if (succeeded === reminders.length) {
+      ElMessage.success(`已确认 ${succeeded} 条提醒`)
+    } else {
+      ElMessage.warning(`已确认 ${succeeded} 条，${reminders.length - succeeded} 条失败，请重试`)
+    }
   } finally {
     acknowledgingAll.value = false
   }

@@ -17,6 +17,46 @@ function freshStore() {
 
 const { useCalendarStore } = await import('@/stores/calendar')
 
+// 确认必须等服务端成功；弹框与日程页同时操作同一条时共享请求。
+{
+  freshStore()
+  const store = useCalendarStore()
+  const reminder = { id: 'ack-1', title: '确认测试' }
+  store.dueReminders = [reminder]
+  let finish
+  let calls = 0
+  handlers.set('/reminders/ack-1/read', () => {
+    calls += 1
+    return new Promise((resolve) => {
+      finish = resolve
+    })
+  })
+  const first = store.acknowledge(reminder)
+  const second = store.acknowledge(reminder)
+  eq('提交中不提前移除', store.dueReminders.length, 1)
+  eq('同时确认只提交一次', calls, 1)
+  finish({ ...reminder, status: 'READ' })
+  eq('确认成功返回 true', await first, true)
+  eq('并发确认获得相同结果', await second, true)
+  eq('成功后移除待处理提醒', store.dueReminders.length, 0)
+  handlers.set('/reminders', () => Promise.resolve([reminder]))
+  await store.refreshReminders()
+  eq('旧轮询结果不能恢复已确认提醒', store.dueReminders.length, 0)
+}
+
+{
+  freshStore()
+  const store = useCalendarStore()
+  const reminder = { id: 'ack-failed', title: '重试测试' }
+  store.dueReminders = [reminder]
+  handlers.set('/reminders/ack-failed/read', () => Promise.reject(new Error('网络断开')))
+  eq('失败返回 false', await store.acknowledge(reminder), false)
+  eq('失败保留提醒', store.dueReminders.length, 1)
+  handlers.set('/reminders/ack-failed/read', () => Promise.resolve(reminder))
+  eq('失败后可以重试', await store.acknowledge(reminder), true)
+  eq('重试成功移除提醒', store.dueReminders.length, 0)
+}
+
 function page(items, total, page = 0, size = 100) {
   return Promise.resolve({ items, page, size, total })
 }

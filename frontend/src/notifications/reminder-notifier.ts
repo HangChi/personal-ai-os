@@ -23,6 +23,8 @@ export interface NoticePayload {
   title: string
   body: string
   tag: string
+  /** 精确记录本次通知包含的提醒，汇总确认不能影响后来新增的提醒。 */
+  reminderIds: string[]
 }
 
 export interface DispatchResult {
@@ -139,6 +141,7 @@ function singleNotice(reminder: Reminder): NoticePayload {
     body: `${formatTime(reminder.remindAt ?? reminder.occurrenceAt)} 到点`,
     // 用提醒 id 作 tag：浏览器会把同 tag 的通知合并，而不是堆成一列
     tag: reminder.id,
+    reminderIds: [reminder.id],
   }
 }
 
@@ -151,6 +154,7 @@ function summaryNotice(reminders: Reminder[]): NoticePayload {
     title: `有 ${reminders.length} 条提醒到点`,
     body: reminders.length > 3 ? `${titles} 等` : titles,
     tag: 'reminder-summary',
+    reminderIds: reminders.map((reminder) => reminder.id),
   }
 }
 

@@ -2,9 +2,7 @@
 /**
  * 到点提醒卡片（从 CalendarView 拆出，2026-10-26）。
  *
- * <p>批量确认（T030）的要点：逐条点「知道了」是重复劳动；这里一次确认全部，
- * 但**只报告成功数** —— acknowledge 内部先乐观移除再请求，
- * 失败的下一轮轮询会带回来，此时声称「失败 N 条」反而误导。
+ * 批量确认复用逐条确认接口；服务端确认成功后才移除，失败项保留供重试。
  */
 import { formatTime, sourceLabel } from '@/lib/calendar-format'
 import type { Reminder } from '@/types/api'

@@ -59,6 +59,7 @@ function recorder() {
   eq('标题含来源前缀', sent[0].title, '[任务] 交周报')
   eq('正文含到点时间', sent[0].body.includes('到点'), true)
   eq('tag 用提醒 id', sent[0].tag, 'r-1')
+  eq('单条通知保留可确认的提醒 id', sent[0].reminderIds.join(','), 'r-1')
   eq('系统通知已发，不再重复交给调用方', result.notices.length, 0)
 }
 
@@ -123,6 +124,7 @@ function recorder() {
 
   eq('4 条合并为 1 条', sent.length, 1)
   eq('标题含数量', sent[0].title, '有 4 条提醒到点')
+  eq('汇总保留本次全部 id', sent[0].reminderIds.join(','), 'r-1,r-2,r-3,r-4')
   eq('正文含前三条标题', sent[0].body.includes('交周报') && sent[0].body.includes('买菜'), true)
   eq('正文有「等」', sent[0].body.includes('等'), true)
 
