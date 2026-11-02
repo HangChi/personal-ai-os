@@ -1,0 +1,20 @@
+[
+  {"id":"backup-drill","query":"怎样确认备份真的能够恢复，而不仅是一个能解压的文件？","sources":["docs/operations.md"],"evidence":"目录验证不能替代恢复演练"},
+  {"id":"backup-consistency","query":"数据库和聊天附件跨资源备份时，怎样保证两者来自同一份应用状态？","sources":["docs/operations.md"],"evidence":"暂停应用写入"},
+  {"id":"host-monitoring","query":"后端直接跑在宿主机，容器中的 Prometheus 应该从哪里采集指标？","sources":["docs/operations.md"],"evidence":"host.docker.internal:9091"},
+  {"id":"knowledge-disagreement","query":"知识库两份资料对同一件事说法不同，是否会自动按上传时间决定谁正确？","sources":["specs/029-rag-infrastructure/spec.md","docs/operations.md"],"evidence":"不自动覆盖资料"},
+  {"id":"unknown-side-effect","query":"服务重启后，如果某个写工具是否已经生效还不能确定，系统会自动重试吗？","sources":["specs/026-durable-agent-execution/spec.md","docs/agent-reliability.md"],"evidence":"有未决工具副作用时阻止自动重试"},
+  {"id":"followup-wait","query":"助手正在等待我回答澄清问题或者人工确认时，还会消耗后面的消息队列吗？","sources":["specs/027-agent-user-interaction/spec.md"],"evidence":"提问和人工确认期间不消耗队列"},
+  {"id":"scanned-pdf","query":"没有文字层的扫描版 PDF 能当作正常文档直接存进知识库吗？","sources":["specs/010-rich-document-parsing/spec.md"],"evidence":"扫描版 PDF"},
+  {"id":"login-errors","query":"登录失败会区分用户名不存在和密码错误，分别告诉访客吗？","sources":["specs/015-single-user-auth/spec.md"],"evidence":"不透露是哪一个错"},
+  {"id":"repeat-calendar","query":"月历如何展示在同一个月重复发生四次的日程？","sources":["specs/013-calendar-month-view/spec.md"],"evidence":"4 个格子各出现一次"},
+  {"id":"pinned-memory","query":"有些重要偏好不能因为相似度低而漏掉，系统如何让这些记忆始终参与上下文？","sources":["specs/021-memory-layering/spec.md"],"evidence":"无条件注入并优先占预算"},
+  {"id":"mcp-directions","query":"作为客户端调用外部 MCP 和把自身暴露成 MCP Server，这两个方向是否必须一起启用？","sources":["docs/mcp.md"],"evidence":"两个方向互不依赖"},
+  {"id":"human-delete","query":"AI 能自行代替用户确认删除任务吗，还是必须由人在界面操作？","sources":["specs/003-task-agent/spec.md"],"evidence":"没有任何可用途径"},
+  {"id":"monolith","query":"为什么目前没有把这个个人助手拆成一批微服务？","sources":["docs/architecture.md"],"evidence":"服务发现"},
+  {"id":"queue-failure","query":"RabbitMQ 暂时不可用时，已经接受的文档索引任务会直接丢失吗？","sources":["docs/operations.md"],"evidence":"仍由数据库轮询恢复"},
+  {"id":"redis-failure","query":"共享嵌入缓存的 Redis 连接失败后，嵌入请求会怎样处理？","sources":["docs/operations.md"],"evidence":"Redis 故障在短超时后回到上游模型"},
+  {"id":"vector-dimension","query":"切换到向量维度不同的模型以后，OpenSearch 可以直接继续用原来的索引吗？","sources":["docs/operations.md"],"evidence":"换向量维度应使用新索引名"},
+  {"id":"production-csrf","query":"生产部署能关闭认证、CSRF 或 Secure Cookie 后仍正常启动吗？","sources":["specs/025-production-security/spec.md","docs/operations.md"],"evidence":"fail closed"},
+  {"id":"task-tags","query":"能不能只查看带有某个标签的任务，而不是每次浏览所有任务？","sources":["specs/014-task-tags/spec.md"],"evidence":"按标签筛选"}
+]

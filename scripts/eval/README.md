@@ -282,3 +282,22 @@ python3 scripts/eval/noise-floor.py
 
 **任何改动后重跑本目录的脚本对比**，否则分不清「真的变好」与「感觉变好」。
 比较时看**判平后指标**，并注意噪声底会随语料变化。
+
+## 当前项目文档的真实模型隔离评测
+
+旧 129 题依赖当时抓取的文章正文，正文缺失时不可沿用旧指标。
+`rag-live-cases.json` 提供 18 个带原文证据校验的问题；`rag-live-eval.py` 在随机隔离数据库中
+同时启动原检索（18081）与新管线（18082），使用相同文档、嵌入模型和真实模型配置。
+它不清空或导入正式知识库，登录凭据只在内存中使用；Token、耗时、降级、原始结果与语料哈希写入 `.cache/rag-live-eval/`。
+这些是项目文档评测，不等于不存在于正式库中的个人资料质量验收。
+
+```bash
+python3 scripts/eval/rag-live-eval.py start --jar /绝对路径/评测发布包.jar
+python3 scripts/eval/rag-live-eval.py evaluate --limit 6  # 先检查真实服务与预算
+python3 scripts/eval/rag-live-eval.py evaluate
+python3 scripts/eval/rag-live-eval.py cleanup
+```
+
+工具需 Docker Desktop、已运行的本地数据库和搜索服务、`.env` 登录配置及 `.env.integrations.local` 的重排配置。
+只清理它创建的 `paios_rag_eval_*` 数据库和 `personalos-eval-*` 索引；报告保留。
+辅助模型和重排 Token 使用服务返回的真实 usage，费用按该账号账单口径计算，不将字符估计冒充实际用量。

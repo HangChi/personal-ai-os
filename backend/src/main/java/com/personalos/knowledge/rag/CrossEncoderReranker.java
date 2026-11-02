@@ -26,6 +26,9 @@ public class CrossEncoderReranker {
         if(!Set.of("cohere","dashscope").contains(this.protocol))throw new IllegalArgumentException("Unsupported rerank protocol");
         if(!Set.of("http","https").contains(this.endpoint.getScheme())||this.endpoint.getUserInfo()!=null||model.isBlank())throw new IllegalArgumentException("Reranker endpoint/model required");
     }
+    private io.micrometer.core.instrument.MeterRegistry meters;
+    @org.springframework.beans.factory.annotation.Autowired
+    void metrics(io.micrometer.core.instrument.MeterRegistry meters){this.meters=meters;}
     public record Ranking(List<KnowledgeHitDto> hits,Map<String,Double> scores) { }
     public Ranking rank(String query,List<KnowledgeHitDto> candidates,long timeoutMs) {
         if(timeoutMs<100)throw new IllegalStateException("Rerank budget exhausted");
@@ -41,6 +44,8 @@ public class CrossEncoderReranker {
             byte[] bytes;try(var body=response.body()){bytes=body.readNBytes(1_000_001);}
             if(response.statusCode()!=200||bytes.length>1_000_000)throw new IllegalStateException("Reranker unavailable");
             var root=json.readTree(bytes);
+            if(meters!=null && root.path("usage").path("total_tokens").isNumber())
+                meters.counter("personalos.knowledge.rag.rerank.tokens").increment(Math.max(0,root.path("usage").path("total_tokens").asLong()));
             var result=(protocol.equals("dashscope")?root.path("output"):root).path("results");var seen=new HashSet<Integer>();var ordered=new ArrayList<KnowledgeHitDto>();var scores=new LinkedHashMap<String,Double>();
             if(!result.isArray())throw new IllegalArgumentException("Missing rerank results");
             for(var row:result){int index=row.path("index").asInt(-1);double score=row.path("relevance_score").asDouble(Double.NaN);
