@@ -39,6 +39,9 @@ public class KnowledgeIndexJobs {
     private final TransactionTemplate transaction;
     private final MeterRegistry metrics;
     private final boolean enabled;
+    private com.personalos.common.config.RuntimeRole role = new com.personalos.common.config.RuntimeRole("combined");
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureRole(com.personalos.common.config.RuntimeRole role) { this.role=role; }
     private final AtomicInteger active = new AtomicInteger();
     private final ExecutorService workers = Executors.newVirtualThreadPerTaskExecutor();
     private final ScheduledExecutorService heartbeat = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -79,10 +82,11 @@ public class KnowledgeIndexJobs {
     public List<KnowledgeJobRepository.Job> recent() { return jobs.recent(); }
 
     @Scheduled(fixedDelayString="${app.knowledge.jobs.poll-ms:1000}",initialDelay=1000)
-    public void dispatch() {
-        if (!enabled || active.get()>=2) return;
+    public synchronized void dispatch() {
+        if (!enabled || !role.allows("index") || active.get()>=1) return;
         active.incrementAndGet();
-        workers.submit(() -> { try { runNext(); } finally { active.decrementAndGet(); } });
+        try { workers.submit(() -> { try { runNext(); } finally { active.decrementAndGet(); } }); }
+        catch (RejectedExecutionException ex) { active.decrementAndGet(); }
     }
     /** 独立于调度入口，便于在测试中同步驱动实际领取、崩溃恢复与提交。 */
     public boolean runNext() {
@@ -114,6 +118,7 @@ public class KnowledgeIndexJobs {
                 jobs.progress(claim,80,"保存索引");
                 boolean committed=Boolean.TRUE.equals(transaction.execute(status -> {
                     if (!jobs.owns(claim)) return false; // 已失去租约的旧 worker 不能写入任何数据。
+                    locks.fence(claim.job().documentId());
                     persist(claim,upload,prepared);
                     return true;
                 }));

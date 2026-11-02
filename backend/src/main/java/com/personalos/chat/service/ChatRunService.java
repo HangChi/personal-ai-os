@@ -30,6 +30,9 @@ public class ChatRunService {
     private final JsonCodec json;
     private final AgentInteractionService interactions;
     private volatile boolean queuedWork;
+    private boolean executionEnabled = true;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureRole(com.personalos.common.config.RuntimeRole role) { executionEnabled=role.allows("api"); }
     private final Map<String, String> deferredRecovery = new ConcurrentHashMap<>();
     private final Map<String, RunEmitter> workers = new ConcurrentHashMap<>();
 
@@ -124,6 +127,7 @@ public class ChatRunService {
     /** 重启后仅恢复结果确定的任务；外部副作用结果不明时保留人工核对入口。 */
     @EventListener(ApplicationReadyEvent.class)
     public void recover() {
+        if (!executionEnabled) return;
         for (var run : repository.recoveryCandidates()) {
             repository.transition(run.id(), run.status(), "INTERRUPTED");
             interactions.restore(run.id());
@@ -146,6 +150,7 @@ public class ChatRunService {
     /** 额度暂满时保持数据库队列，下一次调度继续；启动恢复也不能因额度不足使应用启动失败。 */
     @org.springframework.scheduling.annotation.Scheduled(fixedDelay=1000, initialDelay=1000)
     public synchronized void dispatchWaiting() {
+        if (!executionEnabled) return;
         if (!queuedWork && deferredRecovery.isEmpty()) return;
         for (var entry : deferredRecovery.entrySet()) {
             var run=repository.find(entry.getValue(),entry.getKey());

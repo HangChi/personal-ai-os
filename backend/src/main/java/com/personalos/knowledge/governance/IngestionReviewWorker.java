@@ -27,12 +27,15 @@ public class IngestionReviewWorker {
         reviewTimeout=Math.max(1000,Math.min(30000,timeout));
     }
     private final AtomicBoolean busy=new AtomicBoolean();
+    private boolean enabled=true;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureRole(com.personalos.common.config.RuntimeRole role) { enabled=role.allows("review"); }
     public IngestionReviewWorker(JdbcTemplate db,KnowledgeGovernance governance,EvidenceReview review,KnowledgeRetrievalService retrieval,
             VectorStoreInspector vectors,ModelConcurrencyGate gate,TokenBucketRateLimiter rate) {
         this.db=db;this.governance=governance;this.review=review;this.retrieval=retrieval;this.vectors=vectors;this.gate=gate;this.rate=rate;
     }
     @Scheduled(fixedDelayString="${app.knowledge.rag.review-poll-ms:5000}",initialDelay=10000)
-    public void dispatch(){if(busy.compareAndSet(false,true))executor.submit(()->{try{runNext();}finally{busy.set(false);}});}
+    public void dispatch(){if(enabled && busy.compareAndSet(false,true))executor.submit(()->{try{runNext();}finally{busy.set(false);}});}
     public boolean runNext() {
         if(!Boolean.TRUE.equals(db.queryForObject("SELECT EXISTS(SELECT 1 FROM knowledge_review_job WHERE next_attempt_at<=now())",Boolean.class)))return false;
         var permit=gate.tryAcquire();if(permit==null)return false;

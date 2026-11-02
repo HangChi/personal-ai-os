@@ -36,6 +36,10 @@ public class TokenBucketRateLimiter {
     private double tokens;
 
     private long lastRefillNanos;
+    private DatabaseCoordination coordination;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void coordinate(DatabaseCoordination coordination) { this.coordination = coordination; }
 
     public TokenBucketRateLimiter(RateLimitProperties properties) {
         this.properties = properties;
@@ -56,6 +60,7 @@ public class TokenBucketRateLimiter {
         if (!properties.enabled()) {
             return true;
         }
+        if (coordination != null) return coordination.consume("model-rate", properties.capacity(), properties.period());
         refill();
         if (tokens < 1.0d) {
             return false;

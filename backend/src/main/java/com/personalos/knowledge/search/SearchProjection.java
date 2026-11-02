@@ -12,6 +12,9 @@ public final class SearchProjection {
     private final VectorStoreInspector inspector;
     private final OpenSearchGateway gateway;
     private final MeterRegistry meters;
+    private boolean enabled=true;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureRole(com.personalos.common.config.RuntimeRole role) { enabled=role.allows("delivery"); }
     public SearchProjection(JdbcTemplate db,VectorStoreInspector inspector,OpenSearchGateway gateway,MeterRegistry meters) {
         this.db=db; this.inspector=inspector; this.gateway=gateway; this.meters=meters;
         meters.gauge("personalos.knowledge.search.pending",this,s->s.pending());
@@ -21,6 +24,7 @@ public final class SearchProjection {
     public long pending(){return db.queryForObject("SELECT count(*) FROM knowledge_search_outbox",Long.class);}
     @Scheduled(fixedDelayString="${app.knowledge.search.poll-ms:2000}")
     public void sync() {
+        if (!enabled) return;
         var rows=db.query("SELECT chunk_id,revision FROM knowledge_search_outbox ORDER BY revision LIMIT 50",
                 (rs,n)->Map.entry(rs.getObject(1,UUID.class),rs.getLong(2)));
         for(var row:rows) {

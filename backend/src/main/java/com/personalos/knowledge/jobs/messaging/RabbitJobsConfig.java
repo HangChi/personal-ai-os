@@ -32,9 +32,10 @@ public class RabbitJobsConfig {
         return new RabbitJobNotifier(template,queue.getName(),metrics);
     }
     @Bean SimpleMessageListenerContainer knowledgeJobListener(CachingConnectionFactory factory,Queue queue,
-            KnowledgeIndexJobs jobs,MeterRegistry metrics) {
+            KnowledgeIndexJobs jobs,MeterRegistry metrics,com.personalos.common.config.RuntimeRole role) {
         var listener=new SimpleMessageListenerContainer(factory);
         listener.setQueueNames(queue.getName()); listener.setPrefetchCount(1);
+        listener.setAutoStartup(role.allows("index"));
         listener.setMissingQueuesFatal(false); listener.setRecoveryInterval(5000);
         listener.setDefaultRequeueRejected(false);
         listener.setMessageListener((org.springframework.amqp.core.MessageListener) message -> {

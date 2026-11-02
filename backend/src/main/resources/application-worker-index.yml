@@ -1,0 +1,11 @@
+app:
+  runtime:
+    role: index
+  calendar:
+    scan-enabled: false
+  chat:
+    attachment-janitor-enabled: false
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 4

@@ -80,6 +80,15 @@ public class KnowledgeDocumentService {
      * 替换 / 删除的进程内互斥（为什么不用数据库行锁，见 {@link DocumentWriteLock} 的类注释）。
      */
     private final DocumentWriteLock writeLock;
+    private org.springframework.ai.embedding.EmbeddingModel embeddings;
+    private com.personalos.common.json.JsonCodec json;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureEmbedding(org.springframework.ai.embedding.EmbeddingModel embeddings,
+                            com.personalos.common.json.JsonCodec json) {
+        this.embeddings = embeddings;
+        this.json = json;
+    }
 
     public KnowledgeDocumentService(KnowledgeDocumentRepository repository,
                                     VectorStore vectorStore,
@@ -307,6 +316,7 @@ public class KnowledgeDocumentService {
         // 代价与收益不成比例 —— 单用户场景下第二次操作只会得到 404。
         writeLock.acquire(documentId);
         try {
+            writeLock.fence(documentId);
             KnowledgeDocumentEntity document = repository.findById(documentId)
                     .orElseThrow(() -> new ResourceNotFoundException("知识文档不存在：" + documentId));
 
@@ -408,33 +418,26 @@ public class KnowledgeDocumentService {
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT, "解析后没有可索引的内容");
         }
 
-        // 短事务 1：删旧向量 + 自检。**必须先删再写**：新旧分块边界完全不同，
-        // 两批混在一个 document_id 下会让检索返回「文档里已经不存在的段落」。
-        requireTx().executeWithoutResult(status -> {
-            vectorStore.delete(new FilterExpressionBuilder()
-                    .eq(KnowledgeMetadata.DOCUMENT_ID, documentId.toString())
-                    .build());
-            int leftover = inspector.countByDocumentId(documentId);
-            if (leftover != 0) {
-                throw new IllegalStateException(String.format(
-                        "旧向量清理未完全生效：document_id=%s 仍残留 %d 条。已回滚本次更新。",
-                        documentId, leftover));
-            }
-        });
-
-        // 事务外：向量化。失败时最坏情况是「文档记录还是旧内容、向量为空」——
-        // 用户可以再更新一次，属可恢复失败（见 data-model.md）。
+        // 模型调用在事务外完成；失败不破坏现有索引。
+        List<float[]> output;
         try {
-            vectorStore.add(chunks);
-        } catch (RuntimeException ex) {
-            throw translateVectorFailure(ex);
+            output = embeddings.embed(chunks, org.springframework.ai.embedding.EmbeddingOptions.builder().build(),
+                    new org.springframework.ai.embedding.TokenCountBatchingStrategy());
+        } catch (RuntimeException ex) { throw translateVectorFailure(ex); }
+        if (output.size() != chunks.size()) throw new IllegalStateException("向量数量不匹配");
+        List<VectorStoreInspector.IndexedChunk> prepared = new ArrayList<>();
+        for (int i=0; i<chunks.size(); i++) {
+            var chunk=chunks.get(i);
+            prepared.add(new VectorStoreInspector.IndexedChunk(UUID.fromString(chunk.getId()), chunk.getText(),
+                    json.toJson(chunk.getMetadata()), output.get(i)));
         }
-
-        // 短事务 2：用同一个 newTitle 落库。向量元数据与实体标题必须是同一个值，
-        // 否则「引用显示的名字」与「文档列表里的名字」会对不上
+        // 版本替换与租约校验位于同一短事务，失去所有权的旧进程不能覆盖新内容。
         KnowledgeDocumentEntity saved = requireTx().execute(status -> {
+            writeLock.fence(documentId);
             KnowledgeDocumentEntity current = repository.findById(documentId)
                     .orElseThrow(() -> new ResourceNotFoundException("知识文档不存在：" + documentId));
+            inspector.deleteChunks(documentId);
+            inspector.insertChunks(prepared);
             current.replaceContent(newTitle, filename, contentType, bytes.length,
                     parsedChars, chunks.size(), Instant.now());
             return repository.save(current);
