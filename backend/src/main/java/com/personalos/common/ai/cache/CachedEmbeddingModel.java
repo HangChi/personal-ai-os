@@ -12,6 +12,9 @@ import org.springframework.ai.embedding.*;
 /** 按模型实例和完整选项隔离；默认仅观测重复率，不缓存向量、不改变模型调用。 */
 public final class CachedEmbeddingModel implements EmbeddingModel {
     private final EmbeddingModel delegate;
+    private final Supplier<SharedEmbeddingCache> shared;
+    private final String identity;
+    private final Duration ttl;
     private final boolean enabled;
     private final String model;
     private final Supplier<JsonCodec> json;
@@ -20,6 +23,12 @@ public final class CachedEmbeddingModel implements EmbeddingModel {
     private final Cache<String, Boolean> seen;
     public CachedEmbeddingModel(EmbeddingModel delegate, String model, boolean enabled, int capacity,
                                 Duration ttl, Supplier<JsonCodec> json, Supplier<MeterRegistry> metrics) {
+        this(delegate, model, enabled, capacity, ttl, json, metrics, model, () -> null);
+    }
+    public CachedEmbeddingModel(EmbeddingModel delegate, String model, boolean enabled, int capacity,
+                                Duration ttl, Supplier<JsonCodec> json, Supplier<MeterRegistry> metrics,
+                                String identity, Supplier<SharedEmbeddingCache> shared) {
+        this.shared=shared; this.identity=identity; this.ttl=ttl;
         if (capacity < 1 || ttl.isNegative() || ttl.isZero()) throw new IllegalArgumentException("嵌入缓存容量和 TTL 必须为正数");
         this.delegate = delegate;
         this.enabled = enabled;
@@ -49,7 +58,12 @@ public final class CachedEmbeddingModel implements EmbeddingModel {
         Map<String, Integer> missingKeys = new LinkedHashMap<>();
         for (int i = 0; i < keys.size(); i++) {
             outputs[i] = vectors.getIfPresent(keys.get(i));
-            count(outputs[i] == null ? "miss" : "hit");
+            String outcome="hit";
+            if (outputs[i]==null && shared.get()!=null) {
+                outputs[i]=shared.get().get(identity,keys.get(i));
+                if (outputs[i]!=null) { vectors.put(keys.get(i),outputs[i].clone()); outcome="shared_hit"; }
+            }
+            count(outputs[i] == null ? "miss" : outcome);
             if (outputs[i] == null && !missingKeys.containsKey(keys.get(i))) {
                 missingKeys.put(keys.get(i), missing.size());
                 missing.add(request.getInstructions().get(i));
@@ -64,7 +78,11 @@ public final class CachedEmbeddingModel implements EmbeddingModel {
             for (var entry : missingKeys.entrySet()) {
                 float[] vector = computed.get(entry.getValue());
                 if (vector == null || vector.length == 0) throw new IllegalStateException("嵌入结果为空");
+            }
+            for (var entry : missingKeys.entrySet()) {
+                float[] vector=computed.get(entry.getValue());
                 vectors.put(entry.getKey(), vector.clone());
+                if (shared.get()!=null) shared.get().put(identity,entry.getKey(),vector,ttl);
             }
         }
         List<Embedding> results = new ArrayList<>();

@@ -315,3 +315,12 @@ docker compose --env-file .env.monitoring.local -f compose.monitoring.local.yml 
 Grafana：`http://127.0.0.1:3000/d/personalos-runtime`，用户 admin，密码在本地环境文件中。
 Prometheus：`http://127.0.0.1:9090`，Targets 中 personal-ai-os 应显示 UP。
 停止监控可将上述 `up -d` 改为 `down`；不加 `-v` 时保留历史指标与看板数据。
+
+## 可选 Redis 共享嵌入缓存
+
+`compose.integrations.yml --profile cache` 提供仅回环暴露、有密码与 128MB 上限的 Redis。
+默认不开启。设置 `REDIS_ENABLED=true`、`REDIS_URI`（可用 rediss TLS）、唯一的 `REDIS_NAMESPACE`，
+并明确启用 `EMBEDDING_CACHE_ENABLED=true` 后，查找顺序为 Caffeine → Redis → 模型。
+Redis 只保存文本/选项的摘要与向量，命名空间按用户和部署隔离；模型端点、名称和请求选项参与隔离。
+模型服务在同名模型下更新时应修改 `app.embedding-cache.revision`，防止复用旧空间向量。
+Redis 故障在短超时后回到上游模型，错误记录在 `personalos.embedding.redis.errors`；共享命中标记为 shared_hit。

@@ -13,7 +13,7 @@ import org.springframework.core.env.Environment;
 public class EmbeddingCacheConfig {
     @Bean
     static BeanPostProcessor embeddingCacheDecorator(Environment env, ObjectProvider<JsonCodec> json,
-                                                     ObjectProvider<MeterRegistry> metrics) {
+                                                     ObjectProvider<MeterRegistry> metrics, ObjectProvider<SharedEmbeddingCache> shared) {
         return new BeanPostProcessor() {
             @Override public Object postProcessAfterInitialization(Object bean, String name) {
                 if (!(bean instanceof EmbeddingModel model) || bean instanceof CachedEmbeddingModel) return bean;
@@ -21,7 +21,12 @@ public class EmbeddingCacheConfig {
                         env.getProperty("app.embedding-cache.enabled", Boolean.class, false),
                         env.getProperty("app.embedding-cache.capacity", Integer.class, 1000),
                         env.getProperty("app.embedding-cache.ttl", Duration.class, Duration.ofMinutes(10)),
-                        json::getObject, metrics::getIfAvailable);
+                        json::getObject, metrics::getIfAvailable,
+                        JsonCodec.sha256Hex(name+"|"+java.util.stream.Stream.of(
+                                "spring.ai.model.embedding", "spring.ai.openai.base-url", "spring.ai.openai.embedding.model",
+                                "spring.ai.ollama.base-url", "spring.ai.ollama.embedding.model", "app.embedding-cache.revision")
+                                .map(key -> env.getProperty(key, "")).collect(java.util.stream.Collectors.joining("|"))),
+                        shared::getIfAvailable);
             }
         };
     }

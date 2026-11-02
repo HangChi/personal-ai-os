@@ -387,3 +387,11 @@ app:
     enabled: ${EMBEDDING_CACHE_ENABLED:false}
     capacity: ${EMBEDDING_CACHE_CAPACITY:1000}
     ttl: ${EMBEDDING_CACHE_TTL:10m}
+
+---
+app:
+  redis:
+    enabled: ${REDIS_ENABLED:false}
+    uri: ${REDIS_URI:redis://localhost:6379}
+    namespace: ${REDIS_NAMESPACE:}
+    timeout-ms: ${REDIS_TIMEOUT_MS:150}

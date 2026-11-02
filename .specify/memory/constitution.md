@@ -1,4 +1,6 @@
 <!--
+Sync Impact 1.0.1 → 1.1.0（2026-11-02）：用户明确要求新增 Redis、消息队列、独立检索及 S3；开放后续阶段的可选基础设施，保持模块化单体和禁止分布式事务。关联规格 specs/029-rag-infrastructure。
+
 Sync Impact Report
 - Version change: 0.0.0 (template scaffold) → 1.0.0
 - Modified principles: 全量重写（模板占位符 → 项目专属原则）
@@ -27,7 +29,7 @@ Personal AI OS 是一个开源、自托管、可扩展的个人智能操作系�
 
 ### I. 简单优先，拒绝过度设计（NON-NEGOTIABLE）
 
-- 采用 Monorepo + 模块化单体。MUST NOT 在第一版引入微服务、消息队列、分布式事务或复杂 DDD 聚合。
+- 采用 Monorepo + 模块化单体。MUST NOT 引入业务微服务、分布式事务或复杂 DDD 聚合。首版不引入消息队列；后续按用户明确要求可增加可选基础设施，但 MUST 保留数据库幂等和恢复协议，不以消息投递替代事实来源。
 - 任何新增抽象层 MUST 能回答「不这样做的具体代价是什么」。
 - 新增运行时依赖 MUST 在 `plan` 阶段的 `research.md` 中记录 Decision 与 Alternatives considered。
 
@@ -85,4 +87,4 @@ Personal AI OS 是一个开源、自托管、可扩展的个人智能操作系�
 - 修订 MUST 记录 Sync Impact Report 并递增版本号（语义化版本）。
 - 所有评审 MUST 逐条核对本宪法；违例 MUST 在 `plan.md` 的 Complexity Tracking 中论证，否则不得合并。
 
-**Version**: 1.0.1 | **Ratified**: 2026-10-14 | **Last Amended**: 2026-10-14
+**Version**: 1.1.0 | **Ratified**: 2026-10-14 | **Last Amended**: 2026-11-02
