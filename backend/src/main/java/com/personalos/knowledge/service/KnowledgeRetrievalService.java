@@ -77,6 +77,7 @@ public class KnowledgeRetrievalService implements KnowledgeSearchPort {
             org.springframework.ai.embedding.EmbeddingModel embeddings) {
         this.external=external.getIfAvailable(); this.projection=projection.getIfAvailable(); this.embeddings=embeddings;
     }
+    public boolean hasContent(){return inspector.countAll()>0;}
     /** Chunk-level candidate pool, before final diversity selection. */
     public List<KnowledgeHitDto> candidates(String query,int requested) {
         if(query==null || query.isBlank()) throw new BusinessException(ErrorCode.VALIDATION_FAILED,"Empty query");
@@ -95,6 +96,18 @@ public class KnowledgeRetrievalService implements KnowledgeSearchPort {
         }
         var vectors=vectorSearch(query,limit);
         var keywords=keywordSearch(query,limit);
+        if(properties.hybridSearchEnabled() && KeywordExtractor.extract(query).isEmpty()) {
+            var tokens=new LinkedHashSet<String>();
+            var matcher=java.util.regex.Pattern.compile("[\\p{IsHan}]{2,}").matcher(query);
+            while(matcher.find() && tokens.size()<6) {
+                String text=matcher.group();
+                for(int i=0;i<text.length()-1 && tokens.size()<6;i+=2)tokens.add(text.substring(i,i+2));
+            }
+            var grouped=new LinkedHashMap<String,List<VectorStoreInspector.KeywordMatch>>();
+            for(var match:inspector.searchByKeywords(new ArrayList<>(tokens),limit))grouped.computeIfAbsent(match.token(),k->new ArrayList<>()).add(match);
+            keywords=new ArrayList<>();
+            for(var group:grouped.entrySet()){var first=group.getValue().getFirst();keywords.add(new KeywordChannel(group.getKey(),idf(first.totalChunks(),first.matchedCount()),group.getValue().stream().map(VectorStoreInspector.KeywordMatch::chunk).toList()));}
+        }
         if(keywords.isEmpty()) return vectors.stream().map(this::toHit).toList();
         return fuse(vectors,keywords);
     }

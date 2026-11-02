@@ -23,7 +23,13 @@ public record KnowledgeHitDto(UUID documentId,
                               int chunkIndex,
                               String content,
                               Double score,
-                              MatchedBy matchedBy) {
+                              MatchedBy matchedBy,com.personalos.knowledge.governance.SourceInfo source) {
+    public KnowledgeHitDto(UUID documentId,String documentTitle,String filename,int chunkIndex,String content,Double score,MatchedBy matchedBy) {
+        this(documentId,documentTitle,filename,chunkIndex,content,score,matchedBy,null);
+    }
+    public KnowledgeHitDto withSource(com.personalos.knowledge.governance.SourceInfo info) {
+        return new KnowledgeHitDto(documentId,documentTitle,filename,chunkIndex,content,score,matchedBy,info);
+    }
 
     /** 命中来源（2026-10-26 混合检索引入） */
     public enum MatchedBy {
@@ -31,7 +37,7 @@ public record KnowledgeHitDto(UUID documentId,
         VECTOR,
         /** 仅关键词通道命中（此时 score 为 null） */
         KEYWORD,
-        /** 两个通道都命中，可信度最高 */
+        /** 两个通道都命中；仅代表检索相关性，不代表事实真实性 */
         BOTH
     }
 

@@ -3,7 +3,7 @@ package com.personalos.knowledge.tool;
 import com.personalos.common.ai.tool.ToolExecutionResult;
 import com.personalos.common.ai.tool.ToolExecutor;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
-import com.personalos.knowledge.service.KnowledgeRetrievalService;
+import com.personalos.knowledge.spi.KnowledgeSearchPort;
 import java.util.List;
 import java.util.Map;
 import org.springframework.ai.chat.model.ToolContext;
@@ -20,10 +20,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class KnowledgeTools {
 
-    private final KnowledgeRetrievalService retrievalService;
+    private final KnowledgeSearchPort retrievalService;
     private final ToolExecutor toolExecutor;
 
-    public KnowledgeTools(KnowledgeRetrievalService retrievalService, ToolExecutor toolExecutor) {
+    public KnowledgeTools(KnowledgeSearchPort retrievalService, ToolExecutor toolExecutor) {
         this.retrievalService = retrievalService;
         this.toolExecutor = toolExecutor;
     }
@@ -47,7 +47,9 @@ public class KnowledgeTools {
             if (query == null || query.isBlank()) {
                 return ToolExecutionResult.rejected("检索词不能为空");
             }
-            List<KnowledgeHitDto> hits = retrievalService.search(query, topK);
+            var result = retrievalService.retrieve(query, topK);
+            List<KnowledgeHitDto> hits = result.hits();
+            if(result.guarded()) return ToolExecutionResult.ok(result.guardedAnswer(),result);
             if (hits.isEmpty()) {
                 // 空结果**不是错误**：模型应据此如实回答「资料里没有」。
                 // 若返回 REJECTED，模型会倾向于重试或换个说法再试，反而更糟。

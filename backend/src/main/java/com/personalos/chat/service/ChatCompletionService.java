@@ -237,6 +237,7 @@ public class ChatCompletionService {
         AtomicBoolean terminated = new AtomicBoolean(false);
         // 命中快照：检索在 defer 里才发生，终帧回调需要读它，故用原子引用跨阶段传递
         AtomicReference<List<KnowledgeHitDto>> hitsRef = new AtomicReference<>(List.of());
+        AtomicReference<com.personalos.knowledge.rag.RagResult> ragRef = new AtomicReference<>();
         // 本轮上下文字符数（仪表盘用）：在 defer 里算，终帧回调里读
         AtomicInteger promptCharsRef = new AtomicInteger(0);
         // 系统提示单独留一份：估算用量时「提示」与「补全」要分开算 ——
@@ -280,8 +281,18 @@ public class ChatCompletionService {
         ScheduledFuture<?> heartbeat = heartbeatScheduler.start(emitter);
 
         Flux<ChatResponse> contentFlux = Flux.defer(() -> {
-            List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter);
+            List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter, ragRef);
             hitsRef.set(hits);
+            var rag = ragRef.get();
+            if(rag != null) {
+                if(!rag.stages().isEmpty() || rag.guarded()) send(emitter,"rag",rag);
+                if(rag.guarded()) {
+                    String answer=rag.guardedAnswer();
+                    finisher.recordGuardedReply(conversationId,userContent,answer);
+                    return Flux.just(new ChatResponse(List.of(new org.springframework.ai.chat.model.Generation(
+                        new org.springframework.ai.chat.messages.AssistantMessage(answer)))));
+                }
+            }
             // 附件：图片随 user message 走（多模态协议要求），文本进系统提示（避免存进历史）。
             // 只影响本轮 —— 见 ChatAttachmentContextBuilder 的类注释。
             ChatAttachmentContext attachmentContext = attachmentContextBuilder.build(requestAttachments);
@@ -504,7 +515,7 @@ public class ChatCompletionService {
                     metrics.usage(usage);
 
                     // done 之后：摘要刷新、轮末钩子（都只影响下一轮或仅用于展示）
-                    finisher.afterDone(conversationId, userContent, reply);
+                    if(ragRef.get()==null || !ragRef.get().guarded()) finisher.afterDone(conversationId, userContent, reply);
                 }));
         subscriptionRef.set(subscription);
         // 订阅返回前就已被终止（上面任一路径抢先）：这里补一次 dispose，
@@ -607,7 +618,8 @@ public class ChatCompletionService {
      * @return 命中片段；未开启增强、端口缺失或检索失败时为空列表
      */
     private List<KnowledgeHitDto> retrieveForPrompt(String conversationId, String userContent,
-                                                    int topK, boolean useKnowledge, SseEmitter emitter) {
+                                                    int topK, boolean useKnowledge, SseEmitter emitter,
+                                                    AtomicReference<com.personalos.knowledge.rag.RagResult> ragRef) {
         if (!useKnowledge) {
             return List.of();
         }
@@ -617,7 +629,9 @@ public class ChatCompletionService {
             log.warn("知识库增强开启但检索端口不可用，本轮降级为普通对话 conversationId={}", conversationId);
         } else {
             try {
-                hits = port.search(userContent, topK);
+                var result = port.retrieve(userContent, topK);
+                ragRef.set(result);
+                hits = result.hits();
             } catch (RuntimeException ex) {
                 log.warn("知识库检索失败，本轮降级 conversationId={}", conversationId, ex);
                 send(emitter, EVENT_ERROR,

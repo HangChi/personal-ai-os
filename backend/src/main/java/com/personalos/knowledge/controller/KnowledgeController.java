@@ -13,7 +13,7 @@ import com.personalos.knowledge.dto.KnowledgeSearchRequest;
 import com.personalos.knowledge.dto.KnowledgeSearchResponse;
 import com.personalos.knowledge.service.KnowledgeDocumentService;
 import com.personalos.knowledge.service.KnowledgeQaService;
-import com.personalos.knowledge.service.KnowledgeRetrievalService;
+import com.personalos.knowledge.spi.KnowledgeSearchPort;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -43,11 +43,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class KnowledgeController {
 
     private final KnowledgeDocumentService documentService;
-    private final KnowledgeRetrievalService retrievalService;
+    private final KnowledgeSearchPort retrievalService;
     private final KnowledgeQaService qaService;
 
     public KnowledgeController(KnowledgeDocumentService documentService,
-                               KnowledgeRetrievalService retrievalService,
+                               KnowledgeSearchPort retrievalService,
                                KnowledgeQaService qaService) {
         this.documentService = documentService;
         this.retrievalService = retrievalService;
@@ -131,8 +131,8 @@ public class KnowledgeController {
      */
     @PostMapping("/search")
     public ApiResponse<KnowledgeSearchResponse> search(@Valid @RequestBody KnowledgeSearchRequest request) {
-        return ApiResponse.ok(new KnowledgeSearchResponse(request.query(),
-                retrievalService.search(request.query(), request.topK())));
+        var result = retrievalService.retrieve(request.query(),request.topK());
+        return ApiResponse.ok(new KnowledgeSearchResponse(request.query(),result.hits(),result));
     }
 
     /**

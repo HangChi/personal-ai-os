@@ -239,6 +239,11 @@ public class VectorStoreInspector {
         return count == null ? 0 : count;
     }
 
+    public List<IndexedChunk> documentChunk(UUID documentId,int chunkIndex) {
+        var ids=jdbcTemplate.queryForList("SELECT id FROM "+qualifiedTable()+" WHERE metadata->>'document_id'=? AND metadata->>'chunk_index'=? LIMIT 1",UUID.class,documentId.toString(),String.valueOf(chunkIndex));
+        return projectionChunks(ids);
+    }
+
     /** External index IDs are resolved against current authoritative rows, never external text. */
     public List<IndexedChunk> projectionChunks(List<UUID> ids) {
         if(ids.isEmpty()) return List.of();

@@ -24,4 +24,7 @@ public interface KnowledgeSearchPort {
      * @return 命中片段，按相关度排序；无命中时为空列表
      */
     List<KnowledgeHitDto> search(String query, Integer topK);
+    default com.personalos.knowledge.rag.RagResult retrieve(String query,Integer topK) {
+        return com.personalos.knowledge.rag.RagResult.legacy(search(query,topK),query);
+    }
 }

@@ -99,6 +99,11 @@ public class ChatTurnFinisher {
      * @param partialReply 已经推给客户端的增量；为空时写入纯标记文案，
      *                     否则悬空的提问仍在上下文里
      */
+    /** Deterministic evidence guard bypasses the model and its memory advisor. */
+    public void recordGuardedReply(String conversationId,String question,String answer) {
+        chatMemory.add(conversationId,List.of(new org.springframework.ai.chat.messages.UserMessage(question),new AssistantMessage(answer)));
+    }
+
     public void recordYieldedReply(String conversationId, String partialReply) {
         String body = partialReply == null || partialReply.isBlank() ? "已保存进度，等待用户输入或应用补充要求。" : partialReply.strip();
         chatMemory.add(conversationId, List.of(new AssistantMessage(body)));

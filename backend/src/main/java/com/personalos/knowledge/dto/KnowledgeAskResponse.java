@@ -14,5 +14,9 @@ import java.util.List;
 public record KnowledgeAskResponse(String question,
                                    String answer,
                                    boolean answered,
-                                   List<CitationDto> citations) {
+                                   List<CitationDto> citations,
+                                   com.personalos.knowledge.rag.RagResult retrieval) {
+    public KnowledgeAskResponse(String question,String answer,boolean answered,List<CitationDto> citations) {
+        this(question,answer,answered,citations,null);
+    }
 }
