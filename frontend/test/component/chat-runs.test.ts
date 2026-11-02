@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { followRun, type ChatRun } from '@/api/chat-runs'
 import { requestData } from '@/api/http'
-vi.mock('@/api/http', () => ({ requestData: vi.fn() }))
+vi.mock('@/api/http', () => ({ requestData: vi.fn(), apiBaseUrl: '/api/v1', notifyUnauthorized: vi.fn() }))
 const event = (id: number, name: string, payload: object) => ({ id, name, payload: JSON.stringify(payload) })
 const callbacks = () => ({
   onRun: vi.fn(),
@@ -15,38 +15,43 @@ const callbacks = () => ({
 afterEach(() => {
   vi.useRealTimers()
   vi.resetAllMocks()
+  vi.unstubAllGlobals()
 })
 describe('执行记录追赶', () => {
   it('断线只重读游标后的记录，不重复 token 或提交消息', async () => {
-    vi.useFakeTimers()
     const initial: ChatRun = {
       id: 'r',
       conversationId: 's',
       status: 'RUNNING',
       events: [event(1, 'delta', { content: '前' })],
     }
-    vi.mocked(requestData)
+    const recovered = {
+      ...initial,
+      status: 'COMPLETED',
+      events: [
+        event(1, 'delta', { content: '前' }),
+        event(2, 'delta', { content: '后' }),
+        event(3, 'done', { content: '前后', promptTokens: 1 }),
+      ],
+    }
+    const fetcher = vi
+      .fn()
       .mockRejectedValueOnce(new Error('offline'))
-      .mockResolvedValueOnce({
-        ...initial,
-        status: 'COMPLETED',
-        events: [
-          event(1, 'delta', { content: '前' }),
-          event(2, 'delta', { content: '后' }),
-          event(3, 'done', { content: '前后', promptTokens: 1 }),
-        ],
-      })
+      .mockResolvedValueOnce(
+        new Response(`event:run\ndata:${JSON.stringify(recovered)}\n\n`, {
+          headers: { 'Content-Type': 'text/event-stream' },
+        }),
+      )
+    vi.stubGlobal('fetch', fetcher)
     const handlers = callbacks()
     const pending = followRun(initial, handlers, new AbortController().signal)
-    await vi.runAllTimersAsync()
     await pending
     expect(handlers.onDelta.mock.calls).toEqual([['前'], ['后']])
     expect(handlers.onDone).toHaveBeenCalledOnce()
     expect(handlers.onConnection).toHaveBeenCalledWith(true)
-    for (const [config] of vi.mocked(requestData).mock.calls) {
-      expect(config.method).toBe('get')
-      expect(config.params).toEqual({ after: 1 })
-    }
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    expect(fetcher.mock.calls.every(([url]) => url.endsWith('/events?after=1'))).toBe(true)
+    expect(requestData).not.toHaveBeenCalled()
   })
   it('恢复边界清空旧临时回答，随后接收新活动', async () => {
     const handlers = callbacks()
