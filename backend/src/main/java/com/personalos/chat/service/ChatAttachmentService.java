@@ -50,14 +50,25 @@ public class ChatAttachmentService {
     private final long maxAttachmentBytes;
 
     private final Path uploadDir;
+    private final com.personalos.chat.storage.AttachmentObjectStore remote;
     private final JsonCodec jsonCodec;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public ChatAttachmentService(JsonCodec jsonCodec,
                                  @Value("${app.chat.upload-dir:data/uploads}") String uploadDir,
-                                 @Value("${app.chat.max-attachment-bytes:6291456}") long maxAttachmentBytes) {
+                                 @Value("${app.chat.max-attachment-bytes:6291456}") long maxAttachmentBytes,
+                                 org.springframework.beans.factory.ObjectProvider<com.personalos.chat.storage.AttachmentObjectStore> remote) {
+        this.remote=remote==null?null:remote.getIfAvailable();
         this.jsonCodec = jsonCodec;
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
         this.maxAttachmentBytes = maxAttachmentBytes;
+    }
+
+    public ChatAttachmentService(JsonCodec jsonCodec,String uploadDir,long maxAttachmentBytes) {
+        this(jsonCodec,uploadDir,maxAttachmentBytes,null);
+    }
+    public void pruneRemote(java.util.Set<String> referenced,java.time.Instant before) {
+        if(remote!=null) remote.prune(referenced,before);
     }
 
     /**
@@ -76,18 +87,22 @@ public class ChatAttachmentService {
         }
         String id = UUID.randomUUID().toString();
         String filename = file.getOriginalFilename() == null ? id : file.getOriginalFilename();
+        String contentType = file.getContentType() == null
+                ? "application/octet-stream"
+                : file.getContentType();
         try {
+            if (remote!=null) {
+                remote.put(id,file.getBytes(),contentType);
+            } else {
             Files.createDirectories(uploadDir);
             Path target = uploadDir.resolve(id);
             try (InputStream in = file.getInputStream()) {
                 Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
             }
+            }
         } catch (IOException ex) {
             throw new UncheckedIOException("附件写入失败", ex);
         }
-        String contentType = file.getContentType() == null
-                ? "application/octet-stream"
-                : file.getContentType();
         // 文件名来自客户端，含 \r\n 时能在日志里伪造出整行（例如伪装成一条"登录成功"）。
         // 只做控制字符替换，不改写真实名字。
         log.info("附件已保存 id={} 文件名={} 大小={}", id, sanitizeForLog(filename), file.getSize());
@@ -106,6 +121,7 @@ public class ChatAttachmentService {
         }
         Path file = uploadDir.resolve(id).normalize();
         if (!file.startsWith(uploadDir) || !Files.isRegularFile(file)) {
+            if (remote!=null && remote.size(id)!=null) return remote.load(id);
             throw new BusinessException(com.personalos.common.api.ErrorCode.RESOURCE_NOT_FOUND, "附件不存在");
         }
         try {
@@ -136,6 +152,8 @@ public class ChatAttachmentService {
             }
             Path file = uploadDir.resolve(dto.id()).normalize();
             if (!file.startsWith(uploadDir) || !Files.isRegularFile(file)) {
+                Long length=remote==null?null:remote.size(dto.id());
+                if (length!=null) { verified.add(new ChatAttachmentDto(dto.id(),dto.filename(),dto.contentType(),length)); continue; }
                 log.warn("附件标识未对应到已上传文件，已忽略 id={}", dto.id());
                 continue;
             }
@@ -181,6 +199,9 @@ public class ChatAttachmentService {
     public void delete(String id) {
         if (id == null || !id.matches("[0-9a-fA-F-]{36}")) {
             return;
+        }
+        if (remote!=null) {
+            try { remote.delete(id); } catch(RuntimeException ex) { log.warn("对象删除失败，将留待巡检 id={}",id); }
         }
         Path file = uploadDir.resolve(id).normalize();
         if (!file.startsWith(uploadDir)) {

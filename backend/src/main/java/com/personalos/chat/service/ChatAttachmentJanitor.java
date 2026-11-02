@@ -71,12 +71,10 @@ public class ChatAttachmentJanitor {
             return;
         }
         Path dir = attachmentService.uploadDirectory();
-        if (!Files.isDirectory(dir)) {
-            return;
-        }
-
         Set<String> referenced = referencedIds();
         Instant threshold = Instant.now().minus(GRACE);
+        attachmentService.pruneRemote(referenced,Instant.now().minus(Duration.ofDays(1)));
+        if (!Files.isDirectory(dir)) return;
         int removed = 0;
 
         try (Stream<Path> files = Files.list(dir)) {

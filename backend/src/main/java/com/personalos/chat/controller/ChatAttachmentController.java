@@ -61,7 +61,7 @@ public class ChatAttachmentController {
                         "inline; filename*=UTF-8''" + encoded)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 // 附件内容不可变（标识即内容寻址），可以长缓存
-                .cacheControl(CacheControl.maxAge(java.time.Duration.ofDays(7)).cachePublic())
+                .cacheControl(CacheControl.maxAge(java.time.Duration.ofDays(7)).cachePrivate())
                 .body(resource);
     }
 }

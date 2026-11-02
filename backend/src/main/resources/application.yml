@@ -402,3 +402,16 @@ app:
     enabled: ${RABBITMQ_ENABLED:false}
     uri: ${RABBITMQ_URI:amqp://localhost:5672}
     queue: ${RABBITMQ_QUEUE:personalos.knowledge.ready}
+
+---
+app:
+  storage:
+    s3:
+      enabled: ${S3_ENABLED:false}
+      endpoint: ${S3_ENDPOINT:http://localhost:8333}
+      region: ${S3_REGION:us-east-1}
+      access-key: ${S3_ACCESS_KEY:}
+      secret-key: ${S3_SECRET_KEY:}
+      bucket: ${S3_BUCKET:personalos}
+      namespace: ${S3_NAMESPACE:}
+      cleanup: ${S3_ORPHAN_CLEANUP_ENABLED:false}
