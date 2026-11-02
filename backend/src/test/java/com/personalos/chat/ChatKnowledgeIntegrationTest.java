@@ -76,6 +76,7 @@ class ChatKnowledgeIntegrationTest {
                 new KnowledgeHitDto(DOC_A, "事务与隔离", "tx.md", 0, HIT_A_CONTENT, 0.91, MatchedBy.VECTOR),
                 new KnowledgeHitDto(DOC_B, "隔离级别", "iso.md", 2, HIT_B_CONTENT, 0.83, MatchedBy.KEYWORD));
 
+        private volatile boolean guarded;
         private volatile boolean failNext;
         private volatile boolean returnEmpty;
         private volatile int lastTopK = -1;
@@ -91,6 +92,12 @@ class ChatKnowledgeIntegrationTest {
             return returnEmpty ? List.of() : HITS;
         }
 
+        @Override
+        public com.personalos.knowledge.rag.RagResult retrieve(String query,Integer topK) {
+            var hits=search(query,topK);
+            if(!guarded)return com.personalos.knowledge.rag.RagResult.legacy(hits,query);
+            return new com.personalos.knowledge.rag.RagResult(hits,List.of(query),List.of(),List.of(),"CONFLICT",List.of(),"请说明适用日期");
+        }
         void failNextCall() {
             this.failNext = true;
         }
@@ -100,6 +107,7 @@ class ChatKnowledgeIntegrationTest {
         }
 
         void reset() {
+            this.guarded = false;
             this.failNext = false;
             this.returnEmpty = false;
             this.lastTopK = -1;
@@ -314,6 +322,17 @@ class ChatKnowledgeIntegrationTest {
     }
 
     private record SseEvent(String name, String data) {
+    }
+
+    @Test
+    void conflictingEvidenceBypassesAnswerModelAndPersistsBothSources() throws Exception {
+        String conversationId=createSession();searchStub.guarded=true;
+        var events=streamEvents(conversationId,"{\"content\":\"标准是多少\",\"useKnowledge\":true}");
+        assertThat(events).extracting(SseEvent::name).contains("rag","delta","done");
+        assertThat(events.stream().filter(e->e.name().equals("done")).findFirst().orElseThrow().data()).contains("不同说法","适用日期");
+        assertThat(stub.receivedInstructions).isEmpty();
+        assertThat(messageRepository.findByConversationIdOrderBySequenceNoAsc(conversationId)).hasSize(2);
+        assertThat(citationCountOf(conversationId)).isEqualTo(2);
     }
 
     private String createSession() throws Exception {

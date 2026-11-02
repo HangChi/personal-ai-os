@@ -15,6 +15,8 @@ public final class SearchProjection {
     public SearchProjection(JdbcTemplate db,VectorStoreInspector inspector,OpenSearchGateway gateway,MeterRegistry meters) {
         this.db=db; this.inspector=inspector; this.gateway=gateway; this.meters=meters;
         meters.gauge("personalos.knowledge.search.pending",this,s->s.pending());
+        // A fresh index name or restored database must never look successfully empty.
+        reindex();
     }
     public long pending(){return db.queryForObject("SELECT count(*) FROM knowledge_search_outbox",Long.class);}
     @Scheduled(fixedDelayString="${app.knowledge.search.poll-ms:2000}")

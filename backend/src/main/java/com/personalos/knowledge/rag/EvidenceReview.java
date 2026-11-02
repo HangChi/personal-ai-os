@@ -21,15 +21,17 @@ public class EvidenceReview {
             "clarification":"需要用户补充的适用条件，没有则为空"}。
             evidence 必须覆盖每条资料且编号不重复；quote 必须为对应原文的至少四字连续片段。
             """,payload(question,hits,json),timeout);
-        var relevant=new ArrayList<KnowledgeHitDto>(); var seen=new HashSet<Integer>();
+        var relevant=new ArrayList<KnowledgeHitDto>(); var seen=new HashSet<Integer>(); var grades=new HashMap<Integer,String>();
         if(!result.path("evidence").isArray()) throw new IllegalArgumentException("Missing evidence grades");
         for(var row:result.path("evidence")) {
             int i=row.path("index").asInt(0)-1; String grade=row.path("grade").asString("");
             if(i<0 || i>=hits.size() || !seen.add(i) || !Set.of("SUPPORTED","PARTIAL","IRRELEVANT").contains(grade))
                 throw new IllegalArgumentException("Invalid evidence grade");
-            if(!grade.equals("IRRELEVANT")) relevant.add(hits.get(i));
+            grades.put(i,grade);
         }
         if(seen.size()!=hits.size()) throw new IllegalArgumentException("Incomplete evidence review");
+        for(String grade:List.of("SUPPORTED","PARTIAL"))for(int i=0;i<hits.size();i++)
+            if(grade.equals(grades.get(i)))relevant.add(hits.get(i));
         var conflicts=new ArrayList<RagResult.Disagreement>();
         boolean differentPeriods=false;
         if(!result.path("conflicts").isArray()) throw new IllegalArgumentException("Missing conflict review");

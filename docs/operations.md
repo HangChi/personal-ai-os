@@ -373,3 +373,10 @@ CHECKED_CANDIDATES 只表示候选审查完成，不表示穷尽知识库或不�
 而是并列引用并请求补充对象、时间或版本；普通知识增强对话采用相同保护，并持久化提问、答复和引用。
 人工可保留双方、确认不是冲突，或填写理由后选定来源；决定仅作用于具体证据及当前版本，留存审计。
 修改资料后旧决定标为 STALE，重新复核；系统不按相似度或上传时间自动覆盖资料。
+
+可选真实 cross-encoder：设置 `RAG_RERANKER_ENABLED=true`、`RAG_RERANKER_ENDPOINT`（完整 rerank URL）、
+`RAG_RERANKER_MODEL` 与密钥，使用 Cohere 兼容的 query/documents/results 协议。
+只有显式启用才向该端点发送问题与候选原文；生产使用 HTTPS。超时或结果编号/分数非法时退回 RRF。
+`rankingScores` 分开返回 fusion 和 rerank，原 `hit.score` 保持向量余弦口径；这些分数不表示事实真实性。
+导出现在保留知识库名称与来源适用条件，恢复时重新排队审查；冲突处理审计需通过 PostgreSQL 备份保留。
+OpenSearch 每次启用启动会重新排队当前片段，避免新索引或恢复后的索引被误判为空且已同步。

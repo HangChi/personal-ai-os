@@ -278,6 +278,114 @@
         },
         "overrides": []
       }
+    },
+    {
+      "id": 11,
+      "title": "RAG 阶段平均耗时",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (stage, result) (rate(personalos_knowledge_rag_stage_seconds_sum[5m])) / sum by (stage, result) (rate(personalos_knowledge_rag_stage_seconds_count[5m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 12,
+      "title": "RAG 证据状态",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status) (rate(personalos_knowledge_rag_results_total[5m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 13,
+      "title": "外部搜索待同步片段",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "personalos_knowledge_search_pending"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 14,
+      "title": "外部搜索同步结果",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (result) (rate(personalos_knowledge_search_projections_total[5m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
     }
   ]
 }

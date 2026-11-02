@@ -50,6 +50,15 @@ class RagRetrievalPipelineTest {
         var result=pipeline.retrieve("问题",4);assertThat(result.status()).isEqualTo("UNVERIFIED");
         assertThat(result.disagreements()).isEmpty();assertThat(result.guarded()).isTrue();
     }
+    @Test void rewriteCanRecoverWhenOriginalQueryReturnsNothing() {
+        when(recall.hasContent()).thenReturn(true);
+        when(recall.candidates("原问题",40)).thenReturn(List.of());
+        responses("{\"queries\":[\"住宿限额\"]}","{\"order\":[1,2]}","""
+            {"evidence":[{"index":1,"grade":"SUPPORTED"},{"index":2,"grade":"PARTIAL"}],"conflicts":[],"clarification":""}
+            """);
+        var result=pipeline.retrieve("原问题",4);assertThat(result.hits()).contains(a,b);assertThat(result.status()).isEqualTo("READY");
+    }
+
     @Test void emptyLibraryDoesNotCallGeneration() {
         when(recall.candidates(anyString(),anyInt())).thenReturn(List.of());
         assertThat(pipeline.retrieve("问题",4).status()).isEqualTo("INSUFFICIENT");verifyNoInteractions(model);

@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import KnowledgeAskTab from '@/components/knowledge/KnowledgeAskTab.vue'
 import KnowledgeGovernanceTab from '@/components/knowledge/KnowledgeGovernanceTab.vue'
+import KnowledgeHitList from '@/components/knowledge/KnowledgeHitList.vue'
 import RagTrace from '@/components/knowledge/RagTrace.vue'
 import { useKnowledgeStore } from '@/stores/knowledge'
 import * as api from '@/api/knowledge-governance'
@@ -47,6 +48,12 @@ const retrieval: RagRetrieval = {
   clarification: '',
 }
 describe('RAG 证据与治理界面', () => {
+  it('外部向量召回没有余弦分时仍显示向量来源', () => {
+    const wrapper = mount(KnowledgeHitList, { props: { items: [{ ...hit, score: null, matchedBy: 'VECTOR' }] } })
+    expect(wrapper.text()).toContain('向量命中')
+    expect(wrapper.text()).not.toContain('关键词命中')
+    wrapper.unmount()
+  })
   it('核对未完成时展示降级和过程，不显示事实认证', () => {
     const wrapper = mount(RagTrace, { props: { retrieval } })
     expect(wrapper.text()).toContain('证据核对未完成')

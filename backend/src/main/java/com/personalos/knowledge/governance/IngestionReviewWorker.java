@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 /** Incremental candidate review; never labels the entire knowledge base conflict-free. */
 @Component
-@ConditionalOnProperty(name="app.knowledge.rag.enabled",havingValue="true",matchIfMissing=true)
+@ConditionalOnProperty(name={"app.knowledge.rag.enabled","app.knowledge.rag.ingestion-review-enabled"},havingValue="true",matchIfMissing=true)
 public class IngestionReviewWorker {
     private final JdbcTemplate db; private final KnowledgeGovernance governance; private final EvidenceReview review;
     private final KnowledgeRetrievalService retrieval; private final VectorStoreInspector vectors;
@@ -29,6 +29,7 @@ public class IngestionReviewWorker {
     @Scheduled(fixedDelayString="${app.knowledge.rag.review-poll-ms:5000}",initialDelay=10000)
     public void dispatch(){if(busy.compareAndSet(false,true))executor.submit(()->{try{runNext();}finally{busy.set(false);}});}
     public boolean runNext() {
+        if(!Boolean.TRUE.equals(db.queryForObject("SELECT EXISTS(SELECT 1 FROM knowledge_review_job WHERE next_attempt_at<=now())",Boolean.class)))return false;
         var permit=gate.tryAcquire();if(permit==null)return false;
         try(permit) {
             if(!rate.tryAcquire())return false;
@@ -41,7 +42,7 @@ public class IngestionReviewWorker {
                 var source=governance.sources(List.of(id)).get(id);
                 if(source==null || source.revision()!=revision)return true;
                 if(chunks.isEmpty()) {
-                    db.update("UPDATE knowledge_source SET review_state='CHECKED_CANDIDATES' WHERE document_id=? AND revision=?",id,revision);
+                    db.update("UPDATE knowledge_source SET review_state='CHECKED_CANDIDATES' WHERE document_id=? AND revision=? AND EXISTS(SELECT 1 FROM knowledge_review_job j WHERE j.document_id=knowledge_source.document_id AND j.lease_token=?)",id,revision,token);
                     db.update("DELETE FROM knowledge_review_job WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);return true;
                 }
                 var raw=retrieval.candidates(chunks.getFirst().substring(0,Math.min(1800,chunks.getFirst().length())),20);
@@ -50,10 +51,10 @@ public class IngestionReviewWorker {
                 candidates.add(new KnowledgeHitDto(id,title,"",cursor,chunks.getFirst(),null).withSource(source));
                 candidates.addAll(governance.enrich(raw).stream().filter(h->!h.documentId().equals(id)).limit(11).toList());
                 if(candidates.size()>1) governance.record(review.review("核查新增资料与已有资料对同一事实的不同说法；所有当前资料均为核查对象。",candidates,8000).conflicts());
-                db.update("UPDATE knowledge_source SET review_state='PARTIAL' WHERE document_id=? AND revision=?",id,revision);
+                db.update("UPDATE knowledge_source SET review_state='PARTIAL' WHERE document_id=? AND revision=? AND EXISTS(SELECT 1 FROM knowledge_review_job j WHERE j.document_id=knowledge_source.document_id AND j.lease_token=?)",id,revision,token);
                 db.update("UPDATE knowledge_review_job SET chunk_cursor=chunk_cursor+1,next_attempt_at=now() WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);
             } catch(RuntimeException ex) {
-                db.update("UPDATE knowledge_source SET review_state='UNAVAILABLE' WHERE document_id=? AND revision=?",id,revision);
+                db.update("UPDATE knowledge_source SET review_state='UNAVAILABLE' WHERE document_id=? AND revision=? AND EXISTS(SELECT 1 FROM knowledge_review_job j WHERE j.document_id=knowledge_source.document_id AND j.lease_token=?)",id,revision,token);
                 db.update("UPDATE knowledge_review_job SET next_attempt_at=now()+interval '5 minutes' WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);
             }
             return true;

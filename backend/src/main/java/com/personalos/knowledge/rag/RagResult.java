@@ -2,7 +2,11 @@ package com.personalos.knowledge.rag;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import java.util.*;
 public record RagResult(List<KnowledgeHitDto> hits,List<String> queries,List<Stage> stages,
-                        List<String> warnings,String status,List<Disagreement> disagreements,String clarification) {
+                        List<String> warnings,String status,List<Disagreement> disagreements,String clarification,Map<String,RankingScores> rankingScores) {
+    public record RankingScores(double fusion,Double rerank) { }
+    public RagResult(List<KnowledgeHitDto> hits,List<String> queries,List<Stage> stages,List<String> warnings,String status,List<Disagreement> disagreements,String clarification) {
+        this(hits,queries,stages,warnings,status,disagreements,clarification,Map.of());
+    }
     public record Stage(String name,String status,long durationMs,int inputCount,int outputCount) { }
     /** Evidence text must be exact substrings of the corresponding candidate. */
     public record Disagreement(KnowledgeHitDto left,KnowledgeHitDto right,String leftQuote,String rightQuote,String reason) { }

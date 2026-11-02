@@ -20,10 +20,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class KnowledgeTools {
 
-    private final KnowledgeSearchPort retrievalService;
+    private final org.springframework.beans.factory.ObjectProvider<KnowledgeSearchPort> retrievalService;
     private final ToolExecutor toolExecutor;
 
-    public KnowledgeTools(KnowledgeSearchPort retrievalService, ToolExecutor toolExecutor) {
+    public KnowledgeTools(org.springframework.beans.factory.ObjectProvider<KnowledgeSearchPort> retrievalService, ToolExecutor toolExecutor) {
         this.retrievalService = retrievalService;
         this.toolExecutor = toolExecutor;
     }
@@ -47,7 +47,7 @@ public class KnowledgeTools {
             if (query == null || query.isBlank()) {
                 return ToolExecutionResult.rejected("检索词不能为空");
             }
-            var result = retrievalService.retrieve(query, topK);
+            var result = retrievalService.getObject().retrieve(query, topK);
             List<KnowledgeHitDto> hits = result.hits();
             if(result.guarded()) return ToolExecutionResult.ok(result.guardedAnswer(),result);
             if (hits.isEmpty()) {

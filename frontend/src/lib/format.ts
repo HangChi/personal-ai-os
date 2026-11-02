@@ -46,6 +46,9 @@ export function hitBadge(hit: { score: number | null; matchedBy?: string }): {
   if (hit.matchedBy === 'BOTH') {
     return { text: '向量+关键词', type: 'success' }
   }
+  if (hit.matchedBy === 'VECTOR' && (hit.score === null || hit.score === undefined)) {
+    return { text: '向量命中', type: 'info' }
+  }
   if (hit.score === null || hit.score === undefined) {
     return { text: '关键词命中', type: 'warning' }
   }

@@ -238,6 +238,7 @@ export interface KnowledgeSource {
   reviewState: string
 }
 export interface RagRetrieval {
+  rankingScores?: Record<string, { fusion: number; rerank: number | null }>
   hits: KnowledgeHit[]
   queries: string[]
   stages: { name: string; status: string; durationMs: number; inputCount: number; outputCount: number }[]

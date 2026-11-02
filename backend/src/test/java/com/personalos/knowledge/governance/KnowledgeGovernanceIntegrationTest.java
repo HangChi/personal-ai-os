@@ -27,6 +27,8 @@ class KnowledgeGovernanceIntegrationTest {
         @Bean EmbeddingModel embeddingModel(){return new com.personalos.support.DeterministicEmbeddingModel(1024);}
         @Bean com.personalos.support.ScriptedToolCallingChatModel chatModel(){return new com.personalos.support.ScriptedToolCallingChatModel();}
     }
+    @Autowired com.personalos.export.DataExportService exportService;
+    @Autowired com.personalos.export.DataImportService importService;
     @Autowired KnowledgeGovernance governance; @Autowired KnowledgeDocumentService documents;
     @Autowired VectorStoreInspector vectors; @Autowired JdbcTemplate db;
     UUID a,b;
@@ -67,6 +69,40 @@ class KnowledgeGovernanceIntegrationTest {
         var reviewed=governance.applyDecisions(new EvidenceReview.Review(h,List.of(),""),h,new ArrayList<>());
         assertThat(reviewed.conflicts()).hasSize(1);
     }
+    @Test void ingestionReviewIsIncrementalAndRetriableWithoutOverwritingKnowledge() {
+        var review=mock(EvidenceReview.class);var retrieval=mock(KnowledgeRetrievalService.class);var h=hits();
+        when(retrieval.candidates(anyString(),anyInt())).thenReturn(h);
+        when(review.review(anyString(),anyList(),anyLong())).thenReturn(new EvidenceReview.Review(h,List.of(disagreement(h)),""));
+        var gate=new com.personalos.common.web.ModelConcurrencyGate(4);
+        var rate=mock(com.personalos.common.web.TokenBucketRateLimiter.class);when(rate.tryAcquire()).thenReturn(true);
+        var worker=new IngestionReviewWorker(db,governance,review,retrieval,vectors,gate,rate);
+        try {
+            for(int i=0;i<6 && worker.runNext();i++) { }
+            assertThat(governance.conflicts()).hasSize(1);
+            assertThat(governance.sources(List.of(a,b)).values()).allMatch(source->source.reviewState().equals("CHECKED_CANDIDATES"));
+            assertThat(vectors.countAll()).isEqualTo(2);
+            governance.retry(a);
+            when(review.review(anyString(),anyList(),anyLong())).thenThrow(new IllegalStateException("model unavailable"));
+            assertThat(worker.runNext()).isTrue();
+            assertThat(governance.sources(List.of(a)).get(a).reviewState()).isEqualTo("UNAVAILABLE");
+            assertThat(db.queryForObject("SELECT next_attempt_at>now() FROM knowledge_review_job WHERE document_id=?",Boolean.class,a)).isTrue();
+        } finally {worker.close();}
+    }
+
+    @Test void backupRestoresKnowledgeSpaceAndEffectiveScope() {
+        var space=governance.createSpace("恢复测试知识库");
+        governance.update(a,new KnowledgeGovernance.Metadata(space.id(),"2026版","研发部",LocalDate.parse("2026-01-01"),LocalDate.parse("2026-12-31"),"财务核实","ACTIVE"));
+        var out=new java.io.ByteArrayOutputStream();exportService.writeTo(out);
+        String backup=out.toString(StandardCharsets.UTF_8);
+        assertThat(backup).contains("恢复测试知识库","研发部","2026版");
+        db.update("DELETE FROM vector_store");db.update("DELETE FROM knowledge_document");
+        importService.importAll(backup);
+        var restored=governance.sources(List.of(a)).get(a);
+        assertThat(restored.spaceName()).isEqualTo("恢复测试知识库");assertThat(restored.scope()).isEqualTo("研发部");
+        assertThat(restored.effectiveUntil()).isEqualTo(LocalDate.parse("2026-12-31"));
+        assertThat(restored.reviewState()).isEqualTo("PENDING");
+    }
+
     @Test void projectionFailureRetainsOutboxAndConcurrentChangeCannotBeAcknowledged() {
         var gateway=mock(OpenSearchGateway.class);var projection=new SearchProjection(db,vectors,gateway,new SimpleMeterRegistry());
         doThrow(new IllegalStateException("unavailable")).when(gateway).project(any(),anyLong(),any(),any());

@@ -59,7 +59,8 @@ public record ImportPayload(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record DocumentPayload(DocumentMeta document, List<String> chunks) {
+    public record DocumentPayload(DocumentMeta document, List<String> chunks,com.personalos.knowledge.governance.SourceInfo source) {
+        public DocumentPayload(DocumentMeta document,List<String> chunks){this(document,chunks,null);}
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

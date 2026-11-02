@@ -22,12 +22,14 @@ import org.springframework.stereotype.Component;
 public class KnowledgeExportContributor implements ExportContributor {
 
     private final ExportWriter writer;
+    private final com.personalos.knowledge.governance.KnowledgeGovernance governance;
 
     private final KnowledgeDocumentService documentService;
     private final VectorStoreInspector inspector;
 
     public KnowledgeExportContributor(KnowledgeDocumentService documentService,
-                                      VectorStoreInspector inspector, ExportWriter writer) {
+                                      VectorStoreInspector inspector, ExportWriter writer,com.personalos.knowledge.governance.KnowledgeGovernance governance) {
+        this.governance=governance;
         this.writer = writer;
         this.documentService = documentService;
         this.inspector = inspector;
@@ -44,6 +46,7 @@ public class KnowledgeExportContributor implements ExportContributor {
                 ExportWriter.BATCH_SIZE), (out, document) -> {
             out.writeStartObject();
             out.writePOJOProperty("document", document);
+            out.writePOJOProperty("source",governance.sources(java.util.List.of(document.id())).get(document.id()));
             out.writeName("chunks");
             writer.array(out, page -> inspector.exportChunks(document.id(), page,
                     ExportWriter.BATCH_SIZE));

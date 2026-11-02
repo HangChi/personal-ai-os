@@ -425,3 +425,15 @@ app:
       index: ${OPENSEARCH_INDEX:personalos-chunks-v1}
       username: ${OPENSEARCH_USERNAME:}
       password: ${OPENSEARCH_PASSWORD:}
+
+---
+app:
+  knowledge:
+    rag:
+      enabled: ${RAG_ENABLED:true}
+      budget-ms: ${RAG_BUDGET_MS:20000}
+      reranker:
+        enabled: ${RAG_RERANKER_ENABLED:false}
+        endpoint: ${RAG_RERANKER_ENDPOINT:}
+        api-key: ${RAG_RERANKER_API_KEY:}
+        model: ${RAG_RERANKER_MODEL:}

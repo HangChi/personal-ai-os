@@ -76,13 +76,14 @@ public class KnowledgeGovernance {
     @Transactional public void record(List<RagResult.Disagreement> conflicts) {
         for(var c:conflicts) {
             if(c.left().source()==null || c.right().source()==null || c.left().documentId().equals(c.right().documentId()))continue;
-            var a=c.left();var b=c.right();
+            var a=c.left();var b=c.right();String leftQuote=c.leftQuote(),rightQuote=c.rightQuote();
+            if(a.documentId().compareTo(b.documentId())>0){var swap=a;a=b;b=swap;String quote=leftQuote;leftQuote=rightQuote;rightQuote=quote;}
             db.queryForList("SELECT document_id FROM knowledge_source WHERE document_id IN (?,?) ORDER BY document_id FOR SHARE",a.documentId(),b.documentId());
             var current=sources(List.of(a.documentId(),b.documentId()));
             if(current.size()!=2 || current.get(a.documentId()).revision()!=a.source().revision() || current.get(b.documentId()).revision()!=b.source().revision())continue;
-            String fingerprint=JsonCodec.sha256Hex(a.documentId()+":"+a.source().revision()+":"+b.documentId()+":"+b.source().revision()+":"+c.leftQuote()+":"+c.rightQuote());
+            String fingerprint=JsonCodec.sha256Hex(a.documentId()+":"+a.source().revision()+":"+b.documentId()+":"+b.source().revision()+":"+leftQuote+":"+rightQuote);
             db.update("INSERT INTO knowledge_conflict(fingerprint,left_id,right_id,left_revision,right_revision,left_chunk,right_chunk,left_quote,right_quote,reason) VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(fingerprint) DO NOTHING",
-                fingerprint,a.documentId(),b.documentId(),a.source().revision(),b.source().revision(),a.chunkIndex(),b.chunkIndex(),c.leftQuote(),c.rightQuote(),c.reason());
+                fingerprint,a.documentId(),b.documentId(),a.source().revision(),b.source().revision(),a.chunkIndex(),b.chunkIndex(),leftQuote,rightQuote,c.reason());
         }
     }
     /** Include the known opposing evidence even when it ranked outside topK. */
@@ -116,7 +117,7 @@ public class KnowledgeGovernance {
                 if(a.source()==null||b.source()==null||a.source().revision()!=((Number)row.get("left_revision")).longValue()
                     ||b.source().revision()!=((Number)row.get("right_revision")).longValue()
                     ||!a.content().contains((String)row.get("left_quote"))||!b.content().contains((String)row.get("right_quote")))continue;
-                if(current.stream().noneMatch(c->samePair(c,a,b)))current.add(new RagResult.Disagreement(a,b,(String)row.get("left_quote"),(String)row.get("right_quote"),(String)row.get("reason")));
+                if(current.stream().noneMatch(c->sameEvidence(c,a,b,(String)row.get("left_quote"),(String)row.get("right_quote"))))current.add(new RagResult.Disagreement(a,b,(String)row.get("left_quote"),(String)row.get("right_quote"),(String)row.get("reason")));
             }
         }
         var unresolved=new ArrayList<RagResult.Disagreement>();var relevant=new LinkedHashSet<>(review.relevant());
@@ -132,12 +133,15 @@ public class KnowledgeGovernance {
         }
         return new com.personalos.knowledge.rag.EvidenceReview.Review(List.copyOf(relevant),List.copyOf(unresolved),review.clarification());
     }
-    private static boolean samePair(RagResult.Disagreement c,KnowledgeHitDto a,KnowledgeHitDto b) {
-        return c.left().documentId().equals(a.documentId())&&c.right().documentId().equals(b.documentId())
-            ||c.left().documentId().equals(b.documentId())&&c.right().documentId().equals(a.documentId());
+    private static boolean sameEvidence(RagResult.Disagreement c,KnowledgeHitDto a,KnowledgeHitDto b,String left,String right) {
+        return c.left().documentId().equals(a.documentId())&&c.right().documentId().equals(b.documentId())&&c.leftQuote().equals(left)&&c.rightQuote().equals(right)
+            ||c.left().documentId().equals(b.documentId())&&c.right().documentId().equals(a.documentId())&&c.leftQuote().equals(right)&&c.rightQuote().equals(left);
     }
 
-    public void retry(UUID id){db.update("INSERT INTO knowledge_review_job(document_id,revision) SELECT document_id,revision FROM knowledge_source WHERE document_id=? ON CONFLICT(document_id) DO UPDATE SET chunk_cursor=0,next_attempt_at=now()",id);}
+    @Transactional public void retry(UUID id) {
+        db.update("UPDATE knowledge_source SET review_state='PENDING' WHERE document_id=?",id);
+        db.update("INSERT INTO knowledge_review_job(document_id,revision) SELECT document_id,revision FROM knowledge_source WHERE document_id=? ON CONFLICT(document_id) DO UPDATE SET chunk_cursor=0,next_attempt_at=now(),lease_token=NULL",id);
+    }
     private static String text(String s,int max){if(s==null)return "";if(s.length()>max)throw invalid("字段超过长度限制");return s.strip();}
     private static BusinessException invalid(String message){return new BusinessException(ErrorCode.VALIDATION_FAILED,message);}
 }

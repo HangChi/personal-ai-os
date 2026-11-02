@@ -31,6 +31,9 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         this.recall=recall;this.model=model;this.review=review;this.properties=properties;this.json=json;this.meters=meters;
         this.enabled=enabled;this.budget=Math.max(1000,Math.min(60000,budget));
     }
+    private CrossEncoderReranker crossEncoder;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureReranker(org.springframework.beans.factory.ObjectProvider<CrossEncoderReranker> provider){this.crossEncoder=provider.getIfAvailable();}
     private com.personalos.knowledge.governance.KnowledgeGovernance governance;
     @org.springframework.beans.factory.annotation.Autowired
     void configureGovernance(com.personalos.knowledge.governance.KnowledgeGovernance governance){this.governance=governance;}
@@ -60,13 +63,19 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         }
         var ranked=new ArrayList<>(candidates.values().stream().sorted(Comparator.comparingDouble((KnowledgeHitDto h)->rrf.get(key(h))).reversed()).limit(40).toList());
         if(ranked.isEmpty())return new RagResult(List.of(),List.copyOf(queries),stages,warnings,"INSUFFICIENT",List.of(),"");
+        var rerankScores=new HashMap<String,Double>();
         start=System.nanoTime();
         try {
+            if(crossEncoder!=null) {
+                var ranking=crossEncoder.rank(query,ranked,remaining(deadline));ranked=new ArrayList<>(ranking.hits());rerankScores.putAll(ranking.scores());
+            } else {
             var order=model.call("对候选按能否直接回答问题重排，不回答问题。返回 {\"order\":[1,2,...]}，必须包含所有资料编号一次，不增删编号。相似度不是事实真实性。",EvidenceReview.payload(query,ranked,json),remaining(deadline));
             var reordered=new ArrayList<KnowledgeHitDto>(); var seen=new HashSet<Integer>();
             for(var node:order.path("order")) {int i=node.asInt(0)-1;if(i<0||i>=ranked.size()||!seen.add(i))throw new IllegalArgumentException("Invalid rank");reordered.add(ranked.get(i));}
             if(reordered.size()!=ranked.size()) throw new IllegalArgumentException("Incomplete rank");
-            ranked=reordered;stage(stages,"rerank",start,candidates.size(),ranked.size(),"OK");
+            ranked=reordered;
+            }
+            stage(stages,"rerank",start,candidates.size(),ranked.size(),"OK");
         } catch(RuntimeException ex){warnings.add("重排不可用，采用 RRF 排名");stage(stages,"rerank",start,candidates.size(),ranked.size(),"FALLBACK");}
         // Review diverse sources before topK, so topK=1 cannot silently discard an opposing source.
         var pool=diverse(ranked,16,2);
@@ -85,7 +94,9 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
             var keep=new LinkedHashSet<KnowledgeHitDto>();for(var c:conflicts){keep.add(c.left());keep.add(c.right());} selected=List.copyOf(keep);
         }
         meters.counter("personalos.knowledge.rag.results","status",status).increment();
-        return new RagResult(selected,List.copyOf(queries),List.copyOf(stages),List.copyOf(warnings),status,conflicts,clarification);
+        var scores=new LinkedHashMap<String,RagResult.RankingScores>();
+        for(var hit:selected)scores.put(key(hit),new RagResult.RankingScores(rrf.getOrDefault(key(hit),0.0),rerankScores.get(key(hit))));
+        return new RagResult(selected,List.copyOf(queries),List.copyOf(stages),List.copyOf(warnings),status,conflicts,clarification,Map.copyOf(scores));
     }
     private static long remaining(long deadline){return Math.min(8000,TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime()));}
     private void stage(List<RagResult.Stage> stages,String name,long start,int in,int out,String result) {
@@ -94,7 +105,7 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
     }
     private static String key(KnowledgeHitDto h){return h.documentId()+":"+h.chunkIndex();}
     private void add(List<KnowledgeHitDto> hits,Map<String,KnowledgeHitDto> candidates,Map<String,Double> ranks) {
-        for(int i=0;i<hits.size();i++){var h=hits.get(i);if(h.documentId()==null)continue;candidates.putIfAbsent(key(h),h);ranks.merge(key(h),1.0/(60+i+1),Double::sum);}
+        for(int i=0;i<hits.size();i++){var h=hits.get(i);if(h.documentId()==null)continue;candidates.putIfAbsent(key(h),h);ranks.merge(key(h),1.0/(properties.rrfK()+i+1),Double::sum);}
     }
     private static List<KnowledgeHitDto> diverse(List<KnowledgeHitDto> hits,int limit,int perDocument) {
         Map<UUID,Integer> count=new HashMap<>();var selected=new ArrayList<KnowledgeHitDto>();

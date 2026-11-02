@@ -1,0 +1,46 @@
+package com.personalos.knowledge.rag;
+
+import com.personalos.knowledge.dto.KnowledgeHitDto;
+import java.net.URI;
+import java.net.http.*;
+import java.time.Duration;
+import java.util.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
+
+/** Optional Cohere-compatible cross-encoder. Disabled unless explicitly configured. */
+@Component
+@ConditionalOnProperty(name="app.knowledge.rag.reranker.enabled",havingValue="true")
+public class CrossEncoderReranker {
+    private final URI endpoint;private final String key,model;private final ObjectMapper json;
+    private final HttpClient http=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
+    public CrossEncoderReranker(@Value("${app.knowledge.rag.reranker.endpoint:}") String endpoint,
+            @Value("${app.knowledge.rag.reranker.api-key:}") String key,@Value("${app.knowledge.rag.reranker.model:}") String model,ObjectMapper json) {
+        this.endpoint=URI.create(endpoint);this.key=key;this.model=model;this.json=json;
+        if(!Set.of("http","https").contains(this.endpoint.getScheme())||this.endpoint.getUserInfo()!=null||model.isBlank())throw new IllegalArgumentException("Reranker endpoint/model required");
+    }
+    public record Ranking(List<KnowledgeHitDto> hits,Map<String,Double> scores) { }
+    public Ranking rank(String query,List<KnowledgeHitDto> candidates,long timeoutMs) {
+        if(timeoutMs<100)throw new IllegalStateException("Rerank budget exhausted");
+        var request=HttpRequest.newBuilder(endpoint).timeout(Duration.ofMillis(timeoutMs)).header("Content-Type","application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(Map.of("model",model,"query",query,
+                "documents",candidates.stream().map(h->h.content().substring(0,Math.min(2000,h.content().length()))).toList(),"top_n",candidates.size()))));
+        if(!key.isBlank())request.header("Authorization","Bearer "+key);
+        try {
+            var response=http.send(request.build(),HttpResponse.BodyHandlers.ofInputStream());
+            byte[] bytes;try(var body=response.body()){bytes=body.readNBytes(1_000_001);}
+            if(response.statusCode()!=200||bytes.length>1_000_000)throw new IllegalStateException("Reranker unavailable");
+            var result=json.readTree(bytes).path("results");var seen=new HashSet<Integer>();var ordered=new ArrayList<KnowledgeHitDto>();var scores=new LinkedHashMap<String,Double>();
+            if(!result.isArray())throw new IllegalArgumentException("Missing rerank results");
+            for(var row:result){int index=row.path("index").asInt(-1);double score=row.path("relevance_score").asDouble(Double.NaN);
+                if(index<0||index>=candidates.size()||!seen.add(index)||!Double.isFinite(score)||score<0||score>1)throw new IllegalArgumentException("Invalid rerank result");
+                var hit=candidates.get(index);ordered.add(hit);scores.put(hit.documentId()+":"+hit.chunkIndex(),score);}
+            if(ordered.size()!=candidates.size())throw new IllegalArgumentException("Incomplete rerank results");
+            ordered.sort(Comparator.comparingDouble((KnowledgeHitDto h)->scores.get(h.documentId()+":"+h.chunkIndex())).reversed());
+            return new Ranking(List.copyOf(ordered),Map.copyOf(scores));
+        }catch(InterruptedException ex){Thread.currentThread().interrupt();throw new IllegalStateException("Rerank interrupted");}
+        catch(java.io.IOException ex){throw new IllegalStateException("Reranker unavailable");}
+    }
+}

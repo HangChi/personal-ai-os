@@ -88,10 +88,12 @@ public class DataImportService {
     private final VectorStoreInspector inspector;
     private final JsonCodec jsonCodec;
     private final TransactionTemplate writeTransaction;
+    private final com.personalos.knowledge.governance.KnowledgeGovernance governance;
 
     public DataImportService(EntityManager entityManager, EmbeddingModel embeddingModel,
                              VectorStoreInspector inspector, JsonCodec jsonCodec,
-                             PlatformTransactionManager transactionManager) {
+                             PlatformTransactionManager transactionManager,com.personalos.knowledge.governance.KnowledgeGovernance governance) {
+        this.governance=governance;
         this.entityManager = entityManager;
         this.embeddingModel = embeddingModel;
         this.inspector = inspector;
@@ -376,7 +378,7 @@ public class DataImportService {
     private record DocStats(int documents, int vectors, List<String> notes) {
     }
 
-    private record PreparedDocument(ImportPayload.DocumentMeta meta, int charCount, List<IndexedChunk> chunks) {
+    private record PreparedDocument(ImportPayload.DocumentMeta meta, int charCount, List<IndexedChunk> chunks,com.personalos.knowledge.governance.SourceInfo source) {
     }
 
     private List<PreparedDocument> prepareDocuments(List<ImportPayload.DocumentPayload> documents) {
@@ -410,7 +412,7 @@ public class DataImportService {
             }
             int charCount = meta.charCount() == null
                     ? chunks.stream().mapToInt(chunk -> chunk.getText().length()).sum() : meta.charCount();
-            prepared.add(new PreparedDocument(meta, charCount, indexed));
+            prepared.add(new PreparedDocument(meta, charCount, indexed,entry.source()));
         }
         return prepared;
     }
@@ -444,6 +446,12 @@ public class DataImportService {
             if (!chunks.isEmpty()) {
                 inspector.insertChunks(chunks);
                 vectors += chunks.size();
+            }
+            if(entry.source()!=null) {
+                var source=entry.source();
+                var space=governance.spaces().stream().filter(k->k.name().equals(source.spaceName())).findFirst()
+                    .orElseGet(()->governance.createSpace(source.spaceName()));
+                governance.update(meta.id(),new com.personalos.knowledge.governance.KnowledgeGovernance.Metadata(space.id(),source.version(),source.scope(),source.effectiveFrom(),source.effectiveUntil(),source.authority(),source.lifecycle()));
             }
             imported++;
         }
