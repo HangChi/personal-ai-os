@@ -301,3 +301,14 @@ python3 scripts/eval/rag-live-eval.py cleanup
 工具需 Docker Desktop、已运行的本地数据库和搜索服务、`.env` 登录配置及 `.env.integrations.local` 的重排配置。
 只清理它创建的 `paios_rag_eval_*` 数据库和 `personalos-eval-*` 索引；报告保留。
 辅助模型和重排 Token 使用服务返回的真实 usage，费用按该账号账单口径计算，不将字符估计冒充实际用量。
+
+`rag-live-conflicts.py` 使用真实配置模型和隔离库内的临时合成政策，验证同范围矛盾、模糊问题、
+不同有效期及 `topK=1` 保留双方引用。运行结束删除本轮文档；任一状态不符合预期时返回失败。
+精审默认最多 12 秒且受共享 20 秒辅助预算约束；这是根据真实服务的 8 秒超时调整，仍然保留超时拒答保护。
+
+```bash
+python3 scripts/eval/rag-live-conflicts.py
+python3 scripts/eval/rag-live-eval.py restart-enhanced --jar /修订包.jar
+```
+
+重启增强评测实例会保留同一语料；报告记录语料原始提交与逐文件 SHA-256，正文快照保存在 `.cache/rag-live-eval/corpus/`。

@@ -70,10 +70,6 @@ class BackupValidationTest(unittest.TestCase):
                 module.generate(path)
             self.assertEqual(path.read_bytes(), original)
 
-
-if __name__ == '__main__':
-    unittest.main()
-
 class S3SnapshotTest(unittest.TestCase):
     def config(self):
         return {'S3_ENDPOINT': 'http://127.0.0.1:8333', 'S3_BUCKET': 'personalos',
@@ -119,3 +115,7 @@ class S3SnapshotTest(unittest.TestCase):
     def test_incomplete_credentials_are_rejected(self):
         with self.assertRaises(ValueError):
             backup.S3Snapshot({'S3_ENDPOINT': 'http://127.0.0.1:8333'})
+
+
+if __name__ == '__main__':
+    unittest.main()

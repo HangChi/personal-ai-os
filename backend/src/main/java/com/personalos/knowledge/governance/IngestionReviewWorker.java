@@ -21,6 +21,11 @@ public class IngestionReviewWorker {
     private final KnowledgeRetrievalService retrieval; private final VectorStoreInspector vectors;
     private final ModelConcurrencyGate gate; private final TokenBucketRateLimiter rate;
     private final ExecutorService executor=Executors.newSingleThreadExecutor(Thread.ofVirtual().name("ingestion-review").factory());
+    private long reviewTimeout=12000;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureReviewTimeout(@org.springframework.beans.factory.annotation.Value("${app.knowledge.rag.evidence-timeout-ms:12000}") long timeout) {
+        reviewTimeout=Math.max(1000,Math.min(30000,timeout));
+    }
     private final AtomicBoolean busy=new AtomicBoolean();
     public IngestionReviewWorker(JdbcTemplate db,KnowledgeGovernance governance,EvidenceReview review,KnowledgeRetrievalService retrieval,
             VectorStoreInspector vectors,ModelConcurrencyGate gate,TokenBucketRateLimiter rate) {
@@ -50,7 +55,7 @@ public class IngestionReviewWorker {
                 String title=db.queryForObject("SELECT title FROM knowledge_document WHERE id=?",String.class,id);
                 candidates.add(new KnowledgeHitDto(id,title,"",cursor,chunks.getFirst(),null).withSource(source));
                 candidates.addAll(governance.enrich(raw).stream().filter(h->!h.documentId().equals(id)).limit(11).toList());
-                if(candidates.size()>1) governance.record(review.review("核查新增资料与已有资料对同一事实的不同说法；所有当前资料均为核查对象。",candidates,8000).conflicts());
+                if(candidates.size()>1) governance.record(review.review("核查新增资料与已有资料对同一事实的不同说法；所有当前资料均为核查对象。",candidates,reviewTimeout).conflicts());
                 db.update("UPDATE knowledge_source SET review_state='PARTIAL' WHERE document_id=? AND revision=? AND EXISTS(SELECT 1 FROM knowledge_review_job j WHERE j.document_id=knowledge_source.document_id AND j.lease_token=?)",id,revision,token);
                 db.update("UPDATE knowledge_review_job SET chunk_cursor=chunk_cursor+1,next_attempt_at=now() WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);
             } catch(RuntimeException ex) {

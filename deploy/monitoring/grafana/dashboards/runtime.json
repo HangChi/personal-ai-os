@@ -386,6 +386,60 @@
         },
         "overrides": []
       }
+    },
+    {
+      "id": 15,
+      "title": "RAG 辅助模型 Token",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 56,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (kind) (rate(personalos_knowledge_rag_tokens_total[5m]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 16,
+      "title": "RAG 重排 Token",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 56,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(personalos_knowledge_rag_rerank_tokens_total[5m])"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
     }
   ]
 }

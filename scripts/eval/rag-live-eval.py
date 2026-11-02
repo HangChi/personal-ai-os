@@ -125,6 +125,7 @@ def start(jar):
     subprocess.run(['docker', 'exec', DB_CONTAINER, 'createdb', '-U', 'personalos', database], check=True, stdout=subprocess.DEVNULL)
     state = {'database': database, 'jar': str(jar.resolve()), 'createdAt': stamp, 'index': 'personalos-eval-' + stamp,
              'processes': [], 'documents': {}, 'corpusHashes': {}, 'commit': subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()}
+    state['corpusCommit'] = state['commit']
     private_json(STATE, state)
     for name, port, management in [('baseline', 18081, 18091), ('enhanced', 18082, 18092)]:
         env = values.copy()
@@ -152,6 +153,10 @@ def start(jar):
         document = client.upload(path, source)
         state['documents'][source] = document['id']
         state['corpusHashes'][source] = hashlib.sha256(path.read_bytes()).hexdigest()
+        snapshot = WORK / 'corpus' / source
+        snapshot.parent.mkdir(parents=True, exist_ok=True)
+        snapshot.write_bytes(path.read_bytes())
+        snapshot.chmod(0o600)
         private_json(STATE, state)
         print('Seeded ' + str(len(state['documents'])) + '/' + str(len(paths)) + ': ' + source, flush=True)
     enhanced = Client('http://127.0.0.1:18082/api/v1')
@@ -164,7 +169,7 @@ def start(jar):
     print('Isolated corpus ready; production knowledge untouched', flush=True)
 
 
-def restart_enhanced(jar):
+def restart_enhanced(jar, ingestion_review=False):
     state = json.loads(STATE.read_text())
     process = next(value for value in state['processes'] if value['name'] == 'enhanced')
     old_jar = process.get('jar', state['jar'])
@@ -194,7 +199,7 @@ def restart_enhanced(jar):
     with os.fdopen(fd, 'w') as output:
         launched = subprocess.Popen([module.JAVA, '-Xmx512m', '-jar', str(jar.resolve()), '--spring.profiles.active=monitoring',
                                      '--server.address=127.0.0.1', '--management.server.address=127.0.0.1', '--management.server.port=18092',
-                                     '--app.knowledge.jobs.enabled=false', '--app.knowledge.rag.ingestion-review-enabled=false'],
+                                     '--app.knowledge.jobs.enabled=false', '--app.knowledge.rag.ingestion-review-enabled=' + str(ingestion_review).lower()],
                                     cwd=ROOT, env=values, stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
     process.update(pid=launched.pid, jar=str(jar.resolve()), log=str(log))
     state['commit'] = subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()
@@ -254,6 +259,7 @@ def evaluate(limit):
                          'p50Ms': statistics.median(times), 'p95Ms': times[max(0, int(len(times) * .95 + .999) - 1)],
                          'statusCounts': {status: sum(row['status'] == status for row in items) for status in sorted({row['status'] for row in items})}}
     result = {'createdAt': datetime.now(timezone.utc).isoformat(), 'commit': state['commit'], 'corpusHashes': state['corpusHashes'],
+              'corpusCommit': state.get('corpusCommit', state['commit']),
               'scope': 'Project documents; not private user knowledge; same corpus and embedding model for both modes',
               'summary': summary, 'tokens': {process['name']: process.get('evaluationTokens', {}) for process in state['processes']}, 'rows': rows}
     report = WORK / ('result-' + datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S') + '.json')
@@ -297,6 +303,7 @@ def main():
     parser.add_argument('command', choices=['start', 'restart-enhanced', 'evaluate', 'cleanup'])
     parser.add_argument('--jar', type=Path)
     parser.add_argument('--limit', type=int, default=0)
+    parser.add_argument('--ingestion-review', action='store_true', help='Enable background review only in the owned evaluation process')
     args = parser.parse_args()
     if args.command == 'start':
         if not args.jar:
@@ -305,7 +312,7 @@ def main():
     elif args.command == 'restart-enhanced':
         if not args.jar:
             parser.error('restart-enhanced requires --jar')
-        restart_enhanced(args.jar)
+        restart_enhanced(args.jar, args.ingestion_review)
     elif args.command == 'evaluate':
         evaluate(args.limit)
     else:
