@@ -69,6 +69,31 @@ class BackupValidationTest(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 module.generate(path)
             self.assertEqual(path.read_bytes(), original)
+    def test_private_scalar_accepts_short_and_full_openssl_encodings(self):
+        spec = importlib.util.spec_from_file_location('vapid_parser', Path(__file__).with_name('generate-push-keys.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for length in [31, 32]:
+            scalar = b'\x01' * length
+            body = b'\x02\x01\x01\x04' + bytes([length]) + scalar
+            encoded = b'\x30' + bytes([len(body)]) + body
+            self.assertEqual(module.ec_private_scalar(encoded), scalar.rjust(32, b'\x00'))
+        with self.assertRaises(ValueError):
+            module.ec_private_scalar(b'\x30\x20\x02')
+
+    def test_existing_key_is_rejected_before_generating_another(self):
+        spec = importlib.util.spec_from_file_location('vapid_existing', Path(__file__).with_name('generate-push-keys.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'existing.env'
+            path.write_text('existing')
+            with patch.object(module.subprocess, 'run') as command:
+                with self.assertRaises(FileExistsError):
+                    module.generate(path)
+                command.assert_not_called()
+            self.assertEqual(path.read_text(), 'existing')
+
 
 class S3SnapshotTest(unittest.TestCase):
     def config(self):

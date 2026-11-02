@@ -8,7 +8,38 @@ import subprocess
 import tempfile
 
 
+def ec_private_scalar(encoded):
+    """读取 RFC5915 的版本与 OCTET STRING，兼容省略前导零的 OpenSSL 编码。"""
+    def item(data, offset):
+        if offset + 2 > len(data):
+            raise ValueError('不完整的 DER 编码')
+        tag, size = data[offset], data[offset + 1]
+        start = offset + 2
+        if size & 0x80:
+            width = size & 0x7f
+            if not 1 <= width <= 4 or start + width > len(data):
+                raise ValueError('不合法的 DER 长度')
+            size = int.from_bytes(data[start:start + width], 'big')
+            start += width
+        end = start + size
+        if end > len(data):
+            raise ValueError('不完整的 DER 内容')
+        return tag, data[start:end], end
+    tag, sequence, end = item(encoded, 0)
+    if tag != 0x30 or end != len(encoded):
+        raise ValueError('不支持的 EC 私钥结构')
+    tag, version, offset = item(sequence, 0)
+    if tag != 0x02 or version != b'\x01':
+        raise ValueError('不支持的 EC 私钥版本')
+    tag, scalar, _ = item(sequence, offset)
+    if tag != 0x04 or not 1 <= len(scalar) <= 32 or not any(scalar):
+        raise ValueError('不支持的 P-256 私钥长度')
+    return scalar.rjust(32, b'\x00')
+
+
 def generate(destination):
+    if destination.exists():
+        raise FileExistsError('目标密钥文件已存在')
     with tempfile.TemporaryDirectory(prefix='paios-vapid-') as directory:
         private = Path(directory) / 'key.pem'
         subprocess.run(['openssl', 'ecparam', '-name', 'prime256v1', '-genkey', '-noout', '-out', str(private)],
@@ -18,8 +49,7 @@ def generate(destination):
         secret = subprocess.run(['openssl', 'ec', '-in', str(private), '-outform', 'DER'],
                                 check=True, capture_output=True).stdout
         # RFC5915 ECPrivateKey: INTEGER version=1, OCTET STRING 32字节私钥；SPKI 尾部是未压缩点。
-        marker = secret.index(b'\x02\x01\x01\x04\x20') + 5
-        private_bytes = secret[marker:marker + 32]
+        private_bytes = ec_private_scalar(secret)
         public_bytes = public[-65:]
         if len(private_bytes) != 32 or len(public_bytes) != 65 or public_bytes[0] != 4:
             raise ValueError('不支持的 OpenSSL 密钥编码')

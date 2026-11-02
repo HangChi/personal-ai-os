@@ -1201,7 +1201,7 @@
   },
   "regression": {
     "backendTests": 1113,
-    "pythonBackupTests": 8,
+    "pythonBackupTests": 10,
     "frontendLogicAssertions": 1133,
     "frontendComponentTests": 169,
     "coveragePercent": {
