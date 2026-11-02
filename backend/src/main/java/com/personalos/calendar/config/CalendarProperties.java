@@ -38,7 +38,7 @@ public record CalendarProperties(
      */
     public static final int MAX_REMINDER_LEAD_MINUTES = 10_080;
 
-    private static final long DEFAULT_SCAN_INTERVAL_MS = 60_000L;
+    private static final long DEFAULT_SCAN_INTERVAL_MS = 10_000L;
     private static final long DEFAULT_SCAN_INITIAL_DELAY_MS = 10_000L;
     private static final Duration DEFAULT_LOOKAHEAD = Duration.ofHours(24);
     private static final Duration DEFAULT_LOOKBACK = Duration.ofHours(24);

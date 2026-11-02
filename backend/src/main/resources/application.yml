@@ -314,7 +314,8 @@ app:
     # 定时扫描开关。测试里关闭（见 src/test/resources/application.properties），
     # 否则调度会在集成测试中途写入 reminder，与各用例的清理逻辑相互干扰，产生难以复现的偶发失败。
     scan-enabled: ${AI_CALENDAR_SCAN_ENABLED:true}
-    scan-interval-ms: ${AI_CALENDAR_SCAN_INTERVAL_MS:60000}
+    scan-interval-ms: ${AI_CALENDAR_SCAN_INTERVAL_MS:10000}
+    stream-check-interval-ms: ${AI_CALENDAR_STREAM_CHECK_INTERVAL_MS:1000}
     # 首次扫描延迟：避免与应用启动阶段争抢数据库连接
     scan-initial-delay-ms: ${AI_CALENDAR_SCAN_INITIAL_DELAY_MS:10000}
     # 扫描窗口向前看多远。必须覆盖「提醒提前量」，否则到点的提醒会被漏掉。

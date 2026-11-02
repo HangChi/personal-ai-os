@@ -91,6 +91,17 @@ class AuthIntegrationTest {
     }
 
     @Test
+    @DisplayName("提醒 SSE 未认证时返回 JSON 401，不打开长连接")
+    void reminderStreamRequiresAuthentication() throws Exception {
+        try (HttpClient fresh = HttpClient.newHttpClient()) {
+            var response = fresh.send(HttpRequest.newBuilder(URI.create(baseUrl + "/api/v1/reminders/events"))
+                    .header("Accept", "text/event-stream").GET().build(), HttpResponse.BodyHandlers.ofString());
+            assertThat(response.statusCode()).isEqualTo(401);
+            assertThat(response.headers().firstValue("Content-Type").orElse("")).contains("application/json");
+        }
+    }
+
+    @Test
     @DisplayName("未认证读 /actuator/health：只给状态，不给组件详情")
     void healthDetailsShouldBeHiddenWhenAnonymous() throws Exception {
         // 必须用不带 cookie 的 client：本类多个用例共用带 cookie 的 client，

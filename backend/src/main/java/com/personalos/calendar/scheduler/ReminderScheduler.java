@@ -17,8 +17,7 @@ import org.springframework.stereotype.Component;
  * 这是最难发现的一类故障：没有任何报错，只是「没提醒」。
  * 状态放在数据库里，重启后下一轮扫描会自然地把该补的补上。
  *
- * <p>代价是提醒的精度受扫描间隔限制（默认 60 秒）。对个人日程完全够用；
- * 若将来要求秒级精度，应在扫描间隔上做文章，而不是退回内存定时任务。
+ * <p>默认每 10 秒补齐新增或修改的提醒，已物化提醒的到点变化由 SSE 共享读取发现。
  *
  * <h2>为什么要把异常吞掉并记录</h2>
  * 调度线程里的异常如果逃逸，一次数据库抖动就可能让后续调度不再发生，
@@ -45,7 +44,7 @@ public class ReminderScheduler {
         this.clock = clock;
     }
 
-    @Scheduled(fixedDelayString = "${app.calendar.scan-interval-ms:60000}",
+    @Scheduled(fixedDelayString = "${app.calendar.scan-interval-ms:10000}",
             initialDelayString = "${app.calendar.scan-initial-delay-ms:10000}")
     public void scan() {
         try {

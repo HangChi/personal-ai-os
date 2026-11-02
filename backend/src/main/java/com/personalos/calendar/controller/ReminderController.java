@@ -5,7 +5,9 @@ import com.personalos.calendar.dto.ReminderScanResult;
 import com.personalos.calendar.entity.ReminderStatus;
 import com.personalos.calendar.service.ReminderScanner;
 import com.personalos.calendar.service.ReminderService;
+import com.personalos.calendar.service.ReminderStreamDelivery;
 import com.personalos.common.api.ApiResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * 提醒接口。
@@ -28,11 +31,22 @@ public class ReminderController {
     private final ReminderService reminderService;
     private final ReminderScanner scanner;
     private final Clock clock;
+    private final ReminderStreamDelivery streams;
 
-    public ReminderController(ReminderService reminderService, ReminderScanner scanner, Clock clock) {
+    public ReminderController(ReminderService reminderService, ReminderScanner scanner, Clock clock,
+                              ReminderStreamDelivery streams) {
         this.reminderService = reminderService;
         this.scanner = scanner;
         this.clock = clock;
+        this.streams = streams;
+    }
+
+    /** 与普通提醒接口使用相同的会话认证；定期重连重新检查会话。 */
+    @GetMapping("/events")
+    public SseEmitter events(HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-store");
+        response.setHeader("X-Accel-Buffering", "no");
+        return streams.open();
     }
 
     /**

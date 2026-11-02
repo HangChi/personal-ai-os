@@ -86,6 +86,7 @@ class CalendarReminderIntegrationTest {
     }
 
     private final HttpTestClient http;
+    private final int port;
     private final CalendarEventService eventService;
     private final ReminderService reminderService;
     private final ReminderScanner scanner;
@@ -118,6 +119,7 @@ class CalendarReminderIntegrationTest {
                                     ScriptedToolCallingChatModel model,
                                     TransactionTemplate transactionTemplate) {
         this.http = new HttpTestClient(port);
+        this.port = port;
         this.eventService = eventService;
         this.reminderService = reminderService;
         this.scanner = scanner;
@@ -187,6 +189,49 @@ class CalendarReminderIntegrationTest {
     }
 
     // ------------------------------------------------------------------ 日程 CRUD 与重复展开
+
+    @Test
+    @DisplayName("提醒 SSE 首帧补查、已读同步、到点推送及重连恢复")
+    void reminderStreamSendsCommittedSnapshotsAndRecoversOnReconnect() throws Exception {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        createEvent("流式提醒", now.minusSeconds(60), now.plusSeconds(3600), 0);
+        scanner.scan(now);
+        UUID id = reminderService.list(null, true, 500).getFirst().id();
+        var uri = java.net.URI.create("http://127.0.0.1:" + port + "/api/v1/reminders/events");
+        try (var client = java.net.http.HttpClient.newHttpClient()) {
+            var request = java.net.http.HttpRequest.newBuilder(uri).header("Accept", "text/event-stream").GET().build();
+            var response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofInputStream());
+            assertThat(response.statusCode()).isEqualTo(200);
+            assertThat(response.headers().firstValue("Content-Type").orElse("")).contains("text/event-stream");
+            assertThat(response.headers().firstValue("Cache-Control").orElse("")).isEqualTo("no-store");
+            try (var reader = new java.io.BufferedReader(new java.io.InputStreamReader(response.body(), java.nio.charset.StandardCharsets.UTF_8))) {
+                assertThat(readReminderSnapshot(reader)).contains(id.toString());
+                assertThat(http.post("/api/v1/reminders/" + id + "/read", "{}").status()).isEqualTo(200);
+                assertThat(readReminderSnapshot(reader)).isEqualTo("[]");
+                Instant due = Instant.now().plusSeconds(3);
+                createEvent("稍后到点", due, due.plusSeconds(1800), 0);
+                scanner.scan(Instant.now());
+                // 不再触发扫描：已物化的未来提醒自然到点时也必须推送。
+                assertThat(readReminderSnapshot(reader)).contains("稍后到点");
+            }
+            var reconnected = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofInputStream());
+            try (var reader = new java.io.BufferedReader(new java.io.InputStreamReader(reconnected.body(), java.nio.charset.StandardCharsets.UTF_8))) {
+                assertThat(readReminderSnapshot(reader)).contains("稍后到点").doesNotContain(id.toString());
+            }
+        }
+    }
+
+    private String readReminderSnapshot(java.io.BufferedReader reader) throws Exception {
+        return java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+            try {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("data:")) return line.substring(5).trim();
+                }
+                throw new AssertionError("提醒流提前结束");
+            } catch (java.io.IOException ex) { throw new java.io.UncheckedIOException(ex); }
+        }).get(8, java.util.concurrent.TimeUnit.SECONDS);
+    }
 
     @Test
     @DisplayName("分页：重复日程的实例切片返回，total 是展开后的全量实例数")
