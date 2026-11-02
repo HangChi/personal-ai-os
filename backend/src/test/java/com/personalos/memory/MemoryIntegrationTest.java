@@ -68,6 +68,15 @@ class MemoryIntegrationTest {
     private final AiProperties aiProperties;
 
     @Autowired
+    private com.personalos.memory.service.MemoryService memoryService;
+
+    @Autowired
+    private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
+    @org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+    private com.personalos.memory.service.MemoryEmbeddingService embeddingService;
+
+    @Autowired
     MemoryIntegrationTest(@Value("${local.server.port}") int port,
                           MemoryRepository memoryRepository,
                           ScriptedToolCallingChatModel model,
@@ -85,6 +94,31 @@ class MemoryIntegrationTest {
     }
 
     // ------------------------------------------------------------------ REST
+
+    @Test
+    @DisplayName("同内容并发创建返回同一条记忆，唯一键失败不污染调用方事务")
+    void concurrentCreateReturnsWinnerOutsideFailedTransaction() throws Exception {
+        var barrier = new java.util.concurrent.CyclicBarrier(2);
+        String content = "并发保存的唯一记忆";
+        org.mockito.Mockito.doAnswer(invocation -> {
+            barrier.await(5, java.util.concurrent.TimeUnit.SECONDS);
+            return java.util.Optional.empty();
+        }).when(embeddingService).embed(content);
+        try (var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()) {
+            java.util.concurrent.Callable<String> create = () ->
+                    new org.springframework.transaction.support.TransactionTemplate(transactionManager)
+                            .execute(status -> {
+                                String id = memoryService.create(content).id();
+                                assertThat(memoryRepository.count()).isEqualTo(1);
+                                return id;
+                            });
+            var first = executor.submit(create);
+            var second = executor.submit(create);
+            assertThat(first.get(15, java.util.concurrent.TimeUnit.SECONDS))
+                    .isEqualTo(second.get(15, java.util.concurrent.TimeUnit.SECONDS));
+        }
+        assertThat(memoryRepository.count()).isEqualTo(1);
+    }
 
     @Test
     @DisplayName("空库列表返回空数组，而不是 404 或 null")

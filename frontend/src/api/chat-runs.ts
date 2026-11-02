@@ -46,11 +46,16 @@ export const resumeRun = (conversationId: string, id: string): Promise<ChatRun> 
   requestData({ url: `${base(conversationId)}/${id}/resume`, method: 'post' })
 export const stopRun = (conversationId: string, id: string): Promise<void> =>
   requestData({ url: `${base(conversationId)}/${id}/stop`, method: 'post' })
-export const startRun = (conversationId: string, content: string, options?: StreamChatOptions): Promise<ChatRun> =>
+export const startRun = (
+  conversationId: string,
+  content: string,
+  options?: StreamChatOptions,
+  key: string = crypto.randomUUID(),
+): Promise<ChatRun> =>
   requestData({
     url: base(conversationId),
     method: 'post',
-    headers: { 'Idempotency-Key': crypto.randomUUID() },
+    headers: { 'Idempotency-Key': key },
     data: { content, ...options },
   })
 

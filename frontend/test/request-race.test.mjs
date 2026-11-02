@@ -5,9 +5,20 @@ import { useSearchStore } from '@/stores/search'
 import { useTaskStore } from '@/stores/task'
 import { useCalendarStore } from '@/stores/calendar'
 import { useKnowledgeStore } from '@/stores/knowledge'
+import { useChatStore } from '@/stores/chat'
 
 // 延迟由测试直接控制，不依赖网络或定时器，固定重现逆序返回。
 const cases = [
+  {
+    name: '会话列表',
+    use: useChatStore,
+    url: '/chat/sessions/search',
+    run: (s) => s.searchSessions(),
+    result: (id) => ({ items: [{ conversationId: id }], total: 1, page: 0, size: 20 }),
+    read: (s) => s.sessions[0]?.conversationId,
+    loading: 'loadingSessions',
+    error: 'error',
+  },
   {
     name: '全局搜索',
     use: useSearchStore,

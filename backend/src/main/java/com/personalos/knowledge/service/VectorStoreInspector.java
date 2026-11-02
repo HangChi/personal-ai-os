@@ -206,6 +206,21 @@ public class VectorStoreInspector {
         return count == null ? 0 : count;
     }
 
+    /** 已在事务外算好的分块；导入时与业务记录共用同一事务，不再调用嵌入模型。 */
+    public record IndexedChunk(UUID id, String content, String metadata, float[] embedding) {
+    }
+
+    public void insertChunks(List<IndexedChunk> chunks) {
+        jdbcTemplate.batchUpdate("INSERT INTO " + qualifiedTable()
+                        + " (id, content, metadata, embedding) VALUES (?, ?, ?::jsonb, ?::vector)",
+                chunks, 100, (statement, chunk) -> {
+                    statement.setObject(1, chunk.id());
+                    statement.setString(2, chunk.content());
+                    statement.setString(3, chunk.metadata());
+                    statement.setString(4, java.util.Arrays.toString(chunk.embedding()));
+                });
+    }
+
     /**
      * 逐行校验所有向量的维度，返回不等于期望维度的行数。
      *

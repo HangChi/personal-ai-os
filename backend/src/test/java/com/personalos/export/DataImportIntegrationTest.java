@@ -28,8 +28,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  * {@code localhost:55432} —— 也就是开发者的**真实数据库**，运行测试等于清库。
  * 这类事故一旦发生只能靠备份恢复，所以除了容器配置，下面还有一道显式的库名断言。
  *
- * <p>用 {@code DELETE} 清表而不是事务回滚：向量写入走的是独立连接，事务回滚带不走它 ——
- * 用回滚的测试会留下脏向量，后面「按 document_id 计数」的断言就会飘。
+ * <p>用 {@code DELETE} 隔离每个用例；导入自己提交事务，测试不依赖外层回滚。
+ * 向量与业务记录必须同事务写入，下面另有中途失败的回滚断言。
  */
 @SpringBootTest(properties = {
         // 关掉自动装配的模型，否则会与下面的桩模型同时存在，
@@ -64,6 +64,15 @@ class DataImportIntegrationTest {
 
     @Autowired
     private DataImportService importService;
+
+    @Autowired
+    private DataExportService exportService;
+
+    @Autowired
+    private com.personalos.common.json.JsonCodec jsonCodec;
+
+    @org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+    private EmbeddingModel embeddingModel;
 
     @Autowired
     private VectorStoreInspector inspector;
@@ -181,12 +190,113 @@ class DataImportIntegrationTest {
 
         assertThat(jdbc.queryForObject("select content from memory where id = ?", String.class, MEMORY_ID))
                 .isEqualTo("用户偏好简洁回答");
+        assertThat(jdbc.queryForObject("select pinned from memory where id = ?", Boolean.class, MEMORY_ID))
+                .isFalse();
+        assertThat(jdbc.queryForObject("select hit_count from memory where id = ?", Integer.class, MEMORY_ID))
+                .isZero();
 
         // 知识库：文档记录与向量条数必须一致（SC-001 的不变量）
         assertThat(jdbc.queryForObject(
                 "select chunk_count from knowledge_document where id = ?", Integer.class, DOC_ID))
                 .isEqualTo(2);
         assertThat(inspector.countByDocumentId(DOC_ID)).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("导出后恢复记忆，保留常驻、取代关系与使用记录，支持前向引用")
+    void roundTripsMemoryState() {
+        UUID oldId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        UUID newId = UUID.fromString("00000000-0000-0000-0000-000000000002");
+        jdbc.update("insert into memory (id, content, content_hash, created_at, updated_at, source, pinned, "
+                        + "hit_count, last_used_at) values (?, ?, ?, now(), now(), 'MANUAL', true, 7, "
+                        + "'2026-10-31T08:00:00Z')",
+                newId, "最新要求", com.personalos.common.json.JsonCodec.sha256Hex("最新要求"));
+        jdbc.update("insert into memory (id, content, content_hash, created_at, updated_at, source, superseded_by) "
+                        + "values (?, ?, ?, now(), now(), 'AUTO', ?)",
+                oldId, "旧要求", com.personalos.common.json.JsonCodec.sha256Hex("旧要求"), newId);
+        var output = new java.io.ByteArrayOutputStream();
+        exportService.writeTo(output);
+        jdbc.execute("DELETE FROM memory");
+
+        var result = importService.importAll(output.toString(java.nio.charset.StandardCharsets.UTF_8));
+
+        assertThat(result.memories()).isEqualTo(2);
+        assertThat(jdbc.queryForObject("select pinned from memory where id = ?", Boolean.class, newId)).isTrue();
+        assertThat(jdbc.queryForObject("select superseded_by from memory where id = ?", UUID.class, oldId))
+                .isEqualTo(newId);
+        assertThat(jdbc.queryForObject("select hit_count from memory where id = ?", Integer.class, newId))
+                .isEqualTo(7);
+        assertThat(jdbc.queryForObject("select last_used_at from memory where id = ?",
+                java.time.OffsetDateTime.class, newId).toInstant())
+                .isEqualTo(java.time.Instant.parse("2026-10-31T08:00:00Z"));
+        assertThat(jdbc.queryForList("select id from memory where superseded_by is null", UUID.class))
+                .containsExactly(newId);
+    }
+
+    @Test
+    @DisplayName("知识库导入的嵌入调用在事务外，写入后的元数据与分块仍一致")
+    void embedsOutsideTransaction() {
+        org.mockito.Mockito.doAnswer(invocation -> {
+            assertThat(org.springframework.transaction.support.TransactionSynchronizationManager
+                    .isActualTransactionActive()).isFalse();
+            assertThat(jdbc.queryForObject("select count(*) from chat_session", Integer.class)).isZero();
+            return invocation.callRealMethod();
+        }).when(embeddingModel).embed(org.mockito.ArgumentMatchers.anyList(),
+                org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.EmbeddingOptions.class),
+                org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.BatchingStrategy.class));
+
+        assertThat(importService.importAll(fullPayload()).vectors()).isEqualTo(2);
+        assertThat(inspector.chunksByDocumentId(DOC_ID)).containsExactly("第一段内容", "第二段内容");
+    }
+
+    @Test
+    @DisplayName("嵌入失败不留下业务记录或向量")
+    void embeddingFailureLeavesDatabaseEmpty() {
+        org.mockito.Mockito.doThrow(new IllegalStateException("模拟嵌入服务失败"))
+                .when(embeddingModel).embed(org.mockito.ArgumentMatchers.anyList(),
+                        org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.EmbeddingOptions.class),
+                        org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.BatchingStrategy.class));
+
+        assertThatThrownBy(() -> importService.importAll(fullPayload()))
+                .isInstanceOf(IllegalStateException.class).hasMessageContaining("模拟嵌入服务失败");
+        assertThat(jdbc.queryForObject("select count(*) from chat_session", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from knowledge_document", Integer.class)).isZero();
+        assertThat(inspector.countAll()).isZero();
+    }
+
+    @Test
+    @DisplayName("写入后续文档失败时，已写入的向量和全部业务记录一起回滚")
+    void databaseFailureRollsBackVectorsAndBusinessRows() {
+        ImportPayload payload = jsonCodec.fromJson(fullPayload(), ImportPayload.class);
+        var document = payload.knowledgeDocuments().getFirst();
+        String duplicated = jsonCodec.toJson(new ImportPayload(payload.formatVersion(), payload.sessions(),
+                payload.tasks(), payload.calendarEvents(), payload.memories(), java.util.List.of(document, document)));
+
+        assertThatThrownBy(() -> importService.importAll(duplicated)).isInstanceOf(RuntimeException.class);
+        assertThat(jdbc.queryForObject("select count(*) from chat_session", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from task", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from memory", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from knowledge_document", Integer.class)).isZero();
+        assertThat(inspector.countAll()).isZero();
+    }
+
+    @Test
+    @DisplayName("嵌入期间目标库被写入时，导入重新校验并保留已有数据")
+    void rechecksDatabaseAfterEmbedding() {
+        org.mockito.Mockito.doAnswer(invocation -> {
+            jdbc.update("insert into memory (id, content, content_hash, created_at, updated_at, source) "
+                            + "values (?, ?, ?, now(), now(), 'MANUAL')", UUID.randomUUID(), "并发写入",
+                    com.personalos.common.json.JsonCodec.sha256Hex("并发写入"));
+            return invocation.callRealMethod();
+        }).when(embeddingModel).embed(org.mockito.ArgumentMatchers.anyList(),
+                org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.EmbeddingOptions.class),
+                org.mockito.ArgumentMatchers.any(org.springframework.ai.embedding.BatchingStrategy.class));
+
+        assertThatThrownBy(() -> importService.importAll(fullPayload()))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("导入只支持空库");
+        assertThat(jdbc.queryForObject("select content from memory", String.class)).isEqualTo("并发写入");
+        assertThat(jdbc.queryForObject("select count(*) from chat_session", Integer.class)).isZero();
+        assertThat(inspector.countAll()).isZero();
     }
 
     @Test

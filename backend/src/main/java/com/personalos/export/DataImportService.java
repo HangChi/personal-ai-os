@@ -3,6 +3,8 @@ package com.personalos.export;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.json.JsonCodec;
+import com.personalos.knowledge.service.VectorStoreInspector;
+import com.personalos.knowledge.service.VectorStoreInspector.IndexedChunk;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -16,9 +18,14 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.embedding.EmbeddingOptions;
+import org.springframework.ai.embedding.TokenCountBatchingStrategy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * 数据导入：把导出的 JSON 写回一个**空库**。
@@ -77,13 +84,20 @@ public class DataImportService {
             "memory", "knowledge_document", "confirmation", "operation_record");
 
     private final EntityManager entityManager;
-    private final VectorStore vectorStore;
+    private final EmbeddingModel embeddingModel;
+    private final VectorStoreInspector inspector;
     private final JsonCodec jsonCodec;
+    private final TransactionTemplate writeTransaction;
 
-    public DataImportService(EntityManager entityManager, VectorStore vectorStore, JsonCodec jsonCodec) {
+    public DataImportService(EntityManager entityManager, EmbeddingModel embeddingModel,
+                             VectorStoreInspector inspector, JsonCodec jsonCodec,
+                             PlatformTransactionManager transactionManager) {
         this.entityManager = entityManager;
-        this.vectorStore = vectorStore;
+        this.embeddingModel = embeddingModel;
+        this.inspector = inspector;
         this.jsonCodec = jsonCodec;
+        this.writeTransaction = new TransactionTemplate(transactionManager);
+        this.writeTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     /** 导入结果（给前端展示「到底进来了多少」） */
@@ -96,7 +110,7 @@ public class DataImportService {
      *
      * @param rawJson 导出文件的原始 JSON
      */
-    @Transactional
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
     public ImportResult importAll(String rawJson) {
         ImportPayload payload;
         try {
@@ -107,11 +121,22 @@ public class DataImportService {
         requireSupportedFormat(payload.formatVersion());
         requireEmptyDatabase();
 
+        // 模型调用发生在事务外；失败时尚未写入任何业务记录或向量。
+        List<PreparedDocument> documents = prepareDocuments(payload.knowledgeDocuments());
+        return writeTransaction.execute(status -> importPrepared(payload, documents));
+    }
+
+    private ImportResult importPrepared(ImportPayload payload, List<PreparedDocument> documents) {
+        // 嵌入期间可能有普通写入或另一次导入；锁定后重新校验，避免把数据混进目标库。
+        entityManager.createNativeQuery("lock table " + String.join(", ", GUARDED_TABLES)
+                + " in share row exclusive mode").executeUpdate();
+        requireEmptyDatabase();
+
         int messages = importSessions(payload.sessions());
         int tasks = importTasks(payload.tasks());
         int events = importCalendar(payload.calendarEvents());
         int memories = importMemories(payload.memories());
-        DocStats docs = importDocuments(payload.knowledgeDocuments());
+        DocStats docs = importDocuments(documents);
 
         ImportResult result = new ImportResult(
                 sizeOf(payload.sessions()), messages, tasks, events, memories,
@@ -319,8 +344,9 @@ public class DataImportService {
             }
             Instant createdAt = memory.createdAt() == null ? Instant.now() : memory.createdAt();
             entityManager.createNativeQuery(
-                            "insert into memory (id, content, content_hash, created_at, updated_at, source) "
-                                    + "values (?1, ?2, ?3, ?4, ?5, ?6)")
+                            "insert into memory (id, content, content_hash, created_at, updated_at, source, "
+                                    + "pinned, hit_count, last_used_at) "
+                                    + "values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)")
                     .setParameter(1, memory.id())
                     .setParameter(2, memory.content())
                     // V17 起 content_hash 是 NOT NULL 唯一键；导入时与写入路径同口径重算
@@ -328,8 +354,20 @@ public class DataImportService {
                     .setParameter(4, ts(createdAt))
                     .setParameter(5, ts(memory.updatedAt() == null ? createdAt : memory.updatedAt()))
                     .setParameter(6, isBlank(memory.source()) ? "MANUAL" : memory.source())
+                    .setParameter(7, Boolean.TRUE.equals(memory.pinned()))
+                    .setParameter(8, memory.hitCount() == null ? 0 : memory.hitCount())
+                    .setParameter(9, ts(memory.lastUsedAt()))
                     .executeUpdate();
             imported++;
+        }
+        // 自引用外键要等全部条目存在后再写，导出顺序不保证被取代条目排在目标之后。
+        for (ImportPayload.MemoryPayload memory : memories) {
+            if (memory.id() != null && !isBlank(memory.content()) && memory.supersededBy() != null) {
+                entityManager.createNativeQuery("update memory set superseded_by = ?1 where id = ?2")
+                        .setParameter(1, memory.supersededBy())
+                        .setParameter(2, memory.id())
+                        .executeUpdate();
+            }
         }
         return imported;
     }
@@ -338,21 +376,56 @@ public class DataImportService {
     private record DocStats(int documents, int vectors, List<String> notes) {
     }
 
-    private DocStats importDocuments(List<ImportPayload.DocumentPayload> documents) {
+    private record PreparedDocument(ImportPayload.DocumentMeta meta, int charCount, List<IndexedChunk> chunks) {
+    }
+
+    private List<PreparedDocument> prepareDocuments(List<ImportPayload.DocumentPayload> documents) {
+        if (documents == null) return List.of();
+        List<PreparedDocument> prepared = new ArrayList<>();
+        for (var entry : documents) {
+            var meta = entry.document();
+            if (meta == null || meta.id() == null || entry.chunks() == null || entry.chunks().isEmpty()) continue;
+            List<Document> chunks = new ArrayList<>();
+            for (String text : entry.chunks()) {
+                if (isBlank(text)) continue;
+                Map<String, Object> metadata = new LinkedHashMap<>();
+                metadata.put("document_id", meta.id().toString());
+                metadata.put("document_title", isBlank(meta.title()) ? meta.filename() : meta.title());
+                metadata.put("filename", isBlank(meta.filename()) ? "imported.md" : meta.filename());
+                metadata.put("chunk_index", chunks.size());
+                chunks.add(new Document(text, metadata));
+            }
+            List<IndexedChunk> indexed = new ArrayList<>();
+            if (!chunks.isEmpty()) {
+                List<float[]> vectors = embeddingModel.embed(chunks, EmbeddingOptions.builder().build(),
+                        new TokenCountBatchingStrategy());
+                if (vectors.size() != chunks.size()) {
+                    throw new BusinessException(ErrorCode.INTERNAL_ERROR, "嵌入模型返回的向量数量与分块数量不一致");
+                }
+                for (int i = 0; i < chunks.size(); i++) {
+                    Document chunk = chunks.get(i);
+                    indexed.add(new IndexedChunk(java.util.UUID.fromString(chunk.getId()), chunk.getText(),
+                            jsonCodec.toJson(chunk.getMetadata()), vectors.get(i)));
+                }
+            }
+            int charCount = meta.charCount() == null
+                    ? chunks.stream().mapToInt(chunk -> chunk.getText().length()).sum() : meta.charCount();
+            prepared.add(new PreparedDocument(meta, charCount, indexed));
+        }
+        return prepared;
+    }
+
+    private DocStats importDocuments(List<PreparedDocument> documents) {
         if (documents == null || documents.isEmpty()) {
             return new DocStats(0, 0, List.of());
         }
         int imported = 0;
         int vectors = 0;
         List<String> notes = new ArrayList<>();
-        for (ImportPayload.DocumentPayload entry : documents) {
-            ImportPayload.DocumentMeta meta = entry.document();
-            List<String> chunks = entry.chunks();
-            if (meta == null || meta.id() == null || chunks == null || chunks.isEmpty()) {
-                continue;
-            }
+        for (PreparedDocument entry : documents) {
+            ImportPayload.DocumentMeta meta = entry.meta();
+            List<IndexedChunk> chunks = entry.chunks();
             Instant createdAt = meta.createdAt() == null ? Instant.now() : meta.createdAt();
-            int charCount = meta.charCount() == null ? chunks.stream().mapToInt(String::length).sum() : meta.charCount();
             entityManager.createNativeQuery(
                             "insert into knowledge_document (id, title, filename, content_type, size_bytes, "
                                     + "char_count, chunk_count, created_at, updated_at) "
@@ -362,31 +435,15 @@ public class DataImportService {
                     .setParameter(3, isBlank(meta.filename()) ? "imported.md" : meta.filename())
                     .setParameter(4, isBlank(meta.contentType()) ? "text/markdown" : meta.contentType())
                     .setParameter(5, meta.sizeBytes() == null ? 0L : meta.sizeBytes())
-                    .setParameter(6, charCount)
+                    .setParameter(6, entry.charCount())
                     .setParameter(7, chunks.size())
                     .setParameter(8, ts(createdAt))
                     .setParameter(9, ts(createdAt))
                     .executeUpdate();
 
-            // 向量是「分块文本 + 嵌入模型」的派生物，导出时不带，只能重建。
-            // 元数据的键必须与 KnowledgeDocumentService 写入时完全一致，
-            // 否则检索出来的引用会缺字段（document_title / filename / chunk_index）。
-            List<Document> documentsToIndex = new ArrayList<>(chunks.size());
-            int index = 0;
-            for (String chunk : chunks) {
-                if (isBlank(chunk)) {
-                    continue;
-                }
-                Map<String, Object> metadata = new LinkedHashMap<>();
-                metadata.put("document_id", meta.id().toString());
-                metadata.put("document_title", isBlank(meta.title()) ? meta.filename() : meta.title());
-                metadata.put("filename", isBlank(meta.filename()) ? "imported.md" : meta.filename());
-                metadata.put("chunk_index", index++);
-                documentsToIndex.add(new Document(chunk, metadata));
-            }
-            if (!documentsToIndex.isEmpty()) {
-                vectorStore.add(documentsToIndex);
-                vectors += documentsToIndex.size();
+            if (!chunks.isEmpty()) {
+                inspector.insertChunks(chunks);
+                vectors += chunks.size();
             }
             imported++;
         }

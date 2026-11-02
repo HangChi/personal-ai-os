@@ -78,6 +78,7 @@ export const useChatStore = defineStore('chat', () => {
   const reconnecting = ref(false)
   const submittingInput = ref(false)
   let followupAttempt: { signature: string; key: string } | null = null
+  const sendAttempts = new Map<string, { signature: string; key: string }>()
   const loadingSessions = ref(false)
   const loadingMessages = ref(false)
   const error = ref<string | null>(null)
@@ -203,7 +204,9 @@ export const useChatStore = defineStore('chat', () => {
     }
   })
 
+  let sessionsRequestSeq = 0
   async function loadSessions(targetPage: number = sessionsPage.value): Promise<void> {
+    const requestSeq = ++sessionsRequestSeq
     loadingSessions.value = true
     try {
       const result = await listSessions({
@@ -211,14 +214,16 @@ export const useChatStore = defineStore('chat', () => {
         page: targetPage,
         size: sessionsSize.value,
       })
+      if (requestSeq !== sessionsRequestSeq) return
       sessions.value = result.items
       sessionsPage.value = result.page
       sessionsSize.value = result.size
       sessionsTotal.value = result.total
     } catch (cause) {
+      if (requestSeq !== sessionsRequestSeq) return
       error.value = cause instanceof Error ? cause.message : '加载会话列表失败'
     } finally {
-      loadingSessions.value = false
+      if (requestSeq === sessionsRequestSeq) loadingSessions.value = false
     }
   }
 
@@ -583,6 +588,12 @@ export const useChatStore = defineStore('chat', () => {
     const conversationId = currentConversationId.value
     // 乐观消息的顺序号必须取「当前最大 + 1」而不是「条数 + 1」：
     // 分页之后列表可能只是会话的尾部一段，条数与顺序号已经不再相等
+    const signature = JSON.stringify([trimmed, options])
+    let attempt = sendAttempts.get(conversationId)
+    if (attempt?.signature !== signature) {
+      attempt = { signature, key: crypto.randomUUID() }
+      sendAttempts.set(conversationId, attempt)
+    }
     const nextSequenceNo = messages.value.reduce((max, message) => Math.max(max, message.sequenceNo), 0) + 1
     const optimisticUserMessage: ChatMessage = {
       id: -1,
@@ -602,9 +613,14 @@ export const useChatStore = defineStore('chat', () => {
     error.value = null
     liveActivities.value = []
     try {
-      const run = await startRun(conversationId, trimmed, options)
+      // 同一次发送失败后的重试复用标识；服务端先返回已存在的执行，避免重复副作用。
+      const run = await startRun(conversationId, trimmed, options, attempt.key)
+      sendAttempts.delete(conversationId)
       await trackRun(run)
     } catch (cause) {
+      if (currentConversationId.value === conversationId) {
+        messages.value = messages.value.filter((message) => message.id !== -1 || message.sequenceNo !== nextSequenceNo)
+      }
       streaming.value = false
       error.value = cause instanceof Error ? cause.message : '发送失败'
     }

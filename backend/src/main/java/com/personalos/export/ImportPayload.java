@@ -54,7 +54,8 @@ public record ImportPayload(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record MemoryPayload(UUID id, String content, String source, Instant createdAt, Instant updatedAt) {
+    public record MemoryPayload(UUID id, String content, String source, Instant createdAt, Instant updatedAt,
+                                Boolean pinned, UUID supersededBy, Integer hitCount, Instant lastUsedAt) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

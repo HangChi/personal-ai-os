@@ -106,8 +106,9 @@ public class MemoryService {
     private final MemoryEmbeddingStore embeddingStore;
     private final MemoryProperties properties;
 
-    /** 写事务（创建、修改、置顶、命中记录共用；命中记录失败不能影响对话） */
+    /** 写事务（修改、置顶、命中记录共用；命中记录失败不能影响对话） */
     private final TransactionTemplate writeTransaction;
+    private final TransactionTemplate createTransaction;
 
     public MemoryService(MemoryRepository repository,
                          MemoryEmbeddingService embeddingService,
@@ -121,6 +122,10 @@ public class MemoryService {
         // 显式模板而不是 @Transactional：create 里要「先事务外算向量」，
         // 注解只能把整个方法包进事务，做不到这种分段（且同类自调用会静默失效）。
         this.writeTransaction = new TransactionTemplate(transactionManager);
+        // 唯一键竞争失败只回滚本次插入，不能污染调用方可能已有的事务。
+        this.createTransaction = new TransactionTemplate(transactionManager);
+        this.createTransaction.setPropagationBehavior(
+                org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     /** 导出专用有界读取；稳定排序与外层一致性快照共同保证不截断。 */
@@ -181,23 +186,22 @@ public class MemoryService {
         // 事务外：一次嵌入 HTTP。算不出来就照常保存，只是这条暂时不参与相关度排序
         Optional<float[]> vector = embeddingService.embed(normalized);
 
-        return writeTransaction.execute(status -> {
-            MemoryEntity entity = new MemoryEntity(normalized, Instant.now(), source);
-            MemoryEntity saved;
-            try {
+        try {
+            return createTransaction.execute(status -> {
+                MemoryEntity entity = new MemoryEntity(normalized, Instant.now(), source);
                 // saveAndFlush：下面写向量列是一条原生 UPDATE，行必须先真实存在于库里
-                saved = repository.saveAndFlush(entity);
-            } catch (DataIntegrityViolationException ex) {
-                // 并发去重（V17 唯一键）：另一个请求先落了同内容的行，返回它
-                MemoryEntity winner = repository.findByContentHash(contentHash).orElseThrow(() -> ex);
-                log.info("记忆并发去重命中 id={}", winner.getId());
-                return toDto(winner);
-            }
-            applyVector(saved, vector);
-            log.info("保存记忆 id={} 长度={} 来源={} 常驻={} 向量={}",
-                    saved.getId(), normalized.length(), source, saved.isPinned(), vector.isPresent());
-            return toDto(saved);
-        });
+                MemoryEntity saved = repository.saveAndFlush(entity);
+                applyVector(saved, vector);
+                log.info("保存记忆 id={} 长度={} 来源={} 常驻={} 向量={}",
+                        saved.getId(), normalized.length(), source, saved.isPinned(), vector.isPresent());
+                return toDto(saved);
+            });
+        } catch (DataIntegrityViolationException ex) {
+            // 失败事务已完整回滚，才能查询竞争胜出的记录。
+            MemoryEntity winner = repository.findByContentHash(contentHash).orElseThrow(() -> ex);
+            log.info("记忆并发去重命中 id={}", winner.getId());
+            return toDto(winner);
+        }
     }
 
     /**
