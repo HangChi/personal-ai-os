@@ -383,3 +383,16 @@ OpenSearch 每次启用启动会重新排队当前片段，避免新索引或恢
 
 基础设施 Compose 的 cache / queue / storage / search 可分别启用。只有启动对应服务时才校验它的凭据；
 例如 search profile 不要求 Redis、RabbitMQ 或 S3 密码。启用缓存和队列时，应用 URI 也必须包含相同的账号密码。
+
+### 宿主机本地发布
+
+`python3 scripts/dev/local-runtime.py status|stop|start --jar 发布包路径` 管理本项目 JAR。
+它读取 `.env` 和权限为 600 的 `.env.integrations.local`，不执行环境文件中的 shell 文本，
+凭据仅通过子进程环境传入；业务和管理端口绑定回环，继续保留登录认证。
+发布包放入 `.cache/local-runtime/releases/`，日志和非敏感进程状态保存在 `.cache/local-runtime/`。
+先完成构建，再停止后端进行数据库与附件一致备份、verify/drill，最后启动新包。
+原 `backend/target/` JAR 保留；回退时停止新进程，指定原 JAR 并传 `--without-integrations`。
+工具只按 PID 和 JAR 身份停止本项目进程，不强制杀死停止超时的进程。
+
+百炼原生重排支持 `RAG_RERANKER_PROTOCOL=dashscope`；请求采用 input/parameters，
+结果取 output.results。`cohere` 仍为兼容默认协议。模型和可用性以实际服务端响应为准。

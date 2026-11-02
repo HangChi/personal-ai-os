@@ -8,6 +8,24 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 class CrossEncoderRerankerTest {
+    @Test void supportsNativeDashScopePayloadAndResults() throws Exception {
+        var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);var mapper=new ObjectMapper();
+        var input=new java.util.concurrent.atomic.AtomicReference<tools.jackson.databind.JsonNode>();
+        server.createContext("/rerank",exchange->{
+            input.set(mapper.readTree(exchange.getRequestBody().readAllBytes()));
+            byte[] output="{\"output\":{\"results\":[{\"index\":0,\"relevance_score\":0.95}]},\"usage\":{\"total_tokens\":20}}".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200,output.length);exchange.getResponseBody().write(output);exchange.close();
+        });server.start();
+        try {
+            var client=new CrossEncoderReranker("http://127.0.0.1:"+server.getAddress().getPort()+"/rerank","test-key","qwen3-rerank","dashscope",mapper);
+            var hit=new KnowledgeHitDto(UUID.randomUUID(),"a","a.md",0,"住宿发票",.7);
+            assertThat(client.rank("报销凭证",List.of(hit),1000).hits()).containsExactly(hit);
+            assertThat(input.get().path("input").path("query").asString()).isEqualTo("报销凭证");
+            assertThat(input.get().path("parameters").path("top_n").asInt()).isEqualTo(1);
+            assertThat(input.get().path("query").isMissingNode()).isTrue();
+        }finally{server.stop(0);}
+    }
+
     @Test void ranksByValidatedIndicesAndKeepsVectorScoresSeparate() throws Exception {
         var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
         var body=new java.util.concurrent.atomic.AtomicReference<>("{\"results\":[{\"index\":1,\"relevance_score\":0.9},{\"index\":0,\"relevance_score\":0.2}]}");
