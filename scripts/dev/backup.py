@@ -2,6 +2,7 @@
 """数据库、聊天附件备份与隔离恢复验证；不执行 .env，不修改运行中的业务库。"""
 import argparse
 import hashlib
+import hmac
 import json
 import os
 from pathlib import Path
@@ -11,23 +12,27 @@ import tarfile
 import tempfile
 from datetime import datetime, timezone
 import uuid
+import urllib.request
+import urllib.error
+import urllib.parse
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def settings():
     values = {}
-    env = ROOT / '.env'
-    if env.is_file():
-        for raw in env.read_text().splitlines():
-            line = raw.strip().removeprefix('export ')
-            if not line or line.startswith('#') or '=' not in line:
-                continue
-            key, value = line.split('=', 1)
-            value = value.strip()
-            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
-                value = value[1:-1]
-            values[key.strip()] = value
+    for env in [ROOT / '.env', ROOT / '.env.integrations.local']:
+        if env.is_file():
+            for raw in env.read_text().splitlines():
+                line = raw.strip().removeprefix('export ')
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, value = line.split('=', 1)
+                value = value.strip()
+                if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                    value = value[1:-1]
+                values[key.strip()] = value
     values.update(os.environ)
     return values
 
@@ -117,6 +122,103 @@ def verify(artifact, config, drill=False, identity=None):
     print('备份文件、附件与数据库归档校验通过')
 
 
+class S3Snapshot:
+    """只读、path-style 的逻辑对象快照；不修改远端对象，不输出凭据。"""
+    def __init__(self, config):
+        self.endpoint = config.get('S3_ENDPOINT', '').rstrip('/')
+        uri = urllib.parse.urlparse(self.endpoint)
+        self.access = config.get('S3_ACCESS_KEY') or config.get('AWS_ACCESS_KEY_ID')
+        self.secret = config.get('S3_SECRET_KEY') or config.get('AWS_SECRET_ACCESS_KEY')
+        namespace = config.get('S3_NAMESPACE', '')
+        self.bucket = config.get('S3_BUCKET', '')
+        if uri.scheme not in ('http', 'https') or uri.username or not self.access or not self.secret or not namespace or not self.bucket:
+            raise ValueError('S3 备份需要合法端点、bucket、namespace 和可读凭据，未生成缺少对象的备份')
+        self.region = config.get('S3_REGION', 'us-east-1')
+        self.owner = hashlib.sha256(namespace.encode()).hexdigest()
+        self.prefix = 'personalos/' + self.owner + '/attachments/'
+        self.host = uri.netloc
+        self.maximum = int(config.get('AI_CHAT_MAX_ATTACHMENT_BYTES', str(64 * 1024 * 1024)))
+        self.session = config.get('AWS_SESSION_TOKEN')
+        class NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, req, fp, code, msg, headers, newurl):
+                return None
+        self.opener = urllib.request.build_opener(NoRedirect())
+
+    def get(self, key=None, parameters=None):
+        path = urllib.parse.quote('/' + self.bucket + ('/' + key if key else ''), safe='/-_.~')
+        query = urllib.parse.urlencode(sorted((parameters or {}).items()), quote_via=urllib.parse.quote, safe='-_.~')
+        now = datetime.now(timezone.utc)
+        day, timestamp = now.strftime('%Y%m%d'), now.strftime('%Y%m%dT%H%M%SZ')
+        empty = hashlib.sha256(b'').hexdigest()
+        headers = {'host': self.host, 'x-amz-content-sha256': empty, 'x-amz-date': timestamp}
+        if self.session:
+            headers['x-amz-security-token'] = self.session
+        signed = ';'.join(sorted(headers))
+        canonical_headers = ''.join(name + ':' + headers[name] + '\n' for name in sorted(headers))
+        canonical = '\n'.join(['GET', path, query, canonical_headers, signed, empty])
+        scope = day + '/' + self.region + '/s3/aws4_request'
+        sign = 'AWS4-HMAC-SHA256\n' + timestamp + '\n' + scope + '\n' + hashlib.sha256(canonical.encode()).hexdigest()
+        key_bytes = ('AWS4' + self.secret).encode()
+        for value in [day, self.region, 's3', 'aws4_request']:
+            key_bytes = hmac.new(key_bytes, value.encode(), hashlib.sha256).digest()
+        signature = hmac.new(key_bytes, sign.encode(), hashlib.sha256).hexdigest()
+        headers['Authorization'] = 'AWS4-HMAC-SHA256 Credential=' + self.access + '/' + scope + ', SignedHeaders=' + signed + ', Signature=' + signature
+        try:
+            return self.opener.open(urllib.request.Request(self.endpoint + path + ('?' + query if query else ''), headers=headers), timeout=30)
+        except urllib.error.URLError:
+            raise ValueError('S3 对象读取失败，备份未发布；请检查端点与读取权限') from None
+
+    def copy_to(self, target):
+        token = None
+        count = 0
+        seen_tokens = set()
+        while True:
+            parameters = {'list-type': '2', 'prefix': self.prefix, 'max-keys': '100'}
+            if token:
+                parameters['continuation-token'] = token
+            with self.get(parameters=parameters) as response:
+                body = response.read(1_000_001)
+            if len(body) > 1_000_000:
+                raise ValueError('S3 列表响应超过上限')
+            tree = ET.fromstring(body)
+            for item in tree.findall('{*}Contents'):
+                key = item.findtext('{*}Key', '')
+                if not key.startswith(self.prefix):
+                    raise ValueError('S3 返回了命名空间外对象，拒绝备份')
+                identity = key[len(self.prefix):]
+                try:
+                    if str(uuid.UUID(identity)) != identity:
+                        raise ValueError()
+                except ValueError:
+                    raise ValueError('S3 对象键不是本应用附件 UUID') from None
+                destination = target / identity
+                # 应用优先读旧本地附件，因此备份保留同样的读取优先级。
+                if destination.exists():
+                    continue
+                with self.get(key) as response:
+                    if response.headers.get('x-amz-meta-personalos-owner') != self.owner:
+                        raise ValueError('S3 对象归属标记不匹配，拒绝备份')
+                    size = 0
+                    with destination.open('wb') as output:
+                        while True:
+                            chunk = response.read(1024 * 1024)
+                            if not chunk:
+                                break
+                            size += len(chunk)
+                            if size > self.maximum:
+                                raise ValueError('S3 附件超过备份大小上限')
+                            output.write(chunk)
+                    if size != int(item.findtext('{*}Size', '-1')):
+                        raise ValueError('S3 对象大小发生变化，备份未发布')
+                count += 1
+            if tree.findtext('{*}IsTruncated', 'false').lower() != 'true':
+                return count
+            token = tree.findtext('{*}NextContinuationToken')
+            if not token or token in seen_tokens:
+                raise ValueError('S3 分页游标无效，备份未发布')
+            seen_tokens.add(token)
+
+
 def backup(config):
     container = config.get('DB_CONTAINER', 'personal-ai-os-postgres')
     user = config.get('POSTGRES_USER', 'personalos')
@@ -152,6 +254,9 @@ def backup(config):
             if any(p.is_symlink() for p in source.rglob('*')):
                 raise ValueError('附件目录不允许符号链接')
             shutil.copytree(source, uploads, dirs_exist_ok=True)
+        if config.get('S3_ENABLED', 'false').lower() == 'true':
+            copied_objects = S3Snapshot(config).copy_to(uploads)
+            print('已将 S3 附件纳入逻辑备份：' + str(copied_objects) + ' 项')
         files = {str(p.relative_to(data)): sha(p) for p in data.rglob('*') if p.is_file()}
         (data / 'manifest.json').write_text(json.dumps({
             'formatVersion': 1, 'createdAt': datetime.now(timezone.utc).isoformat(),
