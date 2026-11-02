@@ -90,6 +90,10 @@ personal-ai-os/
 
 ## 快速开始
 
+> 已配置本机完整部署（宿主机 JAR）时，使用 `./scripts/dev/local-stack.sh up -d`，
+> 数据库、中间件、监控和前端统一显示在 `personal-ai-os` 分组中。Java 后端仍单独管理；
+> 配置与启停方式见[运维手册](docs/operations.md)。下列步骤仍适用于首次开发环境搭建。
+
 前置：JDK 21、Docker（含 `docker compose`）、Node.js `^20.19.0 || >=22.12.0`。
 **无需预装 Maven** —— 使用仓库自带的 `backend/mvnw`。
 
