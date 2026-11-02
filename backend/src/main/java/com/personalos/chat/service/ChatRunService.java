@@ -20,6 +20,10 @@ import org.springframework.stereotype.Service;
 /** 持久化执行身份与活动记录。单实例部署中，页面断开不取消后台执行。 */
 @Service
 public class ChatRunService {
+    private final com.personalos.common.web.ModelConcurrencyGate gate;
+    private final com.personalos.common.web.TokenBucketRateLimiter rateLimiter;
+    private final RunEventHub eventHub;
+    private final RunEventDelivery delivery;
     private final ChatRunRepository repository;
     private final ChatCompletionService completion;
     private final ChatSessionService sessions;
@@ -28,7 +32,13 @@ public class ChatRunService {
     private final Map<String, RunEmitter> workers = new ConcurrentHashMap<>();
 
     public ChatRunService(ChatRunRepository repository, ChatCompletionService completion,
-                          ChatSessionService sessions, JsonCodec json, AgentInteractionService interactions) {
+                          ChatSessionService sessions, JsonCodec json, AgentInteractionService interactions,
+                          com.personalos.common.web.ModelConcurrencyGate gate,
+                          com.personalos.common.web.TokenBucketRateLimiter rateLimiter, RunEventHub eventHub, RunEventDelivery delivery) {
+        this.delivery = delivery;
+        this.gate = gate;
+        this.rateLimiter = rateLimiter;
+        this.eventHub = eventHub;
         this.repository = repository;
         this.completion = completion;
         this.sessions = sessions;
@@ -49,8 +59,11 @@ public class ChatRunService {
         if (repository.latest(conversationId).map(run -> interactions.pendingQuestion(run.id()) != null).orElse(false)) {
             throw conflict("请先回答当前任务的问题");
         }
-        repository.create(id, conversationId, json.toJson(request));
-        launch(new ChatRunRepository.Run(id, conversationId, json.toJson(request), "RUNNING"), false);
+        var lease = acquire();
+        try {
+            repository.create(id, conversationId, json.toJson(request));
+            launch(new ChatRunRepository.Run(id, conversationId, json.toJson(request), "RUNNING"), false, null, lease);
+        } catch (RuntimeException ex) { lease.close(); throw ex; }
         return get(conversationId, id, 0);
     }
 
@@ -76,7 +89,11 @@ public class ChatRunService {
         if (interactions.pendingQuestion(id) != null) throw conflict("请先回答当前任务的问题");
         if (repository.pending(conversationId)) throw conflict("请先处理待确认操作，再继续任务");
         if (repository.uncertain(id)) throw conflict("有工具的执行结果尚未核实，请先在活动记录中核对，避免重复执行");
-        if (repository.transition(id, run.status(), "RUNNING")) launch(run, true, userInput);
+        var lease = acquire();
+        try {
+            if (repository.transition(id, run.status(), "RUNNING")) launch(run, true, userInput, lease);
+            else lease.close();
+        } catch (RuntimeException ex) { lease.close(); throw ex; }
         return get(conversationId, id, 0);
     }
 
@@ -87,6 +104,7 @@ public class ChatRunService {
         if (worker != null) worker.cancel();
         repository.transition(id, "RUNNING", "STOPPED");
         repository.transition(id, "INTERRUPTED", "STOPPED");
+        eventHub.signal(id);
     }
 
     /** 人工决定已由确认服务执行；只结束等待，不再向原任务发送续跑消息。 */
@@ -205,21 +223,31 @@ public class ChatRunService {
         }
     }
 
-    private void launch(ChatRunRepository.Run run, boolean resuming) { launch(run, resuming, null); }
+    private com.personalos.common.web.ModelConcurrencyGate.Lease acquire() {
+        var lease = gate.tryAcquire();
+        if (lease == null) throw new BusinessException(ErrorCode.RATE_LIMITED);
+        if (!rateLimiter.tryAcquire()) { lease.close(); throw new BusinessException(ErrorCode.RATE_LIMITED); }
+        return lease;
+    }
 
-    private void launch(ChatRunRepository.Run run, boolean resuming, String userInput) {
-        var emitter = new RunEmitter((name, payload) -> {
+    private void launch(ChatRunRepository.Run run, boolean resuming, String userInput,
+                        com.personalos.common.web.ModelConcurrencyGate.Lease lease) {
+        var emitter = new RunEmitter(delivery.buffer((name, payload) -> {
             RunEmitter current = workers.get(run.id());
             Object eventPayload = "error".equals(name) && current != null && current.stopped()
                     ? new ChatStreamEvents.Error(0, "任务已停止，执行进度已保存") : payload;
             repository.event(run.id(), name, json.toJson(eventPayload));
             if ("done".equals(name) || "yield".equals(name)) {
+                lease.close();
                 finish(run, "yield".equals(name));
             } else if ("error".equals(name)) {
+                lease.close();
                 repository.transition(run.id(), "RUNNING", "INTERRUPTED");
                 workers.remove(run.id());
             }
-        });
+            eventHub.signal(run.id());
+        }));
+        emitter.whenComplete(lease::close);
         workers.put(run.id(), emitter);
         emitter.control(() -> interactions.checkpoint(run.id()));
         var steering = interactions.applySteering(run.id());

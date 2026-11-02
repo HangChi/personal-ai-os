@@ -10,7 +10,7 @@ import org.springframework.mock.web.*;
 import tools.jackson.databind.ObjectMapper;
 
 class ModelConcurrencyFilterTest {
-    private final ModelConcurrencyFilter filter = new ModelConcurrencyFilter(1, new JsonCodec(new ObjectMapper()));
+    private final ModelConcurrencyFilter filter = new ModelConcurrencyFilter(new ModelConcurrencyGate(1), new JsonCodec(new ObjectMapper()));
     private MockHttpServletRequest request() {
         var r = new MockHttpServletRequest("POST", "/api/v1/knowledge/ask");
         r.setAsyncSupported(true);

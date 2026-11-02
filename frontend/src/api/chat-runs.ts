@@ -1,4 +1,4 @@
-import { requestData } from '@/api/http'
+import { apiBaseUrl, notifyUnauthorized, requestData } from '@/api/http'
 import type { StreamChatOptions, StreamHandlers } from '@/api/chat'
 
 export interface RunActivity {
@@ -97,17 +97,18 @@ export const editFollowup = (
 export const steerFollowup = (conversationId: string, runId: string, inputId: string): Promise<ChatRun> =>
   requestData({ url: `${base(conversationId)}/${runId}/followups/${inputId}/steer`, method: 'post' })
 
-/** 只重连只读事件接口；绝不通过重新提交消息重连。游标去重，支持页面刷新后追赶。 */
+/** 读取持久化事件流；只重连 GET，游标去重，绝不重新提交消息。 */
 export async function followRun(initial: ChatRun, handlers: RunHandlers, signal: AbortSignal): Promise<void> {
-  let run = initial
   let cursor = 0
+  let run = initial
   let failures = 0
-  while (!signal.aborted) {
+  const apply = (value: ChatRun): void => {
+    run = value
     handlers.onRun(run)
     for (const event of run.events) {
       if (event.id <= cursor) continue
-      cursor = event.id
       const data = JSON.parse(event.payload)
+      cursor = event.id
       switch (event.name) {
         case 'reset':
           handlers.onReset()
@@ -129,27 +130,83 @@ export async function followRun(initial: ChatRun, handlers: RunHandlers, signal:
           break
       }
     }
-    // 一批恰好满 200 条时继续追赶，终态也必须把尾部读完。
-    if (run.status !== 'RUNNING' && run.events.length < 200) return
-    await new Promise<void>((resolve) =>
-      setTimeout(resolve, run.events.length === 200 ? 0 : Math.min(300 * 2 ** failures, 5000)),
-    )
-    if (signal.aborted) return
+  }
+  apply(initial)
+  while (!signal.aborted && (run.status === 'RUNNING' || run.events.length === 200)) {
     try {
-      run = await requestData<ChatRun>({
-        url: `${base(run.conversationId)}/${run.id}`,
-        method: 'get',
-        params: { after: cursor },
-        signal,
+      await readRunStream(run.conversationId, run.id, cursor, signal, (next) => {
+        apply(next)
+        failures = 0
+        handlers.onConnection(false)
       })
-      failures = 0
-      handlers.onConnection(false)
+      if (run.status !== 'RUNNING' && run.events.length < 200) return
     } catch (cause) {
       if (signal.aborted) return
       handlers.onConnection(true)
       if (++failures >= 8) throw cause
-      // 下一轮只重试读取，不再次处理上一批事件或提前按终态退出。
-      run = { ...run, status: 'RUNNING', events: [] }
     }
+    // 服务端定期关闭长连接，重连仍从最后持久化事件继续；等待可被停止立即打断。
+    await new Promise<void>((resolve) => {
+      const finish = (): void => {
+        clearTimeout(timer)
+        signal.removeEventListener('abort', finish)
+        resolve()
+      }
+      const timer = setTimeout(finish, Math.min(300 * 2 ** failures, 5000))
+      signal.addEventListener('abort', finish, { once: true })
+      if (signal.aborted) finish()
+    })
+  }
+}
+
+export async function readRunStream(
+  conversationId: string,
+  id: string,
+  after: number,
+  signal: AbortSignal,
+  onRun: (run: ChatRun) => void,
+): Promise<void> {
+  const controller = new AbortController()
+  const abort = (): void => controller.abort()
+  signal.addEventListener('abort', abort, { once: true })
+  if (signal.aborted) abort()
+  let idle = setTimeout(abort, 45_000)
+  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
+  try {
+    const response = await fetch(`${apiBaseUrl}${base(conversationId)}/${id}/events?after=${after}`, {
+      headers: { Accept: 'text/event-stream' },
+      credentials: 'same-origin',
+      signal: controller.signal,
+    })
+    if (response.status === 401) notifyUnauthorized()
+    if (!response.ok || !response.body) throw new Error('无法读取执行进度，请稍后重连')
+    reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    while (!signal.aborted) {
+      const { done, value } = await reader.read()
+      if (done) return
+      clearTimeout(idle)
+      idle = setTimeout(abort, 45_000)
+      buffer += decoder.decode(value, { stream: true })
+      let boundary: RegExpExecArray | null
+      while ((boundary = /\r?\n\r?\n/.exec(buffer))) {
+        const frame = buffer.slice(0, boundary.index)
+        buffer = buffer.slice(boundary.index + boundary[0].length)
+        const lines = frame.split(/\r?\n/)
+        if (!lines.some((line) => line === 'event:run' || line === 'event: run')) continue
+        const data = lines
+          .filter((line) => line.startsWith('data:'))
+          .map((line) => line.slice(5).trimStart())
+          .join('\n')
+        if (data) onRun(JSON.parse(data) as ChatRun)
+      }
+    }
+  } finally {
+    clearTimeout(idle)
+    signal.removeEventListener('abort', abort)
+    controller.abort()
+    await reader?.cancel().catch(() => {})
+    reader?.releaseLock()
   }
 }

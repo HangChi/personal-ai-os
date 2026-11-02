@@ -41,10 +41,14 @@ class ChatRunIntegrationTest {
     @Autowired com.personalos.agent.plan.service.AgentPlanService plans;
     @Autowired com.personalos.common.confirmation.ConfirmationService confirmations;
     @Autowired com.personalos.common.ai.tool.ToolExecutor tools;
+    @Autowired com.personalos.common.web.ModelConcurrencyGate gate;
+    @Autowired Model model;
     static class Model implements ChatModel {
+        volatile boolean hold;
         @Override public ChatResponse call(Prompt prompt) { return response("完成"); }
         @Override public ChatOptions getOptions() { return ChatOptions.builder().build(); }
         @Override public Flux<ChatResponse> stream(Prompt prompt) {
+            if (hold) return Flux.never();
             return Flux.concat(Flux.just(response("开始")), Flux.just(response("完成")).delayElements(Duration.ofMillis(400)));
         }
         private ChatResponse response(String text) { return new ChatResponse(List.of(new Generation(new AssistantMessage(text)))); }
@@ -58,6 +62,45 @@ class ChatRunIntegrationTest {
             Thread.sleep(25);
         }
         throw new AssertionError("任务未在 5 秒内结束");
+    }
+    @Test void backgroundPermitSurvivesHttpAndRetryAndIsReleasedOnStop() throws Exception {
+        model.hold = true;
+        var held = new java.util.ArrayList<com.personalos.common.web.ModelConcurrencyGate.Lease>();
+        String conversation = sessions.create("并发准入").conversationId();
+        String other = sessions.create("被限流").conversationId();
+        String id = UUID.randomUUID().toString();
+        try {
+            runs.start(conversation, id, request());
+            for (var lease = gate.tryAcquire(); lease != null; lease = gate.tryAcquire()) held.add(lease);
+            assertThat(held).hasSize(3);
+            assertThat(runs.start(conversation, id, request()).id()).isEqualTo(id);
+            assertThatThrownBy(() -> runs.start(other, "rejected", request()))
+                    .isInstanceOf(com.personalos.common.exception.BusinessException.class)
+                    .hasMessageContaining("频繁");
+            assertThat(repository.find(other, "rejected")).isEmpty();
+            runs.stop(conversation, id);
+            var released = gate.tryAcquire();
+            assertThat(released).isNotNull();
+            released.close();
+        } finally { runs.stop(conversation, id); held.forEach(AutoCloseableLease -> AutoCloseableLease.close()); model.hold = false; }
+    }
+    @Test void persistedSseReplaysByCursorAndDisconnectDoesNotCancelWork() throws Exception {
+        String conversation = sessions.create("流式进度").conversationId();
+        var run = runs.start(conversation, UUID.randomUUID().toString(), request());
+        var url = "http://127.0.0.1:" + port + "/api/v1/chat/sessions/" + conversation + "/runs/" + run.id() + "/events";
+        try (var client = java.net.http.HttpClient.newHttpClient()) {
+            var response = client.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(url)).GET().build(),
+                    java.net.http.HttpResponse.BodyHandlers.ofInputStream());
+            assertThat(response.statusCode()).isEqualTo(200);
+            response.body().close();
+            var done = awaitFinished(conversation, run.id());
+            assertThat(done.status()).isEqualTo("COMPLETED");
+            long cursor = done.events().getFirst().id();
+            var replay = client.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(url + "?after=" + cursor))
+                    .GET().build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+            assertThat(replay.body()).contains("event:run", "COMPLETED", "done")
+                    .doesNotContain("\"name\":\"start\"");
+        }
     }
     @Test void httpStartReturnsExecutionIdentityAndBrowserCanReconnectByCursor() throws Exception {
         String conversation = sessions.create("HTTP 后台执行").conversationId();

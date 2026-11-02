@@ -7,6 +7,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public final class RunEmitter extends SseEmitter {
     private final BiConsumer<String, Object> publisher;
     private volatile Runnable cancel;
+    private Runnable completion = () -> { };
+    public void whenComplete(Runnable action) { completion = action; }
     private volatile boolean stopped;
     private Runnable control = () -> { };
     public void control(Runnable action) { control = action; }
@@ -32,5 +34,5 @@ public final class RunEmitter extends SseEmitter {
     }
     // 后台出口不需要网络心跳，也不积压 Spring MVC 的 earlySendAttempts。
     @Override public void send(SseEventBuilder builder) { }
-    @Override public void complete() { }
+    @Override public void complete() { completion.run(); }
 }

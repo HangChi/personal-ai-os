@@ -6,9 +6,6 @@ import com.personalos.common.json.JsonCodec;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -18,13 +15,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 11)
 public class ModelConcurrencyFilter extends OncePerRequestFilter {
-    private final Semaphore permits;
+    private final ModelConcurrencyGate gate;
     private final JsonCodec codec;
 
-    public ModelConcurrencyFilter(@Value("${app.model-max-concurrent-requests:4}") int maxConcurrent,
-                                   JsonCodec codec) {
-        if (maxConcurrent < 1) throw new IllegalArgumentException("模型并发上限必须为正数");
-        permits = new Semaphore(maxConcurrent);
+    public ModelConcurrencyFilter(ModelConcurrencyGate gate, JsonCodec codec) {
+        this.gate = gate;
         this.codec = codec;
     }
 
@@ -34,14 +29,14 @@ public class ModelConcurrencyFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
-        if (!permits.tryAcquire()) {
+        var lease = gate.tryAcquire();
+        if (lease == null) {
             response.setStatus(429);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write(codec.toJson(ApiResponse.error(ErrorCode.RATE_LIMITED)));
             return;
         }
-        AtomicBoolean released = new AtomicBoolean();
-        Runnable release = () -> { if (released.compareAndSet(false, true)) permits.release(); };
+        Runnable release = lease::close;
         try {
             chain.doFilter(request, response);
         } finally {

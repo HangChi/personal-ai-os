@@ -270,6 +270,7 @@ public class ChatCompletionService {
                 // 释放会话互斥锁：这里被所有终止路径（done/error/超时/断连）调用，
                 // streamClosed 保证只执行一次，因此锁恰好释放一次
                 activeStreams.remove(conversationId);
+                if (background != null) background.complete();
                 metrics.streamClosed();
                 metrics.completed(metricProvider, metricModel, metricOutcome.get(), System.nanoTime() - metricStarted);
             }

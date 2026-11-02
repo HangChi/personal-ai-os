@@ -11,7 +11,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/chat/sessions/{conversationId}/runs")
 public class ChatRunController {
     private final ChatRunService service;
-    public ChatRunController(ChatRunService service) { this.service = service; }
+    private final com.personalos.chat.service.RunEventDelivery delivery;
+    public ChatRunController(ChatRunService service, com.personalos.chat.service.RunEventDelivery delivery) {
+        this.service = service;
+        this.delivery = delivery;
+    }
+    @GetMapping(value = "/{id}/events", produces = "text/event-stream")
+    public org.springframework.web.servlet.mvc.method.annotation.SseEmitter events(
+            @PathVariable String conversationId, @PathVariable String id,
+            @RequestParam(defaultValue = "0") long after) {
+        service.get(conversationId, id, after); // 在响应切换成 SSE 前校验归属，错误仍返回统一信封。
+        return delivery.open(id, after, cursor -> service.get(conversationId, id, cursor));
+    }
     @PostMapping
     public ApiResponse<ChatRunDto> start(@PathVariable String conversationId,
             @RequestHeader(value = "Idempotency-Key", required = false) String key,
