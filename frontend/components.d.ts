@@ -93,6 +93,8 @@ declare module 'vue' {
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     ProviderPresetPicker: typeof import('./src/components/settings/ProviderPresetPicker.vue')['default']
     RagTrace: typeof import('./src/components/knowledge/RagTrace.vue')['default']
+    ReminderNotice: typeof import('./src/components/calendar/ReminderNotice.vue')['default']
+    ReminderNotifications: typeof import('./src/components/calendar/ReminderNotifications.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     StatusTag: typeof import('./src/components/StatusTag.vue')['default']

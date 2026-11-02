@@ -31,7 +31,7 @@ import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { ElNotification } from 'element-plus'
+import ReminderNotifications from '@/components/calendar/ReminderNotifications.vue'
 import { useCalendarStore } from '@/stores/calendar'
 import { refreshPushState } from '@/notifications/web-push'
 import { useAuthStore } from '@/stores/auth'
@@ -64,20 +64,6 @@ watch(
     } else calendarStore.stopReminderPolling()
   },
   { immediate: true },
-)
-watch(
-  () => calendarStore.inlineNotices,
-  () => {
-    for (const notice of calendarStore.consumeInlineNotices()) {
-      ElNotification({
-        title: notice.title,
-        message: notice.body,
-        type: 'warning',
-        duration: 6000,
-        position: 'bottom-right',
-      })
-    }
-  },
 )
 onBeforeUnmount(() => calendarStore.stopReminderPolling())
 
@@ -294,6 +280,7 @@ async function handleLogout(): Promise<void> {
       { 'app-shell--fixed': route.meta.fullWidth, 'app-shell--settings': route.name === 'settings' },
     ]"
   >
+    <ReminderNotifications v-if="!isLoginPage" />
     <!-- 侧栏：宽屏主导航；登录页不渲染 -->
     <el-aside v-if="!isLoginPage" class="app-shell__aside" :width="asideWidth">
       <!--
