@@ -87,7 +87,7 @@ export function searchKnowledge(query: string, topK?: number): Promise<Knowledge
     url: '/knowledge/search',
     method: 'post',
     data: { query, topK },
-    timeout: 30_000,
+    timeout: 90_000,
   })
 }
 

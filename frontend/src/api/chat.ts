@@ -3,6 +3,7 @@ import { csrfToken } from '@/api/csrf'
 import { resolveFilename, triggerBlobDownload } from '@/api/export'
 import type { ApiResponse } from '@/types/api'
 import type {
+  RagRetrieval,
   ChatAttachment,
   ChatCitation,
   ChatMessage,
@@ -118,6 +119,7 @@ export interface StreamHandlers {
   onStart?: (conversationId: string) => void
   /** 知识库增强开启且检索完成后触发一次（阶段 19）；空数组表示零命中 */
   onCitations?: (citations: ChatCitation[]) => void
+  onRag?: (retrieval: RagRetrieval) => void
   /** 每个内容增量触发一次 */
   onDelta: (content: string) => void
   /** 正常结束，参数为完整回复 */
@@ -336,6 +338,9 @@ function dispatchEvent(eventName: string, payload: string, handlers: StreamHandl
       handlers.onCitations?.(list as ChatCitation[])
       break
     }
+    case 'rag':
+      handlers.onRag?.(parsed as unknown as RagRetrieval)
+      break
     case 'delta':
       handlers.onDelta(String(parsed.content ?? ''))
       break

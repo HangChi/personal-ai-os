@@ -9,6 +9,7 @@
  */
 import { storeToRefs } from 'pinia'
 
+import KnowledgeGovernanceTab from '@/components/knowledge/KnowledgeGovernanceTab.vue'
 import KnowledgeAskTab from '@/components/knowledge/KnowledgeAskTab.vue'
 import KnowledgeDocumentsTab from '@/components/knowledge/KnowledgeDocumentsTab.vue'
 import KnowledgeSearchTab from '@/components/knowledge/KnowledgeSearchTab.vue'
@@ -32,6 +33,9 @@ const { knowledgeTab } = storeToRefs(uiStore)
       </el-tab-pane>
       <el-tab-pane label="问答" name="ask">
         <KnowledgeAskTab />
+      </el-tab-pane>
+      <el-tab-pane label="资料治理" name="governance" lazy>
+        <KnowledgeGovernanceTab v-if="knowledgeTab === 'governance'" />
       </el-tab-pane>
     </el-tabs>
   </div>

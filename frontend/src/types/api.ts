@@ -222,6 +222,29 @@ export interface KnowledgeHit {
   score: number | null
   /** 命中来源（混合检索）：VECTOR / KEYWORD / BOTH */
   matchedBy?: 'VECTOR' | 'KEYWORD' | 'BOTH'
+  source?: KnowledgeSource | null
+}
+
+export interface KnowledgeSource {
+  spaceId: string
+  spaceName: string
+  version: string
+  scope: string
+  effectiveFrom: string | null
+  effectiveUntil: string | null
+  authority: string
+  lifecycle: 'ACTIVE' | 'SUPERSEDED'
+  revision: number
+  reviewState: string
+}
+export interface RagRetrieval {
+  hits: KnowledgeHit[]
+  queries: string[]
+  stages: { name: string; status: string; durationMs: number; inputCount: number; outputCount: number }[]
+  warnings: string[]
+  status: 'READY' | 'INSUFFICIENT' | 'CONFLICT' | 'CLARIFY' | 'UNVERIFIED'
+  disagreements: { left: KnowledgeHit; right: KnowledgeHit; leftQuote: string; rightQuote: string; reason: string }[]
+  clarification: string
 }
 
 /** 引用：命中 + 编号 */
@@ -233,15 +256,17 @@ export interface Citation extends KnowledgeHit {
 export interface KnowledgeAskResponse {
   question: string
   answer: string
-  /** false 表示知识库中没有相关内容（此时 citations 为空，且未调用模型） */
+  /** false: no answer, unresolved disagreement, or incomplete evidence review. */
   answered: boolean
   citations: Citation[]
+  retrieval?: RagRetrieval | null
 }
 
 /** 检索响应 */
 export interface KnowledgeSearchResponse {
   query: string
   hits: KnowledgeHit[]
+  retrieval?: RagRetrieval | null
 }
 
 // ---------------------------------------------------------------------------

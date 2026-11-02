@@ -30,12 +30,14 @@ export const useUiStore = defineStore('ui', () => {
   /** 任务页视图（C-05 / FR-010）：table | board */
   const tasksView = ref<'table' | 'board'>(localStorage.getItem('os.tasks.view') === 'board' ? 'board' : 'table')
   /** 知识库 Tab（T026）：documents | search | ask */
-  const knowledgeTab = ref<'documents' | 'search' | 'ask'>(
+  const knowledgeTab = ref<'documents' | 'search' | 'ask' | 'governance'>(
     localStorage.getItem('os.knowledge.tab') === 'search'
       ? 'search'
       : localStorage.getItem('os.knowledge.tab') === 'ask'
         ? 'ask'
-        : 'documents',
+        : localStorage.getItem('os.knowledge.tab') === 'governance'
+          ? 'governance'
+          : 'documents',
   )
 
   /** 侧栏导航折叠（阶段 18 追加）：true = 纯图标模式，localStorage 持久化 */

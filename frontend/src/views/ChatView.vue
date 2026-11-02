@@ -22,6 +22,7 @@ import ChatUserQuestion from '@/components/chat/ChatUserQuestion.vue'
 import ChatFollowupQueue from '@/components/chat/ChatFollowupQueue.vue'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
+import RagTrace from '@/components/knowledge/RagTrace.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
 import ChatSessionList from '@/components/chat/ChatSessionList.vue'
 import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
@@ -66,6 +67,7 @@ const {
   pendingConfirmations,
   toolHistory,
   liveCitations,
+  liveRag,
   retrievalState,
   contextUsage,
 } = storeToRefs(chatStore)
@@ -723,6 +725,8 @@ async function jumpToMatch(step: number): Promise<void> {
             @cancel-edit="editingMessageId = null"
             @submit-edit="submitMessageEdit"
           />
+
+          <RagTrace :retrieval="liveRag" />
 
           <!-- 流式中的助手消息 -->
           <ChatStreamingItem

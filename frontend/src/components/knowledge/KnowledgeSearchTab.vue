@@ -9,12 +9,13 @@ import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 
+import RagTrace from '@/components/knowledge/RagTrace.vue'
 import KnowledgeHitList from '@/components/knowledge/KnowledgeHitList.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useKnowledgeStore } from '@/stores/knowledge'
 
 const knowledgeStore = useKnowledgeStore()
-const { hits, searching, searchError, searched } = storeToRefs(knowledgeStore)
+const { hits, searching, searchError, searched, retrieval } = storeToRefs(knowledgeStore)
 
 const searchQuery = ref('')
 const searchTopK = ref(4)
@@ -59,7 +60,8 @@ async function handleSearch(): Promise<void> {
       :description="searchError"
     />
 
-    <el-empty v-else-if="searched && hits.length === 0" description="没有匹配的片段，换个检索词试试" :image-size="60" />
+    <RagTrace :retrieval="retrieval" />
+    <el-empty v-if="searched && hits.length === 0" description="没有匹配的片段，换个检索词试试" :image-size="60" />
     <KnowledgeHitList v-else-if="hits.length > 0" :items="hits" />
   </el-card>
 </template>

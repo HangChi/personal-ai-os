@@ -97,6 +97,7 @@ export const useChatStore = defineStore('chat', () => {
    * 来源是 SSE citations 事件；done 之后消息列表会带落库后的引用接管，
    * 这个 ref 只在流式中用于「已找到 N 条依据」的即时展示。
    */
+  const liveRag = ref<import('@/types/api').RagRetrieval | null>(null)
   const liveCitations = ref<ChatCitation[]>([])
   /**
    * 本轮检索状态：idle 未开启 / searching 检索中 / done 已出结果（阶段 19）。
@@ -270,6 +271,7 @@ export const useChatStore = defineStore('chat', () => {
     error.value = null
     streamingContent.value = ''
     liveCitations.value = []
+    liveRag.value = null
     retrievalState.value = 'idle'
     try {
       const page = await listMessages(conversationId, { limit: MESSAGE_PAGE_SIZE })
@@ -608,6 +610,7 @@ export const useChatStore = defineStore('chat', () => {
     toolTrail.value = []
     streamingContent.value = ''
     liveCitations.value = []
+    liveRag.value = null
     retrievalState.value = options?.useKnowledge ? 'searching' : 'idle'
     streaming.value = true
     error.value = null
@@ -655,6 +658,9 @@ export const useChatStore = defineStore('chat', () => {
             if (index < 0) liveActivities.value.push(activity)
             else liveActivities.value[index] = activity
             if (activity.status === 'REQUIRES_CONFIRMATION') void loadConfirmations()
+          },
+          onRag: (retrieval) => {
+            liveRag.value = retrieval
           },
           onCitations: (citations) => {
             liveCitations.value = citations
@@ -910,6 +916,7 @@ export const useChatStore = defineStore('chat', () => {
     refreshContextUsage,
     changeContextBudget,
     liveCitations,
+    liveRag,
     retrievalState,
     loadSessions,
     searchSessions,

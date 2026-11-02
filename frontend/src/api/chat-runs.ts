@@ -119,6 +119,9 @@ export async function followRun(initial: ChatRun, handlers: RunHandlers, signal:
         case 'citations':
           handlers.onCitations?.(data.citations ?? [])
           break
+        case 'rag':
+          handlers.onRag?.(data)
+          break
         case 'delta':
           handlers.onDelta(data.content)
           break

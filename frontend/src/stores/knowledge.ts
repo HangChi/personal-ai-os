@@ -10,7 +10,7 @@ import {
   submitIndexJob,
   type KnowledgeIndexJob,
 } from '@/api/knowledge'
-import type { KnowledgeAskResponse, KnowledgeDocument, KnowledgeHit } from '@/types/api'
+import type { KnowledgeAskResponse, KnowledgeDocument, KnowledgeHit, RagRetrieval } from '@/types/api'
 
 /** 知识库状态 */
 export const useKnowledgeStore = defineStore('knowledge', () => {
@@ -58,6 +58,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
   /** 标题/文件名关键词 */
   const keyword = ref('')
   const hits = ref<KnowledgeHit[]>([])
+  const retrieval = ref<RagRetrieval | null>(null)
   const answer = ref<KnowledgeAskResponse | null>(null)
 
   const loadingDocuments = ref(false)
@@ -185,11 +186,13 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
       const result = await searchKnowledge(query, topK)
       if (requestSeq !== searchRequestSeq) return
       hits.value = result.hits
+      retrieval.value = result.retrieval ?? null
       searched.value = true
     } catch (cause) {
       if (requestSeq !== searchRequestSeq) return
       hits.value = []
       searched.value = true
+      retrieval.value = null
       searchError.value = cause instanceof Error ? cause.message : '检索失败'
     } finally {
       if (requestSeq === searchRequestSeq) searching.value = false
@@ -226,6 +229,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     size,
     keyword,
     hits,
+    retrieval,
     answer,
     loadingDocuments,
     uploading,

@@ -9,6 +9,7 @@ import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 
+import RagTrace from '@/components/knowledge/RagTrace.vue'
 import KnowledgeHitList from '@/components/knowledge/KnowledgeHitList.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useKnowledgeStore } from '@/stores/knowledge'
@@ -59,8 +60,9 @@ async function handleAsk(): Promise<void> {
     />
 
     <template v-if="answer">
+      <RagTrace :retrieval="answer.retrieval" />
       <el-alert
-        v-if="!answer.answered"
+        v-if="!answer.answered && !answer.citations.length"
         type="info"
         :closable="false"
         show-icon

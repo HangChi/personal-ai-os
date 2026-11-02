@@ -42,6 +42,9 @@ function labelOf(hit: KnowledgeHit, index: number): string {
         </span>
         <el-tag size="small" :type="hitBadge(hit).type" effect="plain">{{ hitBadge(hit).text }}</el-tag>
       </div>
+      <div v-if="hit.source" class="kh__meta">
+        {{ hit.source.spaceName }} · {{ hit.source.version || '版本未填写' }} · {{ hit.source.scope || '范围未填写' }}
+      </div>
       <div class="kh__content">{{ hit.content }}</div>
     </li>
   </ul>
