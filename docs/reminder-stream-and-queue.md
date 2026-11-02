@@ -67,3 +67,15 @@ Web Push 的后台投递调度仍使用独立配置，SSE 只覆盖页面保持�
 [广播与独立订阅队列](https://www.rabbitmq.com/tutorials/tutorial-three-java)、
 [死信机制](https://www.rabbitmq.com/docs/dlx)、
 [浏览器 SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)。
+
+## 验证记录（2026-11-02，Asia/Shanghai）
+
+- 后端完整回归：1124 项通过，无失败、错误或跳过；行覆盖率 86.30%，分支覆盖率 70.32%，门禁通过。
+- 前端：1151 项逻辑断言、195 项组件测试通过；类型、lint、格式及生产构建检查通过。
+- 隔离数据库的真实 HTTP 用例覆盖：首帧补查、已读后空快照、未来提醒自然到点、重连补查、未认证拒绝。
+- 前端测试覆盖断线退避、无效快照、轮询降级、HTTP/SSE 乱序、登出后晚到响应、逐条弹框及退场排队。
+- 已更新本地运行版本，后端 JAR 为 `.cache/local-runtime/releases/backend-fab017f.jar`。
+  通过 `http://127.0.0.1:8088` 实测匿名 SSE 返回 401、登录后返回 200、重连正常，首帧约 890 毫秒。
+- 该次实际入口检查未读数为 0，未创建或确认用户提醒；新建与到点变化由隔离数据库集成测试验证。
+  前端 21 个关联静态资源与新构建逐字节一致，后端健康为 UP，SSE 监控指标正常暴露。
+- 旧 JAR 保留，前端切换前的归档保存在 `.cache/local-runtime/releases/frontend-before-stream-*.tar.gz`。
