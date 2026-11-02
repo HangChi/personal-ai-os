@@ -241,3 +241,18 @@ Micrometer `/actuator/metrics` 新增：
 - `personalos.chat.streams.active`：当前活跃流。
 
 不把端点、密钥、会话 id 写入指标标签；价格没有可信来源，未生成费用金额。指标为进程累计，重启会归零，历史用量仍保存在数据库。
+
+## 9. 可选历史监控
+
+生产环境叠加监控配置（在 `.env` 或 shell 设置 `GRAFANA_ADMIN_PASSWORD`，不要提交密码）：
+
+```bash
+docker compose -f compose.production.yml -f compose.monitoring.yml up -d --build
+```
+
+Grafana 位于 `http://127.0.0.1:3000`，默认用户 admin，密码取环境变量；远程访问可使用 SSH 隧道。
+自动预置「Personal AI OS 运行状态」看板，显示首段正文 P95、完整回复 P95、活跃流、HTTP 速率、连接等待与堆内存。
+首段正文计时包括检索和上下文准备；没有正文的失败请求不会进入该指标。
+Prometheus 每 15 秒从 backend:9091 采集，数据最多保留 15 天或约 2GB；Grafana 配置和数据使用独立卷。
+管理端口不发布到宿主机，Caddy 继续屏蔽 `/actuator/*`。主业务端口保持原有认证。
+不使用叠加文件时不启用独立管理端口；原 `/actuator/metrics` 行为保持兼容。

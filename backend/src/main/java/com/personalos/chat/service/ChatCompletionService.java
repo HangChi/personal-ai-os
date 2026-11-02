@@ -257,6 +257,7 @@ public class ChatCompletionService {
         // 只有这个数字能说明「有一条流在跑」
         metrics.streamOpened();
         long metricStarted = System.nanoTime();
+        AtomicBoolean firstContentRecorded = new AtomicBoolean();
         AtomicReference<String> metricOutcome = new AtomicReference<>("cancelled");
         String metricModel = target.model().getOptions() == null ? null
                 : target.model().getOptions().getModel();
@@ -432,6 +433,9 @@ public class ChatCompletionService {
                     String chunk = ChatResponseInspection.textOf(response);
                     if (terminated.get() || chunk.isEmpty()) {
                         return;
+                    }
+                    if (firstContentRecorded.compareAndSet(false, true)) {
+                        metrics.firstContent(metricProvider, metricModel, System.nanoTime() - metricStarted);
                     }
                     fullContent.append(chunk);
                     // 发送失败 = 客户端已经走了。必须立刻取消上游，

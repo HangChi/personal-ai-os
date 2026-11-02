@@ -57,6 +57,15 @@ public class ChatStreamMetrics {
                 .register(registry).record(nanos, java.util.concurrent.TimeUnit.NANOSECONDS);
     }
 
+    /** 从请求开始到第一段可见正文，包括检索与上下文装配；静默思考不算正文。 */
+    public void firstContent(String provider, String model, long nanos) {
+        if (registry == null) return;
+        io.micrometer.core.instrument.Timer.builder("personalos.chat.first.content")
+                .tags("provider", label(provider), "model", label(model))
+                .publishPercentileHistogram().register(registry)
+                .record(nanos, java.util.concurrent.TimeUnit.NANOSECONDS);
+    }
+
     public void usage(com.personalos.chat.support.StreamUsage usage) {
         if (registry == null || usage == null || !usage.isMeaningful()) return;
         registry.counter("personalos.chat.tokens", "model", label(usage.model()),

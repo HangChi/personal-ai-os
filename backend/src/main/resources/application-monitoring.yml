@@ -1,0 +1,12 @@
+# 只在 monitoring profile 开启独立采集端口；生产 Compose 不发布该端口。
+management:
+  server:
+    port: 9091
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
