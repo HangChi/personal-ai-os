@@ -91,6 +91,7 @@ class DataImportIntegrationTest {
             throw new IllegalStateException(
                     "拒绝在非测试库上执行清理（当前库：" + database + "）。请检查 Testcontainers 配置。");
         }
+        jdbc.execute("DELETE FROM knowledge_index_job");
         jdbc.execute("DELETE FROM vector_store");
         jdbc.execute("DELETE FROM knowledge_document");
         jdbc.execute("DELETE FROM chat_message");
@@ -307,6 +308,17 @@ class DataImportIntegrationTest {
                 .hasMessageContaining("导入只支持空库");
 
         // 拒绝不能留下半截：会话不该被写进去
+        assertThat(jdbc.queryForObject("select count(*) from chat_session", Integer.class)).isZero();
+    }
+
+    @Test
+    @DisplayName("尚未建立文档的后台任务也使目标库非空，恢复不能与队列混写")
+    void rejectsDatabaseWithPendingIndexJobs() {
+        UUID id = UUID.randomUUID();
+        jdbc.update("insert into knowledge_index_job(id,document_id,replacing,filename,digest) values (?,?,false,'pending.md',?)",
+                id, id, "a".repeat(64));
+        assertThatThrownBy(() -> importService.importAll(fullPayload()))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("knowledge_index_job");
         assertThat(jdbc.queryForObject("select count(*) from chat_session", Integer.class)).isZero();
     }
 
