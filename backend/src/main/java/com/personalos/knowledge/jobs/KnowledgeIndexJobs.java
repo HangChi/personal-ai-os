@@ -25,6 +25,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /** 单实例数据库工作队列；准备阶段无事务，索引与成功回执在同一短事务提交。 */
 @Service
 public class KnowledgeIndexJobs {
+    private final org.springframework.beans.factory.ObjectProvider<KnowledgeJobNotifier> notifier;
     private final KnowledgeJobRepository jobs;
     private final KnowledgeDocumentService documents;
     private final EmbeddingModel embeddings;
@@ -46,7 +47,8 @@ public class KnowledgeIndexJobs {
     public KnowledgeIndexJobs(KnowledgeJobRepository jobs, KnowledgeDocumentService documents, EmbeddingModel embeddings,
             VectorStoreInspector vectors, DocumentWriteLock locks, ModelConcurrencyGate gate, TokenBucketRateLimiter rate,
             JsonCodec json, JdbcTemplate jdbc, KnowledgeProperties properties, PlatformTransactionManager manager,
-            MeterRegistry metrics, @Value("${app.knowledge.jobs.enabled:true}") boolean enabled) {
+            MeterRegistry metrics, org.springframework.beans.factory.ObjectProvider<KnowledgeJobNotifier> notifier, @Value("${app.knowledge.jobs.enabled:true}") boolean enabled) {
+        this.notifier=notifier;
         this.jobs=jobs; this.documents=documents; this.embeddings=embeddings; this.vectors=vectors; this.locks=locks;
         this.gate=gate; this.rate=rate; this.json=json; this.jdbc=jdbc; this.properties=properties; this.enabled=enabled;
         this.metrics=metrics;
@@ -70,6 +72,7 @@ public class KnowledgeIndexJobs {
         if (jobs.waitingCount()>=20) throw new BusinessException(ErrorCode.RATE_LIMITED,"后台任务队列已满，请稍后再试");
         if (target!=null) documents.requireDocument(target);
         jobs.create(id,target==null?id:target,target!=null,filename,title,bytes,digest);
+        notifier.ifAvailable(signal -> signal.submitted(id));
         return get(id);
     }
     public KnowledgeJobRepository.Job get(UUID id) { return jobs.find(id).orElseThrow(() -> new ResourceNotFoundException("后台任务不存在")); }

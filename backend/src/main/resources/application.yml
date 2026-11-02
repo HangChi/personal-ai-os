@@ -395,3 +395,10 @@ app:
     uri: ${REDIS_URI:redis://localhost:6379}
     namespace: ${REDIS_NAMESPACE:}
     timeout-ms: ${REDIS_TIMEOUT_MS:150}
+
+---
+app:
+  rabbitmq:
+    enabled: ${RABBITMQ_ENABLED:false}
+    uri: ${RABBITMQ_URI:amqp://localhost:5672}
+    queue: ${RABBITMQ_QUEUE:personalos.knowledge.ready}

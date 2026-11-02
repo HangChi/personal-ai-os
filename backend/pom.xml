@@ -52,6 +52,7 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency><groupId>org.springframework.amqp</groupId><artifactId>spring-rabbit</artifactId></dependency>
         <dependency><groupId>redis.clients</groupId><artifactId>jedis</artifactId></dependency>
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>

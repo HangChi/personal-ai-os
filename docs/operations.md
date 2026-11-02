@@ -324,3 +324,11 @@ Prometheus：`http://127.0.0.1:9090`，Targets 中 personal-ai-os 应显示 UP�
 Redis 只保存文本/选项的摘要与向量，命名空间按用户和部署隔离；模型端点、名称和请求选项参与隔离。
 模型服务在同名模型下更新时应修改 `app.embedding-cache.revision`，防止复用旧空间向量。
 Redis 故障在短超时后回到上游模型，错误记录在 `personalos.embedding.redis.errors`；共享命中标记为 shared_hit。
+
+## 可选 RabbitMQ 任务通知
+
+`compose.integrations.yml --profile queue` 启动 RabbitMQ 4.4.0，AMQP 与管理端口仅绑定回环地址。
+设置 `RABBITMQ_ENABLED=true`、包含应用账户的 `RABBITMQ_URI`；默认队列 personalos.knowledge.ready。
+任务先写数据库，再向持久队列发送 UUID，等待发布确认（有超时）；不可路由、连接失败均记录 poll_fallback，仍返回已接受的数据库任务。
+消费者只唤醒数据库 worker，重复通知不会绕过原子领取或租约；ACK 只代表通知已处理，不代表索引完成。
+消息最多保留 60 秒/1000 条，通知过期仍由数据库轮询恢复；文件和模型密钥不进入消息。

@@ -10,5 +10,15 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
     ports: ["127.0.0.1:6379:6379"]
     volumes: [redis-data:/data]
+  rabbitmq:
+    profiles: [queue]
+    image: rabbitmq:4.4.0-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: personalos
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}
+    ports: ["127.0.0.1:5672:5672", "127.0.0.1:15672:15672"]
+    volumes: [rabbitmq-data:/var/lib/rabbitmq]
 volumes:
+  rabbitmq-data:
   redis-data:
