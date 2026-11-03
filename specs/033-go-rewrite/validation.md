@@ -232,6 +232,12 @@ Go逐项核对HTTP状态/业务码/文案/null data/UTC时间/JSON媒体类型�
 
 初次Java夹具因泛型条件Class参数不兼容而编译失败，拆分两个convert调用后通过。复查真实JDK代码发现加法嵌套顺序需按秒→分→时→日；补充实际转换器正反例并修正，另拒绝Go Unicode Fold会接受的长s/全角/非ASCII数字。转换错误不回显原文，10000位非法数不会留下巨大日志。全量十四包race、integration标签vet、228项快照复验、1,093文件基线与diff检查通过（/private/tmp/personal-ai-os-go-scalars-all-race.log）。仅转换能力，不代表所有属性/profile/环境绑定完成。
 
+## 增量：真实默认baseline与旧数据（T103e）
+
+先加入Go测试确认缺少兼容API时编译失败（/private/tmp/personal-ai-os-go-baseline-red.log）。执行run_go_postgres_tests.py --tls --baseline --package migration通过：Java真实默认baseline-on-migrate在本次非空旧schema生成版本1标记并执行41后续SQL，validate/二次零执行通过；Go默认策略拒绝，显式兼容策略返回Applied41/CurrentVersion42/BaselineVersion1，旧会话/消息保留且七类DDL逐项等价。真实历史全字段摘要前后相同，自定义标记/非NULL checksum/基线2/SQL checksum/未来记录在副本中全部拒绝。日志 /private/tmp/personal-ai-os-go-baseline-tls.log。
+
+普通42 SQL历史仍通过；单测额外覆盖缺项/乱序/重复标记/失败/未知类型与NULL字段。Go不执行baseline，不把标记算成SQL执行，不代替实际schema与权限验证。其余历史类型和自定义基线仍失败关闭。 最终--tls --backup --baseline六包integration/race全部通过（/private/tmp/personal-ai-os-go-baseline-final-postgres.log），全量十四包race/integration vet/构建/五角色进程smoke/go mod verify通过（/private/tmp/personal-ai-os-go-baseline-all-race.log），本次容器已清理。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

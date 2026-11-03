@@ -85,6 +85,8 @@ def migrate_disposable(environment):
             secret = environment["GO_TEST_POSTGRES_PASSWORD"]
             raise RuntimeError("临时 Flyway 执行失败: " + (result.stdout + result.stderr).replace(secret, "[redacted]"))
         print("真实 Flyway 双执行器锁竞争/合计42迁移/validate/再次零执行通过", flush=True)
+        if environment.get("GO_TEST_FLYWAY_BASELINE") == "disposable":
+            print("真实Flyway非空旧schema baseline-on-migrate/41迁移/validate/二次零执行通过", flush=True)
 
 
 def main():

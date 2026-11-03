@@ -50,3 +50,13 @@ python3 scripts/migration/run_go_postgres_tests.py --tls --backup
 --backup隐含--flyway；仅migration专用新建集群注入backup_seed.sql虚构数据，pg_dump custom → 同集群独立空库personalos_go_restore。无owner/ACL，不读取真实备份；备份仅在内存，容器退出清理。Go验证42历史、七类DDL、40表全行列摘要/10序列状态、Unicode/时区/bytea/NUL/1024维向量/opaque字符串，以及继续写入/唯一约束/源库不变。
 
 PostgreSQL恢复会重排ANY数组cast；仅备份比较用同版本临时表重解析双方CHECK/索引，再逐项比较，条件值变更反例必须被检测。直接Java/Go重放仍用原始严格定义。此处不是跨版本、真实用户备份、生产ACL、真实密文或附件恢复验收。
+
+## 默认baseline1历史（显式选择）
+
+```bash
+python3 scripts/migration/run_go_postgres_tests.py --tls --baseline --package migration
+```
+
+该夹具在同一新集群另建非空旧schema，放入原V2表和虚构会话/消息；真实Flyway默认baseline-on-migrate生成baseline1并只执行41个后续SQL，validate/再次零执行通过。Go七类DDL对照和旧数据保留验证通过。
+
+默认NewHistoryValidator仍只认完整SQL历史；显式NewHistoryValidatorWithBaselineV1才额外接受固定Java默认V1标记（rank1/版本1/成功/NULL checksum/默认description及script），剩余SQL仍逐项校验。不执行baseline/repair，不接受自定义版本/描述或SCHEMA标记。Applied只计SQL，另报BaselineVersion；历史通过不能证明跳过的V1扩展已存在，仍需实际结构验证。

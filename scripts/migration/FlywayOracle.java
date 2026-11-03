@@ -66,5 +66,23 @@ public final class FlywayOracle {
         flyway.validate();
         if (flyway.migrate().migrationsExecuted != 0) throw new IllegalStateException("第二次执行未保持幂等");
         System.out.println("真实 Flyway 双执行器锁竞争/合计42迁移/validate/再次零执行通过");
+        if ("disposable".equals(System.getenv("GO_TEST_FLYWAY_BASELINE"))) {
+            // 自己新建的独立schema，预放V2表和虚构聊天数据，模拟没有Flyway历史的非空旧库。
+            try (var connection = source.getConnection(); var statement = connection.createStatement()) {
+                statement.execute("CREATE SCHEMA go_flyway_baseline");
+                statement.execute("SET search_path TO go_flyway_baseline,public");
+                statement.execute(java.nio.file.Files.readString(Path.of(args[1]).resolve("V2__create_chat_tables.sql")));
+                statement.execute("INSERT INTO chat_session(conversation_id,title) VALUES('baseline-fixture','基线前会话😀')");
+                statement.execute("INSERT INTO chat_message(conversation_id,message_type,content,sequence_no) VALUES('baseline-fixture','USER','基线前消息',1)");
+            }
+            var baseline = Flyway.configure().dataSource(source)
+                    .locations("filesystem:" + Path.of(args[1]).toAbsolutePath())
+                    .schemas("go_flyway_baseline").defaultSchema("go_flyway_baseline")
+                    .createSchemas(false).baselineOnMigrate(true).cleanDisabled(true).load();
+            if (baseline.migrate().migrationsExecuted != 41) throw new IllegalStateException("基线1后必须只执行V2至V42");
+            baseline.validate();
+            if (baseline.migrate().migrationsExecuted != 0) throw new IllegalStateException("基线后重执行不为零");
+            System.out.println("真实Flyway非空旧schema baseline-on-migrate/41迁移/validate/二次零执行通过");
+        }
     }
 }

@@ -220,3 +220,13 @@ DataSize无单位为byte，B/KB/MB/GB/TB使用1024倍率且大小写敏感，移
 复查本机JDK Duration源与真实转换器，确认ISO实际按days + (hours + (minutes + seconds))检测long溢出，不能换成左结合或一次大数相加后才检查。补充两个会区分顺序的真实Java反例：一项合法1793秒、一项中间溢出必须拒绝；Go按相同顺序。正则用显式ASCII大小写，不用Go Unicode Fold接受Java不认的长s/全角字符。
 
 Alternatives considered：直接time.ParseDuration（默认单位/ISO/简写不一致）；浮点解析小数（边界精度丢失）；空字符串直接默认（隐藏明确空值）；不限范围转time.Duration（整数回绕）；把8MB解释为十进制8,000,000（改变容器上传限制）。此处只完成标量转换，不宣称任意YAML、profile、relaxed绑定或所有配置类验收。
+
+## R-026 显式兼容默认Flyway baseline1
+
+Decision：--baseline隐含--flyway，只在新建临时集群另建go_flyway_baseline schema，预执行原V2（两张聊天表）并放虚构中文会话/消息，模拟无Flyway历史的非空旧schema；扩展已在本次集群通过原V1安装。真实Flyway12.4.0的baselineOnMigrate(true)生成版本1 BASELINE默认标记，只执行V2–V42共41项，validate和二次零执行通过。最终七类DDL与标准42迁移的public逐项相同，旧聊天数据保持。
+
+Go保留NewHistoryValidator的默认严格策略；新增NewHistoryValidatorWithBaselineV1才允许第一行rank1/version1/BASELINE/success/checksumNULL/description与script均为<< Flyway Baseline >>。剩余41条仍校验全部SQL元信息/checksum/顺序/数量，不接受额外标记、未来版本、自定义描述或基线2。普通完整SQL历史在显式兼容策略下也有效。HistoryStatus.Applied仅计实际SQL，CurrentVersion=42，BaselineVersion=1（无基线为0），不把基线当作实际执行V1。
+
+真实生成历史调用前后全字段摘要相同，破坏测试只改副本，所有失败均零成功状态/脱敏。不伪造或修复Flyway历史，不执行baseline或争抢DDL锁。历史标记不能证明V1扩展已存在，显式兼容也不替代实际结构验证；生产角色/属主ACL、其他基线版本/标记或用户备份仍待验收。
+
+Alternatives considered：默许任意BASELINE就跳过校验（可隐藏缺失迁移）；Go自动baseline（更改迁移执行权）；把42行直接报告为42个已执行脚本（误导）；只改一个合成SQL行冒充真实Flyway行为。当前场景使用真实默认Flyway生成和校验，未连接现有数据库。

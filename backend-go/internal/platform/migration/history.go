@@ -57,14 +57,17 @@ type historyRow struct {
 }
 
 type HistoryStatus struct {
-	Applied        int
-	CurrentVersion int
+	// Applied只计成功SQL记录，不把BASELINE标记当作实际执行的脚本。
+	Applied         int
+	CurrentVersion  int
+	BaselineVersion int
 }
 
 type HistoryValidator struct {
-	pool     *database.Pool
-	schema   string
-	expected []expectedMigration
+	pool            *database.Pool
+	schema          string
+	expected        []expectedMigration
+	allowBaselineV1 bool
 }
 
 var historySchema = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]{0,62}$`)
@@ -102,23 +105,49 @@ func NewHistoryValidator(pool *database.Pool, scripts []Script, schema string) (
 	return &HistoryValidator{pool: pool, schema: schema, expected: expected}, nil
 }
 
+// NewHistoryValidatorWithBaselineV1 仅显式兼容基线Java默认baseline-on-migrate标记。
+// 仍不执行baseline或放过V2之后的checksum；不证明被跳过的V1实际结构/扩展完整。
+// 自定义基线版本/描述/SCHEMA等历史仍拒绝，部署必须另做完整schema验证。
+func NewHistoryValidatorWithBaselineV1(pool *database.Pool, scripts []Script, schema string) (*HistoryValidator, error) {
+	validator, err := NewHistoryValidator(pool, scripts, schema)
+	if err != nil {
+		return nil, err
+	}
+	validator.allowBaselineV1 = true
+	return validator, nil
+}
+
 func validateHistoryRows(expected []expectedMigration, rows []historyRow) error {
+	_, err := validateHistoryWithBaselineV1(expected, rows, false)
+	return err
+}
+
+func validateHistoryWithBaselineV1(expected []expectedMigration, rows []historyRow, allow bool) (int, error) {
 	if len(expected) == 0 || len(rows) != len(expected) {
-		return &HistoryError{Reason: "迁移数量缺失或超出目录"}
+		return 0, &HistoryError{Reason: "迁移数量缺失或超出目录"}
 	}
 	previousRank := 0
+	baseline := 0
 	for i, expected := range expected {
 		row := rows[i]
+		if i == 0 && allow && row.kind == "BASELINE" {
+			if expected.version != "1" || row.rank != 1 || row.version == nil || *row.version != "1" || !row.success || row.checksum != nil || row.description != "<< Flyway Baseline >>" || row.script != "<< Flyway Baseline >>" {
+				return 0, &HistoryError{Reason: "基线标记不受支持"}
+			}
+			previousRank = 1
+			baseline = 1
+			continue
+		}
 		if row.rank <= previousRank || row.kind != "SQL" || !row.success || row.version == nil || *row.version != expected.version ||
 			row.description != expected.description || row.script != expected.script {
-			return &HistoryError{Reason: "存在失败、乱序或不支持的迁移记录"}
+			return 0, &HistoryError{Reason: "存在失败、乱序或不支持的迁移记录"}
 		}
 		if row.checksum == nil || *row.checksum != expected.checksum {
-			return &HistoryError{Reason: "迁移 checksum 不匹配"}
+			return 0, &HistoryError{Reason: "迁移 checksum 不匹配"}
 		}
 		previousRank = row.rank
 	}
-	return nil
+	return baseline, nil
 }
 
 // Validate 在只读repeatable-read事务中取得一致历史快照。不修改Flyway表或争抢其迁移锁；
@@ -143,8 +172,9 @@ func (validator *HistoryValidator) Validate(ctx context.Context) (HistoryStatus,
 	if err != nil {
 		return HistoryStatus{}, &HistoryError{Reason: "读取历史失败", cause: err}
 	}
-	if err := validateHistoryRows(validator.expected, history); err != nil {
+	baseline, err := validateHistoryWithBaselineV1(validator.expected, history, validator.allowBaselineV1)
+	if err != nil {
 		return HistoryStatus{}, err
 	}
-	return HistoryStatus{Applied: len(history), CurrentVersion: len(validator.expected)}, nil
+	return HistoryStatus{Applied: len(history) - baseline, CurrentVersion: len(validator.expected), BaselineVersion: baseline}, nil
 }
