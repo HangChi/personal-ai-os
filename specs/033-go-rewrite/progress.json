@@ -952,6 +952,149 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "三种 Worker 的 API 预留断言在真实 PostgreSQL 通过，补充 combined/limit=1/失败清理；全链路差分未完成，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/auth/AuthService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "凭据/BCrypt/Java strip/失败锁定基础实现与 74 项实际 Java 编码器对照通过；并发校验串行化，未装配 HTTP/会话/CSRF/配置绑定，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/auth/AuthProperties.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "凭据/BCrypt/Java strip/失败锁定基础实现与 74 项实际 Java 编码器对照通过；并发校验串行化，未装配 HTTP/会话/CSRF/配置绑定，不能 verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "凭据/BCrypt/Java strip/失败锁定基础实现与 74 项实际 Java 编码器对照通过；并发校验串行化，未装配 HTTP/会话/CSRF/配置绑定，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:33": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:45": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:53": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:66": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:74": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:83": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:94": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:109": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:124": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java:138": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
+        "scripts/migration/java_bcrypt_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
     }
   },
   "release_gates": {

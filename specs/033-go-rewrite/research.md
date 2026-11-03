@@ -100,3 +100,11 @@ Decision：Go 只提供显式 fs.FS 的单层整数版本目录，失败关闭�
 在专用 tmpfs PostgreSQL/pgvector 中，用独立 schema、每迁移一个事务和事务内 search_path 重放完整文件，不按分号拆开 PL/pgSQL。空 schema 和插入虚构历史记忆/模型配置的升级两种场景均跑 V1–V42，测试后清理各自 schema。不生成 Flyway 历史；历史/锁/执行权与备份恢复继续独立验收。
 
 Alternatives considered：复制 DDL（两份可能漂移）；只检查文件存在（遗漏执行/排序/编码/函数体问题）；创建看似成功的 Flyway 历史（无法证明真实 checksum 和兼容）；以合成数据冒充用户备份恢复（证据不成立）。
+
+## R-012 BCrypt 兼容与锁定状态
+
+Decision：固定实际下载的 golang.org/x/crypto v0.58.0，使用其 bcrypt 实现（默认 2a/cost10）；模块依赖同时要求 x/text v0.43.0、x/sync v0.24.0，许可证取自实际模块。直接运行基线 BOM 的 Spring Security 7.1.1 BCryptPasswordEncoder/BCrypt，生成 74 项仅含虚构密码与固定盐的快照，包含 Unicode、组合字符、NUL、72 字节及超长。生成配置哈希时拒绝 >72 字节，校验时保留 Java 的长输入行为，不自行截断/正规化；空原始密码按 Spring 包装器返回 false。
+
+Service 不保留 Options 或明文，仅保留私有哈希；fmt/JSON 不公开凭据。配置拒绝非 UTF-8 的 Go 字符串；有效 Unicode 的 strip/isBlank 对齐 Java。Go duration 的范围小于 Java Duration，超范围配置应在未来绑定层明确拒绝。Verify 保留指针输入来区分 null 和空串。失败锁定使用互斥锁覆盖密码检查和状态变更，保持原串行规则并收紧原 AtomicInteger/volatile 组合下的并发窗口。锁定仍为每进程状态，与 Java 一致，不冒充多实例共享锁定。
+
+Alternatives considered：自写 BCrypt（增加密码学风险）；用 Go 自己生成期望值（无法独立验证 Java 兼容）；一律截断密码到 72 字节（配置超长会静默改变凭据）；保留完整配置对象（长期保留明文）。当前没有导入 Java 会话、启用认证或解除诊断应用的安全启动拒绝。

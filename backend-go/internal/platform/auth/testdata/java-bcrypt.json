@@ -1,0 +1,679 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "spring_security": "7.1.1",
+  "spring_framework": "7.0.9",
+  "jars": {
+    "spring-security-crypto-7.1.1.jar": "6e8bb2337faccabd30626f917ed1d2bfa9dde982229b6b373b644d1a01635403",
+    "spring-core-7.0.9.jar": "5195f4722699b39878d99a832549fe65df2890b159d063b88fff31b1ca65ae36",
+    "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc"
+  },
+  "scope": "Spring BCrypt encoder only; synthetic passwords and fixed salt, not sessions/HTTP",
+  "cases": [
+    {
+      "name": "password-0-0",
+      "configured": "",
+      "candidate": "",
+      "hash": "$2a$10$......................F5mzCEQ5E01or2Zs1UUMeqS/7rfVb16",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-0-1",
+      "configured": "",
+      "candidate": "x",
+      "hash": "$2a$10$......................F5mzCEQ5E01or2Zs1UUMeqS/7rfVb16",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-0-2",
+      "configured": "",
+      "candidate": "界",
+      "hash": "$2a$10$......................F5mzCEQ5E01or2Zs1UUMeqS/7rfVb16",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-0-3",
+      "configured": "",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................F5mzCEQ5E01or2Zs1UUMeqS/7rfVb16",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-1-4",
+      "configured": "test-secret",
+      "candidate": "test-secret",
+      "hash": "$2a$10$......................VrDn3lilNG21fNcwBlKeqEd7TnbRkFe",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-1-5",
+      "configured": "test-secret",
+      "candidate": "",
+      "hash": "$2a$10$......................VrDn3lilNG21fNcwBlKeqEd7TnbRkFe",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-1-6",
+      "configured": "test-secret",
+      "candidate": "test-secretx",
+      "hash": "$2a$10$......................VrDn3lilNG21fNcwBlKeqEd7TnbRkFe",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-1-7",
+      "configured": "test-secret",
+      "candidate": "test-secret界",
+      "hash": "$2a$10$......................VrDn3lilNG21fNcwBlKeqEd7TnbRkFe",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-1-8",
+      "configured": "test-secret",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................VrDn3lilNG21fNcwBlKeqEd7TnbRkFe",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-2-9",
+      "configured": "秘密🔐",
+      "candidate": "秘密🔐",
+      "hash": "$2a$10$....................../2lbBRBRah/ipKV4Jx7NKn32tG/MEPK",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-2-10",
+      "configured": "秘密🔐",
+      "candidate": "",
+      "hash": "$2a$10$....................../2lbBRBRah/ipKV4Jx7NKn32tG/MEPK",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-2-11",
+      "configured": "秘密🔐",
+      "candidate": "秘密🔐x",
+      "hash": "$2a$10$....................../2lbBRBRah/ipKV4Jx7NKn32tG/MEPK",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-2-12",
+      "configured": "秘密🔐",
+      "candidate": "秘密🔐界",
+      "hash": "$2a$10$....................../2lbBRBRah/ipKV4Jx7NKn32tG/MEPK",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-2-13",
+      "configured": "秘密🔐",
+      "candidate": "wrong",
+      "hash": "$2a$10$....................../2lbBRBRah/ipKV4Jx7NKn32tG/MEPK",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-3-14",
+      "configured": "é",
+      "candidate": "é",
+      "hash": "$2a$10$......................7T5494NXWzECd5mxb5D3ZdVr6loXjde",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-3-15",
+      "configured": "é",
+      "candidate": "",
+      "hash": "$2a$10$......................7T5494NXWzECd5mxb5D3ZdVr6loXjde",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-3-16",
+      "configured": "é",
+      "candidate": "éx",
+      "hash": "$2a$10$......................7T5494NXWzECd5mxb5D3ZdVr6loXjde",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-3-17",
+      "configured": "é",
+      "candidate": "é界",
+      "hash": "$2a$10$......................7T5494NXWzECd5mxb5D3ZdVr6loXjde",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-3-18",
+      "configured": "é",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................7T5494NXWzECd5mxb5D3ZdVr6loXjde",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-4-19",
+      "configured": "é",
+      "candidate": "é",
+      "hash": "$2a$10$......................MxKxn/tCO/Ku0IqWnLNb3ZDgjBNEimi",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-4-20",
+      "configured": "é",
+      "candidate": "",
+      "hash": "$2a$10$......................MxKxn/tCO/Ku0IqWnLNb3ZDgjBNEimi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-4-21",
+      "configured": "é",
+      "candidate": "éx",
+      "hash": "$2a$10$......................MxKxn/tCO/Ku0IqWnLNb3ZDgjBNEimi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-4-22",
+      "configured": "é",
+      "candidate": "é界",
+      "hash": "$2a$10$......................MxKxn/tCO/Ku0IqWnLNb3ZDgjBNEimi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-4-23",
+      "configured": "é",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................MxKxn/tCO/Ku0IqWnLNb3ZDgjBNEimi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-5-24",
+      "configured": "nul\u0000inside",
+      "candidate": "nul\u0000inside",
+      "hash": "$2a$10$......................yOiI0pogJLpe.bUBA31KmmP50Yo1QXi",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-5-25",
+      "configured": "nul\u0000inside",
+      "candidate": "",
+      "hash": "$2a$10$......................yOiI0pogJLpe.bUBA31KmmP50Yo1QXi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-5-26",
+      "configured": "nul\u0000inside",
+      "candidate": "nul\u0000insidex",
+      "hash": "$2a$10$......................yOiI0pogJLpe.bUBA31KmmP50Yo1QXi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-5-27",
+      "configured": "nul\u0000inside",
+      "candidate": "nul\u0000inside界",
+      "hash": "$2a$10$......................yOiI0pogJLpe.bUBA31KmmP50Yo1QXi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-5-28",
+      "configured": "nul\u0000inside",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................yOiI0pogJLpe.bUBA31KmmP50Yo1QXi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-6-29",
+      "configured": "\u0000start",
+      "candidate": "\u0000start",
+      "hash": "$2a$10$......................3qFs8pA8fA3Q8PolSyLqEy7YyUWsdWu",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-6-30",
+      "configured": "\u0000start",
+      "candidate": "",
+      "hash": "$2a$10$......................3qFs8pA8fA3Q8PolSyLqEy7YyUWsdWu",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-6-31",
+      "configured": "\u0000start",
+      "candidate": "\u0000startx",
+      "hash": "$2a$10$......................3qFs8pA8fA3Q8PolSyLqEy7YyUWsdWu",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-6-32",
+      "configured": "\u0000start",
+      "candidate": "\u0000start界",
+      "hash": "$2a$10$......................3qFs8pA8fA3Q8PolSyLqEy7YyUWsdWu",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-6-33",
+      "configured": "\u0000start",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................3qFs8pA8fA3Q8PolSyLqEy7YyUWsdWu",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-7-34",
+      "configured": " space ",
+      "candidate": " space ",
+      "hash": "$2a$10$......................J2oeOA/iYuqCShwXPnA14VN5.knSIT.",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-7-35",
+      "configured": " space ",
+      "candidate": "",
+      "hash": "$2a$10$......................J2oeOA/iYuqCShwXPnA14VN5.knSIT.",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-7-36",
+      "configured": " space ",
+      "candidate": " space x",
+      "hash": "$2a$10$......................J2oeOA/iYuqCShwXPnA14VN5.knSIT.",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-7-37",
+      "configured": " space ",
+      "candidate": " space 界",
+      "hash": "$2a$10$......................J2oeOA/iYuqCShwXPnA14VN5.knSIT.",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-7-38",
+      "configured": " space ",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................J2oeOA/iYuqCShwXPnA14VN5.knSIT.",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-8-39",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "hash": "$2a$10$......................Ikl8UuzXo3iYotpRwJ3.h839etrOlRm",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-8-40",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "",
+      "hash": "$2a$10$......................Ikl8UuzXo3iYotpRwJ3.h839etrOlRm",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-8-41",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaax",
+      "hash": "$2a$10$......................Ikl8UuzXo3iYotpRwJ3.h839etrOlRm",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-8-42",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa界",
+      "hash": "$2a$10$......................Ikl8UuzXo3iYotpRwJ3.h839etrOlRm",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-8-43",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................Ikl8UuzXo3iYotpRwJ3.h839etrOlRm",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-9-44",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "hash": "$2a$10$......................6I3ms6Ylv.QAtGBarOTA9xLZcr8tT1C",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-9-45",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "",
+      "hash": "$2a$10$......................6I3ms6Ylv.QAtGBarOTA9xLZcr8tT1C",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-9-46",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaax",
+      "hash": "$2a$10$......................6I3ms6Ylv.QAtGBarOTA9xLZcr8tT1C",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-9-47",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa界",
+      "hash": "$2a$10$......................6I3ms6Ylv.QAtGBarOTA9xLZcr8tT1C",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-9-48",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................6I3ms6Ylv.QAtGBarOTA9xLZcr8tT1C",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-10-49",
+      "configured": "界界界界界界界界界界界界界界界界界界界界界界界界",
+      "candidate": "界界界界界界界界界界界界界界界界界界界界界界界界",
+      "hash": "$2a$10$......................PTWsa.iMhMalXlNAmX8CkqybaVr9oP2",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-10-50",
+      "configured": "界界界界界界界界界界界界界界界界界界界界界界界界",
+      "candidate": "",
+      "hash": "$2a$10$......................PTWsa.iMhMalXlNAmX8CkqybaVr9oP2",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-10-51",
+      "configured": "界界界界界界界界界界界界界界界界界界界界界界界界",
+      "candidate": "界界界界界界界界界界界界界界界界界界界界界界界界x",
+      "hash": "$2a$10$......................PTWsa.iMhMalXlNAmX8CkqybaVr9oP2",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-10-52",
+      "configured": "界界界界界界界界界界界界界界界界界界界界界界界界",
+      "candidate": "界界界界界界界界界界界界界界界界界界界界界界界界界",
+      "hash": "$2a$10$......................PTWsa.iMhMalXlNAmX8CkqybaVr9oP2",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-10-53",
+      "configured": "界界界界界界界界界界界界界界界界界界界界界界界界",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................PTWsa.iMhMalXlNAmX8CkqybaVr9oP2",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-11-54",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "hash": "$2a$10$......................NXA.AHTdtciW15RlqKc2G.CSJaprVOi",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-11-55",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "",
+      "hash": "$2a$10$......................NXA.AHTdtciW15RlqKc2G.CSJaprVOi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-11-56",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐x",
+      "hash": "$2a$10$......................NXA.AHTdtciW15RlqKc2G.CSJaprVOi",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-11-57",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐界",
+      "hash": "$2a$10$......................NXA.AHTdtciW15RlqKc2G.CSJaprVOi",
+      "encode_error": false,
+      "matched": true,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-11-58",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "wrong",
+      "hash": "$2a$10$......................NXA.AHTdtciW15RlqKc2G.CSJaprVOi",
+      "encode_error": false,
+      "matched": false,
+      "default_prefix": "$2a$10$"
+    },
+    {
+      "name": "password-12-59",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-12-60",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-12-61",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaax",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-12-62",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa界",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-12-63",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate": "wrong",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-13-64",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaé",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaé",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-13-65",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaé",
+      "candidate": "",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-13-66",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaé",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaéx",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-13-67",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaé",
+      "candidate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaé界",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-13-68",
+      "configured": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaé",
+      "candidate": "wrong",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-14-69",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-14-70",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-14-71",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐x",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-14-72",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐界",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    },
+    {
+      "name": "password-14-73",
+      "configured": "🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐🔐",
+      "candidate": "wrong",
+      "hash": null,
+      "encode_error": true,
+      "matched": false,
+      "default_prefix": null
+    }
+  ]
+}
