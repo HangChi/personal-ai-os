@@ -1239,9 +1239,11 @@
         "backend-go/internal/platform/auth/redis_integration_test.go",
         "scripts/migration/run_go_redis_tests.py",
         "specs/033-go-rewrite/validation.md",
-        "backend-go/internal/platform/redis/client_integration_test.go"
+        "backend-go/internal/platform/redis/client_integration_test.go",
+        "backend-go/internal/platform/redis/security_integration_test.go",
+        "backend-go/internal/platform/redis/response_loss_integration_test.go"
       ],
-      "note": "专用 standalone redis/rediss 解析/TLS 配置/2 秒操作与 Go 独立版本化键已实现；真实 Redis 跨客户端/HTTP 实例/OS 进程共享注销通过。不导入 Spring 序列化会话，切换须重新登录；实际 TLS/ACL/配置与应用装配仍待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。"
+      "note": "专用 standalone redis/rediss 解析/TLS 配置/2 秒操作与 Go 独立版本化键已实现；真实 Redis 跨客户端/HTTP 实例/OS 进程共享注销通过。不导入 Spring 序列化会话，切换须重新登录；实际 TLS/ACL/配置与应用装配仍待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/SharedSessionIntegrationTest.java": {
       "status": "implemented",
@@ -1275,9 +1277,11 @@
         "backend-go/internal/platform/ratelimit/redis_integration_test.go",
         "scripts/migration/run_go_redis_tests.py",
         "specs/033-go-rewrite/validation.md",
-        "backend-go/internal/platform/redis/client_integration_test.go"
+        "backend-go/internal/platform/redis/client_integration_test.go",
+        "backend-go/internal/platform/redis/security_integration_test.go",
+        "backend-go/internal/platform/redis/response_loss_integration_test.go"
       ],
-      "note": "原 Java Lua 逐词对照，真实 Redis 验证共享容量/分数/回拨/配置拒绝/TTL/取消/故障与跨进程预算；使用显式专用客户端和 150ms 边界。实际 TLS/网络不确定响应/应用配置指标装配待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。"
+      "note": "原 Java Lua 逐词对照，真实 Redis 验证共享容量/分数/回拨/配置拒绝/TTL/取消/故障与跨进程预算；使用显式专用客户端和 150ms 边界。实际 TLS/网络不确定响应/应用配置指标装配待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。"
     },
     "file:backend/src/test/java/com/personalos/common/web/RedisRateBucketIntegrationTest.java": {
       "status": "implemented",

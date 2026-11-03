@@ -2,6 +2,7 @@
 """在自身创建的临时 Redis 中验证 Go；不读 .env、不连现有服务或持久卷。"""
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -67,6 +68,25 @@ def run_package(image, package, tls_mode=False):
         if any(mount["Type"] == "volume" for mount in info["Mounts"]):
             raise RuntimeError("Redis 测试不允许持久卷")
         port = bindings[0]["HostPort"]
+        # 只为本次独立客户端包建立精确键空间/命令权限，不开放管理命令。
+        acl_uris = {}
+        if package == "redis":
+            rate_key = "personalos:rate:" + hashlib.sha256(b"fixture:acl-rate").hexdigest()
+            for name, key, commands in [
+                ("go_session", "fixture:acl-session:go:v1:session:*",
+                 ["get", "pttl", "pexpire", "exists", "set", "del"]),
+                ("go_rate", rate_key, ["hmget", "time", "hset", "pexpire"]),
+            ]:
+                acl_password = secrets.token_urlsafe(24)
+                result = capture(["docker", "exec", container, "sh", "-c",
+                                  'REDISCLI_AUTH="$GO_TEST_REDIS_PASSWORD" exec redis-cli' + cli_options + ' "$@"',
+                                  "redis-acl", "ACL", "SETUSER", name, "reset", "on", ">" + acl_password,
+                                  "~" + key, "+hello", "+auth", "+ping", "+eval",
+                                  *["+" + command for command in commands]])
+                if result != "OK":
+                    raise RuntimeError("专用 Redis ACL 创建失败")
+                acl_uris["GO_TEST_REDIS_" + name.removeprefix("go_").upper() + "_URI"] = (
+                    f"{'rediss' if tls_mode else 'redis'}://{name}:{acl_password}@127.0.0.1:{port}/0")
         child_env = {key: value for key, value in os.environ.items() if key in {
             "PATH", "HOME", "TMPDIR", "CC", "CXX", "CGO_ENABLED", "SSL_CERT_FILE", "SSL_CERT_DIR",
         }}
@@ -76,6 +96,7 @@ def run_package(image, package, tls_mode=False):
             "GO_TEST_REDIS_URI": f"{'rediss' if tls_mode else 'redis'}://:{password}@127.0.0.1:{port}/0",
             "GO_TEST_REDIS_CA_PEM": root_pem,
         })
+        child_env.update(acl_uris)
         subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
                         "./internal/platform/" + package], cwd=ROOT / "backend-go", env=child_env,
                        check=True, timeout=180)

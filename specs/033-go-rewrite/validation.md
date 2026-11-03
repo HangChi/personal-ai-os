@@ -178,6 +178,12 @@ Go 值格式刻意不兼容 Java 序列化，命名空间附加 :go:v1:，切换
 
 同一临时集群新建无管理权限账号，仅授独立探针 schema/单表 DML/identity 序列权限；Unicode 事务写读更新删除成功，建库/角色/DDL/未授权读/自提权限均 SQLSTATE 42501。plain database 模式也通过。提取 disposable_tls.py 为 PostgreSQL/Redis 共用，Redis --tls --package redis 回归通过。日志 /private/tmp/personal-ai-os-go-postgres-security-plain.log 与 /private/tmp/personal-ai-os-go-redis-tls-refactor.log。含 integration 标签的 go vet、1,093 文件基线及 diff 检查通过；本次容器清理。完整配置/全部 schema 权限、Flyway 历史锁/恢复、真实网络分区与应用装配仍未完成，T102/P1 保持开放。
 
+## 增量：Redis 最小 ACL 与已执行写入丢响应（T105e）
+
+run_go_redis_tests.py --package redis 和 --tls --package redis 全部 integration/race 通过。使用本次临时创建的两个受限账号，验证完整会话 Load/Rotate/EnsureCSRF/Delete 和容量2共享桶；直接命令及 Lua 的管理权限/键空间越界均 NOPERM。真实 ACL 失败使会话 HTTP 返回脱敏500且不签 Cookie，模型限流计错误并429，无 PostgreSQL/本地回退。首次 HTTP 用例错误地使用不存在的模型路径，改为原 /api/v1/chat/sessions/fixture/stream 后通过，没有改变原路径策略。
+
+透明代理实际切断已执行 EVAL INCR 的响应；调用错误但管理员观察计数1，只有原一次连接；下一次显式 PING 重连，计数仍1。在 TLS 下同样验证。日志 /private/tmp/personal-ai-os-go-redis-acl-loss.log 与 /private/tmp/personal-ai-os-go-redis-acl-loss-tls.log。临时容器清理。该验证覆盖精确丢响应，不代表完整生产网络分区/部署验收。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

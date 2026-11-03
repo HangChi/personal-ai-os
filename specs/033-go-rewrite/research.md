@@ -148,3 +148,11 @@ Decision：复用显式临时 TLS 证书夹具，PostgreSQL 只挂载本次服�
 仅在本次集群创建 NOSUPERUSER/NOCREATEDB/NOCREATEROLE/NOREPLICATION/NOBYPASSRLS 账号，独立 schema 内授权一张表的 DML/identity 序列。真实完成 Unicode 事务读写；创建角色/数据库/表、DROP、读未授权表和自提 SUPERUSER 均 42501。该探针验证连接器/事务权限边界，不是全 42 schema 的部署权限方案。
 
 Alternatives considered：只检查 TLS 配置字段（无法证明握手）；sslmode=require 或忽略证书（失去身份验证）；更改现有集群 pg_hba 或系统信任（越过隔离）；超级用户通过便宣称最小权限（证据不成立）。CA 私钥不进容器，所有资源 finally 清理。
+
+## R-018 Redis ACL 与丢失响应的不确定结果
+
+Decision：仅在新建临时容器中创建 go_session/go_rate 两个账号，reset 后只开 AUTH/HELLO/PING/EVAL、各自 Lua 所需命令和精确键空间。会话仅 fixture:acl-session:go:v1:session:*，限流仅指定 namespace SHA-256 的单键；不授通配命令/管理权限。真实验证所有会话原子操作/模型预算，CONFIG/ACL/FLUSHALL/KEYS、Java 会话键及脚本越界均 NOPERM。误配限流账号或会话键空间时 HTTP 500/模型429，计错误且不访问 PostgreSQL。该 ACL 清单仅是已实现会话/模型桶的权限，未来缓存需另定权限。
+
+透明回环 TCP 代理先完成真实连接/PING，再丢弃下一次服务端返回的数据并断开连接；不读取/输出协议或凭据，TLS 原样转发密文。实际 EVAL INCR 已执行但调用返回错误，独立管理员连接读取计数恰好1，代理只接受一次连接，证明未自动重试。之后显式新 PING 可重连，原计数保持1。普通/TLS 两种模式均通过。不能据此将不确定写入当作未发生，业务恢复仍需协议。
+
+Alternatives considered：只检查 MaxRetries 字段（不证明真实故障）；停掉容器后测试（无法模拟写入已执行/响应丢失）；给 ACL +@all（掩盖越权）；ACL 错误降级本地/其他共享后端（可能身份或预算不一致）。完整半开/长期网络分区和应用生命周期尚未验收。
