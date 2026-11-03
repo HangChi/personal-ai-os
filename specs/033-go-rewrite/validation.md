@@ -296,6 +296,12 @@ Go逐项覆盖全部查询结果/profile/defaults、空值、环境别名冲突�
 
 验证跨实例CSRF、实例2登录/实例1读取轮换后的身份、共享模型预算与独立专用客户端。主动关闭限流客户端：429、Redis错误counter增长、管理DOWN、真实查询runtime_rate_bucket为零，无PostgreSQL回退；会话客户端继续可用。关闭另一侧会话客户端：HTTP500，无本地回退。Foundation关闭不关闭仍完好的借用Redis，创建者可继续PING。故障注入仅客户端关闭，不冒充网络分区/不确定响应/组合跨OS验证。integration vet、Python编译、基线check/diff通过；运行时生产代码未变，无需重跑未受影响的配置oracle或全量组件race。CLI、完整框架/Worker与P1父项仍开放。
 
+## 增量：显式基础主命令与进程配置（T108d）
+
+增加 --foundation/--migrations/--allow-baseline-v1，默认诊断保持不变。系统环境快照、显式 dotenv 开关、ConfigData/profile、canonical 数据源与基础配置统一接入。基础模式拒绝未显式设置的数据库/端口，不自动迁移；连接池上限与毫秒等待、专用 Redis URI/两份根证书、独立管理监听与有界退出均接线。
+
+配置/命令定向 race 通过（/private/tmp/personal-ai-os-go-cli-unit.log），全量 vet/build 通过。测试覆盖参数脱敏、绝对路径、默认不开启、显式数据库缺项阻止 YAML 回落、canonical 优先级、未支持 JDBC 地址拒绝、五角色 profile 池上限、毫秒单位/边界、配置错误在连接前拒绝、来源副本及 dotenv 晚激活。尚未运行这一新模式的真实二进制/容器测试，另行补证；所有 P1 父项保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

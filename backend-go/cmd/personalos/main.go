@@ -1,4 +1,4 @@
-// personalos 当前是隔离的 Go 迁移启动骨架，尚不提供 Java 业务功能。
+// personalos 默认离线诊断，显式 --foundation 可启动尚未发布的 P1 基础运行时。
 package main
 
 import (
@@ -20,7 +20,7 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	if err := run(ctx, logger); err != nil {
+	if err := runCommand(ctx, os.Args[1:], logger); err != nil {
 		logger.Error("Go 迁移进程退出", "error", err)
 		os.Exit(1)
 	}

@@ -300,3 +300,13 @@ Decision：仅在有效monitoring profile提供独立管理handler，业务handl
 Serve只接管显式回环TCP监听器；管理开关和监听器必须一致且端口独立。两侧同时Shutdown，一侧失败则关闭另一侧；宽限到期强制关闭连接并取消工作，保留期限错误，再以有限窗口等租约/池清理。任务不响应取消时允许延后清理，不能提前关池或假称成功。正常取消/异常监听/SSE超时均真实集成验证。
 
 Alternatives considered：根据Host/X-Forwarded头授予管理权限；将HEAD自动映射GET；业务端口也挂Prometheus；管理健康复用业务信封/HTTP200 DOWN；静默丢弃关闭超时。均未采用。完整HTTP histogram/业务指标与CLI接线继续开放。
+
+## R-034 显式基础进程与配置来源桥接
+
+Decision：默认命令继续离线诊断；--foundation 要求绝对原迁移目录，--allow-baseline-v1 只显式放行已验证的默认基线标记。系统环境先复制，再由已有开关控制 dotenv 读取，最后按已对照的 ConfigData 顺序组合。prod 仍在创建连接/监听之前拒绝。
+
+基础模式要求 SERVER_PORT 与 POSTGRES_HOST/PORT/DB/USER/PASSWORD 六项显式非空，防止 YAML 的本地连接默认值误连现有数据。连接实际使用 canonical spring.datasource 属性，当前 JDBC 地址只接受单主机、显式端口和单库路径，拒绝查询/凭据/多主机。默认 verify-full；GO_POSTGRES_SSL_MODE/ROOT_CERT 是显式 TLS 参数，不冒充 Java 的 JDBC 任意参数支持。
+
+基线 Hikari maximum-pool-size 与 connection-timeout（long 毫秒）映射到自有池，Worker profile 的 4 与 API/combined 的 10 保留；0 代表的近乎无界等待和超 Go 时长范围明确拒绝，250ms 下界保留。未声称支持全部 Hikari 扩展参数/调度。退出宽限按 spring.lifecycle.timeout-per-shutdown-phase（默认30s）。专用 Redis URI 由原属性解析，两个客户端独立创建，根证书分别由 GO_REDIS_SESSION_ROOT_CERT/GO_REDIS_RATE_LIMIT_ROOT_CERT 显式绝对路径提供；应用退出后由主命令关闭，退出仍有在途任务时不提前关闭。
+
+Alternatives considered：默认直接连接 YAML 服务；复用旧配置绕开来源顺序；自动执行/修复 Flyway；共用全局 Redis 客户端；P1 通过就解禁生产。均未采用。本批只完成主入口接线/单测，真实 OS 进程与依赖验收单列。

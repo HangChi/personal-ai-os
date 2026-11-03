@@ -60,6 +60,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [x] T108a 提供显式Foundation组合：自有池/Flyway只读校验、Auth/CSRF、共享桶/模型租约、健康与轮末执行器；真实TLS临时库验证两个实例/五角色、保护早于认证、CookieJar登录轮换/注销、退出取消/排空/释放租约后关池及启动失败无连接泄漏。主命令仍离线诊断；管理端口/指标/Redis组合/完整Worker待验，T108保持开放。
 - [x] T108b monitoring有效profile装配独立管理链，只允许精确GET health/prometheus，HEAD及业务端点403；Actuator无业务信封/内部详情，真实DOWN503。接入限流count/sum/Redis错误和池/执行器最小指标；显式独立回环双监听器验证权限隔离、正常退出、异常联动关闭、SSE宽限取消与端口释放。完整观测/CLI/业务Worker仍待完成，T108保持开放。
 - [x] T108c 在脚本同时新建的PostgreSQL/Redis TLS容器与独立会话/限流ACL账号中验证完整Foundation双实例：跨实例CSRF/登录/共享会话/共享预算、客户端故障拒绝/指标/管理DOWN、无PostgreSQL或本地会话回退、借用客户端不被Foundation关闭。全部app回归通过；故障注入是关闭客户端，不冒充真实网络分区，完整T108/T109仍开放。
+- [x] T108d 主命令增加显式 --foundation/绝对迁移目录/V1基线开关，使用系统快照与可选dotenv接入已有基础应用；显式数据库参数、canonical数据源、基线Hikari池上限/毫秒等待、独立Redis URI/根证书、双监听与资源所有权接线。默认离线诊断和生产拒绝保留；单测/race/vet/build通过，真实基础进程另行验收，P1父项仍开放。
 - [ ] T109 P1 真数据库/安全/并发回归通过；progress 逐项填证据并提交后进入 P2。
 
 ## P2 幂等、确认与任务

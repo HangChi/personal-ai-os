@@ -23,7 +23,7 @@
 
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
-默认命令仍仅装配离线诊断；显式P1基础组合已接入数据库/认证/共享保护/健康、轮末执行器、独立管理链/回环双监听和最小指标，尚未完成CLI及全部配置接线。模型、任务、聊天、Agent、知识库、日历、记忆、MCP和业务后台调度仍未迁移。第三方运行时依赖为固定版本的 pgx、go-redis、x/crypto 及其间接依赖，见 [许可证声明](THIRD_PARTY_NOTICES.md)；首次构建需 `go mod download`，已有完整缓存后可离线验证。
+默认命令仍仅装配离线诊断；显式P1基础组合已接入数据库/认证/共享保护/健康、轮末执行器、独立管理链/回环双监听和最小指标，已增加显式 `--foundation` 主命令；完整配置与基础进程验收仍待完成。模型、任务、聊天、Agent、知识库、日历、记忆、MCP和业务后台调度仍未迁移。第三方运行时依赖为固定版本的 pgx、go-redis、x/crypto 及其间接依赖，见 [许可证声明](THIRD_PARTY_NOTICES.md)；首次构建需 `go mod download`，已有完整缓存后可离线验证。
 
 ## 构建与验证
 
@@ -85,3 +85,14 @@ python3 scripts/migration/run_go_postgres_tests.py
 ## 接下来实施
 
 继续 [P1 任务](../specs/033-go-rewrite/tasks.md#p1-基础设施与数据兼容)：先完成真实 PostgreSQL/pgvector、42 个历史迁移、认证/CSRF、完整中间件与运行协调，再进入 P2 任务模块。每阶段填写源码/测试/差分证据并独立提交。
+
+## 显式 P1 基础模式（尚未验收发布）
+
+使用 `personalos --foundation --migrations /absolute/backend/src/main/resources/db/migration` 启动。
+必须在专用环境显式设置 `SERVER_PORT`、`POSTGRES_HOST`、`POSTGRES_PORT`、`POSTGRES_DB`、`POSTGRES_USER`、`POSTGRES_PASSWORD`，不能使用 YAML 连接默认值。不自动执行、baseline 或 repair SQL；需要先由独立 Java Flyway 完成原迁移。已有真实默认 V1 基线历史时才加 `--allow-baseline-v1`。
+
+数据库实际读取解析后的 `spring.datasource.*`，支持单主机 JDBC TCP 地址和显式端口，不接受查询参数或多主机。默认 TLS `verify-full`；`GO_POSTGRES_ROOT_CERT` 指向测试 CA，回环明文测试需显式 `GO_POSTGRES_SSL_MODE=disable`。绝不为测试关闭非回环 TLS 校验。
+
+基线 Hikari 最大连接数/毫秒等待已接入；`worker-index`、`worker-review`、`worker-delivery` profile 上限4，其余默认10。仅设运行角色不会自动加载 profile 文件。`monitoring` profile 启动独立回环管理端口（默认9091，可设 `MANAGEMENT_SERVER_PORT`），限流和会话 Redis 仍由各自原开关/URI/namespace 配置；两份 CA 分别使用 `GO_REDIS_SESSION_ROOT_CERT`、`GO_REDIS_RATE_LIMIT_ROOT_CERT` 的绝对路径。
+
+基础模式允许已实现的认证/CSRF；`prod` 继续拒绝。默认诊断模式的拒绝规则不变。基础模式仍不执行业务 Worker，`readyz` 保持未就绪，未实现业务返回404。完整Servlet/框架差分、真实进程与故障验收仍在P1进行中，禁止用于替换Java实例。

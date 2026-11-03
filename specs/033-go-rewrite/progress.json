@@ -70,9 +70,13 @@
         "backend-go/internal/app/foundation_postgres_integration_test.go",
         "backend-go/internal/app/management.go",
         "backend-go/internal/app/serve.go",
-        "backend-go/internal/app/management_test.go"
+        "backend-go/internal/app/management_test.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/cmd/personalos/startup_test.go",
+        "backend-go/internal/platform/config/process.go",
+        "backend-go/internal/platform/config/process_test.go"
       ],
-      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。"
+      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。 T108d: explicit foundation CLI/configuration wiring and unit tests implemented; real OS process acceptance remains pending."
     },
     "file:backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java": {
       "status": "in_progress",
@@ -85,9 +89,13 @@
         "backend-go/internal/platform/config/baseline.json",
         "backend-go/internal/platform/config/testdata/java-config-data.json",
         "scripts/migration/ConfigDataOracle.java",
-        "scripts/migration/java_config_data_fixture.py"
+        "scripts/migration/java_config_data_fixture.py",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/cmd/personalos/startup_test.go",
+        "backend-go/internal/platform/config/process.go",
+        "backend-go/internal/platform/config/process_test.go"
       ],
-      "note": ".env解析/显式查找与优先级已有测试；新增真实ConfigData133场景×189属性验证dotenv晚于profile发现、系统别名/多文档/占位符。诊断入口旧窄加载尚未切换，任意外部ConfigData和完整应用接线仍待完成。"
+      "note": ".env解析/显式查找与优先级已有测试；新增真实ConfigData133场景×189属性验证dotenv晚于profile发现、系统别名/多文档/占位符。诊断入口旧窄加载尚未切换，任意外部ConfigData和完整应用接线仍待完成。 T108d: explicit foundation CLI/configuration wiring and unit tests implemented; real OS process acceptance remains pending."
     },
     "file:backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java": {
       "status": "in_progress",
