@@ -209,7 +209,11 @@
         "backend-go/internal/app/foundation_postgres_integration_test.go",
         "backend-go/internal/app/foundation_redis_integration_test.go",
         "scripts/migration/run_go_redis_tests.py",
-        "scripts/migration/run_go_postgres_tests.py"
+        "scripts/migration/run_go_postgres_tests.py",
+        "backend-go/internal/app/actuator_metrics.go",
+        "backend-go/internal/app/actuator_metrics_test.go",
+        "backend-go/internal/app/actuator_metrics_integration_test.go",
+        "backend-go/internal/app/foundation_http_oracle_test.go"
       ],
       "note": "本地桶与共享选择/故障/指标回调策略已移植；受控替身证明 Redis 错误拒绝不回退、PostgreSQL 错误透传。真实共享适配器、指标系统和应用装配未完成，不能 verified。 monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。 已通过Foundation双实例与PostgreSQL/Redis TLS、独立ACL组合：共享会话/预算、专用客户端故障不回退和借用资源所有权；真实应用网络分区/CLI仍待验。"
     },

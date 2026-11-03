@@ -336,3 +336,11 @@ Decision：只在runner自建且已执行42迁移的TLS PostgreSQL创建随机�
 透明TCP代理保留端到端TLS，不解密或记录数据；分区关闭已有连接并拒绝新连接，恢复后真实重连。两专用Redis分别故障验证隔离、恢复原会话及无PG回退。单独丢弃服务端COMMIT响应、继续转发客户端写入；调用返回DeadlineExceeded，直连证实一次持久副作用，禁止透明重试不确定写入。
 
 首次整套回归发现两个测试共用ACL固定桶，新增测试改为仅清理本次独立容器的精确键后全app通过。没有放宽生产ACL或忽略旧断言。这些是P1组件证据，不是五发布门禁或真实用户备份/生产验收。
+
+## R-038 实际限流指标的Actuator兼容端点
+
+Decision：默认业务exposure包含metrics，必须接入而非恒定404。真实Micrometer注册原限流名称/标签的固定10/20/30ms样本与两个Redis错误，实际Actuator完成JSON/标签/聚合/媒体/方法处理；以MockClock验证三分钟无样本后MAX归零而累计COUNT/TOTAL_TIME保留。Go实现SimpleMeterRegistry默认一分钟三槽窗口，不将MAX误作永久最大值。
+
+注册是惰性的：无样本不列timer，无Redis错误不列counter；未知名称/无匹配标签为空404，非法无冒号标签保留原全局500，OPTIONS空200且Allow。标签聚合的COUNT/TOTAL_TIME求和、MAX取最大，选择backend后不再返回已选availableTags。列表差分只筛共同的personalos.rate.limit名称，不在Go伪造JVM/Hikari或尚未采集的业务指标。monitoring仍仅两个精确GET，未因此放宽管理权限。
+
+真实TLS应用验证一次允许、一次预算拒绝都进入postgres timer且耗时为实际测量。完整HTTP histogram、日志格式和后续业务指标仍开放，不能将292个基础场景当作全业务差分完成。

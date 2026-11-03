@@ -1,6 +1,10 @@
 import com.personalos.common.auth.*;
 import com.personalos.common.exception.GlobalExceptionHandler;
 import com.personalos.common.json.JsonCodec;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.MockClock;
+import io.micrometer.core.instrument.simple.SimpleConfig;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.CookieManager;
@@ -34,6 +38,8 @@ import tools.jackson.databind.json.JsonMapper;
 @Import({SecurityConfig.class, MonitoringSecurityConfig.class, AuthController.class, CsrfController.class, GlobalExceptionHandler.class})
 public class FoundationHttpOracle {
     private static final AtomicBoolean DATABASE_UP = new AtomicBoolean(true);
+    @Bean MockClock fixtureClock() { return new MockClock(); }
+    @Bean MeterRegistry fixtureRegistry(MockClock clock) { return new SimpleMeterRegistry(SimpleConfig.DEFAULT, clock); }
     @Bean AuthProperties authProperties(org.springframework.core.env.Environment env) {
         return new AuthProperties(env.getProperty("fixture.auth", Boolean.class, false), "admin", "fixture-password", 1000, Duration.ofMinutes(1));
     }
@@ -81,6 +87,14 @@ public class FoundationHttpOracle {
                 for (String line; (line = reader.readLine()) != null;) {
                     Map<String, Object> input = mapper.readValue(line, Map.class);
                     DATABASE_UP.set(!Boolean.TRUE.equals(input.get("databaseDown")));
+                    // 只合成原限流器相同名称/标签的样本，端点序列化/过滤/聚合由真实Actuator执行。
+                    var registry = context.getBean(MeterRegistry.class);
+                    registry.getMeters().stream().filter(meter -> meter.getId().getName().startsWith("personalos.rate.limit.")).toList().forEach(registry::remove);
+                    registry.timer("personalos.rate.limit.acquire", "backend", "postgres").record(Duration.ofMillis(10));
+                    registry.timer("personalos.rate.limit.acquire", "backend", "postgres").record(Duration.ofMillis(20));
+                    registry.timer("personalos.rate.limit.acquire", "backend", "redis").record(Duration.ofMillis(30));
+                    registry.counter("personalos.rate.limit.errors", "backend", "redis").increment(2);
+                    if (Boolean.TRUE.equals(input.get("metricExpired"))) context.getBean(MockClock.class).add(Duration.ofMinutes(3));
                     var cookies = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
                     try (var client = HttpClient.newBuilder().cookieHandler(cookies).followRedirects(HttpClient.Redirect.NEVER).build()) {
                         String origin = "http://127.0.0.1:" + (Boolean.TRUE.equals(input.get("management")) ? management : port);

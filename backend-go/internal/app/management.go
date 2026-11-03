@@ -46,8 +46,10 @@ type foundationMetrics struct {
 	mu          sync.Mutex
 	counts      [2]uint64
 	seconds     [2]float64
+	maxima      [2]metricWindowMax
 	redisErrors uint64
 	extra       ratelimit.Observer
+	clock       func() time.Time
 }
 
 func (m *foundationMetrics) RecordAcquisition(backend ratelimit.Backend, elapsed time.Duration, failed bool) {
@@ -60,8 +62,16 @@ func (m *foundationMetrics) RecordAcquisition(backend ratelimit.Backend, elapsed
 		return
 	}
 	m.mu.Lock()
-	m.counts[index]++
-	m.seconds[index] += max(0, elapsed.Seconds())
+	now := time.Now()
+	if m.clock != nil {
+		now = m.clock()
+	}
+	// Micrometer Timer忽略负样本；错误counter独立于timer。
+	if elapsed >= 0 {
+		m.maxima[index].record(now, elapsed.Seconds())
+		m.counts[index]++
+		m.seconds[index] += elapsed.Seconds()
+	}
 	if backend == ratelimit.Redis && failed {
 		m.redisErrors++
 	}
@@ -92,13 +102,13 @@ func (m *foundationMetrics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (f *Foundation) ManagementHandler() http.Handler { return f.management }
 
 func (f *Foundation) attachManagement(metrics *foundationMetrics, properties config.ActuatorProperties, snapshot func(context.Context) actuatorHealth, logger *slog.Logger) {
-	actuator := newActuatorHandler(properties, snapshot, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		metrics.ServeHTTP(w, r)
+	exporter := &foundationMetricExporter{foundationMetrics: metrics, extra: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		pool, executor := f.pool.Stats(), f.executor.Stats()
 		fmt.Fprintln(w, "# TYPE personalos_go_database_connections gauge")
 		fmt.Fprintf(w, "personalos_go_database_connections{state=\"open\"} %d\npersonalos_go_database_connections{state=\"active\"} %d\npersonalos_go_database_connections{state=\"idle\"} %d\npersonalos_go_database_connections{state=\"max\"} %d\n", pool.OpenConnections, pool.InUse, pool.Idle, pool.MaxOpenConnections)
 		fmt.Fprintln(w, "# TYPE personalos_go_post_turn_tasks gauge")
 		fmt.Fprintf(w, "personalos_go_post_turn_tasks{state=\"active\"} %d\npersonalos_go_post_turn_tasks{state=\"queued\"} %d\n", executor.Active, executor.Queued)
-	}), logger)
+	})}
+	actuator := newActuatorHandler(properties, snapshot, exporter, logger)
 	f.management = f.track(newManagementChain(actuator, logger))
 }

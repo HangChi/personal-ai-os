@@ -330,6 +330,12 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 
 `run_go_redis_tests.py --tls --package app`首次三个新增网络测试通过，旧共享预算断言因固定ACL桶污染失败。补独立容器精确键清理后全app race通过（/private/tmp/personal-ai-os-go-foundation-network.log）。PG/两专用Redis真实TCP分区与恢复、租约保持/释放、无回退验证通过；COMMIT响应实际被丢、调用超时，直连确认仅一次提交。两临时容器和证书finally清理。integration标签全量vet通过；父项和发布门禁保持开放。
 
+## 增量：真实Actuator限流指标（T108f）
+
+真实Servlet夹具扩展到292例；默认重生成一致（/private/tmp/personal-ai-os-java-metrics-check.log），Go基础HTTP/指标定向race全部对照通过（/private/tmp/personal-ai-os-go-metrics-oracle.log）。覆盖列表/具体指标、重复/缺失/未知标签、MAX窗口过期、聚合与过滤、HEAD/OPTIONS/405/406以及原全局500。Java夹具只合成固定计量样本，HTTP由真实Micrometer/Actuator处理；名称清单仅筛共同业务项，不隐藏相关指标缺席。
+
+`run_go_postgres_tests.py --tls --package app`全app race通过（/private/tmp/personal-ai-os-go-metrics-tls.log），真实Flyway后允许/拒绝的模型路径各执行一次，业务Actuator实际报告COUNT=2与正TOTAL_TIME/MAX；未启用Redis不虚构错误counter，默认业务Prometheus仍404。临时容器清理。新增窗口/空注册表测试与integration vet通过。完整观测、业务HTTP histogram和P1父项仍开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

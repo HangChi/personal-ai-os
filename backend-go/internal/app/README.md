@@ -24,7 +24,9 @@ python3 scripts/migration/run_go_postgres_tests.py --tls --flyway --package app
 
 有效profile包含`monitoring`时，`ManagementHandler()`提供独立管理链，否则返回nil。仅允许GET `/actuator/health`、GET `/actuator/prometheus`，其他路径/方法（包括HEAD）403，不创建业务会话。真实Servlet对照后，健康响应保留status与liveness/readiness groups，默认媒体类型为Actuator v3 JSON，也接受application/json。实际探测自有数据库和已启用的专用Redis，失败HTTP503，不套业务信封；默认when_authorized对匿名隐藏组件，显式always才展示详情。非monitoring业务入口的已登录用户可读取详情/组件路径，匿名组件路径为空404。模型未配置不影响健康，健康UP不代表迁移已就绪。
 
-Prometheus文本提供原限流timer的count/sum（秒）及Redis错误counter，backend标签固定postgres/redis；另以`personalos_go_*`命名自有池和轮末队列gauge。这是最小指标集，没有伪造完整Micrometer、业务HTTP histogram、JVM或未迁移业务指标。
+非monitoring业务端口按exposure提供`/actuator/metrics`及具体指标路径。原限流timer以seconds报告COUNT/TOTAL_TIME/MAX，支持backend标签过滤；MAX按SimpleMeterRegistry默认一分钟三槽窗口过期，累计值不清零。Redis错误counter只在实际发生错误后出现；空清单和不存在/无匹配标签指标分别为空names/空404。框架媒体类型、方法与标签错误行为通过真实Actuator差分，不添加JVM或未采集的指标名称。
+
+Prometheus文本提供原限流timer的count/sum（秒）及Redis错误counter，backend标签固定postgres/redis；另以`personalos_go_*`命名自有池和轮末队列gauge。这是最小指标集，完整业务HTTP histogram与其余运行指标仍需补齐。
 
 `Serve(ctx, businessListener, managementListener, shutdownTimeout)`接管调用方显式创建的监听器；仅允许回环TCP，管理必须不同端口并与monitoring开关一致。拒绝参数也会关闭已接管监听器；Foundation未启动时由调用方另行Close。每个实例只Serve一次。关闭时两个HTTP服务同时停止入口并排空，之后关闭Foundation；一侧监听异常会关闭另一侧。宽限耗尽强制关闭连接/取消请求并报告期限错误，另给资源清理有限窗口；不响应取消的任务仍可能延后最终清理，不能把它们标作成功完成。
 

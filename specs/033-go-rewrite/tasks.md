@@ -66,6 +66,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [x] T108c 在脚本同时新建的PostgreSQL/Redis TLS容器与独立会话/限流ACL账号中验证完整Foundation双实例：跨实例CSRF/登录/共享会话/共享预算、客户端故障拒绝/指标/管理DOWN、无PostgreSQL或本地会话回退、借用客户端不被Foundation关闭。全部app回归通过；故障注入是关闭客户端，不冒充真实网络分区，完整T108/T109仍开放。
 - [x] T108d 主命令增加显式 --foundation/绝对迁移目录/V1基线开关，使用系统快照与可选dotenv接入已有基础应用；显式数据库参数、canonical数据源、基线Hikari池上限/毫秒等待、独立Redis URI/根证书、双监听与资源所有权接线。默认离线诊断和生产拒绝保留；单测/race/vet/build通过，真实基础进程另行验收，P1父项仍开放。
 - [x] T108e 使用真实race二进制/五角色/双端口，在自建TLS PostgreSQL与专用Redis ACL下验证跨OS共享预算、认证/CSRF/登录轮换/注销、跨进程共享会话、profile池上限、SIGTERM零退出/端口/连接释放，以及缺项/生产/迁移错误/管理端口冲突启动拒绝。未以此替代真实网络故障或业务Worker验收，P1父项保持开放。
+- [x] T108f 接入业务Actuator metrics列表/单项/标签过滤、COUNT/TOTAL_TIME/MAX与Redis错误counter；只列真实采集项，保留SimpleMeterRegistry窗口过期。真实Servlet夹具扩展292例全部对照，实际TLS PostgreSQL允许/拒绝请求产生的两次计量验证通过；完整HTTP/业务histogram与运行指标仍待完成。
 - [ ] T109 P1 真数据库/安全/并发回归通过；progress 逐项填证据并提交后进入 P2。
 
 ## P2 幂等、确认与任务

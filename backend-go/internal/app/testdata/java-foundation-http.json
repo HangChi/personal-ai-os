@@ -67,7 +67,7 @@
     "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc",
     "jspecify-1.0.1.jar": "070d75f261fe4c5b8202508366715f7f2d4660f88c8ef7e6d3575e48c9683b66"
   },
-  "scope": "real embedded Servlet/Security/Jackson/Validator/Actuator with original foundation sources; synthetic auth and database HealthIndicator only",
+  "scope": "real embedded Servlet/Security/Jackson/Validator/Actuator with original foundation sources; synthetic auth, database HealthIndicator and fixed rate metric samples; metric names filtered to personalos.rate.limit only",
   "cases": [
     {
       "auth": false,
@@ -1258,6 +1258,448 @@
       "csrf": false,
       "monitoring": false,
       "request": {
+        "name": "metrics-list",
+        "method": "GET",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "names": [
+            "personalos.rate.limit.acquire",
+            "personalos.rate.limit.errors"
+          ]
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metrics-head",
+        "method": "HEAD",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metrics-options",
+        "method": "OPTIONS",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "",
+        "allow": "GET,HEAD,OPTIONS",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metrics-post",
+        "method": "POST",
+        "path": "/actuator/metrics",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-personalos.rate.limit.acquire",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "availableTags": [
+            {
+              "tag": "backend",
+              "values": [
+                "redis",
+                "postgres"
+              ]
+            }
+          ],
+          "baseUnit": "seconds",
+          "measurements": [
+            {
+              "statistic": "COUNT",
+              "value": 3.0
+            },
+            {
+              "statistic": "TOTAL_TIME",
+              "value": 0.06
+            },
+            {
+              "statistic": "MAX",
+              "value": 0.03
+            }
+          ],
+          "name": "personalos.rate.limit.acquire"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-personalos.rate.limit.errors",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.errors"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "availableTags": [
+            {
+              "tag": "backend",
+              "values": [
+                "redis"
+              ]
+            }
+          ],
+          "measurements": [
+            {
+              "statistic": "COUNT",
+              "value": 2.0
+            }
+          ],
+          "name": "personalos.rate.limit.errors"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-fixture.missing",
+        "method": "GET",
+        "path": "/actuator/metrics/fixture.missing"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-58",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "availableTags": [],
+          "baseUnit": "seconds",
+          "measurements": [
+            {
+              "statistic": "COUNT",
+              "value": 2.0
+            },
+            {
+              "statistic": "TOTAL_TIME",
+              "value": 0.03
+            },
+            {
+              "statistic": "MAX",
+              "value": 0.02
+            }
+          ],
+          "name": "personalos.rate.limit.acquire"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-59",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "availableTags": [],
+          "baseUnit": "seconds",
+          "measurements": [
+            {
+              "statistic": "COUNT",
+              "value": 1.0
+            },
+            {
+              "statistic": "TOTAL_TIME",
+              "value": 0.03
+            },
+            {
+              "statistic": "MAX",
+              "value": 0.03
+            }
+          ],
+          "name": "personalos.rate.limit.acquire"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-60",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:missing"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-61",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=other:value"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-62",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend"
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-63",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres&tag=backend:redis"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-64",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis&tag=other:value"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-json",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "availableTags": [
+            {
+              "tag": "backend",
+              "values": [
+                "redis",
+                "postgres"
+              ]
+            }
+          ],
+          "baseUnit": "seconds",
+          "measurements": [
+            {
+              "statistic": "COUNT",
+              "value": 3.0
+            },
+            {
+              "statistic": "TOTAL_TIME",
+              "value": 0.06
+            },
+            {
+              "statistic": "MAX",
+              "value": 0.03
+            }
+          ],
+          "name": "personalos.rate.limit.acquire"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-html",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-expired",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "metricExpired": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "availableTags": [
+            {
+              "tag": "backend",
+              "values": [
+                "redis",
+                "postgres"
+              ]
+            }
+          ],
+          "baseUnit": "seconds",
+          "measurements": [
+            {
+              "statistic": "COUNT",
+              "value": 3.0
+            },
+            {
+              "statistic": "TOTAL_TIME",
+              "value": 0.06
+            },
+            {
+              "statistic": "MAX",
+              "value": 0.0
+            }
+          ],
+          "name": "personalos.rate.limit.acquire"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-counter-filter",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.errors?tag=backend:postgres"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -2545,6 +2987,383 @@
       "csrf": false,
       "monitoring": false,
       "request": {
+        "name": "metrics-list",
+        "method": "GET",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metrics-head",
+        "method": "HEAD",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metrics-options",
+        "method": "OPTIONS",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metrics-post",
+        "method": "POST",
+        "path": "/actuator/metrics",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-personalos.rate.limit.acquire",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-personalos.rate.limit.errors",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.errors"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-fixture.missing",
+        "method": "GET",
+        "path": "/actuator/metrics/fixture.missing"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-58",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-59",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-60",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:missing"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-61",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=other:value"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-62",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-63",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres&tag=backend:redis"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-64",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis&tag=other:value"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-json",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-html",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-expired",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "metricExpired": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "metric-counter-filter",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.errors?tag=backend:postgres"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -3826,6 +4645,383 @@
       "csrf": true,
       "monitoring": false,
       "request": {
+        "name": "metrics-list",
+        "method": "GET",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metrics-head",
+        "method": "HEAD",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metrics-options",
+        "method": "OPTIONS",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metrics-post",
+        "method": "POST",
+        "path": "/actuator/metrics",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-personalos.rate.limit.acquire",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-personalos.rate.limit.errors",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.errors"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-fixture.missing",
+        "method": "GET",
+        "path": "/actuator/metrics/fixture.missing"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-58",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-59",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-60",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:missing"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-61",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=other:value"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-62",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-63",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres&tag=backend:redis"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-filter-64",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis&tag=other:value"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-json",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-html",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-expired",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "metricExpired": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "metric-counter-filter",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.errors?tag=backend:postgres"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -5079,6 +6275,383 @@
         "body": {
           "code": 40004,
           "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metrics-list",
+        "method": "GET",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metrics-head",
+        "method": "HEAD",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metrics-options",
+        "method": "OPTIONS",
+        "path": "/actuator/metrics"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metrics-post",
+        "method": "POST",
+        "path": "/actuator/metrics",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-personalos.rate.limit.acquire",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-personalos.rate.limit.errors",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.errors"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-fixture.missing",
+        "method": "GET",
+        "path": "/actuator/metrics/fixture.missing"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-filter-58",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-filter-59",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-filter-60",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:missing"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-filter-61",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=other:value"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-filter-62",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-filter-63",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres&tag=backend:redis"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-filter-64",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis&tag=other:value"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-json",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-html",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-expired",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.acquire",
+        "metricExpired": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "metric-counter-filter",
+        "method": "GET",
+        "path": "/actuator/metrics/personalos.rate.limit.errors?tag=backend:postgres"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
           "data": null,
           "timestamp": "<generated>"
         }

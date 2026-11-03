@@ -69,6 +69,18 @@ def cases():
     add("health-liveness", path="/actuator/health/liveness")
     add("health-component-anonymous", path="/actuator/health/db")
     add("health-component-authenticated", path="/actuator/health/db", login=True, csrf=True)
+    add("metrics-list", path="/actuator/metrics")
+    add("metrics-head", "HEAD", "/actuator/metrics")
+    add("metrics-options", "OPTIONS", "/actuator/metrics")
+    add("metrics-post", "POST", "/actuator/metrics", csrf=True)
+    for name in ["personalos.rate.limit.acquire", "personalos.rate.limit.errors", "fixture.missing"]:
+        add("metric-"+name, path="/actuator/metrics/"+name)
+    for query in ["tag=backend:postgres", "tag=backend:redis", "tag=backend:missing", "tag=other:value", "tag=backend", "tag=backend:postgres&tag=backend:redis", "tag=backend:redis&tag=other:value"]:
+        add("metric-filter-"+str(len(rows)), path="/actuator/metrics/personalos.rate.limit.acquire?"+query)
+    add("metric-json", path="/actuator/metrics/personalos.rate.limit.acquire", accept="application/json")
+    add("metric-html", path="/actuator/metrics/personalos.rate.limit.acquire", accept="text/html")
+    add("metric-expired", path="/actuator/metrics/personalos.rate.limit.acquire", metricExpired=True)
+    add("metric-counter-filter", path="/actuator/metrics/personalos.rate.limit.errors?tag=backend:postgres")
     for name, method, path in [("management-health", "GET", "/actuator/health"), ("management-head", "HEAD", "/actuator/health"),
                                ("management-subpath", "GET", "/actuator/health/db"), ("management-business", "GET", "/api/v1/auth/me")]:
         add(name, method, path, management=True)
@@ -123,6 +135,9 @@ def generate(m2):
                     try: response["body"] = json.loads(response["body"])
                     except json.JSONDecodeError: pass
                 if isinstance(response["body"], dict):
+                    if request["name"] == "metrics-list" and "names" in response["body"]:
+                        # JVM等平台指标不在Go运行时伪造；差分只比较真实记录的共同业务指标。
+                        response["body"]["names"] = [name for name in response["body"]["names"] if name.startswith("personalos.rate.limit.")]
                     if "timestamp" in response["body"]:
                         response["body"]["timestamp"] = "<generated>"
                     data = response["body"].get("data")
@@ -130,7 +145,7 @@ def generate(m2):
                 scenarios.append(dict(auth=auth, csrf=csrf, monitoring=management, request=request, response=response))
     return dict(baseline_commit=baseline, spring_boot=boot, sources_sha256=hashes,
                 jars_sha256={jar.name: hashlib.sha256(jar.read_bytes()).hexdigest() for jar in jars},
-                scope="real embedded Servlet/Security/Jackson/Validator/Actuator with original foundation sources; synthetic auth and database HealthIndicator only", cases=scenarios)
+                scope="real embedded Servlet/Security/Jackson/Validator/Actuator with original foundation sources; synthetic auth, database HealthIndicator and fixed rate metric samples; metric names filtered to personalos.rate.limit only", cases=scenarios)
 
 
 def main():

@@ -17,13 +17,14 @@ import (
 	"time"
 
 	"personal-ai-os/backend-go/internal/platform/config"
+	"personal-ai-os/backend-go/internal/platform/ratelimit"
 )
 
 type foundationHTTPFixture struct {
 	Auth, CSRF, Monitoring bool
 	Request                struct {
-		Name, Method, Path, ContentType, Accept, Body  string
-		CSRF, BadCSRF, Management, DatabaseDown, Login bool
+		Name, Method, Path, ContentType, Accept, Body                 string
+		CSRF, BadCSRF, Management, DatabaseDown, Login, MetricExpired bool
 	}
 	Response struct {
 		Status             int
@@ -42,7 +43,7 @@ func readFoundationHTTPFixture(t *testing.T) []foundationHTTPFixture {
 	if err := json.Unmarshal(data, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	if len(fixture.Cases) != 220 {
+	if len(fixture.Cases) != 292 {
 		t.Fatal("真实 HTTP 场景数量改变，需审查")
 	}
 	return fixture.Cases
@@ -143,8 +144,10 @@ func compareFoundationResponse(t *testing.T, client *http.Client, server string,
 func TestFoundationActuatorRealServletOracle(t *testing.T) {
 	fixtures := readFoundationHTTPFixture(t)
 	for _, mode := range []struct{ auth, csrf, monitoring bool }{{false, false, false}, {true, false, false}, {true, true, false}, {true, true, true}} {
-		properties := config.ActuatorProperties{Health: true, Info: !mode.monitoring, Prometheus: mode.monitoring, HealthDetails: "when_authorized", InfoEnvironment: true, InfoName: "fixture", InfoVersion: "test", SSL: true, Ping: true, Probes: true}
+		properties := config.ActuatorProperties{Health: true, Info: !mode.monitoring, Metrics: !mode.monitoring, Prometheus: mode.monitoring, HealthDetails: "when_authorized", InfoEnvironment: true, InfoName: "fixture", InfoVersion: "test", SSL: true, Ping: true, Probes: true}
 		var down atomic.Bool
+		clock := time.Unix(1_000, 0)
+		metrics := &foundationMetrics{clock: func() time.Time { return clock }}
 		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 		actuator := newActuatorHandler(properties, func(context.Context) actuatorHealth {
 			state := defaultActuatorHealth(!down.Load(), properties)
@@ -152,7 +155,7 @@ func TestFoundationActuatorRealServletOracle(t *testing.T) {
 			db.Details = map[string]any{"database": "fixture"}
 			state.Components["db"] = db
 			return state
-		}, nil, logger)
+		}, metrics, logger)
 		var businessActuator http.Handler = actuator
 		if mode.monitoring {
 			businessActuator = nil
@@ -166,6 +169,18 @@ func TestFoundationActuatorRealServletOracle(t *testing.T) {
 			}
 			t.Run(strings.Join([]string{map[bool]string{true: "auth", false: "anonymous"}[mode.auth], map[bool]string{true: "csrf", false: "plain"}[mode.csrf], map[bool]string{true: "monitoring", false: "business"}[mode.monitoring], test.Request.Name}, "/"), func(t *testing.T) {
 				down.Store(test.Request.DatabaseDown)
+				metrics.mu.Lock()
+				metrics.counts, metrics.seconds, metrics.maxima, metrics.redisErrors = [2]uint64{}, [2]float64{}, [2]metricWindowMax{}, 0
+				metrics.mu.Unlock()
+				metrics.RecordAcquisition(ratelimit.Postgres, 10*time.Millisecond, false)
+				metrics.RecordAcquisition(ratelimit.Postgres, 20*time.Millisecond, false)
+				metrics.RecordAcquisition(ratelimit.Redis, 30*time.Millisecond, false)
+				metrics.mu.Lock()
+				metrics.redisErrors = 2
+				metrics.mu.Unlock()
+				if test.Request.MetricExpired {
+					clock = clock.Add(3 * time.Minute)
+				}
 				jar, _ := cookiejar.New(nil)
 				client := &http.Client{Transport: transport, Jar: jar, Timeout: 5 * time.Second}
 				origin := server.URL

@@ -50,9 +50,15 @@ func newActuatorHandler(properties config.ActuatorProperties, snapshot func(cont
 	return httpmiddleware.HandleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		path := r.URL.Path
 		healthPath := path == "/actuator/health" || strings.HasPrefix(path, "/actuator/health/")
-		known := healthPath && properties.Health || path == "/actuator/info" && properties.Info || path == "/actuator/prometheus" && properties.Prometheus && metrics != nil
+		metricPath := path == "/actuator/metrics" || strings.HasPrefix(path, "/actuator/metrics/")
+		known := healthPath && properties.Health || metricPath && properties.Metrics || path == "/actuator/info" && properties.Info || path == "/actuator/prometheus" && properties.Prometheus && metrics != nil
 		if !known {
 			return httpmiddleware.NotFound()
+		}
+		if r.Method == http.MethodOptions {
+			w.Header().Set("Allow", "GET,HEAD,OPTIONS")
+			w.WriteHeader(http.StatusOK)
+			return nil
 		}
 		if r.Method != http.MethodGet && r.Method != http.MethodHead {
 			return httpmiddleware.MethodNotSupported(r.Method, []string{"GET"})
@@ -67,7 +73,22 @@ func newActuatorHandler(properties config.ActuatorProperties, snapshot func(cont
 		}
 		var value any
 		status := http.StatusOK
-		if healthPath {
+		if metricPath {
+			source, ok := metrics.(actuatorMetricSource)
+			if !ok {
+				source = &foundationMetrics{}
+			}
+			var found bool
+			var err error
+			value, found, err = source.metricSnapshot(strings.TrimPrefix(path, "/actuator/metrics"), r.URL.Query())
+			if err != nil {
+				return err
+			}
+			if !found {
+				w.WriteHeader(http.StatusNotFound)
+				return nil
+			}
+		} else if healthPath {
 			state := snapshot(r.Context())
 			_, authenticated := auth.CurrentUsername(r.Context())
 			details := properties.HealthDetails == "always" || properties.HealthDetails == "when_authorized" && authenticated

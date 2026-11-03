@@ -205,7 +205,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	snapshot := f.actuatorSnapshot(actuatorProperties, clients)
 	var actuator http.Handler
 	if !settings.Monitoring {
-		actuator = newActuatorHandler(actuatorProperties, snapshot, nil, logger)
+		actuator = newActuatorHandler(actuatorProperties, snapshot, metrics, logger)
 	}
 	f.handler = f.track(newFoundationHandler(settings.Role, security, limiter, f.gate, f.health, options.Business, actuator, logger))
 	if settings.Monitoring {
