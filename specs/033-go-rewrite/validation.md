@@ -126,6 +126,12 @@ HTTP 测试覆盖原 Java 四项断言及编码、单次消费、请求 ID 先�
 
 全量九包 race 和含 integration 标签的 vet 通过；基线检查修正测试声明行号后通过。显式 context、活动写事务要求与独立 5 秒清理期限为 Go 生命周期约定；应用/Worker 业务退出装配、断网/提交不确定仍待完成，不能把整文件或 T107 标为 verified。
 
+## 增量：模型共享并发与 HTTP 流生命周期（T107e）
+
+先写本地门控/HTTP 测试并确认缺少 API 编译失败，再实现。1,000 路竞争上限、幂等释放、非法 Java int 配置及取消通过。独立 PostgreSQL 容器验证 index/review/delivery 共享后台配额并保留 API 槽、combined 前台策略、limit=1 原行为、共享拒绝归还后台、本地/数据库释放，以及触发器注入的共享获取失败/释放失败仍完整清理。日志 /private/tmp/personal-ai-os-go-modelgate.log，容器清理完成。
+
+ConcurrencyMiddleware 对同一模型路径持有整段 ServeHTTP/SSE 许可；channel 控制的流处理中第二请求 42900，处理结束归还，正文与 Flusher 透传。成功/请求取消/panic 后均归还许可，普通任务路径绕过。另以真实回环 HTTP 服务验证流建立、存续期间 429、客户端断开导致处理器退出/许可释放以及下一请求 204。全量十包 race/含 integration 标签 vet 和五个独立容器数据库集成通过；应用/Worker/安全链尚未装配，T107 保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

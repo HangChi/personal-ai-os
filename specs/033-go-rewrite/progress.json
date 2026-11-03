@@ -226,21 +226,16 @@
       "note": "四项 Java HTTP 断言已迁移并扩展编码/query/日志脱敏/流透传测试；未做真实服务器与数据库集成。"
     },
     "file:backend/src/test/java/com/personalos/common/web/ModelConcurrencyFilterTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
-        "backend-go/internal/platform/http/model_paths.go",
-        "backend-go/internal/platform/http/model_paths_test.go",
-        "backend-go/internal/platform/http/rate_limit.go",
-        "backend-go/internal/platform/http/rate_limit_test.go",
-        "backend-go/internal/platform/ratelimit/shared.go",
-        "backend-go/internal/platform/ratelimit/shared_test.go",
-        "backend-go/internal/platform/ratelimit/README.md",
-        "scripts/migration/java_model_paths_fixture.py",
-        "scripts/migration/ModelRequestPathsOracle.java",
-        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "backend-go/internal/platform/modelgate/gate.go",
+        "backend-go/internal/platform/modelgate/gate_test.go",
+        "backend-go/internal/platform/modelgate/postgres_integration_test.go",
+        "backend-go/internal/platform/http/concurrency.go",
+        "backend-go/internal/platform/http/concurrency_test.go",
         "specs/033-go-rewrite/validation.md"
       ],
-      "note": "仅模型路径覆盖断言已迁移；异步许可/并发准入/释放与真实共享租约尚未迁移。"
+      "note": "流许可持有/结束释放、失败/同步清理和模型路径断言已移植为 Go 生命周期测试；不是 Servlet ASYNC 容器或完整业务差分，不能 verified。"
     },
     "hook:backend/src/main/java/com/personalos/common/config/RateLimitProperties.java:22:ConfigurationProperties": {
       "status": "in_progress",
@@ -345,7 +340,7 @@
       "note": "已迁移 skipsNonPostMethods 断言并通过独立 HTTP/Java 路径对照；完整并发许可与集成仍待验证，不是 verified。"
     },
     "file:backend/src/main/java/com/personalos/common/web/DatabaseCoordination.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/ratelimit/postgres.go",
         "backend-go/internal/platform/ratelimit/postgres_test.go",
@@ -356,12 +351,17 @@
         "backend-go/internal/platform/coordination/lease_test.go",
         "backend-go/internal/platform/coordination/postgres_integration_test.go",
         "backend-go/internal/platform/database/transaction.go",
-        "backend-go/internal/platform/database/transaction_test.go"
+        "backend-go/internal/platform/database/transaction_test.go",
+        "backend-go/internal/platform/modelgate/gate.go",
+        "backend-go/internal/platform/modelgate/gate_test.go",
+        "backend-go/internal/platform/modelgate/postgres_integration_test.go",
+        "backend-go/internal/platform/http/concurrency.go",
+        "backend-go/internal/platform/http/concurrency_test.go"
       ],
-      "note": "consume 与租约/续租/fencing/事务后释放已实现；真实 PostgreSQL 验证旧 owner/并发/延迟释放/实际定时循环。API 预留门控、应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。"
+      "note": "consume、租约/续租/fencing/事务后释放、API 预留对应场景已实现并在一次性 PostgreSQL 验证；应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。"
     },
     "file:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/ratelimit/postgres.go",
         "backend-go/internal/platform/ratelimit/postgres_test.go",
@@ -372,9 +372,14 @@
         "backend-go/internal/platform/coordination/lease_test.go",
         "backend-go/internal/platform/coordination/postgres_integration_test.go",
         "backend-go/internal/platform/database/transaction.go",
-        "backend-go/internal/platform/database/transaction_test.go"
+        "backend-go/internal/platform/database/transaction_test.go",
+        "backend-go/internal/platform/modelgate/gate.go",
+        "backend-go/internal/platform/modelgate/gate_test.go",
+        "backend-go/internal/platform/modelgate/postgres_integration_test.go",
+        "backend-go/internal/platform/http/concurrency.go",
+        "backend-go/internal/platform/http/concurrency_test.go"
       ],
-      "note": "consume 与租约/续租/fencing/事务后释放已实现；真实 PostgreSQL 验证旧 owner/并发/延迟释放/实际定时循环。API 预留门控、应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。"
+      "note": "consume、租约/续租/fencing/事务后释放、API 预留对应场景已实现并在一次性 PostgreSQL 验证；应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。"
     },
     "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:66": {
       "status": "in_progress",
@@ -911,6 +916,42 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "相应 Go 租约断言已在一次性 PostgreSQL 通过；未执行完整 Java/Go 业务差分，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/ModelConcurrencyGate.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/modelgate/gate.go",
+        "backend-go/internal/platform/modelgate/gate_test.go",
+        "backend-go/internal/platform/modelgate/postgres_integration_test.go",
+        "backend-go/internal/platform/http/concurrency.go",
+        "backend-go/internal/platform/http/concurrency_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "本地/数据库共享并发与后台/API 预留、失败清理已实现；真实 PostgreSQL 验证跨池/角色/获取释放故障。真实 Worker/生产装配与网络故障待验收，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/ModelConcurrencyFilter.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/modelgate/gate.go",
+        "backend-go/internal/platform/modelgate/gate_test.go",
+        "backend-go/internal/platform/modelgate/postgres_integration_test.go",
+        "backend-go/internal/platform/http/concurrency.go",
+        "backend-go/internal/platform/http/concurrency_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "Go ServeHTTP 全生命周期中间件已实现，持有整段 SSE；同步完成/取消/panic/普通路由测试通过。真实网络/前端/安全链装配未验收，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:76": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/modelgate/gate.go",
+        "backend-go/internal/platform/modelgate/gate_test.go",
+        "backend-go/internal/platform/modelgate/postgres_integration_test.go",
+        "backend-go/internal/platform/http/concurrency.go",
+        "backend-go/internal/platform/http/concurrency_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "三种 Worker 的 API 预留断言在真实 PostgreSQL 通过，补充 combined/limit=1/失败清理；全链路差分未完成，不能 verified。"
     }
   },
   "release_gates": {
