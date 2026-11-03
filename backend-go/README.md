@@ -13,17 +13,17 @@
 - `internal/platform/coordination`：数据库时钟租约、续租、fencing 与事务完成后释放；已通过真实 PostgreSQL 竞争/过期/实际定时续租，应用尚未装配，见 [说明](internal/platform/coordination/README.md)。
 - `internal/platform/modelgate`：模型本地/数据库共享并发与 Worker 的 API 预留容量；并发 HTTP 中间件持有整段 SSE 许可，真实应用尚未接线，见 [说明](internal/platform/modelgate/README.md)。
 - `internal/platform/ratelimit`：本地令牌桶、PostgreSQL/Redis 原子共享桶、后端选择/故障策略和指标回调；真实存储的跨实例/跨进程竞争已验，应用接线待完成，见 [边界说明](internal/platform/ratelimit/README.md)。
-- `internal/platform/auth`：单用户 BCrypt/失败锁定、本地/Redis 原子会话及登录/轮换/注销/me/CSRF 安全处理器；实际 Java 密码对照、真实 HTTP/CookieJar/Redis 跨进程已验证，应用接线待完成，见 [边界说明](internal/platform/auth/README.md)。
+- `internal/platform/auth`：单用户BCrypt/失败锁定、本地/Redis会话与登录/轮换/注销/me/CSRF，已接显式Foundation；真实Servlet/TLS/ACL/跨进程与网络故障验证，见[边界说明](internal/platform/auth/README.md)。
 - `internal/platform/redis`：显式专用 Redis 客户端、TLS 配置、受限超时/连接池/生命周期与脱敏错误，见 [说明](internal/platform/redis/README.md)。
-- `internal/platform/health`：真实 SELECT 1 与模型配置状态报告，已验临时数据库断连/恢复和池饱和；尚未挂载应用，见 [说明](internal/platform/health/README.md)。
+- `internal/platform/health`：真实SELECT 1与模型状态报告，已挂显式Foundation；真实Servlet方法/内容协商/探测次数与数据库断连/恢复验证，见[说明](internal/platform/health/README.md)。
 - `internal/platform/taskexec`：原策略有界轮末队列、请求ID捕获和排空/停止；实际业务装配待完成，见 [说明](internal/platform/taskexec/README.md)。
-- `internal/platform/http`：请求 ID 校验/回显/context、模型请求路径匹配、限流拒绝 JSON 与日志脱敏；限流尚未接入诊断应用。
+- `internal/platform/http`：请求ID/模型路径/共享限流与并发/异常边界、JSON协商/多编码，以及显式有界multipart解析。保护链已接Foundation，默认离线诊断保持独立。
 - `internal/app`：默认迁移诊断入口，以及显式P1基础组合（池/Flyway只读校验、认证/CSRF、共享保护、健康与执行器/关闭）；两实例/五角色已通过临时TLS PostgreSQL集成，见 [装配边界](internal/app/README.md)。
 - `cmd/personalos`：回环监听、启动提示、信号处理和超时退出。
 
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
-默认命令仍仅装配离线诊断；显式P1基础组合已接入数据库/认证/共享保护/健康、轮末执行器、独立管理链/回环双监听和最小指标，已增加显式 `--foundation` 主命令；完整配置与基础进程验收仍待完成。模型、任务、聊天、Agent、知识库、日历、记忆、MCP和业务后台调度仍未迁移。第三方运行时依赖为固定版本的 pgx、go-redis、x/crypto 及其间接依赖，见 [许可证声明](THIRD_PARTY_NOTICES.md)；首次构建需 `go mod download`，已有完整缓存后可离线验证。
+默认命令仍仅装配离线诊断；显式`--foundation`已接数据库/认证/共享保护/健康、轮末执行器、独立管理链/双监听与实际限流指标。基础二进制五角色、TLS/ACL双存储、网络分区/恢复和不确定提交已验证；744个基础HTTP场景通过真实框架对照。完整配置/上传与CSRF装配/日志和HTTP观测仍待完成，见[P1剩余项](../specs/033-go-rewrite/p1-remaining.md)。模型、任务、聊天、Agent、知识库、日历、记忆、MCP和业务后台调度仍未迁移。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
 
 ## 构建与验证
 
@@ -95,4 +95,4 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 基线 Hikari 最大连接数/毫秒等待已接入；`worker-index`、`worker-review`、`worker-delivery` profile 上限4，其余默认10。仅设运行角色不会自动加载 profile 文件。`monitoring` profile 启动独立回环管理端口（默认9091，可设 `MANAGEMENT_SERVER_PORT`），限流和会话 Redis 仍由各自原开关/URI/namespace 配置；两份 CA 分别使用 `GO_REDIS_SESSION_ROOT_CERT`、`GO_REDIS_RATE_LIMIT_ROOT_CERT` 的绝对路径。
 
-基础模式允许已实现的认证/CSRF；`prod` 继续拒绝。默认诊断模式的拒绝规则不变。基础模式仍不执行业务 Worker，`readyz` 保持未就绪，未实现业务返回404。完整Servlet/框架差分、真实进程与故障验收仍在P1进行中，禁止用于替换Java实例。
+基础模式允许已实现的认证/CSRF；`prod`继续拒绝。默认诊断规则不变。基础模式不执行业务Worker，`readyz`保持未就绪，未实现业务404。基础进程/网络故障与框架子集已有证据；完整配置/框架装配与发布验收未完成，禁止替换Java实例。

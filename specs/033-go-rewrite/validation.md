@@ -354,6 +354,14 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 
 验证质量权重/稳定默认、非法媒体/q/未知字符集整条拒绝、引号内逗号、profile参数及原q=0行为。UTF-16BE/LE、UTF-32BE/LE实际编码，测试按响应声明解码逐字段对照；另检查原始字节前缀/中文/非BMP字符与编码失败脱敏500。MVC/Actuator对不支持字符集和仅逗号Accept的不同406/500行为均保留。10个迁移Python边界测试通过（/private/tmp/personal-ai-os-go-migration-python.log），1093/104/27/95/1119基线检查通过。P1剩余项逐父项汇总于p1-remaining.md，未批量verified或进入P2。
 
+## 本轮综合收尾：真实TLS应用与五角色二进制
+
+当前代码完整14包race、integration vet/build通过；744基础HTTP场景全部实际对照，10个Python迁移边界测试及固定基线检查通过。
+
+最后执行`run_go_redis_tests.py --tls --package app --package command`通过（/private/tmp/personal-ai-os-go-p1-final-tls.log）。每包使用新建的独立TLS PostgreSQL/Redis与专用ACL，先真实Java Flyway，再运行全app race或race真实二进制。全app耗时87.767秒，无测试超时；新增指标/权限/TCP故障/丢提交响应与全部框架场景通过。真实二进制再次通过combined/API跨OS预算/认证/CSRF/轮换/注销，index/review/delivery隔离、池上限、双端口SIGTERM退出，以及缺项/生产/迁移目录/端口冲突失败清理。两个包各自finally清理自己的容器/临时证书。
+
+`check-complete`实际退出1，明确2438/2438项尚未verified（/private/tmp/personal-ai-os-go-p1-check-complete.log）；这是严格门禁的预期结果，不是本轮测试失败。未将任何父项或发布门禁提前勾选。当前概览与README已纠正早期“尚未接线/尚无真实Flyway恢复”的过时描述；准确缺口见p1-remaining.md。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

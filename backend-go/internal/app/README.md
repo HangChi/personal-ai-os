@@ -1,6 +1,6 @@
 # P1基础运行时
 
-`NewHandler`仍是默认二进制使用的离线诊断入口。`OpenFoundation`是可显式构造、已通过临时TLS PostgreSQL验证的基础组合；主命令尚未切换，不能当作Java业务替代。
+`NewHandler`仍是默认二进制的离线诊断入口。`OpenFoundation`是显式`--foundation`主命令使用的基础组合，已通过自建TLS双存储、真实二进制和网络故障验证；不能当作Java业务替代。
 
 调用方提供`config.Properties`、日志、显式Connector、原SQL目录的`fs.FS`与`Schema: "public"`。连接池默认按角色取10/4，也可显式传`PoolOptions`；不自动读取JDBC URL或Hikari属性。迁移只读校验目录/Flyway历史；不migrate、repair或改SQL。默认严格拒绝BASELINE，显式允许时只接收已验收的V1标记。协调器使用原public表，自定义schema暂时拒绝；共享协调容量大于100在启动前明确拒绝。
 
@@ -18,7 +18,7 @@ API/combined提供原四个Auth路由和真实`/api/v1/health`。健康仍为统
 python3 scripts/migration/run_go_postgres_tests.py --tls --flyway --package app
 ```
 
-通过两个实例共享保护、CookieJar登录/CSRF轮换/注销、五角色池上限、在途取消/执行器排空/租约先于关池、历史损坏拒绝与失败连接清理。完整网络故障/框架差分、CLI接线与业务Worker仍需验收，T102–T109父项保持开放。
+通过双实例共享保护、CookieJar登录/CSRF轮换/注销、五角色池上限、在途取消/执行器排空/租约先于关池、历史损坏拒绝与失败连接清理。基础CLI和TCP分区另有证据；配置/上传安全装配/观测与业务Worker仍有[P1剩余项](../../../specs/033-go-rewrite/p1-remaining.md)，父项保持开放。
 
 ## 独立管理监听与最小指标
 
@@ -41,3 +41,5 @@ python3 scripts/migration/run_go_redis_tests.py --tls --package app
 外层脚本创建独立Redis TLS容器和两个受限ACL账号，内层创建独立PostgreSQL TLS容器并真实执行Java Flyway，再在同一个Go测试进程运行完整app测试。只传专用测试环境白名单，失败时逐层finally只清理自己创建的容器/临时证书。默认Redis全包测试现在也包含app组合，需要PostgreSQL镜像与Java Flyway缓存。
 
 两个Foundation/HTTP实例共用隔离的会话namespace与限流namespace：实例1的CSRF可供实例2登录，实例1能读取轮换后的身份，模型预算共享。分别关闭一侧专用客户端，验证限流429/错误指标、管理健康DOWN、会话500且不回退；数据库共享桶仍未创建，Foundation关闭后未故障的借用客户端仍可PING。此处故障是客户端关闭，未声称覆盖真实网络分区或整套应用跨OS进程故障恢复。
+
+新增透明TCP代理测试保留端到端TLS，分别切断PG/会话Redis/限流Redis连接并恢复；验证健康/请求拒绝、有效租约保持与恢复释放、原Cookie身份恢复和无后端回退。另实际丢弃COMMIT响应，调用超时而直连确认一次提交，禁止透明重试。完整schema40表下P1随机最小角色可启动五角色，未授权37表与DDL/提权均拒绝；后续业务表权限不能由此推断。

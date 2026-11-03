@@ -12,7 +12,7 @@ python3 scripts/migration/java_bcrypt_fixture.py
 
 `MemoryStore` 提供单进程会话，默认闲置 30 分钟，读操作续期。`SessionStore` 的四个原子操作避免 ID 冲突时误删旧会话、首次 CSRF 并发改写、注销后的旧请求重新保存身份。它不用于替代共享 Redis。
 
-`HTTP.Handler(next)` 是尚未挂载到应用的可组合安全入口：
+`HTTP.Handler(next)`是已接入显式Foundation的可组合安全入口，默认离线诊断仍独立：
 
 - 顺序为路径检查 → 会话读取 → CSRF → 认证 → 认证控制器/业务处理器。
 - 支持 `/api/v1/auth/login`、`logout`、`me`、`csrf`；me 的匿名结果仍是 200 + username:null。开启认证时，公共白名单以外的全部路径都要求身份。
@@ -22,4 +22,4 @@ python3 scripts/migration/java_bcrypt_fixture.py
 
 `RedisStore` 使用调用方显式创建的专用 `redisclient.Client`，以 Lua 实现相同原子操作，读续期、首次 CSRF 保留原 TTL；故障向上传递，不回退内存。默认会话超时仍由调用方传入。命名空间强制附加 `:go:v1:session:`，不读取/改写 Spring Session 二进制值；切换至 Go 后需要重新登录。
 
-真实回环 HTTP/CookieJar 已验证完整本地登录/换 ID/新 CSRF/注销过程；专用 Redis 另已验证两个 HTTP 服务共享 SESSION Cookie、跨 OS 子进程注销、TTL 和并发首次 CSRF，同样场景在真实 rediss 下通过。脚本 `python3 scripts/migration/run_go_redis_tests.py`（可加 `--tls`）只连接它新建的临时容器，并清理自身资源。生产 ACL/网络分区、完整配置和应用接线仍待完成。诊断应用继续拒绝启用认证/生产模式；基础子集测试通过不代表 T105 或整个 Java 文件已 verified。
+真实回环HTTP/CookieJar验证登录/轮换/CSRF/注销；专用Redis验证两个HTTP实例和独立OS进程共享、TTL、并发、TLS/最小ACL与真实TCP分区恢复。脚本`python3 scripts/migration/run_go_redis_tests.py --tls --package app --package command`只连接自建临时容器，finally清理自身资源。基础应用接线已完成，完整配置、multipart正文token生命周期及剩余Servlet边界仍见[P1剩余项](../../../../specs/033-go-rewrite/p1-remaining.md)。诊断模式仍拒绝认证/生产开关，基础模式允许已实现认证/CSRF但生产继续拒绝；不代表T105或整个Java文件verified。
