@@ -448,3 +448,10 @@ app:
       enabled: ${REMINDER_WEBHOOK_ENABLED:false}
       url: ${REMINDER_WEBHOOK_URL:}
       secret: ${REMINDER_WEBHOOK_SECRET:}
+
+---
+app:
+  shared-session:
+    enabled: ${REDIS_SESSION_ENABLED:false}
+    uri: ${REDIS_SESSION_URI:}
+    namespace: ${REDIS_SESSION_NAMESPACE:personalos:sessions}
