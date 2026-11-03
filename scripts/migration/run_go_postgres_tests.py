@@ -25,7 +25,7 @@ def capture(command, **kwargs):
     return subprocess.run(command, text=True, capture_output=True, check=True, timeout=120, **kwargs).stdout.strip()
 
 
-PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health"]
+PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", "app"]
 
 
 def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False):
@@ -86,7 +86,7 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
             "GO_TEST_POSTGRES_SSL_MODE": "verify-full" if tls_mode else "disable",
             "GO_TEST_POSTGRES_ROOT_CERT": root_cert,
         })
-        if flyway and package == "migration":
+        if (flyway and package == "migration") or package == "app":
             if baseline:
                 go_env["GO_TEST_FLYWAY_BASELINE"] = "disposable"
             from java_flyway_fixture import migrate_disposable
@@ -98,7 +98,7 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
                 go_env["GO_TEST_BACKUP"] = "disposable"
         print("运行 %s 集成测试" % package, flush=True)
         subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
-                        "./internal/platform/" + package],
+                        "./internal/app" if package == "app" else "./internal/platform/" + package],
                        cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
     finally:
         try:
@@ -115,7 +115,7 @@ def main():
     parser.add_argument("--image", default=IMAGE, help="仅用于显式测试其他 PostgreSQL/pgvector 镜像")
     parser.add_argument("--package", choices=PACKAGES, action="append", help="只测试指定包，可重复；各包独占新容器")
     parser.add_argument("--tls", action="store_true", help="新建 CA/服务端证书，以 verify-full 重跑并拒绝明文连接")
-    parser.add_argument("--flyway", action="store_true", help="migration包先以基线Java Flyway真实执行42迁移，验证只读历史校验")
+    parser.add_argument("--flyway", action="store_true", help="migration包先以基线Java Flyway真实执行迁移；app包始终先迁移独立库")
     parser.add_argument("--backup", action="store_true", help="隐含--flyway，只在新建容器填合成数据并备份恢复到另一空库")
     parser.add_argument("--baseline", action="store_true", help="隐含--flyway，另建非空旧schema验证真实baseline-on-migrate")
     args = parser.parse_args()

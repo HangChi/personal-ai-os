@@ -278,6 +278,12 @@ Go逐项覆盖全部查询结果/profile/defaults、空值、环境别名冲突�
 
 先验证缺少Foundation API的编译失败（/private/tmp/personal-ai-os-go-foundation-config-red.log），再实现显式来源到既有record Binder的组合。配置包全量race通过（/private/tmp/personal-ai-os-go-foundation-config.log）。验证系统profile、dotenv晚激活、显式角色、安全开关、原每分钟60次/模型并发4、ConditionalOnProperty精确true与大小写；非法配置/生产守卫拒绝，格式化/JSON脱敏。基线check通过；主诊断入口仍未切换，P1父项不勾选。
 
+## 增量：P1显式基础装配（T108a）
+
+先记录缺少newFoundationHandler的编译失败（/private/tmp/personal-ai-os-go-foundation-http-red.log）。随后组合自有池、只读Flyway校验、认证/CSRF、共享限流/租约/并发、健康与执行器。临时自建CA/TLS PostgreSQL执行真实Java Flyway双执行器竞争/合计42迁移后跑app集成（/private/tmp/personal-ai-os-go-foundation-postgres.log），全部通过并清理自建容器。
+
+验证跨两个HTTP实例共享预算、限流/并发早于CSRF/认证、登录/轮换/注销、数据库UP且模型NOT_CONFIGURED、五角色池上限与Worker空404。关闭期限取消在途请求；共享租约先于池释放，执行器排空时池仍可用；损坏目录拒绝后pg_stat_activity无失败实例连接。单测确认拒绝配置不连接数据库、panic脱敏/已提交SSE不混JSON。全量14包race、integration vet/build通过（/private/tmp/personal-ai-os-go-foundation-all.log），Python编译/基线check/diff通过。未验证app+Redis真实组合，未切CLI、未做业务Worker或管理端口/指标，P1父项保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

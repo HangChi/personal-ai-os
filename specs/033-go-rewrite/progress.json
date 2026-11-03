@@ -37,9 +37,12 @@
         "specs/033-go-rewrite/validation.md",
         "scripts/migration/smoke_go_process.py",
         "backend-go/internal/platform/config/foundation.go",
-        "backend-go/internal/platform/config/foundation_test.go"
+        "backend-go/internal/platform/config/foundation_test.go",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_http.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go"
       ],
-      "note": "角色解析/allows/worker 及五种角色真实诊断进程/Worker 空 404 已验证；实际 Worker 任务与数据库协调尚未实现，不能 verified。 已组合显式ConfigData到P1配置；完整运行时仍待装配。"
+      "note": "角色解析/allows/worker 及五种角色真实诊断进程/Worker 空 404 已验证；实际 Worker 任务与数据库协调尚未实现，不能 verified。 已组合显式ConfigData到P1配置；完整运行时仍待装配。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
     },
     "file:backend/src/main/java/com/personalos/common/web/RequestIdFilter.java": {
       "status": "in_progress",
@@ -61,9 +64,12 @@
         "backend-go/internal/app/http_test.go",
         "backend-go/cmd/personalos/main_test.go",
         "scripts/migration/smoke_go_process.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_http.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go"
       ],
-      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。"
+      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
     },
     "file:backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java": {
       "status": "in_progress",
@@ -1489,9 +1495,12 @@
         "backend-go/internal/platform/modelgate/postgres_integration_test.go",
         "backend-go/internal/platform/http/concurrency.go",
         "backend-go/internal/platform/http/concurrency_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_http.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go"
       ],
-      "note": "本地/数据库共享并发与后台/API 预留、失败清理已实现；真实 PostgreSQL 验证跨池/角色/获取释放故障。真实 Worker/生产装配与网络故障待验收，不能 verified。"
+      "note": "本地/数据库共享并发与后台/API 预留、失败清理已实现；真实 PostgreSQL 验证跨池/角色/获取释放故障。真实 Worker/生产装配与网络故障待验收，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
     },
     "file:backend/src/main/java/com/personalos/common/web/ModelConcurrencyFilter.java": {
       "status": "implemented",
@@ -1728,9 +1737,12 @@
         "scripts/migration/test_go_config_inventory.py",
         "specs/033-go-rewrite/config-inventory.json",
         "specs/033-go-rewrite/config-inventory.md",
-        "backend-go/internal/platform/config/cookie_sources_test.go"
+        "backend-go/internal/platform/config/cookie_sources_test.go",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_http.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go"
       ],
-      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。"
+      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
     },
     "route:POST:/api/v1/auth/login:backend/src/main/java/com/personalos/common/auth/AuthController.java": {
       "status": "implemented",
@@ -2394,6 +2406,15 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/WorkerIsolationFilter.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_http.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go"
+      ],
+      "note": " 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
     }
   },
   "release_gates": {

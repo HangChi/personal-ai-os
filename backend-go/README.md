@@ -18,12 +18,12 @@
 - `internal/platform/health`：真实 SELECT 1 与模型配置状态报告，已验临时数据库断连/恢复和池饱和；尚未挂载应用，见 [说明](internal/platform/health/README.md)。
 - `internal/platform/taskexec`：原策略有界轮末队列、请求ID捕获和排空/停止；实际业务装配待完成，见 [说明](internal/platform/taskexec/README.md)。
 - `internal/platform/http`：请求 ID 校验/回显/context、模型请求路径匹配、限流拒绝 JSON 与日志脱敏；限流尚未接入诊断应用。
-- `internal/app`：迁移诊断端点、未知 API 明确返回 404、Worker 业务入口隔离。
+- `internal/app`：默认迁移诊断入口，以及显式P1基础组合（池/Flyway只读校验、认证/CSRF、共享保护、健康与执行器/关闭）；两实例/五角色已通过临时TLS PostgreSQL集成，见 [装配边界](internal/app/README.md)。
 - `cmd/personalos`：回环监听、启动提示、信号处理和超时退出。
 
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
-应用尚未装配数据库连接/迁移、认证/CSRF/登录、模型、任务、聊天、Agent、知识库、日历、记忆、MCP 或后台调度。请求 ID 的后台执行/日志传播也尚未接入。第三方运行时依赖为固定版本的 pgx、go-redis、x/crypto 及其间接依赖，见 [许可证声明](THIRD_PARTY_NOTICES.md)；首次构建需 `go mod download`，已有完整缓存后可离线验证。
+默认命令仍仅装配离线诊断；显式P1基础组合已接入数据库/认证/共享保护/健康与轮末执行器，尚未完成管理端口与全部配置接线。模型、任务、聊天、Agent、知识库、日历、记忆、MCP和业务后台调度仍未迁移。第三方运行时依赖为固定版本的 pgx、go-redis、x/crypto 及其间接依赖，见 [许可证声明](THIRD_PARTY_NOTICES.md)；首次构建需 `go mod download`，已有完整缓存后可离线验证。
 
 ## 构建与验证
 

@@ -284,3 +284,11 @@ Decision：将索引中原七个YAML/十七文档的原始扁平属性作为可�
 保留显式空、canonical环境映射与SystemEnvironment别名、profile顺序与多文档后者覆盖、嵌套key/default、未使用default不求值、反斜线转义和循环/缺失拒绝。深度64/结果1MiB为显式资源边界。来源和值均私有复制，错误/JSON/格式化脱敏，100路各10次读取无串扰。
 
 Alternatives considered：在运行时调用Java（违背独立Go）；假装支持任意YAML/外部import却静默忽略；把dotenv提前参与激活（改变原装配顺序）；先合并所有来源（丢优先级与列表边界）；按未知profile直接默认combined而丢弃合法激活。任意外部ConfigData位置/导入/profile分组失败关闭，完整Binder/应用接线仍待完成。
+
+## R-032 显式基础组合与资源所有权
+
+Decision：OpenFoundation组合已有P1组件；默认CLI仍离线。调用方提供连接器、原迁移FS/public schema与可选池参数，Flyway只读校验成功后才启动续租。Redis为显式借用客户端，开关/namespace来自Properties，URI/TLS由创建者控制，不关闭借用资源，不回退本地。自定义schema因协调SQL使用public表拒绝，共享容量超过100在启动前拒绝。
+
+HTTP保持Worker先隔离，RequestID/异常边界覆盖限流→并发→安全→路由；已提交SSE异常只中止。未知业务404、ready503、模型NOT_CONFIGURED。Close用受锁保护的准入计数防止Add/Wait竞争；依次排空HTTP/执行器、关闭协调器/池。期限耗尽取消并返回，清理等实际退出，避免任务持租约时关池。
+
+Alternatives considered：默认进程自动连接当前服务；认证先于限流；Redis故障退内存；期限耗尽直接关池；用成功stub填未迁移API。均不采用。真实TLS临时库仅证明P1组合子集，管理端口/指标/CLI和发布门禁仍开放。
