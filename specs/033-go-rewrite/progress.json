@@ -1263,6 +1263,39 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "原跨实例安全上下文/注销场景已有真实 Go Redis/两 HTTP 实例/跨进程替代断言；未执行完整 Java/Go 差分，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/RedisRateBucket.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/redis.go",
+        "backend-go/internal/platform/ratelimit/redis_test.go",
+        "backend-go/internal/platform/ratelimit/redis_integration_test.go",
+        "scripts/migration/run_go_redis_tests.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原 Java Lua 逐词对照，真实 Redis 验证共享容量/分数/回拨/配置拒绝/TTL/取消/故障与跨进程预算；使用显式专用客户端和 150ms 边界。实际 TLS/网络不确定响应/应用配置指标装配待验，不能 verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/web/RedisRateBucketIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/redis.go",
+        "backend-go/internal/platform/ratelimit/redis_test.go",
+        "backend-go/internal/platform/ratelimit/redis_integration_test.go",
+        "scripts/migration/run_go_redis_tests.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原 32 路容量 5 场景通过，并补充 128 路容量 17 和两独立 OS 进程容量 13；完整 Java/Go 应用差分未执行，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/RedisRateBucketIntegrationTest.java:19": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/redis.go",
+        "backend-go/internal/platform/ratelimit/redis_test.go",
+        "backend-go/internal/platform/ratelimit/redis_integration_test.go",
+        "scripts/migration/run_go_redis_tests.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "独立 Redis 连接的 32 路消费不能重复花费同一令牌的原断言已实际通过；未执行 Java 全量差分，不能 verified。"
     }
   },
   "release_gates": {

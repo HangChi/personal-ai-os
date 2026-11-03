@@ -8,14 +8,22 @@
 - `NewLocal`：只用于独立构造和测试。启动注满，单调时钟按分数平滑补充，互斥锁保护并发，不超过容量；不是跨实例限流实现。
 - `NewShared`：必须显式提供 PostgreSQL 协调后端，可以另传专用 Redis 后端；选中 Redis 后不再访问 PostgreSQL。
 - PostgreSQL 错误向上返回；Redis 返回错误时拒绝准入，记录 Redis 错误指标，不重试、不切换后端。不将共享存储错误降级成本地桶。
-- `Bucket.Consume` 定义原子消费边界，传递原始 context、`model-rate`、容量和周期。`NewPostgresBucket` 已实现真实 PostgreSQL 消费；Redis Lua、TLS/namespace 仍待迁移。
+- `Bucket.Consume` 定义原子消费边界，传递原始 context、`model-rate`、容量和周期。`NewPostgresBucket` 和 `NewRedisBucket` 分别实现真实 PostgreSQL/Redis 消费，均不使用本地回退。
 - `Observer.RecordAcquisition` 在成功、拒绝和数据库错误时记录耗时；`failed=true` 只对应 Redis 返回错误，与 Java 的错误计数位置一致。当前只是可执行的指标回调边界，尚未接入 Prometheus。
 
 ## PostgreSQL 桶
 
 必须显式提供已打开的 Pool，不自行连接、建表或执行迁移。每次消费在独立短事务中 INSERT ON CONFLICT 初始化，再执行原 Java 的条件 UPDATE：用 clock_timestamp 平滑补充分数令牌、上限裁剪、回拨不负补充；拒绝时不修改 tokens/refilled_at。业务事务回滚不返还已消费预算，容量改变也不重新注满。SQL/提交失败返回脱敏错误并保留 errors.Is/As 原因，不重试或使用本地回退。
 
-integration 测试直接加载未修改的 V37 原 SQL。一次性数据库验证两个独立连接池 128 路初始化竞争只放行容量 17，以及两个真实 OS 子进程合计 64 次竞争只放行容量 13；同时覆盖数据库时钟补充、分数/未来时间、配置变化、独立事务、行锁取消/连接释放、缺表拒绝与脱敏。该测试只移植了 DatabaseCoordinationIntegrationTest 中的限流场景，租约/fencing/续租/API 预留仍未实现，也不是完整 Java/Go 服务差分。
+integration 测试直接加载未修改的 V37 原 SQL。一次性数据库验证两个独立连接池 128 路初始化竞争只放行容量 17，以及两个真实 OS 子进程合计 64 次竞争只放行容量 13；同时覆盖数据库时钟补充、分数/未来时间、配置变化、独立事务、行锁取消/连接释放、缺表拒绝与脱敏。租约/fencing/续租与 API 预留另见 coordination/modelgate 包；这仍不是完整 Java/Go 服务差分。
+
+## Redis 桶
+
+显式提供专用 Redis Client 和 namespace，键为 Java 原格式 `personalos:rate:SHA256(namespace UTF-8)`。直接保留原 Java TAKE Lua，以 Redis TIME 计算分数令牌、保护未来时间；拒绝也写回 tokens/at，已存在容量或周期不一致报错，TTL 为 period+1000ms。周期向下取毫秒并夹至最少 1ms。这些规则与 PostgreSQL 桶有意不同。
+
+只接受 `model-rate` 资源，防止在原 Java 单桶中意外混用其他资源。每次消费限制 150ms，父 context 更早的 deadline 优先；不沿用会话默认 2 秒。调用方负责关闭 Client；Lua/网络错误不重试，SharedLimiter 计错并拒绝。
+
+真实 Redis 验证 32/128 路竞争、两个独立 OS 子进程共享预算、分数/未来时间/配置拒绝/TTL/取消/故障指标；原 Lua 单测直接与固定 Java 文本块对照。运行 `python3 scripts/migration/run_go_redis_tests.py --package ratelimit` 仅使用脚本新建的临时容器。
 
 ## HTTP 边界
 
@@ -36,4 +44,4 @@ python3 scripts/migration/java_model_paths_fixture.py
 
 Java BOM 中指定的 Spring/Tomcat 依赖缺失时该命令失败；可用 `--m2` 指定已有缓存。只有审查基线/行为变更后才用 `--write` 重生成。此工具不是 Maven verify，也不替代全量 Java/Go 差分。
 
-仍待完成：环境/YAML 属性绑定、Redis 消费/故障测试、数据库断网/提交不确定故障、指标系统和安全/角色链装配、数据库并发租约/API 预留、实际 SSE/后台生命周期。T107 和 P1 未完成。
+仍待完成：环境/YAML 属性绑定、Redis 实际 TLS/网络分区与不确定响应、数据库断网/提交不确定故障、指标系统和安全/角色链装配、真实 Worker/SSE 全链路生命周期。T107 和 P1 未完成。

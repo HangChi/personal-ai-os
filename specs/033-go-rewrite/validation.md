@@ -156,6 +156,16 @@ Go 值格式刻意不兼容 Java 序列化，命名空间附加 :go:v1:，切换
 
 新增依赖后全量十二包 race、含 integration 标签的 vet、二进制构建、go mod verify 和五个专用 PostgreSQL 包集成再次通过；1,093 文件基线与 diff 空白检查通过。go mod tidy 首次离线因缺少新依赖的测试模块失败，随后仅开放官方代理完成 tidy；实际测试/构建继续使用 GOPROXY=off。
 
+## 增量：Redis 共享模型桶（T107f）
+
+先写构造/原脚本对照测试并确认缺少 API 编译失败，再实现原 Lua 与 namespace SHA-256。定向 race 通过；真实不响应回环 TCP 验证准入使用 150ms 边界，不会沿用会话默认 2 秒。
+
+专用临时 Redis/race 集成通过：原 Java 32 路/容量 5 正好放行 5，扩展 128 路/容量 17 正好放行 17；两个独立 OS 子进程共 64 次尝试容量 13 正好放行 13。还验证分数不足拒绝仍更新 tokens/at、未来 at 不额外补充、容量/周期变更报错不破坏原状态、period+1000ms TTL、纳秒周期夹至 1ms、预取消不消费、Redis 失败返回拒绝/错误指标且不访问 PostgreSQL。日志 /private/tmp/personal-ai-os-go-redis-ratelimit.log，子进程与容器已清理。
+
+原 Lua 的执行行为得到真实 Redis 验证，不代表原 Java 服务完整差分；实际 TLS/不确定提交/配置与真实指标/安全角色链装配仍待完成，T107/P1 保持开放。
+
+全量十二包 race、含 integration 标签的 vet、二进制构建、1,093 文件基线与 diff 空白检查通过。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

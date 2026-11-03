@@ -12,7 +12,7 @@
 - `internal/platform/migration`：原 SQL 目录的数字排序/完整性校验，全部 42 个原迁移已通过空库/合成数据隔离重放；生产执行器/Flyway 历史与恢复待完成，见 [说明](internal/platform/migration/README.md)。
 - `internal/platform/coordination`：数据库时钟租约、续租、fencing 与事务完成后释放；已通过真实 PostgreSQL 竞争/过期/实际定时续租，应用尚未装配，见 [说明](internal/platform/coordination/README.md)。
 - `internal/platform/modelgate`：模型本地/数据库共享并发与 Worker 的 API 预留容量；并发 HTTP 中间件持有整段 SSE 许可，真实应用尚未接线，见 [说明](internal/platform/modelgate/README.md)。
-- `internal/platform/ratelimit`：本地令牌桶、PostgreSQL 原子共享桶、后端选择/故障策略和指标回调；数据库跨池/跨进程竞争已验，Redis 与应用接线待完成，见 [边界说明](internal/platform/ratelimit/README.md)。
+- `internal/platform/ratelimit`：本地令牌桶、PostgreSQL/Redis 原子共享桶、后端选择/故障策略和指标回调；真实存储的跨实例/跨进程竞争已验，应用接线待完成，见 [边界说明](internal/platform/ratelimit/README.md)。
 - `internal/platform/auth`：单用户 BCrypt/失败锁定、本地/Redis 原子会话及登录/轮换/注销/me/CSRF 安全处理器；实际 Java 密码对照、真实 HTTP/CookieJar/Redis 跨进程已验证，应用接线待完成，见 [边界说明](internal/platform/auth/README.md)。
 - `internal/platform/redis`：显式专用 Redis 客户端、TLS 配置、受限超时/连接池/生命周期与脱敏错误，见 [说明](internal/platform/redis/README.md)。
 - `internal/platform/http`：请求 ID 校验/回显/context、模型请求路径匹配、限流拒绝 JSON 与日志脱敏；限流尚未接入诊断应用。

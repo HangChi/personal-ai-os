@@ -124,3 +124,11 @@ Decision：2026-11-03 从官方 Go 模块代理确认并下载 github.com/redis/
 共享会话使用显式 namespace 下附加 :go:v1: 的独立键，JSON 值及 Redis TTL；不读取/改写 Spring Session 的序列化内容，切换需要重新登录。Lua 原子实现读取续期、ID 轮换、首次 CSRF 与删除；存储失败拒绝请求，禁止回退本地。将使用固定已缓存 redis:8.2.1-alpine 摘要的独立 tmpfs/随机回环端口容器，只传入新生成测试凭据，跨两客户端和真实 HTTP 实例验证，完成后补充实际结果。
 
 Alternatives considered：手写 RESP/TLS/池（增加协议和生命周期风险）；依赖 URI 默认值或连接现有 Redis（会越过数据隔离）；直接兼容 Java 二进制序列化（不必要且存在对象反序列化风险）；自动重试 Lua 写入（可能把已成功但丢响应的轮换再次执行）。实际 TLS 握手、ACL 最小权限、真实断网和应用装配另列验收，不以配置单测替代。
+
+## R-015 Redis 原 Lua 与 150ms 模型准入
+
+Decision：RedisBucket 直接保留固定 Java RedisRateBucket 的 TAKE Lua（单测逐词比对），key 仍为 personalos:rate:SHA256(namespace UTF-8)。只接受 SharedLimiter 使用的 model-rate 资源，避免给不同资源名错误共用一个 Java 单桶。周期按 Java toMillis 向下取整，最少 1ms；脚本使用 Redis TIME，拒绝也写回分数状态/at 并更新 period+1000ms TTL，已有配置不一致报错而非重新注满。此处与 PostgreSQL 拒绝不写状态的行为刻意不同。
+
+使用显式专用 Redis Client，但每次准入再限定 150ms（原 Jedis 专用超时）；父 deadline 更早则优先。无自动命令重试。底层异常经脱敏返回，SharedLimiter 计错并拒绝，不回退数据库或本地。调用方负责客户端生命周期；构造/普通单测不访问 Redis。
+
+Alternatives considered：统一成 Go 本地桶算法（会改变服务端时钟、拒绝写回/配置变更规则）；namespace 拼接未哈希键（改变已有键契约）；沿用会话默认 2 秒（改变模型准入延迟）；失败回退 PostgreSQL（可能超发预算）。真实 TLS、网络分区和不确定响应验收继续保留。

@@ -12,7 +12,7 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
 IMAGE = "redis@sha256:987c376c727652f99625c7d205a1cba3cb2c53b92b0b62aade2bd48ee1593232"
-PACKAGES = ["redis", "auth"]
+PACKAGES = ["redis", "auth", "ratelimit"]
 
 
 def capture(command, **kwargs):
