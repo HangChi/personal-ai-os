@@ -50,7 +50,11 @@ func (s *Service) Create(ctx context.Context, r CreateRequest) (Task, error) {
 		return Task{}, errors.New("任务优先级无效")
 	}
 	now := s.now().UTC()
-	return s.store.Insert(ctx, Task{Title: title, Description: description, Status: Todo, Priority: priority, DueAt: r.DueAt, CreatedAt: now, UpdatedAt: now})
+	tags, err := NormalizeTags(r.Tags)
+	if err != nil {
+		return Task{}, err
+	}
+	return s.store.Insert(ctx, Task{Title: title, Description: description, Status: Todo, Priority: priority, DueAt: r.DueAt, CreatedAt: now, UpdatedAt: now, Tags: tags})
 }
 func (s *Service) Get(ctx context.Context, id string) (Task, error) {
 	r, found, err := s.store.Get(ctx, id)
@@ -95,6 +99,12 @@ func (s *Service) Update(ctx context.Context, id string, change UpdateRequest) (
 		r.DueAt = change.DueAt
 	} else if change.ClearDueAt {
 		r.DueAt = nil
+	}
+	if change.Tags != nil {
+		r.Tags, err = NormalizeTags(*change.Tags)
+		if err != nil {
+			return Task{}, err
+		}
 	}
 	r.UpdatedAt = now
 	return s.store.Update(ctx, r)

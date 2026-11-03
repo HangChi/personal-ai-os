@@ -39,3 +39,16 @@ func TestQueryAndTitleBoundaries(t *testing.T) {
 		t.Fatal("empty title accepted")
 	}
 }
+
+func TestTagsKeepOrderAndRejectLimits(t *testing.T) {
+	tags, err := NormalizeTags([]string{" 工作 ", "工作", "", "学习"})
+	if err != nil || len(tags) != 2 || tags[0] != "工作" || tags[1] != "学习" {
+		t.Fatalf("tags=%v err=%v", tags, err)
+	}
+	if _, err := NormalizeTags([]string{"a", "b", "c", "d", "e", "f"}); err == nil {
+		t.Fatal("six tags accepted")
+	}
+	if _, err := NormalizeTags([]string{"😀😀😀😀😀😀😀😀😀😀😀"}); err == nil {
+		t.Fatal("UTF-16 overlong tag accepted")
+	}
+}

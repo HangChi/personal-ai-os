@@ -27,14 +27,22 @@ func scan(row scanner, r *Task) error {
 	return row.Scan(&r.ID, &r.Title, &r.Description, &r.Status, &r.Priority, &r.DueAt, &r.CompletedAt, &r.PreviousStatus, &r.CreatedAt, &r.UpdatedAt)
 }
 func (s *PostgresStore) Insert(ctx context.Context, r Task) (Task, error) {
-	err := s.pool.WithConn(ctx, func(c *sql.Conn) error {
-		return scan(c.QueryRowContext(ctx, `INSERT INTO task(title,description,status,priority,due_at,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING `+columns, r.Title, r.Description, r.Status, r.Priority, r.DueAt, r.CreatedAt, r.UpdatedAt), &r)
+	tags := r.Tags
+	err := s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
+		if err := scan(tx.QueryRowContext(ctx, `INSERT INTO task(title,description,status,priority,due_at,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING `+columns, r.Title, r.Description, r.Status, r.Priority, r.DueAt, r.CreatedAt, r.UpdatedAt), &r); err != nil {
+			return err
+		}
+		r.Tags = tags
+		return writeTags(ctx, tx, r.ID, tags)
 	})
 	return r, err
 }
 func (s *PostgresStore) Get(ctx context.Context, id string) (r Task, found bool, err error) {
 	err = s.pool.WithConn(ctx, func(c *sql.Conn) error {
-		return scan(c.QueryRowContext(ctx, `SELECT `+columns+` FROM task WHERE id=$1::uuid`, id), &r)
+		if err := scan(c.QueryRowContext(ctx, `SELECT `+columns+` FROM task WHERE id=$1::uuid`, id), &r); err != nil {
+			return err
+		}
+		return readTags(ctx, c, &r)
 	})
 	if errors.Is(err, sql.ErrNoRows) {
 		return Task{}, false, nil
@@ -42,8 +50,13 @@ func (s *PostgresStore) Get(ctx context.Context, id string) (r Task, found bool,
 	return r, err == nil, err
 }
 func (s *PostgresStore) Update(ctx context.Context, r Task) (Task, error) {
-	err := s.pool.WithConn(ctx, func(c *sql.Conn) error {
-		return scan(c.QueryRowContext(ctx, `UPDATE task SET title=$2,description=$3,status=$4,priority=$5,due_at=$6,completed_at=$7,previous_status=$8,updated_at=$9 WHERE id=$1::uuid RETURNING `+columns, r.ID, r.Title, r.Description, r.Status, r.Priority, r.DueAt, r.CompletedAt, r.PreviousStatus, r.UpdatedAt), &r)
+	tags := r.Tags
+	err := s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
+		if err := scan(tx.QueryRowContext(ctx, `UPDATE task SET title=$2,description=$3,status=$4,priority=$5,due_at=$6,completed_at=$7,previous_status=$8,updated_at=$9 WHERE id=$1::uuid RETURNING `+columns, r.ID, r.Title, r.Description, r.Status, r.Priority, r.DueAt, r.CompletedAt, r.PreviousStatus, r.UpdatedAt), &r); err != nil {
+			return err
+		}
+		r.Tags = tags
+		return writeTags(ctx, tx, r.ID, tags)
 	})
 	if errors.Is(err, sql.ErrNoRows) {
 		return Task{}, ErrNotFound
@@ -97,9 +110,52 @@ func (s *PostgresStore) Search(ctx context.Context, q Query) (Page, error) {
 			}
 			p.Items = append(p.Items, r)
 		}
-		return rows.Err()
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		if err := rows.Close(); err != nil {
+			return err
+		}
+		for i := range p.Items {
+			if err := readTags(ctx, c, &p.Items[i]); err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 	return p, err
+}
+
+type tagReader interface {
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}
+
+func readTags(ctx context.Context, q tagReader, r *Task) error {
+	rows, err := q.QueryContext(ctx, `SELECT tag FROM task_tag WHERE task_id=$1::uuid ORDER BY tag_index`, r.ID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	r.Tags = make([]string, 0)
+	for rows.Next() {
+		var tag string
+		if err := rows.Scan(&tag); err != nil {
+			return err
+		}
+		r.Tags = append(r.Tags, tag)
+	}
+	return rows.Err()
+}
+func writeTags(ctx context.Context, tx *sql.Tx, id string, tags []string) error {
+	if _, err := tx.ExecContext(ctx, `DELETE FROM task_tag WHERE task_id=$1::uuid`, id); err != nil {
+		return err
+	}
+	for i, tag := range tags {
+		if _, err := tx.ExecContext(ctx, `INSERT INTO task_tag(task_id,tag_index,tag) VALUES($1::uuid,$2,$3)`, id, i, tag); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 func (s *PostgresStore) Stats(ctx context.Context, now time.Time) (stats Stats, err error) {
 	err = s.pool.WithConn(ctx, func(c *sql.Conn) error {

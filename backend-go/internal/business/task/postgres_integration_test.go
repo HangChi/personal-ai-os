@@ -51,13 +51,17 @@ func TestPostgresTaskCRUDAndSearch(t *testing.T) {
 	store, _ := NewPostgresStore(fixturePool(t))
 	service, _ := NewService(store)
 	title := "合成任务P2"
-	created, err := service.Create(ctx, CreateRequest{Title: title})
+	created, err := service.Create(ctx, CreateRequest{Title: title, Tags: []string{" 工作 ", "工作", "学习"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = service.Delete(context.Background(), created.ID) })
 	if created.Status != Todo || created.Priority != Medium {
 		t.Fatalf("created=%+v", created)
+	}
+	loaded, err := service.Get(ctx, created.ID)
+	if err != nil || len(loaded.Tags) != 2 || loaded.Tags[0] != "工作" {
+		t.Fatalf("tags=%v err=%v", loaded.Tags, err)
 	}
 	doing := Doing
 	updated, err := service.Update(ctx, created.ID, UpdateRequest{Status: &doing})

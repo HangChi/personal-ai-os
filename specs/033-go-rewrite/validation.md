@@ -439,3 +439,8 @@ Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退
 - 任务模型实现TODO/DOING/DONE、完成时间与previous_status状态转换，创建/更新/完成/重开/删除、关键词与状态/标签筛选、分页和全量统计的基础路径。任务标签的读取与写入、提醒同步、批量操作及HTTP路由尚未完成，T202–T205均保持未勾选。
 - `run_go_postgres_tests.py --package task`在原42迁移后的独立库通过真实CRUD、状态恢复、筛选及统计；新建容器已清理。业务三包race和vet通过。
 - 对T200补充回归：陈旧HTTP占位遇到同键不同摘要，必须先返回摘要冲突，不能清理后执行；修复另以`917d7a2`提交。
+
+## P2任务标签增量（T203部分）
+
+- 实现标签去空白、去空、去重、首现顺序和5个/UTF-16 20字符上限；任务创建与更新在同一数据库事务写`task`/`task_tag`，查询按`tag_index`恢复顺序。`run_go_postgres_tests.py --package task`再次通过真实原迁移库与race测试。
+- T203其余提醒同步与更完整PATCH语义尚未验收，因此父项保持未勾选。
