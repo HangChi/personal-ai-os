@@ -108,7 +108,7 @@ func (s *Service) Update(ctx context.Context, id string, change UpdateRequest) (
 	}
 	if change.DueAt != nil {
 		r.DueAt = change.DueAt
-	} else if change.ClearDueAt {
+	} else if change.ClearDueAt != nil && *change.ClearDueAt {
 		r.DueAt = nil
 	}
 	if change.Tags != nil {

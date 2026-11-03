@@ -459,3 +459,10 @@ Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退
 - Foundation已挂任务9条原控制器路由及确认列表、确认、取消路由。创建/修改/删除使用原幂等键规则，重放保持同一任务ID；24并发请求跨两个独立Foundation连接池仅创建一行任务，竞争者冲突，完成后可重放。任务删除确认在另一实例执行且重复消费拒绝；取消优先级确认后原任务未变，取消项无法再确认；数据库副作用已核对。
 - P2运行账号启动前检查任务、标签、幂等、确认、提醒表及operation_record序列的实际权限；原迁移由独立Flyway执行，业务账号无迁移所有权。默认诊断入口仍不装配P2；显式Foundation生产模式和readyz守卫保持原P1拒绝。未推送、合并、部署或替换Java实例。
 - T200–T205全部完成。跨模块导出/全局搜索端点、Agent工具、提醒Worker与其他业务模块仍按P3–P8实施；当前全量`check-complete`仍应拒绝。
+
+
+## P2审查修复（2026-11-03）
+
+- 修复PATCH的`clearDueAt`摘要：Go DTO改用可空Boolean，省略与显式null均保留null，false/true各自保留。对原Java `JsonCodec`、`UpdateTaskRequest`实际执行所得的四个SHA-256逐项断言；`{"title":"renamed"}`的原摘要为`03d482d74dad6316524418e1be57e570be64fa687e8bf729ce85c4eca8f1adca`。服务仍仅在显式true且未提供新dueAt时清除截止时间。
+- `task/patch_http_test.go`覆盖四个Java原摘要、同键null回放/false冲突；先复现再修复。TLS原42迁移库预置Java摘要SUCCESS记录，HTTP回放保留原响应且任务标题/更新时间/截止时间不变；显式false仍409/40001。null/false保留截止时间、true清空。日志：`/private/tmp/personal-ai-os-p2-fix-java-oracle.log`、`/private/tmp/personal-ai-os-p2-fix-integration.log`。
+- Go全量race、integration标签vet/build、完整TLS存储/恢复/网络故障回归通过；固定基线检查及14个Python测试通过。提交前另执行原Java offline verify与前端类型检查/生产构建，结果见`/private/tmp/personal-ai-os-commit-java.log`及`/private/tmp/personal-ai-os-commit-frontend.log`。未修改原Java/前端/SQL或现有服务，五发布门禁不变。

@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -231,4 +232,108 @@ func TestFoundationP2ConfirmationAndCrossConnectionIdempotency(t *testing.T) {
 	if code != 409 {
 		t.Fatalf("confirm cancelled=%d", code)
 	}
+}
+
+func TestFoundationP2JavaCompatibilityRegression(t *testing.T) {
+	properties, err := config.LoadBaselineProperties(config.PropertyOptions{Overrides: map[string]string{"app.rate-limit.enabled": "false"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	f, err := OpenFoundation(context.Background(), properties, FoundationOptions{Connector: fixtureAppConnector(t, "go-p2-java-regression"), Migrations: os.DirFS("../../../backend/src/main/resources/db/migration"), Schema: "public", EnableP2: true}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := f.Close(ctx); err != nil {
+			t.Error(err)
+		}
+	})
+	server := httptest.NewServer(f.Handler())
+	t.Cleanup(server.Close)
+	store, err := task.NewPostgresStore(f.Pool())
+	if err != nil {
+		t.Fatal(err)
+	}
+	tasks, err := task.NewService(store)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := func(method, path, body, media, key string) (int, map[string]any) {
+		t.Helper()
+		r, err := http.NewRequest(method, server.URL+path, strings.NewReader(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		r.Header.Set("Content-Type", media)
+		if key != "" {
+			r.Header.Set("Idempotency-Key", key)
+		}
+		response, err := server.Client().Do(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer response.Body.Close()
+		var result map[string]any
+		if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
+			t.Fatal(err)
+		}
+		return response.StatusCode, result
+	}
+
+	t.Run("java-patch-record-replay", func(t *testing.T) {
+		ctx := context.Background()
+		due := time.Date(2026, 12, 1, 10, 0, 0, 0, time.UTC)
+		created, err := tasks.Create(ctx, task.CreateRequest{Title: "后续更新后的标题", DueAt: &due})
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = tasks.Delete(context.Background(), created.ID) })
+		prior := created.DTO(time.Now())
+		prior.Title = "renamed"
+		payload, err := json.Marshal(prior)
+		if err != nil {
+			t.Fatal(err)
+		}
+		key := "java-patch-" + created.ID
+		path := "/api/v1/tasks/" + created.ID
+		// 该摘要由原 Java JsonCodec 对 {"title":"renamed"} 绑定后的 record 实际计算。
+		const digest = "03d482d74dad6316524418e1be57e570be64fa687e8bf729ce85c4eca8f1adca"
+		err = f.Pool().WithConn(ctx, func(conn *sql.Conn) error {
+			_, err := conn.ExecContext(ctx, `INSERT INTO operation_record(idempotency_key,source,operation,request_digest,outcome,response_payload,created_at)
+ VALUES($1,'HTTP',$2,$3,'SUCCESS',$4,$5)`, key, "PATCH "+path, digest, string(payload), time.Now().UTC())
+			return err
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, body := range []string{`{"title":"renamed"}`, `{"title":"renamed","clearDueAt":null}`} {
+			status, result := request(http.MethodPatch, path, body, "application/json", key)
+			if status != 200 || result["data"].(map[string]any)["title"] != "renamed" {
+				t.Fatalf("Java replay=%d %+v", status, result)
+			}
+			current, err := tasks.Get(ctx, created.ID)
+			if err != nil || current.Title != created.Title || !current.UpdatedAt.Equal(created.UpdatedAt) || current.DueAt == nil || !current.DueAt.Equal(due) {
+				t.Fatalf("replay changed the task: %+v err=%v", current, err)
+			}
+		}
+		if status, result := request(http.MethodPatch, path, `{"title":"renamed","clearDueAt":false}`, "application/json", key); status != 409 || result["code"] != float64(40001) {
+			t.Fatalf("null/false digest conflict=%d %+v", status, result)
+		}
+		for _, flag := range []string{"null", "false", "true"} {
+			status, result := request(http.MethodPatch, path, `{"clearDueAt":`+flag+`}`, "application/json", "")
+			if status != 200 {
+				t.Fatalf("clearDueAt=%s status=%d %+v", flag, status, result)
+			}
+			current, err := tasks.Get(ctx, created.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if flag == "true" && current.DueAt != nil || flag != "true" && (current.DueAt == nil || !current.DueAt.Equal(due)) {
+				t.Fatalf("clearDueAt=%s due=%v", flag, current.DueAt)
+			}
+		}
+	})
+
 }

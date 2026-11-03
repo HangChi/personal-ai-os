@@ -108,12 +108,14 @@ type CreateRequest struct {
 	DueAt       *time.Time `json:"dueAt"`
 	Tags        []string   `json:"tags"`
 }
+
+// UpdateRequest 保留 Java Boolean 的 null/false/true，避免省略字段改变已有幂等摘要。
 type UpdateRequest struct {
 	Title       *string    `json:"title"`
 	Description *string    `json:"description"`
 	Priority    *Priority  `json:"priority"`
 	DueAt       *time.Time `json:"dueAt"`
-	ClearDueAt  bool       `json:"clearDueAt"`
+	ClearDueAt  *bool      `json:"clearDueAt"`
 	Status      *Status    `json:"status"`
 	Tags        *[]string  `json:"tags"`
 }

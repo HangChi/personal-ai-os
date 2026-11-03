@@ -2599,8 +2599,8 @@
     },
     "file:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
       "status": "implemented",
-      "evidence": ["backend-go/internal/business/task/http.go", "backend-go/internal/app/foundation.go", "backend-go/internal/app/foundation_task_integration_test.go"],
-      "note": "T205九条任务路由接入真实Foundation安全链；创建/更新/删除幂等及跨连接单次副作用已验证。"
+      "evidence": ["backend-go/internal/business/task/http.go", "backend-go/internal/app/foundation.go", "backend-go/internal/app/foundation_task_integration_test.go", "backend-go/internal/business/task/patch_http_test.go", "specs/033-go-rewrite/validation.md"],
+      "note": "T205九条任务路由接入真实Foundation安全链；创建/更新/删除幂等及跨连接单次副作用已验证。 审查修复：PATCH clearDueAt保留null/false/true；四个Java原摘要和真实库SUCCESS记录回放通过，回放无重复写且显式false仍冲突。"
     },
     "file:backend/src/main/java/com/personalos/task/TaskExportContributor.java": {
       "status": "in_progress",
@@ -2629,9 +2629,11 @@
         "backend-go/internal/business/idempotency/idempotency_test.go",
         "backend-go/internal/business/idempotency/postgres.go",
         "backend-go/internal/business/idempotency/postgres_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/business/task/patch_http_test.go",
+        "backend-go/internal/app/foundation_task_integration_test.go"
       ],
-      "note": "T200：独立短事务占位、跨连接竞争、摘要冲突、结果/失败回放、HTTP陈旧CAS回收与TOOL结果不明保护已实现；业务HTTP/工具装配仍属T205/P4。"
+      "note": "T200：独立短事务占位、跨连接竞争、摘要冲突、结果/失败回放、HTTP陈旧CAS回收与TOOL结果不明保护已实现；业务HTTP/工具装配仍属T205/P4。 P2审查修复：增加原Java PATCH摘要记录的HTTP回放与null/false冲突回归，不改变所有权和竞争策略。"
     },
     "file:backend/src/main/java/com/personalos/common/idempotency/OperationRecordEntity.java": {
       "status": "implemented",
@@ -2662,9 +2664,12 @@
         "backend-go/internal/platform/api/json_encoding_test.go",
         "backend-go/internal/platform/http/negotiation.go",
         "backend-go/internal/business/idempotency/idempotency.go",
-        "backend-go/internal/business/idempotency/idempotency_test.go"
+        "backend-go/internal/business/idempotency/idempotency_test.go",
+        "backend-go/internal/business/task/patch_http_test.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "T106c–T106g及T200：844个真实基础HTTP场景已对照；幂等路径另实现确定性map键JSON、禁HTML转义与SHA-256。未代替所有未来业务DTO或框架配置验收。"
+      "note": "T106c–T106g及T200：844个真实基础HTTP场景已对照；幂等路径另实现确定性map键JSON、禁HTML转义与SHA-256。未代替所有未来业务DTO或框架配置验收。 P2审查修复：UpdateTaskRequest可空Boolean的四个原Java摘要已逐项对照，省略/null不再误编码为false。"
     }
   },
   "release_gates": {
