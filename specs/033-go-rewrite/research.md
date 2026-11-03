@@ -368,3 +368,13 @@ Decision：真实Servlet新增228个场景，分别覆盖认证/业务健康/Act
 JSON响应使用已有固定x/text依赖实际输出UTF-8、UTF-16BE/LE、UTF-32BE/LE，无额外BOM，不只修改Content-Type。测试按声明解码后逐字段比较，并直接检查编码字节前缀/中文与非BMP字符。序列化或编码失败在提交响应前输出脱敏500，不泄漏原数据。
 
 真实框架表明：UTF-16/ISO-8859-1是有效但不受JSON写入器支持的字符集，普通MVC返回406，Actuator显式produces返回500；未知字符集两者406。仅逗号Accept在MVC用默认JSON、Actuator走500。保留这些原行为，没有擅自改成统一理想响应。内容协商不是全部未来DTO/框架配置兼容证明。
+
+## R-042 P1按实际装配与明确边界收口
+
+Decision：P1以真实Foundation/CLI装配为门禁，不能停在独立组件测试。统一multipart请求生命周期、会话/Cookie配置、HTTP流结束计量、monitoring直方图、Go运行指标、root日志级别/ECS和HTTP到后台执行器请求ID链均实际接线；在真实TLS PostgreSQL/Redis、最小ACL、网络分区/不确定COMMIT、恢复库和五角色进程中复验。
+
+所有70处@Value及8处getProperty逐条纳入可复验配置处置台账，动态键集合显式展开；P1调用方有代码证据，后续业务调用方绑定具体P3–P8任务。对datasource/Hikari/Flyway/JPA/Servlet/server/management/logging已接管配置面采用支持白名单，未支持扩展连接前拒绝；不忽略配置或将来源解析误当业务实现。自定义schema/历史标记、外部ConfigData、Tomcat协议栈与Java平台指标的边界写入p1-foundation-contract.md。
+
+原Java verify曾受限失败；本轮恢复环境后重新完整执行，1137测试全过、原JaCoCo阈值通过，前端类型/构建通过，未跳测试或降阈值。因此允许关闭P1父项，P2以后及2438条全量迁移/五发布门禁仍独立追踪。默认回环、prod拒绝与readyz503作为P8发布守卫继续保留。
+
+Alternatives considered：仅凭Go编译关闭父项；将全部Java清单批量verified；接受未使用的任意框架配置；继续引用旧沙箱失败而降低原Java门禁。均未采用。

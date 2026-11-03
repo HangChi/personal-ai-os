@@ -1,6 +1,6 @@
 # 模型请求限流（P1 子集）
 
-来源为固定 Java 基线的 `RateLimitProperties`、`TokenBucketRateLimiter`、`DatabaseCoordination.consume`、`ModelRequestPaths` 和 `RateLimitFilter`。当前代码尚未接入应用入口；`/readyz` 仍为 503。
+来源为固定 Java 基线的 `RateLimitProperties`、`TokenBucketRateLimiter`、`DatabaseCoordination.consume`、`ModelRequestPaths` 和 `RateLimitFilter`。已接显式Foundation；默认诊断不连接共享存储，`/readyz` 仍为 503。
 
 ## 本地与共享桶
 
@@ -9,7 +9,7 @@
 - `NewShared`：必须显式提供 PostgreSQL 协调后端，可以另传专用 Redis 后端；选中 Redis 后不再访问 PostgreSQL。
 - PostgreSQL 错误向上返回；Redis 返回错误时拒绝准入，记录 Redis 错误指标，不重试、不切换后端。不将共享存储错误降级成本地桶。
 - `Bucket.Consume` 定义原子消费边界，传递原始 context、`model-rate`、容量和周期。`NewPostgresBucket` 和 `NewRedisBucket` 分别实现真实 PostgreSQL/Redis 消费，均不使用本地回退。
-- `Observer.RecordAcquisition` 在成功、拒绝和数据库错误时记录耗时；`failed=true` 只对应 Redis 返回错误，与 Java 的错误计数位置一致。当前只是可执行的指标回调边界，尚未接入 Prometheus。
+- `Observer.RecordAcquisition` 在成功、拒绝和数据库错误时记录耗时；`failed=true` 只对应 Redis 返回错误，与 Java 的错误计数位置一致。Foundation已将真实回调接入Actuator/Prometheus，保留累计count/sum和窗口max。
 
 ## PostgreSQL 桶
 
@@ -29,7 +29,7 @@ integration 测试直接加载未修改的 V37 原 SQL。一次性数据库验�
 
 `httpmiddleware.ModelRequestPath` 对照全部 10 个 POST 模式和 1 个 PUT 模式，保留单次解码、方法大小写、Ant 的空段和末尾斜杠行为。该函数只判断保护范围，不保证请求能通过 Go/Java 的服务器、认证或实际路由。Go 中间件用 `URL.EscapedPath()`，避免二次解码 `URL.Path`，并去掉 query。
 
-`RateLimitMiddleware` 应置于请求 ID 中间件内层、挂载前缀处理之后。放行只消费一次，不改写下游 SSE/状态/响应；拒绝返回 HTTP 429、业务码 42900、中文文案及统一 JSON 信封。限流日志仅记录 method、原始路径和 requestId，不读取正文或记录 query/凭据。PostgreSQL 错误输出脱敏的 50000；这部分的 Servlet 容器级错误差分仍待 T106 验证。
+`RateLimitMiddleware` 应置于请求 ID 中间件内层、挂载前缀处理之后。放行只消费一次，不改写下游 SSE/状态/响应；拒绝返回 HTTP 429、业务码 42900、中文文案及统一 JSON 信封。限流日志仅记录 method、原始路径和 requestId，不读取正文或记录 query/凭据。PostgreSQL 错误输出脱敏的 50000；基础Servlet路径/方法/安全头已对照；传输层由Go在Handler之前拒绝的畸形协议不冒充完整Tomcat仿真。
 
 ## 验证与待完成项
 
@@ -44,4 +44,4 @@ python3 scripts/migration/java_model_paths_fixture.py
 
 Java BOM 中指定的 Spring/Tomcat 依赖缺失时该命令失败；可用 `--m2` 指定已有缓存。只有审查基线/行为变更后才用 `--write` 重生成。此工具不是 Maven verify，也不替代全量 Java/Go 差分。
 
-同一组 Redis 竞争/跨进程/失败策略场景已在真实 rediss 下通过，可对脚本加 `--tls` 复验。仍待完成：环境/YAML 属性绑定、Redis 生产 ACL/网络分区与不确定响应、数据库断网/提交不确定故障、指标系统和安全/角色链装配、真实 Worker/SSE 全链路生命周期。T107 和 P1 未完成。
+同一组 Redis 竞争/跨进程/失败策略场景已在真实 rediss 下通过，可对脚本加 `--tls` 复验。环境/固定YAML属性、TLS最小ACL/网络分区/不确定响应、数据库故障/不确定提交、指标及安全/角色链装配均已有P1证据。业务Worker、模型SSE/前端全链路和生产部署按P3–P8验收，详见[P1契约](../../../../specs/033-go-rewrite/p1-foundation-contract.md)。

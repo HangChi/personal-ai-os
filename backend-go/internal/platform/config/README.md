@@ -1,12 +1,12 @@
 # 显式配置基础
 
-默认入口只接受隔离诊断配置：回环8081，不读.env，不连接基础设施，生产/认证/CSRF模式在监听前拒绝。`.env`读取必须由系统环境显式开启，优先级与生产校验已有独立测试；任意YAML/profile/全部属性绑定仍待迁移。
+默认入口只接受隔离诊断配置：回环8081，不读.env，不连接基础设施，生产/认证/CSRF模式在监听前拒绝。`.env`读取必须由系统环境显式开启，优先级与生产校验已有独立测试；显式Foundation使用下述固定基线Properties；任意外部YAML位置/import和profile分组明确拒绝。
 
 ## Cookie真实配置来源
 
 原Java的SecurityConfig、SharedSessionConfig和ProductionSecurityValidator读取`server.servlet.session.cookie.secure`，对应环境变量`SERVER_SERVLET_SESSION_COOKIE_SECURE`。原base/prod YAML却将`SESSION_COOKIE_SECURE`占位符/静态true放在`spring.servlet.session.cookie.secure`。这两个路径不同，不能把后者误认为已开启安全Cookie。
 
-Go保留实际canonical路径及SystemEnvironment的点/下划线/大写别名，先查全部系统环境别名，再查低优先级.env；canonical缺席时保持false，即使prod或SESSION_COOKIE_SECURE=true也不伪造true。真实Spring来源与原生产守卫的4场景见`specs/033-go-rewrite/config-inventory.json`。原Java/YAML未改；Go生产、认证与CSRF启动守卫仍生效。此前参数级生产校验测试不代表完整来源绑定等价。
+Go保留实际canonical路径及SystemEnvironment的点/下划线/大写别名，先查全部系统环境别名，再查低优先级.env；canonical缺席时保持false，即使prod或SESSION_COOKIE_SECURE=true也不伪造true。真实Spring来源与原生产守卫的4场景见`specs/033-go-rewrite/config-inventory.json`。原Java/YAML未改；诊断模式仍拒绝认证/CSRF开关，Foundation允许已实现安全链，所有生产模式仍拒绝。此前参数级生产校验测试不代表完整来源绑定等价。
 
 `python3 scripts/migration/go_config_inventory.py`可离线复验全部配置record字段/默认注解、@Value、直接getProperty及逐文档YAML来源。它不执行完整Binder、profile激活或动态MCP装配。
 
@@ -64,6 +64,6 @@ MCP配置和server字段全部私有，命令指针、server名称、参数、�
 
 原DotEnv处理器没有Ordered/Order，晚于有显式ORDER的ConfigData执行。因此dotenv中的SPRING_PROFILES_ACTIVE可能被Environment延迟报告为active，却不会重新加载对应profile文件；不能据此擅自套用prod或worker文件。133个真实场景/189属性覆盖该区别、系统/default/include激活、文档/profile顺序和别名优先级。原`Environment.Config()`诊断配置子集尚未切换到本解析器，其历史profile测试不代表完整Boot启动行为。
 
-仅支持固定基线已有文档结构；外部`spring.config.*`位置/导入和profile分组明确拒绝，不冒充任意Spring ConfigData替代。`Properties.Foundation()`组合P1使用的角色、Auth/RateLimit/App、安全开关、模型并发与专用Redis条件/namespace；不打开连接，生产配置继续拒绝。Redis条件沿用原ConditionalOnProperty的精确true（忽略大小写），不把on/1当作开启。暂未完成所有业务record的来源绑定与主入口接线。复验：`python3 scripts/migration/java_config_data_fixture.py`，默认比较，显式`--write`更新内置基线与测试快照。
+仅支持固定基线已有文档结构；外部`spring.config.*`位置/导入和profile分组明确拒绝，不冒充任意Spring ConfigData替代。`Properties.Foundation()`组合P1使用的角色、Auth/RateLimit/App、安全开关、模型并发与专用Redis条件/namespace；不打开连接，生产配置继续拒绝。Redis条件沿用原ConditionalOnProperty的精确true（忽略大小写），不把on/1当作开启。主入口已接P1配置与受限数据源/管理/会话/上传/日志装配；其余业务record有独立Binder对照，实际使用方按对应阶段迁移。复验：`python3 scripts/migration/java_config_data_fixture.py`，默认比较，显式`--write`更新内置基线与测试快照。
 
 整数按原32/64位语法检查再归一；浮点沿用Java Double（包含hex、f/d后缀、NaN/Infinity和IEEE溢出）的实际结果，不能静默替换NaN或把合法溢出归一化当作非法。时长先在Java完整范围解析，合法非正值按各record默认处理，归一化后超Go范围仍明确拒绝。知识库扩展名规则与查询限额、Calendar有效前瞻/范围/限额等配置辅助方法已实现；相应业务执行仍属于后续阶段。

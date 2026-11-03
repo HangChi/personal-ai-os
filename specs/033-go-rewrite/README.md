@@ -8,8 +8,8 @@
 ## 当前交付状态
 
 - P0：规格、架构方案、逐文件基线清单、接口/工具/调度索引、实施顺序和验收要求已建立。
-- P1：显式Foundation/真实二进制已接数据库、认证/CSRF、共享限流/模型租约、健康、管理双端口、执行器与实际限流指标。五角色/跨OS共享、真实TLS/最小ACL、网络故障恢复及提交响应丢失验证通过；744基础HTTP场景对照真实Servlet。完整配置/上传安全装配/日志与HTTP观测尚待完成，父项保持开放，见[P1剩余项](p1-remaining.md)。
-- 全42原SQL、真实Flyway历史/锁竞争、七类DDL差分和合成pg_dump/restore数据/序列已验证；完整schema的P1最小权限通过。恢复库Foundation启动、扩展schema/历史支持边界仍需补验，不能将合成恢复当作真实用户备份验收。
+- P1已完成：显式Foundation/真实二进制已接数据库、认证/CSRF、共享限流/模型租约、健康、管理双端口、执行器、上传生命周期、HTTP观测与ECS日志。五角色/跨OS共享、真实TLS/最小ACL、网络故障恢复及提交响应丢失验证通过；844个基础HTTP场景、160个观测标签场景和68个直方图边界对照真实框架。父项验收状态见[P1收口矩阵](p1-remaining.md)和[tasks.md](tasks.md)。
+- 全42原SQL、真实Flyway历史/锁竞争、七类DDL差分和合成pg_dump/restore数据/序列已验证；完整schema的P1最小权限及恢复库五角色Foundation实际启动/关闭通过。扩展schema/历史明确拒绝，支持边界见[P1契约](p1-foundation-contract.md)；合成恢复不等于真实用户备份验收。
 - **Go 尚不能替代 Java。104 个注解 HTTP 路由和所有业务模块均未宣告迁移完成。**
 - Go默认离线诊断不读现有`.env`、不连数据库、不迁移或启业务Worker，`/readyz`固定503。显式GO_DOTENV_ENABLED才允许加载配置；显式基础模式要求独立连接参数/迁移目录，允许已实现的认证/CSRF，生产继续拒绝。
 - 不修改现有 Java、前端、SQL、Compose 或本地运行实例。两个后端必须使用独立测试数据验证。
@@ -31,6 +31,8 @@
 [surface.md](surface.md) | 104 个注解路由、27 个工具、95 个运行钩子的自动索引
 [progress.json](progress.json) | 独立于生成清单维护的状态和验证证据
 [validation.md](validation.md) | 本次实际运行的验证与未验证事项
+[p1-foundation-contract.md](p1-foundation-contract.md) | P1实际支持、明确拒绝及后续业务/发布边界
+[config-disposition.md](config-disposition.md) | 78处直接配置调用方逐项装配或后续阶段归属
 
 ## 防遗漏的执行规则
 
@@ -63,6 +65,4 @@ python3 scripts/migration/go_inventory.py generate \
 
 ## 继续实施的入口
 
-从 [tasks.md 的 P1](tasks.md#p1-基础设施与数据兼容) 继续。先解决数据库/迁移、认证和中间件，再进入任务模块。每阶段补充对应 Java 测试的 Go 用例、差分结果和进度证据，避免一次性改写后再找遗漏。
-
-- 新增数据库租约/续租/fencing/事务完成后释放，以及模型并发/API 预留与 HTTP 流生命周期边界；真实 PostgreSQL 及定向流测试通过，尚未接入诊断应用。
+P1父项验收后，从[tasks.md的P2](tasks.md#p2-幂等确认与任务)开始幂等、确认、任务与标签。本次收口不提前实现或勾选P2。每阶段保留对应Java来源、Go用例、差分结果和进度证据。

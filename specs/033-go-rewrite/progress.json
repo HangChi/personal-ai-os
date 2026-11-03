@@ -43,9 +43,11 @@
         "backend-go/internal/app/foundation_postgres_integration_test.go",
         "scripts/migration/smoke_go_foundation.py",
         "scripts/migration/run_go_postgres_tests.py",
-        "scripts/migration/run_go_redis_tests.py"
+        "scripts/migration/run_go_redis_tests.py",
+        "backend-go/internal/app/foundation_restore_integration_test.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "角色解析/allows/worker 及五种角色真实诊断进程/Worker 空 404 已验证；实际 Worker 任务与数据库协调尚未实现，不能 verified。 已组合显式ConfigData到P1配置；完整运行时仍待装配。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 T108e: 真实二进制在自建TLS存储中验证五角色/双端口/跨OS预算与共享会话、启动失败/退出资源释放；不代表业务Worker或网络故障完成。"
+      "note": "五种角色/profile/10或4池/Worker业务隔离与monitoring独立管理链已装配；真实race进程/TLS/ACL/跨OS共享、SIGTERM与失败清理通过。角色控制已实现，业务Worker按P4–P6迁移，不标记整个文件verified。"
     },
     "file:backend/src/main/java/com/personalos/common/web/RequestIdFilter.java": {
       "status": "in_progress",
@@ -54,10 +56,13 @@
         "backend-go/internal/platform/http/request_id_test.go",
         "backend-go/internal/platform/taskexec/executor.go",
         "backend-go/internal/platform/taskexec/executor_test.go",
-        "backend-go/internal/platform/http/request_id.go",
-        "backend-go/internal/platform/http/request_id_test.go"
+        "backend-go/internal/app/foundation_async_integration_test.go",
+        "backend-go/internal/platform/observability/logging.go",
+        "backend-go/internal/platform/observability/logging_test.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "HTTP校验/回显、复制到独立后台生命周期和1000路/跨任务无残留已验证；真实流/业务和统一日志传播尚待装配。"
+      "note": "HTTP校验/回显、1000路隔离、真实Foundation HTTP到轮末执行器只复制ID、不继承取消/身份/私有值通过；主命令text/ECS实际记录requestId。真实模型/持久业务调用点按P4迁移，状态不提前verified。"
     },
     "file:backend/src/main/java/com/personalos/PersonalOsApplication.java": {
       "status": "in_progress",
@@ -80,9 +85,14 @@
         "backend-go/internal/platform/config/process_test.go",
         "scripts/migration/smoke_go_foundation.py",
         "scripts/migration/run_go_postgres_tests.py",
-        "scripts/migration/run_go_redis_tests.py"
+        "scripts/migration/run_go_redis_tests.py",
+        "backend-go/internal/app/foundation_restore_integration_test.go",
+        "backend-go/internal/app/foundation_async_integration_test.go",
+        "backend-go/internal/app/http_metrics.go",
+        "backend-go/internal/platform/observability/logging.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。 T108d: 已接入显式基础主命令/来源配置并通过单测，真实进程证据见后续T108e。 T108e: 真实二进制在自建TLS存储中验证五角色/双端口/跨OS预算与共享会话、启动失败/退出资源释放；不代表业务Worker或网络故障完成。"
+      "note": "默认离线诊断与显式Foundation主命令均可真实启动；后者完成池/历史只读/认证/共享保护/健康/执行器/双监听/上传/HTTP指标与日志。真实TLS五角色/恢复库/网络故障/进程退出验收通过；业务服务与Worker仍待P2–P7，生产切换待P8。"
     },
     "file:backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java": {
       "status": "in_progress",
@@ -99,9 +109,13 @@
         "backend-go/cmd/personalos/startup.go",
         "backend-go/cmd/personalos/startup_test.go",
         "backend-go/internal/platform/config/process.go",
-        "backend-go/internal/platform/config/process_test.go"
+        "backend-go/internal/platform/config/process_test.go",
+        "specs/033-go-rewrite/config-disposition.json",
+        "scripts/migration/go_config_disposition.py",
+        "specs/033-go-rewrite/p1-foundation-contract.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": ".env解析/显式查找与优先级已有测试；新增真实ConfigData133场景×189属性验证dotenv晚于profile发现、系统别名/多文档/占位符。诊断入口旧窄加载尚未切换，任意外部ConfigData和完整应用接线仍待完成。 T108d: 已接入显式基础主命令/来源配置并通过单测，真实进程证据见后续T108e。"
+      "note": "显式dotenv解析/查找/优先级与晚于ConfigData的profile行为已对照；Foundation主入口已接固定基线Properties。默认不读本地.env，12类record和78直接调用方有独立来源及阶段台账；业务调用方按所属阶段接线。"
     },
     "file:backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java": {
       "status": "in_progress",
@@ -115,9 +129,13 @@
         "scripts/migration/test_go_config_inventory.py",
         "specs/033-go-rewrite/config-inventory.json",
         "specs/033-go-rewrite/config-inventory.md",
-        "backend-go/internal/platform/config/cookie_sources_test.go"
+        "backend-go/internal/platform/config/cookie_sources_test.go",
+        "backend-go/internal/platform/config/extensions.go",
+        "backend-go/internal/platform/config/session.go",
+        "specs/033-go-rewrite/config-disposition.json",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "开关/中文错误顺序、Java isBlank 和 UTF-8 密码边界已移植。生产启动仍额外拒绝；真实认证/CSRF 与业务差分尚未完成，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。"
+      "note": "原生产开关/密码与isBlank/UTF-8校验、真实Spring来源及canonical Secure路径差异已有对照；Foundation认证/CSRF已装配。Go仍额外拒绝全部prod/生产模式、非回环与readyz=503，P8前不解除；不宣称生产部署验收。"
     },
     "file:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java": {
       "status": "in_progress",
@@ -163,9 +181,15 @@
         "scripts/migration/test_go_config_inventory.py",
         "specs/033-go-rewrite/config-inventory.json",
         "specs/033-go-rewrite/config-inventory.md",
-        "backend-go/internal/platform/config/cookie_sources_test.go"
+        "backend-go/internal/platform/config/cookie_sources_test.go",
+        "specs/033-go-rewrite/config-disposition.json",
+        "scripts/migration/go_config_disposition.py",
+        "backend-go/internal/platform/config/extensions.go",
+        "backend-go/internal/platform/config/session.go",
+        "backend-go/internal/platform/observability/logging.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "运行/安全配置子集、连接池/显式事务和固定 pgx 配置/UTC 已实现；一次性 PostgreSQL 验证事务/类型/取消/并发与真实 TLS/证书拒绝、受限账号事务探针。未接应用，完整数据源/profile 配置、全部 schema 权限/Flyway/绝大多数属性待迁移，不能 verified。 已补真实Flyway执行和Go只读历史验证，未支持标记/完整装配继续开放。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。"
+      "note": "固定原7文件/17文档的Properties与12类Binder已有真实框架对照；P1主命令接会话/上传/数据源/管理/日志与相关扩展拒绝。70处@Value/8处getProperty逐项有装配或P3–P8后续任务；未提前宣称业务属性已使用。"
     },
     "file:backend/src/main/java/com/personalos/common/config/RateLimitProperties.java": {
       "status": "in_progress",
@@ -452,9 +476,11 @@
         "backend-go/internal/platform/http/concurrency.go",
         "backend-go/internal/platform/http/concurrency_test.go",
         "backend-go/internal/app/foundation_network_integration_test.go",
-        "backend-go/internal/app/foundation_acl_integration_test.go"
+        "backend-go/internal/app/foundation_acl_integration_test.go",
+        "backend-go/internal/app/foundation_restore_integration_test.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "consume、租约/续租/fencing/事务后释放、API 预留对应场景已实现并在一次性 PostgreSQL 验证；应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。 T102d/T107h：真实TLS完整schema最小权限、TCP分区/恢复与提交响应丢失验证通过，父项仍开放。"
+      "note": "consume、租约/续租/fencing/事务后释放及API预留已实现，接Foundation；真实TLS完整schema最小权限、TCP分区/恢复、有效租约保持/释放、不确定COMMIT不重试与关闭顺序通过。业务最终写入需各模块显式fencing，不提前verified。"
     },
     "file:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java": {
       "status": "implemented",
@@ -1528,9 +1554,12 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation.go",
         "backend-go/internal/app/foundation_http.go",
-        "backend-go/internal/app/foundation_postgres_integration_test.go"
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "backend-go/internal/app/foundation_network_integration_test.go",
+        "scripts/migration/smoke_go_foundation.py",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "本地/数据库共享并发与后台/API 预留、失败清理已实现；真实 PostgreSQL 验证跨池/角色/获取释放故障。真实 Worker/生产装配与网络故障待验收，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
+      "note": "本地/共享并发、三Worker后台/API预留、跨池竞争/拒绝/故障清理已实现并装配。真实HTTP流许可持有/取消/panic、TLS网络恢复与五角色进程验证通过。真实模型/持久业务Worker按P3–P6验收。"
     },
     "file:backend/src/main/java/com/personalos/common/web/ModelConcurrencyFilter.java": {
       "status": "implemented",
@@ -1722,9 +1751,13 @@
         "scripts/migration/java_foundation_http_fixture.py",
         "backend-go/internal/app/testdata/java-foundation-http.json",
         "backend-go/internal/app/foundation_http_oracle_test.go",
-        "backend-go/internal/platform/http/json.go"
+        "backend-go/internal/platform/http/json.go",
+        "backend-go/internal/platform/config/session.go",
+        "backend-go/internal/platform/http/multipart_lifecycle.go",
+        "backend-go/internal/app/foundation_multipart_oracle_test.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "独立 HTTP 处理器/本地会话已实现并以真实回环 CookieJar 验证登录轮换/注销/CSRF；全量内容协商、框架异常与应用接线待验，不能 verified。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。"
+      "note": "四Auth路由及匿名me、BCrypt/锁定、登录轮换/注销、CSRF已接Foundation；真实Servlet基础HTTP与跨OS共享会话/TLS/ACL/网络恢复通过。本地会话Cookie可配置，统一multipart正文token请求生命周期完成；不把基础路由验收等同全项目verified。"
     },
     "file:backend/src/main/java/com/personalos/common/auth/CsrfController.java": {
       "status": "implemented",
@@ -1789,9 +1822,14 @@
         "backend-go/internal/app/actuator.go",
         "backend-go/internal/app/actuator_health.go",
         "backend-go/internal/platform/config/actuator.go",
-        "backend-go/internal/platform/config/actuator_test.go"
+        "backend-go/internal/platform/config/actuator_test.go",
+        "backend-go/internal/platform/http/servlet_boundary.go",
+        "backend-go/internal/platform/http/multipart_lifecycle.go",
+        "backend-go/internal/app/foundation_multipart_oracle_test.go",
+        "backend-go/internal/platform/config/extensions.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。 T106d: 真实Servlet夹具扩展220例全部对照通过，修正业务/管理健康与信息、分组/媒体类型及详情权限；不是完整Micrometer或通用框架验收。"
+      "note": "原匿名白名单/认证/先CSRF/MCP免CSRF已装配；844真实基础HTTP场景逐项对照路径/方法/7安全响应头/字段与协商/上传边界。统一multipart正文CSRF/业务共享解析并清理。非默认未支持Servlet扩展显式拒绝，未来DTO/业务与生产入口继续分阶段验收。"
     },
     "route:POST:/api/v1/auth/login:backend/src/main/java/com/personalos/common/auth/AuthController.java": {
       "status": "implemented",
@@ -1891,9 +1929,11 @@
         "backend-go/internal/app/foundation_redis_integration_test.go",
         "scripts/migration/run_go_postgres_tests.py",
         "scripts/migration/smoke_go_foundation.py",
-        "backend-go/internal/app/foundation_network_integration_test.go"
+        "backend-go/internal/app/foundation_network_integration_test.go",
+        "backend-go/internal/platform/config/session.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "专用 standalone redis/rediss 解析/TLS 配置/2 秒操作与 Go 独立版本化键已实现；真实 Redis 跨客户端/HTTP 实例/OS 进程共享注销通过。不导入 Spring 序列化会话，切换须重新登录；实际 TLS/ACL/配置与应用装配仍待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 已通过Foundation双实例与PostgreSQL/Redis TLS、独立ACL组合：共享会话/预算、专用客户端故障不回退和借用资源所有权；真实应用网络分区/CLI仍待验。 T108e: 真实二进制在自建TLS存储中验证五角色/双端口/跨OS预算与共享会话、启动失败/退出资源释放；不代表业务Worker或网络故障完成。"
+      "note": "专用standalone Redis/TLS最小ACL/跨HTTP与OS进程共享轮换/注销/TTL及真实TCP分区恢复已验收，无本地回退/写重试；Foundation与CLI已装配。保留SESSION/Lax/HttpOnly/30分钟及canonical Secure，原未消费扩展显式拒绝；Go版本化键需重新登录，不兼容Spring序列化。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/SharedSessionIntegrationTest.java": {
       "status": "implemented",
@@ -1932,9 +1972,12 @@
         "backend-go/internal/platform/redis/response_loss_integration_test.go",
         "backend-go/internal/app/foundation_redis_integration_test.go",
         "scripts/migration/run_go_postgres_tests.py",
-        "backend-go/internal/app/foundation_network_integration_test.go"
+        "backend-go/internal/app/foundation_network_integration_test.go",
+        "backend-go/internal/app/actuator_metrics.go",
+        "scripts/migration/smoke_go_foundation.py",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "原 Java Lua 逐词对照，真实 Redis 验证共享容量/分数/回拨/配置拒绝/TTL/取消/故障与跨进程预算；使用显式专用客户端和 150ms 边界。实际 TLS/网络不确定响应/应用配置指标装配待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。 已通过Foundation双实例与PostgreSQL/Redis TLS、独立ACL组合：共享会话/预算、专用客户端故障不回退和借用资源所有权；真实应用网络分区/CLI仍待验。 T102d/T107h：真实TLS完整schema最小权限、TCP分区/恢复与提交响应丢失验证通过，父项仍开放。"
+      "note": "原Lua/TIME/namespace哈希/150ms边界已实现并装配；真实TLS/专用ACL/跨OS共享预算、分区恢复和已执行写丢响应不重放通过。错误拒绝且不回退PG/本地，实际timer/counter已接Actuator/Prometheus。生产及其他缓存按所属阶段验收。"
     },
     "file:backend/src/test/java/com/personalos/common/web/RedisRateBucketIntegrationTest.java": {
       "status": "implemented",
@@ -2081,9 +2124,11 @@
         "backend-go/internal/platform/taskexec/executor_test.go",
         "backend-go/internal/platform/http/request_id.go",
         "backend-go/internal/platform/http/request_id_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_async_integration_test.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "有界队列/显式Go context诊断ID传播和生命周期已实现，20轮race验证；Java全局Reactor钩子由显式context替代，真实业务/应用调用点仍待装配，不能verified。"
+      "note": "1/2并发/32队列/60秒空闲退出、拒绝丢弃/排空/停止已接Foundation；真实HTTP到后台链及五角色退出通过。摘要/记忆等业务调用点按P4/P5实现，不用内存队列替代持久Worker。"
     },
     "file:backend/src/main/java/com/personalos/common/web/MdcPropagatingExecutor.java": {
       "status": "in_progress",
@@ -2092,9 +2137,12 @@
         "backend-go/internal/platform/taskexec/executor_test.go",
         "backend-go/internal/platform/http/request_id.go",
         "backend-go/internal/platform/http/request_id_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_async_integration_test.go",
+        "backend-go/internal/platform/observability/logging_test.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "有界队列/显式Go context诊断ID传播和生命周期已实现，20轮race验证；Java全局Reactor钩子由显式context替代，真实业务/应用调用点仍待装配，不能verified。"
+      "note": "Go显式context替代MDC，20轮race验证队列/传播/生命周期；Foundation真实HTTP到执行器只复制requestId、不继承HTTP取消/身份/私有值，错误/panic与ECS日志传播通过。业务摘要/记忆调用点待P4/P5，不提前verified。"
     },
     "file:backend/src/main/java/com/personalos/common/web/MdcSchedulerHook.java": {
       "status": "in_progress",
@@ -2215,9 +2263,11 @@
         "backend-go/internal/platform/http/multipart_test.go",
         "backend-go/internal/app/foundation_multipart_oracle_test.go",
         "backend-go/internal/platform/config/multipart.go",
-        "backend-go/internal/platform/config/multipart_test.go"
+        "backend-go/internal/platform/config/multipart_test.go",
+        "backend-go/internal/platform/http/servlet_boundary.go",
+        "specs/033-go-rewrite/p1-foundation-contract.md"
       ],
-      "note": "真实Java处理器36响应与Go边界逐项对照；业务错误和资源自定义/空文案保留，日志脱敏与已提交HTTP响应保护通过。完整Servlet/业务调用点装配尚未完成。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。"
+      "note": "真实原处理器36响应及844Servlet基础HTTP对照通过，Foundation已接异常边界/HEAD/panic/已提交SSE中止与日志脱敏。明确区分容器HTML、框架JSON和业务信封；未来DTO/业务异常按所属阶段继续验证。"
     },
     "file:backend/src/main/java/com/personalos/common/exception/BusinessException.java": {
       "status": "implemented",
@@ -2508,9 +2558,14 @@
         "backend-go/internal/app/actuator_health.go",
         "backend-go/internal/platform/config/actuator.go",
         "backend-go/internal/platform/config/actuator_test.go",
-        "backend-go/internal/app/foundation_http_oracle_test.go"
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "backend-go/internal/app/http_metrics.go",
+        "backend-go/internal/app/http_metrics_test.go",
+        "scripts/migration/smoke_go_foundation.py",
+        "specs/033-go-rewrite/p1-foundation-contract.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": " monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。 T106d: 真实Servlet夹具扩展220例全部对照通过，修正业务/管理健康与信息、分组/媒体类型及详情权限；不是完整Micrometer或通用框架验收。"
+      "note": "monitoring独立管理监听器仅精确GET health/prometheus，HEAD/业务路径拒绝；844真实基础HTTP对照与TLS双端口/五角色进程通过。实际HTTP timer/histogram/限流指标/Go运行指标已接，不伪造JVM；生产代理与dashboard仍属P8。"
     },
     "file:backend/src/main/java/com/personalos/common/json/JsonCodec.java": {
       "status": "in_progress",

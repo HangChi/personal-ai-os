@@ -364,11 +364,11 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 
 ## 未执行 / 尚未实现
 
-- Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。
+- Java全量Maven回归已在最终收口重跑通过，1137测试及原覆盖率门禁全过；前端类型与生产构建通过，未修改原Java/前端实现。前端全量业务兼容和端到端测试属于P8。
 - 已有一次性 PostgreSQL 驱动/事务集成；Java/Go 业务差分及其他真实第三方设施集成尚未执行。
 - 没有迁移现有数据库、模型密钥、附件、Redis 会话、RabbitMQ/OpenSearch/S3 数据。
 - 没有替换本地运行实例、推送分支、合并 main 或执行部署。
-- 全部业务模块和路由迁移、完整配置/认证/安全/持久化/模型/后台任务均未完成。
+- P1基础运行时、配置/认证/安全/观测已按契约完成；P2–P8业务路由、业务持久化/模型/后台任务及生产切换未完成。
 - `check-complete` 当前必须失败；最终验收依赖 tasks.md 的 P1–P8 和五项发布门禁。
 
 ## 证据边界
@@ -392,3 +392,30 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 - `run_go_postgres_tests.py --tls --backup --baseline --package migration`通过，含42真实迁移/历史/锁/七类DDL/恢复与真实默认V1基线。日志：`/private/tmp/personal-ai-os-p1-final-migration.log`。
 - 平台auth/config/http/observability race通过；14个Python索引/台账反例测试通过。日志：`/private/tmp/personal-ai-os-p1-final-platform.log`及`/private/tmp/personal-ai-os-p1-final-python.log`。
 
+
+## P1最终总验收（2026-11-03）
+
+结论：P1全部父任务T100–T109及子项共60项完成，P1内无剩余项。支持/拒绝及后续阶段边界固定在[p1-foundation-contract.md](p1-foundation-contract.md)，缺口关闭证据见[p1-remaining.md](p1-remaining.md)。前文记录各批次当时结果，最终状态以本节为准。
+
+| 验收 | 最终实际结果 |
+| --- | --- |
+| Go `test -race ./...` | 15包全部通过；app 95.289s、auth 34.517s。缓存仅用于未变包；本轮新改包实际执行。日志`/private/tmp/personal-ai-os-p1-final-race.log` |
+| Go integration标签 `vet ./...`、`build ./...` | 全部通过，未跳过包或降低检查 |
+| `run_go_redis_tests.py --tls --backup --package app --package command` | app完整race通过101.762s、command 4.229s；真实TLS PostgreSQL/Redis/专用ACL、恢复库五角色、TCP分区恢复、不确定COMMIT、HTTP/执行器链与指标通过。race真实二进制五角色/双端口/跨OS共享会话预算/ECS日志/histogram/SIGTERM/失败清理通过。日志`/private/tmp/personal-ai-os-p1-final-foundation.log` |
+| `run_go_postgres_tests.py --tls --backup --baseline --package migration` | 2.640s通过；42原SQL、真实Flyway历史/锁竞争、七类DDL、合成恢复全行列摘要/10序列、默认V1基线通过。日志`/private/tmp/personal-ai-os-p1-final-migration.log` |
+| `java_foundation_http_fixture.py`（默认比较） | 重新运行原Servlet并核对844基础HTTP场景通过；原7安全头、50分片/512字节头边界及CSRF multipart框架413均保留，不是从Go实现反推期望 |
+| `java_http_metrics_fixture.py`（默认比较） | 原Spring约定160标签场景与Micrometer默认68有限桶通过 |
+| 配置台账与Python边界测试 | 78直接配置调用方/动态键无遗漏，动态集合由固定Java源码展开后逐项相等核对；14个测试通过，覆盖未知来源/缺证据及三个动态来源各删除一项的反例；全部12类record的67字段另有真实Binder证据 |
+| 原Java `./mvnw -o -B -Dapp.dotenv.enabled=false verify` | 最小子进程环境、禁dotenv、独立Testcontainers，退出0/BUILD SUCCESS，4m47s；1137 tests、0 failures、0 errors、0 skipped。JaCoCo行85.6013%、分支69.6224%，原83%/65%门禁通过。日志`/private/tmp/personal-ai-os-p1-final-java.log` |
+| 前端 `npm run type-check`、`npm run build` | 最小子进程环境两项退出0，未改前端；日志`/private/tmp/personal-ai-os-p1-final-frontend.log` |
+| 固定基线/进度检查 | 1093文件、104路由、27工具、95钩子、1119测试声明通过；只更新16个具体来源的证据/当前说明，保留原状态及全部五发布门禁 |
+
+Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退出提示；Maven目标最终退出0，1137测试/覆盖率门禁全部通过。未为消除此提示修改Java或测试设置，未将其当成Go生产退出证据；Go退出有独立进程验收。
+
+所有Go集成只操作runner自己的随机临时容器、测试证书和合成数据，已finally清理。Java全量测试使用原Testcontainers资源，未读取真实.env/沿用模型凭据/改现有服务。未执行容器全局prune或删除现有Compose资源。
+
+配置处置脚本/JSON/Markdown及P1契约同时提交；台账是按来源逐条决策，不是将deferred业务视为实现。未支持的框架扩展在创建外部资源前拒绝。Bootstrap/迁移属主/P1运行账号的权限说明、public/default-V1历史边界及Go/JVM指标差异已记录。
+
+严格`check-complete`最终仍退出1，2438条未verified、五发布门禁未通过：这是P2–P8全量迁移门禁的预期拒绝，不降低或批量改状态以让它变绿。P2及以后未勾选、未启动；默认回环/prod拒绝/readyz503继续保留。未推送、合并或部署。
+
+本轮分批提交：`73895e5`上传/会话/恢复库装配，`140e148`HTTP流观测/日志/Servlet安全边界，随后本次文档/配置台账/最终验收提交。Java/前端/原SQL基线无修改。

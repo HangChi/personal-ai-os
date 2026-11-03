@@ -16,10 +16,10 @@ python3 scripts/migration/java_bcrypt_fixture.py
 
 - 顺序为路径检查 → 会话读取 → CSRF → 认证 → 认证控制器/业务处理器。
 - 支持 `/api/v1/auth/login`、`logout`、`me`、`csrf`；me 的匿名结果仍是 200 + username:null。开启认证时，公共白名单以外的全部路径都要求身份。
-- 登录换掉会话 ID 并丢弃原 CSRF，注销删除服务端状态和客户端 Cookie。Cookie 为 HttpOnly、SameSite Lax 和可配置 Secure；本地名称 JSESSIONID，共享存储调用方使用 SESSION。
+- 登录换掉会话 ID 并丢弃原 CSRF，注销删除服务端状态和客户端 Cookie。本地Cookie默认HttpOnly/SameSite Lax/JSESSIONID，可配置名称/路径/域/HttpOnly/SameSite/Secure和会话timeout；注销使用同一Cookie属性。共享模式保持原固定SESSION/Lax/HttpOnly/30分钟，Secure沿用canonical配置，未消费的Servlet扩展显式拒绝。
 - CSRF 与认证开关独立，支持头部和 `_csrf` 参数/表单；`/mcp` 及子路径只免 CSRF。下游身份通过 `CurrentUsername(ctx)` 获取，不使用全局安全上下文。
-- JSON/表单读取上限 10 MiB。重复 Cookie 与歧义路径明确拒绝。完整媒体类型、字段强制转换、校验错误排序与 Servlet 防火墙差分仍待 T106。
+- JSON/表单读取上限 10 MiB。重复 Cookie 与歧义路径明确拒绝。媒体类型/字符集、String标量绑定、校验及Servlet路径/方法/安全头已在844个基础HTTP场景对照；未来业务DTO随所属阶段验证。
 
 `RedisStore` 使用调用方显式创建的专用 `redisclient.Client`，以 Lua 实现相同原子操作，读续期、首次 CSRF 保留原 TTL；故障向上传递，不回退内存。默认会话超时仍由调用方传入。命名空间强制附加 `:go:v1:session:`，不读取/改写 Spring Session 二进制值；切换至 Go 后需要重新登录。
 
-真实回环HTTP/CookieJar验证登录/轮换/CSRF/注销；专用Redis验证两个HTTP实例和独立OS进程共享、TTL、并发、TLS/最小ACL与真实TCP分区恢复。脚本`python3 scripts/migration/run_go_redis_tests.py --tls --package app --package command`只连接自建临时容器，finally清理自身资源。基础应用接线已完成，完整配置、multipart正文token生命周期及剩余Servlet边界仍见[P1剩余项](../../../../specs/033-go-rewrite/p1-remaining.md)。诊断模式仍拒绝认证/生产开关，基础模式允许已实现认证/CSRF但生产继续拒绝；不代表T105或整个Java文件verified。
+真实回环HTTP/CookieJar验证登录/轮换/CSRF/注销；专用Redis验证两个HTTP实例和独立OS进程共享、TTL、并发、TLS/最小ACL与真实TCP分区恢复。脚本`python3 scripts/migration/run_go_redis_tests.py --tls --package app --package command`只连接自建临时容器，finally清理自身资源。基础应用、会话配置、统一multipart正文token生命周期和Servlet基础边界均已接线验收，详见[P1契约](../../../../specs/033-go-rewrite/p1-foundation-contract.md)。诊断模式仍拒绝认证/生产开关，基础模式允许已实现认证/CSRF但生产继续拒绝；不代表整个Java文件已verified或五个发布门禁通过。

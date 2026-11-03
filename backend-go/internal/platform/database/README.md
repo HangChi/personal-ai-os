@@ -1,12 +1,12 @@
 # 数据库事务基础（P1 子集）
 
-使用 Go 标准库 `database/sql` 管理连接池，真实连接器锁定 `github.com/jackc/pgx/v5 v5.12.0`。`Open` 必须接收调用方显式提供的 `driver.Connector`；没有默认 DSN、全局数据库或自动迁移，也尚未接入应用入口。依赖许可证见 [第三方声明](../../../THIRD_PARTY_NOTICES.md)。
+使用 Go 标准库 `database/sql` 管理连接池，真实连接器锁定 `github.com/jackc/pgx/v5 v5.12.0`。`Open` 必须接收调用方显式提供的 `driver.Connector`；没有默认 DSN、全局数据库或自动迁移，已接显式Foundation，默认离线诊断不连接。依赖许可证见 [第三方声明](../../../THIRD_PARTY_NOTICES.md)。
 
 ## 显式 PostgreSQL 连接器
 
 `NewPostgresConnector` 只构造连接器，`Open` 才会发起连接。必须显式传入主机、端口、数据库、用户和密码；应用名默认为 personalos-go，连接期限为 5 秒。拒绝任意 DSN、socket、多主机和隐式 PG* 环境；不读取 .pgpass、service 或客户端证书文件，不修改进程全局环境。
 
-默认 `verify-full` 校验证书链和主机名，最低 TLS 1.2，可显式传入根证书。`disable` 只允许回环测试主机；不支持 require/prefer 或静默明文回退。这是有意受限的显式配置子集，完整 Java 数据源配置仍待迁移。连接器与选项的普通/Go/JSON 格式化均脱敏。
+默认 `verify-full` 校验证书链和主机名，最低 TLS 1.2，可显式传入根证书。`disable` 只允许回环测试主机；不支持 require/prefer 或静默明文回退。这是有意受限的显式配置子集，canonical受限JDBC/池上限/等待已装配，其他数据源扩展在连接前明确拒绝，见[P1契约](../../../../specs/033-go-rewrite/p1-foundation-contract.md)。连接器与选项的普通/Go/JSON 格式化均脱敏。
 
 会话时区固定 UTC，timestamptz 二进制扫描也显式使用 UTC。临时自建 CA 的真实 PostgreSQL 已验证 TLS 1.2/1.3、受信根与主机名成功、未知 CA/错误主机名和明文连接拒绝。
 
@@ -17,7 +17,7 @@
 - `Open` 校验选项、设置边界并实际 `Ping`；失败关闭新池，不返回半初始化资源。Connector 必须遵守 context，才能保证网络握手也受期限约束。
 - `WithConn` 只在获取连接时使用短 context。回调中的 SQL 使用调用方 context，不会被已取消的获取 context 立即终止。
 - 正常、错误、panic 路径都归还连接；Rows/连接不得逃逸出回调，回调不能留下未结束事务。
-- 停止服务时先取消/等待所有 Worker 与请求，再调用幂等 `Close`。尚未完成应用生命周期装配。
+- 停止服务时先取消/等待所有 Worker 与请求，再调用幂等 `Close`。Foundation已按此顺序装配，并验证正常/超时/失败清理。
 
 ## 事务
 
@@ -39,4 +39,4 @@
 
 `python3 scripts/migration/run_go_postgres_tests.py --tls` 使用临时 CA/服务端证书，拒绝明文，全部五个数据库集成包在 TLS 下复验。`postgres_security_integration_test.go` 在本次集群创建无管理权限的账号，仅授独立探针 schema 的 USAGE、单表 DML 和 identity 序列权限；验证中文/emoji 事务读写以及建库/建角色/DDL/读未授权表/自提超级用户全部拒绝。该探针不代表完整 42 个迁移后的部署权限已验收。
 
-全部 42 个原 SQL 的空库/合成数据重放与 pgvector/schema/触发器测试另见 [migration](../migration/README.md)。待完成：完整数据库配置、全部业务 schema 最小权限角色、应用装配、真实 Flyway 历史/锁与存量备份恢复、跨连接故障回归、生产优雅关闭。
+全部 42 个原 SQL 的空库/合成数据重放与 pgvector/schema/触发器测试另见 [migration](../migration/README.md)。Foundation已通过全42迁移schema的P1最小权限、真实Flyway历史/锁、合成恢复库启动、TLS网络分区/恢复、不确定COMMIT与进程退出；全部业务表权限按P2以后逐项追加，真实用户备份/生产切换仍属P8。

@@ -1,8 +1,8 @@
-# 原 SQL 目录与隔离重放（P1 子集）
+# 原 SQL、历史与隔离恢复
 
 `LoadVersioned(fs.FS)` 只读取显式目录，按整数版本排序并计算原字节 SHA-256。当前支持原 Java 的单层 V1..Vn 文件；重复、缺号、非整数版本、repeatable/undo、符号链接/子目录、不可读、空白或非法 UTF-8/NUL 全部失败，不返回部分成功结果。非 SQL 普通文件可忽略。SQL 不拆分、不插值、不改换行或编码。
 
-目录单测逐一对照固定 Java 基线 cb5d694 的 inventory.json，必须包含全部 42 个原文件且哈希一致。当前不复制 SQL 到 Go，也没有Go生产迁移执行器或应用启动装配。SHA-256 是来源完整性证据，**不是 Flyway checksum**。
+目录单测逐一对照固定 Java 基线 cb5d694 的 inventory.json，必须包含全部 42 个原文件且哈希一致。当前不复制SQL到Go；Foundation启动只读校验历史，不提供Go生产迁移执行器。SHA-256 是来源完整性证据，**不是 Flyway checksum**。
 
 ## 真实隔离验收
 
@@ -21,9 +21,9 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 验收核对最终全部 39 张表、13 个用户触发器、vector/hstore/uuid-ossp/pgcrypto 扩展、两处 vector(1024) 和两个 HNSW 余弦索引。执行状态 CHECK、序号唯一、外键/级联、单会话 RUNNING 唯一与 WAITING_USER 兼容断言；实际向量写入/余弦查询和错误维度拒绝；V35–V42 的文档来源初始化、修订/审查重试重置、搜索 claim 重置、事务内唤醒 Outbox 和候选代数更新。失败事务不得残留业务/唤醒记录。
 
-## 待完成
+## 支持与发布边界
 
-生产部署迁移角色、未支持的历史标记、真实用户备份恢复、对象属主/ACL/注释等结构边界仍未完成。合成历史数据不是用户备份。以上 schema/触发器断言不代表业务仓储、索引 Worker、消息发布或完整模块已迁移；T103 与 P1 保持未完成。
+bootstrap/迁移属主/P1运行账号的职责与权限见[P1契约](../../../../specs/033-go-rewrite/p1-foundation-contract.md)。未支持的schema/历史标记显式拒绝；真实用户备份、跨版本恢复、对象属主/ACL/注释与业务数据验收属于P8。以上合成数据/schema证据不代表业务仓储、索引Worker、消息发布已迁移。
 
 ## 真实 Flyway 历史与只读校验
 
@@ -34,9 +34,9 @@ python3 scripts/migration/run_go_postgres_tests.py --tls --flyway --package migr
 
 前者只离线执行基线Flyway的ChecksumCalculator，核对已提交42原脚本/12合成边界快照。后者仅在自己创建的临时集群使用基线Flyway12.4.0真实执行42迁移、自校验和二次零执行；不是Go伪造历史。需已有基线Maven依赖缓存及JDK，不下载新依赖。
 
-FlywayChecksum保留UTF-8/空白/注释，忽略CR/LF和开头单个BOM，返回有符号CRC32；原字节SHA-256仍是独立来源校验。NewHistoryValidator接收显式Pool/原目录/schema，只读repeatable-read检查标准历史表的成功SQL记录、顺序/整数版本/描述/脚本/checksum和数量；缺表/少项/多项/失败/null/checksum不符均失败，错误脱敏，不repair/clean/baseline。未支持的BASELINE/SCHEMA/repeatable/自定义类型也拒绝，不能据此声称原baseline-on-migrate标记兼容。
+FlywayChecksum保留UTF-8/空白/注释，忽略CR/LF和开头单个BOM，返回有符号CRC32；原字节SHA-256仍是独立来源校验。NewHistoryValidator接收显式Pool/原目录/schema，只读repeatable-read检查标准历史表的成功SQL记录、顺序/整数版本/描述/脚本/checksum和数量；缺表/少项/多项/失败/null/checksum不符均失败，错误脱敏，不repair/clean/baseline。默认拒绝BASELINE；显式接受的精确V1基线见下文，SCHEMA/repeatable/自定义标记仍拒绝。
 
-部署仍由Java或独立Flyway步骤独占迁移，之后Go校验。历史一致不等于实际DDL完全一致，不提供并发DDL授权或代替迁移锁；完整结构差分/恢复/锁竞争仍待验收。
+部署仍由Java或独立Flyway步骤独占迁移，之后Go校验。历史一致不等于实际DDL完全一致，不提供并发DDL授权或代替迁移锁；完整结构差分、合成恢复、双执行器锁竞争已通过下述验收。
 
 
 最新 --flyway 夹具由两个独立Flyway实例同时竞争，合计执行42迁移，validate/再次零执行通过。Go空重放与合成升级均和Java真实public比较七类pg_catalog定义，39表/287列/116约束/84索引/10序列/13触发器/9自有函数逐项一致；额外列的真实DDL反例被发现。比较只归一化schema限定符，排除Flyway自身历史/扩展拥有函数，不掩盖默认值/函数体/约束；属主ACL/注释/数据与未来对象类型不在本次结构证据内。

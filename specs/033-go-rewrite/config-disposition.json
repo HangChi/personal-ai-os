@@ -1,0 +1,1260 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "inventory_sha256": "d720a6d44d5d70e08ebd4c4e39d33f451c4aeb8ae06a0b7effc8e943dd123cbf",
+  "items": [
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java",
+      "line": 14,
+      "expression": "${app.web-push.enabled:false}",
+      "phase": "P5",
+      "task": "T505",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "Web Push密钥/开关/subject随真实浏览器订阅验收",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java",
+      "line": 15,
+      "expression": "${app.web-push.public-key:}",
+      "phase": "P5",
+      "task": "T505",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "Web Push密钥/开关/subject随真实浏览器订阅验收",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java",
+      "line": 16,
+      "expression": "${app.web-push.private-key:}",
+      "phase": "P5",
+      "task": "T505",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "Web Push密钥/开关/subject随真实浏览器订阅验收",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java",
+      "line": 17,
+      "expression": "${app.web-push.subject:}",
+      "phase": "P5",
+      "task": "T505",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "Web Push密钥/开关/subject随真实浏览器订阅验收",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java",
+      "line": 42,
+      "expression": "${app.reminders.webhook.url:}",
+      "phase": "P5",
+      "task": "T506",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "Webhook目的地址/签名/本地HTTP开关随真实投递迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java",
+      "line": 43,
+      "expression": "${app.reminders.webhook.secret:}",
+      "phase": "P5",
+      "task": "T506",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "Webhook目的地址/签名/本地HTTP开关随真实投递迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java",
+      "line": 44,
+      "expression": "${app.reminders.webhook.allow-local-http:false}",
+      "phase": "P5",
+      "task": "T506",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "Webhook目的地址/签名/本地HTTP开关随真实投递迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/service/ChatAttachmentJanitor.java",
+      "line": 56,
+      "expression": "${app.chat.attachment-janitor-enabled:true}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "附件清理开关随存储与孤儿清理迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/service/ChatAttachmentJanitor.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java",
+      "line": 58,
+      "expression": "${app.chat.upload-dir:data/uploads}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "持久目录与6MB业务限制；区别于已装配的8MB容器限制",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java",
+      "line": 59,
+      "expression": "${app.chat.max-attachment-bytes:6291456}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "持久目录与6MB业务限制；区别于已装配的8MB容器限制",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java",
+      "line": 138,
+      "expression": "${app.chat.stream-timeout:120s}",
+      "phase": "P4",
+      "task": "T404",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "流超时与取消随真实模型流迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 16,
+      "expression": "${app.storage.s3.endpoint}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 17,
+      "expression": "${app.storage.s3.region:us-east-1}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 18,
+      "expression": "${app.storage.s3.access-key:}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 19,
+      "expression": "${app.storage.s3.secret-key:}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 29,
+      "expression": "${app.storage.s3.bucket}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 30,
+      "expression": "${app.storage.s3.namespace}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 30,
+      "expression": "${app.storage.s3.cleanup:false}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 31,
+      "expression": "${app.chat.max-attachment-bytes:6291456}",
+      "phase": "P4",
+      "task": "T408",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/chat/support/SseHeartbeatScheduler.java",
+      "line": 63,
+      "expression": "${app.chat.heartbeat-interval:15s}",
+      "phase": "P4",
+      "task": "T404",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "心跳间隔随业务SSE调度；P1只完成通用HTTP流生命周期",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/chat/support/SseHeartbeatScheduler.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java",
+      "line": 14,
+      "expression": "${app.redis.uri}",
+      "phase": "P3",
+      "task": "T304",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "embedding共享缓存URI/命名空间/150ms超时；区别于P1两个专用Redis",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java",
+      "line": 15,
+      "expression": "${app.redis.timeout-ms:150}",
+      "phase": "P3",
+      "task": "T304",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "embedding共享缓存URI/命名空间/150ms超时；区别于P1两个专用Redis",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java",
+      "line": 21,
+      "expression": "${app.redis.namespace}",
+      "phase": "P3",
+      "task": "T304",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "embedding共享缓存URI/命名空间/150ms超时；区别于P1两个专用Redis",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 128,
+      "expression": "${spring.ai.openai.base-url:}",
+      "phase": "P3",
+      "task": "T300",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 129,
+      "expression": "${spring.ai.openai.api-key:}",
+      "phase": "P3",
+      "task": "T300",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 130,
+      "expression": "${spring.ai.openai.chat.model:}",
+      "phase": "P3",
+      "task": "T300",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 131,
+      "expression": "${spring.ai.openai.embedding.model:}",
+      "phase": "P3",
+      "task": "T300",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 132,
+      "expression": "${spring.ai.openai.chat.temperature:}",
+      "phase": "P3",
+      "task": "T300",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelKeyConverter.java",
+      "line": 24,
+      "expression": "${app.model-key-encryption-key:}",
+      "phase": "P3",
+      "task": "T301",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "密钥转换器不在P1中使用真实密钥或解密业务数据",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/config/ModelKeyConverter.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/auth/SecurityConfig.java",
+      "line": 64,
+      "expression": "${server.servlet.session.cookie.secure:false}",
+      "phase": "P1",
+      "task": "T105",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "Foundation安全链已读取canonical Secure/CSRF；保留历史spring/server路径差异",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/config/session.go",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_redis_integration_test.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/auth/SecurityConfig.java",
+      "line": 65,
+      "expression": "${app.security.csrf-enabled:false}",
+      "phase": "P1",
+      "task": "T105",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "Foundation安全链已读取canonical Secure/CSRF；保留历史spring/server路径差异",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/config/session.go",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_redis_integration_test.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/auth/SharedSessionConfig.java",
+      "line": 23,
+      "expression": "${app.shared-session.uri}",
+      "phase": "P1",
+      "task": "T105",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "独立Redis URI与Secure已装配；SESSION/Lax/HttpOnly/30分钟保持固定策略",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/config/session.go",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_redis_integration_test.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/auth/SharedSessionConfig.java",
+      "line": 49,
+      "expression": "${server.servlet.session.cookie.secure:false}",
+      "phase": "P1",
+      "task": "T105",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "独立Redis URI与Secure已装配；SESSION/Lax/HttpOnly/30分钟保持固定策略",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/config/session.go",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_redis_integration_test.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 11,
+      "expression": "${app.security.production-mode:false}",
+      "phase": "P1",
+      "task": "T104",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动",
+      "evidence": [
+        "backend-go/internal/platform/config/properties.go",
+        "backend-go/internal/platform/config/security_test.go",
+        "backend-go/internal/platform/config/properties_test.go",
+        "backend-go/cmd/personalos/startup.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 12,
+      "expression": "${app.auth.enabled:false}",
+      "phase": "P1",
+      "task": "T104",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动",
+      "evidence": [
+        "backend-go/internal/platform/config/properties.go",
+        "backend-go/internal/platform/config/security_test.go",
+        "backend-go/internal/platform/config/properties_test.go",
+        "backend-go/cmd/personalos/startup.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 13,
+      "expression": "${app.security.csrf-enabled:false}",
+      "phase": "P1",
+      "task": "T104",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动",
+      "evidence": [
+        "backend-go/internal/platform/config/properties.go",
+        "backend-go/internal/platform/config/security_test.go",
+        "backend-go/internal/platform/config/properties_test.go",
+        "backend-go/cmd/personalos/startup.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 14,
+      "expression": "${server.servlet.session.cookie.secure:false}",
+      "phase": "P1",
+      "task": "T104",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动",
+      "evidence": [
+        "backend-go/internal/platform/config/properties.go",
+        "backend-go/internal/platform/config/security_test.go",
+        "backend-go/internal/platform/config/properties_test.go",
+        "backend-go/cmd/personalos/startup.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 15,
+      "expression": "${app.auth.password:}",
+      "phase": "P1",
+      "task": "T104",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动",
+      "evidence": [
+        "backend-go/internal/platform/config/properties.go",
+        "backend-go/internal/platform/config/security_test.go",
+        "backend-go/internal/platform/config/properties_test.go",
+        "backend-go/cmd/personalos/startup.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 16,
+      "expression": "${spring.datasource.password:}",
+      "phase": "P1",
+      "task": "T104",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动",
+      "evidence": [
+        "backend-go/internal/platform/config/properties.go",
+        "backend-go/internal/platform/config/security_test.go",
+        "backend-go/internal/platform/config/properties_test.go",
+        "backend-go/cmd/personalos/startup.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/config/RuntimeRole.java",
+      "line": 11,
+      "expression": "${app.runtime.role:combined}",
+      "phase": "P1",
+      "task": "T108",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "五角色与profile/双端口/池上限已装配，业务Worker按所属阶段实现",
+      "evidence": [
+        "backend-go/internal/app/management.go",
+        "backend-go/internal/app/serve.go",
+        "scripts/migration/smoke_go_foundation.py"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java",
+      "line": 24,
+      "expression": "${app.retention.token-usage-days:0}",
+      "phase": "P8",
+      "task": "T801",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "用量/操作记录保留期与清理调度随运维生命周期验收",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java",
+      "line": 25,
+      "expression": "${app.retention.operation-record-days:0}",
+      "phase": "P8",
+      "task": "T801",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "用量/操作记录保留期与清理调度随运维生命周期验收",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/web/ModelConcurrencyGate.java",
+      "line": 15,
+      "expression": "${app.model-max-concurrent-requests:4}",
+      "phase": "P1",
+      "task": "T107",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "共享租约/角色API预留容量已装配，超100明确拒绝",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/redis.go",
+        "backend-go/internal/platform/modelgate/gate.go",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_network_integration_test.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/web/RedisRateBucket.java",
+      "line": 41,
+      "expression": "${app.rate-limit.redis.uri}",
+      "phase": "P1",
+      "task": "T107",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "独立URI/namespace、Lua/TIME/150ms/错误指标已装配",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/redis.go",
+        "backend-go/internal/platform/modelgate/gate.go",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_network_integration_test.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/common/web/RedisRateBucket.java",
+      "line": 42,
+      "expression": "${app.rate-limit.redis.namespace}",
+      "phase": "P1",
+      "task": "T107",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "独立URI/namespace、Lua/TIME/150ms/错误指标已装配",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/redis.go",
+        "backend-go/internal/platform/modelgate/gate.go",
+        "backend-go/internal/app/foundation.go",
+        "backend-go/internal/app/foundation_network_integration_test.go"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/governance/IngestionReviewWorker.java",
+      "line": 26,
+      "expression": "${app.knowledge.rag.evidence-timeout-ms:12000}",
+      "phase": "P6",
+      "task": "T606",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "证据超时随review租约与业务调度迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/governance/IngestionReviewWorker.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java",
+      "line": 53,
+      "expression": "${app.knowledge.jobs.enabled:true}",
+      "phase": "P6",
+      "task": "T602",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "索引任务开关随持久队列迁移，不启动空Worker",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java",
+      "line": 16,
+      "expression": "${app.rabbitmq.uri}",
+      "phase": "P6",
+      "task": "T604",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "Rabbit连接与durable队列随Outbox/信号迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java",
+      "line": 23,
+      "expression": "${app.rabbitmq.queue:personalos.knowledge.ready}",
+      "phase": "P6",
+      "task": "T604",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "Rabbit连接与durable队列随Outbox/信号迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/jobs/messaging/WorkSignalRelay.java",
+      "line": 32,
+      "expression": "${app.rabbitmq.queue:personalos.knowledge.ready}",
+      "phase": "P6",
+      "task": "T604",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "队列名随可靠信号重发迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/jobs/messaging/WorkSignalRelay.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java",
+      "line": 23,
+      "expression": "${app.knowledge.rag.reranker.endpoint:}",
+      "phase": "P6",
+      "task": "T605",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "reranker端点/凭据/模型/协议随真实协议适配迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java",
+      "line": 24,
+      "expression": "${app.knowledge.rag.reranker.api-key:}",
+      "phase": "P6",
+      "task": "T605",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "reranker端点/凭据/模型/协议随真实协议适配迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java",
+      "line": 24,
+      "expression": "${app.knowledge.rag.reranker.model:}",
+      "phase": "P6",
+      "task": "T605",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "reranker端点/凭据/模型/协议随真实协议适配迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java",
+      "line": 24,
+      "expression": "${app.knowledge.rag.reranker.protocol:cohere}",
+      "phase": "P6",
+      "task": "T605",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "reranker端点/凭据/模型/协议随真实协议适配迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
+      "line": 29,
+      "expression": "${app.knowledge.rag.enabled:true}",
+      "phase": "P6",
+      "task": "T605",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "RAG开关与总预算/证据预算随真实检索流水线迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
+      "line": 30,
+      "expression": "${app.knowledge.rag.budget-ms:20000}",
+      "phase": "P6",
+      "task": "T605",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "RAG开关与总预算/证据预算随真实检索流水线迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
+      "line": 36,
+      "expression": "${app.knowledge.rag.evidence-timeout-ms:12000}",
+      "phase": "P6",
+      "task": "T605",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "RAG开关与总预算/证据预算随真实检索流水线迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java",
+      "line": 15,
+      "expression": "${app.knowledge.search.endpoint:http://localhost:9200}",
+      "phase": "P6",
+      "task": "T603",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "可选OpenSearch端点/index/凭据随真实检索迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java",
+      "line": 16,
+      "expression": "${app.knowledge.search.index:personalos-chunks-v1}",
+      "phase": "P6",
+      "task": "T603",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "可选OpenSearch端点/index/凭据随真实检索迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java",
+      "line": 17,
+      "expression": "${app.knowledge.search.username:}",
+      "phase": "P6",
+      "task": "T603",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "可选OpenSearch端点/index/凭据随真实检索迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java",
+      "line": 17,
+      "expression": "${app.knowledge.search.password:}",
+      "phase": "P6",
+      "task": "T603",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "可选OpenSearch端点/index/凭据随真实检索迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java",
+      "line": 31,
+      "expression": "${app.redis.namespace}",
+      "phase": "P6",
+      "task": "T607",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "候选缓存namespace与全部动态配置指纹键随generation失效迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java",
+      "line": 41,
+      "expression": "${spring.ai.vectorstore.pgvector.table-name:vector_store}",
+      "phase": "P6",
+      "task": "T601",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "向量表/schema检查随向量仓储迁移；P1只验证原DDL",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java",
+      "line": 42,
+      "expression": "${spring.ai.vectorstore.pgvector.schema-name:public}",
+      "phase": "P6",
+      "task": "T601",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "向量表/schema检查随向量仓储迁移；P1只验证原DDL",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java",
+      "line": 40,
+      "expression": "${spring.ai.mcp.server.enabled:false}",
+      "phase": "P7",
+      "task": "T702",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "对外MCP开关/名称/版本/端点随协议入口迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java",
+      "line": 41,
+      "expression": "${spring.ai.mcp.server.name:personal-ai-os}",
+      "phase": "P7",
+      "task": "T702",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "对外MCP开关/名称/版本/端点随协议入口迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java",
+      "line": 42,
+      "expression": "${spring.ai.mcp.server.version:0.1.0}",
+      "phase": "P7",
+      "task": "T702",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "对外MCP开关/名称/版本/端点随协议入口迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java",
+      "line": 43,
+      "expression": "${spring.ai.mcp.server.streamable-http.mcp-endpoint:/mcp}",
+      "phase": "P7",
+      "task": "T702",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "对外MCP开关/名称/版本/端点随协议入口迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java",
+      "line": 51,
+      "expression": "${spring.ai.openai.embedding.model:}",
+      "phase": "P5",
+      "task": "T501",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "embedding模型名随记忆向量写入/回填迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java"
+      ]
+    },
+    {
+      "kind": "value_injections",
+      "path": "backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java",
+      "line": 52,
+      "expression": "${spring.ai.ollama.embedding.model:}",
+      "phase": "P5",
+      "task": "T501",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "embedding模型名随记忆向量写入/回填迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java"
+      ]
+    },
+    {
+      "kind": "property_lookups",
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java",
+      "line": 21,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "\"app.embedding-cache.enabled\", Boolean.class, false",
+      "literal_key": "app.embedding-cache.enabled",
+      "dynamic_key": false,
+      "phase": "P3",
+      "task": "T304",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "缓存开关/容量/TTL与指纹键随真实模型缓存迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java"
+      ]
+    },
+    {
+      "kind": "property_lookups",
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java",
+      "line": 22,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "\"app.embedding-cache.capacity\", Integer.class, 1000",
+      "literal_key": "app.embedding-cache.capacity",
+      "dynamic_key": false,
+      "phase": "P3",
+      "task": "T304",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "缓存开关/容量/TTL与指纹键随真实模型缓存迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java"
+      ]
+    },
+    {
+      "kind": "property_lookups",
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java",
+      "line": 23,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "\"app.embedding-cache.ttl\", Duration.class, Duration.ofMinutes(10)",
+      "literal_key": "app.embedding-cache.ttl",
+      "dynamic_key": false,
+      "phase": "P3",
+      "task": "T304",
+      "status": "deferred",
+      "dynamic_keys": [],
+      "note": "缓存开关/容量/TTL与指纹键随真实模型缓存迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java"
+      ]
+    },
+    {
+      "kind": "property_lookups",
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java",
+      "line": 28,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "key, \"\"",
+      "literal_key": null,
+      "dynamic_key": true,
+      "phase": "P3",
+      "task": "T304",
+      "status": "deferred",
+      "dynamic_keys": [
+        "spring.ai.model.embedding",
+        "spring.ai.openai.base-url",
+        "spring.ai.openai.embedding.model",
+        "spring.ai.ollama.base-url",
+        "spring.ai.ollama.embedding.model",
+        "app.embedding-cache.revision"
+      ],
+      "note": "缓存开关/容量/TTL与指纹键随真实模型缓存迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java"
+      ]
+    },
+    {
+      "kind": "property_lookups",
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 532,
+      "receiver": "environment",
+      "method": "getProperty",
+      "arguments": "key",
+      "literal_key": null,
+      "dynamic_key": true,
+      "phase": "P3",
+      "task": "T300",
+      "status": "deferred",
+      "dynamic_keys": [
+        "OPENAI_BASE_URL",
+        "OPENAI_API_KEY",
+        "OPENAI_CHAT_MODEL",
+        "OPENAI_EMBEDDING_MODEL"
+      ],
+      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+      ]
+    },
+    {
+      "kind": "property_lookups",
+      "path": "backend/src/main/java/com/personalos/common/auth/MonitoringSecurityConfig.java",
+      "line": 18,
+      "receiver": "environment",
+      "method": "getProperty",
+      "arguments": "\"local.management.port\", Integer.class, 9091",
+      "literal_key": "local.management.port",
+      "dynamic_key": false,
+      "phase": "P1",
+      "task": "T108",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "local.management.port由独立监听器结构保证；不依据用户Host/转发头授予管理权限",
+      "evidence": [
+        "backend-go/internal/app/management.go",
+        "backend-go/internal/app/serve.go",
+        "scripts/migration/smoke_go_foundation.py"
+      ]
+    },
+    {
+      "kind": "property_lookups",
+      "path": "backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java",
+      "line": 73,
+      "receiver": "environment",
+      "method": "getProperty",
+      "arguments": "\"app.dotenv.enabled\", Boolean.class, true",
+      "literal_key": "app.dotenv.enabled",
+      "dynamic_key": false,
+      "phase": "P1",
+      "task": "T104",
+      "status": "wired",
+      "dynamic_keys": [],
+      "note": "默认禁读；显式开关/来源优先级/晚于ConfigData已验证",
+      "evidence": [
+        "backend-go/internal/platform/config/properties.go",
+        "backend-go/internal/platform/config/security_test.go",
+        "backend-go/internal/platform/config/properties_test.go",
+        "backend-go/cmd/personalos/startup.go"
+      ]
+    },
+    {
+      "kind": "property_lookups",
+      "path": "backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java",
+      "line": 39,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "key, \"\"",
+      "literal_key": null,
+      "dynamic_key": true,
+      "phase": "P6",
+      "task": "T607",
+      "status": "deferred",
+      "dynamic_keys": [
+        "spring.ai.model.embedding",
+        "spring.ai.openai.base-url",
+        "spring.ai.openai.embedding.model",
+        "spring.ai.ollama.base-url",
+        "spring.ai.ollama.embedding.model",
+        "app.embedding-cache.revision",
+        "app.knowledge.search.endpoint",
+        "app.knowledge.search.index"
+      ],
+      "note": "候选缓存namespace与全部动态配置指纹键随generation失效迁移",
+      "evidence": [
+        "specs/033-go-rewrite/tasks.md",
+        "backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java"
+      ]
+    }
+  ]
+}
