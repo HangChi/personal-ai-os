@@ -10,4 +10,14 @@
 python3 scripts/migration/java_bcrypt_fixture.py
 ```
 
-当前尚未实现会话/Cookie/CSRF/共享 Redis 或应用接线；诊断应用继续拒绝启用认证/生产模式。基础凭据测试通过不代表 T105 或整个 Java 文件已 verified。
+`MemoryStore` 提供单进程会话，默认闲置 30 分钟，读操作续期。`SessionStore` 的四个原子操作避免 ID 冲突时误删旧会话、首次 CSRF 并发改写、注销后的旧请求重新保存身份。它不用于替代共享 Redis。
+
+`HTTP.Handler(next)` 是尚未挂载到应用的可组合安全入口：
+
+- 顺序为路径检查 → 会话读取 → CSRF → 认证 → 认证控制器/业务处理器。
+- 支持 `/api/v1/auth/login`、`logout`、`me`、`csrf`；me 的匿名结果仍是 200 + username:null。开启认证时，公共白名单以外的全部路径都要求身份。
+- 登录换掉会话 ID 并丢弃原 CSRF，注销删除服务端状态和客户端 Cookie。Cookie 为 HttpOnly、SameSite Lax 和可配置 Secure；本地名称 JSESSIONID，共享存储调用方使用 SESSION。
+- CSRF 与认证开关独立，支持头部和 `_csrf` 参数/表单；`/mcp` 及子路径只免 CSRF。下游身份通过 `CurrentUsername(ctx)` 获取，不使用全局安全上下文。
+- JSON/表单读取上限 10 MiB。重复 Cookie 与歧义路径明确拒绝。完整媒体类型、字段强制转换、校验错误排序与 Servlet 防火墙差分仍待 T106。
+
+真实回环 HTTP/CookieJar 已验证完整本地登录/换 ID/新 CSRF/注销过程；共享 Redis、配置与应用接线仍待完成。诊断应用继续拒绝启用认证/生产模式；基础子集测试通过不代表 T105 或整个 Java 文件已 verified。

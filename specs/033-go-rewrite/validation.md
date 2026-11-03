@@ -138,6 +138,14 @@ ConcurrencyMiddleware 对同一模型路径持有整段 ServeHTTP/SSE 许可；c
 
 离线 javac/java 直接执行基线 Spring Security 7.1.1 编码器，记录并核对 74 项合成密码结果，覆盖 Unicode/组合字符/NUL/空输入、71/72/>72 字节；Go bcrypt 2a/cost10 和校验结果全部一致。固定盐仅用于对照快照，运行时仍使用 crypto/rand。定向及全量十一包 race、含 integration 标签的 vet、二进制构建、go mod verify、1,093 文件基线和 diff 空白检查通过。全量认证/会话/CSRF/共享存储与真实应用仍未装配，T105 与发布门禁不升级为完成。
 
+## 增量：本地会话与认证 HTTP 边界（T105b）
+
+先写会话/HTTP 测试并确认待实现 API 编译失败，再实现 MemoryStore 和可组合安全处理器。定向 race 覆盖闲置续期/恰好到期、轮换旧 ID 失效/旧令牌丢弃、100 路首次 CSRF 只生成一个值、ID 冲突不删除旧会话、取消不写、过期/注销后 EnsureCSRF 不复活。
+
+HTTP 验证所有请求认证/公共路径、匿名 me、认证关闭不造假登录、登录失败/阈值下一次 42900、CSRF 在认证前 403、令牌绑定 Cookie/登录后变化、MCP 仍需认证、Secure/HttpOnly/Lax/path、注销删除 Cookie/null data、HEAD/405、表单/参数 token、重复 Cookie/歧义路径拒绝、后端失败 50000 和日志/响应脱敏。真实回环 HTTP+CookieJar 完成取 CSRF → 登录换 ID → 身份访问 → 新 CSRF → 注销 → 旧状态 401，未使用 Java 实例或用户数据。完整 Java Servlet/框架差分、Redis 与应用/真实任务和健康接口尚未装配，T105/P1 保持开放。
+
+全量十一包 race、含 integration 标签的 vet、二进制构建、四项 Python 索引测试、1,093 文件基线及 diff 空白检查通过。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

@@ -1095,6 +1095,138 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "原单元断言已以 Go 实现并通过 race；过期测试用可控时钟，未执行整个 Java/Go 应用差分，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/auth/AuthController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "独立 HTTP 处理器/本地会话已实现并以真实回环 CookieJar 验证登录轮换/注销/CSRF；全量内容协商、框架异常与应用接线待验，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/auth/CsrfController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "独立 HTTP 处理器/本地会话已实现并以真实回环 CookieJar 验证登录轮换/注销/CSRF；全量内容协商、框架异常与应用接线待验，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/auth/CurrentUserDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "独立 HTTP 处理器/本地会话已实现并以真实回环 CookieJar 验证登录轮换/注销/CSRF；全量内容协商、框架异常与应用接线待验，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/auth/LoginRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "独立 HTTP 处理器/本地会话已实现并以真实回环 CookieJar 验证登录轮换/注销/CSRF；全量内容协商、框架异常与应用接线待验，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/auth/SecurityConfig.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。"
+    },
+    "route:POST:/api/v1/auth/login:backend/src/main/java/com/personalos/common/auth/AuthController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "认证路由存在于独立可组合处理器，已验证本地会话和 CSRF；尚未挂载至诊断应用，真实 Java/Go 路由差分待验，不能 verified。"
+    },
+    "route:POST:/api/v1/auth/logout:backend/src/main/java/com/personalos/common/auth/AuthController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "认证路由存在于独立可组合处理器，已验证本地会话和 CSRF；尚未挂载至诊断应用，真实 Java/Go 路由差分待验，不能 verified。"
+    },
+    "route:GET:/api/v1/auth/me:backend/src/main/java/com/personalos/common/auth/AuthController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "认证路由存在于独立可组合处理器，已验证本地会话和 CSRF；尚未挂载至诊断应用，真实 Java/Go 路由差分待验，不能 verified。"
+    },
+    "route:GET:/api/v1/auth/csrf:backend/src/main/java/com/personalos/common/auth/CsrfController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "认证路由存在于独立可组合处理器，已验证本地会话和 CSRF；尚未挂载至诊断应用，真实 Java/Go 路由差分待验，不能 verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "认证相关 HTTP 子集与真实回环 CookieJar 已验证；真实健康/任务写入等业务断言和原测试完整运行尚未迁移，不能 verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/auth/AuthDisabledIntegrationTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "认证相关 HTTP 子集与真实回环 CookieJar 已验证；真实健康/任务写入等业务断言和原测试完整运行尚未迁移，不能 verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/auth/AuthLockoutIntegrationTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/auth/http.go",
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/session.go",
+        "backend-go/internal/platform/auth/session_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "认证相关 HTTP 子集与真实回环 CookieJar 已验证；真实健康/任务写入等业务断言和原测试完整运行尚未迁移，不能 verified。"
     }
   },
   "release_gates": {

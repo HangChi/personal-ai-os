@@ -13,7 +13,7 @@
 - `internal/platform/coordination`：数据库时钟租约、续租、fencing 与事务完成后释放；已通过真实 PostgreSQL 竞争/过期/实际定时续租，应用尚未装配，见 [说明](internal/platform/coordination/README.md)。
 - `internal/platform/modelgate`：模型本地/数据库共享并发与 Worker 的 API 预留容量；并发 HTTP 中间件持有整段 SSE 许可，真实应用尚未接线，见 [说明](internal/platform/modelgate/README.md)。
 - `internal/platform/ratelimit`：本地令牌桶、PostgreSQL 原子共享桶、后端选择/故障策略和指标回调；数据库跨池/跨进程竞争已验，Redis 与应用接线待完成，见 [边界说明](internal/platform/ratelimit/README.md)。
-- `internal/platform/auth`：单用户 BCrypt 凭据、Java 空白规则与失败锁定，74 项实际 Java 编码器对照；会话/CSRF/应用接线待完成，见 [边界说明](internal/platform/auth/README.md)。
+- `internal/platform/auth`：单用户 BCrypt/失败锁定、原子本地会话和登录/轮换/注销/me/CSRF 安全处理器；74 项实际 Java 密码对照及真实回环 CookieJar 已验证，共享 Redis/应用接线待完成，见 [边界说明](internal/platform/auth/README.md)。
 - `internal/platform/http`：请求 ID 校验/回显/context、模型请求路径匹配、限流拒绝 JSON 与日志脱敏；限流尚未接入诊断应用。
 - `internal/app`：迁移诊断端点、未知 API 明确返回 404、Worker 业务入口隔离。
 - `cmd/personalos`：回环监听、启动提示、信号处理和超时退出。
@@ -53,7 +53,7 @@ SERVER_PORT=8081 APP_RUNTIME_ROLE=api go run ./cmd/personalos
 
 支持 `SPRING_PROFILES_ACTIVE`/`SPRING_PROFILES_DEFAULT` 中现有运行角色 profile 的顺序覆盖，以及 `APP_RUNTIME_ROLE` 系统环境覆盖。这只是配置子集，尚无任意 YAML、命令行属性、动态 MCP 绑定和完整 145 个环境变量的装配。
 
-`prod`、`APP_SECURITY_PRODUCTION_MODE=true`、`AUTH_ENABLED=true` 或 `APP_SECURITY_CSRF_ENABLED=true` 会在监听前被拒绝。Java 的生产密码/开关校验已移植，但认证、会话与 CSRF 实现尚未完成，不能因校验通过而允许生产启动。
+`prod`、`APP_SECURITY_PRODUCTION_MODE=true`、`AUTH_ENABLED=true` 或 `APP_SECURITY_CSRF_ENABLED=true` 会在监听前被拒绝。Java 的生产密码/开关校验及本地认证安全子集已移植；完整共享会话、安全链与业务装配仍未验收，不能因子集通过而允许生产启动。
 
 端点 | 行为
 --- | ---

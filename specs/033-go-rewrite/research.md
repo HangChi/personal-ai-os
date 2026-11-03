@@ -108,3 +108,11 @@ Decision：固定实际下载的 golang.org/x/crypto v0.58.0，使用其 bcrypt 
 Service 不保留 Options 或明文，仅保留私有哈希；fmt/JSON 不公开凭据。配置拒绝非 UTF-8 的 Go 字符串；有效 Unicode 的 strip/isBlank 对齐 Java。Go duration 的范围小于 Java Duration，超范围配置应在未来绑定层明确拒绝。Verify 保留指针输入来区分 null 和空串。失败锁定使用互斥锁覆盖密码检查和状态变更，保持原串行规则并收紧原 AtomicInteger/volatile 组合下的并发窗口。锁定仍为每进程状态，与 Java 一致，不冒充多实例共享锁定。
 
 Alternatives considered：自写 BCrypt（增加密码学风险）；用 Go 自己生成期望值（无法独立验证 Java 兼容）；一律截断密码到 72 字节（配置超长会静默改变凭据）；保留完整配置对象（长期保留明文）。当前没有导入 Java 会话、启用认证或解除诊断应用的安全启动拒绝。
+
+## R-013 显式会话存储与 HTTP 安全顺序
+
+Decision：以 SessionStore 明确 Load（读且续期）、Rotate（新 ID 不冲突才删除旧 ID）、EnsureCSRF（只在活跃 ID 上首次写入）、Delete 四个原子操作。先实现真实单进程内存存储，默认 30 分钟闲置超时；不用将整个可变会话写回的 Save，防止注销后并发请求复活旧会话。CSRF 创建匿名会话，登录成功丢弃原会话全部属性并换 ID；令牌采用随机 UUIDv4，会话 ID 为 256 位随机 hex，均为前端不解释的 opaque 值。Java 原序列化会话不导入 Go，切换后须重新登录，共享 Redis 使用独立新命名空间。
+
+HTTP 按保守路径防火墙、会话读取、CSRF、认证、控制器顺序组合。保留所有公共路径、所有其他请求需认证、MCP 仅免 CSRF、401/403 JSON 和 me 的匿名 200。令牌支持 X-CSRF-TOKEN、_csrf query/urlencoded/multipart；表单读取最多 10 MiB，multipart 临时文件请求结束清理。Cookie 为 HttpOnly/SameSite Lax/显式 Secure，登录才签发身份会话。JSON 登录读取最多 10 MiB，拒绝重复 Cookie；这些 Go 明确边界及完整媒体类型/字段强制转换/验证错误排序/StrictHttpFirewall 响应仍需 T106 真服务差分。
+
+Alternatives considered：每请求全量 Save（会把过期或注销会话恢复）；登录复用匿名 ID（会话固定攻击）；CSRF 只保护已登录请求（遗漏登录 CSRF）；/mcp 绕过认证（原 Java 仅豁免 CSRF）；把内存会话装作共享 Redis（破坏跨实例注销）。未解除应用的生产/认证/CSRF 启动拒绝。
