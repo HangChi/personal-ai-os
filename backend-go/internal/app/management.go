@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/platform/config"
 	httpmiddleware "personal-ai-os/backend-go/internal/platform/http"
 	"personal-ai-os/backend-go/internal/platform/ratelimit"
@@ -45,6 +46,7 @@ func newManagementChain(actuator http.Handler, logger *slog.Logger) http.Handler
 // 标签固定为两个后端；不记录URI/请求/用户/异常。count/sum为无分位数summary，
 // 这是最小指标集，不代表完整Micrometer/Actuator运行时迁移。
 type foundationMetrics struct {
+	models                     *model.Module
 	mu                         sync.Mutex
 	counts                     [2]uint64
 	seconds                    [2]float64
@@ -103,6 +105,7 @@ func (m *foundationMetrics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "# TYPE personalos_rate_limit_errors_total counter")
 	fmt.Fprintf(w, "personalos_rate_limit_errors_total{backend=\"redis\"} %d\n", failures)
 	m.writeHTTPMetrics(w)
+	m.writeEmbeddingMetrics(w)
 }
 
 // ManagementHandler仅在monitoring有效profile下可用，必须挂到独立监听器。

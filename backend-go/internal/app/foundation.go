@@ -7,11 +7,13 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
 	"personal-ai-os/backend-go/internal/business/confirmation"
 	"personal-ai-os/backend-go/internal/business/idempotency"
+	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/business/task"
 	"personal-ai-os/backend-go/internal/platform/auth"
 	"personal-ai-os/backend-go/internal/platform/config"
@@ -38,6 +40,9 @@ type FoundationOptions struct {
 	Observer                ratelimit.Observer
 	Business                http.Handler
 	EnableP2                bool
+	EnableP3                bool
+	EmbeddingRedis          *redisclient.Client
+	ModelTransport          http.RoundTripper
 }
 
 func (FoundationOptions) String() string               { return "FoundationOptions{redacted}" }
@@ -46,23 +51,25 @@ func (FoundationOptions) MarshalJSON() ([]byte, error) { return []byte(`{"redact
 
 // Foundation是尚未发布的P1组合入口，不启动业务Worker，也不宣告迁移就绪。
 type Foundation struct {
-	pool        *database.Pool
-	coordinator *coordination.Coordinator
-	gate        *modelgate.Gate
-	executor    *taskexec.Executor
-	health      *health.Service
-	history     migration.HistoryStatus
-	handler     http.Handler
-	management  http.Handler
-	ctx         context.Context
-	cancel      context.CancelFunc
-	mu          sync.Mutex
-	closing     bool
-	served      bool
-	active      sync.WaitGroup
-	closeOnce   sync.Once
-	done        chan struct{}
-	closeErr    error
+	pool           *database.Pool
+	coordinator    *coordination.Coordinator
+	gate           *modelgate.Gate
+	executor       *taskexec.Executor
+	health         *health.Service
+	history        migration.HistoryStatus
+	handler        http.Handler
+	management     http.Handler
+	ctx            context.Context
+	cancel         context.CancelFunc
+	mu             sync.Mutex
+	closing        bool
+	served         bool
+	active         sync.WaitGroup
+	closeOnce      sync.Once
+	done           chan struct{}
+	closeErr       error
+	models         *model.Module
+	modelTransport *http.Transport
 }
 
 func (*Foundation) String() string     { return "Foundation{redacted}" }
@@ -165,6 +172,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	defer func() {
 		if err != nil {
 			f.cancel()
+			if f.modelTransport != nil {
+				f.modelTransport.CloseIdleConnections()
+			}
 			if f.coordinator != nil {
 				err = errors.Join(err, f.coordinator.Close(context.Background()))
 			}
@@ -213,8 +223,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if v := settings.App.Version(); v != nil {
 		version = *v
 	}
-	// P3模型运行时尚未接入，不能根据占位URI假装模型已配置。
-	if f.health, err = health.New(health.Options{Application: name, Version: version, ProbeTimeout: 5 * time.Second}, probe, func() bool { return false }, logger); err != nil {
+	if f.health, err = health.New(health.Options{Application: name, Version: version, ProbeTimeout: 5 * time.Second}, probe, func() bool { return f.models != nil && f.models.Runtime.Configured() }, logger); err != nil {
 		return nil, err
 	}
 	if f.executor, err = taskexec.New(taskexec.DefaultOptions(), logger); err != nil {
@@ -266,6 +275,33 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			return nil, taskErr
 		}
 	}
+	if options.EnableP3 {
+		if options.EmbeddingRedis != nil && (options.EmbeddingRedis == options.SessionRedis || options.EmbeddingRedis == options.RateRedis) {
+			return nil, errors.New("嵌入缓存必须使用专用Redis客户端")
+		}
+		transport := options.ModelTransport
+		if transport == nil {
+			f.modelTransport = model.NewTransport()
+			transport = f.modelTransport
+		}
+		f.models, err = model.OpenModule(ctx, pool, properties, transport, options.EmbeddingRedis, logger)
+		if err != nil {
+			return nil, err
+		}
+		previous := options.Business
+		metrics.models = f.models
+		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/api/v1/settings/model") || r.URL.Path == "/api/v1/chat/transcribe" || r.URL.Path == "/api/v1/chat/transcribe/status" {
+				f.models.Handler.ServeHTTP(w, r)
+				return
+			}
+			if previous != nil {
+				previous.ServeHTTP(w, r)
+				return
+			}
+			httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
+		})
+	}
 	var actuator http.Handler
 	if !settings.Monitoring {
 		actuator = newActuatorHandler(actuatorProperties, snapshot, metrics, logger)
@@ -288,6 +324,7 @@ func (f *Foundation) Pool() *database.Pool             { return f.pool }
 func (f *Foundation) ModelGate() *modelgate.Gate       { return f.gate }
 func (f *Foundation) Executor() *taskexec.Executor     { return f.executor }
 func (f *Foundation) History() migration.HistoryStatus { return f.history }
+func (f *Foundation) Models() *model.Module            { return f.models }
 
 func (f *Foundation) track(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -321,6 +358,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 		f.mu.Unlock()
 		go func() {
 			f.active.Wait()
+			if f.modelTransport != nil {
+				f.modelTransport.CloseIdleConnections()
+			}
 			f.executor.Shutdown()
 			_ = f.executor.Wait(context.Background())
 			f.closeErr = errors.Join(f.coordinator.Close(context.Background()), f.pool.Close())

@@ -95,11 +95,17 @@ func (m *foundationMetrics) metricSnapshot(suffix string, query url.Values) (any
 		if m.redisErrors > 0 {
 			names = append(names, rateErrorMetric)
 		}
+		for _, name := range m.embeddingMetricNames() {
+			names = append(names, name)
+		}
 		return struct {
 			Names []string `json:"names"`
 		}{names}, true, nil
 	}
 	name := strings.TrimPrefix(suffix, "/")
+	if strings.HasPrefix(name, "personalos.embedding.") {
+		return m.embeddingMetric(name, query)
+	}
 	if name == httpRequestMetric {
 		return m.httpMetricSnapshotLocked(query)
 	}

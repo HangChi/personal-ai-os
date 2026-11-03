@@ -168,7 +168,7 @@ func runFoundation(ctx context.Context, options commandOptions, system map[strin
 	if err != nil {
 		return err
 	}
-	var session, rate *redisclient.Client
+	var session, rate, embedding *redisclient.Client
 	var foundation *app.Foundation
 	defer func() {
 		if foundation != nil {
@@ -182,6 +182,9 @@ func runFoundation(ctx context.Context, options commandOptions, system map[strin
 		}
 		if rate != nil {
 			err = errors.Join(err, rate.Close())
+		}
+		if embedding != nil {
+			err = errors.Join(err, embedding.Close())
 		}
 		if session != nil {
 			err = errors.Join(err, session.Close())
@@ -199,11 +202,21 @@ func runFoundation(ctx context.Context, options commandOptions, system map[strin
 			return err
 		}
 	}
+	redisEnabled, _, redisErr := properties.Get("app.redis.enabled")
+	if redisErr != nil {
+		return redisErr
+	}
+	if strings.EqualFold(redisEnabled, "true") {
+		embedding, err = dedicatedRedis(properties, env, "app.redis", "GO_REDIS_EMBEDDING_ROOT_CERT")
+		if err != nil {
+			return err
+		}
+	}
 	pool := database.DefaultPoolOptions(settings.Role.Worker())
 	pool.MaxOpen, pool.MaxIdle, pool.ConnectionTimeout = runtime.PoolMaximum, runtime.PoolMaximum, runtime.PoolConnectionTimeout
 	foundation, err = app.OpenFoundation(ctx, properties, app.FoundationOptions{
 		Connector: connector, Migrations: os.DirFS(options.migrations), Schema: "public", AllowBaselineV1: options.allowBaselineV1,
-		Pool: &pool, SessionRedis: session, RateRedis: rate, EnableP2: true,
+		Pool: &pool, SessionRedis: session, RateRedis: rate, EmbeddingRedis: embedding, EnableP2: true, EnableP3: true,
 	}, logger)
 	if err != nil {
 		return err
