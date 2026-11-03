@@ -1,0 +1,4706 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "spring_boot": "4.1.1",
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/common/api/ApiResponse.java": "28667b149d0a3c059437086c4a561ab5c8f1154e0961d8999c03321cfac2297d",
+    "backend/src/main/java/com/personalos/common/api/ErrorCode.java": "6307f7c9616c1b84fbfe190614359005b553cb0ace569ac9d04cc5d552f7ff9b",
+    "backend/src/main/java/com/personalos/common/exception/BusinessException.java": "68a7f80359c4043ff1533c271d78c511b4d22537fe5bb9e80de6c04979736f92",
+    "backend/src/main/java/com/personalos/common/exception/ResourceNotFoundException.java": "1cfbb96093786de75e85c9f04a8226674ac1e5ae34ae191efde0e8082b386b5b",
+    "backend/src/main/java/com/personalos/common/exception/GlobalExceptionHandler.java": "4d5c909f18728d3995935cf302f810b32fc9aa6c9e5ae5ddefc8f19a98b56839",
+    "backend/src/main/java/com/personalos/common/auth/SecurityConfig.java": "5d33cf7f6dc00140dc2b46dd45cf32272fc9df890bd293fef6c1e84b5f240ba4",
+    "backend/src/main/java/com/personalos/common/auth/MonitoringSecurityConfig.java": "958cbcea10dd4c61d37f3390e3ba7f271ebfbfe17b1eeabfcad881ef26172af0",
+    "backend/src/main/java/com/personalos/common/auth/AuthController.java": "37022789e630fc6c51b3010c144e3dada9bdfcb20b1d504c2efe48b3336ffb11",
+    "backend/src/main/java/com/personalos/common/auth/CsrfController.java": "6e58606282df0f10e5ddbbc19b4d4e387631008aed2b5a345b2d8a55426e4d0d",
+    "backend/src/main/java/com/personalos/common/auth/AuthService.java": "3eaf451c4528d82f87fa45babc0e840bd5f41a7f54d8b145143e0221839083ad",
+    "backend/src/main/java/com/personalos/common/auth/AuthProperties.java": "e8f9177f681ee0483a496b8259679944dcd914a13ba5e34f61d43979f7f312b3",
+    "backend/src/main/java/com/personalos/common/auth/CurrentUserDto.java": "94cac4ba8b5f50aac4c12ff2037bd274912a0653715d117246dbd36f430c7f94",
+    "backend/src/main/java/com/personalos/common/auth/LoginRequest.java": "3822d3036e221469c149c281db5ccc9ba3a9536ce2318fa288dbfd45cde4b80c",
+    "backend/src/main/java/com/personalos/common/json/JsonCodec.java": "22022d0932e72c6c67ab34e1ccd21b8592bcfe1e5d4f678bf7e5fcb6a484038e"
+  },
+  "jars_sha256": {
+    "spring-boot-4.1.1.jar": "0d92b532b1d4020640e72d78c31af175c23db8e0ddd45b81855b7fdf4c9c70f0",
+    "spring-boot-autoconfigure-4.1.1.jar": "59228756ddd76cea050f95d86deff334789bc53b6688beaa673b1af2b9794592",
+    "spring-boot-servlet-4.1.1.jar": "4dcb156e311a4c1ad5f1ed7eabd94a78ea74510b05c429a4fcfdcf8beb9d5882",
+    "spring-boot-web-server-4.1.1.jar": "6912fb1fdf7f657a61ac050760fa835fb1e7496399291697e2901f82887a4fee",
+    "spring-boot-tomcat-4.1.1.jar": "17f65629e4eb3c979c0572b69b57d630bb12e64869e9d7520adddaa6734256b6",
+    "spring-boot-webmvc-4.1.1.jar": "9f08c1fb938c45a8693fec5f3065be3aca203948a7ab4d56b06444986f75a6b2",
+    "spring-boot-http-converter-4.1.1.jar": "52a167430a918c223b2ccd2eb62aff91a8e43e6daebe5a07caa37b9a04c61cb9",
+    "spring-boot-http-codec-4.1.1.jar": "fadc1a322454c68ad78e20c11002255e143bd991d3e619b952a3a5f542b5d0fd",
+    "spring-boot-jackson-4.1.1.jar": "69a9b4d8850a0532a5e44ff7306a03621485b26596e7f9481de7d28e68a2dd42",
+    "spring-boot-validation-4.1.1.jar": "c2546a81b6b7a39f51d889c99047f24567e4b28d1717fb53a65e9327cfc436f1",
+    "spring-boot-security-4.1.1.jar": "c940697be9bc67820d5011b86d58105836b7cae7c8fb5d4e61d635b51b392cbe",
+    "spring-boot-actuator-4.1.1.jar": "2bbb38417af25cfc6f57a9b01a85db9b6ccdcadb9e5d40f6b1b2f54a08f8b798",
+    "spring-boot-actuator-autoconfigure-4.1.1.jar": "bedbd4282a0f0c6a08bd5342d3940b50d8a013420d8a536695aedb1421b5e0f5",
+    "spring-boot-health-4.1.1.jar": "f60151e1f014b40761d0644be1cb04f82df7fc3e9b7bf6e946848547eec399e7",
+    "spring-boot-micrometer-metrics-4.1.1.jar": "70dd91dcc319d00998ce5e410b03b841e682aa2f60e4bab159c78ff0ecdb7d0f",
+    "spring-boot-micrometer-observation-4.1.1.jar": "09ebd9ff7de21d10b1f11c70ca0ea8766a8a727affd19642584bee5a314ea11a",
+    "spring-core-7.0.9.jar": "5195f4722699b39878d99a832549fe65df2890b159d063b88fff31b1ca65ae36",
+    "spring-beans-7.0.9.jar": "ff218b827a25c9e8929b0cd56dfb56916cea9d5b669ed97dc7cb262508ff548b",
+    "spring-context-7.0.9.jar": "7552a2fcfa30cea53eb14d7a65a7a8e1b1dd82e832a7164fb7e6fb105f438858",
+    "spring-expression-7.0.9.jar": "046434c40f43819729b9b1db0e6c659dfa68184c1c2c2efa5f7b3a5b27c4e2e2",
+    "spring-aop-7.0.9.jar": "b8c5d6bfcb1f4993f2cc124f7ab7fac40edf5256b9e43c2f7250a733cb5510e9",
+    "spring-web-7.0.9.jar": "941ced476427bde2533872f293da535fd0258de3f3a650a7f1bfe01ed2927302",
+    "spring-webmvc-7.0.9.jar": "8f114c1461692c5e534e82b27de23b7fb23370db8dee7ce0c92d5106906c9555",
+    "spring-tx-7.0.9.jar": "bfb15da6e096e2c0752e9db9987d2415bf0da1d744efc988535c10c6b6c2eedd",
+    "spring-security-core-7.1.1.jar": "98a5011baa78df36fb184e6ce0e8e086ca9a64fcdd8f161c0a96475a3a0907bd",
+    "spring-security-web-7.1.1.jar": "dece134a2332c976a2c94ecf13f816c64e8ea7f2139795485afe655fba0408f3",
+    "spring-security-config-7.1.1.jar": "1f947c853f14cab76563464ee22e72f6672f3913db52647d2f5d1df5f2b1e5a5",
+    "spring-security-crypto-7.1.1.jar": "6e8bb2337faccabd30626f917ed1d2bfa9dde982229b6b373b644d1a01635403",
+    "micrometer-core-1.17.1.jar": "9ca47dfa831409b40253c8dc98c17b9d3e050ebbde4d1543c5521dca2b95ad56",
+    "micrometer-commons-1.17.1.jar": "f2cee6ef046e72eec8128474c7f58c6217173b45ae373c30de0289f2a56ab0fd",
+    "micrometer-observation-1.17.1.jar": "eb34f0cd84a879393ae5c21160fc06385ccdc74f36a4d1e31b199f59acfdaf71",
+    "tomcat-embed-core-11.0.24.jar": "e7b966dcaac8c5ffa4f10e44031ebf5b71f2123560c08ac8b7120028615aea08",
+    "tomcat-embed-el-11.0.24.jar": "ad0546f12dace008aacce18ba13222137760b310ca719e173d3e13021b9af6c6",
+    "tomcat-embed-websocket-11.0.24.jar": "825160101f0da4a10e19b5730c2ae2f99f8c2c7a7211ac05562726c5e97ab91e",
+    "jackson-core-3.1.5.jar": "9431b7fa2673bbb618c11d865fe15e13222fd182a214ff998cb7e56afd8f35d2",
+    "jackson-databind-3.1.5.jar": "3a2338d996fd3056791df8d335fa9ba8a62a706ed4245ecf81b3e583df37d08a",
+    "jackson-annotations-2.21.jar": "53ca085f4a150f703f49e1aabd935bd03b43e1ea3d55d135438292af22cef56b",
+    "snakeyaml-2.6.jar": "c8f7a98e7394adda02f6317249710e4d1b4c7a25aa8c7eace0c2eea52eb8bf85",
+    "jakarta.annotation-api-3.0.0.jar": "b01f55552284cfb149411e64eabca75e942d26d2e1786b32914250e4330afaa2",
+    "jakarta.validation-api-3.1.1.jar": "63ce00156388c365f3ac1be71fcfaf114682fc0c452020b5df6e7ec236e142ab",
+    "hibernate-validator-9.1.3.Final.jar": "0497ebbe23fafe4180b74bd0b96a67eee8556552decc4d3c120c1dc737a2b5fb",
+    "jboss-logging-3.6.3.Final.jar": "7c12ee575508f81e22b1db9334b969d0ec54ef0fd1dcba24eeab1a44235fc366",
+    "classmate-1.7.3.jar": "75fbda45456f123fb6e2028a6189442d8d0730b357adce4c0a6d7e789f70669b",
+    "slf4j-api-2.0.18.jar": "44508fd1576500688c790b190acdd16fec4f8c79a3e0b900afd70503cf055f55",
+    "logback-core-1.5.38.jar": "a855a0fc97b1d06f4efb1c3bba5ebd0eb508d8b58e68e89e4bbc23a85135c883",
+    "logback-classic-1.5.38.jar": "afb439c61fa287c9e1925523b13baab03617e724406a389d48b61c2c3e46b700",
+    "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc",
+    "jspecify-1.0.1.jar": "070d75f261fe4c5b8202508366715f7f2d4660f88c8ef7e6d3575e48c9683b66"
+  },
+  "scope": "real embedded Servlet/Security/Jackson/Validator/Actuator with original foundation sources; synthetic auth and database HealthIndicator only",
+  "cases": [
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me",
+        "method": "GET",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-head",
+        "method": "HEAD",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-options",
+        "method": "OPTIONS",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "",
+        "allow": "GET,HEAD,OPTIONS",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-post",
+        "method": "POST",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-get",
+        "method": "GET",
+        "path": "/api/v1/auth/login"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 GET 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "missing",
+        "method": "GET",
+        "path": "/api/v1/missing"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "csrf",
+        "method": "GET",
+        "path": "/api/v1/auth/csrf"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "token": null,
+            "headerName": "X-CSRF-TOKEN"
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health",
+        "method": "GET",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-head",
+        "method": "HEAD",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-post",
+        "method": "POST",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "info",
+        "method": "GET",
+        "path": "/actuator/info"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {}
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-11",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-12",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "text/event-stream"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-13",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-14",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/*+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-15",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-16",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "*/*"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-17",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-valid",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-unknown",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\",\"extra\":42}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-case",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"USERNAME\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-number",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":123,\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-boolean",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":true,\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-array",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "[\"admin\",\"fixture-password\"]",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-null",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "null",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-broken",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-trailing",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"} {}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-missing-user",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-missing-password",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: password 密码不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-blank-user",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"　\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-null-password",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":null}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: password 密码不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-wrong",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"wrong\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-duplicate",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"wrong\",\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-33",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "text/plain",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-34",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/problem+json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-35",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json;charset=UTF-8",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-36",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json;charset=unsupported",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-37",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/xml",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-empty",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-no-type",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-no-csrf",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-bad-csrf",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true,
+        "badCsrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-accept",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "accept": "text/html",
+        "csrf": true
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-down",
+        "method": "GET",
+        "path": "/actuator/health",
+        "databaseDown": true
+      },
+      "response": {
+        "status": 503,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "DOWN"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-accept",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-html",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "management-health",
+        "method": "GET",
+        "path": "/actuator/health",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "management-head",
+        "method": "HEAD",
+        "path": "/actuator/health",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "management-subpath",
+        "method": "GET",
+        "path": "/actuator/health/db",
+        "management": true
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "management-business",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me",
+        "method": "GET",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-head",
+        "method": "HEAD",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-options",
+        "method": "OPTIONS",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "",
+        "allow": "GET,HEAD,OPTIONS",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-post",
+        "method": "POST",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-get",
+        "method": "GET",
+        "path": "/api/v1/auth/login"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 GET 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "missing",
+        "method": "GET",
+        "path": "/api/v1/missing"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "csrf",
+        "method": "GET",
+        "path": "/api/v1/auth/csrf"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "token": null,
+            "headerName": "X-CSRF-TOKEN"
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health",
+        "method": "GET",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-head",
+        "method": "HEAD",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-post",
+        "method": "POST",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "info",
+        "method": "GET",
+        "path": "/actuator/info"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-11",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-12",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "text/event-stream"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-13",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-14",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/*+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-15",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-16",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "*/*"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-17",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-valid",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-unknown",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\",\"extra\":42}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-case",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"USERNAME\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-number",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":123,\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "用户名或密码错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-boolean",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":true,\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "用户名或密码错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-array",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "[\"admin\",\"fixture-password\"]",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-null",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "null",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-broken",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-trailing",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"} {}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-missing-user",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-missing-password",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: password 密码不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-blank-user",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"　\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-null-password",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":null}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: password 密码不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-wrong",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"wrong\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "用户名或密码错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-duplicate",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"wrong\",\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-33",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "text/plain",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-34",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/problem+json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-35",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json;charset=UTF-8",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-36",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json;charset=unsupported",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-37",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/xml",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-empty",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-no-type",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-no-csrf",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-bad-csrf",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true,
+        "badCsrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "login-accept",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "accept": "text/html",
+        "csrf": true
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-down",
+        "method": "GET",
+        "path": "/actuator/health",
+        "databaseDown": true
+      },
+      "response": {
+        "status": 503,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "DOWN"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-accept",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-html",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "management-health",
+        "method": "GET",
+        "path": "/actuator/health",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "management-head",
+        "method": "HEAD",
+        "path": "/actuator/health",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "management-subpath",
+        "method": "GET",
+        "path": "/actuator/health/db",
+        "management": true
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "management-business",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me",
+        "method": "GET",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-head",
+        "method": "HEAD",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-options",
+        "method": "OPTIONS",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "",
+        "allow": "GET,HEAD,OPTIONS",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-post",
+        "method": "POST",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-get",
+        "method": "GET",
+        "path": "/api/v1/auth/login"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 GET 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "missing",
+        "method": "GET",
+        "path": "/api/v1/missing"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "csrf",
+        "method": "GET",
+        "path": "/api/v1/auth/csrf"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "token": "<generated>",
+            "headerName": "X-CSRF-TOKEN"
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health",
+        "method": "GET",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health-head",
+        "method": "HEAD",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health-post",
+        "method": "POST",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "info",
+        "method": "GET",
+        "path": "/actuator/info"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-11",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-12",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "text/event-stream"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-13",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-14",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/*+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-15",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-16",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "*/*"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-17",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-valid",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-unknown",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\",\"extra\":42}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-case",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"USERNAME\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-number",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":123,\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "用户名或密码错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-boolean",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":true,\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "用户名或密码错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-array",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "[\"admin\",\"fixture-password\"]",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-null",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "null",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-broken",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-trailing",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"} {}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-missing-user",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-missing-password",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: password 密码不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-blank-user",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"　\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-null-password",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":null}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: password 密码不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-wrong",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"wrong\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "用户名或密码错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-duplicate",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"wrong\",\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-33",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "text/plain",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-34",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/problem+json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-35",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json;charset=UTF-8",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-36",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json;charset=unsupported",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-media-37",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/xml",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-empty",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-no-type",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-no-csrf",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json"
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-bad-csrf",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true,
+        "badCsrf": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "login-accept",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "accept": "text/html",
+        "csrf": true
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health-down",
+        "method": "GET",
+        "path": "/actuator/health",
+        "databaseDown": true
+      },
+      "response": {
+        "status": 503,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "DOWN"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health-accept",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health-html",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "management-health",
+        "method": "GET",
+        "path": "/actuator/health",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "management-head",
+        "method": "HEAD",
+        "path": "/actuator/health",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "management-subpath",
+        "method": "GET",
+        "path": "/actuator/health/db",
+        "management": true
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "management-business",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me",
+        "method": "GET",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-head",
+        "method": "HEAD",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-options",
+        "method": "OPTIONS",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "",
+        "allow": "GET,HEAD,OPTIONS",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-post",
+        "method": "POST",
+        "path": "/api/v1/auth/me"
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-get",
+        "method": "GET",
+        "path": "/api/v1/auth/login"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 GET 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "missing",
+        "method": "GET",
+        "path": "/api/v1/missing"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "csrf",
+        "method": "GET",
+        "path": "/api/v1/auth/csrf"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "token": "<generated>",
+            "headerName": "X-CSRF-TOKEN"
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health",
+        "method": "GET",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-head",
+        "method": "HEAD",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-post",
+        "method": "POST",
+        "path": "/actuator/health"
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "info",
+        "method": "GET",
+        "path": "/actuator/info"
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "未登录或登录已过期",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-accept-11",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-accept-12",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "text/event-stream"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-accept-13",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-accept-14",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/*+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-accept-15",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-accept-16",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "*/*"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-accept-17",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-valid",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-unknown",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\",\"extra\":42}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-case",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"USERNAME\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-number",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":123,\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "用户名或密码错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-boolean",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":true,\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "用户名或密码错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-array",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "[\"admin\",\"fixture-password\"]",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-null",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "null",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-broken",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-trailing",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"} {}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-missing-user",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-missing-password",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: password 密码不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-blank-user",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"　\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: username 用户名不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-null-password",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":null}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: password 密码不能为空",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-wrong",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"wrong\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 401,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40100,
+          "message": "用户名或密码错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-duplicate",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"wrong\",\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-media-33",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "text/plain",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-media-34",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/problem+json",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-media-35",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json;charset=UTF-8",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": "admin",
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-media-36",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json;charset=unsupported",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-media-37",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/xml",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-empty",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "",
+        "contentType": "application/json",
+        "csrf": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-no-type",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "csrf": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-no-csrf",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json"
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-bad-csrf",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "csrf": true,
+        "badCsrf": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "login-accept",
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
+        "contentType": "application/json",
+        "accept": "text/html",
+        "csrf": true
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-down",
+        "method": "GET",
+        "path": "/actuator/health",
+        "databaseDown": true
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-accept",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-html",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "management-health",
+        "method": "GET",
+        "path": "/actuator/health",
+        "management": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "management-head",
+        "method": "HEAD",
+        "path": "/actuator/health",
+        "management": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "management-subpath",
+        "method": "GET",
+        "path": "/actuator/health/db",
+        "management": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "management-business",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "management": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    }
+  ]
+}

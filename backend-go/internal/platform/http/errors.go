@@ -186,15 +186,12 @@ func respondRequestError(w *responseState, r *http.Request, problem *requestProb
 		w.Header().Del(key)
 	}
 	w.Header().Set("Cache-Control", "no-store")
-	if problem.allow != "" {
-		w.Header().Set("Allow", problem.allow)
-	}
 	if r.Method == http.MethodHead {
-		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(problem.code.HTTPStatus())
 		return
 	}
-	if err := api.WriteJSON(w, problem.code.HTTPStatus(), api.FailureMessage(problem.code, problem.message)); err != nil {
+	if err := api.WriteControllerJSON(w, problem.code.HTTPStatus(), api.FailureMessage(problem.code, problem.message)); err != nil {
 		logger.Debug("错误响应写入中断", attributes...)
 	}
 }

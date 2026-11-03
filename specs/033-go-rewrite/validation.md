@@ -310,6 +310,12 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 
 缺少显式数据库、prod、无效迁移目录和管理端口被占用均启动失败，业务端口释放；最后查询 pg_stat_activity 确认 personalos-go 连接为0。日志检查未泄漏数据库/认证密码或 Redis URI。脚本 finally 清理自己的两个容器及证书。这里没有伪造模型/任务业务，也不代表网络分区/不确定提交/完整Servlet兼容或P1父任务完成。
 
+## 增量：真实 Servlet 认证 HTTP 差分（T106c）
+
+`java_foundation_http_fixture.py --write`首次启动缺少缓存jspecify依赖而失败，补入基线BOM精确版本后生成200个真实HTTP场景；随后默认重生成比较通过（/private/tmp/personal-ai-os-java-foundation-http-check.log）。使用原Auth/Security/JsonCodec/异常源码与真实Tomcat/Jackson/Hibernate Validator/Actuator，四模式仅合成凭据与数据库HealthIndicator，不加载真实配置或服务。
+
+先加入Go差分，确认156个Auth/未知路由场景失败（/private/tmp/personal-ai-os-go-http-oracle-red.log），再修正字段名大小写/标量转换、媒体类型/字符集/Accept、MVC与安全链Content-Type、405文案/响应头。156例逐项通过。全量14包race、integration标签vet/build通过（/private/tmp/personal-ai-os-go-servlet-all.log）；首次全量发现旧手写Allow断言与真实Java冲突，已按原处理器纠正后重跑通过。Actuator剩余44例尚未参与Go对照，不能将200例全部报为通过；完整multipart和未来业务DTO仍未完成。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

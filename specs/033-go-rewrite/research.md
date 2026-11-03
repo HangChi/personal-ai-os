@@ -310,3 +310,13 @@ Decision：默认命令继续离线诊断；--foundation 要求绝对原迁移�
 基线 Hikari maximum-pool-size 与 connection-timeout（long 毫秒）映射到自有池，Worker profile 的 4 与 API/combined 的 10 保留；0 代表的近乎无界等待和超 Go 时长范围明确拒绝，250ms 下界保留。未声称支持全部 Hikari 扩展参数/调度。退出宽限按 spring.lifecycle.timeout-per-shutdown-phase（默认30s）。专用 Redis URI 由原属性解析，两个客户端独立创建，根证书分别由 GO_REDIS_SESSION_ROOT_CERT/GO_REDIS_RATE_LIMIT_ROOT_CERT 显式绝对路径提供；应用退出后由主命令关闭，退出仍有在途任务时不提前关闭。
 
 Alternatives considered：默认直接连接 YAML 服务；复用旧配置绕开来源顺序；自动执行/修复 Flyway；共用全局 Redis 客户端；P1 通过就解禁生产。均未采用。本批只完成主入口接线/单测，真实 OS 进程与依赖验收单列。
+
+## R-035 真实 Servlet 认证链与 MVC 响应差分
+
+Decision：固定原 Auth/Security/异常/JsonCodec 源码，使用基线 Boot/BOM 精确版本的离线缓存依赖，在唯一临时目录启动真实嵌入式 Tomcat。StandardEnvironment 不包含宿主属性/环境，Java 子进程白名单排除工具选项注入；不扫描整个项目，不加载 DotEnv，不创建业务数据库或模型。四种认证/CSRF/monitoring 模式生成200个真实HTTP响应，原源码与所有jar均记录哈希。数据库健康只由明确的合成 HealthIndicator 提供，不冒充真实驱动。
+
+先对照其中156个Auth/未知路由场景，发现并修正：Jackson字段名区分大小写，而Go默认结构解码不区分；String允许数字/布尔标量；MVC返回application/json而安全EntryPoint/Denied返回带UTF-8；全局405返回具体方法文案且没有Allow（OPTIONS仍有）；不支持的请求媒体类型/字符集被原兜底异常映射为500；不兼容Accept为406，错误仍JSON。登录Accept协商发生在控制器副作用之后，不能提前改变登录/会话语义。保留原q=0仍兼容的框架行为。
+
+DecodeJSONObject只支持显式对象和逐字段String绑定，忽略未知字段、重复取最后、拒绝尾随对象；不假装是所有未来DTO的通用反射Binder。JSON请求保留已有10MiB安全上限，此上限不是Java任意JSON输入无界支持的证明。其余类型、完整multipart与Actuator尚待继续验证。
+
+Alternatives considered：手造期望响应；只直接调用异常方法；使用Go默认case-insensitive解码；按照理想HTTP语义改成415/q=0拒绝；在不验证时批量verified。均未采用。之前手写Allow断言随真实原全局处理器纠正，没有修改Java基线。

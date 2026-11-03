@@ -5,10 +5,8 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"mime"
 	"net/http"
@@ -16,6 +14,7 @@ import (
 	"time"
 
 	"personal-ai-os/backend-go/internal/platform/api"
+	httpmiddleware "personal-ai-os/backend-go/internal/platform/http"
 )
 
 type HTTPOptions struct {
@@ -219,8 +218,7 @@ func (layer *HTTP) dispatch(w http.ResponseWriter, r *http.Request, session *req
 	valid := r.Method == http.MethodPost && strings.HasPrefix(allowed, "POST") ||
 		(r.Method == http.MethodGet || r.Method == http.MethodHead) && strings.HasPrefix(allowed, "GET")
 	if !valid {
-		w.Header().Set("Allow", allowed)
-		layer.writeError(w, api.MethodNotAllowed, "")
+		layer.controllerError(w, api.MethodNotAllowed, "请求方法 "+r.Method+" 不被支持")
 		return true
 	}
 	switch path {
@@ -265,23 +263,28 @@ type csrfToken struct {
 }
 
 func (layer *HTTP) login(w http.ResponseWriter, r *http.Request, session *requestSession) {
-	media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
-	if err != nil || media != "application/json" && !(strings.HasPrefix(media, "application/") && strings.HasSuffix(media, "+json")) {
-		// 完整媒体类型/框架异常差分仍属 T106，此处明确拒绝非 JSON。
-		layer.writeError(w, api.ValidationFailed, "请求体格式错误，请检查 JSON 结构与字段类型")
-		return
-	}
-	var request *struct {
+	var request struct {
 		Username *string `json:"username"`
 		Password *string `json:"password"`
 	}
-	decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 10<<20))
-	if err := decoder.Decode(&request); err != nil || request == nil {
-		layer.writeError(w, api.ValidationFailed, "请求体格式错误，请检查 JSON 结构与字段类型")
-		return
-	}
-	if err := decoder.Decode(new(any)); err != io.EOF {
-		layer.writeError(w, api.ValidationFailed, "请求体格式错误，请检查 JSON 结构与字段类型")
+	// 分离绑定与后续副作用；只有绑定成功才进入凭据校验。
+	bound := false
+	decode := httpmiddleware.HandleErrors(func(w http.ResponseWriter, r *http.Request) error {
+		object, err := httpmiddleware.DecodeJSONObject(w, r, 10<<20)
+		if err != nil {
+			return err
+		}
+		if request.Username, err = httpmiddleware.JSONStringField(object, "username"); err != nil {
+			return err
+		}
+		if request.Password, err = httpmiddleware.JSONStringField(object, "password"); err != nil {
+			return err
+		}
+		bound = true
+		return nil
+	}, layer.logger)
+	decode.ServeHTTP(w, r)
+	if !bound {
 		return
 	}
 	var invalid []string
@@ -292,7 +295,7 @@ func (layer *HTTP) login(w http.ResponseWriter, r *http.Request, session *reques
 		invalid = append(invalid, "password 密码不能为空")
 	}
 	if len(invalid) > 0 {
-		layer.writeError(w, api.ValidationFailed, api.ValidationFailed.Message()+": "+strings.Join(invalid, "; "))
+		layer.controllerError(w, api.ValidationFailed, api.ValidationFailed.Message()+": "+strings.Join(invalid, "; "))
 		return
 	}
 	if !layer.service.Enabled() {
@@ -303,14 +306,14 @@ func (layer *HTTP) login(w http.ResponseWriter, r *http.Request, session *reques
 	if err != nil {
 		var locked *LockedError
 		if errors.As(err, &locked) {
-			layer.writeError(w, api.RateLimited, locked.Error())
+			layer.controllerError(w, api.RateLimited, locked.Error())
 		} else {
-			layer.writeError(w, api.InternalError, "")
+			layer.controllerError(w, api.InternalError, "")
 		}
 		return
 	}
 	if !ok {
-		layer.writeError(w, api.Unauthorized, "用户名或密码错误")
+		layer.controllerError(w, api.Unauthorized, "用户名或密码错误")
 		return
 	}
 	id, err := randomID()
@@ -328,13 +331,26 @@ func (layer *HTTP) login(w http.ResponseWriter, r *http.Request, session *reques
 }
 
 func (layer *HTTP) success(w http.ResponseWriter, r *http.Request, data any) {
+	if !httpmiddleware.JSONAcceptable(r.Header.Get("Accept")) {
+		layer.controllerError(w, api.NotAcceptable, "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept")
+		return
+	}
 	if r.Method == http.MethodHead {
-		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
 		return
 	}
-	if err := api.WriteJSON(w, http.StatusOK, api.OK(data)); err != nil {
+	if err := api.WriteControllerJSON(w, http.StatusOK, api.OK(data)); err != nil {
 		layer.logger.Error("写入认证响应失败")
+	}
+}
+
+func (layer *HTTP) controllerError(w http.ResponseWriter, code api.ErrorCode, message string) {
+	if message == "" {
+		message = code.Message()
+	}
+	if err := api.WriteControllerJSON(w, code.HTTPStatus(), api.FailureMessage(code, message)); err != nil {
+		layer.logger.Error("写入认证控制器错误响应失败")
 	}
 }
 func (layer *HTTP) writeError(w http.ResponseWriter, code api.ErrorCode, message string) {

@@ -33,12 +33,21 @@ func (response Response[T]) IsSuccess() bool { return response.Code == Success }
 // WriteJSON 先序列化再提交响应头，防止序列化失败留下“成功但半截”的响应。
 // 仅用于普通 JSON；SSE、导出和附件后续使用各自的协议写入器。
 func WriteJSON(w http.ResponseWriter, status int, value any) error {
+	return writeJSON(w, status, value, "application/json;charset=UTF-8")
+}
+
+// WriteControllerJSON 对齐 MVC/Jackson 的默认媒体类型；安全过滤器继续使用 WriteJSON。
+func WriteControllerJSON(w http.ResponseWriter, status int, value any) error {
+	return writeJSON(w, status, value, "application/json")
+}
+
+func writeJSON(w http.ResponseWriter, status int, value any, contentType string) error {
 	data, marshalErr := json.Marshal(value)
 	if marshalErr != nil {
 		status = http.StatusInternalServerError
 		data, _ = json.Marshal(Failure(InternalError))
 	}
-	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
 	_, writeErr := w.Write(append(data, '\n'))
 	return errors.Join(marshalErr, writeErr)

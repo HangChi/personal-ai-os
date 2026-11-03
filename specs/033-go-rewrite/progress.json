@@ -1711,9 +1711,14 @@
         "backend-go/internal/platform/auth/http_test.go",
         "backend-go/internal/platform/auth/session.go",
         "backend-go/internal/platform/auth/session_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/FoundationHttpOracle.java",
+        "scripts/migration/java_foundation_http_fixture.py",
+        "backend-go/internal/app/testdata/java-foundation-http.json",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "backend-go/internal/platform/http/json.go"
       ],
-      "note": "独立 HTTP 处理器/本地会话已实现并以真实回环 CookieJar 验证登录轮换/注销/CSRF；全量内容协商、框架异常与应用接线待验，不能 verified。"
+      "note": "独立 HTTP 处理器/本地会话已实现并以真实回环 CookieJar 验证登录轮换/注销/CSRF；全量内容协商、框架异常与应用接线待验，不能 verified。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。"
     },
     "file:backend/src/main/java/com/personalos/common/auth/CsrfController.java": {
       "status": "implemented",
@@ -1744,9 +1749,14 @@
         "backend-go/internal/platform/auth/http_test.go",
         "backend-go/internal/platform/auth/session.go",
         "backend-go/internal/platform/auth/session_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/FoundationHttpOracle.java",
+        "scripts/migration/java_foundation_http_fixture.py",
+        "backend-go/internal/app/testdata/java-foundation-http.json",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "backend-go/internal/platform/http/json.go"
       ],
-      "note": "独立 HTTP 处理器/本地会话已实现并以真实回环 CookieJar 验证登录轮换/注销/CSRF；全量内容协商、框架异常与应用接线待验，不能 verified。"
+      "note": "独立 HTTP 处理器/本地会话已实现并以真实回环 CookieJar 验证登录轮换/注销/CSRF；全量内容协商、框架异常与应用接线待验，不能 verified。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。"
     },
     "file:backend/src/main/java/com/personalos/common/auth/SecurityConfig.java": {
       "status": "in_progress",
@@ -1764,9 +1774,14 @@
         "backend-go/internal/platform/config/cookie_sources_test.go",
         "backend-go/internal/app/foundation.go",
         "backend-go/internal/app/foundation_http.go",
-        "backend-go/internal/app/foundation_postgres_integration_test.go"
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "scripts/migration/FoundationHttpOracle.java",
+        "scripts/migration/java_foundation_http_fixture.py",
+        "backend-go/internal/app/testdata/java-foundation-http.json",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "backend-go/internal/platform/http/json.go"
       ],
-      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
+      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。"
     },
     "route:POST:/api/v1/auth/login:backend/src/main/java/com/personalos/common/auth/AuthController.java": {
       "status": "implemented",
@@ -2163,9 +2178,14 @@
         "backend-go/internal/platform/http/testdata/java-exceptions.json",
         "scripts/migration/java_exception_fixture.py",
         "scripts/migration/ExceptionHandlerOracle.java",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/FoundationHttpOracle.java",
+        "scripts/migration/java_foundation_http_fixture.py",
+        "backend-go/internal/app/testdata/java-foundation-http.json",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "backend-go/internal/platform/http/json.go"
       ],
-      "note": "真实Java处理器36响应与Go边界逐项对照；业务错误和资源自定义/空文案保留，日志脱敏与已提交HTTP响应保护通过。完整Servlet/业务调用点装配尚未完成。"
+      "note": "真实Java处理器36响应与Go边界逐项对照；业务错误和资源自定义/空文案保留，日志脱敏与已提交HTTP响应保护通过。完整Servlet/业务调用点装配尚未完成。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。"
     },
     "file:backend/src/main/java/com/personalos/common/exception/BusinessException.java": {
       "status": "implemented",
@@ -2454,6 +2474,17 @@
         "backend-go/internal/app/foundation_postgres_integration_test.go"
       ],
       "note": " monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。"
+    },
+    "file:backend/src/main/java/com/personalos/common/json/JsonCodec.java": {
+      "status": "in_progress",
+      "evidence": [
+        "scripts/migration/FoundationHttpOracle.java",
+        "scripts/migration/java_foundation_http_fixture.py",
+        "backend-go/internal/app/testdata/java-foundation-http.json",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "backend-go/internal/platform/http/json.go"
+      ],
+      "note": " T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。"
     }
   },
   "release_gates": {

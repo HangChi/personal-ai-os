@@ -40,7 +40,7 @@ func newFoundationHandler(role config.Role, security *auth.HTTP, limiter httpmid
 		default:
 			// 管理端点仅在显式的独立管理处理器开放，不交给业务注入绕过边界。
 			if r.URL.Path == "/actuator" || strings.HasPrefix(r.URL.Path, "/actuator/") || business == nil {
-				writeError(w, api.ResourceNotFound, logger)
+				httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 				return
 			}
 			business.ServeHTTP(w, r)

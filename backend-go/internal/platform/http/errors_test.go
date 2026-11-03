@@ -109,8 +109,8 @@ func TestJavaExceptionHandler36ResponseFixtures(t *testing.T) {
 				t.Fatal("原始异常或查询串泄露", logs.String())
 			}
 			if test.Name == "method" {
-				if response.Header().Get("Allow") != "PUT, DELETE" || !strings.Contains(logs.String(), "\"level\":\"WARN\"") || !strings.Contains(logs.String(), "/api/v1/settings/model/profiles/42") || !strings.Contains(logs.String(), "errors-fixture") {
-					t.Fatal("405日志路径/ID/Allow不完整", logs.String())
+				if response.Header().Get("Allow") != "" || !strings.Contains(logs.String(), "\"level\":\"WARN\"") || !strings.Contains(logs.String(), "/api/v1/settings/model/profiles/42") || !strings.Contains(logs.String(), "errors-fixture") {
+					t.Fatal("405日志路径/ID或原响应头不一致", logs.String())
 				}
 			}
 		})
@@ -267,8 +267,8 @@ func TestExceptionBoundaryClassificationPrecedenceAndHeaders(t *testing.T) {
 	allowed[0] = "PATCH"
 	response := httptest.NewRecorder()
 	HandleErrors(func(http.ResponseWriter, *http.Request) error { return problem }, logger).ServeHTTP(response, httptest.NewRequest("GET", "/test", nil))
-	if response.Header().Get("Allow") != "PUT, DELETE" || response.Header().Get("X-Injected") != "" {
-		t.Fatal("Allow必须复制/去重且拒绝header注入", response.Header())
+	if response.Header().Get("Allow") != "" || response.Header().Get("X-Injected") != "" {
+		t.Fatal("原全局处理器不写Allow，且不能产生header注入", response.Header())
 	}
 }
 

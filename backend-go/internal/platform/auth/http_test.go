@@ -182,7 +182,7 @@ func TestHTTPDisabledValidationAndLockout(t *testing.T) {
 	for _, body := range []string{`{}`, `null`, `{"username":null,"password":"x"}`, `{"username":"x","password":" "}`, `{"username":2,"password":[]}`, `{broken`} {
 		assertAuthStatus(t, requestAuth(handler, "POST", "/api/v1/auth/login", body, nil, ""), 400, api.ValidationFailed)
 	}
-	if r := requestAuth(handler, "PATCH", "/api/v1/auth/me", "", nil, ""); r.Code != 405 || r.Header().Get("Allow") == "" {
+	if r := requestAuth(handler, "PATCH", "/api/v1/auth/me", "", nil, ""); r.Code != 405 || r.Header().Get("Allow") != "" {
 		t.Fatal("method contract")
 	}
 	handler = newTestHTTP(t, true, false, false, store)
