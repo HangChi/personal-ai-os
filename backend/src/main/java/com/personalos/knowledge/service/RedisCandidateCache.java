@@ -6,7 +6,8 @@ import com.personalos.knowledge.dto.KnowledgeHitDto;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.core.env.Environment;
@@ -41,15 +42,21 @@ public class RedisCandidateCache {
                         properties.hybridSearchEnabled(), properties.rrfK(), properties.keywordChannelWeight()))) + ":";
     }
 
-    public List<KnowledgeHitDto> get(String query, int limit, boolean externalReady,
-                                     Supplier<List<KnowledgeHitDto>> recall) {
+    public List<KnowledgeHitDto> get(String query, int limit, BooleanSupplier externalReady,
+                                     Function<Boolean, List<KnowledgeHitDto>> recall) {
         // Uncommitted database changes must never enter the shared cache.
-        if (TransactionSynchronizationManager.isActualTransactionActive()) return recall.get();
+        if (TransactionSynchronizationManager.isActualTransactionActive()) return recall.apply(externalReady.getAsBoolean());
         UUID version;
-        String key;
         try {
             version = generation();
-            key = prefix + version + ":" + JsonCodec.sha256Hex(limit + "\n" + externalReady + "\n" + query);
+        } catch (RuntimeException ex) {
+            count("read_error");
+            return recall.apply(externalReady.getAsBoolean());
+        }
+        // Capture the version first. Any commit between these reads invalidates the write below.
+        boolean ready = externalReady.getAsBoolean();
+        String key = prefix + version + ":" + JsonCodec.sha256Hex(limit + "\n" + ready + "\n" + query);
+        try {
             String raw = redis.get(key);
             if (raw != null && raw.length() <= MAX_BYTES) {
                 var hits = List.of(json.fromJson(raw, KnowledgeHitDto[].class));
@@ -60,10 +67,10 @@ public class RedisCandidateCache {
             }
         } catch (RuntimeException ex) {
             count("read_error");
-            return recall.get();
+            return recall.apply(ready);
         }
         count("miss");
-        List<KnowledgeHitDto> hits = recall.get();
+        List<KnowledgeHitDto> hits = recall.apply(ready);
         try {
             String payload = json.toJson(hits);
             if (payload.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= MAX_BYTES

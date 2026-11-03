@@ -322,6 +322,8 @@ Prometheus：`http://127.0.0.1:9090`，Targets 中 personal-ai-os 应显示 UP�
 
 ## 可选 Redis 共享嵌入缓存
 
+共享会话、模型限流与 RAG 候选缓存的配置见 [Redis 扩展](redis-extensions.md)。
+
 `compose.integrations.yml --profile cache` 提供仅回环暴露、有密码与 128MB 上限的 Redis。
 默认不开启。设置 `REDIS_ENABLED=true`、`REDIS_URI`（可用 rediss TLS）、唯一的 `REDIS_NAMESPACE`，
 并明确启用 `EMBEDDING_CACHE_ENABLED=true` 后，查找顺序为 Caffeine → Redis → 模型。

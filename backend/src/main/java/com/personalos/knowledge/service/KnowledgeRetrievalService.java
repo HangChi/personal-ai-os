@@ -88,11 +88,11 @@ public class KnowledgeRetrievalService implements KnowledgeSearchPort {
     public List<KnowledgeHitDto> candidates(String query,int requested) {
         if(query==null || query.isBlank()) throw new BusinessException(ErrorCode.VALIDATION_FAILED,"Empty query");
         int limit=Math.max(1,Math.min(requested,60));
-        boolean externalReady = external != null && projection.pending() == 0;
         if (candidateCache != null) {
-            return candidateCache.get(query, limit, externalReady, () -> loadCandidates(query, limit, externalReady));
+            return candidateCache.get(query, limit, () -> external != null && projection.pending() == 0,
+                    ready -> loadCandidates(query, limit, ready));
         }
-        return loadCandidates(query, limit, externalReady);
+        return loadCandidates(query, limit, external != null && projection.pending() == 0);
     }
 
     private List<KnowledgeHitDto> loadCandidates(String query, int limit, boolean externalReady) {

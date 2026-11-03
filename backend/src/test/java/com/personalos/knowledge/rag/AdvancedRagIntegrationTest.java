@@ -27,6 +27,7 @@ class AdvancedRagIntegrationTest {
     @Container static org.testcontainers.containers.GenericContainer<?> cache =
             new org.testcontainers.containers.GenericContainer<>("redis:8.2.1-alpine").withExposedPorts(6379);
     @Autowired io.micrometer.core.instrument.MeterRegistry metrics;
+    @Autowired RedisCandidateCache candidateCache;
     @org.springframework.test.context.DynamicPropertySource static void searchProperties(org.springframework.test.context.DynamicPropertyRegistry registry) {
         registry.add("app.redis.enabled", () -> true);
         registry.add("app.redis.uri", () -> "redis://"+cache.getHost()+":"+cache.getMappedPort(6379));
@@ -55,6 +56,17 @@ class AdvancedRagIntegrationTest {
         assertThat(metrics.get("personalos.knowledge.candidate.cache").tag("result","hit").counter().count())
                 .isGreaterThanOrEqualTo(1);
 
+        var loads = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.function.Function<Boolean, java.util.List<com.personalos.knowledge.dto.KnowledgeHitDto>> load = ready -> {
+            loads.incrementAndGet();
+            return hits;
+        };
+        candidateCache.get("concurrent-generation-fixture", 40, () -> {
+            db.update("UPDATE knowledge_candidate_generation SET generation=gen_random_uuid() WHERE id=1");
+            return true;
+        }, load);
+        candidateCache.get("concurrent-generation-fixture", 40, () -> true, load);
+        assertThat(loads.get()).isEqualTo(2);
         model.enqueueText("{\"queries\":[]}");model.enqueueText("{\"order\":[1,2]}");
         String quote1=hits.get(0).content().contains("五百")?"每天五百元":"每天八百元";
         String quote2=hits.get(1).content().contains("五百")?"每天五百元":"每天八百元";
