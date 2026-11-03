@@ -426,3 +426,10 @@ Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退
 - 单元及race测试通过：稳定map摘要、并发动作恰好一次、摘要冲突、失败不伪装成功、HTTP陈旧恢复与TOOL陈旧阻止均有独立断言。
 - `python3 scripts/migration/run_go_postgres_tests.py --package idempotency`通过；runner新建回环临时PostgreSQL并执行原42条真实Flyway迁移，两个独立连接池竞争同一键时仅一个动作执行，竞争方收到结果不明，完成后原payload回放且数据库只有一条SUCCESS。临时容器已finally清理。
 - 本批只关闭T200；确认、任务、标签、贡献接口与9条路由T201–T205保持未开始。未接触现有数据库、Java/前端实现、部署或生产守卫。
+
+## P2第二批：通用确认生命周期（T201，2026-11-03）
+
+- `internal/business/confirmation`实现任务/日程/MCP动作的处理器SPI与启动期缺失/重复注册校验；当前P2可只声明已装配任务动作，后续模块装配时逐步扩展，完整注册表会校验五类动作。
+- 创建使用24字节安全随机数形成48位十六进制令牌，10分钟有效期。列表默认PENDING且支持会话归属筛选；令牌只在确认或取消入口比对。原表`confirmation`存储和CAS状态迁移均走独立短事务，执行处理器不占用数据库事务。
+- 单元race覆盖错误令牌、过期持久标记、32并发只执行一次、目标消失转CANCELLED、执行异常转FAILED、取消与重复拒绝。`run_go_postgres_tests.py --package confirmation`在原42迁移后的两个独立连接池进行24路CAS竞争，通过且容器已清理。
+- 此批只关闭T201；任务处理器及HTTP路由分别在T202/T205装配。
