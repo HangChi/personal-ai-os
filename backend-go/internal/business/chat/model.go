@@ -40,6 +40,7 @@ func (s Session) DTO() SessionDTO {
 }
 
 type Attachment struct {
+	null        bool
 	ID          *string `json:"id"`
 	Filename    *string `json:"filename"`
 	ContentType *string `json:"contentType"`
@@ -151,4 +152,26 @@ func snapshots(raw *string) []Attachment {
 		result = append(result, a)
 	}
 	return result
+}
+
+// 附件名片中的 null 必须原样参与运行请求的幂等比较；验证阶段会忽略它。
+func (a Attachment) MarshalJSON() ([]byte, error) {
+	if a.null {
+		return []byte("null"), nil
+	}
+	type plain Attachment
+	return json.Marshal(plain(a))
+}
+func (a *Attachment) UnmarshalJSON(raw []byte) error {
+	if strings.TrimSpace(string(raw)) == "null" {
+		*a = Attachment{null: true}
+		return nil
+	}
+	type plain Attachment
+	var v plain
+	if e := json.Unmarshal(raw, &v); e != nil {
+		return e
+	}
+	*a = Attachment(v)
+	return nil
 }

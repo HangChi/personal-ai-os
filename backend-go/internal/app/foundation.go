@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"personal-ai-os/backend-go/internal/business/chat"
 	"personal-ai-os/backend-go/internal/business/confirmation"
 	"personal-ai-os/backend-go/internal/business/idempotency"
 	"personal-ai-os/backend-go/internal/business/model"
@@ -41,6 +42,7 @@ type FoundationOptions struct {
 	Business                http.Handler
 	EnableP2                bool
 	EnableP3                bool
+	EnableP4                bool
 	EmbeddingRedis          *redisclient.Client
 	ModelTransport          http.RoundTripper
 }
@@ -69,6 +71,7 @@ type Foundation struct {
 	done           chan struct{}
 	closeErr       error
 	models         *model.Module
+	chat           *chat.Module
 	modelTransport *http.Transport
 }
 
@@ -83,6 +86,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
+	}
+	if options.EnableP4 && (!options.EnableP2 || !options.EnableP3) {
+		return nil, errors.New("P4装配必须显式启用P2与P3依赖")
 	}
 	if err := properties.ValidateFoundationExtensions(); err != nil {
 		return nil, err
@@ -172,6 +178,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	defer func() {
 		if err != nil {
 			f.cancel()
+			if f.chat != nil {
+				_ = f.chat.Close(context.Background())
+			}
 			if f.modelTransport != nil {
 				f.modelTransport.CloseIdleConnections()
 			}
@@ -231,6 +240,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 	clients := []*redisclient.Client{options.SessionRedis, options.RateRedis}
 	snapshot := f.actuatorSnapshot(actuatorProperties, clients)
+	var tasks *task.Service
+	var idem *idempotency.Service
+	var confirms *confirmation.Service
 	if options.EnableP2 {
 		if err := task.CheckPrivileges(ctx, pool); err != nil {
 			return nil, err
@@ -242,7 +254,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		if taskErr != nil {
 			return nil, taskErr
 		}
-		tasks, taskErr := task.NewService(taskStore)
+		tasks, taskErr = task.NewService(taskStore)
 		if taskErr != nil {
 			return nil, taskErr
 		}
@@ -250,7 +262,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		if taskErr != nil {
 			return nil, taskErr
 		}
-		idem, taskErr := idempotency.NewService(idemStore)
+		idem, taskErr = idempotency.NewService(idemStore)
 		if taskErr != nil {
 			return nil, taskErr
 		}
@@ -266,7 +278,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		if taskErr != nil {
 			return nil, taskErr
 		}
-		confirms, taskErr := confirmation.NewService(confirmStore, registry)
+		confirms, taskErr = confirmation.NewService(confirmStore, registry)
 		if taskErr != nil {
 			return nil, taskErr
 		}
@@ -302,6 +314,21 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 		})
 	}
+	if options.EnableP4 {
+		f.chat, err = chat.OpenModule(f.ctx, chat.ModuleOptions{Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem, Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor, Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()})
+		if err != nil {
+			return nil, err
+		}
+		metrics.chat = f.chat
+		previous := options.Business
+		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if chat.OwnsPath(r.URL.Path) {
+				f.chat.Handler.ServeHTTP(w, r)
+				return
+			}
+			previous.ServeHTTP(w, r)
+		})
+	}
 	var actuator http.Handler
 	if !settings.Monitoring {
 		actuator = newActuatorHandler(actuatorProperties, snapshot, metrics, logger)
@@ -325,6 +352,7 @@ func (f *Foundation) ModelGate() *modelgate.Gate       { return f.gate }
 func (f *Foundation) Executor() *taskexec.Executor     { return f.executor }
 func (f *Foundation) History() migration.HistoryStatus { return f.history }
 func (f *Foundation) Models() *model.Module            { return f.models }
+func (f *Foundation) Chat() *chat.Module               { return f.chat }
 
 func (f *Foundation) track(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -357,6 +385,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 		f.closing = true
 		f.mu.Unlock()
 		go func() {
+			if f.chat != nil {
+				_ = f.chat.Close(context.Background())
+			}
 			f.active.Wait()
 			if f.modelTransport != nil {
 				f.modelTransport.CloseIdleConnections()

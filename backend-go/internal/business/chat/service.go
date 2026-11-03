@@ -23,6 +23,8 @@ type Tx interface {
 	Sessions(context.Context, SessionQuery) ([]Session, int64, error)
 	CountMessages(context.Context, string) (int64, error)
 	MaxSequence(context.Context, string) (int, error)
+	RangeMessages(context.Context, string, int, int) ([]Message, error)
+	MessageIdentity(context.Context, string, int) (int64, error)
 	Messages(context.Context, string, MessageQuery) ([]Message, error)
 	InsertMessage(context.Context, string, NewMessage, int, time.Time) error
 	AttachmentSnapshots(context.Context, string, *int) ([]Attachment, error)
@@ -343,5 +345,40 @@ func (s *Service) AttachCitations(ctx context.Context, id string, hits []Citatio
 			}
 		}
 		return nil
+	})
+}
+
+// Complete 将助手回答与引用快照一次提交，done 之前不会暴露半完成的回答。
+func (s *Service) Complete(ctx context.Context, id, content string, hits []Citation) error {
+	if err := ValidateConversationID(id); err != nil {
+		return err
+	}
+	return s.store.Transact(ctx, false, func(tx Tx) error {
+		session, err := tx.Session(ctx, id, true)
+		if err != nil {
+			return err
+		}
+		seq, err := tx.MaxSequence(ctx, id)
+		if err != nil {
+			return err
+		}
+		if seq == 2147483647 {
+			return errors.New("会话消息顺序号已达上限")
+		}
+		now := s.now().UTC()
+		if err = tx.InsertMessage(ctx, id, NewMessage{Role: "ASSISTANT", Content: content}, seq+1, now); err != nil {
+			return err
+		}
+		if len(hits) > 0 {
+			messageID, err := tx.MessageIdentity(ctx, id, seq+1)
+			if err != nil {
+				return err
+			}
+			if err = tx.InsertCitations(ctx, messageID, hits, now); err != nil {
+				return err
+			}
+		}
+		session.UpdatedAt = now
+		return tx.SaveSession(ctx, session)
 	})
 }

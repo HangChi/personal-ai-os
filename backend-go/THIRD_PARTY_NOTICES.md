@@ -326,3 +326,18 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
+
+## P4：AWS SDK for Go v2 / Smithy
+
+S3 使用 `go.mod` / `go.sum` 中锁定的官方模块：主模块 v1.47.5、config v1.33.13、credentials v1.20.13、service/s3 v1.114.6、smithy-go v1.28.7；间接模块版本以 go.mod 为准。均为 Apache-2.0。许可证与 NOTICE 原文取自已下载的上述模块，保存于 `licenses/aws-sdk-go-v2-{LICENSE,NOTICE}.txt` 和 `licenses/smithy-go-{LICENSE,NOTICE}.txt`。构建验证执行 `go mod verify`，没有改写其版权声明。
+
+## P4：BPE 词表数据与外部 PDF 工具
+
+`internal/business/context/assets/` 的四份词表取自原 Java 依赖 `com.knuddels:jtokkit:1.1.0`，其 POM 声明 MIT。JAR 和各词表 SHA-256 / 数据长度 / token 数保存在该目录 manifest.json，提取与默认校验由 `scripts/migration/go_token_assets.py` 完成。本项目独立实现 Go 计数器，未复制 JTokkit 的 Java 实现。来源与可复验边界见该包 README。MIT许可证原文补存于 `licenses/jtokkit-LICENSE.txt`（上游1.1.0 tag）及 `licenses/tiktoken-LICENSE.txt`（词表上游许可证）；保留各自版权声明。
+
+PDF 文本读取可调用外部 Poppler `pdftotext`。本次验收命令版本为 26.10.0（工具自报），该程序不嵌入 Go 二进制、不随本仓库打包；部署方需自行提供。未安装或解析失败时返回不可读提示；不下载或静默替代解析器。
+
+P4新增MIT许可证的取得来源与校验（2026-11-04）：
+
+- JTokkit：`https://raw.githubusercontent.com/knuddelsgmbh/jtokkit/1.1.0/LICENSE`，SHA-256 `1591448c197de536ece69aa858d63044f148ba73f14e96e981c46753a9d8ba71`。
+- 词表上游tiktoken：`https://raw.githubusercontent.com/openai/tiktoken/main/LICENSE`，本轮取得正文SHA-256 `418cb499b436128d653d79941333a5437b7be2ea9213dcc2f04d15d5d2c51d86`；分发使用仓库内固定正文，不在运行或构建时读取main。

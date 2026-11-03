@@ -13,14 +13,20 @@ import (
 	"personal-ai-os/backend-go/internal/platform/database"
 )
 
-type PostgresStore struct{ pool *database.Pool }
-type postgresTx struct{ tx *sql.Tx }
+type PostgresStore struct {
+	pool        *database.Pool
+	attachments *Attachments
+}
+type postgresTx struct {
+	tx          *sql.Tx
+	attachments *Attachments
+}
 
 func NewPostgresStore(pool *database.Pool) (*PostgresStore, error) {
 	if pool == nil {
 		return nil, errors.New("对话数据库连接池不能为空")
 	}
-	return &PostgresStore{pool}, nil
+	return &PostgresStore{pool: pool}, nil
 }
 func (s *PostgresStore) Transact(ctx context.Context, readOnly bool, action func(Tx) error) error {
 	if action == nil {
@@ -30,7 +36,14 @@ func (s *PostgresStore) Transact(ctx context.Context, readOnly bool, action func
 	if readOnly {
 		opts.Isolation = sql.LevelRepeatableRead
 	}
-	return s.pool.WithTx(ctx, opts, func(tx *sql.Tx) error { return action(&postgresTx{tx}) })
+	return s.pool.WithTx(ctx, opts, func(tx *sql.Tx) error {
+		if !readOnly && s.attachments != nil {
+			if err := s.attachments.lockBinding(ctx, tx); err != nil {
+				return err
+			}
+		}
+		return action(&postgresTx{tx: tx, attachments: s.attachments})
+	})
 }
 
 const sessionColumns = `s.conversation_id,s.title,s.created_at,s.updated_at,s.chat_model,s.context_summary,s.summary_upto_seq`
@@ -102,6 +115,30 @@ func (t *postgresTx) CountMessages(ctx context.Context, id string) (count int64,
 }
 func (t *postgresTx) MaxSequence(ctx context.Context, id string) (seq int, err error) {
 	err = t.tx.QueryRowContext(ctx, `SELECT coalesce(max(sequence_no),0) FROM chat_message WHERE conversation_id=$1`, id).Scan(&seq)
+	return
+}
+
+func (t *postgresTx) RangeMessages(ctx context.Context, id string, from, through int) ([]Message, error) {
+	rows, err := t.tx.QueryContext(ctx, `SELECT id,message_type,content,sequence_no,created_at FROM chat_message WHERE conversation_id=$1 AND sequence_no>=$2 AND sequence_no<=$3 ORDER BY sequence_no`, id, from, through)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	result := []Message{}
+	for rows.Next() {
+		var m Message
+		if err = rows.Scan(&m.ID, &m.Role, &m.Content, &m.SequenceNo, &m.CreatedAt); err != nil {
+			return nil, err
+		}
+		result = append(result, m)
+	}
+	return result, rows.Err()
+}
+func (t *postgresTx) MessageIdentity(ctx context.Context, id string, seq int) (messageID int64, err error) {
+	err = t.tx.QueryRowContext(ctx, `SELECT id FROM chat_message WHERE conversation_id=$1 AND sequence_no=$2`, id, seq).Scan(&messageID)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = nil
+	}
 	return
 }
 func (t *postgresTx) Messages(ctx context.Context, id string, q MessageQuery) (items []Message, err error) {
@@ -190,6 +227,13 @@ func (t *postgresTx) loadCitations(ctx context.Context, items []Message, byID ma
 func (t *postgresTx) InsertMessage(ctx context.Context, id string, m NewMessage, seq int, now time.Time) error {
 	var raw *string
 	if len(m.Attachments) > 0 {
+		if t.attachments != nil {
+			verified, err := t.attachments.Verify(ctx, m.Attachments)
+			if err != nil {
+				return err
+			}
+			m.Attachments = verified
+		}
 		data, err := json.Marshal(m.Attachments)
 		if err != nil {
 			return err
