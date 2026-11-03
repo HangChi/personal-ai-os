@@ -1,0 +1,120 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "source": "backend/src/main/java/com/personalos/common/api/ErrorCode.java",
+  "errors": [
+    {
+      "name": "SUCCESS",
+      "code": 0,
+      "message": "OK",
+      "status": 200
+    },
+    {
+      "name": "VALIDATION_FAILED",
+      "code": 40000,
+      "message": "参数校验失败",
+      "status": 400
+    },
+    {
+      "name": "IDEMPOTENCY_KEY_CONFLICT",
+      "code": 40001,
+      "message": "幂等键与请求内容不一致，同一幂等键必须对应相同请求",
+      "status": 409
+    },
+    {
+      "name": "CONFIRMATION_NOT_ACTIVE",
+      "code": 40002,
+      "message": "该确认已失效或已被使用",
+      "status": 409
+    },
+    {
+      "name": "UNSUPPORTED_DOCUMENT",
+      "code": 40003,
+      "message": "不支持的文档",
+      "status": 400
+    },
+    {
+      "name": "RESOURCE_NOT_FOUND",
+      "code": 40004,
+      "message": "资源不存在",
+      "status": 404
+    },
+    {
+      "name": "METHOD_NOT_ALLOWED",
+      "code": 40005,
+      "message": "请求方法不被支持",
+      "status": 405
+    },
+    {
+      "name": "NOT_ACCEPTABLE",
+      "code": 40600,
+      "message": "响应格式不被支持",
+      "status": 406
+    },
+    {
+      "name": "UNAUTHORIZED",
+      "code": 40100,
+      "message": "未登录或登录已过期",
+      "status": 401
+    },
+    {
+      "name": "FORBIDDEN",
+      "code": 40300,
+      "message": "请求被拒绝",
+      "status": 403
+    },
+    {
+      "name": "BUSINESS_CONFLICT",
+      "code": 40900,
+      "message": "业务规则冲突",
+      "status": 409
+    },
+    {
+      "name": "RATE_LIMITED",
+      "code": 42900,
+      "message": "请求过于频繁，请稍后再试",
+      "status": 429
+    },
+    {
+      "name": "CONTEXT_TOO_LARGE",
+      "code": 41301,
+      "message": "上下文超出当前模型可用空间，请减少附件或检索内容、降低思考深度，或切换更大窗口模型",
+      "status": 400
+    },
+    {
+      "name": "AI_UPSTREAM_ERROR",
+      "code": 50200,
+      "message": "AI 服务调用失败，请稍后重试或检查模型配置",
+      "status": 502
+    },
+    {
+      "name": "EMBEDDING_DIMENSION_MISMATCH",
+      "code": 50201,
+      "message": "嵌入模型输出维度与向量表结构不一致，请检查嵌入模型配置或新增迁移重建向量列",
+      "status": 500
+    },
+    {
+      "name": "AI_TIMEOUT",
+      "code": 50202,
+      "message": "模型响应超时，请稍后重试或降低思考深度",
+      "status": 504
+    },
+    {
+      "name": "AGENT_EXECUTION_LIMIT",
+      "code": 50203,
+      "message": "工具调用已停止：重复失败或执行步数达到上限。已完成的操作不会撤销，请先查看执行记录。",
+      "status": 502
+    },
+    {
+      "name": "AI_NOT_CONFIGURED",
+      "code": 50300,
+      "message": "AI 模型未配置，请设置 AI_CHAT_PROVIDER 为 ollama 或 openai",
+      "status": 503
+    },
+    {
+      "name": "INTERNAL_ERROR",
+      "code": 50000,
+      "message": "服务器内部错误",
+      "status": 500
+    }
+  ]
+}
