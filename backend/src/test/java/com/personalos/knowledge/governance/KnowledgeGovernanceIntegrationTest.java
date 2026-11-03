@@ -31,6 +31,7 @@ class KnowledgeGovernanceIntegrationTest {
     @Autowired com.personalos.export.DataImportService importService;
     @Autowired KnowledgeGovernance governance; @Autowired KnowledgeDocumentService documents;
     @Autowired VectorStoreInspector vectors; @Autowired JdbcTemplate db;
+    @Autowired org.springframework.transaction.PlatformTransactionManager manager;
     UUID a,b;
     @BeforeEach void seed() {
         db.update("DELETE FROM vector_store");db.update("DELETE FROM knowledge_document");db.update("DELETE FROM knowledge_conflict_audit");
@@ -75,7 +76,7 @@ class KnowledgeGovernanceIntegrationTest {
         when(review.review(anyString(),anyList(),anyLong())).thenReturn(new EvidenceReview.Review(h,List.of(disagreement(h)),""));
         var gate=new com.personalos.common.web.ModelConcurrencyGate(4);
         var rate=mock(com.personalos.common.web.TokenBucketRateLimiter.class);when(rate.tryAcquire()).thenReturn(true);
-        var worker=new IngestionReviewWorker(db,governance,review,retrieval,vectors,gate,rate);
+        var worker=new IngestionReviewWorker(db,governance,review,retrieval,vectors,gate,rate,manager);
         try {
             for(int i=0;i<6 && worker.runNext();i++) { }
             assertThat(governance.conflicts()).hasSize(1);

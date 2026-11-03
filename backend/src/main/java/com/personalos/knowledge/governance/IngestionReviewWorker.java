@@ -26,12 +26,14 @@ public class IngestionReviewWorker {
     void configureReviewTimeout(@org.springframework.beans.factory.annotation.Value("${app.knowledge.rag.evidence-timeout-ms:12000}") long timeout) {
         reviewTimeout=Math.max(1000,Math.min(30000,timeout));
     }
+    private final org.springframework.transaction.support.TransactionTemplate transaction;
     private final AtomicBoolean busy=new AtomicBoolean();
     private boolean enabled=true;
     @org.springframework.beans.factory.annotation.Autowired
     void configureRole(com.personalos.common.config.RuntimeRole role) { enabled=role.allows("review"); }
     public IngestionReviewWorker(JdbcTemplate db,KnowledgeGovernance governance,EvidenceReview review,KnowledgeRetrievalService retrieval,
-            VectorStoreInspector vectors,ModelConcurrencyGate gate,TokenBucketRateLimiter rate) {
+            VectorStoreInspector vectors,ModelConcurrencyGate gate,TokenBucketRateLimiter rate,org.springframework.transaction.PlatformTransactionManager manager) {
+        this.transaction=new org.springframework.transaction.support.TransactionTemplate(manager);
         this.db=db;this.governance=governance;this.review=review;this.retrieval=retrieval;this.vectors=vectors;this.gate=gate;this.rate=rate;
     }
     @Scheduled(fixedDelayString="${app.knowledge.rag.review-poll-ms:5000}",initialDelay=10000)
@@ -42,7 +44,7 @@ public class IngestionReviewWorker {
         try(permit) {
             if(!rate.tryAcquire())return false;
             UUID token=UUID.randomUUID();
-            var jobs=db.queryForList("WITH ready AS (SELECT document_id FROM knowledge_review_job WHERE next_attempt_at<=now() ORDER BY next_attempt_at FOR UPDATE SKIP LOCKED LIMIT 1) UPDATE knowledge_review_job j SET next_attempt_at=now()+interval '60 seconds',lease_token=? FROM ready WHERE j.document_id=ready.document_id RETURNING j.*",token);
+            var jobs=db.queryForList("WITH ready AS (SELECT document_id FROM knowledge_review_job WHERE next_attempt_at<=now() ORDER BY next_attempt_at FOR UPDATE SKIP LOCKED LIMIT 1) UPDATE knowledge_review_job j SET next_attempt_at=now()+interval '60 seconds',lease_token=?,attempts=attempts+1 FROM ready WHERE j.document_id=ready.document_id RETURNING j.*",token);
             if(jobs.isEmpty())return false;
             var job=jobs.getFirst();UUID id=(UUID)job.get("document_id");long revision=((Number)job.get("revision")).longValue();int cursor=((Number)job.get("chunk_cursor")).intValue();
             try {
@@ -50,23 +52,42 @@ public class IngestionReviewWorker {
                 var source=governance.sources(List.of(id)).get(id);
                 if(source==null || source.revision()!=revision)return true;
                 if(chunks.isEmpty()) {
+                    finish(id,revision,token,List.of(id),() -> {
                     db.update("UPDATE knowledge_source SET review_state='CHECKED_CANDIDATES' WHERE document_id=? AND revision=? AND EXISTS(SELECT 1 FROM knowledge_review_job j WHERE j.document_id=knowledge_source.document_id AND j.lease_token=?)",id,revision,token);
-                    db.update("DELETE FROM knowledge_review_job WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);return true;
+                    db.update("DELETE FROM knowledge_review_job WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);
+                    });
+                    return true;
                 }
                 var raw=retrieval.candidates(chunks.getFirst().substring(0,Math.min(1800,chunks.getFirst().length())),20);
                 var candidates=new ArrayList<KnowledgeHitDto>();
                 String title=db.queryForObject("SELECT title FROM knowledge_document WHERE id=?",String.class,id);
                 candidates.add(new KnowledgeHitDto(id,title,"",cursor,chunks.getFirst(),null).withSource(source));
                 candidates.addAll(governance.enrich(raw).stream().filter(h->!h.documentId().equals(id)).limit(11).toList());
-                if(candidates.size()>1) governance.record(review.review("核查新增资料与已有资料对同一事实的不同说法；所有当前资料均为核查对象。",candidates,reviewTimeout).conflicts());
+                var findings = candidates.size()>1 ? review.review("核查新增资料与已有资料对同一事实的不同说法；所有当前资料均为核查对象。",candidates,reviewTimeout).conflicts() : List.<com.personalos.knowledge.rag.RagResult.Disagreement>of();
+                finish(id,revision,token,candidates.stream().map(KnowledgeHitDto::documentId).distinct().toList(),() -> {
+                governance.record(findings);
                 db.update("UPDATE knowledge_source SET review_state='PARTIAL' WHERE document_id=? AND revision=? AND EXISTS(SELECT 1 FROM knowledge_review_job j WHERE j.document_id=knowledge_source.document_id AND j.lease_token=?)",id,revision,token);
-                db.update("UPDATE knowledge_review_job SET chunk_cursor=chunk_cursor+1,next_attempt_at=now() WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);
+                db.update("UPDATE knowledge_review_job SET chunk_cursor=chunk_cursor+1,next_attempt_at=now(),attempts=0,last_error=NULL WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);
+                });
             } catch(RuntimeException ex) {
+                finish(id,revision,token,List.of(id),() -> {
                 db.update("UPDATE knowledge_source SET review_state='UNAVAILABLE' WHERE document_id=? AND revision=? AND EXISTS(SELECT 1 FROM knowledge_review_job j WHERE j.document_id=knowledge_source.document_id AND j.lease_token=?)",id,revision,token);
-                db.update("UPDATE knowledge_review_job SET next_attempt_at=now()+interval '5 minutes' WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);
+                db.update("UPDATE knowledge_review_job SET next_attempt_at=CASE WHEN attempts>=3 THEN 'infinity'::timestamptz ELSE now()+interval '5 minutes' END,last_error='Review failed' WHERE document_id=? AND revision=? AND lease_token=?",id,revision,token);
+                });
             }
             return true;
         }
+    }
+    private void finish(UUID id,long revision,UUID token,List<UUID> sources,Runnable action) {
+        transaction.executeWithoutResult(status -> {
+            var placeholders=String.join(",",Collections.nCopies(sources.size(),"?"));
+            db.queryForList("SELECT document_id FROM knowledge_source WHERE document_id IN ("+placeholders
+                    +") ORDER BY document_id FOR UPDATE",sources.toArray());
+            if (!db.queryForList("SELECT document_id FROM knowledge_review_job WHERE document_id=? AND revision=? "
+                    +"AND lease_token=? AND next_attempt_at>clock_timestamp() FOR UPDATE",id,revision,token).isEmpty()) {
+                action.run();
+            }
+        });
     }
     @PreDestroy public void close(){executor.shutdownNow();}
 }

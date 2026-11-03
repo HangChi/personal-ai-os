@@ -140,7 +140,7 @@ public class KnowledgeGovernance {
 
     @Transactional public void retry(UUID id) {
         db.update("UPDATE knowledge_source SET review_state='PENDING' WHERE document_id=?",id);
-        db.update("INSERT INTO knowledge_review_job(document_id,revision) SELECT document_id,revision FROM knowledge_source WHERE document_id=? ON CONFLICT(document_id) DO UPDATE SET chunk_cursor=0,next_attempt_at=now(),lease_token=NULL",id);
+        db.update("INSERT INTO knowledge_review_job(document_id,revision) SELECT document_id,revision FROM knowledge_source WHERE document_id=? ON CONFLICT(document_id) DO UPDATE SET chunk_cursor=0,next_attempt_at=now(),lease_token=NULL,attempts=0,last_error=NULL",id);
     }
     private static String text(String s,int max){if(s==null)return "";if(s.length()>max)throw invalid("字段超过长度限制");return s.strip();}
     private static BusinessException invalid(String message){return new BusinessException(ErrorCode.VALIDATION_FAILED,message);}
