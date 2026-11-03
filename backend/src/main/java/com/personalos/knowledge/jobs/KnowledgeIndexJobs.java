@@ -60,24 +60,32 @@ public class KnowledgeIndexJobs {
         metrics.gauge("personalos.knowledge.jobs.active",active);
         metrics.gauge("personalos.knowledge.jobs.pending",jobs,repository -> repository.waitingCount());
     }
-    public synchronized KnowledgeJobRepository.Job submit(UUID id, UUID target, String filename, String title, byte[] bytes) {
+    public KnowledgeJobRepository.Job submit(UUID id, UUID target, String filename, String title, byte[] bytes) {
         if (bytes == null || bytes.length == 0 || bytes.length > properties.maxFileSizeBytes())
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,"文件为空或超过知识库大小上限");
         if (filename == null || filename.length()>300 || (title!=null && title.length()>300))
             throw new BusinessException(ErrorCode.VALIDATION_FAILED,"文件名和标题不能超过 300 字符");
         String digest=json.digestOf(List.of(target==null?"":target.toString(),filename,title==null?"":title,
                 JsonCodec.sha256Hex(java.util.Base64.getEncoder().encodeToString(bytes))));
-        var previous=jobs.find(id);
-        if (previous.isPresent()) {
-            if (!digest.equals(jobs.digest(id))) throw new BusinessException(ErrorCode.IDEMPOTENCY_KEY_CONFLICT);
-            return previous.get();
-        }
-        if (jobs.waitingCount()>=20) throw new BusinessException(ErrorCode.RATE_LIMITED,"后台任务队列已满，请稍后再试");
-        if (target!=null) documents.requireDocument(target);
-        jobs.create(id,target==null?id:target,target!=null,filename,title,bytes,digest);
-        notifier.ifAvailable(signal -> signal.submitted(id));
-        return get(id);
+        Submission submission=transaction.execute(status -> {
+            // Coordinate the capacity check and idempotency across API replicas.
+            jdbc.queryForList("SELECT pg_advisory_xact_lock(181801, 1)");
+            var previous=jobs.find(id);
+            if (previous.isPresent()) {
+                if (!digest.equals(jobs.digest(id))) throw new BusinessException(ErrorCode.IDEMPOTENCY_KEY_CONFLICT);
+                return new Submission(previous.get(),false);
+            }
+            if (jobs.waitingCount()>=20) throw new BusinessException(ErrorCode.RATE_LIMITED,"后台任务队列已满，请稍后再试");
+            if (target!=null) documents.requireDocument(target);
+            jobs.create(id,target==null?id:target,target!=null,filename,title,bytes,digest);
+            return new Submission(get(id),true);
+        });
+        if (submission.created()) notifier.ifAvailable(signal -> signal.submitted(id));
+        return submission.job();
     }
+
+    private record Submission(KnowledgeJobRepository.Job job,boolean created) { }
+
     public KnowledgeJobRepository.Job get(UUID id) { return jobs.find(id).orElseThrow(() -> new ResourceNotFoundException("后台任务不存在")); }
     public List<KnowledgeJobRepository.Job> recent() { return jobs.recent(); }
 
@@ -152,6 +160,6 @@ public class KnowledgeIndexJobs {
         Instant created=jdbc.queryForObject("select created_at from knowledge_document where id=?",OffsetDateTime.class,id).toInstant();
         jobs.succeed(claim,json.toJson(new KnowledgeDocumentDto(id,upload.title(),upload.filename(),upload.contentType(),upload.sizeBytes(),upload.charCount(),chunks.size(),created)));
     }
-    @Scheduled(cron="0 20 4 * * *") public void cleanup() { jobs.cleanup(); }
+    @Scheduled(cron="0 20 4 * * *") public void cleanup() { if (role.allows("index")) jobs.cleanup(); }
     @PreDestroy void close() { workers.shutdownNow(); heartbeat.shutdownNow(); }
 }

@@ -29,7 +29,7 @@ public class WorkerWakeupsConfig {
     @Bean SimpleMessageListenerContainer searchWakeups(CachingConnectionFactory factory,RuntimeRole role,
             ObjectProvider<SearchProjection> worker,MeterRegistry metrics) {
         return listener(factory,WorkSignalRelay.SEARCH_QUEUE,role.allows("delivery"),
-                () -> worker.ifAvailable(SearchProjection::sync),metrics);
+                () -> worker.ifAvailable(SearchProjection::dispatch),metrics);
     }
     private SimpleMessageListenerContainer listener(CachingConnectionFactory factory,String queue,boolean enabled,
                                                      Runnable wakeup,MeterRegistry metrics) {

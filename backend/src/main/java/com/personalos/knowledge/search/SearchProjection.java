@@ -32,16 +32,17 @@ public final class SearchProjection {
     }
 
     @Scheduled(fixedDelayString="${app.knowledge.search.poll-ms:2000}")
-    public void sync() {
+    public void dispatch() {
         if (!role.allows("delivery") || !busy.compareAndSet(false,true)) return;
         try {
             executor.execute(() -> {
-                try { projectBatch(); } finally { busy.set(false); }
+                try { sync(); } finally { busy.set(false); }
             });
         } catch (RejectedExecutionException ex) { busy.set(false); }
     }
 
-    public void projectBatch() {
+    public void sync() {
+        if (!role.allows("delivery")) return;
         for (int i=0; i<20 && !Thread.currentThread().isInterrupted(); i++) {
             UUID token=UUID.randomUUID();
             var rows=db.query("""

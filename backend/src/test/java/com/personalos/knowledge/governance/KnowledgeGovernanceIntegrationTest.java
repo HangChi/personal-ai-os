@@ -107,14 +107,14 @@ class KnowledgeGovernanceIntegrationTest {
     @Test void projectionFailureRetainsOutboxAndConcurrentChangeCannotBeAcknowledged() {
         var gateway=mock(OpenSearchGateway.class);var projection=new SearchProjection(db,vectors,gateway,new SimpleMeterRegistry(),new com.personalos.common.config.RuntimeRole("combined"));
         doThrow(new IllegalStateException("unavailable")).when(gateway).project(any(),anyLong(),any(),any());
-        long pending=projection.pending();assertThat(pending).isPositive();projection.projectBatch();assertThat(projection.pending()).isEqualTo(pending);
+        long pending=projection.pending();assertThat(pending).isPositive();projection.sync();assertThat(projection.pending()).isEqualTo(pending);
         reset(gateway);
         db.update("UPDATE knowledge_search_outbox SET available_at=now()");
         doAnswer(invocation->{db.update("UPDATE knowledge_search_outbox SET revision=nextval('knowledge_search_revision') WHERE chunk_id=?",invocation.getArgument(0,UUID.class));return null;})
             .when(gateway).project(any(),anyLong(),any(),any());
-        projection.projectBatch();assertThat(projection.pending()).isEqualTo(pending);
-        reset(gateway);projection.projectBatch();assertThat(projection.pending()).isZero();
-        documents.delete(a);assertThat(projection.pending()).isPositive();projection.projectBatch();assertThat(projection.pending()).isZero();
+        projection.sync();assertThat(projection.pending()).isEqualTo(pending);
+        reset(gateway);projection.sync();assertThat(projection.pending()).isZero();
+        documents.delete(a);assertThat(projection.pending()).isPositive();projection.sync();assertThat(projection.pending()).isZero();
         verify(gateway,atLeastOnce()).project(any(),anyLong(),isNull(),isNull());
     }
 }

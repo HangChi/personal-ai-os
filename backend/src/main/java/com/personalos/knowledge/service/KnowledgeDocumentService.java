@@ -44,21 +44,8 @@ import static com.personalos.knowledge.service.DocumentFilenameSupport.stripExte
 import static com.personalos.knowledge.service.DocumentFilenameSupport.truncateTitle;
 
 /**
- * 知识文档的入库、更新、列表与删除。
- *
- * <h2>事务边界为什么不是「整个流程一个事务」（2026-10-27 修正）</h2>
- * 早先的注释写着「一个事务保证文档记录与向量要么都成、要么都回滚」。原子性本身没错，
- * 但它换来了一个更糟的代价：**解析与向量化都在事务里**。向量化是每个分块一次嵌入 HTTP 调用，
- * 一本几十页的文档要几十秒 —— 这期间一直握着一条数据库连接（池只有 10 条、连接超时 5 秒），
- * 几个人同时上传就能让全站请求开始超时。
- *
- * <p>现在只让两处**真正的写入**进短事务，长耗时步骤在事务外：
- * <ol>
- *   <li>入库：落记录（取 id）→ 事务外解析+向量化 → 更新计数；向量化失败则删掉刚建的记录。</li>
- *   <li>替换：事务外解析 → 删旧向量+自检 → 事务外向量化 → 更新记录。</li>
- * </ol>
- * 代价是失败时可能留下「文档记录在、向量为空」，那是**可恢复**的（再传一次即可），
- * 已记录在 data-model.md。比起全站连接被占满，这个代价小得多。
+ * 知识文档的入库、更新、列表与删除。解析和嵌入在事务外执行。
+ * 替换与删除共享文档租约，最终短事务校验租约并原子提交向量和文档记录。
  */
 @Service
 public class KnowledgeDocumentService {
@@ -77,7 +64,7 @@ public class KnowledgeDocumentService {
     private final TransactionTemplate transactionTemplate;
 
     /**
-     * 替换 / 删除的进程内互斥（为什么不用数据库行锁，见 {@link DocumentWriteLock} 的类注释）。
+     * 替换与删除共享的文档租约。
      */
     private final DocumentWriteLock writeLock;
     private org.springframework.ai.embedding.EmbeddingModel embeddings;
@@ -310,10 +297,7 @@ public class KnowledgeDocumentService {
      */
     @Transactional
     public int delete(UUID documentId) {
-        // 与 update 共用同一把锁，理由见 DocumentWriteLock 的类注释。
-        // 注意：@Transactional 的提交发生在方法返回之后，所以释放锁与提交之间还有一个
-        // 极短窗口（微秒级）。要彻底消除得把整个删除也搬进 TransactionTemplate，
-        // 代价与收益不成比例 —— 单用户场景下第二次操作只会得到 404。
+        // 租约在事务结束后释放。
         writeLock.acquire(documentId);
         try {
             writeLock.fence(documentId);
@@ -344,27 +328,7 @@ public class KnowledgeDocumentService {
         }
     }
 
-    /**
-     * 用新文件替换已有文档的内容（「更新」而不是「删了重传」）。
-     *
-     * <h2>为什么 id 不变</h2>
-     * 引用快照里存的是 {@code document_id}。如果做成「删除 + 新建」，历史回答里的引用
-     * 会全部指向一个不存在的文档 —— 内容其实还在，只是断了链。
-     *
-     * <h2>顺序与 delete 一致：先删旧向量、再写新向量</h2>
-     * 新旧内容的分块边界完全不同，两批向量混在一个 document_id 下，检索会返回
-     * **已经不存在于文档里的段落** —— 那种回答看起来有出处，点开却对不上。
-     *
-     * <p>中途失败时最坏情况是「文档记录在、向量为空」，用户可以再更新一次；
-     * 反过来（先写新向量再删旧）会留下两代向量混杂，不可恢复。
-     *
-     * <h2>标题跟着文件名走</h2>
-     * 换了一个文件却还显示旧标题，用户会以为没生效。
-     *
-     * <h2>事务边界（2026-10-27）</h2>
-     * 与 {@link #ingest} 同理：解析与向量化都在事务外，只让「删旧向量」与「更新记录」
-     * 各占一个短事务。中间失败时文档记录仍是旧内容、向量为空 —— 可再更新一次。
-     */
+    /** 保留文档 ID，完成新内容解析与嵌入后再原子替换旧索引。 */
     public KnowledgeDocumentDto update(UUID documentId, String originalFilename, byte[] bytes) {
         // 替换与删除共用同一把锁：两者都要先清旧向量，
         // 并发执行会让两代向量混存（后果见 DocumentWriteLock 的类注释）。
