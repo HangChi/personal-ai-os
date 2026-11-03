@@ -336,4 +336,76 @@ func TestFoundationP2JavaCompatibilityRegression(t *testing.T) {
 		}
 	})
 
+	t.Run("invalid-confirmation-does-not-consume-token", func(t *testing.T) {
+		ctx := context.Background()
+		confirmStore, err := confirmation.NewPostgresStore(f.Pool())
+		if err != nil {
+			t.Fatal(err)
+		}
+		handler, err := task.NewConfirmationHandler(tasks)
+		if err != nil {
+			t.Fatal(err)
+		}
+		registry, err := confirmation.NewRegistryFor([]confirmation.Action{confirmation.DeleteTask, confirmation.ScheduleTask, confirmation.SetPriority}, handler)
+		if err != nil {
+			t.Fatal(err)
+		}
+		confirmations, err := confirmation.NewService(confirmStore, registry)
+		if err != nil {
+			t.Fatal(err)
+		}
+		requests, err := task.NewConfirmationRequests(tasks, confirmations)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, action := range []string{"confirm", "cancel"} {
+			created, err := tasks.Create(ctx, task.CreateRequest{Title: "非法确认不得删除"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { _ = tasks.Delete(context.Background(), created.ID) })
+			pending, err := requests.Delete(ctx, []string{created.ID}, "p2-java-regression")
+			if err != nil {
+				t.Fatal(err)
+			}
+			body := `{"token":"` + pending.Token + `"}`
+			path := "/api/v1/agent/confirmations/" + pending.ID + "/" + action
+			for _, bad := range []struct {
+				body, media  string
+				status, code int
+			}{
+				{`{"TOKEN":"` + pending.Token + `"}`, "application/json", 400, 40000},
+				{body + ` {}`, "application/json", 400, 40000},
+				{`{"token":" \t\u3000"}`, "application/json", 400, 40000},
+				{body, "text/plain", 500, 50000},
+			} {
+				status, result := request(http.MethodPost, path, bad.body, bad.media, "")
+				if status != bad.status || result["code"] != float64(bad.code) {
+					t.Fatalf("invalid %s=%d %+v", action, status, result)
+				}
+				record, found, err := confirmStore.Get(ctx, pending.ID)
+				if err != nil || !found || record.Status != confirmation.Pending || record.ResolvedAt != nil {
+					t.Fatalf("invalid request consumed token: %+v found=%v err=%v", record, found, err)
+				}
+				if _, err := tasks.Get(ctx, created.ID); err != nil {
+					t.Fatalf("invalid request changed task: %v", err)
+				}
+			}
+			if status, result := request(http.MethodPost, path, body, "application/json", ""); status != 200 {
+				t.Fatalf("valid %s after rejected requests=%d %+v", action, status, result)
+			}
+			record, found, err := confirmStore.Get(ctx, pending.ID)
+			want := confirmation.Confirmed
+			if action == "cancel" {
+				want = confirmation.Cancelled
+			}
+			if err != nil || !found || record.Status != want {
+				t.Fatalf("valid %s status=%s found=%v err=%v", action, record.Status, found, err)
+			}
+			_, err = tasks.Get(ctx, created.ID)
+			if action == "confirm" && err != task.ErrNotFound || action == "cancel" && err != nil {
+				t.Fatalf("%s task outcome=%v", action, err)
+			}
+		}
+	})
 }

@@ -130,24 +130,26 @@ func (h *HTTP) serve(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodPost {
 			return web.MethodNotSupported(r.Method, []string{"POST"})
 		}
-		var body struct {
-			Token string `json:"token"`
+		object, err := web.DecodeJSONObject(w, r, 10<<20)
+		if err != nil {
+			return err
 		}
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			return web.InvalidBody(err)
+		token, err := web.JSONStringField(object, "token")
+		if err != nil {
+			return err
 		}
-		if body.Token == "" {
+		if token == nil || strip(*token) == "" {
 			return web.ValidationFailure([]web.Violation{{Field: "token", Message: "确认令牌不能为空"}})
 		}
 		switch parts[1] {
 		case "confirm":
-			value, err := h.Confirmations.Confirm(r.Context(), parts[0], body.Token)
+			value, err := h.Confirmations.Confirm(r.Context(), parts[0], *token)
 			if err != nil {
 				return confirmError(err)
 			}
 			return respond(w, r, http.StatusOK, value)
 		case "cancel":
-			if err := h.Confirmations.Cancel(r.Context(), parts[0], body.Token); err != nil {
+			if err := h.Confirmations.Cancel(r.Context(), parts[0], *token); err != nil {
 				return confirmError(err)
 			}
 			return respond(w, r, http.StatusOK, nil)

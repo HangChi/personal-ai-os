@@ -460,9 +460,11 @@ Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退
 - P2运行账号启动前检查任务、标签、幂等、确认、提醒表及operation_record序列的实际权限；原迁移由独立Flyway执行，业务账号无迁移所有权。默认诊断入口仍不装配P2；显式Foundation生产模式和readyz守卫保持原P1拒绝。未推送、合并、部署或替换Java实例。
 - T200–T205全部完成。跨模块导出/全局搜索端点、Agent工具、提醒Worker与其他业务模块仍按P3–P8实施；当前全量`check-complete`仍应拒绝。
 
-
 ## P2审查修复（2026-11-03）
 
 - 修复PATCH的`clearDueAt`摘要：Go DTO改用可空Boolean，省略与显式null均保留null，false/true各自保留。对原Java `JsonCodec`、`UpdateTaskRequest`实际执行所得的四个SHA-256逐项断言；`{"title":"renamed"}`的原摘要为`03d482d74dad6316524418e1be57e570be64fa687e8bf729ce85c4eca8f1adca`。服务仍仅在显式true且未提供新dueAt时清除截止时间。
-- `task/patch_http_test.go`覆盖四个Java原摘要、同键null回放/false冲突；先复现再修复。TLS原42迁移库预置Java摘要SUCCESS记录，HTTP回放保留原响应且任务标题/更新时间/截止时间不变；显式false仍409/40001。null/false保留截止时间、true清空。日志：`/private/tmp/personal-ai-os-p2-fix-java-oracle.log`、`/private/tmp/personal-ai-os-p2-fix-integration.log`。
-- Go全量race、integration标签vet/build、完整TLS存储/恢复/网络故障回归通过；固定基线检查及14个Python测试通过。提交前另执行原Java offline verify与前端类型检查/生产构建，结果见`/private/tmp/personal-ai-os-commit-java.log`及`/private/tmp/personal-ai-os-commit-frontend.log`。未修改原Java/前端/SQL或现有服务，五发布门禁不变。
+- 确认与取消入口复用`DecodeJSONObject`/`JSONStringField`，保留精确字段名、未知字段忽略、重复字段取末值、标量转String及字符集处理；拒绝尾随JSON、非法类型与Java式空白令牌。错误媒体类型保留原全局处理器的脱敏500，不擅自改成415。原Java控制器、校验器及全局异常处理器的MockMvc隔离对照共38例，核对HTTP/业务码与处理器调用次数；不启动Java应用或连接现有数据库。日志：`/private/tmp/personal-ai-os-p2-fix-java-oracle.log`、`/private/tmp/personal-ai-os-p2-fix-java-binding.log`。
+- 新增`task/patch_http_test.go`及`task/confirmation_http_test.go`：先在修复前复现摘要/旧记录回放和确认绑定失败，再于修复后通过。回归覆盖四个Java原摘要、同键null回放/false冲突，以及确认/取消各19种绑定场景；非法绑定不得读取确认、执行CAS或调用处理器。日志：`/private/tmp/personal-ai-os-p2-fix-red.log`、`/private/tmp/personal-ai-os-p2-fix-unit.log`。
+- `run_go_postgres_tests.py --tls --package app --run '^TestFoundationP2'`通过全部三个P2集成用例。新建的原42迁移TLS库中预置Java摘要的SUCCESS记录，HTTP回放保留原响应且任务标题/更新时间/截止时间不变；显式false仍409/40001。null/false保留截止时间、true清空；确认和取消的非法请求保持PENDING/未决时间为空/任务未变，随后同一令牌仍可正常确认或取消。日志：`/private/tmp/personal-ai-os-p2-fix-integration.log`。
+- Go全量`go test -race -count=1 ./...`18包通过（app 96.274s）；integration标签`go vet ./...`和`go build ./...`通过。`run_go_redis_tests.py --tls --backup --package app`完整P1/P2回归通过（101.429s），包括独立TLS PostgreSQL/Redis/最小ACL、恢复库五角色、网络分区与不确定提交。临时容器均已清理。日志：`/private/tmp/personal-ai-os-p2-fix-race.log`、`/private/tmp/personal-ai-os-p2-fix-foundation.log`。
+- 固定基线1093文件/104路由/27工具/95钩子/1119测试声明检查及14个Python测试通过。只补充四个已有progress项的证据，保留原状态及五发布门禁。未修改原Java/前端/SQL或现有服务。提交前Java offline verify通过（1137测试，零失败/错误/跳过），前端类型检查与生产构建通过；日志：`/private/tmp/personal-ai-os-commit-java.log`、`/private/tmp/personal-ai-os-commit-frontend.log`。两项修复分别本地提交；未推送或部署。
