@@ -25,7 +25,7 @@ def capture(command, **kwargs):
     return subprocess.run(command, text=True, capture_output=True, check=True, timeout=120, **kwargs).stdout.strip()
 
 
-PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", "app", "command"]
+PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", "idempotency", "app", "command"]
 
 
 def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None):
@@ -93,7 +93,7 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
                 "GO_TEST_REDIS", "GO_TEST_REDIS_URI", "GO_TEST_REDIS_CA_PEM",
                 "GO_TEST_REDIS_SESSION_URI", "GO_TEST_REDIS_RATE_URI",
             } if key in redis_env})
-        if (flyway and package == "migration") or package in {"app", "command"}:
+        if (flyway and package == "migration") or package in {"idempotency", "app", "command"}:
             if baseline:
                 go_env["GO_TEST_FLYWAY_BASELINE"] = "disposable"
             from java_flyway_fixture import migrate_disposable
@@ -104,7 +104,8 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
                 verify_backup_fixture(container)
                 go_env["GO_TEST_BACKUP"] = "disposable"
         print("运行 %s 集成测试" % package, flush=True)
-        target = "./cmd/personalos" if package == "command" else "./internal/app" if package == "app" else "./internal/platform/" + package
+        target = ("./cmd/personalos" if package == "command" else "./internal/app" if package == "app"
+                  else "./internal/business/idempotency" if package == "idempotency" else "./internal/platform/" + package)
         subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration", target],
                        cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
         if package == "command":

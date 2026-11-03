@@ -419,3 +419,10 @@ Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退
 严格`check-complete`最终仍退出1，2438条未verified、五发布门禁未通过：这是P2–P8全量迁移门禁的预期拒绝，不降低或批量改状态以让它变绿。P2及以后未勾选、未启动；默认回环/prod拒绝/readyz503继续保留。未推送、合并或部署。
 
 本轮分批提交：`73895e5`上传/会话/恢复库装配，`140e148`HTTP流观测/日志/Servlet安全边界，随后本次文档/配置台账/最终验收提交。Java/前端/原SQL基线无修改。
+
+## P2首批：幂等所有权与结果回放（T200，2026-11-03）
+
+- 新增`internal/business/idempotency`，实现确定性JSON/SHA-256、单轮工具键、HTTP/TOOL占位、摘要冲突、完成回放、失败回填和不确定结果保护。HTTP仅回收超过5分钟且CAS条件仍完全匹配的陈旧占位；TOOL无论多旧都不自动重试。
+- 单元及race测试通过：稳定map摘要、并发动作恰好一次、摘要冲突、失败不伪装成功、HTTP陈旧恢复与TOOL陈旧阻止均有独立断言。
+- `python3 scripts/migration/run_go_postgres_tests.py --package idempotency`通过；runner新建回环临时PostgreSQL并执行原42条真实Flyway迁移，两个独立连接池竞争同一键时仅一个动作执行，竞争方收到结果不明，完成后原payload回放且数据库只有一条SUCCESS。临时容器已finally清理。
+- 本批只关闭T200；确认、任务、标签、贡献接口与9条路由T201–T205保持未开始。未接触现有数据库、Java/前端实现、部署或生产守卫。
