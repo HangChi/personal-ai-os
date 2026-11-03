@@ -18,7 +18,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 ## P1 基础设施与数据兼容
 
 - [x] T100 创建可编译的 Go 模块与迁移诊断入口，默认回环 8081、不读现有 .env、不触碰现有数据、readyz 保持未就绪。实际进程监听/退出另列 T100a。
-- [ ] T100a 在允许回环监听的环境验证真实进程启动、livez/readyz/未知 API、SIGTERM 和退出；先前环境绑定端口被拒绝，权限调整后尚未重新验证。
+- [x] T100a 权限调整后以真实二进制分别启动五种角色，验证 livez/readyz、HEAD/405/未知 API、Worker 空 404、SIGTERM 零退出及端口释放；脚本仅使用临时目录/最小环境，未访问现有数据。完整依赖与 Worker 生命周期仍属 T108。
 - [x] T101 移植 ApiResponse、完整 ErrorCode、PageDto 的 of/ofPage/offsetOverflows、RuntimeRole 和 RequestId 基础契约，增加边界测试。仅基础代码实现，不代表全量 P1/异步传播 verified。
 - [ ] T102 决策并锁定 PostgreSQL 驱动/连接池、数据库配置、事务接口、超时/退出与最小权限；形成 research 补充。
 - [x] T102a 实现标准库显式 Connector 连接池、受限获取/探测、显式事务/独立事务、错误与 panic 回滚、取消/资源释放/错误脱敏，验证 32 路并发。尚未注册真实 PostgreSQL 驱动、接入应用或验证数据库语义，T102 仍未完成。

@@ -34,9 +34,10 @@
       "evidence": [
         "backend-go/internal/platform/config/config.go",
         "backend-go/internal/platform/config/config_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/smoke_go_process.py"
       ],
-      "note": "角色解析/allows/worker 基础规则已实现；实际独立 Worker/数据库协调未实现。"
+      "note": "角色解析/allows/worker 及五种角色真实诊断进程/Worker 空 404 已验证；实际 Worker 任务与数据库协调尚未实现，不能 verified。"
     },
     "file:backend/src/main/java/com/personalos/common/web/RequestIdFilter.java": {
       "status": "in_progress",
@@ -52,9 +53,11 @@
         "backend-go/cmd/personalos/main.go",
         "backend-go/internal/app/http.go",
         "backend-go/internal/app/http_test.go",
-        "backend-go/cmd/personalos/main_test.go"
+        "backend-go/cmd/personalos/main_test.go",
+        "scripts/migration/smoke_go_process.py",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "诊断入口已接入默认隔离的配置来源及启动拒绝测试；实际监听、数据库/业务/调度/完整装配仍待完成。"
+      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。"
     },
     "file:backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java": {
       "status": "in_progress",

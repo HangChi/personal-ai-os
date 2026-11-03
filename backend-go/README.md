@@ -61,7 +61,13 @@ SERVER_PORT=8081 APP_RUNTIME_ROLE=api go run ./cmd/personalos
 
 两个诊断端点是本阶段新增能力，JSON 为 `{process,phase,ready,role}`；它们不是现有 Java `/api/v1/health` 或 Actuator 的替代实现。Worker 在此阶段也不执行任务，仅可用来验证角色与隔离配置。
 
-实际进程绑定/退出的验证状态见 [验证记录](../specs/033-go-rewrite/validation.md)，不能以 httptest 的处理器测试替代真实启动验收。
+五种角色已通过真实进程 HTTP/HEAD/405/404、恒定未就绪、SIGTERM 与端口释放冒烟。可从仓库根目录复验（脚本不读取 .env，不沿用数据库/模型环境）：
+
+```bash
+python3 scripts/migration/smoke_go_process.py --binary /absolute/path/to/personalos
+```
+
+完整依赖/Worker/生产退出仍未验收，详见 [验证记录](../specs/033-go-rewrite/validation.md)。
 
 ## 接下来实施
 

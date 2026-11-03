@@ -84,6 +84,12 @@ HTTP 测试覆盖原 Java 四项断言及编码、单次消费、请求 ID 先�
 
 全部增量完成后再次执行 `go test -race -count=1 ./...`（七个包通过）、`go vet ./...` 和命令构建，均通过。Java 216 项快照重新执行核对通过；四项 Python 索引测试、1,093 文件基线检查、Markdown 本地链接与 git diff --check 通过。`check-complete` 仍按预期拒绝全部 2,438 个未 verified 项及发布门禁，没有预先升级验证状态。本轮未重复运行未变更的 Java 全量/前端门禁，其既有未通过事项继续保留。
 
+## 增量：P1 真实进程冒烟（T100a）
+
+2026-11-03 权限调整后重新构建 `/private/tmp/personal-ai-os-go-p1` 并实际执行 `python3 scripts/migration/smoke_go_process.py --binary /private/tmp/personal-ai-os-go-p1`，combined/api/index/review/delivery 五种角色全部通过。每个进程使用新临时目录和最小显式环境、随机回环端口，禁止 .env；验证 GET livez 200/readyz 503、HEAD 无正文、POST 405/Allow、请求 ID 回显、未知 API 404（Worker 无正文）、SIGTERM 返回 0 和端口释放。所有测试子进程均已退出。
+
+该结果解除此前端口绑定受限造成的 T100a 阻塞；不证明数据库/认证/真实 Worker/生产优雅退出已完成。没有访问现有 Java 监听端口、数据库、模型或用户数据。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。
