@@ -146,6 +146,16 @@ HTTP 验证所有请求认证/公共路径、匿名 me、认证关闭不造假�
 
 全量十一包 race、含 integration 标签的 vet、二进制构建、四项 Python 索引测试、1,093 文件基线及 diff 空白检查通过。
 
+## 增量：专用 Redis 与跨实例会话（T105c）
+
+先写客户端/存储构造测试并确认缺少实现时失败，再实现显式 URI、原 Java 的解码后 userinfo 冒号拆分、rediss TLS 验证配置、2 秒父 context 受限操作、有限连接池、无命令自动重试、关闭和错误脱敏。回环不响应 TCP 测试证明 100ms 父 deadline 不被 2 秒默认值覆盖；预取消和幂等关闭通过。URI/证书单测不代表实际 TLS 握手。
+
+运行 run_go_redis_tests.py：每包独占固定摘要 redis:8.2.1-alpine 的新 tmpfs 容器，无持久卷/既有服务，密码随机生成，只暴露随机回环端口。真实测试验证两独立客户端共用身份、100 路首次 CSRF 只有一个值、ID 冲突不破坏旧状态、轮换/注销和过期不复活；TTL 读续期、CSRF 不重置 TTL、实际过期、错误 schema/持久无 TTL 拒绝，模拟 Spring 命名空间保持不变。独立 OS 子进程成功读取并注销父进程会话；两个真实 HTTP 服务通过 SESSION Cookie 跨实例认证/取新 CSRF/注销，另一实例拒绝旧 Cookie。关闭 Redis 客户端后请求为 50000，没有本地或匿名成功回退。日志 /private/tmp/personal-ai-os-go-redis-tests.log；本次容器全部清理。
+
+Go 值格式刻意不兼容 Java 序列化，命名空间附加 :go:v1:，切换须重新登录。真实 TLS/ACL 最小权限、网络分区/不确定响应、完整配置与应用装配仍待验收；T105/P1/五项发布门禁继续开放。
+
+新增依赖后全量十二包 race、含 integration 标签的 vet、二进制构建、go mod verify 和五个专用 PostgreSQL 包集成再次通过；1,093 文件基线与 diff 空白检查通过。go mod tidy 首次离线因缺少新依赖的测试模块失败，随后仅开放官方代理完成 tidy；实际测试/构建继续使用 GOPROXY=off。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

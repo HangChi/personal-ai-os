@@ -13,14 +13,15 @@
 - `internal/platform/coordination`：数据库时钟租约、续租、fencing 与事务完成后释放；已通过真实 PostgreSQL 竞争/过期/实际定时续租，应用尚未装配，见 [说明](internal/platform/coordination/README.md)。
 - `internal/platform/modelgate`：模型本地/数据库共享并发与 Worker 的 API 预留容量；并发 HTTP 中间件持有整段 SSE 许可，真实应用尚未接线，见 [说明](internal/platform/modelgate/README.md)。
 - `internal/platform/ratelimit`：本地令牌桶、PostgreSQL 原子共享桶、后端选择/故障策略和指标回调；数据库跨池/跨进程竞争已验，Redis 与应用接线待完成，见 [边界说明](internal/platform/ratelimit/README.md)。
-- `internal/platform/auth`：单用户 BCrypt/失败锁定、原子本地会话和登录/轮换/注销/me/CSRF 安全处理器；74 项实际 Java 密码对照及真实回环 CookieJar 已验证，共享 Redis/应用接线待完成，见 [边界说明](internal/platform/auth/README.md)。
+- `internal/platform/auth`：单用户 BCrypt/失败锁定、本地/Redis 原子会话及登录/轮换/注销/me/CSRF 安全处理器；实际 Java 密码对照、真实 HTTP/CookieJar/Redis 跨进程已验证，应用接线待完成，见 [边界说明](internal/platform/auth/README.md)。
+- `internal/platform/redis`：显式专用 Redis 客户端、TLS 配置、受限超时/连接池/生命周期与脱敏错误，见 [说明](internal/platform/redis/README.md)。
 - `internal/platform/http`：请求 ID 校验/回显/context、模型请求路径匹配、限流拒绝 JSON 与日志脱敏；限流尚未接入诊断应用。
 - `internal/app`：迁移诊断端点、未知 API 明确返回 404、Worker 业务入口隔离。
 - `cmd/personalos`：回环监听、启动提示、信号处理和超时退出。
 
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
-应用尚未装配数据库连接/迁移、认证/CSRF/登录、模型、任务、聊天、Agent、知识库、日历、记忆、MCP 或后台调度。请求 ID 的后台执行/日志传播也尚未接入。第三方运行时依赖为固定版本的 pgx、x/crypto 及其间接依赖，见 [许可证声明](THIRD_PARTY_NOTICES.md)；首次构建需 `go mod download`，已有完整缓存后可离线验证。
+应用尚未装配数据库连接/迁移、认证/CSRF/登录、模型、任务、聊天、Agent、知识库、日历、记忆、MCP 或后台调度。请求 ID 的后台执行/日志传播也尚未接入。第三方运行时依赖为固定版本的 pgx、go-redis、x/crypto 及其间接依赖，见 [许可证声明](THIRD_PARTY_NOTICES.md)；首次构建需 `go mod download`，已有完整缓存后可离线验证。
 
 ## 构建与验证
 

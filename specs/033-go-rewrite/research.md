@@ -116,3 +116,11 @@ Decision：以 SessionStore 明确 Load（读且续期）、Rotate（新 ID 不�
 HTTP 按保守路径防火墙、会话读取、CSRF、认证、控制器顺序组合。保留所有公共路径、所有其他请求需认证、MCP 仅免 CSRF、401/403 JSON 和 me 的匿名 200。令牌支持 X-CSRF-TOKEN、_csrf query/urlencoded/multipart；表单读取最多 10 MiB，multipart 临时文件请求结束清理。Cookie 为 HttpOnly/SameSite Lax/显式 Secure，登录才签发身份会话。JSON 登录读取最多 10 MiB，拒绝重复 Cookie；这些 Go 明确边界及完整媒体类型/字段强制转换/验证错误排序/StrictHttpFirewall 响应仍需 T106 真服务差分。
 
 Alternatives considered：每请求全量 Save（会把过期或注销会话恢复）；登录复用匿名 ID（会话固定攻击）；CSRF 只保护已登录请求（遗漏登录 CSRF）；/mcp 绕过认证（原 Java 仅豁免 CSRF）；把内存会话装作共享 Redis（破坏跨实例注销）。未解除应用的生产/认证/CSRF 启动拒绝。
+
+## R-014 专用 Redis 连接与 Go 共享会话
+
+Decision：2026-11-03 从官方 Go 模块代理确认并下载 github.com/redis/go-redis/v9 v9.23.0（发布记录 2026-10-05、来源提交 6f2b2639e563b11709e06f42bc0addbfb5a1abb6）。先固定版本并实现显式 redis/rediss URI、TLS、2 秒操作边界、有限连接池和错误脱敏；关闭命令自动重试，防止不确定写入被重复执行。只支持专用 standalone，不读取环境/默认服务或全局客户端。许可证随实际模块保存。
+
+共享会话使用显式 namespace 下附加 :go:v1: 的独立键，JSON 值及 Redis TTL；不读取/改写 Spring Session 的序列化内容，切换需要重新登录。Lua 原子实现读取续期、ID 轮换、首次 CSRF 与删除；存储失败拒绝请求，禁止回退本地。将使用固定已缓存 redis:8.2.1-alpine 摘要的独立 tmpfs/随机回环端口容器，只传入新生成测试凭据，跨两客户端和真实 HTTP 实例验证，完成后补充实际结果。
+
+Alternatives considered：手写 RESP/TLS/池（增加协议和生命周期风险）；依赖 URI 默认值或连接现有 Redis（会越过数据隔离）；直接兼容 Java 二进制序列化（不必要且存在对象反序列化风险）；自动重试 Lua 写入（可能把已成功但丢响应的轮换再次执行）。实际 TLS 握手、ACL 最小权限、真实断网和应用装配另列验收，不以配置单测替代。
