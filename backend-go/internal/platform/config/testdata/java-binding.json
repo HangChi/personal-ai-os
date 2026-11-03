@@ -1,0 +1,2748 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "spring_boot": "4.1.1",
+  "spring_framework": "7.0.9",
+  "jars_sha256": {
+    "spring-boot-4.1.1.jar": "0d92b532b1d4020640e72d78c31af175c23db8e0ddd45b81855b7fdf4c9c70f0",
+    "spring-core-7.0.9.jar": "5195f4722699b39878d99a832549fe65df2890b159d063b88fff31b1ca65ae36",
+    "spring-context-7.0.9.jar": "7552a2fcfa30cea53eb14d7a65a7a8e1b1dd82e832a7164fb7e6fb105f438858",
+    "spring-beans-7.0.9.jar": "ff218b827a25c9e8929b0cd56dfb56916cea9d5b669ed97dc7cb262508ff548b",
+    "spring-expression-7.0.9.jar": "046434c40f43819729b9b1db0e6c659dfa68184c1c2c2efa5f7b3a5b27c4e2e2",
+    "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc"
+  },
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/common/auth/AuthProperties.java": "e8f9177f681ee0483a496b8259679944dcd914a13ba5e34f61d43979f7f312b3",
+    "backend/src/main/java/com/personalos/common/config/RateLimitProperties.java": "50327e4e19e367ab49a9772ca8ee606e26182daf062d6e4000587fa9fc2851ed",
+    "backend/src/main/java/com/personalos/common/ai/AgentExecutionProperties.java": "c9b4cfc769d6d36783c4b00737fc9657d71edb6d86ec2054e1a79ba8863f5dc5"
+  },
+  "scope": "Binder.bindOrCreate; canonical resolved String map only; no placeholders/YAML/environment/application assembly",
+  "cases": [
+    {
+      "kind": "auth",
+      "input": {},
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.unknown": "ignored-synthetic"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {},
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.unknown": "ignored-synthetic"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {},
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.unknown": "ignored-synthetic"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": ""
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": " "
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "true"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "TRUE"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "TrUe"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "on"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "yes"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "1"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "false"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "off"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "NO"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "0"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": " true\t"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "　true"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "truth"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "2"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "y"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "n"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "tr ue"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "truſe"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": ""
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": " "
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "true"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "TRUE"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "TrUe"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "on"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "yes"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "1"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "false"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "off"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "NO"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "0"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": " true\t"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "　true"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "truth"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "2"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "y"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "n"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "tr ue"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "truſe"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": ""
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": " "
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "-1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "1"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 1,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "+12"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 12,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "0012"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 12,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "2147483647"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 2147483647,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "2147483648"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "-2147483648"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "-2147483649"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "0x10"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 16,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "0X7fffffff"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 2147483647,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "#10"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 16,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "+0x10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "-0x10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "0x80000000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "1_000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "1,000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "1.0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": " 1\t2\n"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 12,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "1　2"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 12,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "１２"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 12,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "١٢"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 12,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "123abc"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "𝟙𝟚"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "0xＦＦ"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 255,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "#ａ"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 10,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "0x+10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "0x-10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "++1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "--1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "0b10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "010"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 10,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "1 2"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.max-failures": "12"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": ""
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": " "
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "-1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "1"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 1,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "+12"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 12,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "0012"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 12,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "2147483647"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 2147483647,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "2147483648"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "-2147483648"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "-2147483649"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "0x10"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 16,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "0X7fffffff"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 2147483647,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "#10"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 16,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "+0x10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "-0x10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "0x80000000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "1_000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "1,000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "1.0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": " 1\t2\n"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 12,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "1　2"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 12,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "１２"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 12,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "١٢"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 12,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "123abc"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "𝟙𝟚"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "0xＦＦ"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 255,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "#ａ"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 10,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "0x+10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "0x-10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "++1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "--1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "0b10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "010"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 10,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "1 2"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.capacity": "12"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": ""
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": " "
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "-1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "1"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 1,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "+12"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "0012"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "2147483647"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 2147483647,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "2147483648"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "-2147483648"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "-2147483649"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "0x10"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 16,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "0X7fffffff"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 2147483647,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "#10"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 16,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "+0x10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "-0x10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "0x80000000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "1_000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "1,000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "1.0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": " 1\t2\n"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "1　2"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "１２"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "١٢"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "123abc"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "𝟙𝟚"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "0xＦＦ"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 255,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "#ａ"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 10,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "0x+10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "0x-10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "++1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "--1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "0b10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "010"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 10,
+        "maxConsecutiveFailures": 2
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "1 2"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "12"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": ""
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": " "
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "-1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "1"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 1
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "+12"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 12
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "0012"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 12
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "2147483647"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2147483647
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "2147483648"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "-2147483648"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "-2147483649"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "0x10"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 16
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "0X7fffffff"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 2147483647
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "#10"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 16
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "+0x10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "-0x10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "0x80000000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "1_000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "1,000"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "1.0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": " 1\t2\n"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 12
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "1　2"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 12
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "１２"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 12
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "١٢"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 12
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "123abc"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "𝟙𝟚"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "0xＦＦ"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 255
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "#ａ"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 10
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "0x+10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "0x-10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "++1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "--1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "0b10"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "010"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 12,
+        "maxConsecutiveFailures": 10
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "1 2"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-consecutive-failures": "12"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": ""
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": " "
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "-1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "1"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "1000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "1ns"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "1"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "60s"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "2m"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "120000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "PT1.000000001S"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "1000000001"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "PT-0.5S"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "1.5s"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "P1D"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "86400000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "9223372036854775807ns"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "9223372036854775807"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "9223372036854775808ns"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "9223372036855ms"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "9223372036855000000"
+      },
+      "go_overflow": true
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "PT9223372036854775807S"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "9223372036854775807000000000"
+      },
+      "go_overflow": true
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.lockout": "bad-synthetic-value"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": ""
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": " "
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "0"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "-1"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "1"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "1000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "1ns"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "1"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "60s"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "2m"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "120000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "PT1.000000001S"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "1000000001"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "PT-0.5S"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "1.5s"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "P1D"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "86400000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "9223372036854775807ns"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "9223372036854775807"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "9223372036854775808ns"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "9223372036855ms"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "9223372036855000000"
+      },
+      "go_overflow": true
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "PT9223372036854775807S"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "capacity": 60,
+        "period": "9223372036854775807000000000"
+      },
+      "go_overflow": true
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.period": "bad-synthetic-value"
+      },
+      "java_error": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.username": ""
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.username": " "
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.username": "\t\u001c　"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.username": "  合成用户😀  "
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "合成用户😀",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.username": " fixture "
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": " fixture ",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.username": "a\u0000b"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "a\u0000b",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.username": "${literal}"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "${literal}",
+        "password": null,
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.password": ""
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": "",
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.password": " "
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": " ",
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.password": "\t\u001c　"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": "\t\u001c　",
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.password": "  合成用户😀  "
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": "  合成用户😀  ",
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.password": " fixture "
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": " fixture ",
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.password": "a\u0000b"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": "a\u0000b",
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.password": "${literal}"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "username": "admin",
+        "password": "${literal}",
+        "maxFailures": 5,
+        "lockout": "60000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "auth",
+      "input": {
+        "app.auth.enabled": "true",
+        "app.auth.username": " test ",
+        "app.auth.password": "fixture-only-password",
+        "app.auth.max-failures": "7",
+        "app.auth.lockout": "3s"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": true,
+        "username": "test",
+        "password": "fixture-only-password",
+        "maxFailures": 7,
+        "lockout": "3000000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "rate-limit",
+      "input": {
+        "app.rate-limit.enabled": "false",
+        "app.rate-limit.capacity": "10",
+        "app.rate-limit.period": "250ms"
+      },
+      "java_error": false,
+      "value": {
+        "enabled": false,
+        "capacity": 10,
+        "period": "250000000"
+      },
+      "go_overflow": false
+    },
+    {
+      "kind": "agent",
+      "input": {
+        "app.agent.max-model-calls": "4",
+        "app.agent.max-consecutive-failures": "3"
+      },
+      "java_error": false,
+      "value": {
+        "maxModelCalls": 4,
+        "maxConsecutiveFailures": 3
+      },
+      "go_overflow": false
+    }
+  ]
+}

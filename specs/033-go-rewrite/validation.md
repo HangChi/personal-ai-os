@@ -244,6 +244,12 @@ go_config_inventory.py从固定Git基线加载全部7 YAML文件，实际Spring�
 
 隔离StandardEnvironment排除宿主来源，实际Spring属性解析与原ProductionSecurityValidator的4场景证明spring.servlet/server.servlet Cookie路径差异。Go先加入对照测试确认旧实现失败，再改canonical环境别名与系统高于.env的优先级。旧dotenv测试依赖了错误的prod Cookie默认值，补显式canonical fixture后保留其原先三个开关优先级断言。定向race通过（/private/tmp/personal-ai-os-go-cookie-sources.log），全量十四包race/integration vet/build通过（/private/tmp/personal-ai-os-go-config-sources-all.log）。进程smoke初次漏传必填--binary未执行，随后明确构建临时二进制，五角色真实HTTP/退出复验全部通过。生产/认证/CSRF启动守卫保持，完整绑定/装配仍待完成。
 
+## 增量：认证/限流/Agent配置的真实Binder对照（T104d）
+
+先加入绑定测试，确认BindAuthProperties/BindRateLimitProperties/BindAgentExecutionProperties未实现时编译失败（/private/tmp/personal-ai-os-go-binding-red.log）。独立编译三个固定Java record，真实Spring Binder.bindOrCreate生成241项快照，其中120项原Java拒绝、4项Java合法而超Go时长范围；默认脚本重复生成完全一致。只传已解析canonical字符串map，明确不做占位符/来源/profile解析。
+
+Go逐项核对完整record结果，覆盖缺省注解/显式空/零负值/32位溢出、内部空白/hex/BMP Unicode与补充平面反例、纳秒/空时长、用户名strip和密码null/空/原样。错误/格式化/JSON不泄漏凭据，密码指针与原map修改不能改变已绑定值；100路各10次无共享状态。测试将绑定值传给真实BCrypt服务，成功登录、两次失败、第三次锁定29–30秒，并验证启用后缺密码仍由服务拒绝；本地桶容量与禁用后仍校验非法配置通过。定向三轮race通过（/private/tmp/personal-ai-os-go-binding-stress.log），全量十四包race/integration vet/build通过（/private/tmp/personal-ai-os-go-binding-all.log）。未装入主应用或执行P4 Agent，T104/T105/T109保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

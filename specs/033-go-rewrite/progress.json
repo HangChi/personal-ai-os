@@ -140,9 +140,15 @@
         "backend-go/internal/platform/config/scalars_test.go",
         "backend-go/internal/platform/config/testdata/java-scalars.json",
         "scripts/migration/java_config_scalar_fixture.py",
-        "scripts/migration/ConfigScalarOracle.java"
+        "scripts/migration/ConfigScalarOracle.java",
+        "backend-go/internal/platform/config/binding.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/binding_integration_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py"
       ],
-      "note": "默认 enabled/capacity/period 与正数校验已移植；环境/YAML 属性绑定及完整共享后端装配仍待迁移。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。"
+      "note": "默认 enabled/capacity/period 与正数校验已移植；环境/YAML 属性绑定及完整共享后端装配仍待迁移。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。 已提供canonical字符串map的类型化绑定，真实Spring Binder241项对照/凭据副本与脱敏、BCrypt锁定与本地桶接线验证；4个Java时长超Go范围明确拒绝。来源/profile/其余配置/应用装配未完成，不能verified；Agent仅配置不代表P4执行。"
     },
     "file:backend/src/main/java/com/personalos/common/web/TokenBucketRateLimiter.java": {
       "status": "in_progress",
@@ -284,9 +290,15 @@
         "scripts/migration/java_model_paths_fixture.py",
         "scripts/migration/ModelRequestPathsOracle.java",
         "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/platform/config/binding.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/binding_integration_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py"
       ],
-      "note": "已有默认值/正数校验，环境/YAML 属性绑定尚未完成。"
+      "note": "已有默认值/正数校验，环境/YAML 属性绑定尚未完成。 已提供canonical字符串map的类型化绑定，真实Spring Binder241项对照/凭据副本与脱敏、BCrypt锁定与本地桶接线验证；4个Java时长超Go范围明确拒绝。来源/profile/其余配置/应用装配未完成，不能verified；Agent仅配置不代表P4执行。"
     },
     "test:backend/src/test/java/com/personalos/common/web/ModelConcurrencyFilterTest.java:41": {
       "status": "implemented",
@@ -1503,7 +1515,7 @@
       "note": "凭据/BCrypt/Java strip/失败锁定基础实现与 74 项实际 Java 编码器对照通过；并发校验串行化，未装配 HTTP/会话/CSRF/配置绑定，不能 verified。"
     },
     "file:backend/src/main/java/com/personalos/common/auth/AuthProperties.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/auth/service.go",
         "backend-go/internal/platform/auth/service_test.go",
@@ -1514,9 +1526,15 @@
         "backend-go/internal/platform/config/scalars_test.go",
         "backend-go/internal/platform/config/testdata/java-scalars.json",
         "scripts/migration/java_config_scalar_fixture.py",
-        "scripts/migration/ConfigScalarOracle.java"
+        "scripts/migration/ConfigScalarOracle.java",
+        "backend-go/internal/platform/config/binding.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/binding_integration_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py"
       ],
-      "note": "凭据/BCrypt/Java strip/失败锁定基础实现与 74 项实际 Java 编码器对照通过；并发校验串行化，未装配 HTTP/会话/CSRF/配置绑定，不能 verified。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。"
+      "note": "凭据/BCrypt/Java strip/失败锁定基础实现与 74 项实际 Java 编码器对照通过；并发校验串行化，未装配 HTTP/会话/CSRF/配置绑定，不能 verified。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。 已提供canonical字符串map的类型化绑定，真实Spring Binder241项对照/凭据副本与脱敏、BCrypt锁定与本地桶接线验证；4个Java时长超Go范围明确拒绝。来源/profile/其余配置/应用装配未完成，不能verified；Agent仅配置不代表P4执行。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java": {
       "status": "implemented",
@@ -2189,6 +2207,45 @@
         "backend-go/internal/platform/config/cookie_sources_test.go"
       ],
       "note": " 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/AgentExecutionProperties.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/config/binding.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/binding_integration_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": " 已提供canonical字符串map的类型化绑定，真实Spring Binder241项对照/凭据副本与脱敏、BCrypt锁定与本地桶接线验证；4个Java时长超Go范围明确拒绝。来源/profile/其余配置/应用装配未完成，不能verified；Agent仅配置不代表P4执行。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/ai/AgentExecutionProperties.java:7:ConfigurationProperties": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/config/binding.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/binding_integration_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": " 已提供canonical字符串map的类型化绑定，真实Spring Binder241项对照/凭据副本与脱敏、BCrypt锁定与本地桶接线验证；4个Java时长超Go范围明确拒绝。来源/profile/其余配置/应用装配未完成，不能verified；Agent仅配置不代表P4执行。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/auth/AuthProperties.java:32:ConfigurationProperties": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/config/binding.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/binding_integration_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": " 已提供canonical字符串map的类型化绑定，真实Spring Binder241项对照/凭据副本与脱敏、BCrypt锁定与本地桶接线验证；4个Java时长超Go范围明确拒绝。来源/profile/其余配置/应用装配未完成，不能verified；Agent仅配置不代表P4执行。"
     }
   },
   "release_gates": {

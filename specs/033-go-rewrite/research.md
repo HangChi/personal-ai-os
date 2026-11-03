@@ -240,3 +240,13 @@ Decision：用基线离线依赖的YamlPropertySourceLoader和独立编译record
 Go LoadSecurity改按canonical路径的四种真实环境别名解析，先查系统来源所有别名再查.env，防止低优先级精确键压过高优先级别名。不把prod错误路径/未被消费的SESSION_COOKIE_SECURE强行当true。原三个prod开关优先级保持；诊断生产/认证/CSRF监听守卫不放开。此前参数级生产校验虽通过，但未证明来源绑定，本次以真实Java来源结果修正。完整YAML/profile、Binder默认与所有属性仍属T104。
 
 Alternatives considered：只grep环境变量（漏record默认与重复文档）；先合并YAML再索引（丢来源/profile）；同时改原Java消掉差异（破坏固定基线）；把SESSION_COOKIE_SECURE当canonical别名（掩盖原行为）；为拿到true绕过生产守卫。当前只对合成来源验证，不接现有服务。
+
+## R-028 三类record的真实Binder语义
+
+Decision：先为Auth/RateLimit/AgentExecution提供纯函数绑定器，输入仅为已解析canonical字符串map，输出类型化配置。独立编译固定Java的三个record，以真实Binder.bindOrCreate/MapConfigurationPropertySource/ApplicationConversionService/PlaceholdersResolver.NONE生成241项结果；不把这误报为YAML/profile/系统环境绑定。DefaultValue与紧凑构造器分别验证：缺省整数取注解，显式空整数失败；Duration空串转换null后回落注解，而纯空白失败；即使关闭认证/限流，非法预算仍拒绝。
+
+整数保留32位边界与Spring NumberUtils规则，移除所有Java空白（包括数字中间）；只接受原hex前缀与Integer.parseInt的BMP Character.digit，拒绝补充平面数学数字、Unicode正负号、浮点与分隔符。时长复用已验证转换器；4个Java合法但超Go纳秒范围的值保持ErrScalarOverflow。错误只含固定属性名和安全原因，不带输入或Binder原始异常。
+
+Auth保留密码null/显式空字符串，用户名按Java strip/default。密码私有存储、访问返回独立副本，用户名/密码均不参与JSON或常规格式化；仍由AuthService校验启用后的必填和编码，避免将record构造和服务启动混为一谈。真实BCrypt两次失败后锁定及本地桶容量/关闭/关闭后非法配置验证通过。Agent仅绑定预算，不提前实现P4执行逻辑。所有函数不读文件、环境或创建连接，主入口守卫不变。
+
+Alternatives considered：用strconv.Atoi替代Java整数（Unicode/空白/hex不一致）；把空字符串视作完全缺省（整数误放行）；在record里额外要求密码（改变错误优先级）；把原配置map保留在对象里（泄漏与可变别名）；在此阶段放开生产装配。来源解析、其余record和应用接线继续属T104/T105/T109。

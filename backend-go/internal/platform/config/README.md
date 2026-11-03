@@ -23,3 +23,17 @@ python3 scripts/migration/java_config_scalar_fixture.py
 ```
 
 该命令从固定基线BOM解析本机离线依赖，直接调用真实Boot ApplicationConversionService核对228项。默认只比较，显式--write才更新快照；不启动Spring或读取.env。它不证明完整Binder、带DurationUnit/DataSizeUnit注解、YAML或配置来源优先级兼容。
+
+## 类型化配置绑定
+
+`BindAuthProperties`、`BindRateLimitProperties`、`BindAgentExecutionProperties`只接收已解析的canonical字符串map，例如`app.auth.max-failures`。nil/空map采用原record的DefaultValue和紧凑构造器；这里没有自动叠加application.yml，不读取宿主环境/.env，不实现relaxed键转换、YAML/profile或占位符。调用方必须先完成来源优先级与canonical化，不能把原始环境map直接交进来。未知字段与该默认Binder一样忽略。
+
+真实Spring Binder.bindOrCreate的241项对照区分缺省/空/零/非法：缺省整数采用注解，显式空整数报错；空时长转换成null后采用注解，纯空白报错；关闭限流仍校验容量/周期。整数遵循Java 32位、内部Java空白移除、hex与BMP Unicode数字语法，补充平面数学数字不被当作UTF-16 char接受。4个Java合法但超Go时长范围的输入保持显式ErrScalarOverflow，不截断。
+
+认证绑定保留密码nil/空值且不trim，用户名使用Java strip/default。用户名/密码不参与JSON或格式化；`Password()`返回独立副本，只供显式凭据编码器使用。record本身允许认证开启而密码缺席，与原Java相同；AuthService随后负责必填/BCrypt校验，不能绕过。测试已将绑定结果交给真实Go认证和限流组件验证，主诊断应用仍不装配这些能力。
+
+```bash
+python3 scripts/migration/java_config_binding_fixture.py
+```
+
+夹具从固定Git源码独立编译三类record并使用真实Binder，只注入合成字符串map、PlaceholdersResolver.NONE，不读取系统属性、真实环境、文件配置或启动应用。默认重生成比较，--write显式更新。Agent这里只覆盖配置绑定，不表示P4执行引擎已迁移。
