@@ -64,9 +64,9 @@ def main():
             "GO_TEST_POSTGRES_USER": "go_fixture", "GO_TEST_POSTGRES_DB": "personalos_go_test",
             "GO_TEST_POSTGRES_PASSWORD": password,
         })
-        print("运行真实驱动/事务/取消/并发集成测试", flush=True)
+        print("运行真实驱动/事务/取消/并发与跨进程共享限流集成测试", flush=True)
         subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
-                        "./internal/platform/database"], cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
+                        "./internal/platform/database", "./internal/platform/ratelimit"], cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
     finally:
         if container:
             subprocess.run(["docker", "rm", "--force", container], check=True, capture_output=True, timeout=30)

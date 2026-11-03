@@ -343,6 +343,50 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "已迁移 skipsNonPostMethods 断言并通过独立 HTTP/Java 路径对照；完整并发许可与集成仍待验证，不是 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/DatabaseCoordination.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/postgres.go",
+        "backend-go/internal/platform/ratelimit/postgres_test.go",
+        "backend-go/internal/platform/ratelimit/postgres_integration_test.go",
+        "scripts/migration/run_go_postgres_tests.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "仅 consume 已移植并在一次性 PostgreSQL 验证共享预算、数据库时钟、独立事务/锁取消；两个 OS 进程共享预算通过。acquire/Lease/fence/renew/延迟释放与退出尚未迁移，不能 verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/postgres.go",
+        "backend-go/internal/platform/ratelimit/postgres_test.go",
+        "backend-go/internal/platform/ratelimit/postgres_integration_test.go",
+        "scripts/migration/run_go_postgres_tests.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "限流共享/数据库时钟断言已移植，并增加跨进程/并发/取消/错误测试；其余租约/fencing/API 预留场景未迁移，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:66": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/postgres.go",
+        "backend-go/internal/platform/ratelimit/postgres_test.go",
+        "backend-go/internal/platform/ratelimit/postgres_integration_test.go",
+        "scripts/migration/run_go_postgres_tests.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "限流共享与数据库时钟补充断言已在 Go 真 PostgreSQL 通过；未实际执行 Java/Go 服务差分，不能 verified。"
+    },
+    "file:backend/src/main/resources/db/migration/V37__runtime_coordination.sql": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/postgres.go",
+        "backend-go/internal/platform/ratelimit/postgres_test.go",
+        "backend-go/internal/platform/ratelimit/postgres_integration_test.go",
+        "scripts/migration/run_go_postgres_tests.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "共享桶集成测试直接在一次性 PostgreSQL 加载未修改的 V37 原 SQL。仅该文件重放，42 个迁移/Flyway 历史/恢复与租约语义尚未验收，不能 verified。"
     }
   },
   "release_gates": {

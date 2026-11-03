@@ -13,7 +13,7 @@ const (
 	Redis    Backend = "redis"
 )
 
-// Bucket 是共享存储的原子消费边界。具体 PostgreSQL/Redis 适配器尚未实现。
+// Bucket 是共享存储的原子消费边界；PostgreSQL 已实现，Redis 适配器仍待迁移。
 // 实现必须自行保证跨进程原子性，并使用共享后端时钟，不得调用本地桶替代。
 type Bucket interface {
 	Consume(ctx context.Context, name string, capacity int, period time.Duration) (bool, error)
