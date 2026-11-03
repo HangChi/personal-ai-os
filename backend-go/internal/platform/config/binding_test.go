@@ -40,7 +40,7 @@ func boundRecord(kind string, input map[string]string) (any, error) {
 	case "mcp":
 		return boundMCP([]BindingSource{{Values: input}})
 	default:
-		return nil, errors.New("未知配置夹具")
+		return boundRemainingRecord(kind, input)
 	}
 }
 
@@ -86,7 +86,8 @@ func TestJavaRecordBinding(t *testing.T) {
 	for _, test := range fixture.Cases {
 		counts[test.Kind]++
 	}
-	for kind, minimum := range map[string]int{"auth": 90, "rate-limit": 76, "agent": 75, "mcp": 157} {
+	for kind, minimum := range map[string]int{"auth": 90, "rate-limit": 76, "agent": 75, "mcp": 157,
+		"plan": 44, "calendar": 215, "ai": 66, "context": 161, "protection": 114, "app": 16, "knowledge": 296, "memory": 165} {
 		if counts[kind] < minimum {
 			t.Fatal("绑定夹具缺失", kind)
 		}

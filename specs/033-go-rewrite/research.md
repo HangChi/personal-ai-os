@@ -264,3 +264,13 @@ MCP record对null/非正时长先归一到10秒，所以合法负Duration即便�
 容器字段全部私有，访问返回副本；格式化/JSON隐藏server名称、命令、参数和环境。来源map仅同步读取，调用期间不能并发修改；返回对象不保留可变别名。显式map固定排序键用于对照，尚不承诺任意宿主来源别名冲突顺序。
 
 Alternatives considered：把全部来源先合并成一个map（错误拼接列表/丢来源）；自动纠正ENV_API_KEY（悄改基线行为）；未知字段也注册空server（幽灵进程）；先将巨大负时长转Go再归一（误拒）；写通用反射Binder或引入Spring运行时。当前只提供配置边界，不提前实现P7。
+
+## R-030 全部record构造器与primitive缺省
+
+Decision：补齐其余8类canonical纯绑定，独立编译全部12类原record，真实Binder夹具从398扩展到1475项。复用既有整数语法但按字段区分int32/long64，先转换再交由各紧凑构造器归一，不能把正值校验错误套用到允许归一的record。Double遵循NumberUtils移除Java空白、Double.parseDouble大小写/hex/后缀/非有限值/IEEE溢出；原record保留的NaN也保留，不擅自修复业务行为。测试输出只对非有限值使用字符串标签，生产配置不从该测试编码器输出。
+
+真实Binder证明Calendar初始延迟缺省0、Knowledge相似阈值缺省0、Protection重试缺省0（静态defaults工厂是1）。Context/Memory父record缺省创建enabled=true的nested；实际绑定任一已知子字段才采用primitive false。空Duration转换null时nested仍不被创建，首版按键存在判断造成两个真实差分，已修正并全量复验。未知nested子字段不能改变默认开关。
+
+时长先检查Java自身完整范围，再按record允许零/负值归一，最后检查Go范围。字符串null/空保留，提示与应用字符串私有/脱敏、访问指针副本；扩展名集合私有且访问复制。Unicode小写使用已有x/text的完整大小写实现，不引入新运行时版本；业务执行与ConfigData/来源发现仍未接线。
+
+Alternatives considered：把YAML默认值灌进record缺省（掩盖真实primitive差异）；按所有非正数报错（改变紧凑构造器语义）；用Go float语法直接接收Inf/小写nan（扩大Java接受集）；把NaN比较误判为越界；所有nested只按键存在判定。T104父任务继续开放。

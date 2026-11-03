@@ -159,6 +159,15 @@ func bindPositiveInt(properties map[string]string, key string, fallback int) (in
 	if !found {
 		return fallback, nil
 	}
+	value, err := bindJavaInteger(source, key, 32)
+	if err != nil || value <= 0 {
+		return 0, &propertyError{key, ErrInvalidProperty}
+	}
+	return int(value), nil
+}
+
+// bindJavaInteger同时供primitive int/long使用；正值约束由各record独立处理。
+func bindJavaInteger(source, key string, bits int) (int64, error) {
 	// Spring NumberUtils移除所有Java空白，包含数字中间的空白。
 	source = strings.Map(func(r rune) rune {
 		if javaWhitespace(r) {
@@ -190,11 +199,11 @@ func bindPositiveInt(properties map[string]string, key string, fallback int) (in
 	if negative {
 		text = "-" + text
 	}
-	value, err := strconv.ParseInt(text, base, 32)
-	if err != nil || value <= 0 {
+	value, err := strconv.ParseInt(text, base, bits)
+	if err != nil {
 		return 0, &propertyError{key, ErrInvalidProperty}
 	}
-	return int(value), nil
+	return value, nil
 }
 
 // Integer.parseInt逐UTF-16 char使用Character.digit，支持BMP十进制数字与

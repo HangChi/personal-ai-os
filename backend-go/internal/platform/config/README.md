@@ -49,3 +49,11 @@ Map按键合并，单server各字段独立覆盖；List/Set取最高优先级来
 MCP配置和server字段全部私有，命令指针、server名称、参数、环境map和工具集合访问均返回副本；格式化/JSON只输出脱敏信息。command的null/空串保持区别，连接期限为null/非正值时归一到10秒。先按Java Duration完整范围检查合法性再归一化，合法巨大负值仍归一化，Java自身溢出则拒绝；归一化后仍超Go范围的正值明确ErrScalarOverflow。
 
 离线Binder夹具已扩展为四类record共398项，其中MCP157项；只使用显式合成MAP/正确命名为*-systemEnvironment的来源。当前实现针对上述MCP键形态，不是任意Spring Binder替代；不支持ConfigData/profile激活、占位符/SpEL、任意配置类型、宿主来源发现或应用接线。同一显式map以排序键枚举；任意别名冲突和其余relaxed绑定边界仍需继续验收。没有启动MCP子进程或连接协议服务，P7保持未开始。
+
+## 全部12类record
+
+后续扩展的`module_binding.go`提供其余8类`Bind*Properties`，真实Binder夹具累计1475项，覆盖全部12类配置record。输入仍为已解析canonical字符串map，不加载YAML、环境或业务运行时。`AppProperties`字符串保留null/空，提示文本和应用标识常规格式化/JSON脱敏，集合访问返回副本。
+
+特别保留原构造器行为：Calendar的首次扫描延迟缺省为0，Knowledge相似阈值缺省为0，Protection绑定缺省重试0而显式defaults工厂为1；Context.summary与Memory.ranking/backfill完全缺省时enabled=true，绑定其余已知子字段后primitive缺省false。仅空时长转换null不构成nested绑定，未知字段也不会创建nested。
+
+整数按原32/64位语法检查再归一；浮点沿用Java Double（包含hex、f/d后缀、NaN/Infinity和IEEE溢出）的实际结果，不能静默替换NaN或把合法溢出归一化当作非法。时长先在Java完整范围解析，合法非正值按各record默认处理，归一化后超Go范围仍明确拒绝。知识库扩展名规则与查询限额、Calendar有效前瞻/范围/限额等配置辅助方法已实现；相应业务执行仍属于后续阶段。

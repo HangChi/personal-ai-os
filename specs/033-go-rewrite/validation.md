@@ -260,6 +260,12 @@ Go逐项核对完整record结果，覆盖缺省注解/显式空/零负值/32位�
 
 全部容器/命令指针副本与来源修改隔离、格式化/JSON/动态错误键脱敏、非法UTF-8和100路各10次绑定通过；定向三轮race（/private/tmp/personal-ai-os-go-mcp-binding-stress.log）、全量十四包race（/private/tmp/personal-ai-os-go-mcp-binding-all.log）、integration vet、构建、五角色真实HTTP/退出和go mod verify通过。最后局部简化/夹具数量守卫后定向race与vet复验。完整ConfigData/profile/别名冲突/应用装配继续开放，未执行MCP子进程或连接协议，P7仍未开始。
 
+## 增量：全部12类配置record（T104f）
+
+先加入其余8类绑定和辅助方法测试，确认缺少API时编译失败（/private/tmp/personal-ai-os-go-module-bind-red.log），再实现。真实Binder夹具累计1475项并默认重生成比较通过，覆盖原67个字段/容器节点；不启动业务或读取宿主配置。首次逐项对照发现空nested时长应转换null而不创建nested的两个差分，修正后全部通过。
+
+全量14包race通过（/private/tmp/personal-ai-os-go-module-binding-all.log）、integration标签vet/build通过；全部配置索引重生成、1093文件基线check与diff检查通过。辅助方法覆盖Calendar有效前瞻/查询限额、Knowledge扩展名/TopK、Protection静态工厂与Binder缺省差异；100路各10次验证集合/指针/来源修改不串扰，错误与提示/标识格式化脱敏。此证据只证明已解析canonical map的record绑定，不是全量ConfigData/profile/应用装配，P1保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

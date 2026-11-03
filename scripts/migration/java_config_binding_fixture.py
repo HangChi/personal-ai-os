@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""真实Spring Binder的安全/限流/预算及动态MCP对照；不读取宿主环境或YAML。"""
+"""全部12类真实Spring配置record的对照；不读取宿主环境或YAML。"""
 
 import argparse
 import base64
@@ -18,6 +18,14 @@ RECORDS = {
     "rate-limit": ("app.rate-limit", "com.personalos.common.config.RateLimitProperties"),
     "agent": ("app.agent", "com.personalos.common.ai.AgentExecutionProperties"),
     "mcp": ("mcp", "com.personalos.mcp.config.McpProperties"),
+    "plan": ("app.plan", "com.personalos.agent.plan.PlanProperties"),
+    "calendar": ("app.calendar", "com.personalos.calendar.config.CalendarProperties"),
+    "ai": ("app.ai", "com.personalos.common.ai.AiProperties"),
+    "context": ("app.context", "com.personalos.common.ai.ContextProperties"),
+    "protection": ("app.context.protection", "com.personalos.common.ai.ContextProtectionProperties"),
+    "app": ("app", "com.personalos.common.config.AppProperties"),
+    "knowledge": ("app.knowledge", "com.personalos.knowledge.config.KnowledgeProperties"),
+    "memory": ("app.memory", "com.personalos.memory.MemoryProperties"),
 }
 
 
@@ -55,6 +63,62 @@ def cases():
         {"kind": "agent", "input": {"app.agent.max-model-calls": "4", "app.agent.max-consecutive-failures": "3"}},
     ]
     result += mcp_cases()
+    result += remaining_record_cases()
+    return result
+
+
+def remaining_record_cases():
+    result = []
+    def add(kind, key, values):
+        prefix = RECORDS[kind][0]
+        for value in values:
+            result.append({"kind": kind, "input": {prefix + "." + key: value}})
+    integers = ["", " ", "0", "-1", "1", "+12", "0012", "2147483647", "2147483648", "-2147483648",
+                "-2147483649", "0x10", "#10", "+0x10", "-0x10", "1.0", "1_000", "1,000",
+                " 1\t2\n", "1\u30002", "１２", "١٢", "𝟙𝟚", "0xＦＦ", "++1", "--1", "0x+10", "1\u00a02"]
+    for kind, keys in {
+        "plan": ["max-inject-chars"],
+        "calendar": ["max-range-days", "default-query-limit", "max-query-limit"],
+        "ai": ["memory.max-messages", "memory.context-window-tokens"],
+        "context": ["summary.min-messages", "summary.max-excerpt-chars", "summary.max-summary-chars", "auto-memory.max-items"],
+        "protection": ["output-reserve-tokens", "safety-margin-tokens", "image-reserve-tokens", "max-retries"],
+        "knowledge": ["embedding-dimensions", "top-k", "min-chunk-size-chars", "chunk-size-chars", "chunk-overlap-chars", "rrf-k"],
+        "memory": ["pinned-max-count", "ranking.half-life-days", "backfill.batch-size"],
+    }.items():
+        for key in keys:
+            add(kind, key, integers)
+    for kind, key in [("calendar", "scan-interval-ms"), ("calendar", "scan-initial-delay-ms"), ("knowledge", "max-file-size-bytes")]:
+        add(kind, key, integers + ["9223372036854775807", "-9223372036854775808", "9223372036854775808", "0x7fffffffffffffff"])
+    for kind, keys in {"plan": ["enabled"], "calendar": ["scan-enabled"], "context": ["summary.enabled", "auto-memory.enabled"],
+                       "knowledge": ["hybrid-search-enabled"], "memory": ["ranking.enabled", "backfill.enabled"]}.items():
+        for key in keys:
+            add(kind, key, ["", " ", "true", "TRUE", "on", "yes", "1", "false", "off", "NO", "0", " true\t", "\u3000true", "bad"])
+    for kind, keys in {"calendar": ["scan-lookahead", "scan-lookback", "default-reminder-lead"],
+                       "context": ["summary.timeout"], "memory": ["ranking.timeout"]}.items():
+        for key in keys:
+            add(kind, key, ["", " ", "0", "-1", "1", "1ns", "PT0S", "PT-0.5S", "2m", "P8D", "1.5s", "bad",
+                            "9223372036854775807ns", "9223372036854775808ns", "PT9223372036854775807S",
+                            "PT-9223372036854775808S", "PT-9223372036854775808.000000001S"])
+    for kind, key in [("knowledge", "similarity-threshold"), ("knowledge", "keyword-channel-weight"), ("memory", "similar-threshold")]:
+        add(kind, key, ["", " ", "0", "-0.0", "-1", "1", "1.1", "0.5", " 0.5 ", "0. 5", "0.\u30005", "０.５",
+                        "NaN", "+NaN", "-NaN", "nan", "Infinity", "+Infinity", "-Infinity", "Inf", "1e400", "1e-400",
+                        "0.5f", "0.5D", "0x1.0p-1", "0X1P-1f", "0x1", "1_0", ".5", "1.", "1e", "bad"])
+    for kind, key in [("ai", "system-prompt"), ("app", "name"), ("app", "version")]:
+        add(kind, key, ["", " ", "\t\u001c\u3000", "  合成提示😀  ", "\u00a0fixture\u00a0", "a\u0000b", "${literal}"])
+    add("knowledge", "allowed-extensions", ["", " ", "md,txt", " md , txt ", ",", ",md,,txt,", "MD,md,😀", "'md,txt'", "md\\,txt", "md\u3000,txt"])
+    for values in [
+        {"app.knowledge.allowed-extensions[0]": "MD", "app.knowledge.allowed-extensions[1]": " txt "},
+        {"app.knowledge.allowed-extensions[1]": "gap"},
+        {"app.knowledge.allowed-extensions[0]": "md", "app.knowledge.allowed-extensions[2]": "gap"},
+        {"app.knowledge.allowed-extensions": "txt", "app.knowledge.allowed-extensions[0]": "md"},
+        {"app.knowledge.allowed-extensions[00]": "md"},
+        {"app.knowledge.allowed-extensions[-1]": "md"},
+    ]:
+        result.append({"kind": "knowledge", "input": values})
+    for kind, keys in {"ai": ["memory.unknown"], "context": ["summary.unknown", "auto-memory.unknown"],
+                       "memory": ["ranking.unknown", "backfill.unknown"]}.items():
+        for key in keys:
+            add(kind, key, ["ignored"])
     return result
 
 
@@ -194,11 +258,13 @@ def generate(m2):
             # Set没有顺序契约，只为跨语言快照使用相同Unicode标量顺序。
             for server in row["value"]["servers"].values():
                 server["autoTools"].sort()
-        row["go_overflow"] = bool(row["value"] and (any(
-            key in row["value"] and not -(2**63) <= int(row["value"][key]) <= 2**63 - 1
-            for key in ["lockout", "period"]) or any(
-                not -(2**63) <= int(server["connectTimeout"]) <= 2**63 - 1
-                for server in row["value"].get("servers", {}).values())))
+        def duration_overflow(value):
+            if not isinstance(value, dict):
+                return False
+            duration_keys = {"lockout", "period", "connectTimeout", "timeout", "scanLookahead", "scanLookback", "defaultReminderLead"}
+            return any((key in duration_keys and child is not None and not -(2**63) <= int(child) <= 2**63 - 1)
+                       or duration_overflow(child) for key, child in value.items())
+        row["go_overflow"] = duration_overflow(row["value"])
     return {"baseline_commit": baseline, "spring_boot": boot, "spring_framework": spring,
             "jars_sha256": {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in jars},
             "sources_sha256": hashes,

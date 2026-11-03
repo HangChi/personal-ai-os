@@ -2290,6 +2290,102 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "临时目录合成.env显式加载后，fetch/uvx/args/autoTools/30s与真实Spring环境绑定结果相同；全量ConfigData/其他属性来源/应用装配未验收，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/agent/plan/PlanProperties.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/config/CalendarProperties.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/AiProperties.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/ContextProperties.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/ContextProtectionProperties.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/config/AppProperties.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/config/KnowledgeProperties.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/MemoryProperties.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
     }
   },
   "release_gates": {

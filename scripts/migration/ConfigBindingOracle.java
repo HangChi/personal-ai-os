@@ -45,6 +45,7 @@ public class ConfigBindingOracle {
         // 大于Go Duration范围时仍保留Java精确值，交由对照测试显式记录收紧。
         if (value instanceof Duration duration) return quote(java.math.BigInteger.valueOf(duration.getSeconds())
                 .multiply(java.math.BigInteger.valueOf(1_000_000_000L)).add(java.math.BigInteger.valueOf(duration.getNano())).toString());
+        if (value instanceof Double number && !Double.isFinite(number)) return quote(number.toString());
         if (value instanceof Boolean || value instanceof Number) return value.toString();
         if (value instanceof Map<?,?> map) {
             Map<String,Object> sorted = new TreeMap<>();
