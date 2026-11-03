@@ -28,7 +28,7 @@ def capture(command, **kwargs):
 PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", "idempotency", "confirmation", "task", "app", "command"]
 
 
-def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None):
+def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None, test_pattern=None):
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, POSTGRES_PASSWORD=password)
     container = None
@@ -106,7 +106,8 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
         print("运行 %s 集成测试" % package, flush=True)
         target = ("./cmd/personalos" if package == "command" else "./internal/app" if package == "app"
                   else "./internal/business/" + package if package in {"idempotency", "confirmation", "task"} else "./internal/platform/" + package)
-        subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration", target],
+        test_filter = ["-run", test_pattern] if test_pattern else []
+        subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration", *test_filter, target],
                        cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
         if package == "command":
             from smoke_go_foundation import run as smoke_foundation
@@ -133,13 +134,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", default=IMAGE, help="仅用于显式测试其他 PostgreSQL/pgvector 镜像")
     parser.add_argument("--package", choices=PACKAGES, action="append", help="只测试指定包，可重复；各包独占新容器")
+    parser.add_argument("--run", help="将Go测试名过滤表达式传给go test -run；仍使用独立迁移容器")
     parser.add_argument("--tls", action="store_true", help="新建 CA/服务端证书，以 verify-full 重跑并拒绝明文连接")
     parser.add_argument("--flyway", action="store_true", help="migration包先以基线Java Flyway真实执行迁移；app包始终先迁移独立库")
     parser.add_argument("--backup", action="store_true", help="隐含--flyway，只在新建容器填合成数据并备份恢复到另一空库")
     parser.add_argument("--baseline", action="store_true", help="隐含--flyway，另建非空旧schema验证真实baseline-on-migrate")
     args = parser.parse_args()
     for package in args.package or PACKAGES:
-        run_package(args.image, package, args.tls, args.flyway or args.backup or args.baseline, args.backup, args.baseline)
+        run_package(args.image, package, args.tls, args.flyway or args.backup or args.baseline, args.backup, args.baseline, test_pattern=args.run)
 
 
 if __name__ == "__main__":

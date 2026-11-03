@@ -451,3 +451,11 @@ Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退
 - 更新或删除任务时，在同一事务内清除已失效的PENDING任务提醒并同步仍有效提醒标题；真实库用例验证截止时间、完成、改标题与删除。提醒扫描/投递Worker仍属P6。
 - 导出批读取和任务搜索贡献接口已实现并在真实库测试；跨模块导出/全局搜索端点仍属后续阶段。P2最小数据库角色的实际GRANT及缺权启动拒绝均已验证。
 - `run_go_postgres_tests.py --package task`、任务包race、integration vet/build通过，独立临时容器已清理。Java原`TaskTagsTest`与`ConfirmationTransactionTest`追加15例通过；任务/确认HTTP对照由T205收口。
+
+## P2最终验收（T200–T205，2026-11-03）
+
+- 原Java `TaskApiIntegrationTest`、`TaskTagsIntegrationTest`、`ConfirmationIntegrationTest`共45例通过；`TaskTagsTest`、`ConfirmationTransactionTest`另15例通过，均未跳过，原覆盖率检查通过。日志：`/private/tmp/personal-ai-os-p2-java-tests.log`、`/private/tmp/personal-ai-os-p2-java-extra.log`。
+- Go全量`go test -race -count=1 ./...`通过18包；integration `go vet`/`go build`通过。真实原42迁移库的task包覆盖CRUD、标签、提醒与最小权限；app完整P1+P2回归通过，P2定向两例在最后改动后再次通过；command五角色真实进程回归通过。日志：`/private/tmp/personal-ai-os-p2-go-race.log`、`/private/tmp/personal-ai-os-p2-task-last.log`、`/private/tmp/personal-ai-os-p2-app-final.log`、`/private/tmp/personal-ai-os-p2-app-last.log`、`/private/tmp/personal-ai-os-p2-command-final.log`。
+- Foundation已挂任务9条原控制器路由及确认列表、确认、取消路由。创建/修改/删除使用原幂等键规则，重放保持同一任务ID；24并发请求跨两个独立Foundation连接池仅创建一行任务，竞争者冲突，完成后可重放。任务删除确认在另一实例执行且重复消费拒绝；取消优先级确认后原任务未变，取消项无法再确认；数据库副作用已核对。
+- P2运行账号启动前检查任务、标签、幂等、确认、提醒表及operation_record序列的实际权限；原迁移由独立Flyway执行，业务账号无迁移所有权。默认诊断入口仍不装配P2；显式Foundation生产模式和readyz守卫保持原P1拒绝。未推送、合并、部署或替换Java实例。
+- T200–T205全部完成。跨模块导出/全局搜索端点、Agent工具、提醒Worker与其他业务模块仍按P3–P8实施；当前全量`check-complete`仍应拒绝。

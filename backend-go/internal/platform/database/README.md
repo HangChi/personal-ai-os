@@ -39,4 +39,4 @@
 
 `python3 scripts/migration/run_go_postgres_tests.py --tls` 使用临时 CA/服务端证书，拒绝明文，全部五个数据库集成包在 TLS 下复验。`postgres_security_integration_test.go` 在本次集群创建无管理权限的账号，仅授独立探针 schema 的 USAGE、单表 DML 和 identity 序列权限；验证中文/emoji 事务读写以及建库/建角色/DDL/读未授权表/自提超级用户全部拒绝。该探针不代表完整 42 个迁移后的部署权限已验收。
 
-全部 42 个原 SQL 的空库/合成数据重放与 pgvector/schema/触发器测试另见 [migration](../migration/README.md)。Foundation已通过全42迁移schema的P1最小权限、真实Flyway历史/锁、合成恢复库启动、TLS网络分区/恢复、不确定COMMIT与进程退出；全部业务表权限按P2以后逐项追加，真实用户备份/生产切换仍属P8。
+全部 42 个原 SQL 的空库/合成数据重放与 pgvector/schema/触发器测试另见 [migration](../migration/README.md)。Foundation已通过全42迁移schema的P1最小权限、真实Flyway历史/锁、合成恢复库启动、TLS网络分区/恢复、不确定COMMIT与进程退出；P2任务/确认/幂等/提醒表及序列权限另经受限角色实测，后续业务表权限逐阶段追加，真实用户备份/生产切换仍属P8。

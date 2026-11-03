@@ -10,6 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"personal-ai-os/backend-go/internal/business/confirmation"
+	"personal-ai-os/backend-go/internal/business/idempotency"
+	"personal-ai-os/backend-go/internal/business/task"
 	"personal-ai-os/backend-go/internal/platform/auth"
 	"personal-ai-os/backend-go/internal/platform/config"
 	"personal-ai-os/backend-go/internal/platform/coordination"
@@ -34,6 +37,7 @@ type FoundationOptions struct {
 	SessionRedis, RateRedis *redisclient.Client
 	Observer                ratelimit.Observer
 	Business                http.Handler
+	EnableP2                bool
 }
 
 func (FoundationOptions) String() string               { return "FoundationOptions{redacted}" }
@@ -218,6 +222,50 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 	clients := []*redisclient.Client{options.SessionRedis, options.RateRedis}
 	snapshot := f.actuatorSnapshot(actuatorProperties, clients)
+	if options.EnableP2 {
+		if err := task.CheckPrivileges(ctx, pool); err != nil {
+			return nil, err
+		}
+		if options.Business != nil {
+			return nil, errors.New("P2业务路由与自定义业务处理器不能同时装配")
+		}
+		taskStore, taskErr := task.NewPostgresStore(pool)
+		if taskErr != nil {
+			return nil, taskErr
+		}
+		tasks, taskErr := task.NewService(taskStore)
+		if taskErr != nil {
+			return nil, taskErr
+		}
+		idemStore, taskErr := idempotency.NewPostgresStore(pool)
+		if taskErr != nil {
+			return nil, taskErr
+		}
+		idem, taskErr := idempotency.NewService(idemStore)
+		if taskErr != nil {
+			return nil, taskErr
+		}
+		confirmStore, taskErr := confirmation.NewPostgresStore(pool)
+		if taskErr != nil {
+			return nil, taskErr
+		}
+		handler, taskErr := task.NewConfirmationHandler(tasks)
+		if taskErr != nil {
+			return nil, taskErr
+		}
+		registry, taskErr := confirmation.NewRegistryFor([]confirmation.Action{confirmation.DeleteTask, confirmation.ScheduleTask, confirmation.SetPriority}, handler)
+		if taskErr != nil {
+			return nil, taskErr
+		}
+		confirms, taskErr := confirmation.NewService(confirmStore, registry)
+		if taskErr != nil {
+			return nil, taskErr
+		}
+		options.Business, taskErr = task.NewHTTP(tasks, idem, confirms, logger)
+		if taskErr != nil {
+			return nil, taskErr
+		}
+	}
 	var actuator http.Handler
 	if !settings.Monitoring {
 		actuator = newActuatorHandler(actuatorProperties, snapshot, metrics, logger)

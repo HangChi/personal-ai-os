@@ -203,7 +203,7 @@ func runFoundation(ctx context.Context, options commandOptions, system map[strin
 	pool.MaxOpen, pool.MaxIdle, pool.ConnectionTimeout = runtime.PoolMaximum, runtime.PoolMaximum, runtime.PoolConnectionTimeout
 	foundation, err = app.OpenFoundation(ctx, properties, app.FoundationOptions{
 		Connector: connector, Migrations: os.DirFS(options.migrations), Schema: "public", AllowBaselineV1: options.allowBaselineV1,
-		Pool: &pool, SessionRedis: session, RateRedis: rate,
+		Pool: &pool, SessionRedis: session, RateRedis: rate, EnableP2: true,
 	}, logger)
 	if err != nil {
 		return err

@@ -8,7 +8,7 @@
 
 HTTP顺序：Servlet路径/方法边界 → Worker业务隔离 → Request ID/HTTP观测 → 异常边界 → 共享限流 → 共享模型并发 → 会话/CSRF/认证 → 路由；整个请求共享一次multipart解析并在结束时清理。已提交SSE异常中止而不追加JSON。限流/并发早于安全链，匿名/CSRF失败仍消耗模型预算，拒绝后释放并发租约。
 
-API/combined提供原四个Auth路由和真实`/api/v1/health`。健康仍为统一信封/HTTP200，数据库DOWN通过内容报告，模型保持NOT_CONFIGURED。`/livez`与恒定503的`/readyz`是迁移诊断。Worker的这些业务端点均空404。非monitoring业务端口按原配置提供Actuator健康/信息；monitoring时迁到独立管理入口。可显式注入未来业务handler，nil时未知业务404。
+API/combined提供原四个Auth路由、真实`/api/v1/health`，并在P2装配时提供任务9路由和确认列表/执行/取消。健康仍为统一信封/HTTP200，数据库DOWN通过内容报告，模型保持NOT_CONFIGURED。`/livez`与恒定503的`/readyz`是迁移诊断。Worker的这些业务端点均空404。非monitoring业务端口按原配置提供Actuator健康/信息；monitoring时迁到独立管理入口。可显式注入未来业务handler，nil时未知业务404。
 
 `Close(ctx)`先拒新请求，等已有HTTP退出，再排空执行器、停止续租并释放租约、关闭自有池。超时会取消在途HTTP/执行器并返回期限错误；清理继续等待实际退出，不提前关闭仍在使用的池。任务/handler必须响应context取消。调用方负责Shutdown监听器；可再次Close等待清理，借用Redis始终由创建者最后关闭。
 

@@ -2570,12 +2570,57 @@
     "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationService.java": {
       "status": "in_progress",
       "evidence": ["backend-go/internal/business/confirmation/confirmation.go", "backend-go/internal/business/confirmation/postgres.go", "backend-go/internal/business/confirmation/confirmation_test.go", "backend-go/internal/business/confirmation/postgres_integration_test.go", "specs/033-go-rewrite/validation.md"],
-      "note": "T201通用生命周期、令牌、期限、CAS竞争、取消和失败结果已在真实数据库验证；面向人的HTTP路由在T205装配。"
+      "note": "T201通用生命周期、令牌、期限、CAS竞争、取消和失败结果已在真实数据库验证；T205已装配面向人的列表、确认与取消HTTP路由，后续日程/MCP动作仍待迁移。"
     },
     "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationRegistry.java": {
       "status": "implemented",
       "evidence": ["backend-go/internal/business/confirmation/confirmation.go", "backend-go/internal/business/confirmation/confirmation_test.go"],
       "note": "按当前装配动作验证处理器完整性与重复注册；完整五动作注册表为后续日程/MCP保留严格校验。"
+    },
+    "file:backend/src/main/java/com/personalos/task/entity/TaskEntity.java": {
+      "status": "implemented",
+      "evidence": ["backend-go/internal/business/task/model.go", "backend-go/internal/business/task/postgres.go", "backend-go/internal/business/task/postgres_integration_test.go"],
+      "note": "T202任务字段、状态时间与previous_status由原42迁移后的真实库验证。"
+    },
+    "file:backend/src/main/java/com/personalos/task/service/TaskService.java": {
+      "status": "implemented",
+      "evidence": ["backend-go/internal/business/task/service.go", "backend-go/internal/business/task/postgres.go", "backend-go/internal/business/task/postgres_integration_test.go", "backend-go/internal/app/foundation_task_integration_test.go"],
+      "note": "T202–T204 CRUD、筛选、分页、统计、完成重开、批量删除、到期查询与导出批读取通过真实库和HTTP验证。"
+    },
+    "file:backend/src/main/java/com/personalos/task/repository/TaskRepository.java": {
+      "status": "implemented",
+      "evidence": ["backend-go/internal/business/task/postgres.go", "backend-go/internal/business/task/postgres_integration_test.go"],
+      "note": "任务SQL读写、稳定展示顺序、标签和提醒事务同步已在原schema及P2最小权限角色下验证。"
+    },
+    "file:backend/src/main/java/com/personalos/task/TaskTags.java": {
+      "status": "implemented",
+      "evidence": ["backend-go/internal/business/task/tags.go", "backend-go/internal/business/task/model_test.go", "backend-go/internal/business/task/postgres_integration_test.go"],
+      "note": "T203 Java式去空白、UTF-16长度、去重与首现顺序、五标签上限以及PATCH保留/清空均通过。"
+    },
+    "file:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": ["backend-go/internal/business/task/http.go", "backend-go/internal/app/foundation.go", "backend-go/internal/app/foundation_task_integration_test.go"],
+      "note": "T205九条任务路由接入真实Foundation安全链；创建/更新/删除幂等及跨连接单次副作用已验证。"
+    },
+    "file:backend/src/main/java/com/personalos/task/TaskExportContributor.java": {
+      "status": "in_progress",
+      "evidence": ["backend-go/internal/business/task/contributors.go", "backend-go/internal/business/task/postgres_integration_test.go"],
+      "note": "T204任务导出键与有界分批读取已实现；跨模块ExportWriter与导出端点属后续阶段。"
+    },
+    "file:backend/src/main/java/com/personalos/task/TaskSearchContributor.java": {
+      "status": "implemented",
+      "evidence": ["backend-go/internal/business/task/contributors.go", "backend-go/internal/business/task/postgres.go", "backend-go/internal/business/task/postgres_integration_test.go"],
+      "note": "T204任务标题/描述搜索、更新时间排序及命中字段/副标题已验证；全局搜索聚合端点属后续阶段。"
+    },
+    "file:backend/src/main/java/com/personalos/task/confirmation/TaskConfirmationHandler.java": {
+      "status": "implemented",
+      "evidence": ["backend-go/internal/business/task/confirmation.go", "backend-go/internal/app/foundation_task_integration_test.go"],
+      "note": "T205任务删除、改截止时间、改优先级动作已注册；跨实例确认删除与重复拒绝真实库验证。"
+    },
+    "file:backend/src/main/java/com/personalos/task/confirmation/TaskConfirmationService.java": {
+      "status": "implemented",
+      "evidence": ["backend-go/internal/business/task/confirmation.go", "backend-go/internal/app/foundation_task_integration_test.go"],
+      "note": "T205任务确认请求、会话归属、摘要和令牌消费经真实Foundation路由验证。"
     },
     "file:backend/src/main/java/com/personalos/common/idempotency/IdempotencyService.java": {
       "status": "implemented",

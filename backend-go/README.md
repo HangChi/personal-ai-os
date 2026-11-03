@@ -1,6 +1,6 @@
 # Personal AI OS：Go 迁移起点
 
-本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1基础设施与数据兼容已完成，业务P2–P8尚未完成，不能替代现有Java后端。**
+本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1基础设施与P2任务能力已完成，P3–P8尚未完成，不能替代现有Java后端。**
 
 全量范围、逐文件来源、迁移状态与验收要求见 [迁移文档](../specs/033-go-rewrite/README.md)。现有 Java 源码、前端、SQL 与运行实例继续保留。
 
@@ -21,10 +21,11 @@
 - `internal/app`：默认迁移诊断入口，以及显式P1基础组合（池/Flyway只读校验、认证/CSRF、共享保护、健康与执行器/关闭）；两实例/五角色已通过临时TLS PostgreSQL集成，见 [装配边界](internal/app/README.md)。
 - `cmd/personalos`：回环监听、启动提示、信号处理和超时退出。
 - `internal/platform/observability`：root日志级别、Go文本/ECS格式、HTTP及后台请求ID；HTTP完成timer/直方图与Go运行指标在app组合。
+- `internal/business/idempotency`、`confirmation`、`task`：P2幂等所有权/回放、人工确认、任务9路由与标签/提醒同步；已在真实迁移库和跨连接竞争下验证。
 
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
-默认命令仍仅装配离线诊断；显式`--foundation`已接数据库/认证/共享保护/健康、轮末执行器、独立管理链/双监听、multipart与CSRF生命周期、HTTP/运行指标与日志。844个基础HTTP场景、160个原观测标签场景和68个直方图边界通过真实框架对照。完整支持/显式拒绝与后续阶段边界见[P1契约](../specs/033-go-rewrite/p1-foundation-contract.md)，78处配置调用方见[台账](../specs/033-go-rewrite/config-disposition.md)。模型、任务、聊天、Agent、知识库、日历、记忆、MCP和业务后台调度仍未迁移。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
+默认命令仍仅装配离线诊断；显式`--foundation`已接P1基础能力和P2任务/确认路由。844个基础HTTP场景、160个原观测标签场景和68个直方图边界通过真实框架对照。完整P1边界见[P1契约](../specs/033-go-rewrite/p1-foundation-contract.md)，78处配置调用方见[台账](../specs/033-go-rewrite/config-disposition.md)。模型、聊天、Agent工具、知识库、日历、记忆、MCP和业务后台调度仍未迁移。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
 
 ## 构建与验证
 
@@ -85,7 +86,7 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 ## 接下来实施
 
-下一阶段为[P2幂等、确认与任务](../specs/033-go-rewrite/tasks.md#p2-幂等确认与任务)。每阶段填写源码/测试/差分证据并独立提交，本次仅完成P1。
+下一阶段为[P3模型配置与协议](../specs/033-go-rewrite/tasks.md#p3-模型配置与协议)。每阶段填写源码/测试/差分证据并独立提交。
 
 ## 显式 P1 基础模式（尚未验收发布）
 
@@ -96,4 +97,4 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 基线 Hikari 最大连接数/毫秒等待已接入；`worker-index`、`worker-review`、`worker-delivery` profile 上限4，其余默认10。仅设运行角色不会自动加载 profile 文件。`monitoring` profile 启动独立回环管理端口（默认9091，可设 `MANAGEMENT_SERVER_PORT`），限流和会话 Redis 仍由各自原开关/URI/namespace 配置；两份 CA 分别使用 `GO_REDIS_SESSION_ROOT_CERT`、`GO_REDIS_RATE_LIMIT_ROOT_CERT` 的绝对路径。
 
-基础模式允许已实现的认证/CSRF；`prod`继续拒绝。默认诊断规则不变。基础模式不执行业务Worker，`readyz`保持未就绪，未实现业务404。P1基础模式验收通过不表示P8发布验收，禁止替换Java实例。
+基础模式允许已实现的认证/CSRF；`prod`继续拒绝。默认诊断规则不变。基础模式不执行业务Worker，`readyz`保持未就绪；P2任务/确认路由已接，其他未实现业务404。P1/P2验收通过不表示P8发布验收，禁止替换Java实例。
