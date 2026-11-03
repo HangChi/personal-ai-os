@@ -118,6 +118,14 @@ HTTP 测试覆盖原 Java 四项断言及编码、单次消费、请求 ID 先�
 
 此处没有真实 Flyway 执行、历史/CRC32/锁验证、存量备份恢复或完整 Java/Go 结构/业务差分。目录 SHA-256 不是 Flyway checksum；全部 SQL 仍仅 in_progress，T103/P1 与发布门禁保持开放。
 
+## 增量：数据库租约与事务完成边界（T107d）
+
+事务完成与租约测试先确认待实现 API 编译失败，再实现 WithManagedTx/Transaction/AfterCompletion 和 coordination。受控测试验证完成回调在归还连接后、提交/回滚/panic/提交失败路径、全部清理执行与业务 panic 优先、错误保留、只读/结束事务限制。
+
+专用临时 PostgreSQL 的原 V37 集成通过：跨池容量/幂等释放；过期 owner fencing 失败且不能释放替代 owner；续租失效不复活；提交/回滚/panic 后延迟释放；无事务/只读/结束事务拒绝；32 路初始化竞争容量 4；SKIP LOCKED 跳过锁行；缺表续租撤销本地信任；实际等待 11 秒验证 10 秒循环续租与关闭释放。日志 /private/tmp/personal-ai-os-go-coordination.log，容器已清理。集成脚本现为每包新建独立容器，避免原 V37 与其他测试 DDL 相互污染。
+
+全量九包 race 和含 integration 标签的 vet 通过；基线检查修正测试声明行号后通过。显式 context、活动写事务要求与独立 5 秒清理期限为 Go 生命周期约定；应用/Worker 业务退出装配、断网/提交不确定仍待完成，不能把整文件或 T107 标为 verified。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

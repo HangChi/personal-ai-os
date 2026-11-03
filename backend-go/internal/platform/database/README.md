@@ -21,6 +21,8 @@
 
 ## 事务
 
+- `WithManagedTx` 提供显式 Transaction 和 AfterCompletion；完成回调在事务终止且连接归还后执行，提交/错误/取消/panic 都覆盖。回调错误保留原因，回调 panic 不跳过后续清理，也不覆盖业务 panic；不引入隐式环境事务。
+
 - `WithTx` 使用同一连接执行开始/回调/提交；回调错误或 panic 时回滚，panic 原样传播。
 - 仓储操作需要共享事务时显式传入同一 `*sql.Tx`。再次调用 Pool.WithTx 会开始独立事务并占用另一连接，不隐式加入当前事务。
 - 只读和隔离级别透传 `sql.TxOptions`；真实 PostgreSQL 测试已验证只读写入拒绝和 serializable 设置。

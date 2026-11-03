@@ -22,21 +22,21 @@ def capture(command, **kwargs):
     return subprocess.run(command, text=True, capture_output=True, check=True, timeout=120, **kwargs).stdout.strip()
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--image", default=IMAGE, help="仅用于显式测试其他 PostgreSQL/pgvector 镜像")
-    args = parser.parse_args()
+PACKAGES = ["database", "ratelimit", "migration", "coordination"]
+
+
+def run_package(image, package):
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, POSTGRES_PASSWORD=password)
     container = None
     try:
-        print("启动独立 PostgreSQL/pgvector 容器（无持久卷、随机回环端口）", flush=True)
+        print("启动 %s 专用 PostgreSQL/pgvector 容器（无持久卷、随机回环端口）" % package, flush=True)
         container = capture([
             "docker", "run", "--detach", "--rm", "--name", "personalos-go-test-" + uuid.uuid4().hex[:12],
             "--label", "personalos.go-test=true", "--memory", "512m",
             "--tmpfs", "/var/lib/postgresql/data:rw,nosuid,size=384m",
             "--publish", "127.0.0.1::5432", "--env", "POSTGRES_PASSWORD",
-            "--env", "POSTGRES_USER=go_fixture", "--env", "POSTGRES_DB=personalos_go_test", args.image,
+            "--env", "POSTGRES_USER=go_fixture", "--env", "POSTGRES_DB=personalos_go_test", image,
         ], env=docker_env)
         if not container or not all(char in "0123456789abcdef" for char in container):
             raise RuntimeError("Docker 未返回可验证的独立容器 ID")
@@ -64,14 +64,23 @@ def main():
             "GO_TEST_POSTGRES_USER": "go_fixture", "GO_TEST_POSTGRES_DB": "personalos_go_test",
             "GO_TEST_POSTGRES_PASSWORD": password,
         })
-        print("运行驱动/事务/共享限流与全部 42 个原 SQL 隔离重放", flush=True)
+        print("运行 %s 集成测试" % package, flush=True)
         subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
-                        "./internal/platform/database", "./internal/platform/ratelimit", "./internal/platform/migration"],
+                        "./internal/platform/" + package],
                        cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
     finally:
         if container:
             subprocess.run(["docker", "rm", "--force", container], check=True, capture_output=True, timeout=30)
             print("已清理本次独立测试容器", flush=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--image", default=IMAGE, help="仅用于显式测试其他 PostgreSQL/pgvector 镜像")
+    parser.add_argument("--package", choices=PACKAGES, action="append", help="只测试指定包，可重复；各包独占新容器")
+    args = parser.parse_args()
+    for package in args.package or PACKAGES:
+        run_package(args.image, package)
 
 
 if __name__ == "__main__":

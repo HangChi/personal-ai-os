@@ -351,9 +351,14 @@
         "backend-go/internal/platform/ratelimit/postgres_test.go",
         "backend-go/internal/platform/ratelimit/postgres_integration_test.go",
         "scripts/migration/run_go_postgres_tests.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/platform/coordination/lease.go",
+        "backend-go/internal/platform/coordination/lease_test.go",
+        "backend-go/internal/platform/coordination/postgres_integration_test.go",
+        "backend-go/internal/platform/database/transaction.go",
+        "backend-go/internal/platform/database/transaction_test.go"
       ],
-      "note": "仅 consume 已移植并在一次性 PostgreSQL 验证共享预算、数据库时钟、独立事务/锁取消；两个 OS 进程共享预算通过。acquire/Lease/fence/renew/延迟释放与退出尚未迁移，不能 verified。"
+      "note": "consume 与租约/续租/fencing/事务后释放已实现；真实 PostgreSQL 验证旧 owner/并发/延迟释放/实际定时循环。API 预留门控、应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。"
     },
     "file:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java": {
       "status": "in_progress",
@@ -362,9 +367,14 @@
         "backend-go/internal/platform/ratelimit/postgres_test.go",
         "backend-go/internal/platform/ratelimit/postgres_integration_test.go",
         "scripts/migration/run_go_postgres_tests.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/platform/coordination/lease.go",
+        "backend-go/internal/platform/coordination/lease_test.go",
+        "backend-go/internal/platform/coordination/postgres_integration_test.go",
+        "backend-go/internal/platform/database/transaction.go",
+        "backend-go/internal/platform/database/transaction_test.go"
       ],
-      "note": "限流共享/数据库时钟断言已移植，并增加跨进程/并发/取消/错误测试；其余租约/fencing/API 预留场景未迁移，不能 verified。"
+      "note": "consume 与租约/续租/fencing/事务后释放已实现；真实 PostgreSQL 验证旧 owner/并发/延迟释放/实际定时循环。API 预留门控、应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。"
     },
     "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:66": {
       "status": "in_progress",
@@ -841,6 +851,66 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:33": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/coordination/lease.go",
+        "backend-go/internal/platform/coordination/lease_test.go",
+        "backend-go/internal/platform/coordination/postgres_integration_test.go",
+        "backend-go/internal/platform/database/transaction.go",
+        "backend-go/internal/platform/database/transaction_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "相应 Go 租约断言已在一次性 PostgreSQL 通过；未执行完整 Java/Go 业务差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:40": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/coordination/lease.go",
+        "backend-go/internal/platform/coordination/lease_test.go",
+        "backend-go/internal/platform/coordination/postgres_integration_test.go",
+        "backend-go/internal/platform/database/transaction.go",
+        "backend-go/internal/platform/database/transaction_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "相应 Go 租约断言已在一次性 PostgreSQL 通过；未执行完整 Java/Go 业务差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:50": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/coordination/lease.go",
+        "backend-go/internal/platform/coordination/lease_test.go",
+        "backend-go/internal/platform/coordination/postgres_integration_test.go",
+        "backend-go/internal/platform/database/transaction.go",
+        "backend-go/internal/platform/database/transaction_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "相应 Go 租约断言已在一次性 PostgreSQL 通过；未执行完整 Java/Go 业务差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:58": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/coordination/lease.go",
+        "backend-go/internal/platform/coordination/lease_test.go",
+        "backend-go/internal/platform/coordination/postgres_integration_test.go",
+        "backend-go/internal/platform/database/transaction.go",
+        "backend-go/internal/platform/database/transaction_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "相应 Go 租约断言已在一次性 PostgreSQL 通过；未执行完整 Java/Go 业务差分，不能 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:72": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/coordination/lease.go",
+        "backend-go/internal/platform/coordination/lease_test.go",
+        "backend-go/internal/platform/coordination/postgres_integration_test.go",
+        "backend-go/internal/platform/database/transaction.go",
+        "backend-go/internal/platform/database/transaction_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "相应 Go 租约断言已在一次性 PostgreSQL 通过；未执行完整 Java/Go 业务差分，不能 verified。"
     }
   },
   "release_gates": {
