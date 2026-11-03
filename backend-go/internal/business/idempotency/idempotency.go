@@ -116,6 +116,9 @@ func (s *Service) Execute(ctx context.Context, request Request, action func(cont
 			return Result{}, err
 		}
 		if found {
+			if existing.Digest != request.Digest {
+				return Result{}, &ConflictError{Kind: ErrDigestConflict, Key: request.Key}
+			}
 			if existing.Outcome == InProgress && existing.Source == SourceHTTP && existing.CreatedAt.Before(s.now().Add(-StaleAfter)) {
 				deleted, deleteErr := s.store.DeleteStaleHTTP(ctx, existing, s.now().Add(-StaleAfter))
 				if deleteErr != nil {

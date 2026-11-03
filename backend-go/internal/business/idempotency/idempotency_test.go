@@ -146,6 +146,22 @@ func TestStaleHTTPRetriesButStaleToolRemainsUnknown(t *testing.T) {
 	}
 }
 
+func TestStaleHTTPWithDifferentDigestNeverExecutes(t *testing.T) {
+	store := newMemoryStore()
+	service, _ := NewService(store)
+	now := time.Now()
+	service.now = func() time.Time { return now }
+	store.records["stale-conflict"] = Record{Key: "stale-conflict", Source: SourceHTTP, Digest: SHA256("original"), Outcome: InProgress, CreatedAt: now.Add(-StaleAfter - time.Second)}
+	_, err := service.Execute(context.Background(), request("stale-conflict", SourceHTTP, SHA256("different")), func(context.Context) (Result, error) {
+		t.Fatal("different content must not execute")
+		return Result{}, nil
+	})
+	var conflict *ConflictError
+	if !errors.As(err, &conflict) || conflict.Kind != ErrDigestConflict || store.records["stale-conflict"].Outcome != InProgress {
+		t.Fatalf("stale conflict=%v", err)
+	}
+}
+
 func TestFailureIsPersistedAndNeverReplayedAsSuccess(t *testing.T) {
 	store := newMemoryStore()
 	service, _ := NewService(store)
