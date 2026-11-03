@@ -440,3 +440,11 @@ app:
         endpoint: ${RAG_RERANKER_ENDPOINT:}
         api-key: ${RAG_RERANKER_API_KEY:}
         model: ${RAG_RERANKER_MODEL:}
+
+---
+app:
+  reminders:
+    webhook:
+      enabled: ${REMINDER_WEBHOOK_ENABLED:false}
+      url: ${REMINDER_WEBHOOK_URL:}
+      secret: ${REMINDER_WEBHOOK_SECRET:}

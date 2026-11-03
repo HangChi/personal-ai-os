@@ -85,6 +85,50 @@ class CalendarReminderIntegrationTest {
         }
     }
 
+    @Autowired org.springframework.jdbc.core.JdbcTemplate webhookDb;
+    @Autowired com.personalos.common.json.JsonCodec webhookJson;
+
+    @Test
+    void webhookRetriesWithStableIdentityAndValidSignature() throws Exception {
+        String secret = "test-only-signing-secret-32-characters";
+        var received = new java.util.ArrayList<String>();
+        var server = com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress("127.0.0.1",0),0);
+        server.createContext("/hooks", exchange -> {
+            byte[] bytes = exchange.getRequestBody().readAllBytes();
+            String timestamp = exchange.getRequestHeaders().getFirst("X-PersonalOS-Timestamp");
+            String signature = exchange.getRequestHeaders().getFirst("X-PersonalOS-Signature");
+            try {
+                var mac = javax.crypto.Mac.getInstance("HmacSHA256");
+                mac.init(new javax.crypto.spec.SecretKeySpec(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8),"HmacSHA256"));
+                mac.update((timestamp+".").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                String expected = "sha256="+java.util.HexFormat.of().formatHex(mac.doFinal(bytes));
+                if (!expected.equals(signature)) { exchange.sendResponseHeaders(400,-1); return; }
+                received.add(exchange.getRequestHeaders().getFirst("Idempotency-Key"));
+                exchange.sendResponseHeaders(received.size()==1 ? 503 : 204,-1);
+            } catch (java.security.GeneralSecurityException ex) { exchange.sendResponseHeaders(500,-1); }
+            finally { exchange.close(); }
+        });
+        server.start();
+        var worker = new com.personalos.calendar.webhook.ReminderWebhookWorker(webhookDb,
+                new com.personalos.common.config.RuntimeRole("combined"),webhookJson,
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry(),
+                "http://127.0.0.1:"+server.getAddress().getPort()+"/hooks",secret,true);
+        try {
+            worker.deliver();
+            webhookDb.update("UPDATE reminder_webhook_target SET enabled_at=now()-interval '1 hour'");
+            var now=java.time.Instant.now();
+            createEvent("Webhook integration fixture",now.minusSeconds(10),now.plusSeconds(60),0);
+            scanner.scan(now);
+            worker.deliver();
+            assertThat(webhookDb.queryForObject("SELECT state FROM reminder_webhook_delivery",String.class)).isEqualTo("PENDING");
+            webhookDb.update("UPDATE reminder_webhook_delivery SET next_attempt_at=now()");
+            worker.deliver(); worker.deliver();
+            assertThat(webhookDb.queryForObject("SELECT state FROM reminder_webhook_delivery",String.class)).isEqualTo("SENT");
+            assertThat(received).hasSize(2);
+            assertThat(received.getFirst()).isEqualTo(received.getLast());
+        } finally { worker.close(); server.stop(0); }
+    }
+
     private final HttpTestClient http;
     private final int port;
     private final CalendarEventService eventService;
