@@ -28,7 +28,7 @@ Prometheus文本提供原限流timer的count/sum（秒）及Redis错误counter�
 
 `Serve(ctx, businessListener, managementListener, shutdownTimeout)`接管调用方显式创建的监听器；仅允许回环TCP，管理必须不同端口并与monitoring开关一致。拒绝参数也会关闭已接管监听器；Foundation未启动时由调用方另行Close。每个实例只Serve一次。关闭时两个HTTP服务同时停止入口并排空，之后关闭Foundation；一侧监听异常会关闭另一侧。宽限耗尽强制关闭连接/取消请求并报告期限错误，另给资源清理有限窗口；不响应取消的任务仍可能延后最终清理，不能把它们标作成功完成。
 
-真实双监听集成验证Worker业务健康空404、业务端口不提供管理指标、管理端口不允许Auth/业务API、GET健康/指标及HEAD403、正常退出/异常退出释放端口，以及真实流式请求关闭超时。主CLI仍只使用离线诊断，尚未自动开启这些监听器。
+真实双监听集成验证Worker业务健康空404、业务端口不提供管理指标、管理端口不允许Auth/业务API、GET健康/指标及HEAD403、正常退出/异常退出释放端口，以及真实流式请求关闭超时。主CLI默认离线诊断，显式 `--foundation` 已接入这些监听器；真实二进制在两个自建TLS存储/专用ACL下完成五角色、跨OS会话/预算和退出验证，完整网络故障与业务Worker仍待验收。
 
 ## PostgreSQL与Redis TLS组合
 

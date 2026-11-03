@@ -25,7 +25,7 @@ def capture(command, **kwargs):
     return subprocess.run(command, text=True, capture_output=True, check=True, timeout=120, **kwargs).stdout.strip()
 
 
-PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", "app"]
+PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", "app", "command"]
 
 
 def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None):
@@ -87,13 +87,13 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
             "GO_TEST_POSTGRES_ROOT_CERT": root_cert,
         })
         if redis_env is not None:
-            if package != "app" or redis_env.get("GO_TEST_REDIS") != "disposable":
+            if package not in {"app", "command"} or redis_env.get("GO_TEST_REDIS") != "disposable":
                 raise ValueError("组合测试只能接收脚本新建的app专用Redis")
             go_env.update({key: redis_env[key] for key in {
                 "GO_TEST_REDIS", "GO_TEST_REDIS_URI", "GO_TEST_REDIS_CA_PEM",
                 "GO_TEST_REDIS_SESSION_URI", "GO_TEST_REDIS_RATE_URI",
             } if key in redis_env})
-        if (flyway and package == "migration") or package == "app":
+        if (flyway and package == "migration") or package in {"app", "command"}:
             if baseline:
                 go_env["GO_TEST_FLYWAY_BASELINE"] = "disposable"
             from java_flyway_fixture import migrate_disposable
@@ -104,9 +104,20 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
                 verify_backup_fixture(container)
                 go_env["GO_TEST_BACKUP"] = "disposable"
         print("运行 %s 集成测试" % package, flush=True)
-        subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
-                        "./internal/app" if package == "app" else "./internal/platform/" + package],
+        target = "./cmd/personalos" if package == "command" else "./internal/app" if package == "app" else "./internal/platform/" + package
+        subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration", target],
                        cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
+        if package == "command":
+            from smoke_go_foundation import run as smoke_foundation
+            with tempfile.TemporaryDirectory(prefix="personalos-go-foundation-build-") as directory:
+                binary = Path(directory, "personalos")
+                subprocess.run(["go", "build", "-race", "-o", str(binary), "./cmd/personalos"],
+                               cwd=ROOT / "backend-go", env=go_env, check=True, timeout=120)
+                smoke_foundation(binary, go_env)
+            active = capture(["docker", "exec", container, "psql", "-U", "go_fixture", "-d", "personalos_go_test", "-Atc",
+                              "SELECT count(*) FROM pg_stat_activity WHERE application_name='personalos-go'"])
+            if active != "0":
+                raise AssertionError("基础进程退出后仍有数据库连接")
     finally:
         try:
             if container:

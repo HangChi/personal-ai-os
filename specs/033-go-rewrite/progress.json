@@ -40,9 +40,12 @@
         "backend-go/internal/platform/config/foundation_test.go",
         "backend-go/internal/app/foundation.go",
         "backend-go/internal/app/foundation_http.go",
-        "backend-go/internal/app/foundation_postgres_integration_test.go"
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "scripts/migration/smoke_go_foundation.py",
+        "scripts/migration/run_go_postgres_tests.py",
+        "scripts/migration/run_go_redis_tests.py"
       ],
-      "note": "角色解析/allows/worker 及五种角色真实诊断进程/Worker 空 404 已验证；实际 Worker 任务与数据库协调尚未实现，不能 verified。 已组合显式ConfigData到P1配置；完整运行时仍待装配。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
+      "note": "角色解析/allows/worker 及五种角色真实诊断进程/Worker 空 404 已验证；实际 Worker 任务与数据库协调尚未实现，不能 verified。 已组合显式ConfigData到P1配置；完整运行时仍待装配。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 T108e: 真实二进制在自建TLS存储中验证五角色/双端口/跨OS预算与共享会话、启动失败/退出资源释放；不代表业务Worker或网络故障完成。"
     },
     "file:backend/src/main/java/com/personalos/common/web/RequestIdFilter.java": {
       "status": "in_progress",
@@ -74,9 +77,12 @@
         "backend-go/cmd/personalos/startup.go",
         "backend-go/cmd/personalos/startup_test.go",
         "backend-go/internal/platform/config/process.go",
-        "backend-go/internal/platform/config/process_test.go"
+        "backend-go/internal/platform/config/process_test.go",
+        "scripts/migration/smoke_go_foundation.py",
+        "scripts/migration/run_go_postgres_tests.py",
+        "scripts/migration/run_go_redis_tests.py"
       ],
-      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。 T108d: explicit foundation CLI/configuration wiring and unit tests implemented; real OS process acceptance remains pending."
+      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。 T108d: 已接入显式基础主命令/来源配置并通过单测，真实进程证据见后续T108e。 T108e: 真实二进制在自建TLS存储中验证五角色/双端口/跨OS预算与共享会话、启动失败/退出资源释放；不代表业务Worker或网络故障完成。"
     },
     "file:backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java": {
       "status": "in_progress",
@@ -95,7 +101,7 @@
         "backend-go/internal/platform/config/process.go",
         "backend-go/internal/platform/config/process_test.go"
       ],
-      "note": ".env解析/显式查找与优先级已有测试；新增真实ConfigData133场景×189属性验证dotenv晚于profile发现、系统别名/多文档/占位符。诊断入口旧窄加载尚未切换，任意外部ConfigData和完整应用接线仍待完成。 T108d: explicit foundation CLI/configuration wiring and unit tests implemented; real OS process acceptance remains pending."
+      "note": ".env解析/显式查找与优先级已有测试；新增真实ConfigData133场景×189属性验证dotenv晚于profile发现、系统别名/多文档/占位符。诊断入口旧窄加载尚未切换，任意外部ConfigData和完整应用接线仍待完成。 T108d: 已接入显式基础主命令/来源配置并通过单测，真实进程证据见后续T108e。"
     },
     "file:backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java": {
       "status": "in_progress",
@@ -1858,9 +1864,10 @@
         "specs/033-go-rewrite/config-inventory.md",
         "backend-go/internal/platform/config/cookie_sources_test.go",
         "backend-go/internal/app/foundation_redis_integration_test.go",
-        "scripts/migration/run_go_postgres_tests.py"
+        "scripts/migration/run_go_postgres_tests.py",
+        "scripts/migration/smoke_go_foundation.py"
       ],
-      "note": "专用 standalone redis/rediss 解析/TLS 配置/2 秒操作与 Go 独立版本化键已实现；真实 Redis 跨客户端/HTTP 实例/OS 进程共享注销通过。不导入 Spring 序列化会话，切换须重新登录；实际 TLS/ACL/配置与应用装配仍待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 已通过Foundation双实例与PostgreSQL/Redis TLS、独立ACL组合：共享会话/预算、专用客户端故障不回退和借用资源所有权；真实应用网络分区/CLI仍待验。"
+      "note": "专用 standalone redis/rediss 解析/TLS 配置/2 秒操作与 Go 独立版本化键已实现；真实 Redis 跨客户端/HTTP 实例/OS 进程共享注销通过。不导入 Spring 序列化会话，切换须重新登录；实际 TLS/ACL/配置与应用装配仍待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 已通过Foundation双实例与PostgreSQL/Redis TLS、独立ACL组合：共享会话/预算、专用客户端故障不回退和借用资源所有权；真实应用网络分区/CLI仍待验。 T108e: 真实二进制在自建TLS存储中验证五角色/双端口/跨OS预算与共享会话、启动失败/退出资源释放；不代表业务Worker或网络故障完成。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/SharedSessionIntegrationTest.java": {
       "status": "implemented",

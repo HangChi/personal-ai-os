@@ -302,6 +302,14 @@ Go逐项覆盖全部查询结果/profile/defaults、空值、环境别名冲突�
 
 配置/命令定向 race 通过（/private/tmp/personal-ai-os-go-cli-unit.log），全量 vet/build 通过。测试覆盖参数脱敏、绝对路径、默认不开启、显式数据库缺项阻止 YAML 回落、canonical 优先级、未支持 JDBC 地址拒绝、五角色 profile 池上限、毫秒单位/边界、配置错误在连接前拒绝、来源副本及 dotenv 晚激活。尚未运行这一新模式的真实二进制/容器测试，另行补证；所有 P1 父项保持开放。
 
+## 增量：真实基础二进制与五角色双存储（T108e）
+
+runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Flyway，再构建真正的 `cmd/personalos` race 二进制；运行时不是测试替身或 httptest server。Redis command 套件由外层另建 TLS Redis/两受限 ACL，内层只持有自己的 PostgreSQL。所有子进程都使用白名单环境/自有临时目录，dotenv 关闭；不会加载仓库真实 .env、系统代理或用户数据库。
+
+两套命令通过：`run_go_postgres_tests.py --tls --package command`（/private/tmp/personal-ai-os-go-cli-postgres.log）、`run_go_redis_tests.py --tls --package command`（/private/tmp/personal-ai-os-go-cli-redis.log）。combined/API 同时运行，模型保护先于 CSRF，前两次403而第三次跨实例429；真实登录/会话轮换/注销通过。Redis 模式还实际跨 OS 进程读取 CSRF/登录身份/注销失效。五角色监控端口权限、数据库健康与模型 NOT_CONFIGURED、10/4 池上限、Worker业务空404、SIGTERM零退出和两个端口释放均通过。
+
+缺少显式数据库、prod、无效迁移目录和管理端口被占用均启动失败，业务端口释放；最后查询 pg_stat_activity 确认 personalos-go 连接为0。日志检查未泄漏数据库/认证密码或 Redis URI。脚本 finally 清理自己的两个容器及证书。这里没有伪造模型/任务业务，也不代表网络分区/不确定提交/完整Servlet兼容或P1父任务完成。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。
