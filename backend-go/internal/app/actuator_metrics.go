@@ -83,6 +83,12 @@ func (m *foundationMetrics) metricSnapshot(suffix string, query url.Values) (any
 	defer m.mu.Unlock()
 	if suffix == "" {
 		names := []string{}
+		if !m.started.IsZero() {
+			names = append(names, "go.goroutines", "go.memory.used", "process.uptime")
+		}
+		if len(m.httpTimers) > 0 {
+			names = append(names, httpRequestMetric)
+		}
 		if m.counts[0]+m.counts[1] > 0 {
 			names = append(names, rateAcquireMetric)
 		}
@@ -94,6 +100,12 @@ func (m *foundationMetrics) metricSnapshot(suffix string, query url.Values) (any
 		}{names}, true, nil
 	}
 	name := strings.TrimPrefix(suffix, "/")
+	if name == httpRequestMetric {
+		return m.httpMetricSnapshotLocked(query)
+	}
+	if name == "go.goroutines" || name == "go.memory.used" || name == "process.uptime" {
+		return m.runtimeMetricLocked(name, query)
+	}
 	if name != rateAcquireMetric && name != rateErrorMetric {
 		return nil, false, nil
 	}

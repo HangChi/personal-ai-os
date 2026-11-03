@@ -112,7 +112,11 @@ def cases():
         ("over-file-limit", multipart([('name="file"; filename="large.bin"', "application/octet-stream", "x"*65)])),
         ("other-file-over-limit", multipart([file_part, ('name="other"; filename="large.bin"', None, "x"*65)])),
         ("field-over-file-limit", multipart([file_part, ('name="title"', None, "x"*65)])),
-        ("over-request-limit", multipart([file_part, ('name="title"', None, "x"*1024)])),
+        ("over-request-limit", multipart([file_part, ('name="title"', None, "x"*8192)])),
+        ("at-part-limit", multipart([file_part] + [('name="f"', None, "x")]*49)),
+        ("over-part-limit", multipart([file_part] + [('name="f"', None, "x")]*50)),
+        ("at-header-limit", multipart([('name="file"; filename="' + 'x'*(512-len('Content-Disposition: form-data; name="file"; filename=""\r\nContent-Type: text/plain\r\n\r\n')) + '"', 'text/plain', 'x')])),
+        ("over-header-limit", multipart([('name="file"; filename="' + 'x'*(513-len('Content-Disposition: form-data; name="file"; filename=""\r\nContent-Type: text/plain\r\n\r\n')) + '"', 'text/plain', 'x')])),
         ("missing-close", multipart([file_part], close=False)),
         ("empty-body", ""),
     ]
@@ -138,6 +142,19 @@ def cases():
     for name, method, path in [("management-health", "GET", "/actuator/health"), ("management-head", "HEAD", "/actuator/health"),
                                ("management-subpath", "GET", "/actuator/health/db"), ("management-business", "GET", "/api/v1/auth/me")]:
         add(name, method, path, management=True)
+    for path in ["/api/v1//auth/me", "/api/v1/./auth/me", "/api/v1/../auth/me", "/api/v1/auth/me;v=1",
+                 "/api/v1/auth%2fme", "/api/v1/auth/%2e%2e/me", "/%2Fapi/v1/auth/me", "/api/v1/auth%5cme",
+                 "/api/v1/auth%25me", "/api/v1/auth/me%00", "/api/v1/auth/me%0a"]:
+        add("firewall-" + str(len(rows)), path=path)
+    for method in ["TRACE", "PRIVATE", "get"]:
+        add("firewall-method-" + method, method=method)
+    for name, parts in [
+        ("valid", [('name="_csrf"', None, "__FIXTURE_CSRF__"), file_part]),
+        ("invalid", [('name="_csrf"', None, "fixture-invalid-token"), file_part]),
+        ("oversize", [('name="_csrf"', None, "__FIXTURE_CSRF__"), ('name="file"; filename="large.bin"', None, "x"*65)]),
+    ]:
+        add("body-csrf-" + name, "POST", "/api/v1/auth/logout", csrf=True, bodyCsrf=True,
+            contentType="multipart/form-data; boundary=fixture-boundary", body=multipart(parts))
     return rows
 
 

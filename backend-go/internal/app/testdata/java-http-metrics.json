@@ -1,0 +1,2005 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "jars_sha256": {
+    "spring-core-7.0.9.jar": "5195f4722699b39878d99a832549fe65df2890b159d063b88fff31b1ca65ae36",
+    "spring-web-7.0.9.jar": "941ced476427bde2533872f293da535fd0258de3f3a650a7f1bfe01ed2927302",
+    "micrometer-core-1.17.1.jar": "9ca47dfa831409b40253c8dc98c17b9d3e050ebbde4d1543c5521dca2b95ad56",
+    "micrometer-commons-1.17.1.jar": "f2cee6ef046e72eec8128474c7f58c6217173b45ae373c30de0289f2a56ab0fd",
+    "micrometer-observation-1.17.1.jar": "eb34f0cd84a879393ae5c21160fc06385ccdc74f36a4d1e31b199f59acfdaf71",
+    "tomcat-embed-core-11.0.24.jar": "e7b966dcaac8c5ffa4f10e44031ebf5b71f2123560c08ac8b7120028615aea08",
+    "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc"
+  },
+  "oracle_sha256": "71f4102fab6ea0621f7c8afe2499988d755a72afffed4a4c41ce995d3b1ece61",
+  "bounds_seconds": [
+    0.001,
+    0.001048576,
+    0.001398101,
+    0.001747626,
+    0.002097151,
+    0.002446676,
+    0.002796201,
+    0.003145726,
+    0.003495251,
+    0.003844776,
+    0.004194304,
+    0.005592405,
+    0.006990506,
+    0.008388607,
+    0.009786708,
+    0.011184809,
+    0.01258291,
+    0.013981011,
+    0.015379112,
+    0.016777216,
+    0.022369621,
+    0.027962026,
+    0.033554431,
+    0.039146836,
+    0.044739241,
+    0.050331646,
+    0.055924051,
+    0.061516456,
+    0.067108864,
+    0.089478485,
+    0.111848106,
+    0.134217727,
+    0.156587348,
+    0.178956969,
+    0.20132659,
+    0.223696211,
+    0.246065832,
+    0.268435456,
+    0.357913941,
+    0.447392426,
+    0.536870911,
+    0.626349396,
+    0.715827881,
+    0.805306366,
+    0.894784851,
+    0.984263336,
+    1.073741824,
+    1.431655765,
+    1.789569706,
+    2.147483647,
+    2.505397588,
+    2.863311529,
+    3.22122547,
+    3.579139411,
+    3.937053352,
+    4.294967296,
+    5.726623061,
+    7.158278826,
+    8.589934591,
+    10.021590356,
+    11.453246121,
+    12.884901886,
+    14.316557651,
+    15.748213416,
+    17.179869184,
+    22.906492245,
+    28.633115306,
+    30.0
+  ],
+  "cases": [
+    {
+      "method": "GET",
+      "status": 200,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 204,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 204,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 302,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "REDIRECTION"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 302,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 400,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 400,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 401,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 401,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 403,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 403,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 404,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "NOT_FOUND"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 404,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 429,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 429,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 500,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 500,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 503,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "GET",
+      "status": 503,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "GET",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 200,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 200,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 204,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 204,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 302,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "REDIRECTION"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 302,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 400,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 400,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 401,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 401,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 403,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 403,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 404,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "NOT_FOUND"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 404,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 429,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 429,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 500,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 500,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 503,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "HEAD",
+      "status": 503,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "HEAD",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 204,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 204,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 302,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "REDIRECTION"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 302,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 400,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 400,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 401,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 401,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 403,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 403,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 404,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "NOT_FOUND"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 404,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 429,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 429,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 500,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 500,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 503,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "POST",
+      "status": 503,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "POST",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 200,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 200,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 204,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 204,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 302,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "REDIRECTION"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 302,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 400,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 400,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 401,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 401,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 403,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 403,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 404,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "NOT_FOUND"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 404,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 429,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 429,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 500,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 500,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 503,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PATCH",
+      "status": 503,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "PATCH",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 200,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 200,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 204,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 204,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 302,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "REDIRECTION"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 302,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 400,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 400,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 401,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 401,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 403,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 403,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 404,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "NOT_FOUND"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 404,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 429,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 429,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 500,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 500,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 503,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "status": 503,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "OPTIONS",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 200,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 200,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 204,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 204,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 302,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "REDIRECTION"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 302,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 400,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 400,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 401,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 401,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 403,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 403,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 404,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "NOT_FOUND"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 404,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 429,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 429,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 500,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 500,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 503,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "TRACE",
+      "status": 503,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "TRACE",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 200,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 200,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 204,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 204,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 302,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "REDIRECTION"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 302,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 400,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 400,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 401,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 401,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 403,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 403,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 404,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "NOT_FOUND"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 404,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 429,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 429,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 500,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 500,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 503,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "CONNECT",
+      "status": 503,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 200,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 200,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SUCCESS",
+        "status": "200",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 204,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 204,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SUCCESS",
+        "status": "204",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 302,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "REDIRECTION"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 302,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "REDIRECTION",
+        "status": "302",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 400,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 400,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "400",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 401,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 401,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "401",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 403,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 403,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "403",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 404,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "NOT_FOUND"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 404,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "404",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 429,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 429,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "CLIENT_ERROR",
+        "status": "429",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 500,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 500,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SERVER_ERROR",
+        "status": "500",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 503,
+      "route": "",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "UNKNOWN"
+      }
+    },
+    {
+      "method": "PRIVATE",
+      "status": 503,
+      "route": "/api/v1/fixture/{id}",
+      "tags": {
+        "exception": "none",
+        "method": "UNKNOWN",
+        "outcome": "SERVER_ERROR",
+        "status": "503",
+        "uri": "/api/v1/fixture/{id}"
+      }
+    }
+  ]
+}

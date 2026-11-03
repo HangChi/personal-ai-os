@@ -94,9 +94,18 @@ func ParseMultipart(w http.ResponseWriter, r *http.Request, limits MultipartLimi
 		if err != nil {
 			return nil, multipartFailure(err)
 		}
-		// 防止极多空片制造文件描述符/元数据压力；未冒充全部Tomcat扩展参数。
-		if count >= 1000 {
-			return nil, errors.New("multipart分片数超出已支持范围")
+		// 固定Tomcat 11.0.24默认50片/512字节分片头，不允许基础模式静默扩大。
+		if count >= 50 {
+			return nil, UploadTooLarge(nil)
+		}
+		headerBytes := 2
+		for key, values := range part.Header {
+			for _, value := range values {
+				headerBytes += len(key) + 2 + len(value) + 2
+			}
+		}
+		if headerBytes > 512 {
+			return nil, UploadTooLarge(nil)
 		}
 		_, disposition, err := mime.ParseMediaType(part.Header.Get("Content-Disposition"))
 		if err != nil {

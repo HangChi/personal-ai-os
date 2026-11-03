@@ -63,6 +63,7 @@ def child_environment(fixture, role, port, management, ca_file):
         "POSTGRES_PASSWORD": fixture["GO_TEST_POSTGRES_PASSWORD"],
         "GO_POSTGRES_SSL_MODE": fixture["GO_TEST_POSTGRES_SSL_MODE"],
         "GO_POSTGRES_ROOT_CERT": fixture["GO_TEST_POSTGRES_ROOT_CERT"],
+        "LOGGING_STRUCTURED_FORMAT_CONSOLE": "ecs",
     })
     if fixture.get("GO_TEST_REDIS") == "disposable":
         env.update({
@@ -123,6 +124,9 @@ def process(binary, fixture, role, directory, ca_file):
                     child.wait(timeout=5)
             log.seek(0)
             logs = log.read()
+            rows = [json.loads(line) for line in logs.splitlines() if line.strip()]
+            if not rows or not all(row.get("ecs.version") and row.get("service.runtime") == "go" and row.get("requestId") for row in rows):
+                raise AssertionError("真实基础进程未装配ECS/请求ID日志")
             # 即使失败也不打印原始配置/凭据；只验证日志没有泄漏。
             for key in ("POSTGRES_PASSWORD", "AUTH_PASSWORD", "REDIS_SESSION_URI", "REDIS_RATE_LIMIT_URI"):
                 if env.get(key) and env[key] in logs:
@@ -137,6 +141,7 @@ def verify_role(role, port, management):
     status, _, body = request(management, "GET", "/actuator/prometheus")
     expected = 4 if role in {"index", "review", "delivery"} else 10
     assert status == 200 and f'personalos_go_database_connections{{state="max"}} {expected}\n'.encode() in body, "profile 未配置实际池上限"
+    assert b"http_server_requests_seconds_bucket{" in body and b"go_goroutines " in body, "真实管理端口未采集HTTP直方图/Go运行时"
     status, _, body = request(port, "GET", "/api/v1/health")
     if role in {"index", "review", "delivery"}:
         assert status == 404 and body == b"", "Worker 业务必须空404"

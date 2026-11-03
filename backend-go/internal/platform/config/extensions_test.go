@@ -26,3 +26,29 @@ func TestFoundationExtensionBoundary(t *testing.T) {
 		}
 	}
 }
+
+func TestLoggingAndHTTPObservationConfiguration(t *testing.T) {
+	p, err := LoadBaselineProperties(PropertyOptions{System: map[string]string{"SPRING_PROFILES_ACTIVE": "monitoring", "LOGGING_STRUCTURED_FORMAT_CONSOLE": "ecs", "LOGGING_LEVEL_ROOT": "DEBUG"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	logging, err := p.Logging()
+	if err != nil || logging.Format != "ecs" || logging.Level != -4 {
+		t.Fatal("日志配置未绑定", err)
+	}
+	a, err := p.Actuator()
+	if err != nil || !a.HTTPHistogram || !a.HTTPRequests {
+		t.Fatal("monitoring直方图未绑定", err)
+	}
+	for key, value := range map[string]string{"logging.structured.format.console": "private-format", "logging.level.root": "private-level", "management.metrics.distribution.percentiles-histogram.http.server.requests": "private-bool"} {
+		p, _ := LoadBaselineProperties(PropertyOptions{Overrides: map[string]string{key: value}})
+		if strings.HasPrefix(key, "logging") {
+			_, err = p.Logging()
+		} else {
+			_, err = p.Actuator()
+		}
+		if err == nil || strings.Contains(err.Error(), value) {
+			t.Fatal("配置未安全拒绝", key, err)
+		}
+	}
+}

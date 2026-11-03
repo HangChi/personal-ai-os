@@ -111,7 +111,7 @@ public class FoundationHttpOracle {
         settings.put("info.app.version", "test");
         settings.put("fixture.auth", args[0]);
         settings.put("spring.servlet.multipart.max-file-size", "64B");
-        settings.put("spring.servlet.multipart.max-request-size", "1024B");
+        settings.put("spring.servlet.multipart.max-request-size", "8192B");
         settings.put("app.security.csrf-enabled", args[1]);
         if (Boolean.parseBoolean(args[2])) {
             settings.put("spring.profiles.active", "monitoring");
@@ -159,15 +159,22 @@ public class FoundationHttpOracle {
                         var request = HttpRequest.newBuilder(URI.create(origin + input.get("path")));
                         if (input.containsKey("contentType")) request.header("Content-Type", (String) input.get("contentType"));
                         if (input.containsKey("accept")) request.header("Accept", (String) input.get("accept"));
-                        if (token != null) request.header("X-CSRF-TOKEN", token);
+                        if (token != null && !Boolean.TRUE.equals(input.get("bodyCsrf"))) request.header("X-CSRF-TOKEN", token);
                         if (Boolean.TRUE.equals(input.get("badCsrf"))) request.setHeader("X-CSRF-TOKEN", "fixture-invalid-token");
-                        request.method((String) input.get("method"), input.containsKey("body") ? HttpRequest.BodyPublishers.ofString((String) input.get("body")) : HttpRequest.BodyPublishers.noBody());
+                        String requestBody = (String) input.getOrDefault("body", "");
+                        if (Boolean.TRUE.equals(input.get("bodyCsrf")) && token != null) requestBody = requestBody.replace("__FIXTURE_CSRF__", token);
+                        request.method((String) input.get("method"), input.containsKey("body") ? HttpRequest.BodyPublishers.ofString(requestBody) : HttpRequest.BodyPublishers.noBody());
                         var response = client.send(request.build(), HttpResponse.BodyHandlers.ofString());
                         var output = new LinkedHashMap<String, Object>();
                         output.put("name", input.get("name"));
                         output.put("status", response.statusCode());
                         output.put("contentType", response.headers().firstValue("content-type").orElse(""));
                         output.put("allow", response.headers().firstValue("allow").orElse(""));
+                        var securityHeaders = new LinkedHashMap<String, String>();
+                        for (String name : new String[]{"cache-control", "pragma", "x-content-type-options", "x-frame-options", "x-xss-protection", "strict-transport-security", "referrer-policy"}) {
+                            securityHeaders.put(name, response.headers().firstValue(name).orElse(""));
+                        }
+                        output.put("securityHeaders", securityHeaders);
                         output.put("body", response.body());
                         if (input.get("path").equals("/api/v1/health")) output.put("databaseProbes", DATABASE_PROBES.get());
                         System.out.println("CASE\t" + mapper.writeValueAsString(output));

@@ -82,6 +82,7 @@ func (layer *HTTP) Handler(next http.Handler) http.Handler {
 		w.Header().Set("Pragma", "no-cache")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-XSS-Protection", "0")
 		if unsafePath(r) {
 			layer.writeError(w, api.ValidationFailed, "")
 			return
@@ -100,7 +101,15 @@ func (layer *HTTP) Handler(next http.Handler) http.Handler {
 				layer.storageError(w)
 				return
 			}
-			presented := csrfInput(w, r)
+			presented, err := csrfInput(w, r)
+			if err != nil {
+				status := 500
+				if httpmiddleware.IsUploadTooLarge(err) {
+					status = 413
+				}
+				httpmiddleware.WriteServletError(w, r, status)
+				return
+			}
 			if subtle.ConstantTimeCompare([]byte(session.state.CSRFToken), []byte(presented)) != 1 {
 				layer.writeError(w, api.Forbidden, "")
 				return
@@ -425,30 +434,30 @@ func unsafePath(r *http.Request) bool {
 	return false
 }
 
-func csrfInput(w http.ResponseWriter, r *http.Request) string {
+func csrfInput(w http.ResponseWriter, r *http.Request) (string, error) {
 	if token := r.Header.Get("X-CSRF-TOKEN"); token != "" {
-		return token
+		return token, nil
 	}
 	media, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if media == "application/x-www-form-urlencoded" || media == "multipart/form-data" {
 		if media == "multipart/form-data" {
 			upload, err := httpmiddleware.RequestMultipart(w, r)
 			if err != nil {
-				return ""
+				return "", err
 			}
 			if values := upload.Values["_csrf"]; len(values) > 0 && values[0] != "" {
-				return values[0]
+				return values[0], nil
 			}
-			return r.URL.Query().Get("_csrf")
+			return r.URL.Query().Get("_csrf"), nil
 		} else {
 			r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
 			if err := r.ParseForm(); err != nil {
-				return ""
+				return "", err
 			}
 		}
 		if token := r.PostForm.Get("_csrf"); token != "" {
-			return token
+			return token, nil
 		}
 	}
-	return r.URL.Query().Get("_csrf")
+	return r.URL.Query().Get("_csrf"), nil
 }

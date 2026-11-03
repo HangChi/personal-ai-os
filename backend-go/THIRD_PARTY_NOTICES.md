@@ -1,5 +1,13 @@
 # 第三方运行时依赖声明
 
+## Micrometer 1.17.1 直方图边界算法
+
+`internal/app/http_metrics.go`的默认Timer边界生成与Micrometer
+`io.micrometer.core.instrument.distribution.PercentileHistogramBuckets`保持一致，
+Copyright 2017 VMware, Inc.，Apache License 2.0。
+许可证正文保存在`licenses/micrometer-LICENSE.txt`（取自固定原JAR META-INF/LICENSE）。
+只复用边界算法；未引入Java运行时或声称Go指标是Micrometer/JVM本身。
+
 以下版本来自 go.mod/go.sum，许可证正文逐字取自对应已下载模块的 LICENSE；不包含 Go 标准库。模块归档完整性通过 go mod verify 检查。仅测试依赖的声明仍随其模块分发。
 
 ## github.com/jackc/pgx/v5 v5.12.0

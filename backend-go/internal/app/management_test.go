@@ -27,14 +27,14 @@ func TestManagementOnlyAllowsExactGET(t *testing.T) {
 		{"POST", "/actuator/health", 403}, {"OPTIONS", "/actuator/prometheus", 403},
 		{"GET", "/api/v1/auth/csrf", 403}, {"GET", "/api/v1/health", 403},
 		{"GET", "/actuator/health/", 403}, {"GET", "/actuator/health/liveness", 403}, {"GET", "/actuator/env", 403},
-		{"GET", "/actuator//health", 403},
+		{"GET", "/actuator//health", 400},
 	} {
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, httptest.NewRequest(test.method, test.path, nil))
 		if w.Code != test.want {
 			t.Fatalf("管理白名单错误: %s %s %d", test.method, test.path, w.Code)
 		}
-		if len(w.Header().Values("Set-Cookie")) != 0 || w.Header().Get("Cache-Control") == "" {
+		if len(w.Header().Values("Set-Cookie")) != 0 || test.path != "/actuator//health" && w.Header().Get("Cache-Control") == "" {
 			t.Fatal("管理入口不应创建业务会话")
 		}
 		if test.path == "/actuator/health" && test.want == 200 && w.Body.String() != `{"status":"UP","groups":["liveness","readiness"]}` {

@@ -383,3 +383,12 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 - `go test -race ./internal/platform/auth ./internal/platform/config ./internal/app`通过；额外配置拒绝清单测试继续独立维护。请求ID到实际Foundation执行器链新增断言将纳入最后真实回归。
 - 父任务继续开放，日志/HTTP观测与78处配置处置清单完成后再统一验收。
 
+## P1收口批次：HTTP观测、日志与Servlet边界
+
+- 原框架夹具扩展至844场景，新增路径/非法方法/7个安全响应头、multipart正文CSRF和默认50片/512字节头限制。先保留差分失败：原容器部分非法路径返回HTML400，其余框架JSON400/405，不能套业务40000；CSRF读取超限是框架413，控制器上传超限是业务40003。按实际来源修正。
+- `java_http_metrics_fixture.py`执行固定原Spring观测约定160场景及Micrometer默认68个有限桶。曾检测出CONNECT应是UNKNOWN，按实际约定修正。该夹具是框架约定执行，不冒充完整应用指标负载。
+- 新HTTP完成计时不会在SSE首Flush时累计，正常/取消/panic/ErrAbortHandler只记录一次；未知URL不进入标签，序列上限256且超限计数。慢采集导出先取快照，不持锁阻塞请求完成。
+- 自建TLS PostgreSQL/Redis/ACL完整app race通过89.255s；含恢复库五角色、真实网络分区/不确定COMMIT、HTTP与Go运行指标。真实race二进制五角色/双端口/跨OS会话预算/ECS日志/HTTP histogram/SIGTERM/失败清理均通过。日志：`/private/tmp/personal-ai-os-p1-final-foundation.log`。此轮之后增加的multipart默认边界将纳入最终再验。
+- `run_go_postgres_tests.py --tls --backup --baseline --package migration`通过，含42真实迁移/历史/锁/七类DDL/恢复与真实默认V1基线。日志：`/private/tmp/personal-ai-os-p1-final-migration.log`。
+- 平台auth/config/http/observability race通过；14个Python索引/台账反例测试通过。日志：`/private/tmp/personal-ai-os-p1-final-platform.log`及`/private/tmp/personal-ai-os-p1-final-python.log`。
+

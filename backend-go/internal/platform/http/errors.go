@@ -99,6 +99,11 @@ func UploadTooLarge(cause error) error {
 	return &requestProblem{code: api.UnsupportedDocument, message: "文件过大，请压缩或拆分后重新上传", cause: cause}
 }
 
+func IsUploadTooLarge(err error) bool {
+	problem := classifyRequestError(err)
+	return problem.code == api.UnsupportedDocument
+}
+
 // IntegrityConflict 由仓储明确分类，边界不会把任意数据库/网络错误猜成409。
 func IntegrityConflict(cause error) error {
 	return &requestProblem{code: api.BusinessConflict, message: "数据不符合服务端约束（可能超出长度限制或与已有记录冲突），请检查后重试", cause: cause}
@@ -185,7 +190,9 @@ func respondRequestError(w *responseState, r *http.Request, problem *requestProb
 	for _, key := range []string{"Content-Length", "Content-Encoding", "Content-Disposition", "ETag", "Last-Modified"} {
 		w.Header().Del(key)
 	}
-	w.Header().Set("Cache-Control", "no-store")
+	if w.Header().Get("Cache-Control") == "" {
+		w.Header().Set("Cache-Control", "no-store")
+	}
 	if r.Method == http.MethodHead {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(problem.code.HTTPStatus())
@@ -199,6 +206,7 @@ func respondRequestError(w *responseState, r *http.Request, problem *requestProb
 type responseState struct {
 	http.ResponseWriter
 	committed bool
+	status    int
 }
 
 func (w *responseState) Unwrap() http.ResponseWriter { return w.ResponseWriter }
@@ -209,16 +217,23 @@ func (w *responseState) WriteHeader(status int) {
 	w.ResponseWriter.WriteHeader(status)
 	if status >= 200 || status == http.StatusSwitchingProtocols {
 		w.committed = true
+		w.status = status
 	}
 }
 func (w *responseState) Write(data []byte) (int, error) {
 	w.committed = true
+	if w.status == 0 {
+		w.status = http.StatusOK
+	}
 	return w.ResponseWriter.Write(data)
 }
 func (w *responseState) FlushError() error {
 	err := http.NewResponseController(w.ResponseWriter).Flush()
 	if !errors.Is(err, http.ErrNotSupported) {
 		w.committed = true
+		if w.status == 0 {
+			w.status = http.StatusOK
+		}
 	}
 	return err
 }

@@ -17,6 +17,7 @@ import (
 	"personal-ai-os/backend-go/internal/app"
 	"personal-ai-os/backend-go/internal/platform/config"
 	"personal-ai-os/backend-go/internal/platform/database"
+	"personal-ai-os/backend-go/internal/platform/observability"
 	redisclient "personal-ai-os/backend-go/internal/platform/redis"
 )
 
@@ -142,6 +143,14 @@ func runFoundation(ctx context.Context, options commandOptions, system map[strin
 	}
 	settings, err := properties.Foundation()
 	if err != nil {
+		return err
+	}
+	logging, err := properties.Logging()
+	if err != nil {
+		return err
+	}
+	logger = observability.NewLogger(os.Stderr, logging)
+	if err := properties.ValidateFoundationExtensions(); err != nil {
 		return err
 	}
 	runtime, err := properties.ProcessRuntime()

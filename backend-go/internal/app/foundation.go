@@ -193,7 +193,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if err != nil {
 		return nil, err
 	}
-	metrics := &foundationMetrics{extra: options.Observer}
+	metrics := &foundationMetrics{extra: options.Observer, started: time.Now(), httpEnabled: actuatorProperties.HTTPRequests, httpHistogram: actuatorProperties.HTTPHistogram}
 	limiter, err := ratelimit.NewShared(ratelimit.Options{Enabled: settings.RateLimit.Enabled, Capacity: settings.RateLimit.Capacity, Period: settings.RateLimit.Period}, postgresBucket, redisBucket, metrics)
 	if err != nil {
 		return nil, err
@@ -222,7 +222,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if !settings.Monitoring {
 		actuator = newActuatorHandler(actuatorProperties, snapshot, metrics, logger)
 	}
-	f.handler = f.track(newFoundationHandler(settings.Role, security, limiter, f.gate, f.health, options.Business, actuator, logger))
+	f.handler = f.track(metrics.observeHTTP(newFoundationHandler(settings.Role, security, limiter, f.gate, f.health, options.Business, actuator, logger)))
 	if settings.Monitoring {
 		f.attachManagement(metrics, actuatorProperties, snapshot, logger)
 	}

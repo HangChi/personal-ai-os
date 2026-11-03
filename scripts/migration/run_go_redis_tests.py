@@ -24,7 +24,7 @@ def capture(command, **kwargs):
                           timeout=120, **kwargs).stdout.strip()
 
 
-def run_package(image, package, tls_mode=False):
+def run_package(image, package, tls_mode=False, backup=False):
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, GO_TEST_REDIS_PASSWORD=password)
     container = None
@@ -102,7 +102,7 @@ def run_package(image, package, tls_mode=False):
         if package in {"app", "command"}:
             # 外层持有自己的Redis，内层仅创建/清理自己的PostgreSQL；失败逐层finally清理。
             from run_go_postgres_tests import IMAGE as POSTGRES_IMAGE, run_package as run_postgres
-            run_postgres(POSTGRES_IMAGE, package, tls_mode=tls_mode, flyway=True, redis_env=child_env)
+            run_postgres(POSTGRES_IMAGE, package, tls_mode=tls_mode, flyway=True, backup=backup and package == "app", redis_env=child_env)
         else:
             subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
                             "./internal/platform/" + package], cwd=ROOT / "backend-go", env=child_env,
@@ -121,10 +121,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", default=IMAGE)
     parser.add_argument("--package", choices=PACKAGES, action="append")
+    parser.add_argument("--backup", action="store_true", help="app组合测试同时验证本次合成pg_dump恢复库的基础启动")
     parser.add_argument("--tls", action="store_true", help="新建临时 CA/证书，在真实 rediss 服务运行同一组测试")
     args = parser.parse_args()
     for package in args.package or PACKAGES:
-        run_package(args.image, package, args.tls)
+        run_package(args.image, package, args.tls, args.backup)
 
 
 if __name__ == "__main__":

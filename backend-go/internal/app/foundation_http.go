@@ -59,12 +59,12 @@ func newFoundationHandler(role config.Role, security *auth.HTTP, limiter httpmid
 	protected := chain
 	chain = httpmiddleware.HandleErrors(func(w http.ResponseWriter, r *http.Request) error { protected.ServeHTTP(w, r); return nil }, logger)
 	chain = httpmiddleware.RequestIDMiddleware(chain)
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return httpmiddleware.ServletBoundary(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// 与Java WorkerIsolationFilter一致，业务请求在会话/限流/数据库访问前返回。
 		if role.Worker() && !strings.HasPrefix(r.URL.Path, "/actuator/") {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		chain.ServeHTTP(w, r)
-	})
+	}))
 }

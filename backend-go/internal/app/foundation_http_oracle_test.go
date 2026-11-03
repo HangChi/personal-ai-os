@@ -27,14 +27,15 @@ import (
 type foundationHTTPFixture struct {
 	Auth, CSRF, Monitoring bool
 	Request                struct {
-		Name, Method, Path, ContentType, Accept, Body                                  string
-		CSRF, BadCSRF, Management, DatabaseDown, Login, MetricExpired, ModelConfigured bool
+		Name, Method, Path, ContentType, Accept, Body                                            string
+		CSRF, BadCSRF, Management, DatabaseDown, Login, MetricExpired, ModelConfigured, BodyCSRF bool
 	}
 	Response struct {
 		Status             int
 		DatabaseProbes     int
 		ContentType, Allow string
 		Body               any
+		SecurityHeaders    map[string]string
 	}
 }
 
@@ -48,7 +49,7 @@ func readFoundationHTTPFixture(t *testing.T) []foundationHTTPFixture {
 	if err := json.Unmarshal(data, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	if len(fixture.Cases) != 744 {
+	if len(fixture.Cases) != 844 {
 		t.Fatal("真实 HTTP 场景数量改变，需审查")
 	}
 	return fixture.Cases
@@ -113,7 +114,13 @@ func compareFoundationResponse(t *testing.T, client *http.Client, server string,
 			t.Fatal(err)
 		}
 		if token.Data.Token != nil {
-			r.Header.Set("X-CSRF-TOKEN", *token.Data.Token)
+			if test.Request.BodyCSRF {
+				body := strings.ReplaceAll(test.Request.Body, "__FIXTURE_CSRF__", *token.Data.Token)
+				r.Body = io.NopCloser(strings.NewReader(body))
+				r.ContentLength = int64(len(body))
+			} else {
+				r.Header.Set("X-CSRF-TOKEN", *token.Data.Token)
+			}
 		}
 	}
 	if test.Request.BadCSRF {
@@ -161,6 +168,11 @@ func compareFoundationResponse(t *testing.T, client *http.Client, server string,
 		}
 	}
 	got := normalizeFoundationBody(t, data)
+	for name, want := range test.Response.SecurityHeaders {
+		if got := response.Header.Get(name); got != want {
+			t.Errorf("安全响应头与真实Servlet不同: %s %q/%q", name, got, want)
+		}
+	}
 	if response.StatusCode != test.Response.Status || response.Header.Get("Content-Type") != test.Response.ContentType || normalizedAllow(response.Header.Get("Allow")) != normalizedAllow(test.Response.Allow) || !reflect.DeepEqual(got, test.Response.Body) {
 		t.Errorf("与真实Servlet不同: status=%d/%d type=%q/%q allow=%q/%q body=%v / %v", response.StatusCode, test.Response.Status, response.Header.Get("Content-Type"), test.Response.ContentType, response.Header.Get("Allow"), test.Response.Allow, got, test.Response.Body)
 	}
