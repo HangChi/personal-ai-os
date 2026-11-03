@@ -28,7 +28,7 @@ func redisFixture(t *testing.T) *redisclient.Client {
 	if os.Getenv("GO_TEST_REDIS") != "disposable" {
 		t.Skip("仅运行专用临时 Redis fixture")
 	}
-	client, err := redisclient.New(redisclient.Config{URI: os.Getenv("GO_TEST_REDIS_URI")})
+	client, err := redisclient.New(redisclient.Config{URI: os.Getenv("GO_TEST_REDIS_URI"), RootCertPEM: []byte(os.Getenv("GO_TEST_REDIS_CA_PEM"))})
 	if err != nil {
 		t.Fatal(err)
 	}

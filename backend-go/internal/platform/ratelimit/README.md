@@ -44,4 +44,4 @@ python3 scripts/migration/java_model_paths_fixture.py
 
 Java BOM 中指定的 Spring/Tomcat 依赖缺失时该命令失败；可用 `--m2` 指定已有缓存。只有审查基线/行为变更后才用 `--write` 重生成。此工具不是 Maven verify，也不替代全量 Java/Go 差分。
 
-仍待完成：环境/YAML 属性绑定、Redis 实际 TLS/网络分区与不确定响应、数据库断网/提交不确定故障、指标系统和安全/角色链装配、真实 Worker/SSE 全链路生命周期。T107 和 P1 未完成。
+同一组 Redis 竞争/跨进程/失败策略场景已在真实 rediss 下通过，可对脚本加 `--tls` 复验。仍待完成：环境/YAML 属性绑定、Redis 生产 ACL/网络分区与不确定响应、数据库断网/提交不确定故障、指标系统和安全/角色链装配、真实 Worker/SSE 全链路生命周期。T107 和 P1 未完成。

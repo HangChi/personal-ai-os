@@ -166,6 +166,12 @@ Go 值格式刻意不兼容 Java 序列化，命名空间附加 :go:v1:，切换
 
 全量十二包 race、含 integration 标签的 vet、二进制构建、1,093 文件基线与 diff 空白检查通过。
 
+## 增量：真实 Redis TLS（T105d）
+
+运行 python3 scripts/migration/run_go_redis_tests.py --tls，三个专用容器（redis/auth/ratelimit）全部 integration/race 通过。分别生成临时 CA/服务端证书，不接现有 Redis，不安装系统 CA；CA 私钥不挂载容器。实际验证正确证书/主机名可用、未知 CA/错误主机名为对应 x509 拒绝，明文连接 TLS 端口无法成功。同一 rediss 传输下，全部共享会话、真实 HTTP/CookieJar、跨进程注销和 Lua 限流/跨进程预算场景通过。日志 /private/tmp/personal-ai-os-go-redis-tls.log，容器/临时证书已清理。首次夹具证书配置混用造成就绪失败，已分离服务端配置修正，并保留就绪失败脱敏诊断/清理路径。
+
+另在最小环境、禁 .env、Maven 离线模式执行 -Dtest=AuthServiceTest test：原 Java 10 项断言全部通过，Maven 目标仍因 JaCoCo 累计行覆盖率 0.80 < 0.83 失败；没有关闭/跳过覆盖率门禁，也不据此声称 Java verify 通过。日志 /private/tmp/personal-ai-os-java-auth-test.log。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

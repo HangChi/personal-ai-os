@@ -132,3 +132,11 @@ Decision：RedisBucket 直接保留固定 Java RedisRateBucket 的 TAKE Lua（�
 使用显式专用 Redis Client，但每次准入再限定 150ms（原 Jedis 专用超时）；父 deadline 更早则优先。无自动命令重试。底层异常经脱敏返回，SharedLimiter 计错并拒绝，不回退数据库或本地。调用方负责客户端生命周期；构造/普通单测不访问 Redis。
 
 Alternatives considered：统一成 Go 本地桶算法（会改变服务端时钟、拒绝写回/配置变更规则）；namespace 拼接未哈希键（改变已有键契约）；沿用会话默认 2 秒（改变模型准入延迟）；失败回退 PostgreSQL（可能超发预算）。真实 TLS、网络分区和不确定响应验收继续保留。
+
+## R-016 真实 Redis TLS 与证书失败边界
+
+Decision：扩展同一隔离 Redis 脚本的 --tls 模式，每包新建临时 CA 和独立服务端证书（SAN localhost/127.0.0.1），仅挂载服务端所需证书/密钥，CA 私钥留在宿主临时目录。显式 PEM 通过测试子进程环境传入 Client，不改系统信任。Redis 只开 TLS 端口，业务测试全部用 rediss。退出 finally 同时清理自身容器和证书目录。
+
+客户端真实握手验证受信根/正确主机名通过，未知根和错误主机名保留可识别的 x509 原因并拒绝，明文访问该端口不成功；同一套会话/两个 HTTP 实例/独立进程注销和原 Lua 限流竞争在 TLS 下均通过。原 R-014/R-015 的实际 Redis TLS 待验项由此补充，生产 ACL/真实网络分区/不确定写入与应用装配仍未完成。
+
+Alternatives considered：只检查 tls.Config 字段（不证明握手）；修改系统 CA 或 InsecureSkipVerify（绕过实际验证）；将 CA 私钥装入 Redis 容器（不必要）；拿现有生产 Redis 做测试（破坏隔离）。首次证书生成复用 CA 主题配置造成测试就绪失败，分离 server.cnf 并补齐证书标识后修复，失败资源均清理。

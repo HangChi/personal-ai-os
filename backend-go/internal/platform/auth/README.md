@@ -22,4 +22,4 @@ python3 scripts/migration/java_bcrypt_fixture.py
 
 `RedisStore` 使用调用方显式创建的专用 `redisclient.Client`，以 Lua 实现相同原子操作，读续期、首次 CSRF 保留原 TTL；故障向上传递，不回退内存。默认会话超时仍由调用方传入。命名空间强制附加 `:go:v1:session:`，不读取/改写 Spring Session 二进制值；切换至 Go 后需要重新登录。
 
-真实回环 HTTP/CookieJar 已验证完整本地登录/换 ID/新 CSRF/注销过程；专用 Redis 另已验证两个 HTTP 服务共享 SESSION Cookie、跨 OS 子进程注销、TTL 和并发首次 CSRF。脚本 `python3 scripts/migration/run_go_redis_tests.py` 只连接它新建的临时容器，并清理自身资源。TLS/ACL 真实验收、完整配置和应用接线仍待完成。诊断应用继续拒绝启用认证/生产模式；基础子集测试通过不代表 T105 或整个 Java 文件已 verified。
+真实回环 HTTP/CookieJar 已验证完整本地登录/换 ID/新 CSRF/注销过程；专用 Redis 另已验证两个 HTTP 服务共享 SESSION Cookie、跨 OS 子进程注销、TTL 和并发首次 CSRF，同样场景在真实 rediss 下通过。脚本 `python3 scripts/migration/run_go_redis_tests.py`（可加 `--tls`）只连接它新建的临时容器，并清理自身资源。生产 ACL/网络分区、完整配置和应用接线仍待完成。诊断应用继续拒绝启用认证/生产模式；基础子集测试通过不代表 T105 或整个 Java 文件已 verified。
