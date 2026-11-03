@@ -35,13 +35,16 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.personalos.common.api.ApiResponse;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 /** 真实嵌入式 Servlet/Security/Jackson/Validator/Actuator，只加载显式原基础源码。 */
 @SpringBootConfiguration(proxyBeanMethods = false)
 @EnableAutoConfiguration(excludeName = "org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration")
-@Import({SecurityConfig.class, MonitoringSecurityConfig.class, AuthController.class, CsrfController.class, HealthController.class, GlobalExceptionHandler.class})
+@Import({SecurityConfig.class, MonitoringSecurityConfig.class, AuthController.class, CsrfController.class, HealthController.class, FoundationHttpOracle.UploadFixture.class, GlobalExceptionHandler.class})
 public class FoundationHttpOracle {
     private static final AtomicBoolean DATABASE_UP = new AtomicBoolean(true);
     private static final AtomicBoolean MODEL_CONFIGURED = new AtomicBoolean(false);
@@ -70,6 +73,23 @@ public class FoundationHttpOracle {
         };
         return new HealthService(new AppProperties("fixture", "test"), jdbc, model);
     }
+    /** 只验证真实Servlet参数绑定/容器限制，不替代附件或知识库业务实现。 */
+    @RestController
+    static class UploadFixture {
+        @PostMapping("/api/v1/fixture-upload")
+        ApiResponse<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) throws Exception { return describe(file); }
+        @PostMapping(value = "/api/v1/fixture-part", consumes = "multipart/form-data")
+        ApiResponse<Map<String, Object>> part(@RequestPart("file") MultipartFile file) throws Exception { return describe(file); }
+        private ApiResponse<Map<String, Object>> describe(MultipartFile file) throws Exception {
+            var data = new LinkedHashMap<String, Object>();
+            data.put("filename", file.getOriginalFilename());
+            data.put("contentType", file.getContentType());
+            data.put("size", file.getSize());
+            data.put("empty", file.isEmpty());
+            data.put("bytes", Base64.getEncoder().encodeToString(file.getBytes()));
+            return ApiResponse.ok(data);
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) throws Exception {
@@ -90,6 +110,8 @@ public class FoundationHttpOracle {
         settings.put("info.app.name", "fixture");
         settings.put("info.app.version", "test");
         settings.put("fixture.auth", args[0]);
+        settings.put("spring.servlet.multipart.max-file-size", "64B");
+        settings.put("spring.servlet.multipart.max-request-size", "1024B");
         settings.put("app.security.csrf-enabled", args[1]);
         if (Boolean.parseBoolean(args[2])) {
             settings.put("spring.profiles.active", "monitoring");

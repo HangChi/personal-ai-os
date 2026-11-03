@@ -342,6 +342,12 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 
 健康68例检查GET/HEAD/OPTIONS/405、CSRF安全链、DOWN/可选模型、Accept406与具体+json媒体；每例还比较数据库探测次数，保留探测先于响应协商的原MVC行为。两个生成时间字段只验证UTC格式后归一化。未声明完成整个Servlet绑定或P1父项。
 
+## 增量：真实Multipart基础解析（T106f）
+
+真实Spring/Tomcat合成测试控制器分别使用@RequestParam/@RequestPart，新增152个multipart场景，累计516例；Java默认重生成比较通过（/private/tmp/personal-ai-os-java-multipart-check.log）。Go全部152个multipart场景及大小配置定向race通过（/private/tmp/personal-ai-os-go-multipart-oracle.log）。文件/普通字段64B和总量1024B仅为夹具边界，原YAML不变。
+
+验证空文件/空文件名/Unicode/路径文本/缺媒体类型/重复取首、缺参数/畸形边界/错误媒体、其他分片超限也拒绝；每个真实HTTP请求后检查暂存目录为空。独立race验证二进制不变、未知Content-Length尾随超限、取消/截断清理、清理幂等与32请求暂存隔离（/private/tmp/personal-ai-os-go-multipart-lifecycle.log）。生产没有fixture业务端点；完整上传业务、CSRF表单与location/threshold/Tomcat扩展仍待装配，父项开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

@@ -72,7 +72,7 @@
     "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc",
     "jspecify-1.0.1.jar": "070d75f261fe4c5b8202508366715f7f2d4660f88c8ef7e6d3575e48c9683b66"
   },
-  "scope": "real Servlet/Security/Jackson/Validator/Actuator and original HealthController/HealthService; synthetic credentials, JdbcTemplate, model-state adapter, database HealthIndicator and fixed metric samples; metric names filtered to personalos.rate.limit only",
+  "scope": "real Servlet/Security/Jackson/Validator/Actuator and original foundation/health sources; synthetic credentials, JdbcTemplate, model-state adapter, health indicator, fixed metrics and multipart-only fixture endpoints; no upload business implementation",
   "cases": [
     {
       "auth": false,
@@ -2177,6 +2177,1052 @@
       "csrf": false,
       "monitoring": false,
       "request": {
+        "name": "upload-fixture-upload-valid",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-empty-file",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"empty.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "empty.txt",
+            "contentType": "text/plain",
+            "size": 0,
+            "empty": true,
+            "bytes": ""
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-empty-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "",
+            "contentType": null,
+            "size": 0,
+            "empty": true,
+            "bytes": ""
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-no-content-type",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"data.bin\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "data.bin",
+            "contentType": null,
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-unicode",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"周报.txt\"\r\nContent-Type: text/plain\r\n\r\n你好\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "周报.txt",
+            "contentType": "text/plain",
+            "size": 6,
+            "empty": false,
+            "bytes": "5L2g5aW9"
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-path-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"../private/fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "../private/fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-duplicate",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"second.txt\"\r\nContent-Type: text/plain\r\n\r\nsecond\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-missing",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"other.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-field-only",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-at-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"limit.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "limit.bin",
+            "contentType": "application/octet-stream",
+            "size": 64,
+            "empty": false,
+            "bytes": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"large.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-other-file-over-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"large.bin\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-field-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-over-request-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-missing-close",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-empty-body",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-103",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "application/json",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-104",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-105",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=wrong",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-valid",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-empty-file",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"empty.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "empty.txt",
+            "contentType": "text/plain",
+            "size": 0,
+            "empty": true,
+            "bytes": ""
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-empty-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "",
+            "contentType": null,
+            "size": 0,
+            "empty": true,
+            "bytes": ""
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-no-content-type",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"data.bin\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "data.bin",
+            "contentType": null,
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-unicode",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"周报.txt\"\r\nContent-Type: text/plain\r\n\r\n你好\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "周报.txt",
+            "contentType": "text/plain",
+            "size": 6,
+            "empty": false,
+            "bytes": "5L2g5aW9"
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-path-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"../private/fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "../private/fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-duplicate",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"second.txt\"\r\nContent-Type: text/plain\r\n\r\nsecond\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-missing",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"other.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-field-only",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-at-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"limit.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "limit.bin",
+            "contentType": "application/octet-stream",
+            "size": 64,
+            "empty": false,
+            "bytes": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"large.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-other-file-over-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"large.bin\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-field-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-over-request-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-missing-close",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-empty-body",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-122",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "application/json",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-123",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-124",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=wrong",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -4313,6 +5359,1052 @@
       "csrf": false,
       "monitoring": false,
       "request": {
+        "name": "upload-fixture-upload-valid",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-empty-file",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"empty.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "empty.txt",
+            "contentType": "text/plain",
+            "size": 0,
+            "empty": true,
+            "bytes": ""
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-empty-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "",
+            "contentType": null,
+            "size": 0,
+            "empty": true,
+            "bytes": ""
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-no-content-type",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"data.bin\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "data.bin",
+            "contentType": null,
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-unicode",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"周报.txt\"\r\nContent-Type: text/plain\r\n\r\n你好\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "周报.txt",
+            "contentType": "text/plain",
+            "size": 6,
+            "empty": false,
+            "bytes": "5L2g5aW9"
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-path-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"../private/fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "../private/fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-duplicate",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"second.txt\"\r\nContent-Type: text/plain\r\n\r\nsecond\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-missing",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"other.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-field-only",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-at-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"limit.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "limit.bin",
+            "contentType": "application/octet-stream",
+            "size": 64,
+            "empty": false,
+            "bytes": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"large.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-other-file-over-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"large.bin\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-field-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-over-request-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-missing-close",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-empty-body",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-103",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "application/json",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-104",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-105",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=wrong",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-valid",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-empty-file",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"empty.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "empty.txt",
+            "contentType": "text/plain",
+            "size": 0,
+            "empty": true,
+            "bytes": ""
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-empty-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "",
+            "contentType": null,
+            "size": 0,
+            "empty": true,
+            "bytes": ""
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-no-content-type",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"data.bin\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "data.bin",
+            "contentType": null,
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-unicode",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"周报.txt\"\r\nContent-Type: text/plain\r\n\r\n你好\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "周报.txt",
+            "contentType": "text/plain",
+            "size": 6,
+            "empty": false,
+            "bytes": "5L2g5aW9"
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-path-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"../private/fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "../private/fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-duplicate",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"second.txt\"\r\nContent-Type: text/plain\r\n\r\nsecond\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "fixture.txt",
+            "contentType": "text/plain",
+            "size": 5,
+            "empty": false,
+            "bytes": "aGVsbG8="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-missing",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"other.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-field-only",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-at-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"limit.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "filename": "limit.bin",
+            "contentType": "application/octet-stream",
+            "size": 64,
+            "empty": false,
+            "bytes": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"large.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-other-file-over-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"large.bin\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-field-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-over-request-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40003,
+          "message": "文件过大，请压缩或拆分后重新上传",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-missing-close",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-empty-body",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-122",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "application/json",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-123",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-124",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=wrong",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40000,
+          "message": "参数校验失败: 缺少参数 file",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -6443,6 +8535,956 @@
       "csrf": true,
       "monitoring": false,
       "request": {
+        "name": "upload-fixture-upload-valid",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-empty-file",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"empty.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-empty-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-no-content-type",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"data.bin\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-unicode",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"周报.txt\"\r\nContent-Type: text/plain\r\n\r\n你好\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-path-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"../private/fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-duplicate",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"second.txt\"\r\nContent-Type: text/plain\r\n\r\nsecond\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-missing",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"other.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-field-only",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-at-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"limit.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"large.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-other-file-over-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"large.bin\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-field-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-over-request-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-missing-close",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-upload-empty-body",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-103",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "application/json",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-104",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-105",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=wrong",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-valid",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-empty-file",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"empty.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-empty-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-no-content-type",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"data.bin\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-unicode",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"周报.txt\"\r\nContent-Type: text/plain\r\n\r\n你好\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-path-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"../private/fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-duplicate",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"second.txt\"\r\nContent-Type: text/plain\r\n\r\nsecond\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-missing",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"other.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-field-only",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-at-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"limit.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"large.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-other-file-over-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"large.bin\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-field-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-over-request-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-missing-close",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-fixture-part-empty-body",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-122",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "application/json",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-123",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "upload-media-124",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=wrong",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -8548,6 +11590,956 @@
         "allow": "",
         "body": "",
         "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-valid",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-empty-file",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"empty.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-empty-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-no-content-type",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"data.bin\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-unicode",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"周报.txt\"\r\nContent-Type: text/plain\r\n\r\n你好\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-path-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"../private/fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-duplicate",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"second.txt\"\r\nContent-Type: text/plain\r\n\r\nsecond\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-missing",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"other.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-field-only",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-at-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"limit.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"large.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-other-file-over-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"large.bin\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-field-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-over-request-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-missing-close",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-upload-empty-body",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-media-103",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "application/json",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-media-104",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-media-105",
+        "method": "POST",
+        "path": "/api/v1/fixture-upload",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=wrong",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-valid",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-empty-file",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"empty.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-empty-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"\"\r\n\r\n\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-no-content-type",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"data.bin\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-unicode",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"周报.txt\"\r\nContent-Type: text/plain\r\n\r\n你好\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-path-filename",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"../private/fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-duplicate",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"second.txt\"\r\nContent-Type: text/plain\r\n\r\nsecond\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-missing",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"other.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-field-only",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-at-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"limit.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"large.bin\"\r\nContent-Type: application/octet-stream\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-other-file-over-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"large.bin\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-field-over-file-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-over-request-limit",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-missing-close",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-fixture-part-empty-body",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "",
+        "contentType": "multipart/form-data; boundary=fixture-boundary",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-media-122",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "application/json",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-media-123",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "upload-media-124",
+        "method": "POST",
+        "path": "/api/v1/fixture-part",
+        "body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"fixture.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--fixture-boundary--\r\n",
+        "contentType": "multipart/form-data; boundary=wrong",
+        "csrf": true,
+        "login": true
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
       }
     },
     {

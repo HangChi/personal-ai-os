@@ -352,3 +352,11 @@ Decision：真实Servlet直接运行基线HealthController/HealthService/HealthS
 GET/HEAD先调用服务再协商；不兼容Accept为406但仍探测一次。HEAD成功无正文，OPTIONS不探测/空200/Allow，错误方法不探测并由原全局405处理且无Allow。数据库DOWN仍HTTP200，模型CONFIGURED只影响分量。具体application/problem+json被原Jackson接受且作为响应媒体类型，健康与认证成功使用同一协商器保留这个值，安全过滤器仍沿用其UTF-8响应。
 
 先保存Go差分失败证据后修正，364基础场景逐项通过；仅归一化信封/健康生成时间，状态、应用名/版本、组件和探测次数都不忽略。完整请求解析/multipart及业务DTO继续开放。
+
+## R-040 Multipart元数据、限制与暂存所有权
+
+Decision：真实Servlet两个测试端点分别执行@RequestParam/@RequestPart的MultipartFile绑定，使用64B/1024B缩小边界，合成控制器不替代任何上传业务。原容器对普通字段也应用单片上限；空filename仍是文件，重复取第一个，无Content-Type为null，原路径文本文件名不会被框架去掉。Go原生ReadForm/FileName会将空filename归为字段并去掉路径，因此使用NextRawPart显式解析元数据。
+
+每请求随机0700目录/随机0600文件，元数据原文件名永不参与路径拼接。调用方显式Close，解析失败/超限/取消自动清理；未知长度及尾随字节仍计总限制。大小错误保持原40003，畸形边界500、缺分片40000；不将全部错误猜作400。canonical内置8MB/10MB绑定，Java无界-1明确拒绝；非默认location/threshold/Tomcat扩展与完整CSRF装配尚未宣称兼容。
+
+Alternatives considered：ReadForm后仅检查Size（丢失空文件名语义）；将原文件名直接作为磁盘路径；全部文件常驻内存；只查Content-Length。均未采用。未修改原Java/前端/SQL，也未提前接入P4/P6业务路由。

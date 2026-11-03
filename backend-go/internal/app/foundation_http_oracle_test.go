@@ -46,7 +46,7 @@ func readFoundationHTTPFixture(t *testing.T) []foundationHTTPFixture {
 	if err := json.Unmarshal(data, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	if len(fixture.Cases) != 364 {
+	if len(fixture.Cases) != 516 {
 		t.Fatal("真实 HTTP 场景数量改变，需审查")
 	}
 	return fixture.Cases
@@ -212,7 +212,7 @@ func TestFoundationAuthRealServletOracle(t *testing.T) {
 		server := httptest.NewServer(h)
 		transport := &http.Transport{Proxy: nil}
 		for _, test := range fixtures {
-			if test.Auth != mode.auth || test.CSRF != mode.csrf || test.Monitoring != mode.monitoring || test.Request.Management || strings.HasPrefix(test.Request.Path, "/actuator/") || test.Request.Path == "/api/v1/health" {
+			if test.Auth != mode.auth || test.CSRF != mode.csrf || test.Monitoring != mode.monitoring || test.Request.Management || strings.HasPrefix(test.Request.Path, "/actuator/") || strings.HasPrefix(test.Request.Path, "/api/v1/fixture-") || test.Request.Path == "/api/v1/health" {
 				continue
 			}
 			t.Run(strings.Join([]string{map[bool]string{true: "auth", false: "anonymous"}[mode.auth], map[bool]string{true: "csrf", false: "plain"}[mode.csrf], map[bool]string{true: "monitoring", false: "business"}[mode.monitoring], test.Request.Name}, "/"), func(t *testing.T) {

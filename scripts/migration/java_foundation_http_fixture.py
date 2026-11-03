@@ -90,6 +90,37 @@ def cases():
     for accept in ["text/html", "text/event-stream", "application/json", "application/*+json", "application/problem+json", "application/json;q=0", "*/*"]:
         add("business-health-accept-"+str(len(rows)), path="/api/v1/health", accept=accept)
     add("business-health-head-html", "HEAD", "/api/v1/health", accept="text/html")
+    def multipart(parts, close=True):
+        body = ""
+        for disposition, content_type, data in parts:
+            body += "--fixture-boundary\r\nContent-Disposition: form-data; " + disposition + "\r\n"
+            if content_type is not None: body += "Content-Type: " + content_type + "\r\n"
+            body += "\r\n" + data + "\r\n"
+        return body + ("--fixture-boundary--\r\n" if close else "")
+    file_part = ('name="file"; filename="fixture.txt"', "text/plain", "hello")
+    upload_bodies = [
+        ("valid", multipart([file_part])),
+        ("empty-file", multipart([('name="file"; filename="empty.txt"', "text/plain", "")])),
+        ("empty-filename", multipart([('name="file"; filename=""', None, "")])),
+        ("no-content-type", multipart([('name="file"; filename="data.bin"', None, "hello")])),
+        ("unicode", multipart([('name="file"; filename="周报.txt"', "text/plain", "你好")])),
+        ("path-filename", multipart([('name="file"; filename="../private/fixture.txt"', "text/plain", "hello")])),
+        ("duplicate", multipart([file_part, ('name="file"; filename="second.txt"', "text/plain", "second")])),
+        ("missing", multipart([('name="other"; filename="other.txt"', "text/plain", "hello")])),
+        ("field-only", multipart([('name="file"', None, "hello")])),
+        ("at-file-limit", multipart([('name="file"; filename="limit.bin"', "application/octet-stream", "x"*64)])),
+        ("over-file-limit", multipart([('name="file"; filename="large.bin"', "application/octet-stream", "x"*65)])),
+        ("other-file-over-limit", multipart([file_part, ('name="other"; filename="large.bin"', None, "x"*65)])),
+        ("field-over-file-limit", multipart([file_part, ('name="title"', None, "x"*65)])),
+        ("over-request-limit", multipart([file_part, ('name="title"', None, "x"*1024)])),
+        ("missing-close", multipart([file_part], close=False)),
+        ("empty-body", ""),
+    ]
+    for path in ["/api/v1/fixture-upload", "/api/v1/fixture-part"]:
+        for name, body in upload_bodies:
+            add("upload-"+path.rsplit("/", 1)[-1]+"-"+name, "POST", path, body=body, contentType="multipart/form-data; boundary=fixture-boundary", csrf=True, login=True)
+        for content_type in ["application/json", "multipart/form-data", "multipart/form-data; boundary=wrong"]:
+            add("upload-media-"+str(len(rows)), "POST", path, body=upload_bodies[0][1], contentType=content_type, csrf=True, login=True)
     for name, method, path in [("management-health", "GET", "/actuator/health"), ("management-head", "HEAD", "/actuator/health"),
                                ("management-subpath", "GET", "/actuator/health/db"), ("management-business", "GET", "/api/v1/auth/me")]:
         add(name, method, path, management=True)
@@ -160,7 +191,7 @@ def generate(m2):
                 scenarios.append(dict(auth=auth, csrf=csrf, monitoring=management, request=request, response=response))
     return dict(baseline_commit=baseline, spring_boot=boot, sources_sha256=hashes,
                 jars_sha256={jar.name: hashlib.sha256(jar.read_bytes()).hexdigest() for jar in jars},
-                scope="real Servlet/Security/Jackson/Validator/Actuator and original HealthController/HealthService; synthetic credentials, JdbcTemplate, model-state adapter, database HealthIndicator and fixed metric samples; metric names filtered to personalos.rate.limit only", cases=scenarios)
+                scope="real Servlet/Security/Jackson/Validator/Actuator and original foundation/health sources; synthetic credentials, JdbcTemplate, model-state adapter, health indicator, fixed metrics and multipart-only fixture endpoints; no upload business implementation", cases=scenarios)
 
 
 def main():

@@ -2210,7 +2210,12 @@
         "scripts/migration/java_foundation_http_fixture.py",
         "backend-go/internal/app/testdata/java-foundation-http.json",
         "backend-go/internal/app/foundation_http_oracle_test.go",
-        "backend-go/internal/platform/http/json.go"
+        "backend-go/internal/platform/http/json.go",
+        "backend-go/internal/platform/http/multipart.go",
+        "backend-go/internal/platform/http/multipart_test.go",
+        "backend-go/internal/app/foundation_multipart_oracle_test.go",
+        "backend-go/internal/platform/config/multipart.go",
+        "backend-go/internal/platform/config/multipart_test.go"
       ],
       "note": "真实Java处理器36响应与Go边界逐项对照；业务错误和资源自定义/空文案保留，日志脱敏与已提交HTTP响应保护通过。完整Servlet/业务调用点装配尚未完成。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。"
     },
