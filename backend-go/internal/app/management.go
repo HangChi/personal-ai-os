@@ -56,6 +56,7 @@ type foundationMetrics struct {
 	clock                      func() time.Time
 	started                    time.Time
 	httpEnabled, httpHistogram bool
+	embeddingHistogram         bool
 	httpActive                 int64
 	httpDropped                uint64
 	httpTimers                 map[httpMetricLabels]*httpMetricTimer

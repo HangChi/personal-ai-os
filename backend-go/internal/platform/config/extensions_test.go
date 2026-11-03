@@ -37,7 +37,7 @@ func TestLoggingAndHTTPObservationConfiguration(t *testing.T) {
 		t.Fatal("日志配置未绑定", err)
 	}
 	a, err := p.Actuator()
-	if err != nil || !a.HTTPHistogram || !a.HTTPRequests {
+	if err != nil || !a.HTTPHistogram || !a.HTTPRequests || !a.EmbeddingHistogram {
 		t.Fatal("monitoring直方图未绑定", err)
 	}
 	for key, value := range map[string]string{"logging.structured.format.console": "private-format", "logging.level.root": "private-level", "management.metrics.distribution.percentiles-histogram.http.server.requests": "private-bool"} {

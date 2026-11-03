@@ -256,8 +256,8 @@ func (c *ChatClient) invoke(ctx context.Context, r ChatRequest, stream bool) (*h
 	}
 	resp, err := c.http.Do(req)
 	if err != nil {
-		cause:=ctx.Err()
-        cancel()
+		cause := ctx.Err()
+		cancel()
 		if cause != nil {
 			return nil, nil, cause
 		}

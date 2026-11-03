@@ -11,9 +11,11 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -215,6 +217,61 @@ func TestP3ConcurrentActivationAndReplaceRollback(t *testing.T) {
 		t.Fatal("cancellation lost", e)
 	}
 }
+func TestP3ConstraintRollbackAndSafeConflict(t *testing.T) {
+	s, store := writeFixture(t)
+	ctx := context.Background()
+	original, err := s.Create(ctx, profileCommand("before"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, err := store.Require(ctx, original.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	command := profileCommand("should rollback")
+	n := Temperature(math.NaN())
+	command.Temperature = &n
+	command.APIKey = ptr("synthetic-replacement-not-persisted")
+	command.ChatModels = []*string{ptr("replacement")}
+	_, err = s.Update(ctx, original.ID, command)
+	assertConflict := func(err error) {
+		t.Helper()
+		w := httptest.NewRecorder()
+		web.HandleErrors(func(http.ResponseWriter, *http.Request) error { return err }, slog.New(slog.NewTextHandler(io.Discard, nil))).ServeHTTP(w, httptest.NewRequest("PUT", "/", nil))
+		if w.Code != 409 || strings.Contains(w.Body.String(), "synthetic") {
+			t.Fatalf("constraint response=%d %s", w.Code, w.Body.String())
+		}
+	}
+	assertConflict(err)
+	if err == nil {
+		t.Fatalf("constraint not safe conflict: %T %v", err, err)
+	}
+	after, readErr := store.Require(ctx, original.ID)
+	if readErr != nil || !reflect.DeepEqual(before, after) {
+		t.Fatal("constraint changed persisted profile/key/models", readErr)
+	}
+	_, err = s.Save(ctx, SaveCommand{ChatModel: ptr("before")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacy, _, _ := store.Legacy(ctx)
+	_, err = s.Save(ctx, SaveCommand{Temperature: &n, APIKey: ptr("synthetic-bad-key")})
+	assertConflict(err)
+	if err == nil {
+		t.Fatalf("legacy constraint not conflict: %T %v", err, err)
+	}
+	current, _, _ := store.Legacy(ctx)
+	if !reflect.DeepEqual(legacy, current) {
+		t.Fatal("legacy failed write persisted")
+	}
+	renamed, err := s.Rename(ctx, original.ID, "  renamed  ")
+	if err != nil || renamed.Name != "renamed" || renamed.Revision != original.Revision {
+		t.Fatal("service rename", err)
+	}
+	if _, err = s.Rename(ctx, original.ID, " "); err == nil {
+		t.Fatal("blank rename accepted")
+	}
+}
 func TestP3AllModelRoutesOnOriginalSchema(t *testing.T) {
 	s, store := writeFixture(t)
 	var upstreamPathsMu sync.Mutex
@@ -323,5 +380,63 @@ func TestP3AllModelRoutesOnOriginalSchema(t *testing.T) {
 		if paths[path] == 0 {
 			t.Error("no upstream call", path)
 		}
+	}
+}
+
+func TestP3StartupLegacyOverrideNamedInheritanceAndManualWindows(t *testing.T) {
+	s, store := writeFixture(t)
+	ctx := context.Background()
+	initial := runtimeClient(t, "https://initial.invalid", "initial")
+	s.runtime.Replace(initial)
+	command := profileCommand("  trim name  ")
+	command.ContextWindows = map[string]*int{"gpt-4o": intPointer(200000)}
+	profile, err := s.Create(ctx, command)
+	if err != nil || profile.Name != "trim name" || profile.ContextWindows["gpt-4o"] != 200000 {
+		t.Fatal("manual larger window/name", profile, err)
+	}
+	if _, err = s.Activate(ctx, profile.ID); err != nil {
+		t.Fatal(err)
+	}
+	s.runtime.Replace(initial)
+	if err = s.Startup(ctx); err != nil || s.runtime.Current() != initial {
+		t.Fatal("startup incorrectly applies active profile", err)
+	}
+	if _, err = s.Save(ctx, SaveCommand{ChatModel: ptr("legacy-startup"), APIKey: ptr("synthetic-legacy-startup-key")}); err != nil {
+		t.Fatal(err)
+	}
+	s.runtime.Replace(initial)
+	if err = s.Startup(ctx); err != nil || s.runtime.Current().Name() != "legacy-startup" {
+		t.Fatal("legacy startup missing", err)
+	}
+	named, err := s.ResolveNamed(ctx, "  historical-choice  ")
+	if err != nil || named.Name() != "historical-choice" || named.resolved.BaseURL != "https://fixture.invalid/v1" || named.resolved.APIKey() != "synthetic-saved-key-wxyz" {
+		t.Fatal("active config inheritance", err)
+	}
+	if window := s.LookupWindow(ctx, "gpt-4o"); window == nil || *window != 200000 {
+		t.Fatal("registered active window", window)
+	}
+	command.APIKey = ptr(" ")
+	command.ChatModels = []*string{ptr("gpt-4o")}
+	command.Temperature = ptr(Temperature(0))
+	changed, err := s.Update(ctx, profile.ID, command)
+	if err != nil || *changed.Temperature != 0 {
+		t.Fatal("zero temperature", err)
+	}
+	saved, err := store.Require(ctx, profile.ID)
+	if err != nil || saved.APIKey != nil || s.runtime.Current().resolved.APIKey() != "synthetic-env-fallback-abcd" {
+		t.Fatal("profile key clear/fallback", err)
+	}
+	command.ChatModels = nil
+	command.ChatModel = nil
+	command.EmbeddingModels = nil
+	command.EmbeddingModel = nil
+	command.AudioModels = nil
+	command.Temperature = nil
+	if _, err = s.Update(ctx, profile.ID, command); err != nil {
+		t.Fatal(err)
+	}
+	saved, err = store.Require(ctx, profile.ID)
+	if err != nil || saved.ChatModel != nil || saved.Temperature != nil || len(saved.Models) != 0 {
+		t.Fatal("whole replacement did not clear", err)
 	}
 }

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"math"
 	"reflect"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -98,5 +100,62 @@ func TestEmbeddingInvalidBatchNeverPartiallyCachesAndFailuresRetry(t *testing.T)
 	}
 	if _, e = NewCachedEmbedding(f, "id", true, 0, time.Second, nil); e == nil {
 		t.Fatal("invalid capacity accepted")
+	}
+}
+
+func TestEmbeddingConcurrentObservationIsAtomicAndDoesNotCache(t *testing.T) {
+	var calls atomic.Int32
+	f := embeddingFunc(func(context.Context, EmbeddingRequest) (EmbeddingResponse, error) {
+		calls.Add(1)
+		return EmbeddingResponse{}, nil
+	})
+	c, _ := NewCachedEmbedding(f, "id", false, 10, time.Minute, nil)
+	var wg sync.WaitGroup
+	for i := 0; i < 128; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, err := c.Embed(context.Background(), EmbeddingRequest{Input: []string{"same"}})
+			if err != nil {
+				t.Error(err)
+			}
+		}()
+	}
+	wg.Wait()
+	s := c.Stats.Snapshot()
+	if calls.Load() != 128 || s.Counts["observed_new"] != 1 || s.Counts["observed_repeat"] != 127 || s.Calls != 128 {
+		t.Fatalf("concurrent observation: %+v calls=%d", s, calls.Load())
+	}
+	now := time.Now()
+	c.seen.now = func() time.Time { return now }
+	c.seen.markSeen("ttl")
+	now = now.Add(30 * time.Second)
+	if !c.seen.markSeen("ttl") {
+		t.Fatal("unexpired observation missing")
+	}
+	now = now.Add(30 * time.Second)
+	if c.seen.markSeen("ttl") {
+		t.Fatal("repeat extended expire-after-write")
+	}
+}
+func TestEmbeddingTimerMaximumExpiryAndBoundedHistogram(t *testing.T) {
+	s := NewCacheStats()
+	now := time.Date(2026, 11, 3, 0, 0, 0, 0, time.UTC)
+	s.now = func() time.Time { return now }
+	s.record(2 * time.Millisecond)
+	s.record(40 * time.Second)
+	s.record(-time.Second)
+	snap := s.Snapshot()
+	if snap.Calls != 2 || snap.Duration != 40*time.Second+2*time.Millisecond || snap.Maximum != 40*time.Second || len(snap.Buckets) != 68 || snap.Buckets[len(snap.Buckets)-1] != 1 {
+		t.Fatalf("timer=%+v", snap)
+	}
+	now = now.Add(3 * time.Minute)
+	snap = s.Snapshot()
+	if snap.Maximum != 0 || snap.Calls != 2 || snap.Buckets[len(snap.Buckets)-1] != 1 {
+		t.Fatal("max expiry cleared cumulative values")
+	}
+	snap.Buckets[0] = 999
+	if s.Snapshot().Buckets[0] == 999 {
+		t.Fatal("histogram snapshot aliases")
 	}
 }

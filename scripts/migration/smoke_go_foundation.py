@@ -64,16 +64,19 @@ def child_environment(fixture, role, port, management, ca_file):
         "GO_POSTGRES_SSL_MODE": fixture["GO_TEST_POSTGRES_SSL_MODE"],
         "GO_POSTGRES_ROOT_CERT": fixture["GO_TEST_POSTGRES_ROOT_CERT"],
         "LOGGING_STRUCTURED_FORMAT_CONSOLE": "ecs",
+        "AI_CHAT_PROVIDER": "none", "AI_EMBEDDING_PROVIDER": "none",
     })
     if fixture.get("GO_TEST_REDIS") == "disposable":
         env.update({
             "REDIS_SESSION_ENABLED": "true", "REDIS_SESSION_URI": fixture["GO_TEST_REDIS_SESSION_URI"],
             "REDIS_SESSION_NAMESPACE": "fixture:app-sessions", "REDIS_RATE_LIMIT_ENABLED": "true",
             "REDIS_RATE_LIMIT_URI": fixture["GO_TEST_REDIS_RATE_URI"], "REDIS_RATE_LIMIT_NAMESPACE": "fixture:app-rate",
+            "REDIS_ENABLED": "true", "REDIS_URI": fixture["GO_TEST_REDIS_EMBEDDING_URI"], "REDIS_NAMESPACE": "fixture:embedding",
         })
         if fixture.get("GO_TEST_REDIS_CA_PEM"):
             env["GO_REDIS_SESSION_ROOT_CERT"] = str(ca_file)
             env["GO_REDIS_RATE_LIMIT_ROOT_CERT"] = str(ca_file)
+            env["GO_REDIS_EMBEDDING_ROOT_CERT"] = str(ca_file)
     return env
 
 
@@ -128,7 +131,7 @@ def process(binary, fixture, role, directory, ca_file):
             if not rows or not all(row.get("ecs.version") and row.get("service.runtime") == "go" and row.get("requestId") for row in rows):
                 raise AssertionError("真实基础进程未装配ECS/请求ID日志")
             # 即使失败也不打印原始配置/凭据；只验证日志没有泄漏。
-            for key in ("POSTGRES_PASSWORD", "AUTH_PASSWORD", "REDIS_SESSION_URI", "REDIS_RATE_LIMIT_URI"):
+            for key in ("POSTGRES_PASSWORD", "AUTH_PASSWORD", "REDIS_SESSION_URI", "REDIS_RATE_LIMIT_URI", "REDIS_URI"):
                 if env.get(key) and env[key] in logs:
                     raise AssertionError("基础进程日志泄漏敏感配置")
 
@@ -199,7 +202,7 @@ def verify_failed_start(binary, fixture, directory, ca_file):
             result = subprocess.run([str(binary), "--foundation", "--migrations", path], cwd=directory, env=env,
                                     capture_output=True, text=True, timeout=15)
             assert result.returncode != 0, "基础启动失败被误报为成功"
-            for key in ("POSTGRES_PASSWORD", "AUTH_PASSWORD", "REDIS_SESSION_URI", "REDIS_RATE_LIMIT_URI"):
+            for key in ("POSTGRES_PASSWORD", "AUTH_PASSWORD", "REDIS_SESSION_URI", "REDIS_RATE_LIMIT_URI", "REDIS_URI"):
                 assert not env.get(key) or env[key] not in result.stdout + result.stderr, "启动错误泄漏凭据"
             assert_released(port)
         assert_released(management)

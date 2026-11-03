@@ -6,7 +6,10 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
+
+	"personal-ai-os/backend-go/internal/business/model"
 )
 
 func (m *foundationMetrics) embeddingMetricNames() []string {
@@ -34,8 +37,21 @@ func (m *foundationMetrics) writeEmbeddingMetrics(w http.ResponseWriter) {
 	}
 	if e := m.models.Embedding; e != nil {
 		s := e.Stats.Snapshot()
-		fmt.Fprintln(w, "# TYPE personalos_embedding_duration_seconds summary")
+		kind := "summary"
+		if m.embeddingHistogram {
+			kind = "histogram"
+		}
+		fmt.Fprintln(w, "# TYPE personalos_embedding_duration_seconds", kind)
 		fmt.Fprintf(w, "personalos_embedding_duration_seconds_count{model=%q} %d\npersonalos_embedding_duration_seconds_sum{model=%q} %g\n", m.models.EmbeddingName, s.Calls, m.models.EmbeddingName, s.Duration.Seconds())
+		fmt.Fprintln(w, "# TYPE personalos_embedding_duration_seconds_max gauge")
+		fmt.Fprintf(w, "personalos_embedding_duration_seconds_max{model=%q} %g\n", m.models.EmbeddingName, s.Maximum.Seconds())
+		if m.embeddingHistogram {
+			for i, bound := range model.EmbeddingHistogramBounds() {
+				fmt.Fprintf(w, "personalos_embedding_duration_seconds_bucket{model=%q,le=%q} %d\n", m.models.EmbeddingName, strconv.FormatFloat(bound, 'g', -1, 64), s.Buckets[i])
+			}
+			fmt.Fprintf(w, "personalos_embedding_duration_seconds_bucket{model=%q,le=\"+Inf\"} %d\n", m.models.EmbeddingName, s.Calls)
+		}
+
 		fmt.Fprintln(w, "# TYPE personalos_embedding_cache_requests_total counter")
 		keys := []string{}
 		for k := range s.Counts {
@@ -66,6 +82,9 @@ func (m *foundationMetrics) embeddingMetric(name string, q url.Values) (any, boo
 		key, value, ok := strings.Cut(v, ":")
 		if !ok {
 			return nil, false, errors.New("指标标签格式无效")
+		}
+		if old, exists := filter[key]; exists && old != value {
+			return nil, false, nil
 		}
 		filter[key] = value
 	}
@@ -106,7 +125,7 @@ func (m *foundationMetrics) embeddingMetric(name string, q url.Values) (any, boo
 			return nil, false, nil
 		}
 		r.BaseUnit = "seconds"
-		r.Measurements = []actuatorMeasurement{{"COUNT", float64(s.Calls)}, {"TOTAL_TIME", s.Duration.Seconds()}}
+		r.Measurements = []actuatorMeasurement{{"COUNT", float64(s.Calls)}, {"TOTAL_TIME", s.Duration.Seconds()}, {"MAX", s.Maximum.Seconds()}}
 	} else if name == "personalos.embedding.cache.requests" {
 		results := []string{}
 		var total uint64

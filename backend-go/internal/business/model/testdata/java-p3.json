@@ -1,0 +1,1587 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/common/ai/ModelContextWindows.java": "832939f68382787df91ad209cef868349875da6593f29e2a1e1597c45e494186",
+    "backend/src/main/java/com/personalos/common/ai/ModelWindowReferences.java": "767795aba03c4a86626d2e47dd8cad72df22316f8e3ccc6ff6c0b17911954546",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelListProbeService.java": "bc3abf6908e0a3b7a677df73396da8ae321ee607573a75f6d7554e729a19cd3c",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelProfileService.java": "71a1c9e83706cef2aacbbbc7f30b5ed440f23f3f26068c412a94c27c437cacd8",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": "adc00a21cc1ce1df20d1896feecb524bf07d48c099e140b05a0ffbc627f1d75b",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelConfigController.java": "3f37c013aaea8025126a6cd276c6fc0bac7427a0210a74af46ced4c75d9ce7b5",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java": "5cedd32b895dc758e4dd97f797a43cabba35afea5cf944c0d678e920b97fab49",
+    "backend/src/main/java/com/personalos/common/ai/config/AiModelProfileEntity.java": "4492ea6598517367ed7e2229e4b92430ee3043260527e67e7598d114604151a6",
+    "backend/src/main/java/com/personalos/common/ai/config/AiModelProfileModelEntity.java": "69c56a9d51e1e57644e6a4d507781ac36ed355e4f81cc1ec0297033bb8ae3a62",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelProtocol.java": "65582dd853162048068195c9773fe2a426c3f8cafa8a459319ec8dfaa387d22a"
+  },
+  "inputs": {
+    "metadata": [
+      "{\"context_length\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"context_length\": \"131,072\"}]}}",
+      "{\"context_window\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"context_window\": \"131,072\"}]}}",
+      "{\"max_model_len\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"max_model_len\": \"131,072\"}]}}",
+      "{\"max_context_length\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"max_context_length\": \"131,072\"}]}}",
+      "{\"max_context_window\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"max_context_window\": \"131,072\"}]}}",
+      "{\"context_window_tokens\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"context_window_tokens\": \"131,072\"}]}}",
+      "{\"max_context_window_tokens\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"max_context_window_tokens\": \"131,072\"}]}}",
+      "{\"max_position_embeddings\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"max_position_embeddings\": \"131,072\"}]}}",
+      "{\"n_ctx\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"n_ctx\": \"131,072\"}]}}",
+      "{\"max_input_tokens\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"max_input_tokens\": \"131,072\"}]}}",
+      "{\"max_prompt_tokens\": 8192}",
+      "{\"metadata\": {\"nested\": [{\"max_prompt_tokens\": \"131,072\"}]}}",
+      "{\"context_length\": null}",
+      "{\"context_length\": true}",
+      "{\"context_length\": 1000}",
+      "{\"context_length\": 1024}",
+      "{\"context_length\": 33554432}",
+      "{\"context_length\": 33554433}",
+      "{\"context_length\": 8192.5}",
+      "{\"context_length\": \"8k\"}",
+      "{\"context_length\": \"8,192\"}",
+      "{\"context_length\": \" 8192\"}",
+      "{\"context_length\": \"0008192\"}",
+      "{\"model_info\": {\"llama.context_length\": 32768}}",
+      "{\"extra_info\": {\"default_envs\": {\"max_tokens\": 131072, \"max_input_tokens\": 129024}}}",
+      "{\"extra_info\": {\"default_envs\": {\"max_input_tokens\": 9000}}}",
+      "{\"context_length\": 100000, \"max_input_tokens\": 90000}",
+      "{\"metadata\": {\"first\": {\"context_length\": 4096}, \"context_length\": 8192}}",
+      "{\"metadata\": {\"a\": {\"b\": {\"c\": {\"d\": {\"e\": {\"context_length\": 8192}}}}}}}"
+    ],
+    "known": [
+      null,
+      "",
+      " QWEN_MAX:latest ",
+      "azure/gpt-4o-2024-08-06",
+      "cmaas-qwen3.8-flash",
+      "unknown",
+      "avoid-o1-alias",
+      "gpt-4otherrandom",
+      "gpt-4.1",
+      "gateway/gpt-4.1-latest",
+      "gpt-4o-mini",
+      "gateway/gpt-4o-mini-latest",
+      "gpt-4o",
+      "gateway/gpt-4o-latest",
+      "gpt-4-turbo",
+      "gateway/gpt-4-turbo-latest",
+      "gpt-4-32k",
+      "gateway/gpt-4-32k-latest",
+      "gpt-4",
+      "gateway/gpt-4-latest",
+      "gpt-3.5-turbo",
+      "gateway/gpt-3.5-turbo-latest",
+      "o3",
+      "gateway/o3-latest",
+      "o4-mini",
+      "gateway/o4-mini-latest",
+      "o1",
+      "gateway/o1-latest",
+      "claude-3-7",
+      "gateway/claude-3-7-latest",
+      "claude-3-5",
+      "gateway/claude-3-5-latest",
+      "claude-3",
+      "gateway/claude-3-latest",
+      "claude-sonnet-4",
+      "gateway/claude-sonnet-4-latest",
+      "claude-opus-4",
+      "gateway/claude-opus-4-latest",
+      "qwen-long",
+      "gateway/qwen-long-latest",
+      "qwen3-max",
+      "gateway/qwen3-max-latest",
+      "qwen-max",
+      "gateway/qwen-max-latest",
+      "qwen-plus",
+      "gateway/qwen-plus-latest",
+      "qwen-turbo",
+      "gateway/qwen-turbo-latest",
+      "qwen3",
+      "gateway/qwen3-latest",
+      "qwen2.5",
+      "gateway/qwen2.5-latest",
+      "qwen-vl-max",
+      "gateway/qwen-vl-max-latest",
+      "deepseek-v3",
+      "gateway/deepseek-v3-latest",
+      "deepseek-chat",
+      "gateway/deepseek-chat-latest",
+      "deepseek-reasoner",
+      "gateway/deepseek-reasoner-latest",
+      "deepseek-coder",
+      "gateway/deepseek-coder-latest",
+      "deepseek-v4.1-flash",
+      "gateway/deepseek-v4.1-flash-latest",
+      "gemini-2.5",
+      "gateway/gemini-2.5-latest",
+      "gemini-2.0",
+      "gateway/gemini-2.0-latest",
+      "gemini-1.5-pro",
+      "gateway/gemini-1.5-pro-latest",
+      "gemini-1.5",
+      "gateway/gemini-1.5-latest",
+      "llama-3.3",
+      "gateway/llama-3.3-latest",
+      "llama-3.1",
+      "gateway/llama-3.1-latest",
+      "llama-3",
+      "gateway/llama-3-latest",
+      "mistral-large",
+      "gateway/mistral-large-latest",
+      "glm-4",
+      "gateway/glm-4-latest",
+      "glm-4-plus",
+      "gateway/glm-4-plus-latest",
+      "moonshot-v1-128k",
+      "gateway/moonshot-v1-128k-latest",
+      "moonshot-v1-32k",
+      "gateway/moonshot-v1-32k-latest",
+      "moonshot-v1-8k",
+      "gateway/moonshot-v1-8k-latest",
+      "kimi",
+      "gateway/kimi-latest"
+    ],
+    "references": [
+      {
+        "name": "qwen3.8-flash",
+        "base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      },
+      {
+        "name": "qwen3.8-flash",
+        "base": "https://gateway.invalid/v1"
+      },
+      {
+        "name": "deepseek-v4-pro",
+        "base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      },
+      {
+        "name": "deepseek-v4-pro",
+        "base": "https://gateway.invalid/v1"
+      },
+      {
+        "name": "deepseek-v4-pro-20261031",
+        "base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      },
+      {
+        "name": "deepseek-v4-pro-20261031",
+        "base": "https://gateway.invalid/v1"
+      },
+      {
+        "name": "deepseek-v4-pro-wrong",
+        "base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      },
+      {
+        "name": "deepseek-v4-pro-wrong",
+        "base": "https://gateway.invalid/v1"
+      },
+      {
+        "name": "cmaas-glm-5.3",
+        "base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      },
+      {
+        "name": "cmaas-glm-5.3",
+        "base": "https://gateway.invalid/v1"
+      },
+      {
+        "name": "minimax-m2.5",
+        "base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      },
+      {
+        "name": "minimax-m2.5",
+        "base": "https://gateway.invalid/v1"
+      },
+      {
+        "name": "deepseek-v4.1-flash",
+        "base": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+      },
+      {
+        "name": "deepseek-v4.1-flash",
+        "base": "https://gateway.invalid/v1"
+      }
+    ],
+    "bindings": [
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": ""
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "null"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "[]"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":\"fixture\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"Name\":\"wrong case\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":\"fixture\"} {}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":\"   \"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":12}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":true}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":{}}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":\"fixture\",\"chatModels\":{}}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":\"fixture\",\"chatModels\":[null,12,true,\"x\"]}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":\"fixture\",\"contextWindows\":{\"x\":\"8192\"}}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":\"fixture\",\"contextWindows\":{\"x\":8192.9}}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\":\"fixture\",\"contextWindows\":{\"x\":true}}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"baseUrl\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"apiKey\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"chatModel\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"embeddingModel\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"presetId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"protocol\": \"xxxxxxxxxxxxxxxxxxxxx\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"chatModels\": [\"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\"]}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"audioModels\": [\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": -1}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": 0}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": 2}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": 3}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": \"0.7\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": \"NaN\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": \"Infinity\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": false}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": {}}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"temperature\": null}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"baseUrl\": \"file:///tmp/a\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"baseUrl\": \"javascript:x\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"baseUrl\": \"HTTPS://x\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"baseUrl\": \" http://fixture.invalid \"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"baseUrl\": \"https://\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "text/plain",
+        "body": "{\"name\":\"fixture\"}"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/settings/model",
+        "contentType": "application/json",
+        "body": "{}"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/settings/model",
+        "contentType": "application/json",
+        "body": "null"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/settings/model",
+        "contentType": "application/json",
+        "body": "{\"temperature\":3}"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/settings/model",
+        "contentType": "application/json",
+        "body": "{\"apiKey\":{}}"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/settings/model",
+        "contentType": "application/json",
+        "body": "{\"baseUrl\":\"file:///x\"}"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/settings/model",
+        "contentType": "application/json",
+        "body": "{\"chatModel\":12}"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/settings/model",
+        "contentType": "application/json",
+        "body": "{\"temperature\":\"bad\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"presetId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \"temperature\": 3}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"protocol\": \"xxxxxxxxxxxxxxxxxxxxx\", \"baseUrl\": \"file:///x\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"fixture\", \"chatModels\": [\"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\", \"x\"], \"baseUrl\": \"file:///x\"}"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/settings/model/profiles",
+        "contentType": "application/json",
+        "body": "{\"name\": \"\", \"temperature\": 3}"
+      }
+    ],
+    "probes": [
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 401,
+          "body": "{}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 401,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 403,
+          "body": "{}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 403,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 404,
+          "body": "{}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 404,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 405,
+          "body": "{}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 405,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 429,
+          "body": "{}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 429,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 500,
+          "body": "{}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 500,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "not json"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "null"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"B\",\"context_length\":8192},{\"id\":\"a\"},{\"id\":\"B\"}]}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "[{\"id\":\"custom\",\"max_input_tokens\":4096}]"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{\"context_length\":131072,\"max_input_tokens\":120000}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{\"max_input_tokens\":32768}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{\"model_info\":{\"llama.context_length\":8192}}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{\"extra_info\":{\"default_envs\":{\"max_tokens\":131072,\"max_input_tokens\":129024}}}"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "not json"
+        }
+      },
+      {
+        "operation": "window",
+        "protocol": "OPENAI",
+        "model": "gpt-4o",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"gpt-4o\"}]}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "OLLAMA",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"models\":[{\"name\":\"custom\"}]}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{\"model_info\":{\"llama.context_length\":4096}}"
+        }
+      },
+      {
+        "operation": "models",
+        "protocol": "ANTHROPIC",
+        "model": "custom",
+        "list": {
+          "status": 200,
+          "body": "{\"data\":[{\"id\":\"custom\",\"context_length\":8192}]}"
+        },
+        "detail": {
+          "status": 200,
+          "body": "{}"
+        }
+      }
+    ]
+  },
+  "expected": {
+    "metadata": [
+      8192,
+      131072,
+      8192,
+      131072,
+      8192,
+      131072,
+      8192,
+      131072,
+      8192,
+      131072,
+      8192,
+      131072,
+      8192,
+      131072,
+      8192,
+      131072,
+      8192,
+      131072,
+      8192,
+      131072,
+      8192,
+      131072,
+      null,
+      null,
+      null,
+      1024,
+      33554432,
+      null,
+      null,
+      null,
+      8192,
+      null,
+      8192,
+      32768,
+      null,
+      9000,
+      100000,
+      8192,
+      null
+    ],
+    "known": [
+      null,
+      null,
+      30720,
+      128000,
+      null,
+      null,
+      null,
+      null,
+      1047576,
+      1047576,
+      128000,
+      128000,
+      128000,
+      128000,
+      128000,
+      128000,
+      32768,
+      32768,
+      8192,
+      8192,
+      16385,
+      16385,
+      200000,
+      null,
+      200000,
+      200000,
+      200000,
+      null,
+      200000,
+      200000,
+      200000,
+      200000,
+      200000,
+      200000,
+      200000,
+      200000,
+      200000,
+      200000,
+      1000000,
+      1000000,
+      262144,
+      262144,
+      30720,
+      30720,
+      131072,
+      131072,
+      131072,
+      131072,
+      131072,
+      131072,
+      131072,
+      131072,
+      30720,
+      30720,
+      65536,
+      65536,
+      65536,
+      65536,
+      65536,
+      65536,
+      65536,
+      65536,
+      1048576,
+      1048576,
+      1048576,
+      1048576,
+      1048576,
+      1048576,
+      2097152,
+      2097152,
+      1048576,
+      1048576,
+      131072,
+      131072,
+      131072,
+      131072,
+      8192,
+      8192,
+      131072,
+      131072,
+      131072,
+      131072,
+      131072,
+      131072,
+      131072,
+      131072,
+      32768,
+      32768,
+      8192,
+      8192,
+      131072,
+      null
+    ],
+    "references": [
+      {
+        "tokens": 1000000,
+        "url": "https://help.aliyun.com/zh/model-studio/qwen3-8-flash",
+        "inputLimit": 983616
+      },
+      null,
+      {
+        "tokens": 1000000,
+        "url": "https://help.aliyun.com/zh/model-studio/deepseek-v4-pro",
+        "inputLimit": null
+      },
+      {
+        "tokens": 1048576,
+        "url": "https://api-docs.deepseek.com/api/list-models/",
+        "inputLimit": null
+      },
+      {
+        "tokens": 1000000,
+        "url": "https://help.aliyun.com/zh/model-studio/deepseek-v4-pro",
+        "inputLimit": null
+      },
+      {
+        "tokens": 1048576,
+        "url": "https://api-docs.deepseek.com/api/list-models/",
+        "inputLimit": null
+      },
+      null,
+      null,
+      {
+        "tokens": 1048576,
+        "url": "https://help.aliyun.com/zh/model-studio/glm-5-3",
+        "inputLimit": null
+      },
+      null,
+      {
+        "tokens": 204800,
+        "url": "https://help.aliyun.com/zh/model-studio/minimax-m2-5",
+        "inputLimit": null
+      },
+      null,
+      {
+        "tokens": 1000000,
+        "url": "https://help.aliyun.com/zh/model-studio/deepseek-v4-1-flash",
+        "inputLimit": null
+      },
+      null
+    ],
+    "bindings": [
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u914d\u7f6e\u540d\u79f0\u4e0d\u80fd\u4e3a\u7a7a"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u914d\u7f6e\u540d\u79f0\u4e0d\u80fd\u4e3a\u7a7a"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u914d\u7f6e\u540d\u79f0\u4e0d\u80fd\u4e3a\u7a7a"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u914d\u7f6e\u540d\u79f0\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 60 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u7aef\u70b9\u5730\u5740\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 500 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "API Key\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 500 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u5bf9\u8bdd\u6a21\u578b\u540d\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 120 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u5d4c\u5165\u6a21\u578b\u540d\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 120 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u9884\u8bbe\u6807\u8bc6\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 60 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u534f\u8bae\u7c7b\u578b\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 20 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u914d\u7f6e\u540d\u79f0\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 60 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u5bf9\u8bdd\u6a21\u578b\u6700\u591a\u4fdd\u5b58 500 \u4e2a"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bed\u97f3\u6a21\u578b\u540d\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 120 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6e29\u5ea6\u5fc5\u987b\u5728 0.0 \u5230 2.0 \u4e4b\u95f4"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6e29\u5ea6\u5fc5\u987b\u5728 0.0 \u5230 2.0 \u4e4b\u95f4"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6e29\u5ea6\u5fc5\u987b\u5728 0.0 \u5230 2.0 \u4e4b\u95f4"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u7aef\u70b9\u5730\u5740\u5fc5\u987b\u4ee5 http:// \u6216 https:// \u5f00\u5934"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u7aef\u70b9\u5730\u5740\u5fc5\u987b\u4ee5 http:// \u6216 https:// \u5f00\u5934"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u7aef\u70b9\u5730\u5740\u5fc5\u987b\u4ee5 http:// \u6216 https:// \u5f00\u5934"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 500,
+        "code": 50000,
+        "message": "\u670d\u52a1\u5668\u5185\u90e8\u9519\u8bef"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6e29\u5ea6\u5fc5\u987b\u5728 0.0 \u5230 2.0 \u4e4b\u95f4"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u7aef\u70b9\u5730\u5740\u5fc5\u987b\u4ee5 http:// \u6216 https:// \u5f00\u5934"
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u9884\u8bbe\u6807\u8bc6\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 60 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u534f\u8bae\u7c7b\u578b\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 20 \u4e2a\u5b57\u7b26"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u5bf9\u8bdd\u6a21\u578b\u6700\u591a\u4fdd\u5b58 500 \u4e2a"
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6e29\u5ea6\u5fc5\u987b\u5728 0.0 \u5230 2.0 \u4e4b\u95f4"
+      }
+    ],
+    "probes": [
+      {
+        "ok": false,
+        "models": [],
+        "latencyMs": 0,
+        "error": "\u8ba4\u8bc1\u5931\u8d25\uff08401\uff09\uff1aAPI Key \u65e0\u6548\uff0c\u6216\u8be5\u7aef\u70b9\u4e0d\u4f7f\u7528\u8fd9\u79cd\u9274\u6743\u65b9\u5f0f\uff1b\u54cd\u5e94\uff1a{}",
+        "kind": "ERROR",
+        "contextWindows": {}
+      },
+      {
+        "ok": false,
+        "window": null,
+        "kind": "AUTH_FAILED",
+        "error": "\u8ba4\u8bc1\u5931\u8d25\uff08HTTP 401\uff09\uff0c\u8bf7\u68c0\u67e5 API Key \u4e0e\u7aef\u70b9\u5730\u5740",
+        "source": null,
+        "sourceUrl": null,
+        "detailKind": "AUTH_FAILED",
+        "httpStatus": 401,
+        "reportedDefaultWindow": null,
+        "message": null
+      },
+      {
+        "ok": false,
+        "models": [],
+        "latencyMs": 0,
+        "error": "\u65e0\u6743\u9650\uff08403\uff09\uff1a\u8be5\u5bc6\u94a5\u4e0d\u80fd\u5217\u51fa\u6a21\u578b\uff1b\u54cd\u5e94\uff1a{}",
+        "kind": "ERROR",
+        "contextWindows": {}
+      },
+      {
+        "ok": false,
+        "window": null,
+        "kind": "FORBIDDEN",
+        "error": "\u6ca1\u6709\u67e5\u8be2\u6743\u9650\uff08HTTP 403\uff09\uff0c\u8bf7\u68c0\u67e5\u5bc6\u94a5\u6743\u9650",
+        "source": null,
+        "sourceUrl": null,
+        "detailKind": "FORBIDDEN",
+        "httpStatus": 403,
+        "reportedDefaultWindow": null,
+        "message": null
+      },
+      {
+        "ok": false,
+        "models": [],
+        "latencyMs": 0,
+        "error": "\u63a5\u53e3\u4e0d\u5b58\u5728\uff08404\uff09\uff1a/v1/models \u5728\u8be5\u7aef\u70b9\u4e0a\u4e0d\u5b58\u5728\uff0c\u53ef\u80fd\u5b83\u4e0d\u63d0\u4f9b\u6a21\u578b\u5217\u8868\u63a5\u53e3\uff1b\u54cd\u5e94\uff1a{}",
+        "kind": "UNSUPPORTED",
+        "contextWindows": {}
+      },
+      {
+        "ok": false,
+        "window": null,
+        "kind": "NOT_FOUND",
+        "error": "\u7aef\u70b9\u672a\u63d0\u4f9b\u8be5\u6a21\u578b\u7684\u8be6\u60c5\u63a5\u53e3\uff08HTTP 404/405\uff09",
+        "source": null,
+        "sourceUrl": null,
+        "detailKind": "NOT_FOUND",
+        "httpStatus": 404,
+        "reportedDefaultWindow": null,
+        "message": null
+      },
+      {
+        "ok": false,
+        "models": [],
+        "latencyMs": 0,
+        "error": "\u8bf7\u6c42\u5931\u8d25\uff08HTTP 405\uff09\uff1b\u54cd\u5e94\uff1a{}",
+        "kind": "UNSUPPORTED",
+        "contextWindows": {}
+      },
+      {
+        "ok": false,
+        "window": null,
+        "kind": "NOT_FOUND",
+        "error": "\u7aef\u70b9\u672a\u63d0\u4f9b\u8be5\u6a21\u578b\u7684\u8be6\u60c5\u63a5\u53e3\uff08HTTP 404/405\uff09",
+        "source": null,
+        "sourceUrl": null,
+        "detailKind": "NOT_FOUND",
+        "httpStatus": 405,
+        "reportedDefaultWindow": null,
+        "message": null
+      },
+      {
+        "ok": false,
+        "models": [],
+        "latencyMs": 0,
+        "error": "\u88ab\u9650\u6d41\uff08429\uff09\uff1a\u8bf7\u6c42\u8fc7\u4e8e\u9891\u7e41\uff1b\u54cd\u5e94\uff1a{}",
+        "kind": "ERROR",
+        "contextWindows": {}
+      },
+      {
+        "ok": false,
+        "window": null,
+        "kind": "RATE_LIMITED",
+        "error": "\u7aef\u70b9\u9650\u6d41\uff08HTTP 429\uff09\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5",
+        "source": null,
+        "sourceUrl": null,
+        "detailKind": "RATE_LIMITED",
+        "httpStatus": 429,
+        "reportedDefaultWindow": null,
+        "message": null
+      },
+      {
+        "ok": false,
+        "models": [],
+        "latencyMs": 0,
+        "error": "\u8bf7\u6c42\u5931\u8d25\uff08HTTP 500\uff09\uff1b\u54cd\u5e94\uff1a{}",
+        "kind": "ERROR",
+        "contextWindows": {}
+      },
+      {
+        "ok": false,
+        "window": null,
+        "kind": "HTTP_ERROR",
+        "error": "\u6a21\u578b\u7aef\u70b9\u67e5\u8be2\u5931\u8d25\uff08HTTP 500\uff09\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5",
+        "source": null,
+        "sourceUrl": null,
+        "detailKind": "HTTP_ERROR",
+        "httpStatus": 500,
+        "reportedDefaultWindow": null,
+        "message": null
+      },
+      {
+        "ok": false,
+        "models": [],
+        "latencyMs": 0,
+        "error": "\u54cd\u5e94\u4e0d\u662f\u5408\u6cd5 JSON\uff08\u8be5\u7aef\u70b9\u53ef\u80fd\u8fd4\u56de\u4e86 HTML \u9875\u9762\uff09\uff1anot json",
+        "kind": "UNSUPPORTED",
+        "contextWindows": {}
+      },
+      {
+        "ok": false,
+        "models": [],
+        "latencyMs": 0,
+        "error": "\u54cd\u5e94\u4e3a\u7a7a",
+        "kind": "ERROR",
+        "contextWindows": {}
+      },
+      {
+        "ok": false,
+        "models": [],
+        "latencyMs": 0,
+        "error": "\u63a5\u53e3\u6709\u54cd\u5e94\u4f46\u6ca1\u6709\u89e3\u6790\u5230\u4efb\u4f55\u6a21\u578b\u540d\uff0c\u53ef\u80fd\u8be5\u7aef\u70b9\u4e0d\u63d0\u4f9b\u6a21\u578b\u5217\u8868\u3002\u53ef\u4ee5\u624b\u52a8\u586b\u5199\u6a21\u578b\u540d\u3002",
+        "kind": "UNSUPPORTED",
+        "contextWindows": {}
+      },
+      {
+        "ok": true,
+        "models": [
+          "a",
+          "B"
+        ],
+        "latencyMs": 0,
+        "error": null,
+        "kind": null,
+        "contextWindows": {
+          "B": 8192
+        }
+      },
+      {
+        "ok": true,
+        "models": [
+          "custom"
+        ],
+        "latencyMs": 0,
+        "error": null,
+        "kind": null,
+        "contextWindows": {
+          "custom": 4096
+        }
+      },
+      {
+        "ok": true,
+        "window": 120000,
+        "kind": null,
+        "error": null,
+        "source": "input-limit",
+        "sourceUrl": null,
+        "detailKind": "INPUT_LIMIT",
+        "httpStatus": 200,
+        "reportedDefaultWindow": null,
+        "message": "\u7aef\u70b9\u603b\u7a97\u53e3 131072 token\uff0c\u5df2\u91c7\u7528\u66f4\u5c0f\u7684\u8f93\u5165\u4e0a\u9650\u4f5c\u4fdd\u5b88\u914d\u7f6e"
+      },
+      {
+        "ok": true,
+        "window": 32768,
+        "kind": null,
+        "error": null,
+        "source": "input-limit",
+        "sourceUrl": null,
+        "detailKind": "INPUT_LIMIT",
+        "httpStatus": 200,
+        "reportedDefaultWindow": null,
+        "message": "\u7aef\u70b9\u672a\u63d0\u4f9b\u603b\u7a97\u53e3\uff0c\u5df2\u7528\u8f93\u5165\u4e0a\u9650\u4f5c\u4fdd\u5b88\u914d\u7f6e"
+      },
+      {
+        "ok": true,
+        "window": 8192,
+        "kind": null,
+        "error": null,
+        "source": "endpoint",
+        "sourceUrl": null,
+        "detailKind": "FOUND",
+        "httpStatus": 200,
+        "reportedDefaultWindow": null,
+        "message": null
+      },
+      {
+        "ok": false,
+        "window": null,
+        "kind": "DERIVED_DEFAULT",
+        "error": "\u7aef\u70b9\u53ea\u8fd4\u56de\u4e86\u9ed8\u8ba4\u8c03\u7528\u53c2\u6570\uff0c\u65e0\u6cd5\u636e\u6b64\u786e\u8ba4\u6a21\u578b\u7684\u4e0a\u4e0b\u6587\u7a97\u53e3",
+        "source": null,
+        "sourceUrl": null,
+        "detailKind": "DERIVED_DEFAULT",
+        "httpStatus": 200,
+        "reportedDefaultWindow": 129024,
+        "message": null
+      },
+      {
+        "ok": false,
+        "window": null,
+        "kind": "INVALID_RESPONSE",
+        "error": "\u7aef\u70b9\u672a\u8fd4\u56de\u6709\u6548\u7684\u6a21\u578b\u5143\u6570\u636e JSON\uff0c\u8bf7\u68c0\u67e5\u7aef\u70b9\u5730\u5740",
+        "source": null,
+        "sourceUrl": null,
+        "detailKind": "INVALID_RESPONSE",
+        "httpStatus": 200,
+        "reportedDefaultWindow": null,
+        "message": null
+      },
+      {
+        "ok": true,
+        "window": 128000,
+        "kind": "REFERENCE",
+        "error": null,
+        "source": "catalog",
+        "sourceUrl": null,
+        "detailKind": "NO_METADATA",
+        "httpStatus": 200,
+        "reportedDefaultWindow": null,
+        "message": "\u63a5\u53e3\u6b63\u5e38\u54cd\u5e94\uff0c\u4f46\u6ca1\u6709\u63d0\u4f9b\u53ef\u8bc6\u522b\u7684\u4e0a\u4e0b\u6587\u7a97\u53e3\u5b57\u6bb5\uff1b\u63d0\u4f9b\u5185\u7f6e\u53c2\u8003\u503c\uff0c\u4e0d\u4ee3\u8868\u6b64\u7aef\u70b9\u7684\u5b9e\u6d4b\u4e0a\u9650"
+      },
+      {
+        "ok": true,
+        "models": [
+          "custom"
+        ],
+        "latencyMs": 0,
+        "error": null,
+        "kind": null,
+        "contextWindows": {
+          "custom": 4096
+        }
+      },
+      {
+        "ok": true,
+        "models": [
+          "custom"
+        ],
+        "latencyMs": 0,
+        "error": null,
+        "kind": null,
+        "contextWindows": {
+          "custom": 8192
+        }
+      }
+    ]
+  }
+}

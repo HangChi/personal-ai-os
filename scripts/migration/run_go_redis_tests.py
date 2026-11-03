@@ -16,7 +16,7 @@ from disposable_tls import create_tls_fixture as tls_fixture
 
 ROOT = Path(__file__).resolve().parents[2]
 IMAGE = "redis@sha256:987c376c727652f99625c7d205a1cba3cb2c53b92b0b62aade2bd48ee1593232"
-PACKAGES = ["redis", "auth", "ratelimit", "app", "command"]
+PACKAGES = ["redis", "auth", "ratelimit", "app", "command", "model"]
 
 
 def capture(command, **kwargs):
@@ -70,14 +70,16 @@ def run_package(image, package, tls_mode=False, backup=False):
         port = bindings[0]["HostPort"]
         # 只为本次独立客户端包建立精确键空间/命令权限，不开放管理命令。
         acl_uris = {}
-        if package in {"redis", "app", "command"}:
+        if package in {"redis", "app", "command", "model"}:
             session_namespace = "fixture:app-sessions" if package in {"app", "command"} else "fixture:acl-session"
             rate_namespace = "fixture:app-rate" if package in {"app", "command"} else "fixture:acl-rate"
             rate_key = "personalos:rate:" + hashlib.sha256(rate_namespace.encode()).hexdigest()
+            cache_key = "personalos:embedding:" + hashlib.sha256(b"fixture:embedding").hexdigest() + ":*"
             for name, key, commands in [
                 ("go_session", session_namespace + ":go:v1:session:*",
                  ["get", "pttl", "pexpire", "exists", "set", "del"]),
                 ("go_rate", rate_key, ["hmget", "time", "hset", "pexpire"]),
+                ("go_embedding", cache_key, ["get", "psetex"]),
             ]:
                 acl_password = secrets.token_urlsafe(24)
                 result = capture(["docker", "exec", container, "sh", "-c",
@@ -105,7 +107,7 @@ def run_package(image, package, tls_mode=False, backup=False):
             run_postgres(POSTGRES_IMAGE, package, tls_mode=tls_mode, flyway=True, backup=backup and package == "app", redis_env=child_env)
         else:
             subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
-                            "./internal/platform/" + package], cwd=ROOT / "backend-go", env=child_env,
+                            ("./internal/business/model" if package == "model" else "./internal/platform/" + package)], cwd=ROOT / "backend-go", env=child_env,
                            check=True, timeout=180)
     finally:
         try:

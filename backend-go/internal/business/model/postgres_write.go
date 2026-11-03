@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 	"time"
 
 	"personal-ai-os/backend-go/internal/platform/api"
+	web "personal-ai-os/backend-go/internal/platform/http"
 )
 
 const profileColumns = `id::text,name,preset_id,base_url,api_key,chat_model,temperature,embedding_model,audio_model,protocol,active,sort_order,revision,created_at,updated_at`
@@ -48,6 +50,7 @@ func (s *PostgresReadStore) Require(ctx context.Context, id string) (p Profile, 
 	return
 }
 func (s *PostgresReadStore) Save(ctx context.Context, c SaveCommand) (v Values, err error) {
+	defer func() { err = storeError(err) }()
 	err = s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
 		if _, e := tx.ExecContext(ctx, `LOCK TABLE ai_model_config IN SHARE ROW EXCLUSIVE MODE`); e != nil {
 			return e
@@ -80,12 +83,20 @@ func (s *PostgresReadStore) Save(ctx context.Context, c SaveCommand) (v Values, 
 
 // 写事务串行化档案集合，保护「最后一套」、排序与唯一 active 的跨行不变量。
 func (s *PostgresReadStore) write(ctx context.Context, f func(*sql.Tx) error) error {
-	return s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
+	return storeError(s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
 		if _, err := tx.ExecContext(ctx, `LOCK TABLE ai_model_profile IN SHARE ROW EXCLUSIVE MODE`); err != nil {
 			return err
 		}
 		return f(tx)
-	})
+	}))
+}
+
+func storeError(err error) error {
+	var state interface{ SQLState() string }
+	if errors.As(err, &state) && strings.HasPrefix(state.SQLState(), "23") {
+		return web.IntegrityConflict(err)
+	}
+	return err
 }
 func (s *PostgresReadStore) replace(ctx context.Context, tx *sql.Tx, id string, c ProfileCommand, now time.Time) error {
 	if _, err := tx.ExecContext(ctx, `DELETE FROM ai_model_profile_model WHERE profile_id=$1`, id); err != nil {

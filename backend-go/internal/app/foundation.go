@@ -207,7 +207,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if err != nil {
 		return nil, err
 	}
-	metrics := &foundationMetrics{extra: options.Observer, started: time.Now(), httpEnabled: actuatorProperties.HTTPRequests, httpHistogram: actuatorProperties.HTTPHistogram}
+	metrics := &foundationMetrics{extra: options.Observer, started: time.Now(), httpEnabled: actuatorProperties.HTTPRequests, httpHistogram: actuatorProperties.HTTPHistogram, embeddingHistogram: actuatorProperties.EmbeddingHistogram}
 	limiter, err := ratelimit.NewShared(ratelimit.Options{Enabled: settings.RateLimit.Enabled, Capacity: settings.RateLimit.Capacity, Period: settings.RateLimit.Period}, postgresBucket, redisBucket, metrics)
 	if err != nil {
 		return nil, err

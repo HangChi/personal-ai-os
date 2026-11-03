@@ -91,7 +91,7 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
                 raise ValueError("组合测试只能接收脚本新建的app专用Redis")
             go_env.update({key: redis_env[key] for key in {
                 "GO_TEST_REDIS", "GO_TEST_REDIS_URI", "GO_TEST_REDIS_CA_PEM",
-                "GO_TEST_REDIS_SESSION_URI", "GO_TEST_REDIS_RATE_URI",
+                "GO_TEST_REDIS_SESSION_URI", "GO_TEST_REDIS_RATE_URI", "GO_TEST_REDIS_EMBEDDING_URI",
             } if key in redis_env})
         if (flyway and package == "migration") or package in {"idempotency", "confirmation", "task", "model", "app", "command"}:
             if baseline:

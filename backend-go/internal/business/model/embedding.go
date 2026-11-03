@@ -11,6 +11,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"slices"
 	"sync"
 	"time"
 
@@ -124,34 +125,97 @@ type SharedEmbeddingCache interface {
 	Get(context.Context, string, string) []float32
 	Put(context.Context, string, string, []float32, time.Duration)
 }
+
+// CacheStats 保留累计调用/耗时及 Micrometer 默认三分钟窗口 MAX。
+// 固定桶只分配一次，不随文本、模型选项或请求数增长。
 type CacheStats struct {
 	mu       sync.Mutex
 	Counts   map[string]uint64
 	Calls    uint64
 	Duration time.Duration
+	now      func() time.Time
+	last     time.Time
+	current  int
+	maxima   [3]time.Duration
+	buckets  []uint64
 }
 type CacheSnapshot struct {
-	Counts   map[string]uint64
-	Calls    uint64
-	Duration time.Duration
+	Counts            map[string]uint64
+	Calls             uint64
+	Duration, Maximum time.Duration
+	Buckets           []uint64
 }
 
-func NewCacheStats() *CacheStats          { return &CacheStats{Counts: map[string]uint64{}} }
+var embeddingBounds = EmbeddingHistogramBounds()
+
+// EmbeddingHistogramBounds 与固定 Micrometer Timer 的默认 1ms–30s 桶一致。
+func EmbeddingHistogramBounds() []float64 {
+	values := []float64{.001, 30}
+	for exp := 2; exp <= 36; exp += 2 {
+		current := int64(1) << exp
+		delta := current / 3
+		next := (current << 2) - delta
+		for ; current < next; current += delta {
+			if current >= 1_000_000 && current <= 30_000_000_000 {
+				values = append(values, float64(current)/1e9)
+			}
+		}
+	}
+	slices.Sort(values)
+	return slices.Compact(values)
+}
+func NewCacheStats() *CacheStats {
+	return &CacheStats{Counts: map[string]uint64{}, now: time.Now, buckets: make([]uint64, len(embeddingBounds))}
+}
 func (s *CacheStats) count(result string) { s.mu.Lock(); s.Counts[result]++; s.mu.Unlock() }
+func (s *CacheStats) rotate() {
+	now := s.now()
+	if s.last.IsZero() {
+		s.last = now
+		return
+	}
+	steps := now.Sub(s.last) / time.Minute
+	if steps <= 0 {
+		return
+	}
+	s.last = s.last.Add(steps * time.Minute)
+	if steps >= 3 {
+		s.maxima = [3]time.Duration{}
+		s.current = 0
+		return
+	}
+	for ; steps > 0; steps-- {
+		s.maxima[s.current] = 0
+		s.current = (s.current + 1) % len(s.maxima)
+	}
+}
 func (s *CacheStats) record(elapsed time.Duration) {
+	if elapsed < 0 {
+		return
+	}
 	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.rotate()
 	s.Calls++
 	s.Duration += elapsed
-	s.mu.Unlock()
+	for i := range s.maxima {
+		s.maxima[i] = max(s.maxima[i], elapsed)
+	}
+	for i, bound := range embeddingBounds {
+		if elapsed.Seconds() <= bound {
+			s.buckets[i]++
+		}
+	}
 }
 func (s *CacheStats) Snapshot() CacheSnapshot {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.rotate()
 	m := map[string]uint64{}
 	for k, v := range s.Counts {
 		m[k] = v
 	}
-	return CacheSnapshot{m, s.Calls, s.Duration}
+	return CacheSnapshot{Counts: m, Calls: s.Calls, Duration: s.Duration, Maximum: s.maxima[s.current], Buckets: append([]uint64(nil), s.buckets...)}
 }
 
 type cacheEntry struct {
@@ -200,6 +264,25 @@ func (c *localVectors) put(key string, vector []float32) {
 		c.order.Remove(el)
 	}
 	c.items[key] = c.order.PushFront(cacheEntry{key, append([]float32(nil), vector...), c.now().Add(c.ttl)})
+}
+
+func (c *localVectors) markSeen(key string) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if el := c.items[key]; el != nil {
+		if c.now().Before(el.Value.(cacheEntry).expires) {
+			return true
+		}
+		c.order.Remove(el)
+		delete(c.items, key)
+	}
+	for len(c.items) >= c.capacity {
+		el := c.order.Back()
+		delete(c.items, el.Value.(cacheEntry).key)
+		c.order.Remove(el)
+	}
+	c.items[key] = c.order.PushFront(cacheEntry{key: key, expires: c.now().Add(c.ttl)})
+	return false
 }
 
 type CachedEmbedding struct {
@@ -266,11 +349,10 @@ func (c *CachedEmbedding) Embed(ctx context.Context, r EmbeddingRequest) (Embedd
 	}
 	if !c.enabled {
 		for _, key := range keys {
-			if _, ok := c.seen.get(key); ok {
+			if c.seen.markSeen(key) {
 				c.Stats.count("observed_repeat")
 			} else {
 				c.Stats.count("observed_new")
-				c.seen.put(key, nil)
 			}
 		}
 		return c.invoke(ctx, r)

@@ -128,7 +128,7 @@ func dedicatedRedis(properties *config.Properties, env config.Environment, prefi
 	return redisclient.New(redisclient.Config{URI: uri, RootCertPEM: root})
 }
 
-// runFoundation 拥有全部资源：基础应用退出后才关闭两个专用 Redis 客户端。
+// runFoundation 拥有全部资源：基础应用退出后才关闭三个专用 Redis 客户端。
 // 所有配置与迁移文件均在监听/连接之前验证；不自动 migrate/repair 或启动业务 Worker。
 func runFoundation(ctx context.Context, options commandOptions, system map[string]string, logger *slog.Logger) (err error) {
 	if ctx == nil || logger == nil {

@@ -26,6 +26,15 @@ type Module struct {
 }
 
 func OpenModule(ctx context.Context, pool *database.Pool, p *config.Properties, transport http.RoundTripper, redis *redisclient.Client, logger *slog.Logger) (*Module, error) {
+	if p == nil || pool == nil {
+		return nil, errors.New("P3模块需要显式配置与连接池")
+	}
+	if logger == nil {
+		logger = slog.Default()
+	}
+	if err := validateProtocolRetries(p); err != nil {
+		return nil, err
+	}
 	get := func(k string) (string, error) { v, _, e := p.Get(k); return v, e }
 	key, err := get("app.model-key-encryption-key")
 	if err != nil {
@@ -181,6 +190,9 @@ func OpenModule(ctx context.Context, pool *database.Pool, p *config.Properties, 
 		if e != nil {
 			return nil, e
 		}
+		if ttl == nil {
+			return nil, errors.New("嵌入缓存 TTL 不能为空")
+		}
 		parts := []string{}
 		for _, k := range []string{"spring.ai.model.embedding", "spring.ai.openai.base-url", "spring.ai.openai.embedding.model", "spring.ai.ollama.base-url", "spring.ai.ollama.embedding.model", "app.embedding-cache.revision"} {
 			v, e := get(k)
@@ -218,4 +230,28 @@ func CheckPrivileges(ctx context.Context, pool *database.Pool) error {
 		}
 		return nil
 	})
+}
+
+// 热应用工厂固定禁重试；初始provider也只支持原基线的一次尝试。
+// 对已知重试扩展显式拒绝，避免接受配置后静默忽略。
+func validateProtocolRetries(p *config.Properties) error {
+	for key, expected := range map[string]int{
+		"spring.ai.retry.max-attempts":           1,
+		"spring.ai.openai.max-retries":           0,
+		"spring.ai.openai.chat.max-retries":      0,
+		"spring.ai.openai.embedding.max-retries": 0,
+	} {
+		raw, found, err := p.Get(key)
+		if err != nil {
+			return err
+		}
+		if !found {
+			continue
+		}
+		n, err := strconv.Atoi(raw)
+		if err != nil || n != expected {
+			return errors.New("P3模型协议只支持单次请求与禁用SDK重试")
+		}
+	}
+	return nil
 }

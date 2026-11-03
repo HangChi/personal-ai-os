@@ -64,7 +64,7 @@ func checkLength(value *string, max int, label string) error {
 	}
 	return nil
 }
-func validateSave(c SaveCommand) error {
+func validateSaveLengths(c SaveCommand) error {
 	for _, v := range []struct {
 		p *string
 		n int
@@ -74,6 +74,9 @@ func validateSave(c SaveCommand) error {
 			return err
 		}
 	}
+	return nil
+}
+func validateSaveValues(c SaveCommand) error {
 	if c.Temperature != nil && (*c.Temperature < 0 || *c.Temperature > 2) {
 		return validation("温度必须在 0.0 到 2.0 之间")
 	}
@@ -82,8 +85,14 @@ func validateSave(c SaveCommand) error {
 	}
 	return nil
 }
+func validateSave(c SaveCommand) error {
+	if err := validateSaveLengths(c); err != nil {
+		return err
+	}
+	return validateSaveValues(c)
+}
 func validateProfile(c ProfileCommand) error {
-	if err := validateSave(c.SaveCommand); err != nil {
+	if err := validateSaveLengths(c.SaveCommand); err != nil {
 		return err
 	}
 	for _, v := range []struct {
@@ -105,6 +114,9 @@ func validateProfile(c ProfileCommand) error {
 				return err
 			}
 		}
+	}
+	if err := validateSaveValues(c.SaveCommand); err != nil {
+		return err
 	}
 	if c.Name == nil || strip(*c.Name) == "" {
 		return validation("配置名称不能为空")
@@ -166,6 +178,20 @@ func (s *Service) Activate(ctx context.Context, id string) (ProfileDTO, error) {
 		return ProfileDTO{}, err
 	}
 	p, err := s.store.Require(ctx, id)
+	if err != nil {
+		return ProfileDTO{}, err
+	}
+	return s.resolver.ProfileDTO(p), nil
+}
+func (s *Service) Rename(ctx context.Context, id, name string) (ProfileDTO, error) {
+	name = strip(name)
+	if name == "" {
+		return ProfileDTO{}, validation("配置名称不能为空")
+	}
+	if err := checkLength(&name, 60, "配置名称"); err != nil {
+		return ProfileDTO{}, err
+	}
+	p, err := s.store.Rename(ctx, id, name)
 	if err != nil {
 		return ProfileDTO{}, err
 	}

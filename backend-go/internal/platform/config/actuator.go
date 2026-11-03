@@ -11,6 +11,7 @@ type ActuatorProperties struct {
 	HealthDetails                                 string
 	InfoName, InfoVersion                         string
 	HTTPHistogram, HTTPRequests                   bool
+	EmbeddingHistogram                            bool
 }
 
 func (ActuatorProperties) String() string               { return "ActuatorProperties{redacted}" }
@@ -22,7 +23,7 @@ func (p *Properties) Actuator() (ActuatorProperties, error) {
 		return ActuatorProperties{}, errors.New("Actuator 配置来源不能为空")
 	}
 	values := map[string]string{}
-	for _, key := range []string{"management.endpoints.web.exposure.include", "management.endpoints.web.exposure.exclude", "management.endpoint.health.show-details", "management.info.env.enabled", "info.app.name", "info.app.version", "management.health.diskspace.enabled", "management.health.ssl.enabled", "management.health.ping.enabled", "management.endpoint.health.probes.enabled", "management.metrics.distribution.percentiles-histogram.http.server.requests", "management.metrics.enable.http.server.requests"} {
+	for _, key := range []string{"management.endpoints.web.exposure.include", "management.endpoints.web.exposure.exclude", "management.endpoint.health.show-details", "management.info.env.enabled", "info.app.name", "info.app.version", "management.health.diskspace.enabled", "management.health.ssl.enabled", "management.health.ping.enabled", "management.endpoint.health.probes.enabled", "management.metrics.distribution.percentiles-histogram.http.server.requests", "management.metrics.enable.http.server.requests", "management.metrics.distribution.percentiles-histogram.personalos.embedding.duration"} {
 		value, found, err := p.Get(key)
 		if err != nil {
 			return ActuatorProperties{}, err
@@ -50,6 +51,7 @@ func (p *Properties) Actuator() (ActuatorProperties, error) {
 		{"management.endpoint.health.probes.enabled", true, &result.Probes},
 		{"management.metrics.distribution.percentiles-histogram.http.server.requests", false, &result.HTTPHistogram},
 		{"management.metrics.enable.http.server.requests", true, &result.HTTPRequests},
+		{"management.metrics.distribution.percentiles-histogram.personalos.embedding.duration", false, &result.EmbeddingHistogram},
 	} {
 		value, err := bindBoolean(values, item.key, item.fallback)
 		if err != nil {
