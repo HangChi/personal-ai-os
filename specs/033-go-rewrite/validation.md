@@ -250,6 +250,16 @@ go_config_inventory.py从固定Git基线加载全部7 YAML文件，实际Spring�
 
 Go逐项核对完整record结果，覆盖缺省注解/显式空/零负值/32位溢出、内部空白/hex/BMP Unicode与补充平面反例、纳秒/空时长、用户名strip和密码null/空/原样。错误/格式化/JSON不泄漏凭据，密码指针与原map修改不能改变已绑定值；100路各10次无共享状态。测试将绑定值传给真实BCrypt服务，成功登录、两次失败、第三次锁定29–30秒，并验证启用后缺密码仍由服务拒绝；本地桶容量与禁用后仍校验非法配置通过。定向三轮race通过（/private/tmp/personal-ai-os-go-binding-stress.log），全量十四包race/integration vet/build通过（/private/tmp/personal-ai-os-go-binding-all.log）。未装入主应用或执行P4 Agent，T104/T105/T109保持开放。
 
+## 增量：MCP动态配置与多来源覆盖（T104e）
+
+先加入MCP绑定对照确认BindMCPProperties/BindingSource未实现时编译失败（/private/tmp/personal-ai-os-go-mcp-binding-red.log）。真实Binder夹具扩展为四类共398项，新增MCP157项；149项Java本身拒绝、5项有效结果超Go时长范围。全部成功值/错误逐项通过，集合仅按同一Unicode标量顺序规范化，不忽略成员/参数顺序或map键。默认重生成完全一致，原时长/大小228项快照复验通过。
+
+首版Java合成环境来源名不符合Boot的*-systemEnvironment约定，未启用环境键映射；修正后加入原.env五字段独立断言。Go临时目录写入纯合成.env并显式LoadEnvironment，实际绑定fetch/uvx/args/autoTools/30秒；系统来源只覆盖command，保留低来源其他字段。真实Java证实ENV_API_KEY变成api.key、单数SERVER不绑定，均保留原行为。
+
+覆盖Map按键合并、List/Set整体覆盖/高来源空值阻止回落、同源标量先于索引、连续索引/缺口/非规范/巨大索引、未知字段不造server、空record/map/只配置空时长、普通/括号map键、ASCII trim与无shell转义。低来源非法列表被高来源替代时不误拒，未遮蔽的非法时长仍失败。发现MCP会归一化合法巨大负时长，因此内部先检查Java完整Duration范围再默认10秒；补齐简单单位long秒溢出、负fraction下界/全局负号反例，不把Java自身溢出当合法默认。
+
+全部容器/命令指针副本与来源修改隔离、格式化/JSON/动态错误键脱敏、非法UTF-8和100路各10次绑定通过；定向三轮race（/private/tmp/personal-ai-os-go-mcp-binding-stress.log）、全量十四包race（/private/tmp/personal-ai-os-go-mcp-binding-all.log）、integration vet、构建、五角色真实HTTP/退出和go mod verify通过。最后局部简化/夹具数量守卫后定向race与vet复验。完整ConfigData/profile/别名冲突/应用装配继续开放，未执行MCP子进程或连接协议，P7仍未开始。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

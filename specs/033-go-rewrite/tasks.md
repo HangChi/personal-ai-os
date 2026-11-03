@@ -35,6 +35,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [x] T104b 显式时长/数据大小转换器保留null、Java单位/大小写/空白/ISO符号/精度；真实Boot转换器228项逐项对照，超出Go int64纳秒的8个Java合法值明确拒绝且不截断。补充Java秒数中间加法顺序/Unicode折叠反例；尚未完成全属性绑定或装入主入口。
 - [x] T104c 固定全部12配置record/67字段、70处@Value、8处getProperty与7 YAML文件/17文档/205属性来源；真实Spring/原生产守卫4场景发现并对齐Cookie canonical路径与系统环境优先级。索引默认重生成比较；非完整Binder/profile装配，T104保持开放。
 - [x] T104d 显式绑定已解析canonical字符串map到Auth/RateLimit/AgentExecution三类配置；真实Binder.bindOrCreate的241项对照覆盖注解默认/空值/整数Unicode与hex/正值校验/时长，4项Java超Go范围明确拒绝。验证凭据脱敏/副本、1000次并发及真实BCrypt锁定/本地桶接线；不读取环境/展开占位符或装入主应用，T104保持开放。
+- [x] T104e 显式MCP动态server/map/list/set与多来源覆盖绑定；新增157项真实Binder结果，四类配置共398项。覆盖.env原场景、下划线透传键实际变点分键、列表整体覆盖/空项/缺口、非正时长默认、全部容器副本/脱敏与1000次并发。不启动MCP命令/协议或加载ConfigData，完整T104与P7运行时继续开放。
 - [ ] T105 实现认证/失败锁定/会话/轮换/注销/me/CSRF/Cookie/匿名白名单，移植 Auth*、SharedSession、Security 与生产验证相关断言。
 - [x] T105a 移植单用户凭据、BCrypt 2a/cost10、Java strip/空值与失败锁定；固定真实 Java 编码器的 74 项 Unicode/NUL/长度边界对照，串行化并发校验。会话/CSRF/配置与应用接线仍属 T105。
 - [x] T105b 实现原子本地会话/过期续期/登录轮换/注销/me/CSRF/Cookie 和可组合 HTTP 安全链；真实回环 CookieJar 验证登录前后令牌/旧 ID 失效，补充表单令牌/匿名/错误/路径边界。Redis/完整框架差分/应用接线仍属 T105。

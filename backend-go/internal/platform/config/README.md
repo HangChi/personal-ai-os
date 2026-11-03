@@ -37,3 +37,15 @@ python3 scripts/migration/java_config_binding_fixture.py
 ```
 
 夹具从固定Git源码独立编译三类record并使用真实Binder，只注入合成字符串map、PlaceholdersResolver.NONE，不读取系统属性、真实环境、文件配置或启动应用。默认重生成比较，--write显式更新。Agent这里只覆盖配置绑定，不表示P4执行引擎已迁移。
+
+## MCP动态配置来源
+
+`BindMCPProperties(sources ...BindingSource)`在参数内显式组合来源，顺序由高到低。普通来源支持`mcp.servers.fetch.command`、camel/kebab字段名、`args[0]`连续索引和方括号map键；`Environment:true`来源使用SystemEnvironment的下划线/索引映射。`DotEnv.BindingSource()`仅复制已经解析的字面值，不访问文件。调用方必须显式枚举需要使用的系统变量；这里不会从进程环境补全。
+
+Map按键合并，单server各字段独立覆盖；List/Set取最高优先级来源的整个集合，不能拼接低优先级剩余项。空列表仍会阻止回落，索引缺口/非规范索引拒绝。逗号列表使用Java String.trim的ASCII控制字符规则，不执行shell/CSV引号或反斜线转义。Set只去重、不承诺顺序；访问器为稳定输出排序。
+
+原SystemEnvironment有一处需显式注意：`MCP_SERVERS_FETCH_ENV_API_KEY`实际绑定为`env["api.key"]`，不是`API_KEY`；`HTTP_PROXY`同样变成`http.proxy`。普通属性的`mcp.servers.fetch.env.[API_KEY]`才保留该原样键。Go按真实基线结果保留此行为，不自行修复；以后调整应作为有明确迁移说明的行为变更。单数MCP_SERVER不会声明server，带额外下划线的server名字也不能臆测为完整名字。
+
+MCP配置和server字段全部私有，命令指针、server名称、参数、环境map和工具集合访问均返回副本；格式化/JSON只输出脱敏信息。command的null/空串保持区别，连接期限为null/非正值时归一到10秒。先按Java Duration完整范围检查合法性再归一化，合法巨大负值仍归一化，Java自身溢出则拒绝；归一化后仍超Go范围的正值明确ErrScalarOverflow。
+
+离线Binder夹具已扩展为四类record共398项，其中MCP157项；只使用显式合成MAP/正确命名为*-systemEnvironment的来源。当前实现针对上述MCP键形态，不是任意Spring Binder替代；不支持ConfigData/profile激活、占位符/SpEL、任意配置类型、宿主来源发现或应用接线。同一显式map以排序键枚举；任意别名冲突和其余relaxed绑定边界仍需继续验收。没有启动MCP子进程或连接协议服务，P7保持未开始。

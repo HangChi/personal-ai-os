@@ -250,3 +250,17 @@ Decision：先为Auth/RateLimit/AgentExecution提供纯函数绑定器，输入�
 Auth保留密码null/显式空字符串，用户名按Java strip/default。密码私有存储、访问返回独立副本，用户名/密码均不参与JSON或常规格式化；仍由AuthService校验启用后的必填和编码，避免将record构造和服务启动混为一谈。真实BCrypt两次失败后锁定及本地桶容量/关闭/关闭后非法配置验证通过。Agent仅绑定预算，不提前实现P4执行逻辑。所有函数不读文件、环境或创建连接，主入口守卫不变。
 
 Alternatives considered：用strconv.Atoi替代Java整数（Unicode/空白/hex不一致）；把空字符串视作完全缺省（整数误放行）；在record里额外要求密码（改变错误优先级）；把原配置map保留在对象里（泄漏与可变别名）；在此阶段放开生产装配。来源解析、其余record和应用接线继续属T104/T105/T109。
+
+## R-029 MCP动态绑定与集合来源边界
+
+Decision：扩展原真实Binder夹具至四类record398项，MCP新增157项。显式BindingSource区分普通Map与SystemEnvironment来源，按高到低组合，不读取宿主变量。Java环境夹具的来源名使用原约定*-systemEnvironment；初版随意命名synthetic-0导致Boot没有选择环境映射器，发现后修正并加入原.env五字段独立断言，避免把错误夹具当基线行为。
+
+动态server map按键/字段合并；List/Set只能由最高包含它的来源整体替代，空值与缺口不能向低来源凑齐。逗号转换只用String.trim、不当shell/CSV；索引原样保留空格。命令null/空串分开，unknown字段不凭空创建server；空record/map、只配置空时长、同源标量/索引与低来源非法值被遮蔽均直接对照。绑定器只覆盖MCP已列键形态，任意relaxed别名冲突/ConfigData/profile仍未验收。
+
+实际SystemEnvironment将MCP_SERVERS_FETCH_ENV_API_KEY映射为透传键api.key，而普通属性env.[API_KEY]保留API_KEY；HTTP_PROXY同理。Go保留并记录原行为，不能按注释猜测成大写原样键。相关运行子进程/环境可用性/协议仍属P7；该绑定不执行命令或授权工具。
+
+MCP record对null/非正时长先归一到10秒，所以合法负Duration即便原纳秒超Go范围也可归一；不能先套用Go Duration范围误拒。复用内部精确大整数解析，并补Java简单单位秒乘法及Duration long秒/纳秒总边界，拒绝Java自身溢出后再归一化的伪合法值；正值归一化结果超Go范围仍明确拒绝。外部ParseDuration的228项契约不变。
+
+容器字段全部私有，访问返回副本；格式化/JSON隐藏server名称、命令、参数和环境。来源map仅同步读取，调用期间不能并发修改；返回对象不保留可变别名。显式map固定排序键用于对照，尚不承诺任意宿主来源别名冲突顺序。
+
+Alternatives considered：把全部来源先合并成一个map（错误拼接列表/丢来源）；自动纠正ENV_API_KEY（悄改基线行为）；未知字段也注册空server（幽灵进程）；先将巨大负时长转Go再归一（误拒）；写通用反射Binder或引入Spring运行时。当前只提供配置边界，不提前实现P7。

@@ -37,9 +37,28 @@ func boundRecord(kind string, input map[string]string) (any, error) {
 		}
 		return map[string]any{"maxModelCalls": value.MaxModelCalls,
 			"maxConsecutiveFailures": value.MaxConsecutiveFailures}, nil
+	case "mcp":
+		return boundMCP([]BindingSource{{Values: input}})
 	default:
 		return nil, errors.New("未知配置夹具")
 	}
+}
+
+func boundMCP(sources []BindingSource) (any, error) {
+	value, err := BindMCPProperties(sources...)
+	if err != nil {
+		return nil, err
+	}
+	servers := make(map[string]any)
+	for _, name := range value.ServerNames() {
+		server, found := value.Server(name)
+		if !found {
+			return nil, errors.New("server映射缺失")
+		}
+		servers[name] = map[string]any{"command": server.Command(), "args": server.Args(), "env": server.Environment(),
+			"autoTools": server.AutoTools(), "connectTimeout": strconv.FormatInt(int64(server.ConnectTimeout()), 10)}
+	}
+	return map[string]any{"enabled": value.Enabled(), "servers": servers}, nil
 }
 
 func TestJavaRecordBinding(t *testing.T) {
@@ -54,17 +73,37 @@ func TestJavaRecordBinding(t *testing.T) {
 			JavaError bool              `json:"java_error"`
 			Overflow  bool              `json:"go_overflow"`
 			Value     json.RawMessage   `json:"value"`
+			Sources   []struct {
+				Environment bool              `json:"environment"`
+				Values      map[string]string `json:"values"`
+			} `json:"sources"`
 		} `json:"cases"`
 	}
 	if err := json.Unmarshal(data, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	if len(fixture.Cases) < 197 {
-		t.Fatal("绑定夹具缺失")
+	counts := make(map[string]int)
+	for _, test := range fixture.Cases {
+		counts[test.Kind]++
+	}
+	for kind, minimum := range map[string]int{"auth": 90, "rate-limit": 76, "agent": 75, "mcp": 157} {
+		if counts[kind] < minimum {
+			t.Fatal("绑定夹具缺失", kind)
+		}
 	}
 	for index, test := range fixture.Cases {
 		t.Run(fmt.Sprintf("%s-%03d", test.Kind, index), func(t *testing.T) {
 			value, err := boundRecord(test.Kind, test.Input)
+			if len(test.Sources) > 0 {
+				if test.Kind != "mcp" {
+					t.Fatal("来源夹具只用于MCP")
+				}
+				sources := make([]BindingSource, len(test.Sources))
+				for i, source := range test.Sources {
+					sources[i] = BindingSource{Environment: source.Environment, Values: source.Values}
+				}
+				value, err = boundMCP(sources)
+			}
 			if test.JavaError || test.Overflow {
 				if err == nil || value != nil {
 					t.Fatal("非法或超范围配置必须拒绝")

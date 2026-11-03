@@ -22,6 +22,20 @@ var (
 // 空字符串保持Java null，其余不trim。正值等业务限制由对应配置类负责。
 // Java Duration范围大于Go；无法表示为int64纳秒时明确拒绝，绝不溢出或截断。
 func ParseDuration(source string) (*time.Duration, error) {
+	nanos, err := durationNanos(source)
+	if err != nil || nanos == nil {
+		return nil, err
+	}
+	if !nanos.IsInt64() {
+		return nil, ErrScalarOverflow
+	}
+	value := time.Duration(nanos.Int64())
+	return &value, nil
+}
+
+// durationNanos保留Java完整Duration范围，供先归一化非正值的record使用。
+// 对外ParseDuration仍严格拒绝超出Go范围的原始时长。
+func durationNanos(source string) (*big.Int, error) {
 	if source == "" {
 		return nil, nil
 	}
@@ -50,6 +64,9 @@ func ParseDuration(source string) (*time.Duration, error) {
 		default:
 			return nil, errInvalidDuration
 		}
+		if unit > 1_000_000_000 && !new(big.Int).Mul(big.NewInt(amount), big.NewInt(unit/1_000_000_000)).IsInt64() {
+			return nil, errInvalidDuration
+		}
 		nanos = new(big.Int).Mul(big.NewInt(amount), big.NewInt(unit))
 	} else {
 		var err error
@@ -58,11 +75,13 @@ func ParseDuration(source string) (*time.Duration, error) {
 			return nil, err
 		}
 	}
-	if !nanos.IsInt64() {
-		return nil, ErrScalarOverflow
+	// Java Duration存储long秒与0..999999999纳秒；归一化前仍须保留其溢出边界。
+	minimum := new(big.Int).Mul(big.NewInt(-1<<63), big.NewInt(1_000_000_000))
+	maximum := new(big.Int).Add(new(big.Int).Mul(big.NewInt(1<<63-1), big.NewInt(1_000_000_000)), big.NewInt(999_999_999))
+	if nanos.Cmp(minimum) < 0 || nanos.Cmp(maximum) > 0 {
+		return nil, errInvalidDuration
 	}
-	value := time.Duration(nanos.Int64())
-	return &value, nil
+	return nanos, nil
 }
 
 func parseISODuration(source string) (*big.Int, error) {

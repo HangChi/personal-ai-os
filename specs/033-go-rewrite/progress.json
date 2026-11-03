@@ -92,9 +92,15 @@
       "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/config/dotenv_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/platform/config/mcp_binding.go",
+        "backend-go/internal/platform/config/mcp_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py"
       ],
-      "note": "已迁移解析/重复键顺序/空值/父目录/优先级断言；MCP 绑定场景未迁移，尚无 Java/Go 全链路差分。"
+      "note": "已迁移解析/重复键顺序/空值/父目录/优先级断言；MCP 绑定场景未迁移，尚无 Java/Go 全链路差分。 已完成MCP动态server/map/list/set与显式多来源配置绑定，真实Binder157项/全部398项、原.env场景及副本/脱敏/并发对照。保留ENV_API_KEY实际变成api.key的基线行为；未启动协议/命令或完成完整来源/应用装配，不能verified。"
     },
     "file:backend/src/main/resources/application.yml": {
       "status": "in_progress",
@@ -2246,6 +2252,44 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": " 已提供canonical字符串map的类型化绑定，真实Spring Binder241项对照/凭据副本与脱敏、BCrypt锁定与本地桶接线验证；4个Java时长超Go范围明确拒绝。来源/profile/其余配置/应用装配未完成，不能verified；Agent仅配置不代表P4执行。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/config/McpProperties.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/config/mcp_binding.go",
+        "backend-go/internal/platform/config/mcp_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": " 已完成MCP动态server/map/list/set与显式多来源配置绑定，真实Binder157项/全部398项、原.env场景及副本/脱敏/并发对照。保留ENV_API_KEY实际变成api.key的基线行为；未启动协议/命令或完成完整来源/应用装配，不能verified。"
+    },
+    "hook:backend/src/main/java/com/personalos/mcp/config/McpProperties.java:34:ConfigurationProperties": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/config/mcp_binding.go",
+        "backend-go/internal/platform/config/mcp_binding_test.go",
+        "backend-go/internal/platform/config/binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": " 已完成MCP动态server/map/list/set与显式多来源配置绑定，真实Binder157项/全部398项、原.env场景及副本/脱敏/并发对照。保留ENV_API_KEY实际变成api.key的基线行为；未启动协议/命令或完成完整来源/应用装配，不能verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:22": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/config/mcp_binding.go",
+        "backend-go/internal/platform/config/mcp_binding_test.go",
+        "backend-go/internal/platform/config/testdata/java-binding.json",
+        "scripts/migration/ConfigBindingOracle.java",
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "临时目录合成.env显式加载后，fetch/uvx/args/autoTools/30s与真实Spring环境绑定结果相同；全量ConfigData/其他属性来源/应用装配未验收，不能verified。"
     }
   },
   "release_gates": {
