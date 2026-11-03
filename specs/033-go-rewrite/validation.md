@@ -468,3 +468,13 @@ Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退
 - `run_go_postgres_tests.py --tls --package app --run '^TestFoundationP2'`通过全部三个P2集成用例。新建的原42迁移TLS库中预置Java摘要的SUCCESS记录，HTTP回放保留原响应且任务标题/更新时间/截止时间不变；显式false仍409/40001。null/false保留截止时间、true清空；确认和取消的非法请求保持PENDING/未决时间为空/任务未变，随后同一令牌仍可正常确认或取消。日志：`/private/tmp/personal-ai-os-p2-fix-integration.log`。
 - Go全量`go test -race -count=1 ./...`18包通过（app 96.274s）；integration标签`go vet ./...`和`go build ./...`通过。`run_go_redis_tests.py --tls --backup --package app`完整P1/P2回归通过（101.429s），包括独立TLS PostgreSQL/Redis/最小ACL、恢复库五角色、网络分区与不确定提交。临时容器均已清理。日志：`/private/tmp/personal-ai-os-p2-fix-race.log`、`/private/tmp/personal-ai-os-p2-fix-foundation.log`。
 - 固定基线1093文件/104路由/27工具/95钩子/1119测试声明检查及14个Python测试通过。只补充四个已有progress项的证据，保留原状态及五发布门禁。未修改原Java/前端/SQL或现有服务。提交前Java offline verify通过（1137测试，零失败/错误/跳过），前端类型检查与生产构建通过；日志：`/private/tmp/personal-ai-os-commit-java.log`、`/private/tmp/personal-ai-os-commit-frontend.log`。两项修复分别本地提交；未推送或部署。
+
+
+## P3首批：配置读取与密文转换（2026-11-03）
+
+- 已完成T300a：新增`internal/business/model`的数据库意图值、配置解析、安全DTO与读取服务。`PostgresReadStore`读取原三张配置/档案/模型表；单语句选择active或V20，旧配置入口保持只读V20，列表以只读repeatable-read快照批量读取。保持展示顺序、各用途模型顺序、空数组/null、窗口已知值与全子表为空时的历史兜底。
+- 已完成T301a：原AES-GCM格式、旧明文/禁用行为、随机IV、认证失败/缺失主密钥拒绝和脱敏错误；默认格式化/JSON不输出内部凭据。掩码按UTF-16末四位及原UTF-8输出处理，修复实际Java夹具发现的截断emoji代理对差异。密钥保留/清空/替换的业务写路径仍未完成。
+- `python3 scripts/migration/java_model_config_fixture.py`通过固定基线实际执行的23个配置合并/DTO、8个掩码及Java↔Go双向AES-GCM验证。脚本只编译固定Git源码，复用原Maven verify产物与依赖清单，禁用网络下载，不启动应用/模型/数据库。夹具只含明确合成凭据；元信息保存源码SHA-256和限定范围。Go全量race也消费该Java夹具。
+- `python3 scripts/migration/run_go_postgres_tests.py --tls --package model`通过（最终model 1.726s）：自建TLS PostgreSQL/pgvector，真实Flyway重放原42迁移；验证legacy/active/环境逐层回落、修订/时间、有序子表、部分清单不混旧列、Java密文持久化读取、错误不返回半份配置、无关密文不影响当前解析、取消和读取无副作用。容器/证书由脚本清理。最终补充非null温度/预设字段映射也通过。日志：`/private/tmp/personal-ai-os-p3-model-integration-final.log`。
+- `go test -race -count=1 ./...`19包通过（app 94.568s、model 1.225s）；integration标签`go vet ./...`与`go build ./...`通过。固定基线1093文件/104路由/27工具/95钩子/1119测试声明及14个Python测试通过。日志：`/private/tmp/personal-ai-os-p3-race.log`、`/private/tmp/personal-ai-os-p3-vet.log`、`/private/tmp/personal-ai-os-p3-build.log`、`/private/tmp/personal-ai-os-p3-python.log`。
+- 本请求在两项P2修复提交前已运行原Java offline verify（1137测试全通过）及前端类型/生产构建；P3首批未修改Java/前端/SQL，沿用本次已通过门禁，不重复启动原全量测试。P2两项分开提交为`260e5c7`和`6433a0b`。T300/T301父项、T302–T305、P4–P8及五发布门禁保持开放；`check-complete`按预期拒绝（2438项尚未verified及五门禁），不以首批代码冒充全量验收。未装配模型路由/启动应用/协议调用，未推送或部署。

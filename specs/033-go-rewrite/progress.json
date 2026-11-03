@@ -2670,6 +2670,130 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "T106c–T106g及T200：844个真实基础HTTP场景已对照；幂等路径另实现确定性map键JSON、禁HTML转义与SHA-256。未代替所有未来业务DTO或框架配置验收。 P2审查修复：UpdateTaskRequest可空Boolean的四个原Java摘要已逐项对照，省略/null不再误编码为false。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/read.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/testdata/java-config-read.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T300a逐字段合并/原始变量来源、旧单行与active读取解析已对照23个Java场景；保存、运行时工厂与启动应用仍待实现。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ModelProfileService.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/read.go",
+        "backend-go/internal/business/model/postgres_read.go",
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T300a有序批量档案/模型读取、整子表为空才回落旧列、active优先/V20回落已验证；CRUD/激活/排序写入与运行时应用仍待完成。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/AiModelConfigRepository.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/postgres_read.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T300a原三表查询/排序/批量模型加载与TLS真实库读取已实现；仓储写路径及后续职责未完成。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/AiModelProfileRepository.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/postgres_read.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T300a原三表查询/排序/批量模型加载与TLS真实库读取已实现；仓储写路径及后续职责未完成。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/AiModelProfileModelRepository.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/postgres_read.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T300a原三表查询/排序/批量模型加载与TLS真实库读取已实现；仓储写路径及后续职责未完成。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ModelKeyConverter.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/keys.go",
+        "backend-go/internal/business/model/keys_test.go",
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/testdata/java-config-read.json",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T301a原格式/AAD/随机IV/认证、旧明文/禁用、错误脱敏及原Java↔Go双向合成密文通过；不能据此关闭T301的业务密钥更新和全路由验收。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/ModelConfigDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T300a读取DTO字段/null/空集合/来源/掩码/顺序已实现；未代表模型HTTP端点和运行时应用已验收。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/ModelProfileDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T300a读取DTO字段/null/空集合/来源/掩码/顺序已实现；未代表模型HTTP端点和运行时应用已验收。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/ModelProfileListDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T300a读取DTO字段/null/空集合/来源/掩码/顺序已实现；未代表模型HTTP端点和运行时应用已验收。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已移植配置合并、来源、无默认语音和掩码读取断言；保存/热切换/启动等写侧断言尚未完成。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已覆盖读取、批量子表及active/V20解析；CRUD/激活竞争/删除保护/密钥三态/排序写入断言尚未完成。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/ModelKeyConverterTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/keys_test.go",
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/testdata/java-config-read.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "三个原转换器测试的随机IV/认证/旧明文/禁用/非法参数/长Unicode密钥行为已移植，并增加双向Java合成密文证据；未代替整个T301业务写路径。"
     }
   },
   "release_gates": {

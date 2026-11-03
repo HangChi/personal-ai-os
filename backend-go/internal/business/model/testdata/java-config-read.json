@@ -1,0 +1,919 @@
+{
+  "masks": {
+    "": "",
+    "\u3000": "",
+    "abc": "****",
+    "abcd": "****",
+    "12345": "****2345",
+    "key\ud83d\ude00ab": "****\ud83d\ude00ab",
+    "key\ud83d\ude00abc": "****?abc",
+    "\u5bc6\u94a5\ud83d\ude00\u5c3e\u5df4": "****\ud83d\ude00\u5c3e\u5df4"
+  },
+  "javaCiphertext": "{aesgcm:v1}ghmnM90PSLluaIfG224BccJSLCNr55pq3bOTCk+BlF+3eTyI2QrXexGqIltz1EEtvpjadWV4/sqaizhQXA==",
+  "syntheticPlaintext": "synthetic-java-go-key-\u5bc6\ud83d\ude00abcd",
+  "syntheticMaster": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=",
+  "cases": [
+    {
+      "name": "yaml-defaults",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "0.7"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "yaml-defaults",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": 0.7,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "builtin-defaults",
+      "properties": {
+        "spring.ai.openai.base-url": "",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "",
+        "spring.ai.openai.embedding.model": "",
+        "spring.ai.openai.chat.temperature": ""
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "builtin-defaults",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": null,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "DEFAULT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "environment",
+      "properties": {
+        "spring.ai.openai.base-url": " https://env.invalid/v1 ",
+        "spring.ai.openai.api-key": "synthetic-env-only-abcd",
+        "spring.ai.openai.chat.model": "env-chat",
+        "spring.ai.openai.embedding.model": "env-embed",
+        "spring.ai.openai.chat.temperature": "0.7"
+      },
+      "variables": {
+        "OPENAI_BASE_URL": " https://env.invalid/v1 ",
+        "OPENAI_API_KEY": "synthetic-env-only-abcd",
+        "OPENAI_CHAT_MODEL": "env-chat",
+        "OPENAI_EMBEDDING_MODEL": "env-embed"
+      },
+      "values": null,
+      "expected": {
+        "name": "environment",
+        "dto": {
+          "baseUrl": "https://env.invalid/v1",
+          "apiKeyMasked": "****abcd",
+          "hasApiKey": true,
+          "chatModel": "env-chat",
+          "temperature": 0.7,
+          "embeddingModel": "env-embed",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "ENVIRONMENT",
+            "apiKey": "ENVIRONMENT",
+            "chatModel": "ENVIRONMENT",
+            "embeddingModel": "ENVIRONMENT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "mixed-database",
+      "properties": {
+        "spring.ai.openai.base-url": " https://env.invalid/v1 ",
+        "spring.ai.openai.api-key": "synthetic-env-only-abcd",
+        "spring.ai.openai.chat.model": "env-chat",
+        "spring.ai.openai.embedding.model": "env-embed",
+        "spring.ai.openai.chat.temperature": "0.7"
+      },
+      "variables": {
+        "OPENAI_BASE_URL": " https://env.invalid/v1 ",
+        "OPENAI_API_KEY": "synthetic-env-only-abcd",
+        "OPENAI_CHAT_MODEL": "env-chat",
+        "OPENAI_EMBEDDING_MODEL": "env-embed"
+      },
+      "values": {
+        "chatModel": "db-chat",
+        "temperature": 0
+      },
+      "expected": {
+        "name": "mixed-database",
+        "dto": {
+          "baseUrl": "https://env.invalid/v1",
+          "apiKeyMasked": "****abcd",
+          "hasApiKey": true,
+          "chatModel": "db-chat",
+          "temperature": 0.0,
+          "embeddingModel": "env-embed",
+          "revision": 1,
+          "updatedAt": "2026-11-03T00:00:00Z",
+          "sources": {
+            "baseUrl": "ENVIRONMENT",
+            "apiKey": "ENVIRONMENT",
+            "chatModel": "DATABASE",
+            "embeddingModel": "ENVIRONMENT",
+            "audioModel": "DEFAULT",
+            "temperature": "DATABASE"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "database-all",
+      "properties": {
+        "spring.ai.openai.base-url": " https://env.invalid/v1 ",
+        "spring.ai.openai.api-key": "synthetic-env-only-abcd",
+        "spring.ai.openai.chat.model": "env-chat",
+        "spring.ai.openai.embedding.model": "env-embed",
+        "spring.ai.openai.chat.temperature": "0.7"
+      },
+      "variables": {
+        "OPENAI_BASE_URL": " https://env.invalid/v1 ",
+        "OPENAI_API_KEY": "synthetic-env-only-abcd",
+        "OPENAI_CHAT_MODEL": "env-chat",
+        "OPENAI_EMBEDDING_MODEL": "env-embed"
+      },
+      "values": {
+        "baseUrl": "  https://db.invalid  ",
+        "apiKey": "synthetic-db-only-wxyz",
+        "chatModel": "db-chat",
+        "embeddingModel": "db-embed",
+        "temperature": 1.2,
+        "audioModel": "\t asr \u3000"
+      },
+      "expected": {
+        "name": "database-all",
+        "dto": {
+          "baseUrl": "  https://db.invalid  ",
+          "apiKeyMasked": "****wxyz",
+          "hasApiKey": true,
+          "chatModel": "db-chat",
+          "temperature": 1.2,
+          "embeddingModel": "db-embed",
+          "revision": 1,
+          "updatedAt": "2026-11-03T00:00:00Z",
+          "sources": {
+            "baseUrl": "DATABASE",
+            "apiKey": "DATABASE",
+            "chatModel": "DATABASE",
+            "embeddingModel": "DATABASE",
+            "audioModel": "DATABASE",
+            "temperature": "DATABASE"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": "asr",
+        "hasAudioModel": true
+      }
+    },
+    {
+      "name": "blank-db-values",
+      "properties": {
+        "spring.ai.openai.base-url": " https://env.invalid/v1 ",
+        "spring.ai.openai.api-key": "synthetic-env-only-abcd",
+        "spring.ai.openai.chat.model": "env-chat",
+        "spring.ai.openai.embedding.model": "env-embed",
+        "spring.ai.openai.chat.temperature": "0.7"
+      },
+      "variables": {
+        "OPENAI_BASE_URL": " https://env.invalid/v1 ",
+        "OPENAI_API_KEY": "synthetic-env-only-abcd",
+        "OPENAI_CHAT_MODEL": "env-chat",
+        "OPENAI_EMBEDDING_MODEL": "env-embed"
+      },
+      "values": {
+        "baseUrl": "\u3000",
+        "apiKey": "\t",
+        "chatModel": "\u001c",
+        "audioModel": "\u3000"
+      },
+      "expected": {
+        "name": "blank-db-values",
+        "dto": {
+          "baseUrl": "https://env.invalid/v1",
+          "apiKeyMasked": "****abcd",
+          "hasApiKey": true,
+          "chatModel": "env-chat",
+          "temperature": 0.7,
+          "embeddingModel": "env-embed",
+          "revision": 1,
+          "updatedAt": "2026-11-03T00:00:00Z",
+          "sources": {
+            "baseUrl": "ENVIRONMENT",
+            "apiKey": "ENVIRONMENT",
+            "chatModel": "ENVIRONMENT",
+            "embeddingModel": "ENVIRONMENT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "nbsp-is-not-blank",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "0.7"
+      },
+      "variables": {},
+      "values": {
+        "baseUrl": "\u00a0",
+        "apiKey": "\u2007",
+        "chatModel": "\u202f"
+      },
+      "expected": {
+        "name": "nbsp-is-not-blank",
+        "dto": {
+          "baseUrl": "\u00a0",
+          "apiKeyMasked": "****",
+          "hasApiKey": true,
+          "chatModel": "\u202f",
+          "temperature": 0.7,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": 1,
+          "updatedAt": "2026-11-03T00:00:00Z",
+          "sources": {
+            "baseUrl": "DATABASE",
+            "apiKey": "DATABASE",
+            "chatModel": "DATABASE",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "blank-environment",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "\t\u3000",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "0.7"
+      },
+      "variables": {
+        "OPENAI_API_KEY": "\t\u3000"
+      },
+      "values": null,
+      "expected": {
+        "name": "blank-environment",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": 0.7,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "direct-property-source",
+      "properties": {
+        "spring.ai.openai.base-url": "https://direct.invalid",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "0.7"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "direct-property-source",
+        "dto": {
+          "baseUrl": "https://direct.invalid",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": 0.7,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-''",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": ""
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-''",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": null,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "DEFAULT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'bad'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "bad"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'bad'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": null,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "DEFAULT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'0'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "0"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'0'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": 0.0,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'-0.0'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "-0.0"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'-0.0'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": -0.0,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'1f'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "1f"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'1f'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": 1.0,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'0x1.8p-1'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "0x1.8p-1"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'0x1.8p-1'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": 0.75,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'NaN'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "NaN"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'NaN'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": "NaN",
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'Infinity'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "Infinity"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'Infinity'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": "Infinity",
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'-Infinity'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "-Infinity"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'-Infinity'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": "-Infinity",
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'1e999'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "1e999"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'1e999'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": "Infinity",
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'\\u3000.5\\u3000'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "\u3000.5\u3000"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'\\u3000.5\\u3000'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": 0.5,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "ENVIRONMENT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'1_0'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "1_0"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'1_0'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": null,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "DEFAULT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'inf'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "inf"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'inf'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": null,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "DEFAULT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    },
+    {
+      "name": "temperature-'0x10'",
+      "properties": {
+        "spring.ai.openai.base-url": "https://api.openai.com",
+        "spring.ai.openai.api-key": "",
+        "spring.ai.openai.chat.model": "gpt-4o-mini",
+        "spring.ai.openai.embedding.model": "text-embedding-3-small",
+        "spring.ai.openai.chat.temperature": "0x10"
+      },
+      "variables": {},
+      "values": null,
+      "expected": {
+        "name": "temperature-'0x10'",
+        "dto": {
+          "baseUrl": "https://api.openai.com",
+          "apiKeyMasked": "",
+          "hasApiKey": false,
+          "chatModel": "gpt-4o-mini",
+          "temperature": null,
+          "embeddingModel": "text-embedding-3-small",
+          "revision": null,
+          "updatedAt": null,
+          "sources": {
+            "baseUrl": "DEFAULT",
+            "apiKey": "DEFAULT",
+            "chatModel": "DEFAULT",
+            "embeddingModel": "DEFAULT",
+            "audioModel": "DEFAULT",
+            "temperature": "DEFAULT"
+          },
+          "hotReloadable": true,
+          "embeddingHotReloadable": false
+        },
+        "audioModel": null,
+        "hasAudioModel": false
+      }
+    }
+  ],
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java": "5cedd32b895dc758e4dd97f797a43cabba35afea5cf944c0d678e920b97fab49",
+    "backend/src/main/java/com/personalos/common/ai/config/AiModelProfileEntity.java": "4492ea6598517367ed7e2229e4b92430ee3043260527e67e7598d114604151a6",
+    "backend/src/main/java/com/personalos/common/ai/config/AiModelConfigEntity.java": "2178b422c232a1aa253c525e98882ff2a3ece9442def1d3a2e3db48c2eb43d1f",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelKeyConverter.java": "e9b6df5c77ae7dccddedd5fe160acf2c4d759cc876de9b884f21108ada271a79",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelProtocol.java": "65582dd853162048068195c9773fe2a426c3f8cafa8a459319ec8dfaa387d22a",
+    "backend/src/main/java/com/personalos/common/ai/config/dto/ModelConfigDto.java": "089f207c7bb24531e21fed69ba71a71c69e41cc206f44ba03445a94b97f86085"
+  },
+  "scope": "configuration merge/DTO/key converter only; not HTTP, CRUD, runtime model or full P3 acceptance"
+}
