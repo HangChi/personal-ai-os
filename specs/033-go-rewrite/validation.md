@@ -290,6 +290,12 @@ Go逐项覆盖全部查询结果/profile/defaults、空值、环境别名冲突�
 
 配置/app定向race通过（/private/tmp/personal-ai-os-go-management-unit.log）。新建自建CA/TLS PostgreSQL并运行真实Java Flyway后，全部app集成通过（/private/tmp/personal-ai-os-go-management-postgres.log），容器已清理。验证真实回环业务/管理双端口隔离、HEAD403、池/限流指标、实际池失败DOWN、单监听异常联动关闭、流式请求宽限耗尽取消/期限错误及端口释放；100路指标更新固定标签无竞态。全量14包race、integration vet/build通过（/private/tmp/personal-ai-os-go-management-all.log），Python测试/基线check/diff通过。完整Micrometer/业务histogram、Redis组合、CLI与业务Worker仍未完成，P1不勾选。
 
+## 增量：Foundation双存储TLS/ACL组合（T108c）
+
+`run_go_redis_tests.py --tls --package app`外层创建Redis TLS/两个独立最小ACL账号，再调用PostgreSQL runner创建另一独立TLS数据库并执行真实Flyway。合并环境只允许专用Redis测试键，不继承当前应用/PG配置。全部app race集成通过，新增双实例会话/限流组合用例未跳过（/private/tmp/personal-ai-os-go-foundation-redis.log）；两容器和临时证书逐层清理。
+
+验证跨实例CSRF、实例2登录/实例1读取轮换后的身份、共享模型预算与独立专用客户端。主动关闭限流客户端：429、Redis错误counter增长、管理DOWN、真实查询runtime_rate_bucket为零，无PostgreSQL回退；会话客户端继续可用。关闭另一侧会话客户端：HTTP500，无本地回退。Foundation关闭不关闭仍完好的借用Redis，创建者可继续PING。故障注入仅客户端关闭，不冒充网络分区/不确定响应/组合跨OS验证。integration vet、Python编译、基线check/diff通过；运行时生产代码未变，无需重跑未受影响的配置oracle或全量组件race。CLI、完整框架/Worker与P1父项仍开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。
