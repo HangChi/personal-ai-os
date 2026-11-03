@@ -58,6 +58,7 @@ public class KnowledgeIndexJobs {
         transaction=new TransactionTemplate(manager);
         transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         metrics.gauge("personalos.knowledge.jobs.active",active);
+        metrics.gauge("personalos.knowledge.jobs.oldest.ready.seconds",jobs,KnowledgeJobRepository::oldestReadySeconds);
         metrics.gauge("personalos.knowledge.jobs.pending",jobs,repository -> repository.waitingCount());
     }
     public KnowledgeJobRepository.Job submit(UUID id, UUID target, String filename, String title, byte[] bytes) {

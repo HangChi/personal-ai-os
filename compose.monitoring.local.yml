@@ -9,6 +9,7 @@ services:
     ports: ["127.0.0.1:9090:9090"]
     volumes:
       - ./deploy/monitoring/prometheus.local.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/monitoring/worker-targets:/etc/prometheus/worker-targets:ro
       - prometheus-data:/prometheus
   grafana:
     image: grafana/grafana:13.2.2

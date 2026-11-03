@@ -21,6 +21,10 @@ public class KnowledgeJobRepository {
     public String digest(UUID id) { return jdbc.queryForObject("select digest from knowledge_index_job where id=?", String.class,id); }
     public boolean hasReady() { return Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from knowledge_index_job where "
             + "(status='PENDING' and available_at<=now()) or (status='RUNNING' and lease_until<now()))",Boolean.class)); }
+    public double oldestReadySeconds() {
+        return jdbc.queryForObject("SELECT COALESCE(EXTRACT(EPOCH FROM now()-min(available_at)),0) "
+                + "FROM knowledge_index_job WHERE status='PENDING' AND available_at<=now()", Double.class);
+    }
     public long waitingCount() { return jdbc.queryForObject("select count(*) from knowledge_index_job where status in ('PENDING','RUNNING')",Long.class); }
     public void create(UUID id, UUID document, boolean replacing, String filename, String title, byte[] bytes, String digest) {
         jdbc.update("insert into knowledge_index_job(id,document_id,replacing,filename,title,payload,digest) values (?,?,?,?,?,?,?)",

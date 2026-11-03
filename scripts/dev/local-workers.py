@@ -95,6 +95,16 @@ def start(role, jar):
     raise RuntimeError(role + ': failed health check; see protected log ' + str(log))
 
 
+def publish_monitoring_targets():
+    directory = ROOT / 'deploy/monitoring/worker-targets'
+    directory.mkdir(parents=True, exist_ok=True)
+    targets = [{'targets': ['host.docker.internal:' + str(ROLES[role][1])],
+                'labels': {'role': role}} for role in ROLES if owned(current(role))]
+    temp = directory / '.active.tmp'
+    temp.write_text(json.dumps(targets) + '\n')
+    temp.replace(directory / 'active.json')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['start', 'stop', 'status'])
@@ -114,9 +124,14 @@ def main():
             for role in reversed(started):
                 stop(role)
             raise
+        finally:
+            publish_monitoring_targets()
     elif args.command == 'stop':
-        for role in reversed(roles):
-            stop(role)
+        try:
+            for role in reversed(roles):
+                stop(role)
+        finally:
+            publish_monitoring_targets()
     else:
         print(json.dumps([{'role': role, 'running': owned(current(role)), 'state': current(role)} for role in roles]))
 

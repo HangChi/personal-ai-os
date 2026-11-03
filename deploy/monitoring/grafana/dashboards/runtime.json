@@ -2,7 +2,7 @@
   "uid": "personalos-runtime",
   "title": "Personal AI OS 运行状态",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "refresh": "15s",
   "time": {
     "from": "now-1h",
@@ -432,6 +432,114 @@
         {
           "refId": "A",
           "expr": "rate(personalos_knowledge_rag_rerank_tokens_total[5m])"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 17,
+      "title": "召回各环节 P95",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 64,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le, stage) (rate(personalos_knowledge_recall_seconds_bucket[5m])))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 18,
+      "title": "RAG 各阶段 P95",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 64,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le, stage) (rate(personalos_knowledge_rag_stage_seconds_bucket[5m])))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 19,
+      "title": "最早可执行任务等待时间",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 72,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (__name__) ({__name__=~\"personalos_knowledge_(jobs|review)_oldest_ready_seconds\"})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 20,
+      "title": "独立 worker 采集状态",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "personalos-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 72,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "up{job=\"personal-ai-os-worker\"}"
         }
       ],
       "fieldConfig": {

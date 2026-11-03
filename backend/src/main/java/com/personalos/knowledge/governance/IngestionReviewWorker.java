@@ -36,6 +36,16 @@ public class IngestionReviewWorker {
         this.transaction=new org.springframework.transaction.support.TransactionTemplate(manager);
         this.db=db;this.governance=governance;this.review=review;this.retrieval=retrieval;this.vectors=vectors;this.gate=gate;this.rate=rate;
     }
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureMetrics(io.micrometer.core.instrument.MeterRegistry registry) {
+        registry.gauge("personalos.knowledge.review.ready", db, jdbc -> jdbc.queryForObject(
+                "SELECT count(*) FROM knowledge_review_job WHERE next_attempt_at<=now()", Long.class));
+        registry.gauge("personalos.knowledge.review.oldest.ready.seconds", db, jdbc -> jdbc.queryForObject(
+                "SELECT COALESCE(EXTRACT(EPOCH FROM now()-min(next_attempt_at)),0) "
+                + "FROM knowledge_review_job WHERE next_attempt_at<=now()", Double.class));
+        registry.gauge("personalos.knowledge.review.failed", db, jdbc -> jdbc.queryForObject(
+                "SELECT count(*) FROM knowledge_review_job WHERE next_attempt_at='infinity'::timestamptz", Long.class));
+    }
     @Scheduled(fixedDelayString="${app.knowledge.rag.review-poll-ms:5000}",initialDelay=10000)
     public void dispatch(){if(enabled && busy.compareAndSet(false,true))executor.submit(()->{try{runNext();}finally{busy.set(false);}});}
     public boolean runNext() {

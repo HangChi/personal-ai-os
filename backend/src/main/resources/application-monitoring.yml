@@ -10,3 +10,6 @@ management:
     distribution:
       percentiles-histogram:
         http.server.requests: true
+        personalos.embedding.duration: true
+        personalos.knowledge.recall: true
+        personalos.knowledge.rag.stage: true
