@@ -64,6 +64,11 @@ def cases():
     add("health-down", path="/actuator/health", databaseDown=True)
     add("health-accept", path="/actuator/health", accept="application/json")
     add("health-html", path="/actuator/health", accept="text/html")
+    add("health-authenticated", path="/actuator/health", login=True, csrf=True)
+    add("health-readiness", path="/actuator/health/readiness")
+    add("health-liveness", path="/actuator/health/liveness")
+    add("health-component-anonymous", path="/actuator/health/db")
+    add("health-component-authenticated", path="/actuator/health/db", login=True, csrf=True)
     for name, method, path in [("management-health", "GET", "/actuator/health"), ("management-head", "HEAD", "/actuator/health"),
                                ("management-subpath", "GET", "/actuator/health/db"), ("management-business", "GET", "/api/v1/auth/me")]:
         add(name, method, path, management=True)

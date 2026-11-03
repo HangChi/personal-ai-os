@@ -76,6 +76,10 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if err != nil {
 		return nil, err
 	}
+	actuatorProperties, err := properties.Actuator()
+	if err != nil {
+		return nil, err
+	}
 	// 协调器使用基线public表；不允许仅修改历史schema却把实际协调写入另一schema。
 	if options.Schema != "public" {
 		return nil, errors.New("基础装配仅验收显式public schema")
@@ -197,9 +201,15 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if f.executor, err = taskexec.New(taskexec.DefaultOptions(), logger); err != nil {
 		return nil, err
 	}
-	f.handler = f.track(newFoundationHandler(settings.Role, security, limiter, f.gate, f.health, options.Business, logger))
+	clients := []*redisclient.Client{options.SessionRedis, options.RateRedis}
+	snapshot := f.actuatorSnapshot(actuatorProperties, clients)
+	var actuator http.Handler
+	if !settings.Monitoring {
+		actuator = newActuatorHandler(actuatorProperties, snapshot, nil, logger)
+	}
+	f.handler = f.track(newFoundationHandler(settings.Role, security, limiter, f.gate, f.health, options.Business, actuator, logger))
 	if settings.Monitoring {
-		f.attachManagement(metrics, []*redisclient.Client{options.SessionRedis, options.RateRedis}, logger)
+		f.attachManagement(metrics, actuatorProperties, snapshot, logger)
 	}
 	return f, nil
 }

@@ -58,6 +58,9 @@ public class FoundationHttpOracle {
         settings.put("management.endpoints.web.exposure.include", "health,info,metrics");
         settings.put("management.endpoint.health.show-details", "when_authorized");
         settings.put("management.health.diskspace.enabled", "false");
+        settings.put("management.info.env.enabled", "true");
+        settings.put("info.app.name", "fixture");
+        settings.put("info.app.version", "test");
         settings.put("fixture.auth", args[0]);
         settings.put("app.security.csrf-enabled", args[1]);
         if (Boolean.parseBoolean(args[2])) {
@@ -86,6 +89,12 @@ public class FoundationHttpOracle {
                             var response = client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/api/v1/auth/csrf")).GET().build(), HttpResponse.BodyHandlers.ofString());
                             Map<String, Object> payload = mapper.readValue(response.body(), Map.class);
                             token = (String) ((Map<String, Object>) payload.get("data")).get("token");
+                        }
+                        if (Boolean.TRUE.equals(input.get("login"))) {
+                            var login = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/api/v1/auth/login")).header("Content-Type", "application/json");
+                            if (token != null) login.header("X-CSRF-TOKEN", token);
+                            var response = client.send(login.POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"admin\",\"password\":\"fixture-password\"}")).build(), HttpResponse.BodyHandlers.ofString());
+                            if (response.statusCode() != 200) throw new IllegalStateException("合成登录失败");
                         }
                         var request = HttpRequest.newBuilder(URI.create(origin + input.get("path")));
                         if (input.containsKey("contentType")) request.header("Content-Type", (String) input.get("contentType"));

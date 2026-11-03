@@ -8,7 +8,7 @@
 
 HTTP顺序：Worker业务隔离 → Request ID → 异常边界 → 共享限流 → 共享模型并发 → 会话/CSRF/认证 → 路由。已提交SSE异常中止而不追加JSON。限流/并发早于安全链，匿名/CSRF失败仍消耗模型预算，拒绝后释放并发租约。
 
-API/combined提供原四个Auth路由和真实`/api/v1/health`。健康仍为统一信封/HTTP200，数据库DOWN通过内容报告，模型保持NOT_CONFIGURED。`/livez`与恒定503的`/readyz`是迁移诊断。Worker的这些业务端点均空404；`/actuator/*`在业务入口不提供管理数据。可显式注入未来业务handler，nil时未知业务404。
+API/combined提供原四个Auth路由和真实`/api/v1/health`。健康仍为统一信封/HTTP200，数据库DOWN通过内容报告，模型保持NOT_CONFIGURED。`/livez`与恒定503的`/readyz`是迁移诊断。Worker的这些业务端点均空404。非monitoring业务端口按原配置提供Actuator健康/信息；monitoring时迁到独立管理入口。可显式注入未来业务handler，nil时未知业务404。
 
 `Close(ctx)`先拒新请求，等已有HTTP退出，再排空执行器、停止续租并释放租约、关闭自有池。超时会取消在途HTTP/执行器并返回期限错误；清理继续等待实际退出，不提前关闭仍在使用的池。任务/handler必须响应context取消。调用方负责Shutdown监听器；可再次Close等待清理，借用Redis始终由创建者最后关闭。
 
@@ -22,7 +22,7 @@ python3 scripts/migration/run_go_postgres_tests.py --tls --flyway --package app
 
 ## 独立管理监听与最小指标
 
-有效profile包含`monitoring`时，`ManagementHandler()`提供独立管理链，否则返回nil。仅允许GET `/actuator/health`、GET `/actuator/prometheus`，其他路径/方法（包括HEAD）403，不创建业务会话。健康仅输出`{"status":"UP"}`或`{"status":"DOWN"}`，实际探测自有数据库和已启用的专用Redis，失败HTTP503，不套业务信封或公开依赖详情。模型未配置不影响健康，健康UP不代表迁移已就绪。
+有效profile包含`monitoring`时，`ManagementHandler()`提供独立管理链，否则返回nil。仅允许GET `/actuator/health`、GET `/actuator/prometheus`，其他路径/方法（包括HEAD）403，不创建业务会话。真实Servlet对照后，健康响应保留status与liveness/readiness groups，默认媒体类型为Actuator v3 JSON，也接受application/json。实际探测自有数据库和已启用的专用Redis，失败HTTP503，不套业务信封；默认when_authorized对匿名隐藏组件，显式always才展示详情。非monitoring业务入口的已登录用户可读取详情/组件路径，匿名组件路径为空404。模型未配置不影响健康，健康UP不代表迁移已就绪。
 
 Prometheus文本提供原限流timer的count/sum（秒）及Redis错误counter，backend标签固定postgres/redis；另以`personalos_go_*`命名自有池和轮末队列gauge。这是最小指标集，没有伪造完整Micrometer、业务HTTP histogram、JVM或未迁移业务指标。
 

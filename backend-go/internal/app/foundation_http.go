@@ -12,7 +12,7 @@ import (
 	httpmiddleware "personal-ai-os/backend-go/internal/platform/http"
 )
 
-func newFoundationHandler(role config.Role, security *auth.HTTP, limiter httpmiddleware.ModelLimiter, gate httpmiddleware.ModelConcurrency, probe *health.Service, business http.Handler, logger *slog.Logger) http.Handler {
+func newFoundationHandler(role config.Role, security *auth.HTTP, limiter httpmiddleware.ModelLimiter, gate httpmiddleware.ModelConcurrency, probe *health.Service, business, actuator http.Handler, logger *slog.Logger) http.Handler {
 	healthHandler := probe.Handler()
 	router := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -38,8 +38,15 @@ func newFoundationHandler(role config.Role, security *auth.HTTP, limiter httpmid
 				logger.Error("写入基础诊断响应失败")
 			}
 		default:
-			// 管理端点仅在显式的独立管理处理器开放，不交给业务注入绕过边界。
-			if r.URL.Path == "/actuator" || strings.HasPrefix(r.URL.Path, "/actuator/") || business == nil {
+			if r.URL.Path == "/actuator" || strings.HasPrefix(r.URL.Path, "/actuator/") {
+				if actuator != nil {
+					actuator.ServeHTTP(w, r)
+					return
+				}
+				httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
+				return
+			}
+			if business == nil {
 				httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 				return
 			}

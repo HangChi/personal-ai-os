@@ -28,7 +28,7 @@ func (l *fixtureLimiter) TryAcquire(context.Context) (bool, error) {
 	return l.allowed, nil
 }
 
-func fixtureFoundationHandler(t *testing.T, role config.Role, secured, csrf bool, limiter *fixtureLimiter, gate *modelgate.Gate, business http.Handler) http.Handler {
+func fixtureFoundationHandler(t *testing.T, role config.Role, secured, csrf bool, limiter *fixtureLimiter, gate *modelgate.Gate, business http.Handler, actuator ...http.Handler) http.Handler {
 	t.Helper()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	service, err := auth.New(auth.Options{Enabled: secured, Username: "admin", Password: "fixture-password", MaxFailures: 5, Lockout: time.Minute})
@@ -53,7 +53,11 @@ func fixtureFoundationHandler(t *testing.T, role config.Role, secured, csrf bool
 			t.Fatal(err)
 		}
 	}
-	return newFoundationHandler(role, layer, limiter, gate, probe, business, logger)
+	var management http.Handler
+	if len(actuator) > 0 {
+		management = actuator[0]
+	}
+	return newFoundationHandler(role, layer, limiter, gate, probe, business, management, logger)
 }
 
 func TestFoundationHTTPProtectionOrder(t *testing.T) {

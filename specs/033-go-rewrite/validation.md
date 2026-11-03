@@ -316,6 +316,14 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 
 先加入Go差分，确认156个Auth/未知路由场景失败（/private/tmp/personal-ai-os-go-http-oracle-red.log），再修正字段名大小写/标量转换、媒体类型/字符集/Accept、MVC与安全链Content-Type、405文案/响应头。156例逐项通过。全量14包race、integration标签vet/build通过（/private/tmp/personal-ai-os-go-servlet-all.log）；首次全量发现旧手写Allow断言与真实Java冲突，已按原处理器纠正后重跑通过。Actuator剩余44例尚未参与Go对照，不能将200例全部报为通过；完整multipart和未来业务DTO仍未完成。
 
+## 增量：业务与管理 Actuator 真实差分（T106d）
+
+夹具新增认证后健康详情、liveness/readiness及组件路径，并补原info属性，累计220例；默认重生成一致（/private/tmp/personal-ai-os-java-actuator-check.log）。Go逐项对照全部220例通过（/private/tmp/personal-ai-os-go-actuator-oracle.log，随后race同套件通过）。真实框架证明非monitoring业务端口开放health/info、默认健康响应带groups和vendor媒体类型；monitoring业务端口则404，管理HEAD/组件子路径403。此前仅status/application-json假设已按实测修正。
+
+匿名无components，认证后按when_authorized显示实际可见分量，匿名访问db分量为空404；健康DOWN503，分组可独立UP。默认信息从原info.app属性绑定。Foundation详情使用真实SELECT 1、专用Redis与Linux/macOS磁盘探测；磁盘/SSL/Ping/探针与exposure/details开关接线。Go的数据库校验描述明确为SELECT 1，Redis分量用实际专用客户端命名，不伪造JDBC/JVM运行细节。
+
+配置/app定向race通过（/private/tmp/personal-ai-os-go-actuator-unit.log），integration vet/build通过。真实TLS/ACL全app与真实二进制command套件通过（/private/tmp/personal-ai-os-go-actuator-redis.log），两个容器/证书均清理。smoke同步按真实健康groups契约断言。此批覆盖健康/info与最小Prometheus，不宣称完整Micrometer metrics/histogram或所有管理扩展配置已迁移；T106/T108/T109父项仍开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

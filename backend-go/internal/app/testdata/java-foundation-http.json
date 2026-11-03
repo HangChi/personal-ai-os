@@ -284,7 +284,12 @@
         "status": 200,
         "contentType": "application/vnd.spring-boot.actuator.v3+json",
         "allow": "",
-        "body": {}
+        "body": {
+          "app": {
+            "name": "fixture",
+            "version": "test"
+          }
+        }
       }
     },
     {
@@ -1152,6 +1157,100 @@
           "data": null,
           "timestamp": "<generated>"
         }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-authenticated",
+        "method": "GET",
+        "path": "/actuator/health",
+        "login": true,
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-readiness",
+        "method": "GET",
+        "path": "/actuator/health/readiness"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-liveness",
+        "method": "GET",
+        "path": "/actuator/health/liveness"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-component-anonymous",
+        "method": "GET",
+        "path": "/actuator/health/db"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-component-authenticated",
+        "method": "GET",
+        "path": "/actuator/health/db",
+        "login": true,
+        "csrf": true
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
       }
     },
     {
@@ -2322,6 +2421,130 @@
       "csrf": false,
       "monitoring": false,
       "request": {
+        "name": "health-authenticated",
+        "method": "GET",
+        "path": "/actuator/health",
+        "login": true,
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "components": {
+            "db": {
+              "details": {
+                "database": "fixture"
+              },
+              "status": "UP"
+            },
+            "livenessState": {
+              "status": "UP"
+            },
+            "ping": {
+              "status": "UP"
+            },
+            "readinessState": {
+              "status": "UP"
+            },
+            "ssl": {
+              "details": {
+                "expiringChains": [],
+                "invalidChains": [],
+                "validChains": []
+              },
+              "status": "UP"
+            }
+          },
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-readiness",
+        "method": "GET",
+        "path": "/actuator/health/readiness"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-liveness",
+        "method": "GET",
+        "path": "/actuator/health/liveness"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-component-anonymous",
+        "method": "GET",
+        "path": "/actuator/health/db"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "health-component-authenticated",
+        "method": "GET",
+        "path": "/actuator/health/db",
+        "login": true,
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "details": {
+            "database": "fixture"
+          },
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -3479,6 +3702,130 @@
       "csrf": true,
       "monitoring": false,
       "request": {
+        "name": "health-authenticated",
+        "method": "GET",
+        "path": "/actuator/health",
+        "login": true,
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "components": {
+            "db": {
+              "details": {
+                "database": "fixture"
+              },
+              "status": "UP"
+            },
+            "livenessState": {
+              "status": "UP"
+            },
+            "ping": {
+              "status": "UP"
+            },
+            "readinessState": {
+              "status": "UP"
+            },
+            "ssl": {
+              "details": {
+                "expiringChains": [],
+                "invalidChains": [],
+                "validChains": []
+              },
+              "status": "UP"
+            }
+          },
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health-readiness",
+        "method": "GET",
+        "path": "/actuator/health/readiness"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health-liveness",
+        "method": "GET",
+        "path": "/actuator/health/liveness"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health-component-anonymous",
+        "method": "GET",
+        "path": "/actuator/health/db"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "",
+        "allow": "",
+        "body": ""
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "health-component-authenticated",
+        "method": "GET",
+        "path": "/actuator/health/db",
+        "login": true,
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "details": {
+            "database": "fixture"
+          },
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -4615,6 +4962,115 @@
         "method": "GET",
         "path": "/actuator/health",
         "accept": "text/html"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-authenticated",
+        "method": "GET",
+        "path": "/actuator/health",
+        "login": true,
+        "csrf": true
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-readiness",
+        "method": "GET",
+        "path": "/actuator/health/readiness"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-liveness",
+        "method": "GET",
+        "path": "/actuator/health/liveness"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-component-anonymous",
+        "method": "GET",
+        "path": "/actuator/health/db"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "health-component-authenticated",
+        "method": "GET",
+        "path": "/actuator/health/db",
+        "login": true,
+        "csrf": true
       },
       "response": {
         "status": 404,

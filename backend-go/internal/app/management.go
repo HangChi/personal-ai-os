@@ -8,13 +8,19 @@ import (
 	"sync"
 	"time"
 
+	"personal-ai-os/backend-go/internal/platform/config"
 	httpmiddleware "personal-ai-os/backend-go/internal/platform/http"
 	"personal-ai-os/backend-go/internal/platform/ratelimit"
-	redisclient "personal-ai-os/backend-go/internal/platform/redis"
 )
 
 // 独立管理链只接收原MonitoringSecurityConfig的两个精确GET，不复用业务匿名白名单。
 func newManagementHandler(up func(context.Context) bool, metrics http.Handler, logger *slog.Logger) http.Handler {
+	properties := config.ActuatorProperties{Health: true, Prometheus: true, Probes: true, HealthDetails: "never"}
+	actuator := newActuatorHandler(properties, func(ctx context.Context) actuatorHealth { return defaultActuatorHealth(up(ctx), properties) }, metrics, logger)
+	return newManagementChain(actuator, logger)
+}
+
+func newManagementChain(actuator http.Handler, logger *slog.Logger) http.Handler {
 	handler := httpmiddleware.HandleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -24,19 +30,8 @@ func newManagementHandler(up func(context.Context) bool, metrics http.Handler, l
 			return nil
 		}
 		switch r.URL.Path {
-		case "/actuator/health":
-			ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
-			defer cancel()
-			status, state := http.StatusOK, "UP"
-			if !up(ctx) {
-				status, state = http.StatusServiceUnavailable, "DOWN"
-			}
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(status)
-			_, err := fmt.Fprintf(w, `{"status":%q}`, state)
-			return err
-		case "/actuator/prometheus":
-			metrics.ServeHTTP(w, r)
+		case "/actuator/health", "/actuator/prometheus":
+			actuator.ServeHTTP(w, r)
 		default:
 			w.WriteHeader(http.StatusForbidden)
 		}
@@ -96,25 +91,14 @@ func (m *foundationMetrics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // 不凭转发头或请求URL猜测本地端口，不将管理权限开放给业务handler。
 func (f *Foundation) ManagementHandler() http.Handler { return f.management }
 
-func (f *Foundation) attachManagement(metrics *foundationMetrics, clients []*redisclient.Client, logger *slog.Logger) {
-	f.management = f.track(newManagementHandler(func(ctx context.Context) bool {
-		if f.health.CurrentStatus(ctx).Status != "UP" {
-			return false
-		}
-		for _, client := range clients {
-			if client != nil {
-				if err := client.Ping(ctx); err != nil {
-					return false
-				}
-			}
-		}
-		return true
-	}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func (f *Foundation) attachManagement(metrics *foundationMetrics, properties config.ActuatorProperties, snapshot func(context.Context) actuatorHealth, logger *slog.Logger) {
+	actuator := newActuatorHandler(properties, snapshot, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		metrics.ServeHTTP(w, r)
 		pool, executor := f.pool.Stats(), f.executor.Stats()
 		fmt.Fprintln(w, "# TYPE personalos_go_database_connections gauge")
 		fmt.Fprintf(w, "personalos_go_database_connections{state=\"open\"} %d\npersonalos_go_database_connections{state=\"active\"} %d\npersonalos_go_database_connections{state=\"idle\"} %d\npersonalos_go_database_connections{state=\"max\"} %d\n", pool.OpenConnections, pool.InUse, pool.Idle, pool.MaxOpenConnections)
 		fmt.Fprintln(w, "# TYPE personalos_go_post_turn_tasks gauge")
 		fmt.Fprintf(w, "personalos_go_post_turn_tasks{state=\"active\"} %d\npersonalos_go_post_turn_tasks{state=\"queued\"} %d\n", executor.Active, executor.Queued)
-	}), logger))
+	}), logger)
+	f.management = f.track(newManagementChain(actuator, logger))
 }

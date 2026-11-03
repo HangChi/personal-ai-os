@@ -37,7 +37,7 @@ func TestManagementOnlyAllowsExactGET(t *testing.T) {
 		if len(w.Header().Values("Set-Cookie")) != 0 || w.Header().Get("Cache-Control") == "" {
 			t.Fatal("管理入口不应创建业务会话")
 		}
-		if test.path == "/actuator/health" && test.want == 200 && w.Body.String() != `{"status":"UP"}` {
+		if test.path == "/actuator/health" && test.want == 200 && w.Body.String() != `{"status":"UP","groups":["liveness","readiness"]}` {
 			t.Fatal("Actuator不能套业务信封或泄露组件")
 		}
 	}
@@ -47,7 +47,7 @@ func TestManagementOnlyAllowsExactGET(t *testing.T) {
 	down := newManagementHandler(func(context.Context) bool { return false }, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), slog.New(slog.NewTextHandler(io.Discard, nil)))
 	w := httptest.NewRecorder()
 	down.ServeHTTP(w, httptest.NewRequest("GET", "/actuator/health", nil))
-	if w.Code != 503 || w.Body.String() != `{"status":"DOWN"}` {
+	if w.Code != 503 || w.Body.String() != `{"status":"DOWN","groups":["liveness","readiness"]}` {
 		t.Fatal("Actuator DOWN应503且无内部详情")
 	}
 }

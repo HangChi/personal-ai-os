@@ -99,7 +99,7 @@ def process(binary, fixture, role, directory, ca_file):
                     raise AssertionError("基础进程在 HTTP 启动前退出")
                 try:
                     status, _, body = request(management, "GET", "/actuator/health")
-                    if status != 200 or body != b'{"status":"UP"}':
+                    if status != 200 or json.loads(body) != {"status":"UP","groups":["liveness","readiness"]}:
                         raise AssertionError("基础依赖启动后未健康")
                     break
                 except (OSError, http.client.HTTPException, urllib.error.URLError):

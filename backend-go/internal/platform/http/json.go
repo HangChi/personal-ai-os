@@ -16,16 +16,36 @@ import (
 // JSONAcceptable 对齐 MVC 未声明 produces 的 Jackson 响应协商。
 // 原框架仍将 q=0 的兼容类型作为候选，不自行增加与基线不同的排除规则。
 func JSONAcceptable(accept string) bool {
+	_, ok := SelectJSONMediaType(accept, []string{"application/json", "application/*+json"})
+	return ok
+}
+
+// SelectJSONMediaType 使用响应声明的顺序处理未指定和通配 Accept。
+func SelectJSONMediaType(accept string, supported []string) (string, bool) {
+	if len(supported) == 0 {
+		return "", false
+	}
 	if accept == "" {
-		return true
+		return supported[0], true
 	}
 	for _, part := range strings.Split(accept, ",") {
 		media, _, err := mime.ParseMediaType(strings.TrimSpace(part))
-		if err == nil && (media == "*/*" || media == "application/*" || media == "application/json" || media == "application/*+json" || strings.HasPrefix(media, "application/") && strings.HasSuffix(media, "+json")) {
-			return true
+		if err != nil {
+			continue
+		}
+		for _, candidate := range supported {
+			if media == "*/*" || media == "application/*" || media == candidate || media == "application/*+json" && strings.HasSuffix(candidate, "+json") {
+				if strings.Contains(candidate, "*") {
+					return supported[0], true
+				}
+				return candidate, true
+			}
+			if candidate == "application/*+json" && strings.HasPrefix(media, "application/") && strings.HasSuffix(media, "+json") {
+				return media, true
+			}
 		}
 	}
-	return false
+	return "", false
 }
 
 // DecodeJSONObject 保留 Jackson 的精确字段名、未知字段忽略、重复字段取最后值。

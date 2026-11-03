@@ -320,3 +320,11 @@ Decision：固定原 Auth/Security/异常/JsonCodec 源码，使用基线 Boot/B
 DecodeJSONObject只支持显式对象和逐字段String绑定，忽略未知字段、重复取最后、拒绝尾随对象；不假装是所有未来DTO的通用反射Binder。JSON请求保留已有10MiB安全上限，此上限不是Java任意JSON输入无界支持的证明。其余类型、完整multipart与Actuator尚待继续验证。
 
 Alternatives considered：手造期望响应；只直接调用异常方法；使用Go默认case-insensitive解码；按照理想HTTP语义改成415/q=0拒绝；在不验证时批量verified。均未采用。之前手写Allow断言随真实原全局处理器纠正，没有修改Java基线。
+
+## R-036 以真实Actuator修正健康暴露与详情
+
+Decision：真实Boot HTTP而非源码白名单推断决定端点位置/响应。非monitoring业务端口按exposure开放health/info，monitoring移至独立端口；管理安全链仍仅两个精确GET。健康带liveness/readiness分组、默认Actuator-v3 JSON、DOWN503，明确区别于业务health的信封/HTTP200。when_authorized只在实际身份存在时展开组件，匿名组件路径空404，不用未认证的角色名推断权限。
+
+绑定原exposure/include/exclude、details、info环境开关及固定应用信息；数据库与专用Redis实际探测，Linux/macOS磁盘容量实际读取，未验收平台返回UNKNOWN而不造容量。入站监听器没有HTTPS证书链，ssl分量仅报告空链；不把数据库出站TLS当作入站证书健康。Go数据库验证描述为SELECT 1，专用Redis分量按实际功能命名，完整JDBC/JVM细节不伪造。
+
+Alternatives considered：所有业务Actuator永久404；匿名只status而丢失groups；监控HEAD自动放行；认证后仍忽略详情配置；复用业务health信封。均由真实220场景排除。metrics完整清单/业务histogram与扩展管理配置继续单独追踪。

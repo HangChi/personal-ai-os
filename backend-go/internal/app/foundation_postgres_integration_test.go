@@ -408,7 +408,7 @@ func TestFoundationPostgresManagementDownAndMetrics(t *testing.T) {
 	}
 	w = httptest.NewRecorder()
 	f.ManagementHandler().ServeHTTP(w, httptest.NewRequest("GET", "/actuator/health", nil))
-	if w.Code != 503 || w.Body.String() != `{"status":"DOWN"}` {
+	if w.Code != 503 || w.Body.String() != `{"status":"DOWN","groups":["liveness","readiness"]}` {
 		t.Fatal("真实探测失败未映射Actuator DOWN")
 	}
 }

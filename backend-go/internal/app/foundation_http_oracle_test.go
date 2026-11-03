@@ -1,8 +1,10 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -10,6 +12,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -19,8 +22,8 @@ import (
 type foundationHTTPFixture struct {
 	Auth, CSRF, Monitoring bool
 	Request                struct {
-		Name, Method, Path, ContentType, Accept, Body string
-		CSRF, BadCSRF, Management, DatabaseDown       bool
+		Name, Method, Path, ContentType, Accept, Body  string
+		CSRF, BadCSRF, Management, DatabaseDown, Login bool
 	}
 	Response struct {
 		Status             int
@@ -39,7 +42,7 @@ func readFoundationHTTPFixture(t *testing.T) []foundationHTTPFixture {
 	if err := json.Unmarshal(data, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	if len(fixture.Cases) != 200 {
+	if len(fixture.Cases) != 220 {
 		t.Fatal("真实 HTTP 场景数量改变，需审查")
 	}
 	return fixture.Cases
@@ -104,6 +107,24 @@ func compareFoundationResponse(t *testing.T, client *http.Client, server string,
 	if test.Request.BadCSRF {
 		r.Header.Set("X-CSRF-TOKEN", "fixture-invalid-token")
 	}
+	if test.Request.Login {
+		login, err := http.NewRequest("POST", server+"/api/v1/auth/login", strings.NewReader(`{"username":"admin","password":"fixture-password"}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		login.Header.Set("Content-Type", "application/json")
+		if token := r.Header.Get("X-CSRF-TOKEN"); token != "" {
+			login.Header.Set("X-CSRF-TOKEN", token)
+		}
+		response, err := client.Do(login)
+		if err != nil {
+			t.Fatal(err)
+		}
+		response.Body.Close()
+		if response.StatusCode != 200 {
+			t.Fatal("合成登录失败")
+		}
+	}
 	response, err := client.Do(r)
 	if err != nil {
 		t.Fatal(err)
@@ -116,6 +137,47 @@ func compareFoundationResponse(t *testing.T, client *http.Client, server string,
 	got := normalizeFoundationBody(t, data)
 	if response.StatusCode != test.Response.Status || response.Header.Get("Content-Type") != test.Response.ContentType || normalizedAllow(response.Header.Get("Allow")) != normalizedAllow(test.Response.Allow) || !reflect.DeepEqual(got, test.Response.Body) {
 		t.Errorf("与真实Servlet不同: status=%d/%d type=%q/%q allow=%q/%q body=%v / %v", response.StatusCode, test.Response.Status, response.Header.Get("Content-Type"), test.Response.ContentType, response.Header.Get("Allow"), test.Response.Allow, got, test.Response.Body)
+	}
+}
+
+func TestFoundationActuatorRealServletOracle(t *testing.T) {
+	fixtures := readFoundationHTTPFixture(t)
+	for _, mode := range []struct{ auth, csrf, monitoring bool }{{false, false, false}, {true, false, false}, {true, true, false}, {true, true, true}} {
+		properties := config.ActuatorProperties{Health: true, Info: !mode.monitoring, Prometheus: mode.monitoring, HealthDetails: "when_authorized", InfoEnvironment: true, InfoName: "fixture", InfoVersion: "test", SSL: true, Ping: true, Probes: true}
+		var down atomic.Bool
+		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+		actuator := newActuatorHandler(properties, func(context.Context) actuatorHealth {
+			state := defaultActuatorHealth(!down.Load(), properties)
+			db := state.Components["db"]
+			db.Details = map[string]any{"database": "fixture"}
+			state.Components["db"] = db
+			return state
+		}, nil, logger)
+		var businessActuator http.Handler = actuator
+		if mode.monitoring {
+			businessActuator = nil
+		}
+		server := httptest.NewServer(fixtureFoundationHandler(t, config.API, mode.auth, mode.csrf, &fixtureLimiter{allowed: true}, nil, nil, businessActuator))
+		management := httptest.NewServer(newManagementChain(actuator, logger))
+		transport := &http.Transport{Proxy: nil}
+		for _, test := range fixtures {
+			if test.Auth != mode.auth || test.CSRF != mode.csrf || test.Monitoring != mode.monitoring || !test.Request.Management && !strings.HasPrefix(test.Request.Path, "/actuator/") {
+				continue
+			}
+			t.Run(strings.Join([]string{map[bool]string{true: "auth", false: "anonymous"}[mode.auth], map[bool]string{true: "csrf", false: "plain"}[mode.csrf], map[bool]string{true: "monitoring", false: "business"}[mode.monitoring], test.Request.Name}, "/"), func(t *testing.T) {
+				down.Store(test.Request.DatabaseDown)
+				jar, _ := cookiejar.New(nil)
+				client := &http.Client{Transport: transport, Jar: jar, Timeout: 5 * time.Second}
+				origin := server.URL
+				if mode.monitoring && test.Request.Management {
+					origin = management.URL
+				}
+				compareFoundationResponse(t, client, origin, test)
+			})
+		}
+		transport.CloseIdleConnections()
+		server.Close()
+		management.Close()
 	}
 }
 

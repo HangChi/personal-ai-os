@@ -1779,9 +1779,13 @@
         "scripts/migration/java_foundation_http_fixture.py",
         "backend-go/internal/app/testdata/java-foundation-http.json",
         "backend-go/internal/app/foundation_http_oracle_test.go",
-        "backend-go/internal/platform/http/json.go"
+        "backend-go/internal/platform/http/json.go",
+        "backend-go/internal/app/actuator.go",
+        "backend-go/internal/app/actuator_health.go",
+        "backend-go/internal/platform/config/actuator.go",
+        "backend-go/internal/platform/config/actuator_test.go"
       ],
-      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。"
+      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 T106c: 真实Servlet认证链156例逐项通过；Actuator剩余44例及通用业务/multipart仍待完成，不能verified。 T106d: 真实Servlet夹具扩展220例全部对照通过，修正业务/管理健康与信息、分组/媒体类型及详情权限；不是完整Micrometer或通用框架验收。"
     },
     "route:POST:/api/v1/auth/login:backend/src/main/java/com/personalos/common/auth/AuthController.java": {
       "status": "implemented",
@@ -1952,9 +1956,14 @@
         "backend-go/internal/platform/health/service.go",
         "backend-go/internal/platform/health/service_test.go",
         "backend-go/internal/platform/health/postgres_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/actuator.go",
+        "backend-go/internal/app/actuator_health.go",
+        "backend-go/internal/platform/config/actuator.go",
+        "backend-go/internal/platform/config/actuator_test.go",
+        "backend-go/internal/app/foundation_http_oracle_test.go"
       ],
-      "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。"
+      "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。 T106d: 真实Servlet夹具扩展220例全部对照通过，修正业务/管理健康与信息、分组/媒体类型及详情权限；不是完整Micrometer或通用框架验收。"
     },
     "file:backend/src/main/java/com/personalos/common/health/HealthStatusDto.java": {
       "status": "implemented",
@@ -2471,9 +2480,14 @@
         "backend-go/internal/app/management.go",
         "backend-go/internal/app/serve.go",
         "backend-go/internal/app/management_test.go",
-        "backend-go/internal/app/foundation_postgres_integration_test.go"
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "backend-go/internal/app/actuator.go",
+        "backend-go/internal/app/actuator_health.go",
+        "backend-go/internal/platform/config/actuator.go",
+        "backend-go/internal/platform/config/actuator_test.go",
+        "backend-go/internal/app/foundation_http_oracle_test.go"
       ],
-      "note": " monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。"
+      "note": " monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。 T106d: 真实Servlet夹具扩展220例全部对照通过，修正业务/管理健康与信息、分组/媒体类型及详情权限；不是完整Micrometer或通用框架验收。"
     },
     "file:backend/src/main/java/com/personalos/common/json/JsonCodec.java": {
       "status": "in_progress",
