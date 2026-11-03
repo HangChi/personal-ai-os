@@ -56,4 +56,14 @@ MCP配置和server字段全部私有，命令指针、server名称、参数、�
 
 特别保留原构造器行为：Calendar的首次扫描延迟缺省为0，Knowledge相似阈值缺省为0，Protection绑定缺省重试0而显式defaults工厂为1；Context.summary与Memory.ranking/backfill完全缺省时enabled=true，绑定其余已知子字段后primitive缺省false。仅空时长转换null不构成nested绑定，未知字段也不会创建nested。
 
+## 原YAML的配置来源解析
+
+`LoadBaselineProperties(PropertyOptions{Overrides: ..., System: ..., DotEnv: ...})`只使用显式map与`baseline.json`嵌入基线，不搜索文件、读取宿主环境或创建连接。基线由真实Spring YAML加载器生成，保留7文件/17文档和原占位符；`java_config_data_fixture.py`从固定Git源码核对原文哈希、执行真正Boot ConfigData并复验生成内容。
+
+来源顺序是显式canonical覆盖→系统环境→按激活顺序反向排列的profile文件→反向多文档基础配置→dotenv。系统变量和dotenv仍分别保留SystemEnvironment别名。`Get`区分缺省/显式空、延迟解析嵌套占位符/默认值/转义，循环或无法解析时脱敏拒绝；有64层与1MiB展开上限。各map在构造时复制，profiles访问复制，所有读取可并发且无可变缓存。
+
+原DotEnv处理器没有Ordered/Order，晚于有显式ORDER的ConfigData执行。因此dotenv中的SPRING_PROFILES_ACTIVE可能被Environment延迟报告为active，却不会重新加载对应profile文件；不能据此擅自套用prod或worker文件。133个真实场景/189属性覆盖该区别、系统/default/include激活、文档/profile顺序和别名优先级。原`Environment.Config()`诊断配置子集尚未切换到本解析器，其历史profile测试不代表完整Boot启动行为。
+
+仅支持固定基线已有文档结构；外部`spring.config.*`位置/导入和profile分组明确拒绝，不冒充任意Spring ConfigData替代。暂未完成所有record的来源绑定与应用装配。复验：`python3 scripts/migration/java_config_data_fixture.py`，默认比较，显式`--write`更新内置基线与测试快照。
+
 整数按原32/64位语法检查再归一；浮点沿用Java Double（包含hex、f/d后缀、NaN/Infinity和IEEE溢出）的实际结果，不能静默替换NaN或把合法溢出归一化当作非法。时长先在Java完整范围解析，合法非正值按各record默认处理，归一化后超Go范围仍明确拒绝。知识库扩展名规则与查询限额、Calendar有效前瞻/范围/限额等配置辅助方法已实现；相应业务执行仍属于后续阶段。

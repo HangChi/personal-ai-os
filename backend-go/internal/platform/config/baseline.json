@@ -1,0 +1,321 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "sources_sha256": {
+    "backend/src/main/resources/application-monitoring.yml": "faae22feba4c1be606d8d60e3a13aeee85f55c90077639967346aff3eeb01e7b",
+    "backend/src/main/resources/application-prod.yml": "5d82063a7736e7708835b1c9b6eb6cfa198df3ac53b38314bd7a292b39b4da14",
+    "backend/src/main/resources/application-runtime-api.yml": "909ee56a6cac69342af968008d87fb1eb21db0245032948cd24ec2e550f50947",
+    "backend/src/main/resources/application-worker-delivery.yml": "276677be13f4316f376c28f7ac73700e5363e778773f3cba97d0a3ea2d4fbeb6",
+    "backend/src/main/resources/application-worker-index.yml": "20252ecfd193ac16a4c287d92759c755749a0d1f684cb8215864b5b81303aa81",
+    "backend/src/main/resources/application-worker-review.yml": "a9761a80024eec6e289b0a882caa9d176e0e2a8da4db92793cf0f32f8ec15f89",
+    "backend/src/main/resources/application.yml": "068bc97f8ec29a3a646c42d2bc5e367ad527e6dd82bc567e5056b771c2c253e7"
+  },
+  "documents": [
+    {
+      "file": "application-monitoring.yml",
+      "index": 0,
+      "properties": {
+        "management.endpoints.web.exposure.include": "health,prometheus",
+        "management.metrics.distribution.percentiles-histogram.http.server.requests": "true",
+        "management.metrics.distribution.percentiles-histogram.personalos.embedding.duration": "true",
+        "management.metrics.distribution.percentiles-histogram.personalos.knowledge.rag.stage": "true",
+        "management.metrics.distribution.percentiles-histogram.personalos.knowledge.recall": "true",
+        "management.server.port": "9091"
+      }
+    },
+    {
+      "file": "application-prod.yml",
+      "index": 0,
+      "properties": {
+        "app.auth.enabled": "true",
+        "app.security.csrf-enabled": "true",
+        "app.security.production-mode": "true",
+        "management.endpoint.health.show-details": "never",
+        "management.endpoints.web.exposure.include": "health,info",
+        "server.forward-headers-strategy": "framework",
+        "spring.config.activate.on-profile": "prod",
+        "spring.servlet.session.cookie.http-only": "true",
+        "spring.servlet.session.cookie.same-site": "strict",
+        "spring.servlet.session.cookie.secure": "true"
+      }
+    },
+    {
+      "file": "application-runtime-api.yml",
+      "index": 0,
+      "properties": {
+        "app.runtime.role": "api"
+      }
+    },
+    {
+      "file": "application-worker-delivery.yml",
+      "index": 0,
+      "properties": {
+        "app.calendar.scan-enabled": "false",
+        "app.chat.attachment-janitor-enabled": "false",
+        "app.runtime.role": "delivery",
+        "spring.datasource.hikari.maximum-pool-size": "4"
+      }
+    },
+    {
+      "file": "application-worker-index.yml",
+      "index": 0,
+      "properties": {
+        "app.calendar.scan-enabled": "false",
+        "app.chat.attachment-janitor-enabled": "false",
+        "app.runtime.role": "index",
+        "spring.datasource.hikari.maximum-pool-size": "4"
+      }
+    },
+    {
+      "file": "application-worker-review.yml",
+      "index": 0,
+      "properties": {
+        "app.calendar.scan-enabled": "false",
+        "app.chat.attachment-janitor-enabled": "false",
+        "app.runtime.role": "review",
+        "spring.datasource.hikari.maximum-pool-size": "4"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 0,
+      "properties": {
+        "app.agent.max-consecutive-failures": "${AI_AGENT_MAX_CONSECUTIVE_FAILURES:2}",
+        "app.agent.max-model-calls": "${AI_AGENT_MAX_MODEL_CALLS:12}",
+        "app.ai.memory.max-context-chars": "${AI_MEMORY_MAX_CONTEXT_CHARS:12000}",
+        "app.ai.memory.max-messages": "${AI_MEMORY_MAX_MESSAGES:20}",
+        "app.ai.system-prompt": "${AI_SYSTEM_PROMPT:你是 Personal AI OS 的个人助手。回答简洁、准确，默认使用中文，必要时使用列表。}",
+        "app.auth.enabled": "${AUTH_ENABLED:false}",
+        "app.auth.password": "${AUTH_PASSWORD:}",
+        "app.auth.username": "${AUTH_USERNAME:admin}",
+        "app.calendar.default-query-limit": "${AI_CALENDAR_DEFAULT_QUERY_LIMIT:100}",
+        "app.calendar.default-reminder-lead": "${AI_CALENDAR_DEFAULT_LEAD:15m}",
+        "app.calendar.max-query-limit": "${AI_CALENDAR_MAX_QUERY_LIMIT:500}",
+        "app.calendar.max-range-days": "${AI_CALENDAR_MAX_RANGE_DAYS:90}",
+        "app.calendar.scan-enabled": "${AI_CALENDAR_SCAN_ENABLED:true}",
+        "app.calendar.scan-initial-delay-ms": "${AI_CALENDAR_SCAN_INITIAL_DELAY_MS:10000}",
+        "app.calendar.scan-interval-ms": "${AI_CALENDAR_SCAN_INTERVAL_MS:10000}",
+        "app.calendar.scan-lookahead": "${AI_CALENDAR_SCAN_LOOKAHEAD:24h}",
+        "app.calendar.scan-lookback": "${AI_CALENDAR_SCAN_LOOKBACK:24h}",
+        "app.calendar.stream-check-interval-ms": "${AI_CALENDAR_STREAM_CHECK_INTERVAL_MS:1000}",
+        "app.chat.max-attachment-bytes": "${AI_CHAT_MAX_ATTACHMENT_BYTES:6291456}",
+        "app.chat.stream-timeout": "${AI_CHAT_STREAM_TIMEOUT:120s}",
+        "app.chat.upload-dir": "${AI_CHAT_UPLOAD_DIR:data/uploads}",
+        "app.context.auto-memory.enabled": "${AI_CONTEXT_AUTO_MEMORY_ENABLED:false}",
+        "app.context.auto-memory.max-items": "${AI_CONTEXT_AUTO_MEMORY_MAX_ITEMS:3}",
+        "app.context.protection.image-reserve-tokens": "${CONTEXT_IMAGE_RESERVE_TOKENS:4096}",
+        "app.context.protection.max-retries": "${CONTEXT_MAX_RETRIES:1}",
+        "app.context.protection.output-reserve-tokens": "${CONTEXT_OUTPUT_RESERVE_TOKENS:4096}",
+        "app.context.protection.safety-margin-tokens": "${CONTEXT_SAFETY_MARGIN_TOKENS:512}",
+        "app.context.summary.enabled": "${AI_CONTEXT_SUMMARY_ENABLED:true}",
+        "app.context.summary.max-excerpt-chars": "${AI_CONTEXT_SUMMARY_MAX_EXCERPT:4000}",
+        "app.context.summary.max-summary-chars": "${AI_CONTEXT_SUMMARY_MAX_CHARS:1200}",
+        "app.context.summary.min-messages": "${AI_CONTEXT_SUMMARY_MIN_MESSAGES:4}",
+        "app.knowledge.allowed-extensions": "${AI_KNOWLEDGE_ALLOWED_EXTENSIONS:md,markdown,txt,pdf,docx,png,jpg,jpeg,webp,gif}",
+        "app.knowledge.chunk-overlap-chars": "${AI_KNOWLEDGE_CHUNK_OVERLAP_CHARS:0}",
+        "app.knowledge.chunk-size-chars": "${AI_KNOWLEDGE_CHUNK_SIZE_CHARS:1200}",
+        "app.knowledge.embedding-dimensions": "${AI_KNOWLEDGE_EMBEDDING_DIMENSIONS:1024}",
+        "app.knowledge.hybrid-search-enabled": "${AI_KNOWLEDGE_HYBRID_ENABLED:true}",
+        "app.knowledge.keyword-channel-weight": "${AI_KNOWLEDGE_KEYWORD_CHANNEL_WEIGHT:1.0}",
+        "app.knowledge.max-file-size-bytes": "${AI_KNOWLEDGE_MAX_FILE_SIZE:5242880}",
+        "app.knowledge.min-chunk-size-chars": "${AI_KNOWLEDGE_MIN_CHUNK_SIZE_CHARS:350}",
+        "app.knowledge.rrf-k": "${AI_KNOWLEDGE_RRF_K:60}",
+        "app.knowledge.similarity-threshold": "${AI_KNOWLEDGE_SIMILARITY_THRESHOLD:0.3}",
+        "app.knowledge.top-k": "${AI_KNOWLEDGE_TOP_K:4}",
+        "app.memory.backfill.batch-size": "${APP_MEMORY_BACKFILL_BATCH:20}",
+        "app.memory.backfill.enabled": "${APP_MEMORY_BACKFILL_ENABLED:true}",
+        "app.memory.pinned-max-count": "${APP_MEMORY_PINNED_MAX:10}",
+        "app.memory.ranking.enabled": "${APP_MEMORY_RANKING_ENABLED:true}",
+        "app.memory.ranking.half-life-days": "${APP_MEMORY_HALF_LIFE_DAYS:30}",
+        "app.memory.ranking.timeout": "${APP_MEMORY_RANKING_TIMEOUT:400ms}",
+        "app.memory.similar-threshold": "${APP_MEMORY_SIMILAR_THRESHOLD:0.92}",
+        "app.model-key-encryption-key": "${MODEL_KEY_ENCRYPTION_KEY:}",
+        "app.model-max-concurrent-requests": "${AI_MODEL_MAX_CONCURRENT_REQUESTS:4}",
+        "app.name": "personal-ai-os",
+        "app.plan.enabled": "${APP_PLAN_ENFORCE:true}",
+        "app.plan.max-inject-chars": "${APP_PLAN_MAX_INJECT_CHARS:1200}",
+        "app.rate-limit.capacity": "${APP_RATE_LIMIT_CAPACITY:60}",
+        "app.rate-limit.enabled": "${APP_RATE_LIMIT_ENABLED:true}",
+        "app.rate-limit.period": "${APP_RATE_LIMIT_PERIOD:1m}",
+        "app.retention.operation-record-days": "${OPERATION_RECORD_RETENTION_DAYS:0}",
+        "app.retention.token-usage-days": "${TOKEN_USAGE_RETENTION_DAYS:0}",
+        "app.security.csrf-enabled": "${APP_SECURITY_CSRF_ENABLED:false}",
+        "app.security.production-mode": "${APP_SECURITY_PRODUCTION_MODE:false}",
+        "app.version": "0.1.0-SNAPSHOT",
+        "app.web-push.enabled": "${WEB_PUSH_ENABLED:false}",
+        "app.web-push.private-key": "${WEB_PUSH_PRIVATE_KEY:}",
+        "app.web-push.public-key": "${WEB_PUSH_PUBLIC_KEY:}",
+        "app.web-push.subject": "${WEB_PUSH_SUBJECT:}",
+        "info.app.name": "${spring.application.name}",
+        "info.app.version": "${app.version}",
+        "logging.pattern.console": "%d{HH:mm:ss.SSS} %5p [%X{requestId:------------}] [%15.15t] %-40.40logger{39} : %msg%n",
+        "management.endpoint.health.show-details": "${ACTUATOR_HEALTH_DETAILS:when_authorized}",
+        "management.endpoints.web.exposure.include": "health,info,metrics",
+        "management.info.env.enabled": "true",
+        "server.port": "${SERVER_PORT:8080}",
+        "server.shutdown": "graceful",
+        "spring.ai.mcp.server.enabled": "${PERSONAL_MCP_SERVER_ENABLED:false}",
+        "spring.ai.mcp.server.expose-mcp-client-tools": "false",
+        "spring.ai.mcp.server.instructions": "${PERSONAL_MCP_SERVER_INSTRUCTIONS:Personal AI OS personal assistant data tools. Read-only tools are enabled by default.}",
+        "spring.ai.mcp.server.name": "${PERSONAL_MCP_SERVER_NAME:personal-ai-os}",
+        "spring.ai.mcp.server.protocol": "${PERSONAL_MCP_SERVER_PROTOCOL:streamable}",
+        "spring.ai.mcp.server.streamable-http.mcp-endpoint": "${PERSONAL_MCP_SERVER_ENDPOINT:/mcp}",
+        "spring.ai.mcp.server.tool-callback-converter": "false",
+        "spring.ai.mcp.server.version": "${PERSONAL_MCP_SERVER_VERSION:0.1.0}",
+        "spring.ai.model.audio.speech": "none",
+        "spring.ai.model.audio.transcription": "none",
+        "spring.ai.model.chat": "${AI_CHAT_PROVIDER:ollama}",
+        "spring.ai.model.embedding": "${AI_EMBEDDING_PROVIDER:ollama}",
+        "spring.ai.model.image": "none",
+        "spring.ai.model.moderation": "none",
+        "spring.ai.ollama.base-url": "${OLLAMA_BASE_URL:http://localhost:11434}",
+        "spring.ai.ollama.chat.model": "${OLLAMA_CHAT_MODEL:qwen2.5:7b}",
+        "spring.ai.ollama.chat.temperature": "0.7",
+        "spring.ai.ollama.embedding.model": "${OLLAMA_EMBEDDING_MODEL:bge-m3}",
+        "spring.ai.openai.api-key": "${OPENAI_API_KEY:}",
+        "spring.ai.openai.base-url": "${OPENAI_BASE_URL:https://api.openai.com}",
+        "spring.ai.openai.chat.max-retries": "0",
+        "spring.ai.openai.chat.model": "${OPENAI_CHAT_MODEL:gpt-4o-mini}",
+        "spring.ai.openai.chat.options.extra-body.enable_thinking": "${OPENAI_ENABLE_THINKING:false}",
+        "spring.ai.openai.chat.temperature": "0.7",
+        "spring.ai.openai.embedding.max-retries": "0",
+        "spring.ai.openai.embedding.model": "${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}",
+        "spring.ai.openai.max-retries": "0",
+        "spring.ai.retry.backoff.initial-interval": "500ms",
+        "spring.ai.retry.backoff.max-interval": "2s",
+        "spring.ai.retry.backoff.multiplier": "2",
+        "spring.ai.retry.max-attempts": "${AI_RETRY_MAX_ATTEMPTS:1}",
+        "spring.ai.tools.limits.max-calls-per-tool-default": "${AI_TOOL_MAX_CALLS_PER_TOOL:3}",
+        "spring.ai.tools.limits.max-total-tool-calls": "${AI_TOOL_MAX_TOTAL_CALLS:12}",
+        "spring.ai.tools.limits.on-limit-exceeded": "${AI_TOOL_ON_LIMIT_EXCEEDED:throw}",
+        "spring.ai.vectorstore.pgvector.dimensions": "${AI_KNOWLEDGE_EMBEDDING_DIMENSIONS:1024}",
+        "spring.ai.vectorstore.pgvector.distance-type": "COSINE_DISTANCE",
+        "spring.ai.vectorstore.pgvector.index-type": "HNSW",
+        "spring.ai.vectorstore.pgvector.initialize-schema": "false",
+        "spring.ai.vectorstore.pgvector.max-document-batch-size": "10000",
+        "spring.ai.vectorstore.pgvector.schema-name": "public",
+        "spring.ai.vectorstore.pgvector.table-name": "vector_store",
+        "spring.ai.vectorstore.type": "pgvector",
+        "spring.application.name": "personal-ai-os",
+        "spring.datasource.hikari.connection-timeout": "5000",
+        "spring.datasource.hikari.maximum-pool-size": "10",
+        "spring.datasource.hikari.pool-name": "personalos-pool",
+        "spring.datasource.password": "${POSTGRES_PASSWORD:personalos}",
+        "spring.datasource.url": "jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:55432}/${POSTGRES_DB:personal_ai_os}",
+        "spring.datasource.username": "${POSTGRES_USER:personalos}",
+        "spring.flyway.baseline-on-migrate": "true",
+        "spring.flyway.enabled": "true",
+        "spring.flyway.locations": "classpath:db/migration",
+        "spring.jpa.hibernate.ddl-auto": "validate",
+        "spring.jpa.open-in-view": "false",
+        "spring.jpa.properties.hibernate.jdbc.time_zone": "UTC",
+        "spring.mvc.async.request-timeout": "${ASYNC_REQUEST_TIMEOUT:10m}",
+        "spring.servlet.multipart.max-file-size": "8MB",
+        "spring.servlet.multipart.max-request-size": "10MB",
+        "spring.servlet.session.cookie.http-only": "true",
+        "spring.servlet.session.cookie.same-site": "lax",
+        "spring.servlet.session.cookie.secure": "${SESSION_COOKIE_SECURE:false}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 1,
+      "properties": {
+        "app.embedding-cache.capacity": "${EMBEDDING_CACHE_CAPACITY:1000}",
+        "app.embedding-cache.enabled": "${EMBEDDING_CACHE_ENABLED:false}",
+        "app.embedding-cache.ttl": "${EMBEDDING_CACHE_TTL:10m}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 2,
+      "properties": {
+        "app.redis.enabled": "${REDIS_ENABLED:false}",
+        "app.redis.namespace": "${REDIS_NAMESPACE:}",
+        "app.redis.timeout-ms": "${REDIS_TIMEOUT_MS:150}",
+        "app.redis.uri": "${REDIS_URI:redis://localhost:6379}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 3,
+      "properties": {
+        "app.rabbitmq.enabled": "${RABBITMQ_ENABLED:false}",
+        "app.rabbitmq.queue": "${RABBITMQ_QUEUE:personalos.knowledge.ready}",
+        "app.rabbitmq.uri": "${RABBITMQ_URI:amqp://localhost:5672}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 4,
+      "properties": {
+        "app.storage.s3.access-key": "${S3_ACCESS_KEY:}",
+        "app.storage.s3.bucket": "${S3_BUCKET:personalos}",
+        "app.storage.s3.cleanup": "${S3_ORPHAN_CLEANUP_ENABLED:false}",
+        "app.storage.s3.enabled": "${S3_ENABLED:false}",
+        "app.storage.s3.endpoint": "${S3_ENDPOINT:http://localhost:8333}",
+        "app.storage.s3.namespace": "${S3_NAMESPACE:}",
+        "app.storage.s3.region": "${S3_REGION:us-east-1}",
+        "app.storage.s3.secret-key": "${S3_SECRET_KEY:}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 5,
+      "properties": {
+        "app.knowledge.search.enabled": "${OPENSEARCH_ENABLED:false}",
+        "app.knowledge.search.endpoint": "${OPENSEARCH_ENDPOINT:http://localhost:9200}",
+        "app.knowledge.search.index": "${OPENSEARCH_INDEX:personalos-chunks-v1}",
+        "app.knowledge.search.password": "${OPENSEARCH_PASSWORD:}",
+        "app.knowledge.search.username": "${OPENSEARCH_USERNAME:}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 6,
+      "properties": {
+        "app.knowledge.rag.budget-ms": "${RAG_BUDGET_MS:20000}",
+        "app.knowledge.rag.enabled": "${RAG_ENABLED:true}",
+        "app.knowledge.rag.evidence-timeout-ms": "${RAG_EVIDENCE_TIMEOUT_MS:12000}",
+        "app.knowledge.rag.reranker.api-key": "${RAG_RERANKER_API_KEY:}",
+        "app.knowledge.rag.reranker.enabled": "${RAG_RERANKER_ENABLED:false}",
+        "app.knowledge.rag.reranker.endpoint": "${RAG_RERANKER_ENDPOINT:}",
+        "app.knowledge.rag.reranker.model": "${RAG_RERANKER_MODEL:}",
+        "app.knowledge.rag.reranker.protocol": "${RAG_RERANKER_PROTOCOL:cohere}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 7,
+      "properties": {
+        "app.reminders.webhook.enabled": "${REMINDER_WEBHOOK_ENABLED:false}",
+        "app.reminders.webhook.secret": "${REMINDER_WEBHOOK_SECRET:}",
+        "app.reminders.webhook.url": "${REMINDER_WEBHOOK_URL:}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 8,
+      "properties": {
+        "app.shared-session.enabled": "${REDIS_SESSION_ENABLED:false}",
+        "app.shared-session.namespace": "${REDIS_SESSION_NAMESPACE:personalos:sessions}",
+        "app.shared-session.uri": "${REDIS_SESSION_URI:}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 9,
+      "properties": {
+        "app.rate-limit.redis.enabled": "${REDIS_RATE_LIMIT_ENABLED:false}",
+        "app.rate-limit.redis.namespace": "${REDIS_RATE_LIMIT_NAMESPACE:personalos:model}",
+        "app.rate-limit.redis.uri": "${REDIS_RATE_LIMIT_URI:}"
+      }
+    },
+    {
+      "file": "application.yml",
+      "index": 10,
+      "properties": {
+        "app.knowledge.candidate-cache.enabled": "${RAG_CANDIDATE_CACHE_ENABLED:false}"
+      }
+    }
+  ]
+}

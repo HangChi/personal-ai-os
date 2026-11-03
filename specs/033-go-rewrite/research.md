@@ -274,3 +274,13 @@ Decision：补齐其余8类canonical纯绑定，独立编译全部12类原record
 时长先检查Java自身完整范围，再按record允许零/负值归一，最后检查Go范围。字符串null/空保留，提示与应用字符串私有/脱敏、访问指针副本；扩展名集合私有且访问复制。Unicode小写使用已有x/text的完整大小写实现，不引入新运行时版本；业务执行与ConfigData/来源发现仍未接线。
 
 Alternatives considered：把YAML默认值灌进record缺省（掩盖真实primitive差异）；按所有非正数报错（改变紧凑构造器语义）；用Go float语法直接接收Inf/小写nan（扩大Java接受集）；把NaN比较误判为越界；所有nested只按键存在判定。T104父任务继续开放。
+
+## R-031 固定基线ConfigData与Dotenv执行顺序
+
+Decision：将索引中原七个YAML/十七文档的原始扁平属性作为可重生成嵌入资源，保留全部未解析占位符和原文件哈希。Go无新增YAML依赖，也不读取任意外部文件；从显式map构建不可变来源。脚本从Git基线重建唯一临时配置目录，真实ConfigDataEnvironmentPostProcessor.applyTo执行文件发现/profile/default/include与加载，之后附加合成dotenv、ConfigurationPropertySources，再逐项查询189属性，133场景对照。
+
+原DotEnvEnvironmentPostProcessor无Ordered/Order，而ConfigData有显式ORDER，故dotenv晚于文件发现。初版oracle先加dotenv再执行ConfigData，错误允许dotenv激活profile文件；复查源接口和顺序后修正。真实最终Environment可以延迟报告dotenv中的active，但文件未加载；例如dotenv worker-index与系统worker-index有不同role/池大小。Go分别记录用于文件加载的bootstrap列表和最终报告列表，不能按最终active重载。此前诊断配置的窄profile逻辑继续保留原边界，不将其视为Boot全量等价。
+
+保留显式空、canonical环境映射与SystemEnvironment别名、profile顺序与多文档后者覆盖、嵌套key/default、未使用default不求值、反斜线转义和循环/缺失拒绝。深度64/结果1MiB为显式资源边界。来源和值均私有复制，错误/JSON/格式化脱敏，100路各10次读取无串扰。
+
+Alternatives considered：在运行时调用Java（违背独立Go）；假装支持任意YAML/外部import却静默忽略；把dotenv提前参与激活（改变原装配顺序）；先合并所有来源（丢优先级与列表边界）；按未知profile直接默认combined而丢弃合法激活。任意外部ConfigData位置/导入/profile分组失败关闭，完整Binder/应用接线仍待完成。

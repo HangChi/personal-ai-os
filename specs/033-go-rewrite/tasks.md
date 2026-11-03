@@ -37,6 +37,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [x] T104d 显式绑定已解析canonical字符串map到Auth/RateLimit/AgentExecution三类配置；真实Binder.bindOrCreate的241项对照覆盖注解默认/空值/整数Unicode与hex/正值校验/时长，4项Java超Go范围明确拒绝。验证凭据脱敏/副本、1000次并发及真实BCrypt锁定/本地桶接线；不读取环境/展开占位符或装入主应用，T104保持开放。
 - [x] T104e 显式MCP动态server/map/list/set与多来源覆盖绑定；新增157项真实Binder结果，四类配置共398项。覆盖.env原场景、下划线透传键实际变点分键、列表整体覆盖/空项/缺口、非正时长默认、全部容器副本/脱敏与1000次并发。不启动MCP命令/协议或加载ConfigData，完整T104与P7运行时继续开放。
 - [x] T104f 补齐其余Plan/Calendar/AI/Context/Protection/App/Knowledge/Memory八类canonical绑定，全部12类共1475项真实Binder对照；保留primitive零值、空时长不创建nested、归一化前Java时长范围、long/Double语法、非有限值、集合与凭据/提示脱敏和副本。未完成ConfigData/profile/全来源接线，T104保持开放。
+- [x] T104g 从原7 YAML/17文档生成带来源哈希的内置基线，提供显式来源组合/profile顺序/占位符解析；133场景×189属性直接对照真实Boot ConfigData。区分dotenv晚于ConfigData导致的profile文件不重载，保留缺省/空值/别名冲突/循环拒绝/转义；不读文件或宿主变量，外部导入/位置/profile分组明确拒绝。完整Binder到应用与外部配置能力仍属T104。
 - [ ] T105 实现认证/失败锁定/会话/轮换/注销/me/CSRF/Cookie/匿名白名单，移植 Auth*、SharedSession、Security 与生产验证相关断言。
 - [x] T105a 移植单用户凭据、BCrypt 2a/cost10、Java strip/空值与失败锁定；固定真实 Java 编码器的 74 项 Unicode/NUL/长度边界对照，串行化并发校验。会话/CSRF/配置与应用接线仍属 T105。
 - [x] T105b 实现原子本地会话/过期续期/登录轮换/注销/me/CSRF/Cookie 和可组合 HTTP 安全链；真实回环 CookieJar 验证登录前后令牌/旧 ID 失效，补充表单令牌/匿名/错误/路径边界。Redis/完整框架差分/应用接线仍属 T105。

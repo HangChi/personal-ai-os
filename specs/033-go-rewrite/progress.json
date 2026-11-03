@@ -68,9 +68,15 @@
       "evidence": [
         "backend-go/internal/platform/config/dotenv.go",
         "backend-go/internal/platform/config/dotenv_test.go",
-        "backend-go/cmd/personalos/main.go"
+        "backend-go/cmd/personalos/main.go",
+        "backend-go/internal/platform/config/properties.go",
+        "backend-go/internal/platform/config/properties_test.go",
+        "backend-go/internal/platform/config/baseline.json",
+        "backend-go/internal/platform/config/testdata/java-config-data.json",
+        "scripts/migration/ConfigDataOracle.java",
+        "scripts/migration/java_config_data_fixture.py"
       ],
-      "note": "Java 字面量解析/查找/顺序/来源优先级已移植并单测；Go 默认不读文件，需显式开启。Spring relaxed binding/动态 MCP 装配与完整配置仍未迁移，不能 verified。"
+      "note": ".env解析/显式查找与优先级已有测试；新增真实ConfigData133场景×189属性验证dotenv晚于profile发现、系统别名/多文档/占位符。诊断入口旧窄加载尚未切换，任意外部ConfigData和完整应用接线仍待完成。"
     },
     "file:backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java": {
       "status": "in_progress",

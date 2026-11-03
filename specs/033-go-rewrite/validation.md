@@ -266,6 +266,14 @@ Go逐项核对完整record结果，覆盖缺省注解/显式空/零负值/32位�
 
 全量14包race通过（/private/tmp/personal-ai-os-go-module-binding-all.log）、integration标签vet/build通过；全部配置索引重生成、1093文件基线check与diff检查通过。辅助方法覆盖Calendar有效前瞻/查询限额、Knowledge扩展名/TopK、Protection静态工厂与Binder缺省差异；100路各10次验证集合/指针/来源修改不串扰，错误与提示/标识格式化脱敏。此证据只证明已解析canonical map的record绑定，不是全量ConfigData/profile/应用装配，P1保持开放。
 
+## 增量：真实ConfigData来源与占位符（T104g）
+
+先加入测试确认LoadBaselineProperties/PropertyOptions不存在（/private/tmp/personal-ai-os-go-properties-red.log），再实现。脚本真实ConfigDataEnvironmentPostProcessor.applyTo只加载Git原七YAML到唯一临时目录；初版在ConfigData前注入dotenv，复查原处理器无Ordered/Order后改为实际后置顺序，重新生成133场景/189属性/17文档结果。最终默认重生成完全一致，内置资源含原文件SHA-256。
+
+Go逐项覆盖全部查询结果/profile/defaults、空值、环境别名冲突、后激活profile/后文档优先、dotenv不能重载profile、嵌套key/default、未用default不求值、转义、循环与缺失。定向三轮race通过（/private/tmp/personal-ai-os-go-config-data-stress.log）；全量14包race/build通过（/private/tmp/personal-ai-os-go-config-data-all.log），integration vet、Python10项、基线check/diff通过。100路各10次读取、输入map/profiles副本、格式化/JSON/错误脱敏、非法UTF-8和未支持外部ConfigData明确拒绝通过。
+
+此为显式map与内置固定基线的来源解析，不读取真实.env，不连接设施，不执行任意外部YAML/导入/profile分组，尚未替换诊断入口的窄配置加载或完成全record到应用接线。完整T104/T109继续开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。
