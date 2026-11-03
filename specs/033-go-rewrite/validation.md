@@ -106,6 +106,18 @@ HTTP 测试覆盖原 Java 四项断言及编码、单次消费、请求 ID 先�
 
 只迁移 DatabaseCoordination 的 consume 及原测试对应限流场景，不把 acquire/renew/Lease/fence/延迟释放或 API 预留标成已实现。Redis/指标系统/应用装配、断网与提交不确定故障、完整 Java/Go 服务差分待完成；T107 和 P1 保持未完成。
 
+## 增量：P1 原 SQL 全量隔离重放（T103a）
+
+先写目录测试并确认缺少 LoadVersioned 时编译失败，再实现显式数字排序、连续唯一、原字节哈希与格式拒绝；对照固定 Java inventory 的全部 42 个文件及 SHA-256，通过 race 单测。没有复制或改写原 SQL。
+
+执行 python3 scripts/migration/run_go_postgres_tests.py，数据库基础、共享限流和迁移三个包全部 integration/race 通过。migration 在自己创建的 schema 中分别从 V1 到 V42 重放空库和合成历史数据两种场景，每个原文件一个事务，保留 PL/pgSQL 原函数体。核对最终 39 张表、13 个用户触发器、四个扩展、两处 vector(1024) 和两个 HNSW vector_cosine_ops 索引。
+
+实际断言还覆盖 CHECK/唯一/FK/级联、单会话 RUNNING 部分唯一与 WAITING_USER、向量余弦查询/错误维度拒绝；文档来源初始化、修订/审查任务重试归零、搜索 claim/重试重置、review/search 唤醒 Outbox、候选 generation 更新和失败事务不残留业务/唤醒记录。合成 V16/V20 数据验证 V17 UTF-8 记忆哈希、V21/V22 模型配置搬迁、V23 模型清单。测试 schema/子进程/容器均清理。详细日志：/private/tmp/personal-ai-os-go-postgres-tests.log。
+
+阶段结束再次执行全量八个 Go 包 race 单测、含 integration 标签的 go vet、命令构建、go mod verify，全部通过；五种角色真实进程冒烟再次通过。四项 Python 索引测试、1,093 文件基线、Markdown 本地链接及 git diff --check 通过；Docker 标签检查没有残留测试容器。check-complete 仍按预期拒绝全部 2,438 个未 verified 项。
+
+此处没有真实 Flyway 执行、历史/CRC32/锁验证、存量备份恢复或完整 Java/Go 结构/业务差分。目录 SHA-256 不是 Flyway checksum；全部 SQL 仍仅 in_progress，T103/P1 与发布门禁保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

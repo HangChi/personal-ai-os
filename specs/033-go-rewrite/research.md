@@ -92,3 +92,11 @@ Decision：2026-11-03 已通过 Go 官方模块代理查询并下载 pgx/v5 v5.1
 验收采用现有 Compose 同系列的 pgvector/pgvector pg17 镜像，固定已验证摘要 sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d。脚本创建独立容器、tmpfs 数据目录、随机密码与回环端口，并在 finally 中仅清理自身容器。不读取 .env、不使用现有数据库、不执行原 SQL 或伪造 Flyway 历史。应用尚不装配数据库，readyz 继续 503。
 
 Alternatives considered：直接 ParseConfig 用户 DSN（隐式来源可能越过迁移隔离）；默认非回环明文连接或 require/prefer（未验证的降级）；同时引入 pgxpool（重复现有连接池边界）。真实 TLS 握手、最小权限和全部迁移重放仍单列验收。
+
+## R-011 原 SQL 目录与重放先于生产迁移器
+
+Decision：Go 只提供显式 fs.FS 的单层整数版本目录，失败关闭地校验 V1..Vn 顺序/唯一/连续、原字节 SHA-256 和编码；当前不执行生产迁移，不复制或改写 Java SQL，不把 SHA-256 当 Flyway CRC32。全部原文件逐一对照固定基线 inventory。
+
+在专用 tmpfs PostgreSQL/pgvector 中，用独立 schema、每迁移一个事务和事务内 search_path 重放完整文件，不按分号拆开 PL/pgSQL。空 schema 和插入虚构历史记忆/模型配置的升级两种场景均跑 V1–V42，测试后清理各自 schema。不生成 Flyway 历史；历史/锁/执行权与备份恢复继续独立验收。
+
+Alternatives considered：复制 DDL（两份可能漂移）；只检查文件存在（遗漏执行/排序/编码/函数体问题）；创建看似成功的 Flyway 历史（无法证明真实 checksum 和兼容）；以合成数据冒充用户备份恢复（证据不成立）。

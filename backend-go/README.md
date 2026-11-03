@@ -9,6 +9,7 @@
 - `internal/platform/api`：响应信封、19 个 Java 错误码及 HTTP 映射、两类分页与 Java offset 溢出边界。
 - `internal/platform/config`：五种角色/端口、显式开启的 .env 解析/父目录查找、系统环境/profile/文件优先级、Java 生产安全校验与未完成安全能力的启动拒绝。
 - `internal/platform/database`：显式 pgx 连接器、连接池与事务生命周期、获取超时/取消、UTC 类型与错误脱敏；已通过一次性 PostgreSQL 真实集成测试，尚未接入应用。边界见 [说明](internal/platform/database/README.md)。
+- `internal/platform/migration`：原 SQL 目录的数字排序/完整性校验，全部 42 个原迁移已通过空库/合成数据隔离重放；生产执行器/Flyway 历史与恢复待完成，见 [说明](internal/platform/migration/README.md)。
 - `internal/platform/ratelimit`：本地令牌桶、PostgreSQL 原子共享桶、后端选择/故障策略和指标回调；数据库跨池/跨进程竞争已验，Redis 与应用接线待完成，见 [边界说明](internal/platform/ratelimit/README.md)。
 - `internal/platform/http`：请求 ID 校验/回显/context、模型请求路径匹配、限流拒绝 JSON 与日志脱敏；限流尚未接入诊断应用。
 - `internal/app`：迁移诊断端点、未知 API 明确返回 404、Worker 业务入口隔离。

@@ -35,4 +35,4 @@
 
 从仓库根目录运行 `python3 scripts/migration/run_go_postgres_tests.py`，仅创建和清理自己的临时 PostgreSQL/pgvector 容器：固定镜像摘要、tmpfs 数据目录、无持久卷、随机回环端口、随机测试密码，不读取 .env 或使用现有 Compose。
 
-待完成：完整数据库配置、真实 TLS/最小权限角色、应用装配、42 个原 SQL 的隔离重放、存量库恢复、跨连接锁/故障回归、生产优雅关闭。测试容器可用不等于已验收 pgvector 或 Flyway。
+全部 42 个原 SQL 的空库/合成数据重放与 pgvector/schema/触发器测试另见 [migration](../migration/README.md)。待完成：完整数据库配置、真实 TLS/最小权限角色、应用装配、真实 Flyway 历史/锁与存量备份恢复、跨连接故障回归、生产优雅关闭。
