@@ -18,7 +18,7 @@ public class SearchConfig {
             KnowledgeProperties properties,ObjectMapper mapper) {
         return new OpenSearchGateway(endpoint,index,user,password,properties.embeddingDimensions(),mapper);
     }
-    @Bean SearchProjection searchProjection(JdbcTemplate db,VectorStoreInspector inspector,OpenSearchGateway gateway,MeterRegistry meters) {
-        return new SearchProjection(db,inspector,gateway,meters);
+    @Bean SearchProjection searchProjection(JdbcTemplate db,VectorStoreInspector inspector,OpenSearchGateway gateway,MeterRegistry meters,com.personalos.common.config.RuntimeRole role) {
+        return new SearchProjection(db,inspector,gateway,meters,role);
     }
 }
