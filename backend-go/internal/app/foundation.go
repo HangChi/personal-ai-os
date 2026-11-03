@@ -15,6 +15,7 @@ import (
 	"personal-ai-os/backend-go/internal/platform/coordination"
 	"personal-ai-os/backend-go/internal/platform/database"
 	"personal-ai-os/backend-go/internal/platform/health"
+	httpmiddleware "personal-ai-os/backend-go/internal/platform/http"
 	"personal-ai-os/backend-go/internal/platform/migration"
 	"personal-ai-os/backend-go/internal/platform/modelgate"
 	"personal-ai-os/backend-go/internal/platform/ratelimit"
@@ -72,11 +73,25 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
+	if err := properties.ValidateFoundationExtensions(); err != nil {
+		return nil, err
+	}
+	if _, err := properties.Logging(); err != nil {
+		return nil, err
+	}
 	settings, err := properties.Foundation()
 	if err != nil {
 		return nil, err
 	}
 	actuatorProperties, err := properties.Actuator()
+	if err != nil {
+		return nil, err
+	}
+	multipart, err := properties.Multipart()
+	if err != nil {
+		return nil, err
+	}
+	sessionProperties, err := properties.Session(settings.SharedSession)
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +123,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 	var sessions auth.SessionStore
 	if settings.SharedSession {
-		sessions, err = auth.NewRedisStore(options.SessionRedis, settings.SessionNamespace, auth.DefaultSessionTimeout)
+		sessions, err = auth.NewRedisStore(options.SessionRedis, settings.SessionNamespace, sessionProperties.Timeout)
 	} else {
-		sessions, err = auth.NewMemoryStore(auth.DefaultSessionTimeout)
+		sessions, err = auth.NewMemoryStore(sessionProperties.Timeout)
 	}
 	if err != nil {
 		return nil, err
@@ -122,7 +137,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			return nil, err
 		}
 	}
-	security, err := auth.NewHTTP(service, sessions, auth.HTTPOptions{CSRFEnabled: settings.Security.CSRFEnabled, CookieSecure: settings.Security.CookieSecure, CookieName: sessionCookie(settings.SharedSession)}, logger)
+	security, err := auth.NewHTTP(service, sessions, auth.HTTPOptions{CSRFEnabled: settings.Security.CSRFEnabled, CookieSecure: settings.Security.CookieSecure, Cookie: &sessionProperties.Cookie, Multipart: httpmiddleware.MultipartLimits{MaxFileBytes: multipart.MaxFileBytes, MaxRequestBytes: multipart.MaxRequestBytes, TempDirectory: multipart.Location}}, logger)
 	if err != nil {
 		return nil, err
 	}

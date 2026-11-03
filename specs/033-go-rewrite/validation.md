@@ -374,3 +374,12 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 ## 证据边界
 
 源码哈希和词法索引能防止基线文件静默缺席或漂移，不能证明 Go 方法行为与 Java 完全一致。必须结合代码审查、逐项测试替代、真实数据升级/恢复、故障注入与前端验收，才能将条目标记为 verified。
+# P1收口批次：上传生命周期与恢复库装配（2026-11-03）
+
+- `python3 scripts/migration/run_go_postgres_tests.py --tls --backup --package app`：真实TLS/原42迁移/合成pg_dump恢复，全app race通过85.387s，新增恢复库五角色启动/健康角色隔离/租约/关闭全部通过，临时容器已清理。首次完整跑遇到双监听器关闭测试5s期限；该测试改为先关闭自身客户端空闲连接，再发起Shutdown，未扩大期限或删除退出断言。
+- 生产auth链为整个请求持有一次multipart解析，正文CSRF/下游共用结果；请求成功、token拒绝、超限、panic清理测试通过。已移除独立原生ParseMultipartForm，避免吞正文及两套大小上限。
+- location仅接受显式存在的绝对目录；threshold非0、关闭multipart、延迟/strict扩展未实现时明确拒绝。文件名仍仅元数据，原Java/前端/SQL未改。
+- 本地Session timeout（无单位秒）及Cookie name/path/domain/http-only/same-site接入Foundation与注销；共享模式保持原固定30分钟/SESSION/Lax/HttpOnly，显式Servlet会话扩展拒绝而不假装生效。
+- `go test -race ./internal/platform/auth ./internal/platform/config ./internal/app`通过；额外配置拒绝清单测试继续独立维护。请求ID到实际Foundation执行器链新增断言将纳入最后真实回归。
+- 父任务继续开放，日志/HTTP观测与78处配置处置清单完成后再统一验收。
+

@@ -22,6 +22,8 @@ type HTTPOptions struct {
 	CookieSecure bool
 	// 本地容器使用 JSESSIONID，共享会话使用 SESSION；值格式为 Go 自己的随机 ID。
 	CookieName string
+	Cookie     *http.Cookie
+	Multipart  httpmiddleware.MultipartLimits
 }
 
 type HTTP struct {
@@ -38,8 +40,18 @@ func NewHTTP(service *Service, store SessionStore, options HTTPOptions, logger *
 	if options.CookieName == "" {
 		options.CookieName = "JSESSIONID"
 	}
-	if options.CookieName != "JSESSIONID" && options.CookieName != "SESSION" {
+	if options.Cookie != nil {
+		cookie := *options.Cookie
+		if err := cookie.Valid(); err != nil || cookie.Name == "" || cookie.Path == "" || cookie.Value != "" || cookie.MaxAge != 0 || !cookie.Expires.IsZero() {
+			return nil, errors.New("会话Cookie配置无效")
+		}
+		options.Cookie = &cookie
+		options.CookieName = cookie.Name
+	} else if options.CookieName != "JSESSIONID" && options.CookieName != "SESSION" {
 		return nil, errors.New("不支持的会话 Cookie 名称")
+	}
+	if options.Multipart.MaxFileBytes == 0 && options.Multipart.MaxRequestBytes == 0 {
+		options.Multipart = httpmiddleware.MultipartLimits{MaxFileBytes: 8 << 20, MaxRequestBytes: 10 << 20}
 	}
 	return &HTTP{service: service, store: store, options: options, logger: logger}, nil
 }
@@ -65,7 +77,7 @@ func (layer *HTTP) Handler(next http.Handler) http.Handler {
 	if next == nil {
 		panic("认证下游处理器不能为空")
 	}
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return httpmiddleware.MultipartLifecycle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate")
 		w.Header().Set("Pragma", "no-cache")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -89,9 +101,6 @@ func (layer *HTTP) Handler(next http.Handler) http.Handler {
 				return
 			}
 			presented := csrfInput(w, r)
-			if r.MultipartForm != nil {
-				defer r.MultipartForm.RemoveAll()
-			}
 			if subtle.ConstantTimeCompare([]byte(session.state.CSRFToken), []byte(presented)) != 1 {
 				layer.writeError(w, api.Forbidden, "")
 				return
@@ -104,11 +113,17 @@ func (layer *HTTP) Handler(next http.Handler) http.Handler {
 		if layer.service.Enabled() && session.state.Username != "" {
 			r = r.WithContext(context.WithValue(r.Context(), principalKey{}, session.state.Username))
 		}
+		if httpmiddleware.IsMultipart(r) {
+			if _, err := httpmiddleware.RequestMultipart(w, r); err != nil {
+				httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return err }, layer.logger).ServeHTTP(w, r)
+				return
+			}
+		}
 		if layer.dispatch(w, r, &session) {
 			return
 		}
 		next.ServeHTTP(w, r)
-	})
+	}), layer.options.Multipart)
 }
 
 func (layer *HTTP) load(r *http.Request) (requestSession, error) {
@@ -191,6 +206,11 @@ func (layer *HTTP) ensureCSRF(w http.ResponseWriter, r *http.Request, session *r
 func (layer *HTTP) cookie(w http.ResponseWriter, id string, remove bool) {
 	cookie := &http.Cookie{Name: layer.options.CookieName, Value: id, Path: "/", HttpOnly: true,
 		Secure: layer.options.CookieSecure, SameSite: http.SameSiteLaxMode}
+	if layer.options.Cookie != nil {
+		*cookie = *layer.options.Cookie
+		cookie.Value = id
+		cookie.Secure = layer.options.CookieSecure
+	}
 	if remove {
 		cookie.Value = ""
 		cookie.MaxAge = -1
@@ -411,13 +431,20 @@ func csrfInput(w http.ResponseWriter, r *http.Request) string {
 	}
 	media, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if media == "application/x-www-form-urlencoded" || media == "multipart/form-data" {
-		r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
 		if media == "multipart/form-data" {
-			if err := r.ParseMultipartForm(1 << 20); err != nil {
+			upload, err := httpmiddleware.RequestMultipart(w, r)
+			if err != nil {
 				return ""
 			}
-		} else if err := r.ParseForm(); err != nil {
-			return ""
+			if values := upload.Values["_csrf"]; len(values) > 0 && values[0] != "" {
+				return values[0]
+			}
+			return r.URL.Query().Get("_csrf")
+		} else {
+			r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
+			if err := r.ParseForm(); err != nil {
+				return ""
+			}
 		}
 		if token := r.PostForm.Get("_csrf"); token != "" {
 			return token

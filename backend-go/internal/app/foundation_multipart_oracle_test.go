@@ -26,11 +26,10 @@ func TestFoundationMultipartRealServletOracle(t *testing.T) {
 		if !strings.HasPrefix(r.URL.Path, "/api/v1/fixture-") {
 			return httpmiddleware.NotFound()
 		}
-		upload, err := httpmiddleware.ParseMultipart(w, r, httpmiddleware.MultipartLimits{MaxFileBytes: 64, MaxRequestBytes: 1024, TempDirectory: directory})
+		upload, err := httpmiddleware.RequestMultipart(w, r)
 		if err != nil {
 			return err
 		}
-		defer upload.Close()
 		files := upload.Files["file"]
 		if len(files) == 0 {
 			return httpmiddleware.MissingParameter("file")

@@ -30,6 +30,10 @@ import (
 )
 
 func fixtureAppConnector(t *testing.T, name string) driver.Connector {
+	return fixtureAppDatabaseConnector(t, name, false)
+}
+
+func fixtureAppDatabaseConnector(t *testing.T, name string, restored bool) driver.Connector {
 	t.Helper()
 	if os.Getenv("GO_TEST_POSTGRES") != "disposable" || os.Getenv("GO_TEST_FLYWAY") != "disposable" {
 		t.Skip("仅接受已执行真实Flyway的独立临时库")
@@ -43,6 +47,12 @@ func fixtureAppConnector(t *testing.T, name string) driver.Connector {
 	}
 	if o.Host != "127.0.0.1" || o.Database != "personalos_go_test" || o.Username != "go_fixture" {
 		t.Fatal("只允许专用临时库")
+	}
+	if restored {
+		if os.Getenv("GO_TEST_BACKUP") != "disposable" {
+			t.Skip("仅接受本次runner恢复的合成库")
+		}
+		o.Database = "personalos_go_restore"
 	}
 	o.Port, o.SSLMode, o.RootCert = port, os.Getenv("GO_TEST_POSTGRES_SSL_MODE"), os.Getenv("GO_TEST_POSTGRES_ROOT_CERT")
 	o.ApplicationName = name
@@ -369,6 +379,8 @@ func TestFoundationPostgresManagementAndListeners(t *testing.T) {
 	if !strings.Contains(string(text), `personalos_go_database_connections{state="max"} 4`) || strings.Contains(string(text), "fixture-password") {
 		t.Fatal("指标缺少池上限或泄露凭据")
 	}
+	// 关闭本测试客户端的空闲连接后再请求服务退出，避免transport预连与Shutdown竞争。
+	client.CloseIdleConnections()
 	cancel()
 	select {
 	case err := <-done:

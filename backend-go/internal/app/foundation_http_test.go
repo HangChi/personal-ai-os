@@ -43,7 +43,7 @@ func fixtureFoundationProbeHandler(t *testing.T, role config.Role, secured, csrf
 	if err != nil {
 		t.Fatal(err)
 	}
-	layer, err := auth.NewHTTP(service, store, auth.HTTPOptions{CSRFEnabled: csrf}, logger)
+	layer, err := auth.NewHTTP(service, store, auth.HTTPOptions{CSRFEnabled: csrf, Multipart: httpmiddleware.MultipartLimits{MaxFileBytes: 64, MaxRequestBytes: 1024}}, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
