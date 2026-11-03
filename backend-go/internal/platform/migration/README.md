@@ -2,7 +2,7 @@
 
 `LoadVersioned(fs.FS)` 只读取显式目录，按整数版本排序并计算原字节 SHA-256。当前支持原 Java 的单层 V1..Vn 文件；重复、缺号、非整数版本、repeatable/undo、符号链接/子目录、不可读、空白或非法 UTF-8/NUL 全部失败，不返回部分成功结果。非 SQL 普通文件可忽略。SQL 不拆分、不插值、不改换行或编码。
 
-目录单测逐一对照固定 Java 基线 cb5d694 的 inventory.json，必须包含全部 42 个原文件且哈希一致。当前不复制 SQL 到 Go，也没有生产迁移执行器或应用启动装配。SHA-256 是来源完整性证据，**不是 Flyway checksum**。
+目录单测逐一对照固定 Java 基线 cb5d694 的 inventory.json，必须包含全部 42 个原文件且哈希一致。当前不复制 SQL 到 Go，也没有Go生产迁移执行器或应用启动装配。SHA-256 是来源完整性证据，**不是 Flyway checksum**。
 
 ## 真实隔离验收
 
@@ -23,4 +23,17 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 ## 待完成
 
-生产迁移执行权与角色、真实 Flyway 历史/CRC32/校验失败/迁移锁、存量备份恢复、Java Flyway 与 Go 重放的完整结构差分仍未完成。合成历史数据不是用户备份。以上 schema/触发器断言不代表业务仓储、索引 Worker、消息发布或完整模块已迁移；T103 与 P1 保持未完成。
+生产部署迁移角色、未支持的历史标记、迁移锁竞争、存量备份恢复、Java Flyway 与 Go 重放的完整结构差分仍未完成。合成历史数据不是用户备份。以上 schema/触发器断言不代表业务仓储、索引 Worker、消息发布或完整模块已迁移；T103 与 P1 保持未完成。
+
+## 真实 Flyway 历史与只读校验
+
+```bash
+python3 scripts/migration/java_flyway_fixture.py
+python3 scripts/migration/run_go_postgres_tests.py --tls --flyway --package migration
+```
+
+前者只离线执行基线Flyway的ChecksumCalculator，核对已提交42原脚本/12合成边界快照。后者仅在自己创建的临时集群使用基线Flyway12.4.0真实执行42迁移、自校验和二次零执行；不是Go伪造历史。需已有基线Maven依赖缓存及JDK，不下载新依赖。
+
+FlywayChecksum保留UTF-8/空白/注释，忽略CR/LF和开头单个BOM，返回有符号CRC32；原字节SHA-256仍是独立来源校验。NewHistoryValidator接收显式Pool/原目录/schema，只读repeatable-read检查标准历史表的成功SQL记录、顺序/整数版本/描述/脚本/checksum和数量；缺表/少项/多项/失败/null/checksum不符均失败，错误脱敏，不repair/clean/baseline。未支持的BASELINE/SCHEMA/repeatable/自定义类型也拒绝，不能据此声称原baseline-on-migrate标记兼容。
+
+部署仍由Java或独立Flyway步骤独占迁移，之后Go校验。历史一致不等于实际DDL完全一致，不提供并发DDL授权或代替迁移锁；完整结构差分/恢复/锁竞争仍待验收。

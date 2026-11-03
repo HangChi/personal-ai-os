@@ -196,6 +196,14 @@ run_go_postgres_tests.py --package health 和 --tls --package health 均通过�
 
 实际channel同步验证：首任务运行、32任务排队、队满扩到第二执行单元、第35个任务拒绝；Shutdown拒绝新任务且Wait期限不假报完成，排空34已接受任务。Stop取消活跃任务/丢10排队项且幂等；错误/panic不泄露详情/中断后续；全体空闲退出后可重启，1000路并发提交与并发Shutdown没有漏接受任务。请求ID按提交时捕获、下一个空ID无残留；仅保留执行器取消/期限，不复制原HTTP取消/身份值。Java Reactor调度器以显式Gocontext替代，真实流式/摘要/记忆与应用生命周期调用点仍未装配，T107/T108保持开放。
 
+## 增量：真实 Flyway 与 Go 只读历史（T103b）
+
+Java基线BOM实际缓存的Flyway12.4.0/JDBC42.7.13，由独立FlywayOracle在本次临时集群实际执行V1–V42，Flyway validate通过、二次migrate执行数0。run_go_postgres_tests.py --flyway --package migration 及 --tls --flyway --package migration 均通过：同时复验原空schema/合成历史重放与新只读历史校验。Java程序不启动应用、不读.env或现有服务。
+
+先写Go测试确认待实现API编译失败，再实现CRC32/只读repeatable-read校验。直接Java ChecksumCalculator固定42原脚本和12合成边界（CR/LF/CRLF/BOM/Unicode/6000字长行），Go逐项相同；java_flyway_fixture.py重复运行快照一致。真实历史42行校验通过，调用方目录切片修改不影响预期，原历史全字段摘要前后一致。副本中缺失/失败/脚本/描述/版本/checksum/null/BASELINE/未来版本全部拒绝，缺表和预取消保留可识别原因，不写repair/baseline。日志 /private/tmp/personal-ai-os-go-flyway-history-tls.log；首次夹具函数名引用错误导致编译失败，补充专用fixture后通过且失败容器清理。
+
+全量十四包race、含integration标签vet、四项Python索引单测通过，日志 /private/tmp/personal-ai-os-go-stage-history-race.log。真实锁竞争、完整结构差分/存量备份恢复和baseline标记兼容未完成；Go尚未装配应用，T103/P1继续开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

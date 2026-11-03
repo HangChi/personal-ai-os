@@ -172,3 +172,13 @@ Decision：用Go受锁保护的有界队列和按需goroutine移植ContextTaskCo
 没有线程本地MDC或全局调度钩子；CopyRequestID只把提交context中的安全诊断ID复制到执行器生命周期context，不保留HTTP身份、Cookie、其他值或断连取消。已有Java主源码仅写入requestId，其他执行身份仍需业务显式传入。每次任务上下文独立，结束即释放。错误/panic只记通用文案和ID，继续队列，不重试；这是Go防止单goroutine panic终止进程的显式约定。
 
 Alternatives considered：无限go语句（模型慢时无限堆积）；满队列立即拒绝但不扩至2（改变Java策略）；context.WithoutCancel直接保留整个请求值（长期保留身份/敏感状态）；共享可变全局请求ID（串请求）；强杀goroutine（Go不支持安全强杀）。该执行器仅供原本尽力而为轮末工作，不可替代持久化Run/数据库任务恢复协议。
+
+## R-021 Flyway 执行权与只读历史校验
+
+Decision：保留Java/独立迁移步骤为唯一DDL执行者，Go只校验，不migrate/baseline/repair/clean，也不伪造历史或争抢迁移锁。使用基线Boot4.1.1 BOM实际Flyway12.4.0/JDBC42.7.13和已有离线依赖，独立Java程序只连接脚本新建临时集群，完整执行原42迁移、Flyway validate和二次零执行。没有启动Spring应用或读取.env。
+
+离线直接调用该Flyway的ChecksumCalculator生成42原脚本与12合成边界，GoCRC32独立实现并逐一核对。忽略CR/LF与开头单个BOM，其他空白/Unicode/注释保留，结果为有符号32位；原字节SHA-256仍单独用于来源完整性。Go在只读repeatable-read事务读显式schema下标准flyway_schema_history，精确校验数量、成功SQL类型、递增rank/整数版本、description/script与checksum，返回值仅完整成功。限制最多目录数+1行，错误不回显历史文本或驱动消息。
+
+BASELINE/SCHEMA/repeatable/自定义类型、乱序或超出目录的历史当前失败关闭，不将未验证标记直接接受。原Java baseline-on-migrate场景仍待独立兼容；历史一致也不能证明实际DDL未遭人为修改，需要完整schema差分与恢复验收。上线流程必须先独占完成迁移，Go校验不提供并发DDL授权。
+
+Alternatives considered：用SHA-256代替Flyway checksum；读取版本号存在便通过；自动repair或写入看似成功历史；Go启动时与Java双执行器竞争；空库重放成功便声称存量备份兼容。初版集成引用不存在的fixture函数导致编译失败，已补充显式隔离连接夹具后重跑成功。
