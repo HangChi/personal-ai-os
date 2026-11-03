@@ -110,6 +110,11 @@ func TestPostgresOriginalMigrationsIntegration(t *testing.T) {
 					t.Fatal("原迁移失败，停止后续重放")
 				}
 			}
+			if os.Getenv("GO_TEST_FLYWAY") == "disposable" {
+				t.Run("full schema definition diff with real Java Flyway", func(t *testing.T) {
+					assertSchemaMatchesJavaFlyway(t, pool, ctx, schema)
+				})
+			}
 			t.Run("complete schema and indexes", func(t *testing.T) {
 				err := inSchema(func(tx *sql.Tx) error {
 					expectStrings := func(query string, expected []string, args ...any) error {

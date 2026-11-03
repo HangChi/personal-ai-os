@@ -204,6 +204,12 @@ Java基线BOM实际缓存的Flyway12.4.0/JDBC42.7.13，由独立FlywayOracle在�
 
 全量十四包race、含integration标签vet、四项Python索引单测通过，日志 /private/tmp/personal-ai-os-go-stage-history-race.log。真实锁竞争、完整结构差分/存量备份恢复和baseline标记兼容未完成；Go尚未装配应用，T103/P1继续开放。
 
+## 增量：真实 Flyway 竞争与 schema 定义差分（T103c）
+
+run_go_postgres_tests.py --tls --flyway --package migration 通过。两个独立Flyway实例通过latch同时开始，真实竞争迁移锁，总执行数42，最终validate和再次零执行通过。Go依旧只读历史、不接管迁移执行权。
+
+Java真实public和Go空schema/合成升级schema的七类定义全部逐项相同：39表、287列、116约束、84索引、10序列、13用户触发器、9自有函数。采集包含列类型/默认值/排序/nullable、CHECK/FK/唯一、索引/序列/触发器/函数定义；排除Flyway历史/扩展函数，仅归一化当前schema限定符。每个Go副本实际加列的反例均被比较器检测，之后删除。日志 /private/tmp/personal-ai-os-go-flyway-schema-tls.log；含integration标签vet通过，容器清理。此处未比较数据/部署属主ACL/注释或备份恢复，T103继续开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

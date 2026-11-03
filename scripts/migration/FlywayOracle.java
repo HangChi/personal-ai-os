@@ -3,6 +3,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.internal.resolver.ChecksumCalculator;
 import org.flywaydb.core.internal.resource.StringResource;
@@ -44,9 +47,24 @@ public final class FlywayOracle {
         var flyway = Flyway.configure().dataSource(source)
                 .locations("filesystem:" + Path.of(args[1]).toAbsolutePath())
                 .defaultSchema("public").baselineOnMigrate(true).cleanDisabled(true).load();
-        if (flyway.migrate().migrationsExecuted != 42) throw new IllegalStateException("未执行全部42原迁移");
+        var start = new CountDownLatch(1);
+        try (var workers = Executors.newFixedThreadPool(2)) {
+            java.util.concurrent.Callable<Integer> migrate = () -> {
+                start.await();
+                return Flyway.configure().dataSource(source)
+                        .locations("filesystem:" + Path.of(args[1]).toAbsolutePath())
+                        .defaultSchema("public").baselineOnMigrate(true).cleanDisabled(true).load()
+                        .migrate().migrationsExecuted;
+            };
+            var first = workers.submit(migrate);
+            var second = workers.submit(migrate);
+            start.countDown();
+            if (first.get(60, TimeUnit.SECONDS) + second.get(60, TimeUnit.SECONDS) != 42) {
+                throw new IllegalStateException("两个迁移执行器没有合计恰好执行42迁移");
+            }
+        }
         flyway.validate();
         if (flyway.migrate().migrationsExecuted != 0) throw new IllegalStateException("第二次执行未保持幂等");
-        System.out.println("真实 Flyway 42 迁移/validate/二次零执行通过");
+        System.out.println("真实 Flyway 双执行器锁竞争/合计42迁移/validate/再次零执行通过");
     }
 }

@@ -23,7 +23,7 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 ## 待完成
 
-生产部署迁移角色、未支持的历史标记、迁移锁竞争、存量备份恢复、Java Flyway 与 Go 重放的完整结构差分仍未完成。合成历史数据不是用户备份。以上 schema/触发器断言不代表业务仓储、索引 Worker、消息发布或完整模块已迁移；T103 与 P1 保持未完成。
+生产部署迁移角色、未支持的历史标记、存量备份恢复、对象属主/ACL/注释等结构边界仍未完成。合成历史数据不是用户备份。以上 schema/触发器断言不代表业务仓储、索引 Worker、消息发布或完整模块已迁移；T103 与 P1 保持未完成。
 
 ## 真实 Flyway 历史与只读校验
 
@@ -37,3 +37,6 @@ python3 scripts/migration/run_go_postgres_tests.py --tls --flyway --package migr
 FlywayChecksum保留UTF-8/空白/注释，忽略CR/LF和开头单个BOM，返回有符号CRC32；原字节SHA-256仍是独立来源校验。NewHistoryValidator接收显式Pool/原目录/schema，只读repeatable-read检查标准历史表的成功SQL记录、顺序/整数版本/描述/脚本/checksum和数量；缺表/少项/多项/失败/null/checksum不符均失败，错误脱敏，不repair/clean/baseline。未支持的BASELINE/SCHEMA/repeatable/自定义类型也拒绝，不能据此声称原baseline-on-migrate标记兼容。
 
 部署仍由Java或独立Flyway步骤独占迁移，之后Go校验。历史一致不等于实际DDL完全一致，不提供并发DDL授权或代替迁移锁；完整结构差分/恢复/锁竞争仍待验收。
+
+
+最新 --flyway 夹具由两个独立Flyway实例同时竞争，合计执行42迁移，validate/再次零执行通过。Go空重放与合成升级均和Java真实public比较七类pg_catalog定义，39表/287列/116约束/84索引/10序列/13触发器/9自有函数逐项一致；额外列的真实DDL反例被发现。比较只归一化schema限定符，排除Flyway自身历史/扩展拥有函数，不掩盖默认值/函数体/约束；属主ACL/注释/数据与未来对象类型不在本次结构证据内。

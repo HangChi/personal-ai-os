@@ -182,3 +182,13 @@ Decision：保留Java/独立迁移步骤为唯一DDL执行者，Go只校验，�
 BASELINE/SCHEMA/repeatable/自定义类型、乱序或超出目录的历史当前失败关闭，不将未验证标记直接接受。原Java baseline-on-migrate场景仍待独立兼容；历史一致也不能证明实际DDL未遭人为修改，需要完整schema差分与恢复验收。上线流程必须先独占完成迁移，Go校验不提供并发DDL授权。
 
 Alternatives considered：用SHA-256代替Flyway checksum；读取版本号存在便通过；自动repair或写入看似成功历史；Go启动时与Java双执行器竞争；空库重放成功便声称存量备份兼容。初版集成引用不存在的fixture函数导致编译失败，已补充显式隔离连接夹具后重跑成功。
+
+## R-022 Flyway 锁竞争与七类 schema 定义差分
+
+Decision：Java夹具使用两个独立Flyway实例/线程，由同一latch同时释放，真实竞争新集群的迁移执行；两者执行数合计必须恰好42，之后Flyway validate和再次零执行。Go不执行DDL或实现另一套Flyway锁，不将此验证误报为Go迁移器。
+
+在同一临时PostgreSQL版本中，对照Java迁移的public与Go原SQL逐事务重放的独立schema。只读repeatable-read采集七类pg_catalog定义：表属性、列顺序/类型/NULL/identity/generated/default/collation、约束定义/可延迟/验证状态、索引定义/唯一/有效性、序列参数、触发器开关/定义、自有函数定义。排除Flyway自身历史表与扩展拥有的函数，仅归一化各自schema限定符；不忽略函数体、默认值和约束。
+
+空重放和合成升级均为39表/287列/116约束/84索引/10序列/13触发器/9函数逐项一致。实际在Go副本加额外列必须产生差分，随后清理。不比较数据/部署属主ACL/注释或未来新增对象类型；这些另列验收，不能仅凭同一SQL来源宣称全库完全等价。
+
+Alternatives considered：只比表数或最终版本；用Go自身预期生成双方结构；正例通过但比较器从不失败；忽略全部默认值/函数体以消掉差异；在原Java数据库故障注入。当前所有DDL仅在脚本新集群或自己的重放副本。
