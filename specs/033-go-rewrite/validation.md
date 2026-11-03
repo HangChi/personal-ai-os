@@ -190,6 +190,12 @@ run_go_redis_tests.py --package redis 和 --tls --package redis 全部 integrati
 
 run_go_postgres_tests.py --package health 和 --tls --package health 均通过。只在自己创建的新集群，由维护库连接实际禁用测试库连接并终止探针连接，真实HTTP保持200并报告DOWN；恢复后UP。单槽池饱和时50ms探测期限生效，归还后UP/零占用；健康探测不建业务表。日志 /private/tmp/personal-ai-os-go-health-postgres.log 与 /private/tmp/personal-ai-os-go-health-postgres-tls.log。初版夹具尝试从当前库禁用自身连接被22023拒绝，已改为同一临时集群维护库，资源清理。应用/配置/模型provider与完整框架差分尚未装配，T106/P1保持开放。
 
+## 增量：有界后台任务与请求ID（T107g）
+
+先加入taskexec测试确认未实现API编译失败，再实现受限执行器与CopyRequestID。定向race通过，随后taskexec/http连续20轮race通过，含integration标签vet通过。日志 /private/tmp/personal-ai-os-go-taskexec.log 与 /private/tmp/personal-ai-os-go-taskexec-stress.log。
+
+实际channel同步验证：首任务运行、32任务排队、队满扩到第二执行单元、第35个任务拒绝；Shutdown拒绝新任务且Wait期限不假报完成，排空34已接受任务。Stop取消活跃任务/丢10排队项且幂等；错误/panic不泄露详情/中断后续；全体空闲退出后可重启，1000路并发提交与并发Shutdown没有漏接受任务。请求ID按提交时捕获、下一个空ID无残留；仅保留执行器取消/期限，不复制原HTTP取消/身份值。Java Reactor调度器以显式Gocontext替代，真实流式/摘要/记忆与应用生命周期调用点仍未装配，T107/T108保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

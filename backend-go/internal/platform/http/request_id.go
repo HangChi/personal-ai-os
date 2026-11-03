@@ -35,6 +35,12 @@ func RequestID(ctx context.Context) string {
 	return value
 }
 
+// CopyRequestID 只复制诊断标识；生命周期/取消/身份和值均来自 destination。
+// 后台任务不应保留整个 HTTP context 或随客户端断开而被错误取消。
+func CopyRequestID(destination, source context.Context) context.Context {
+	return context.WithValue(destination, requestIDKey{}, RequestID(source))
+}
+
 func RequestIDMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		id := resolveRequestID(request.Header.Get(RequestIDHeader))

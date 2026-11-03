@@ -15,6 +15,8 @@
 - `internal/platform/ratelimit`：本地令牌桶、PostgreSQL/Redis 原子共享桶、后端选择/故障策略和指标回调；真实存储的跨实例/跨进程竞争已验，应用接线待完成，见 [边界说明](internal/platform/ratelimit/README.md)。
 - `internal/platform/auth`：单用户 BCrypt/失败锁定、本地/Redis 原子会话及登录/轮换/注销/me/CSRF 安全处理器；实际 Java 密码对照、真实 HTTP/CookieJar/Redis 跨进程已验证，应用接线待完成，见 [边界说明](internal/platform/auth/README.md)。
 - `internal/platform/redis`：显式专用 Redis 客户端、TLS 配置、受限超时/连接池/生命周期与脱敏错误，见 [说明](internal/platform/redis/README.md)。
+- `internal/platform/health`：真实 SELECT 1 与模型配置状态报告，已验临时数据库断连/恢复和池饱和；尚未挂载应用，见 [说明](internal/platform/health/README.md)。
+- `internal/platform/taskexec`：原策略有界轮末队列、请求ID捕获和排空/停止；实际业务装配待完成，见 [说明](internal/platform/taskexec/README.md)。
 - `internal/platform/http`：请求 ID 校验/回显/context、模型请求路径匹配、限流拒绝 JSON 与日志脱敏；限流尚未接入诊断应用。
 - `internal/app`：迁移诊断端点、未知 API 明确返回 404、Worker 业务入口隔离。
 - `cmd/personalos`：回环监听、启动提示、信号处理和超时退出。

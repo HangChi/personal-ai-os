@@ -43,9 +43,13 @@
       "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
         "backend-go/internal/platform/http/request_id_test.go"
       ],
-      "note": "HTTP 校验/回显/context 传递已实现；异步日志和后台执行传播仍待迁移。"
+      "note": "HTTP校验/回显、复制到独立后台生命周期和1000路/跨任务无残留已验证；真实流/业务和统一日志传播尚待装配。"
     },
     "file:backend/src/main/java/com/personalos/PersonalOsApplication.java": {
       "status": "in_progress",
@@ -1405,6 +1409,127 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "对应 shouldStayUpWhenModelNotConfigured 的状态/信封断言已迁移；Go DTO 使用值语义，完整应用服务差分仍未完成。"
+    },
+    "file:backend/src/main/java/com/personalos/common/config/ContextTaskConfig.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "有界队列/显式Go context诊断ID传播和生命周期已实现，20轮race验证；Java全局Reactor钩子由显式context替代，真实业务/应用调用点仍待装配，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/MdcPropagatingExecutor.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "有界队列/显式Go context诊断ID传播和生命周期已实现，20轮race验证；Java全局Reactor钩子由显式context替代，真实业务/应用调用点仍待装配，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/MdcSchedulerHook.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "有界队列/显式Go context诊断ID传播和生命周期已实现，20轮race验证；Java全局Reactor钩子由显式context替代，真实业务/应用调用点仍待装配，不能verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/web/MdcPropagatingExecutorTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "有界队列/显式Go context诊断ID传播和生命周期已实现，20轮race验证；Java全局Reactor钩子由显式context替代，真实业务/应用调用点仍待装配，不能verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/web/MdcSchedulerHookTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "有界队列/显式Go context诊断ID传播和生命周期已实现，20轮race验证；Java全局Reactor钩子由显式context替代，真实业务/应用调用点仍待装配，不能verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/MdcPropagatingExecutorTest.java:32": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 propagatesAndClears 的传播/无残留/关闭断言已通过Go任务context及生命周期测试；没有真实Reactor/业务流差分。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/MdcPropagatingExecutorTest.java:62": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 delegatesLifecycle 的传播/无残留/关闭断言已通过Go任务context及生命周期测试；没有真实Reactor/业务流差分。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/MdcSchedulerHookTest.java:25": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 propagatesToSchedulerThread 的传播/无残留/关闭断言已通过Go任务context及生命周期测试；没有真实Reactor/业务流差分。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/MdcSchedulerHookTest.java:43": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 clearsAfterTask 的传播/无残留/关闭断言已通过Go任务context及生命周期测试；没有真实Reactor/业务流差分。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/config/ContextTaskConfig.java:34:Bean": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已有显式Go执行器/诊断context替代，未接应用和实际业务调用点。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/web/MdcSchedulerHook.java:35:PostConstruct": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/taskexec/executor.go",
+        "backend-go/internal/platform/taskexec/executor_test.go",
+        "backend-go/internal/platform/http/request_id.go",
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已有显式Go执行器/诊断context替代，未接应用和实际业务调用点。"
     }
   },
   "release_gates": {

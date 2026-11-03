@@ -164,3 +164,11 @@ Decision：HealthService 使用显式 Probe/本地模型配置回调和元信息
 真实故障只在本次临时集群：维护连接使用该集群 postgres 库，禁止 personalos_go_test 新连接并终止其探针连接；DOWN 后恢复UP，单槽池被占用时按50ms期限返回DOWN、释放后UP。首次从当前库禁用自身连接被 PostgreSQL 22023 拒绝，改到维护库修正，不放宽故障断言。
 
 Alternatives considered：只用进程存活冒充数据库健康；调用模型接口当健康检查（昂贵/副作用）；数据库失败把报告改为503（改变前端契约）；改掉 readyz=false（会虚报全量迁移就绪）。Handler 暂只可显式组合，诊断应用仍未挂载任何业务端点。
+
+## R-020 有界轮末执行与显式诊断传播
+
+Decision：用Go受锁保护的有界队列和按需goroutine移植ContextTaskConfig：1核心/2最大/32排队/60s全体空闲退出，先排队后扩容，满载新任务丢弃。返回bool供观测，不等待/自动重试。Shutdown排空、Stop取消与清队列、Wait独立期限；任务不遵守context时不得假报退出。处理空闲退出与提交竞争，最后执行单元退出不能遗留已接受任务。
+
+没有线程本地MDC或全局调度钩子；CopyRequestID只把提交context中的安全诊断ID复制到执行器生命周期context，不保留HTTP身份、Cookie、其他值或断连取消。已有Java主源码仅写入requestId，其他执行身份仍需业务显式传入。每次任务上下文独立，结束即释放。错误/panic只记通用文案和ID，继续队列，不重试；这是Go防止单goroutine panic终止进程的显式约定。
+
+Alternatives considered：无限go语句（模型慢时无限堆积）；满队列立即拒绝但不扩至2（改变Java策略）；context.WithoutCancel直接保留整个请求值（长期保留身份/敏感状态）；共享可变全局请求ID（串请求）；强杀goroutine（Go不支持安全强杀）。该执行器仅供原本尽力而为轮末工作，不可替代持久化Run/数据库任务恢复协议。

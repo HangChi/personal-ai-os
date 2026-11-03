@@ -1,6 +1,7 @@
 package httpmiddleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -8,7 +9,33 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
+
+func TestCopyRequestIDUsesDestinationLifetimeAndValues(t *testing.T) {
+	type secretKey struct{}
+	source, cancelSource := context.WithCancel(context.WithValue(context.Background(), secretKey{}, "request-secret"))
+	source = context.WithValue(source, requestIDKey{}, "trace-42")
+	cancelSource()
+	destination, cancelDestination := context.WithTimeout(context.Background(), time.Second)
+	defer cancelDestination()
+	copied := CopyRequestID(destination, source)
+	if RequestID(copied) != "trace-42" || copied.Err() != nil || copied.Value(secretKey{}) != nil {
+		t.Fatal("复制了请求生命周期/身份或遗漏标识")
+	}
+	deadline, _ := copied.Deadline()
+	want, _ := destination.Deadline()
+	if deadline != want {
+		t.Fatal("目标生命周期丢失")
+	}
+	if RequestID(CopyRequestID(copied, context.Background())) != "" {
+		t.Fatal("空来源未清除上次标识")
+	}
+	cancelDestination()
+	if copied.Err() == nil {
+		t.Fatal("未传播执行器生命周期取消")
+	}
+}
 
 func TestRequestIDValidationAndJavaTrim(t *testing.T) {
 	generated := regexp.MustCompile(`^[a-f0-9]{12}$`)
