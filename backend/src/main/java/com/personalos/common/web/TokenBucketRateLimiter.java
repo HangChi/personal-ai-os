@@ -24,6 +24,15 @@ public class TokenBucketRateLimiter {
 
     private long lastRefillNanos;
     private DatabaseCoordination coordination;
+    private RedisRateBucket redis;
+    private io.micrometer.core.instrument.MeterRegistry metrics;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureBackend(org.springframework.beans.factory.ObjectProvider<RedisRateBucket> redis,
+                          io.micrometer.core.instrument.MeterRegistry metrics) {
+        this.redis = redis.getIfAvailable();
+        this.metrics = metrics;
+    }
 
     @org.springframework.beans.factory.annotation.Autowired
     void coordinate(DatabaseCoordination coordination) { this.coordination = coordination; }
@@ -43,11 +52,28 @@ public class TokenBucketRateLimiter {
      *
      * @return {@code true} 表示放行，{@code false} 表示应拒绝
      */
-    public synchronized boolean tryAcquire() {
+    public boolean tryAcquire() {
         if (!properties.enabled()) {
             return true;
         }
-        if (coordination != null) return coordination.consume("model-rate", properties.capacity(), properties.period());
+        if (coordination == null) return consumeLocal();
+        String backend = redis == null ? "postgres" : "redis";
+        long start = System.nanoTime();
+        try {
+            return redis == null
+                    ? coordination.consume("model-rate", properties.capacity(), properties.period())
+                    : redis.consume(properties.capacity(), properties.period());
+        } catch (RuntimeException ex) {
+            if (redis == null) throw ex;
+            metrics.counter("personalos.rate.limit.errors", "backend", backend).increment();
+            return false;
+        } finally {
+            metrics.timer("personalos.rate.limit.acquire", "backend", backend)
+                    .record(System.nanoTime() - start, java.util.concurrent.TimeUnit.NANOSECONDS);
+        }
+    }
+
+    private synchronized boolean consumeLocal() {
         refill();
         if (tokens < 1.0d) {
             return false;
