@@ -93,6 +93,249 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "已实现运行/安全配置子集与连接池上限/显式事务基础；未连接真实 PostgreSQL，数据库配置/TLS/时区/Flyway/绝大多数属性与完整 profile 装配仍待迁移，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/config/RateLimitProperties.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/local.go",
+        "backend-go/internal/platform/ratelimit/local_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "默认 enabled/capacity/period 与正数校验已移植；环境/YAML 属性绑定及完整共享后端装配仍待迁移。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/TokenBucketRateLimiter.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/local.go",
+        "backend-go/internal/platform/ratelimit/local_test.go",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json"
+      ],
+      "note": "本地桶与共享选择/故障/指标回调策略已移植；受控替身证明 Redis 错误拒绝不回退、PostgreSQL 错误透传。真实共享适配器、指标系统和应用装配未完成，不能 verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/web/TokenBucketRateLimiterTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/local.go",
+        "backend-go/internal/platform/ratelimit/local_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "四项本地桶断言已用可控时钟迁移，另有回拨和 1,000 路并发竞态测试；未执行 Java/Go 差分或共享存储集成。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/TokenBucketRateLimiterTest.java:19": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/local.go",
+        "backend-go/internal/platform/ratelimit/local_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 drainsToZero 的 Go 断言已通过；不是全链路 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/TokenBucketRateLimiterTest.java:31": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/local.go",
+        "backend-go/internal/platform/ratelimit/local_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 refillsOverTime 的 Go 断言已通过；不是全链路 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/TokenBucketRateLimiterTest.java:50": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/local.go",
+        "backend-go/internal/platform/ratelimit/local_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 disabledAllowsEverything 的 Go 断言已通过；不是全链路 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/TokenBucketRateLimiterTest.java:61": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/ratelimit/local.go",
+        "backend-go/internal/platform/ratelimit/local_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 rejectsInvalidConfig 的 Go 断言已通过；不是全链路 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/ModelRequestPaths.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "全部 POST/PUT 模式已用原 Java 实际执行的 216 项结果对照，含一次解码/上下文/大小写/空段/末尾斜杠；不是服务器/安全链/业务路由验收，暂不 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/web/RateLimitFilter.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "独立 Go 中间件已覆盖请求 ID 顺序、路径/方法/编码、一次消费、429 信封、放行流透传与日志脱敏；未接诊断应用或真实共享存储。容器错误行为待 T106 差分。"
+    },
+    "file:backend/src/test/java/com/personalos/common/web/RateLimitFilterTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "四项 Java HTTP 断言已迁移并扩展编码/query/日志脱敏/流透传测试；未做真实服务器与数据库集成。"
+    },
+    "file:backend/src/test/java/com/personalos/common/web/ModelConcurrencyFilterTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "仅模型路径覆盖断言已迁移；异步许可/并发准入/释放与真实共享租约尚未迁移。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/config/RateLimitProperties.java:22:ConfigurationProperties": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已有默认值/正数校验，环境/YAML 属性绑定尚未完成。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/ModelConcurrencyFilterTest.java:41": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已迁移 coversInferenceRoutesAndLeavesLocalQueriesAlone 断言并通过独立 HTTP/Java 路径对照；完整并发许可与集成仍待验证，不是 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/RateLimitFilterTest.java:40": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已迁移 rejectsGuardedPathWith429 断言并通过独立 HTTP/Java 路径对照；完整并发许可与集成仍待验证，不是 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/RateLimitFilterTest.java:55": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已迁移 guardCoversKnowledgeUpload 断言并通过独立 HTTP/Java 路径对照；完整并发许可与集成仍待验证，不是 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/RateLimitFilterTest.java:68": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已迁移 allowsUnguardedPath 断言并通过独立 HTTP/Java 路径对照；完整并发许可与集成仍待验证，不是 verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/RateLimitFilterTest.java:80": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "已迁移 skipsNonPostMethods 断言并通过独立 HTTP/Java 路径对照；完整并发许可与集成仍待验证，不是 verified。"
     }
   },
   "release_gates": {

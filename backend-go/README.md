@@ -1,6 +1,6 @@
 # Personal AI OS：Go 迁移起点
 
-本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**当前完成基础契约、配置安全子集、SQL 事务基础和本地诊断入口，不能替代现有 Java 后端。**
+本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**当前完成基础契约、配置安全子集、SQL 事务基础、限流子集和本地诊断入口，不能替代现有 Java 后端。**
 
 全量范围、逐文件来源、迁移状态与验收要求见 [迁移文档](../specs/033-go-rewrite/README.md)。现有 Java 源码、前端、SQL 与运行实例继续保留。
 
@@ -9,11 +9,12 @@
 - `internal/platform/api`：响应信封、19 个 Java 错误码及 HTTP 映射、两类分页与 Java offset 溢出边界。
 - `internal/platform/config`：五种角色/端口、显式开启的 .env 解析/父目录查找、系统环境/profile/文件优先级、Java 生产安全校验与未完成安全能力的启动拒绝。
 - `internal/platform/database`：显式 Connector 连接池与事务生命周期、获取超时/取消、错误脱敏；尚未接入真实驱动或应用。边界见 [说明](internal/platform/database/README.md)。
-- `internal/platform/http`：请求 ID 校验、Java trim 兼容、响应回显及 context 传递。
+- `internal/platform/ratelimit`：本地令牌桶、默认值/校验、共享后端选择/故障策略和指标回调；真实共享适配器和应用接线尚未完成，见 [边界说明](internal/platform/ratelimit/README.md)。
+- `internal/platform/http`：请求 ID 校验/回显/context、模型请求路径匹配、限流拒绝 JSON 与日志脱敏；限流尚未接入诊断应用。
 - `internal/app`：迁移诊断端点、未知 API 明确返回 404、Worker 业务入口隔离。
 - `cmd/personalos`：回环监听、启动提示、信号处理和超时退出。
 
-错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离以及诊断的未就绪行为。
+错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
 尚无数据库连接/迁移、认证/CSRF/登录、模型、任务、聊天、Agent、知识库、日历、记忆、MCP 或后台调度。请求 ID 的后台执行/日志传播也尚未接入。没有第三方 Go 运行时依赖。
 

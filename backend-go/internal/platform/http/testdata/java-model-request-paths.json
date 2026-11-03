@@ -1,0 +1,1523 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "source": "backend/src/main/java/com/personalos/common/web/ModelRequestPaths.java",
+  "source_sha256": "327671aa2d929ee3ade63110c92ab0b3fba9511b54d7aef5299edbee31b9194e",
+  "spring_boot": "4.1.1",
+  "spring_framework": "7.0.9",
+  "tomcat": "11.0.24",
+  "scope": "direct Java matcher only; not servlet-container/security/router acceptance",
+  "cases": [
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/session-123/stream/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/session-123/stream//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/session-123/stream;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/session-123/stream/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/chat/sessions/session-123/stream",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/chat/sessions/session-123/stream",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/chat/sessions/session-123/stream",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/uploads",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/chat/uploads",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/chat/uploads",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/chat/uploads",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/chat/uploads",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/chat/uploads",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/chat/uploads",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/uploads/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/uploads//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/chat/uploads",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/chat/uploads",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/chat/uploads",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/chat/uploads",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/uploads;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/uploads/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/chat/uploads",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/chat/uploads",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/chat/uploads",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/transcribe",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/chat/transcribe",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/chat/transcribe",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/chat/transcribe",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/chat/transcribe",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/chat/transcribe",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/chat/transcribe",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/transcribe/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/transcribe//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/chat/transcribe",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/chat/transcribe",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/chat/transcribe",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/chat/transcribe",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/transcribe;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/transcribe/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/chat/transcribe",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/chat/transcribe",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/chat/transcribe",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/documents",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/knowledge/documents",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/knowledge/documents",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/knowledge/documents",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/knowledge/documents",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/knowledge/documents",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/knowledge/documents",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/documents/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/documents//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/knowledge/documents",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/knowledge/documents",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/knowledge/documents",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/knowledge/documents",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/documents;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/documents/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/knowledge/documents",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/knowledge/documents",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/knowledge/documents",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/search",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/knowledge/search",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/knowledge/search",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/knowledge/search",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/knowledge/search",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/knowledge/search",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/knowledge/search",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/search/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/search//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/knowledge/search",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/knowledge/search",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/knowledge/search",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/knowledge/search",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/search;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/search/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/knowledge/search",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/knowledge/search",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/knowledge/search",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/ask",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/knowledge/ask",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/knowledge/ask",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/knowledge/ask",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/knowledge/ask",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/knowledge/ask",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/knowledge/ask",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/ask/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/ask//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/knowledge/ask",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/knowledge/ask",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/knowledge/ask",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/knowledge/ask",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/ask;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/knowledge/ask/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/knowledge/ask",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/knowledge/ask",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/knowledge/ask",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/settings/model/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/settings/model/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/settings/model/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/settings/model/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/settings/model/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/settings/model/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/test/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/test//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/settings/model/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/settings/model/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/settings/model/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/settings/model/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/test;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/test/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/settings/model/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/settings/model/test",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/settings/model/test",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/test/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/test//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/test;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/test/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/settings/model/profiles/test",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/settings/model/profiles/test",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/settings/model/profiles/test",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-models/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-models//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-models;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-models/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/settings/model/profiles/probe-models",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/settings/model/profiles/probe-models",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/settings/model/profiles/probe-models",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "post",
+      "uri": "/api/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-window/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-window//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "//api//v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/API/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/%61pi/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "%2Fapi%2Fv1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-window;v=1",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/settings/model/profiles/probe-window/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "api/v1/settings/model/profiles/probe-window",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/personal-os/api/v1/settings/model/profiles/probe-window",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/应用/api/v1/settings/model/profiles/probe-window",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/api/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "put",
+      "uri": "/api/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "GET",
+      "uri": "/api/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "DELETE",
+      "uri": "/api/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PATCH",
+      "uri": "/api/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "OPTIONS",
+      "uri": "/api/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "HEAD",
+      "uri": "/api/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/api/v1/knowledge/documents/session-123/",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/api/v1/knowledge/documents/session-123//",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "//api//v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/API/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/%61pi/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "%2Fapi%2Fv1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/api/v1/knowledge/documents/session-123;v=1",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/api/v1/knowledge/documents/session-123/extra",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "api/v1/knowledge/documents/session-123",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/personal-os/api/v1/knowledge/documents/session-123",
+      "context_path": "/personal-os",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/应用/api/v1/knowledge/documents/session-123",
+      "context_path": "/应用",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/tasks",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/%75ploads",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/%2575ploads",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/+uploads",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions//stream",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/a%2Fb/stream",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/%E7%94%A8%E6%88%B7/stream",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/%FF/stream",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/%0A/stream",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/sessions/../stream",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/api/v1/knowledge/documents/",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/api/v1/knowledge/documents//",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/api/v1/knowledge/documents",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    },
+    {
+      "method": "PUT",
+      "uri": "/api/v1/knowledge/documents/%2F",
+      "context_path": "",
+      "matched": true,
+      "error": false
+    },
+    {
+      "method": "POST",
+      "uri": "/api/v1/chat/uploads%",
+      "context_path": "",
+      "matched": false,
+      "error": true
+    },
+    {
+      "method": "GET",
+      "uri": "/invalid%2",
+      "context_path": "",
+      "matched": false,
+      "error": true
+    },
+    {
+      "method": "PUT",
+      "uri": "/invalid%GG",
+      "context_path": "",
+      "matched": false,
+      "error": true
+    },
+    {
+      "method": "POST",
+      "uri": "",
+      "context_path": "",
+      "matched": false,
+      "error": false
+    }
+  ]
+}

@@ -74,3 +74,11 @@ Decision：先用标准库 database/sql 与 driver.Connector 实现连接池生�
 原因：2026-11-03 查询 pgx 可用版本时，沙箱 DNS 不可用，联网审批返回 503。未确认和下载的版本不能写入 go.mod，也不能声称已接入 PostgreSQL。标准库事务边界可先用受控测试驱动验证；真实 pgx Connector 与 PostgreSQL/pgvector 集成保持待完成。
 
 Alternatives considered：猜测并锁定 pgx 版本（无法验证或构建）；自写 PostgreSQL 协议（增加认证/TLS/类型/取消风险）；仅增加空数据库接口（没有可执行的事务与资源管理行为）。获取超时仅约束连接池等待，不把已取消的获取 context 用作事务 context；提交失败不自动重试，以防重复副作用。
+
+## R-009 限流路径差分与故障策略
+
+Decision：先移植可独立执行的本地桶、共享后端选择和 HTTP 保护边界，不把本地桶装进应用冒充共享限流。共享 Redis 失败直接拒绝，PostgreSQL 失败上抛，保留原 Java 行为；前者没有数据库/本地回退。真实共享适配器继续等待依赖与隔离设施验收。
+
+模型路径不能简化为对解码后 URL.Path 的前缀判断。使用固定 Git blob 和基线 BOM 对应的本机缓存 Spring/Tomcat，离线编译执行原始 ModelRequestPaths，记录包含编码、上下文、空段和末尾斜杠的 216 项结果。Go 用单次 PathUnescape 和固定逐段模式匹配对照；不引入通用 Ant 匹配器。快照生成器不启动 Spring、不下载依赖、不读 .env，也不取代 Maven 质量门禁或服务器端安全测试。
+
+Alternatives considered：只复制注释中的聊天/知识路径（遗漏上传/转写/探测/PUT）；以 Go 行为生成 expected（失去独立对照）；对 URL.Path 再解码（双编码路径语义改变）；共享设施错误回退本地（多实例可超发）。Servlet 容器错误映射和实际安全链仍待集成差分。
