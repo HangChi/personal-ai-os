@@ -156,3 +156,11 @@ Decision：仅在新建临时容器中创建 go_session/go_rate 两个账号，r
 透明回环 TCP 代理先完成真实连接/PING，再丢弃下一次服务端返回的数据并断开连接；不读取/输出协议或凭据，TLS 原样转发密文。实际 EVAL INCR 已执行但调用返回错误，独立管理员连接读取计数恰好1，代理只接受一次连接，证明未自动重试。之后显式新 PING 可重连，原计数保持1。普通/TLS 两种模式均通过。不能据此将不确定写入当作未发生，业务恢复仍需协议。
 
 Alternatives considered：只检查 MaxRetries 字段（不证明真实故障）；停掉容器后测试（无法模拟写入已执行/响应丢失）；给 ACL +@all（掩盖越权）；ACL 错误降级本地/其他共享后端（可能身份或预算不一致）。完整半开/长期网络分区和应用生命周期尚未验收。
+
+## R-019 真实依赖健康报告
+
+Decision：HealthService 使用显式 Probe/本地模型配置回调和元信息；实际 PostgreSQL Probe 复用 Pool，仅 SELECT 1。数据库失败/取消报告 DOWN，模型未配置仅显示 NOT_CONFIGURED，HTTP 报告仍200，与原 Java 一致。调用方显式设置正 ProbeTimeout，较早父期限优先；不创建无法取消的旁路 goroutine。每次返回独立 components，UTC时间。日志只记通用失败和请求ID，不含驱动错误；这是对原日志的有意安全收紧。
+
+真实故障只在本次临时集群：维护连接使用该集群 postgres 库，禁止 personalos_go_test 新连接并终止其探针连接；DOWN 后恢复UP，单槽池被占用时按50ms期限返回DOWN、释放后UP。首次从当前库禁用自身连接被 PostgreSQL 22023 拒绝，改到维护库修正，不放宽故障断言。
+
+Alternatives considered：只用进程存活冒充数据库健康；调用模型接口当健康检查（昂贵/副作用）；数据库失败把报告改为503（改变前端契约）；改掉 readyz=false（会虚报全量迁移就绪）。Handler 暂只可显式组合，诊断应用仍未挂载任何业务端点。

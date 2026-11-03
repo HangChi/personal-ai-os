@@ -25,7 +25,7 @@ def capture(command, **kwargs):
     return subprocess.run(command, text=True, capture_output=True, check=True, timeout=120, **kwargs).stdout.strip()
 
 
-PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate"]
+PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health"]
 
 
 def run_package(image, package, tls_mode=False):

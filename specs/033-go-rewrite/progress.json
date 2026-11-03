@@ -1304,6 +1304,107 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "独立 Redis 连接的 32 路消费不能重复花费同一令牌的原断言已实际通过；未执行 Java 全量差分，不能 verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/health/HealthService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/service.go",
+        "backend-go/internal/platform/health/service_test.go",
+        "backend-go/internal/platform/health/postgres_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/health/HealthStatusDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/service.go",
+        "backend-go/internal/platform/health/service_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。"
+    },
+    "file:backend/src/main/java/com/personalos/common/health/HealthController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/http.go",
+        "backend-go/internal/platform/health/http_test.go",
+        "backend-go/internal/platform/health/postgres_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/health/HealthServiceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/service_test.go",
+        "backend-go/internal/platform/health/postgres_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。"
+    },
+    "file:backend/src/test/java/com/personalos/common/health/HealthControllerTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/http_test.go",
+        "backend-go/internal/platform/health/postgres_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。"
+    },
+    "route:GET:/api/v1/health:backend/src/main/java/com/personalos/common/health/HealthController.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/health/http.go",
+        "backend-go/internal/platform/health/http_test.go",
+        "backend-go/internal/platform/health/postgres_integration_test.go"
+      ],
+      "note": "可组合处理器及临时真实数据库HTTP已验证；尚未挂载真实应用入口，不能视为已提供业务端点。"
+    },
+    "test:backend/src/test/java/com/personalos/common/health/HealthControllerTest.java:35": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/service_test.go",
+        "backend-go/internal/platform/health/http_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 healthShouldReturnUnifiedEnvelope 的状态/信封断言已迁移；Go DTO 使用值语义，完整应用服务差分仍未完成。"
+    },
+    "test:backend/src/test/java/com/personalos/common/health/HealthControllerTest.java:54": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/service_test.go",
+        "backend-go/internal/platform/health/http_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 healthShouldDelegateToService 的状态/信封断言已迁移；Go DTO 使用值语义，完整应用服务差分仍未完成。"
+    },
+    "test:backend/src/test/java/com/personalos/common/health/HealthServiceTest.java:32": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/service_test.go",
+        "backend-go/internal/platform/health/http_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 shouldBeUpWhenAllDependenciesReady 的状态/信封断言已迁移；Go DTO 使用值语义，完整应用服务差分仍未完成。"
+    },
+    "test:backend/src/test/java/com/personalos/common/health/HealthServiceTest.java:46": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/service_test.go",
+        "backend-go/internal/platform/health/http_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 shouldBeDownWhenDatabaseUnreachable 的状态/信封断言已迁移；Go DTO 使用值语义，完整应用服务差分仍未完成。"
+    },
+    "test:backend/src/test/java/com/personalos/common/health/HealthServiceTest.java:61": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/service_test.go",
+        "backend-go/internal/platform/health/http_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "对应 shouldStayUpWhenModelNotConfigured 的状态/信封断言已迁移；Go DTO 使用值语义，完整应用服务差分仍未完成。"
     }
   },
   "release_gates": {

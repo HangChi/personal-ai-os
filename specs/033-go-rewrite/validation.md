@@ -184,6 +184,12 @@ run_go_redis_tests.py --package redis 和 --tls --package redis 全部 integrati
 
 透明代理实际切断已执行 EVAL INCR 的响应；调用错误但管理员观察计数1，只有原一次连接；下一次显式 PING 重连，计数仍1。在 TLS 下同样验证。日志 /private/tmp/personal-ai-os-go-redis-acl-loss.log 与 /private/tmp/personal-ai-os-go-redis-acl-loss-tls.log。临时容器清理。该验证覆盖精确丢响应，不代表完整生产网络分区/部署验收。
 
+## 增量：真实依赖健康报告（T106a）
+
+先加入服务/HTTP测试并确认缺少实现时编译失败，再实现。定向 race 和全量十三包 race、含integration标签的vet通过。对照原Java三种数据库/模型状态和控制器信封，增加UTC/独立对象/并发、探测期限/父取消、日志脱敏、GET/HEAD/405/匿名安全链断言。日志 /private/tmp/personal-ai-os-go-health.log 和 /private/tmp/personal-ai-os-go-stage-health-race.log。
+
+run_go_postgres_tests.py --package health 和 --tls --package health 均通过。只在自己创建的新集群，由维护库连接实际禁用测试库连接并终止探针连接，真实HTTP保持200并报告DOWN；恢复后UP。单槽池饱和时50ms探测期限生效，归还后UP/零占用；健康探测不建业务表。日志 /private/tmp/personal-ai-os-go-health-postgres.log 与 /private/tmp/personal-ai-os-go-health-postgres-tls.log。初版夹具尝试从当前库禁用自身连接被22023拒绝，已改为同一临时集群维护库，资源清理。应用/配置/模型provider与完整框架差分尚未装配，T106/P1保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。
