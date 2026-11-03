@@ -77,12 +77,26 @@ public class KnowledgeRetrievalService implements KnowledgeSearchPort {
             org.springframework.ai.embedding.EmbeddingModel embeddings) {
         this.external=external.getIfAvailable(); this.projection=projection.getIfAvailable(); this.embeddings=embeddings;
     }
+    private RedisCandidateCache candidateCache;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureCandidateCache(org.springframework.beans.factory.ObjectProvider<RedisCandidateCache> cache) {
+        candidateCache = cache.getIfAvailable();
+    }
+
     public boolean hasContent(){return inspector.countAll()>0;}
     /** Chunk-level candidate pool, before final diversity selection. */
     public List<KnowledgeHitDto> candidates(String query,int requested) {
         if(query==null || query.isBlank()) throw new BusinessException(ErrorCode.VALIDATION_FAILED,"Empty query");
         int limit=Math.max(1,Math.min(requested,60));
-        if(external!=null && projection.pending()==0) {
+        boolean externalReady = external != null && projection.pending() == 0;
+        if (candidateCache != null) {
+            return candidateCache.get(query, limit, externalReady, () -> loadCandidates(query, limit, externalReady));
+        }
+        return loadCandidates(query, limit, externalReady);
+    }
+
+    private List<KnowledgeHitDto> loadCandidates(String query, int limit, boolean externalReady) {
+        if(externalReady) {
             try {
                 var channels=external.search(query,embeddings.embed(query),limit);
                 Map<UUID,Double> ranks=new LinkedHashMap<>();

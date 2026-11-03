@@ -463,3 +463,9 @@ app:
       enabled: ${REDIS_RATE_LIMIT_ENABLED:false}
       uri: ${REDIS_RATE_LIMIT_URI:}
       namespace: ${REDIS_RATE_LIMIT_NAMESPACE:personalos:model}
+
+---
+app:
+  knowledge:
+    candidate-cache:
+      enabled: ${RAG_CANDIDATE_CACHE_ENABLED:false}

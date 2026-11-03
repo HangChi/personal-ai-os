@@ -11,3 +11,9 @@ Spring Session 保存登录上下文和会话属性。共享模式使用 `SESSIO
 默认使用 PostgreSQL 令牌桶。`personalos.rate.limit.acquire` 按后端记录每次扣减耗时。评估迁移时，在相同 API 与 worker 并发下对照吞吐、准入耗时和 PostgreSQL 的 `pg_stat_activity.wait_event_type = 'Lock'`。这个计时包含连接和 SQL 执行耗时。
 
 确认需要迁移后，统一暂停模型请求，再给所有 API 和 worker 配置同一个启用 `noeviction` 的 Redis、同一 `REDIS_RATE_LIMIT_NAMESPACE` 及相同的令牌桶额度和周期。等待原限流周期结束后，用 `REDIS_RATE_LIMIT_ENABLED=true` 启动所有进程。回退时同样统一切换。Redis 故障时拒绝模型请求，避免切换到独立计数器后超额。跨进程并发额度与写入租约继续由数据库管理。
+
+## RAG 候选缓存
+
+设置 `RAG_CANDIDATE_CACHE_ENABLED=true` 和 `REDIS_ENABLED=true` 启用。缓存保存当前单用户部署的未过滤候选池，TTL 为 20 秒，单条最多 256 KiB。缓存键覆盖环境命名空间、检索参数、嵌入配置、索引就绪状态和数据库资料版本。文档、向量或来源变更随业务事务更新版本。每次请求继续运行资料范围过滤、重排和冲突判断。
+
+候选值包含知识片段原文，适用于受信任的缓存 Redis。查询文本只以摘要进入键。Redis 读写故障时继续正常检索。指标 `personalos.knowledge.candidate.cache` 按命中、未命中及错误计数。

@@ -24,7 +24,14 @@ class AdvancedRagIntegrationTest {
         .withEnv("discovery.type","single-node").withEnv("DISABLE_SECURITY_PLUGIN","true").withEnv("DISABLE_INSTALL_DEMO_CONFIG","true")
         .withEnv("OPENSEARCH_JAVA_OPTS","-Xms512m -Xmx512m").withExposedPorts(9200)
         .waitingFor(org.testcontainers.containers.wait.strategy.Wait.forHttp("/_cluster/health").forPort(9200));
+    @Container static org.testcontainers.containers.GenericContainer<?> cache =
+            new org.testcontainers.containers.GenericContainer<>("redis:8.2.1-alpine").withExposedPorts(6379);
+    @Autowired io.micrometer.core.instrument.MeterRegistry metrics;
     @org.springframework.test.context.DynamicPropertySource static void searchProperties(org.springframework.test.context.DynamicPropertyRegistry registry) {
+        registry.add("app.redis.enabled", () -> true);
+        registry.add("app.redis.uri", () -> "redis://"+cache.getHost()+":"+cache.getMappedPort(6379));
+        registry.add("app.redis.namespace", () -> "advanced-rag-test");
+        registry.add("app.knowledge.candidate-cache.enabled", () -> true);
         registry.add("app.knowledge.search.enabled",()->true);
         registry.add("app.knowledge.search.endpoint",()->"http://"+search.getHost()+":"+search.getMappedPort(9200));
         registry.add("app.knowledge.search.index",()->"advanced-rag-test");
@@ -44,6 +51,10 @@ class AdvancedRagIntegrationTest {
         projection.sync();assertThat(projection.pending()).isZero();
         var hits=recall.candidates("住宿报销标准",40);
         assertThat(hits).hasSize(2);
+        assertThat(recall.candidates("住宿报销标准",40)).isEqualTo(hits);
+        assertThat(metrics.get("personalos.knowledge.candidate.cache").tag("result","hit").counter().count())
+                .isGreaterThanOrEqualTo(1);
+
         model.enqueueText("{\"queries\":[]}");model.enqueueText("{\"order\":[1,2]}");
         String quote1=hits.get(0).content().contains("五百")?"每天五百元":"每天八百元";
         String quote2=hits.get(1).content().contains("五百")?"每天五百元":"每天八百元";
@@ -59,6 +70,7 @@ class AdvancedRagIntegrationTest {
         assertThat(recall.candidates("住宿报销标准",40)).noneMatch(hit->hit.documentId().equals(a));
         projection.sync();assertThat(projection.pending()).isZero();
         assertThat(recall.candidates("住宿报销标准",40)).extracting(hit->hit.documentId()).containsOnly(b);
+        cache.stop();
         search.stop();
         assertThat(recall.candidates("住宿报销标准",40)).extracting(hit->hit.documentId()).containsOnly(b);
     }
