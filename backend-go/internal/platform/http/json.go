@@ -20,34 +20,6 @@ func JSONAcceptable(accept string) bool {
 	return ok
 }
 
-// SelectJSONMediaType 使用响应声明的顺序处理未指定和通配 Accept。
-func SelectJSONMediaType(accept string, supported []string) (string, bool) {
-	if len(supported) == 0 {
-		return "", false
-	}
-	if accept == "" {
-		return supported[0], true
-	}
-	for _, part := range strings.Split(accept, ",") {
-		media, _, err := mime.ParseMediaType(strings.TrimSpace(part))
-		if err != nil {
-			continue
-		}
-		for _, candidate := range supported {
-			if media == "*/*" || media == "application/*" || media == candidate || media == "application/*+json" && strings.HasSuffix(candidate, "+json") {
-				if strings.Contains(candidate, "*") {
-					return supported[0], true
-				}
-				return candidate, true
-			}
-			if candidate == "application/*+json" && strings.HasPrefix(media, "application/") && strings.HasSuffix(media, "+json") {
-				return media, true
-			}
-		}
-	}
-	return "", false
-}
-
 // DecodeJSONObject 保留 Jackson 的精确字段名、未知字段忽略、重复字段取最后值。
 // 字段类型由调用方按 DTO 逐项校验；不把 encoding/json 的大小写宽松匹配当作 Java 契约。
 func DecodeJSONObject(w http.ResponseWriter, r *http.Request, maxBytes int64) (map[string]json.RawMessage, error) {

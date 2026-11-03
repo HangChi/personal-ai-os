@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"mime"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -17,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"personal-ai-os/backend-go/internal/platform/api"
 	"personal-ai-os/backend-go/internal/platform/config"
 	"personal-ai-os/backend-go/internal/platform/health"
 	"personal-ai-os/backend-go/internal/platform/ratelimit"
@@ -46,7 +48,7 @@ func readFoundationHTTPFixture(t *testing.T) []foundationHTTPFixture {
 	if err := json.Unmarshal(data, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	if len(fixture.Cases) != 516 {
+	if len(fixture.Cases) != 744 {
 		t.Fatal("真实 HTTP 场景数量改变，需审查")
 	}
 	return fixture.Cases
@@ -143,6 +145,20 @@ func compareFoundationResponse(t *testing.T, client *http.Client, server string,
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if contentType := response.Header.Get("Content-Type"); contentType != "" {
+		_, parameters, err := mime.ParseMediaType(contentType)
+		if err != nil {
+			t.Fatal(err)
+		}
+		codec, err := api.JSONEncoding(parameters["charset"])
+		if err != nil {
+			t.Fatal("响应声明了无法实际解码的字符集", err)
+		}
+		data, err = codec.NewDecoder().Bytes(data)
+		if err != nil {
+			t.Fatal("响应字节与声明的字符集不同", err)
+		}
 	}
 	got := normalizeFoundationBody(t, data)
 	if response.StatusCode != test.Response.Status || response.Header.Get("Content-Type") != test.Response.ContentType || normalizedAllow(response.Header.Get("Allow")) != normalizedAllow(test.Response.Allow) || !reflect.DeepEqual(got, test.Response.Body) {

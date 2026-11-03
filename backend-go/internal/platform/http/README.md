@@ -26,6 +26,8 @@ python3 scripts/migration/java_exception_fixture.py
 
 `ParseMultipart(w, request, MultipartLimits)`必须显式提供正数文件/总请求上限；`config.Properties.Multipart()`从canonical属性绑定内置8MB/10MB限制，Java的无界-1在Go明确拒绝。解析结果由调用方`Close()`清理；文件`Open()`返回的reader先关闭，再清理整个请求随机暂存目录。失败/超限/取消自动清理。只读取当前请求，不调用业务或现有存储。
 
+内容协商器解析带引号的多值Accept，按原Spring质量优先和稳定声明顺序选择，保留原q=0兼容行为。整条头包含非法媒体/q/未知字符集时拒绝，不能跳过坏项选另一个。保留profile等响应参数，支持实际UTF-8/UTF-16BE/LE/UTF-32BE/LE编码。普通MVC和显式produces的Actuator在有效但不支持的字符集、仅逗号Accept上的错误契约不同，真实差分分别验证。
+
 空filename仍是文件、无filename是普通字段，Content-Type缺失为nil；保留Unicode/路径文本原文件名，绝不用它拼接磁盘路径。重复分片按到达顺序保存，单文件绑定取第一个。普通字段同样受单片上限；未知Content-Length及关闭boundary后的尾随字节仍受总请求限制。额外1000分片保护尚未声称等价于全部Tomcat扩展配置。
 
 真实Servlet夹具在两个仅测试端点分别使用@RequestParam/@RequestPart验证152个场景，累计516基础场景。临时大小缩到64B/1024B验证精确边界，不修改原YAML；二进制内容/分块总量/取消/失败暂存清理与32路隔离另有race测试。这里只提供基础解析与绑定证据，生产代码没有注册这些fixture端点；后续附件/知识库/音频业务和完整CSRF表单解析装配仍需按各模块接线验收。

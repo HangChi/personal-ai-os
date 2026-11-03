@@ -3223,6 +3223,1447 @@
       "csrf": false,
       "monitoring": false,
       "request": {
+        "name": "negotiation-125",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-126",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-127",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-128",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-129",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-130",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-131",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-132",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-133",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-134",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-135",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-136",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-137",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-138",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-139",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-140",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-141",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-142",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-143",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": ","
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-144",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-145",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-146",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-147",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-148",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-149",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-150",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-151",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-152",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-153",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-154",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-155",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-156",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-157",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-158",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-159",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-160",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-161",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-162",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": ","
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-163",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-164",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-165",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-166",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-167",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-168",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-169",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-170",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-171",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-172",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-173",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-174",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-175",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-176",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-177",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-178",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-179",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-180",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-181",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": ","
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -6405,6 +7846,1447 @@
       "csrf": false,
       "monitoring": false,
       "request": {
+        "name": "negotiation-125",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-126",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-127",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-128",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-129",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-130",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-131",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-132",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-133",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-134",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-135",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-136",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-137",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-138",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-139",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-140",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-141",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-142",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-143",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": ","
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-144",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-145",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-146",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-147",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-148",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-149",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-150",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-151",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-152",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-153",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-154",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-155",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-156",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-157",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-158",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-159",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-160",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-161",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-162",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": ","
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-163",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-164",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-165",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-166",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-167",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-168",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-169",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-170",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-171",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-172",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-173",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-174",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-175",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-176",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-177",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-178",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-179",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-180",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-181",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": ","
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -9485,6 +12367,1447 @@
       "csrf": true,
       "monitoring": false,
       "request": {
+        "name": "negotiation-125",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-126",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-127",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-128",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-129",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-130",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-131",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-132",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-133",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-134",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-135",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-136",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-137",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-138",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-139",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-140",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-141",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-142",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-143",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": ","
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-144",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-145",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-146",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-147",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-148",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-149",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-150",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-151",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-152",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-153",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-154",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-155",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-156",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-157",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-158",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-159",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-160",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-161",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-162",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": ","
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-163",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-164",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-165",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-166",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-167",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-168",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-169",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-170",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-171",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-172",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-173",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-174",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-175",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-176",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-177",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-178",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-179",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-180",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "groups": [
+            "liveness",
+            "readiness"
+          ],
+          "status": "UP"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "negotiation-181",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": ","
+      },
+      "response": {
+        "status": 500,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 50000,
+          "message": "服务器内部错误",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
         "name": "management-health",
         "method": "GET",
         "path": "/actuator/health",
@@ -12537,6 +16860,1435 @@
         "body": {
           "code": 40300,
           "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-125",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-126",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-127",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-128",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-129",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-130",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-131",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-132",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-133",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-134",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-135",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-136",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-137",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-138",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-139",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-140",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-141",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-142",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-143",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "accept": ","
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-144",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-145",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-146",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-147",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.spring-boot.actuator.v3+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-148",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-149",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-150",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-151",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-152",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-153",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-154",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-16LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-155",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32BE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-156",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;charset=UTF-32LE",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-157",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-158",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-159",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-160",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json;profile=\"a,b\"",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-161",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-162",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": ","
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-163",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0.1,application/problem+json;q=0.9"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-164",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/problem+json;q=0.1,application/json;q=0.9"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-165",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/*;q=0.9,application/problem+json;q=0.1"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-166",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-167",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "garbage,application/json"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-168",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=2"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-169",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=NaN"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-170",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "APPLICATION/JSON"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-171",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-8"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-172",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16BE"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-173",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16LE"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-174",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-32BE"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-175",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-32LE"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-176",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=UTF-16"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-177",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=ISO-8859-1"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-178",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;charset=unsupported"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-179",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;profile=\"a,b\""
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-180",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": "application/json;q=0,text/html;q=1"
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
+          "data": null,
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "negotiation-181",
+        "method": "GET",
+        "path": "/actuator/health",
+        "accept": ","
+      },
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40004,
+          "message": "资源不存在",
           "data": null,
           "timestamp": "<generated>"
         }

@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
 
+	"personal-ai-os/backend-go/internal/platform/api"
 	"personal-ai-os/backend-go/internal/platform/auth"
 	"personal-ai-os/backend-go/internal/platform/config"
 	httpmiddleware "personal-ai-os/backend-go/internal/platform/http"
@@ -66,6 +67,10 @@ func newActuatorHandler(properties config.ActuatorProperties, snapshot func(cont
 		if path == "/actuator/prometheus" {
 			metrics.ServeHTTP(w, r)
 			return nil
+		}
+		if accept := r.Header.Get("Accept"); accept != "" && strings.Trim(accept, ", \t") == "" {
+			// 原显式produces的Actuator对仅逗号Accept走全局500；普通MVC仍使用默认JSON。
+			return errors.New("显式端点的Accept候选为空")
 		}
 		contentType, ok := httpmiddleware.SelectJSONMediaType(r.Header.Get("Accept"), []string{actuatorMediaType, "application/json"})
 		if !ok {
@@ -128,7 +133,7 @@ func newActuatorHandler(properties config.ActuatorProperties, snapshot func(cont
 }
 
 func writeActuator(w http.ResponseWriter, r *http.Request, status int, contentType string, value any) error {
-	data, err := json.Marshal(value)
+	data, err := api.MarshalJSONMediaType(value, contentType)
 	if err != nil {
 		return err
 	}

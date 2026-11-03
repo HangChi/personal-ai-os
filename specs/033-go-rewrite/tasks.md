@@ -53,6 +53,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [x] T106d 扩展真实Servlet夹具到220例并全部逐项对照：非monitoring业务端口健康/信息、monitoring端口隔离、vendor JSON/Accept、健康分组/503、匿名隐藏组件/空404、认证后详情与分量路径。接入原exposure/details/info开关和实际数据库/Redis/磁盘探测；不冒充完整Micrometer或所有扩展配置，通用multipart/DTO仍待验收。
 - [x] T106e 在真实Servlet运行原HealthController/HealthService并以合成数据库/模型状态适配器扩展健康68例，累计364基础场景全部对照；修正业务健康媒体类型/HEAD/OPTIONS/405/Accept及探测先于协商，DOWN仍HTTP200。共享控制器JSON协商保留具体+json媒体类型，通用multipart/DTO仍开放。
 - [x] T106f 提供有界multipart临时文件解析与canonical大小绑定，保留空/原始文件名、nil媒体类型、重复顺序和普通字段单片限制；152个真实Servlet参数/分片绑定场景通过，累计516基础场景。验证二进制/分块总量/取消/失败清理和32路隔离；无生产fixture端点，业务上传与完整CSRF表单装配仍待接线。
+- [x] T106g 扩展真实Servlet到744例并全部逐项对照，新增多值Accept质量/非法项/带引号参数/字符集与MVC/Actuator差异；实际UTF-8/16/32字节编码而非仅改响应头。全14包race、integration vet/build及10个Python边界测试通过，仍不宣称所有未来DTO已验收。
 - [ ] T107 实现请求 ID 异步传播、模型路径、令牌桶、数据库协调/租约/API 预留容量、专用 Redis 限流和故障回退。
 - [x] T107a 移植独立构造的本地令牌桶、默认值/参数校验，覆盖初始容量、平滑分数补充、回拨保护和 1,000 路并发；不用于应用共享限流，不代表 T107 完成。
 - [x] T107b 移植模型路径/限流 HTTP 中间件和共享后端选择/故障策略，以固定 Java 实际执行的 216 项路径结果对照；受控替身覆盖 Redis 不回退、PostgreSQL 错误透传、指标回调及 429/日志脱敏。未接应用、真实存储或指标系统，T107 仍未完成。

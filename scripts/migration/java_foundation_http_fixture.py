@@ -121,6 +121,20 @@ def cases():
             add("upload-"+path.rsplit("/", 1)[-1]+"-"+name, "POST", path, body=body, contentType="multipart/form-data; boundary=fixture-boundary", csrf=True, login=True)
         for content_type in ["application/json", "multipart/form-data", "multipart/form-data; boundary=wrong"]:
             add("upload-media-"+str(len(rows)), "POST", path, body=upload_bodies[0][1], contentType=content_type, csrf=True, login=True)
+    accepts = [
+        "application/json;q=0.1,application/problem+json;q=0.9",
+        "application/problem+json;q=0.1,application/json;q=0.9",
+        "application/*;q=0.9,application/problem+json;q=0.1",
+        "application/json;q=0.1,application/vnd.spring-boot.actuator.v3+json;q=0.9",
+        "garbage,application/json", "application/json;q=2", "application/json;q=NaN",
+        "APPLICATION/JSON", "application/json;charset=UTF-8", "application/json;charset=UTF-16BE",
+        "application/json;charset=UTF-16LE", "application/json;charset=UTF-32BE", "application/json;charset=UTF-32LE",
+        "application/json;charset=UTF-16", "application/json;charset=ISO-8859-1", "application/json;charset=unsupported",
+        'application/json;profile="a,b"', "application/json;q=0,text/html;q=1", ",",
+    ]
+    for path in ["/api/v1/auth/me", "/api/v1/health", "/actuator/health"]:
+        for accept in accepts:
+            add("negotiation-"+str(len(rows)), path=path, accept=accept)
     for name, method, path in [("management-health", "GET", "/actuator/health"), ("management-head", "HEAD", "/actuator/health"),
                                ("management-subpath", "GET", "/actuator/health/db"), ("management-business", "GET", "/api/v1/auth/me")]:
         add(name, method, path, management=True)

@@ -348,6 +348,12 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 
 验证空文件/空文件名/Unicode/路径文本/缺媒体类型/重复取首、缺参数/畸形边界/错误媒体、其他分片超限也拒绝；每个真实HTTP请求后检查暂存目录为空。独立race验证二进制不变、未知Content-Length尾随超限、取消/截断清理、清理幂等与32请求暂存隔离（/private/tmp/personal-ai-os-go-multipart-lifecycle.log）。生产没有fixture业务端点；完整上传业务、CSRF表单与location/threshold/Tomcat扩展仍待装配，父项开放。
 
+## 增量：多值Accept与UTF编码（T106g）
+
+真实Servlet新增228个认证/业务健康/Actuator协商场景，累计744例；默认重生成比较通过（/private/tmp/personal-ai-os-java-negotiation-check.log）。先定向228例race通过（/private/tmp/personal-ai-os-go-negotiation-oracle.log），再完整14包race全部通过（/private/tmp/personal-ai-os-go-p1-current-race.log），包含全部744基础HTTP场景、152个multipart与暂存生命周期。integration标签全量vet/build通过。
+
+验证质量权重/稳定默认、非法媒体/q/未知字符集整条拒绝、引号内逗号、profile参数及原q=0行为。UTF-16BE/LE、UTF-32BE/LE实际编码，测试按响应声明解码逐字段对照；另检查原始字节前缀/中文/非BMP字符与编码失败脱敏500。MVC/Actuator对不支持字符集和仅逗号Accept的不同406/500行为均保留。10个迁移Python边界测试通过（/private/tmp/personal-ai-os-go-migration-python.log），1093/104/27/95/1119基线检查通过。P1剩余项逐父项汇总于p1-remaining.md，未批量verified或进入P2。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

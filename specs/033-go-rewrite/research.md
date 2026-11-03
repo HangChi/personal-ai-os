@@ -360,3 +360,11 @@ Decision：真实Servlet两个测试端点分别执行@RequestParam/@RequestPart
 每请求随机0700目录/随机0600文件，元数据原文件名永不参与路径拼接。调用方显式Close，解析失败/超限/取消自动清理；未知长度及尾随字节仍计总限制。大小错误保持原40003，畸形边界500、缺分片40000；不将全部错误猜作400。canonical内置8MB/10MB绑定，Java无界-1明确拒绝；非默认location/threshold/Tomcat扩展与完整CSRF装配尚未宣称兼容。
 
 Alternatives considered：ReadForm后仅检查Size（丢失空文件名语义）；将原文件名直接作为磁盘路径；全部文件常驻内存；只查Content-Length。均未采用。未修改原Java/前端/SQL，也未提前接入P4/P6业务路由。
+
+## R-041 多值Accept与真实JSON字节编码
+
+Decision：真实Servlet新增228个场景，分别覆盖认证/业务健康/Actuator。选择规则按质量权重而非头内先后，稳定保留默认声明顺序；非法媒体/q/未知字符集整条拒绝，逗号在引号内不是分隔符，保留具体+json和profile参数。原Spring的q=0兼容行为仍保留。
+
+JSON响应使用已有固定x/text依赖实际输出UTF-8、UTF-16BE/LE、UTF-32BE/LE，无额外BOM，不只修改Content-Type。测试按声明解码后逐字段比较，并直接检查编码字节前缀/中文与非BMP字符。序列化或编码失败在提交响应前输出脱敏500，不泄漏原数据。
+
+真实框架表明：UTF-16/ISO-8859-1是有效但不受JSON写入器支持的字符集，普通MVC返回406，Actuator显式produces返回500；未知字符集两者406。仅逗号Accept在MVC用默认JSON、Actuator走500。保留这些原行为，没有擅自改成统一理想响应。内容协商不是全部未来DTO/框架配置兼容证明。

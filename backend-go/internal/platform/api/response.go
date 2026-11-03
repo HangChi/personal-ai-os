@@ -47,14 +47,15 @@ func WriteControllerMediaJSON(w http.ResponseWriter, status int, value any, cont
 }
 
 func writeJSON(w http.ResponseWriter, status int, value any, contentType string) error {
-	data, marshalErr := json.Marshal(value)
+	data, marshalErr := MarshalJSONMediaType(value, contentType)
 	if marshalErr != nil {
 		status = http.StatusInternalServerError
+		contentType = "application/json"
 		data, _ = json.Marshal(Failure(InternalError))
 	}
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
-	_, writeErr := w.Write(append(data, '\n'))
+	_, writeErr := w.Write(data)
 	return errors.Join(marshalErr, writeErr)
 }
 
