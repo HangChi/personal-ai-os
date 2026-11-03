@@ -15,6 +15,7 @@ type FoundationProperties struct {
 	Security                        Security
 	ModelConcurrency                int
 	SharedSession, RedisRateLimit   bool
+	Monitoring                      bool
 	SessionNamespace, RateNamespace string
 }
 
@@ -93,6 +94,7 @@ func (p *Properties) Foundation() (FoundationProperties, error) {
 	if result.Security.Production || slices.Contains(profiles, "prod") {
 		return FoundationProperties{}, errors.New("Go 生产装配尚未验收，禁止使用生产配置启动")
 	}
+	result.Monitoring = slices.Contains(profiles, "monitoring")
 	// 原ConditionalOnProperty(havingValue="true")只忽略大小写，不接受on/1等布尔别名。
 	result.SharedSession = strings.EqualFold(values["app.shared-session.enabled"], "true")
 	result.RedisRateLimit = strings.EqualFold(values["app.rate-limit.redis.enabled"], "true")

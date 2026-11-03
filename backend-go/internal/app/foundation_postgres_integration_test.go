@@ -10,6 +10,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -307,5 +308,188 @@ func TestFoundationPostgresFiveRoles(t *testing.T) {
 				t.Fatal("角色隔离不符")
 			}
 		})
+	}
+}
+
+func TestFoundationPostgresManagementAndListeners(t *testing.T) {
+	f := fixtureFoundation(t, map[string]string{"spring.profiles.active": "monitoring", "app.runtime.role": "index", "app.auth.enabled": "true", "app.auth.password": "fixture-password", "app.security.csrf-enabled": "true"}, nil)
+	if f.ManagementHandler() == nil {
+		t.Fatal("monitoring未创建独立链")
+	}
+	business, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	management, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		business.Close()
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan error, 1)
+	go func() { done <- f.Serve(ctx, business, management, 5*time.Second) }()
+	client := &http.Client{Timeout: 5 * time.Second}
+	for _, test := range []struct {
+		port, path string
+		want       int
+	}{
+		{business.Addr().String(), "/api/v1/health", 404},
+		{business.Addr().String(), "/actuator/prometheus", 401},
+		{management.Addr().String(), "/api/v1/auth/csrf", 403},
+		{management.Addr().String(), "/actuator/health", 200},
+	} {
+		response, err := client.Get("http://" + test.port + test.path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		response.Body.Close()
+		if response.StatusCode != test.want {
+			t.Fatalf("独立端口权限错误: %s %d", test.path, response.StatusCode)
+		}
+	}
+	r, _ := http.NewRequest("HEAD", "http://"+management.Addr().String()+"/actuator/health", nil)
+	response, err := client.Do(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.StatusCode != 403 {
+		t.Fatal("HEAD不在原管理白名单")
+	}
+	response, err = client.Get("http://" + management.Addr().String() + "/actuator/prometheus")
+	if err != nil {
+		t.Fatal(err)
+	}
+	text, err := io.ReadAll(response.Body)
+	response.Body.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(text), `personalos_go_database_connections{state="max"} 4`) || strings.Contains(string(text), "fixture-password") {
+		t.Fatal("指标缺少池上限或泄露凭据")
+	}
+	cancel()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("双端口未退出")
+	}
+	for _, listener := range []net.Listener{business, management} {
+		rebound, err := net.Listen("tcp", listener.Addr().String())
+		if err != nil {
+			t.Fatal("监听端口未释放")
+		}
+		rebound.Close()
+	}
+	plain := fixtureFoundation(t, nil, nil)
+	if plain.ManagementHandler() != nil {
+		t.Fatal("未启用monitoring时意外开放管理链")
+	}
+}
+
+func TestFoundationPostgresManagementDownAndMetrics(t *testing.T) {
+	f := fixtureFoundation(t, map[string]string{"spring.profiles.active": "monitoring", "app.rate-limit.capacity": "1", "app.rate-limit.period": "1h"}, nil)
+	appExec(t, f, "DELETE FROM runtime_rate_bucket")
+	for i := 0; i < 2; i++ {
+		f.Handler().ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("POST", "/api/v1/settings/model/test", nil))
+	}
+	w := httptest.NewRecorder()
+	f.ManagementHandler().ServeHTTP(w, httptest.NewRequest("GET", "/actuator/prometheus", nil))
+	if !strings.Contains(w.Body.String(), `personalos_rate_limit_acquire_seconds_count{backend="postgres"} 2`) {
+		t.Fatal("管理指标未接到实际限流")
+	}
+	// 只关闭本次fixture自有池，验证已装配的Actuator DOWN映射，不影响任何现有服务。
+	if err := f.Pool().Close(); err != nil {
+		t.Fatal(err)
+	}
+	w = httptest.NewRecorder()
+	f.ManagementHandler().ServeHTTP(w, httptest.NewRequest("GET", "/actuator/health", nil))
+	if w.Code != 503 || w.Body.String() != `{"status":"DOWN"}` {
+		t.Fatal("真实探测失败未映射Actuator DOWN")
+	}
+}
+
+func TestFoundationPostgresListenerFailureClosesBoth(t *testing.T) {
+	f := fixtureFoundation(t, map[string]string{"spring.profiles.active": "monitoring"}, nil)
+	business, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	management, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		business.Close()
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- f.Serve(context.Background(), business, management, time.Second) }()
+	response, err := (&http.Client{Timeout: 3 * time.Second}).Get("http://" + management.Addr().String() + "/actuator/health")
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	business.Close()
+	select {
+	case err := <-done:
+		if err == nil {
+			t.Fatal("监听失败不能伪装成功")
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("另一个监听器未退出")
+	}
+	if err := f.Pool().Ping(context.Background()); err == nil {
+		t.Fatal("监听异常未清理自有池")
+	}
+	listener, err := net.Listen("tcp", management.Addr().String())
+	if err != nil {
+		t.Fatal("管理监听器未释放")
+	}
+	listener.Close()
+}
+
+func TestFoundationPostgresServeDeadlineCancelsStream(t *testing.T) {
+	entered := make(chan struct{})
+	f := fixtureFoundation(t, map[string]string{"app.rate-limit.enabled": "false"}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Write([]byte("data: fixture\n\n"))
+		w.(http.Flusher).Flush()
+		close(entered)
+		<-r.Context().Done()
+	}))
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan error, 1)
+	go func() { done <- f.Serve(ctx, listener, nil, 20*time.Millisecond) }()
+	r, err := http.NewRequest("POST", "http://"+listener.Addr().String()+"/api/v1/settings/model/test", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := (&http.Client{Timeout: 5 * time.Second}).Do(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	<-entered
+	cancel()
+	select {
+	case err := <-done:
+		if !errors.Is(err, context.DeadlineExceeded) {
+			t.Fatal("关闭流的宽限耗尽必须报告期限错误")
+		}
+	case <-time.After(7 * time.Second):
+		t.Fatal("流取消/关闭未完成")
+	}
+	if err := f.Close(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if f.Pool().Stats().InUse != 0 {
+		t.Fatal("退出流后连接泄漏")
 	}
 }

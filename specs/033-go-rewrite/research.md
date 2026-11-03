@@ -292,3 +292,11 @@ Decision：OpenFoundation组合已有P1组件；默认CLI仍离线。调用方�
 HTTP保持Worker先隔离，RequestID/异常边界覆盖限流→并发→安全→路由；已提交SSE异常只中止。未知业务404、ready503、模型NOT_CONFIGURED。Close用受锁保护的准入计数防止Add/Wait竞争；依次排空HTTP/执行器、关闭协调器/池。期限耗尽取消并返回，清理等实际退出，避免任务持租约时关池。
 
 Alternatives considered：默认进程自动连接当前服务；认证先于限流；Redis故障退内存；期限耗尽直接关池；用成功stub填未迁移API。均不采用。真实TLS临时库仅证明P1组合子集，管理端口/指标/CLI和发布门禁仍开放。
+
+## R-033 独立管理权限与有界监听退出
+
+Decision：仅在有效monitoring profile提供独立管理handler，业务handler不共享管理权限。原链只允许GET health/prometheus，HEAD也403；Actuator健康采用无业务信封/无依赖详情的UP200/DOWN503，数据库与已启用专用Redis实际探测。限流观察器串接内部固定标签count/sum/errors与显式外部观察器，池/执行器另以personalos_go命名，避免冒充完整Micrometer。
+
+Serve只接管显式回环TCP监听器；管理开关和监听器必须一致且端口独立。两侧同时Shutdown，一侧失败则关闭另一侧；宽限到期强制关闭连接并取消工作，保留期限错误，再以有限窗口等租约/池清理。任务不响应取消时允许延后清理，不能提前关池或假称成功。正常取消/异常监听/SSE超时均真实集成验证。
+
+Alternatives considered：根据Host/X-Forwarded头授予管理权限；将HEAD自动映射GET；业务端口也挂Prometheus；管理健康复用业务信封/HTTP200 DOWN；静默丢弃关闭超时。均未采用。完整HTTP histogram/业务指标与CLI接线继续开放。

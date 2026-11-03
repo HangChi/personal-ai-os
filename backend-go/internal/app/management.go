@@ -1,0 +1,120 @@
+package app
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"sync"
+	"time"
+
+	httpmiddleware "personal-ai-os/backend-go/internal/platform/http"
+	"personal-ai-os/backend-go/internal/platform/ratelimit"
+	redisclient "personal-ai-os/backend-go/internal/platform/redis"
+)
+
+// 独立管理链只接收原MonitoringSecurityConfig的两个精确GET，不复用业务匿名白名单。
+func newManagementHandler(up func(context.Context) bool, metrics http.Handler, logger *slog.Logger) http.Handler {
+	handler := httpmiddleware.HandleErrors(func(w http.ResponseWriter, r *http.Request) error {
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusForbidden)
+			return nil
+		}
+		switch r.URL.Path {
+		case "/actuator/health":
+			ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+			defer cancel()
+			status, state := http.StatusOK, "UP"
+			if !up(ctx) {
+				status, state = http.StatusServiceUnavailable, "DOWN"
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(status)
+			_, err := fmt.Fprintf(w, `{"status":%q}`, state)
+			return err
+		case "/actuator/prometheus":
+			metrics.ServeHTTP(w, r)
+		default:
+			w.WriteHeader(http.StatusForbidden)
+		}
+		return nil
+	}, logger)
+	return httpmiddleware.RequestIDMiddleware(handler)
+}
+
+// 标签固定为两个后端；不记录URI/请求/用户/异常。count/sum为无分位数summary，
+// 这是最小指标集，不代表完整Micrometer/Actuator运行时迁移。
+type foundationMetrics struct {
+	mu          sync.Mutex
+	counts      [2]uint64
+	seconds     [2]float64
+	redisErrors uint64
+	extra       ratelimit.Observer
+}
+
+func (m *foundationMetrics) RecordAcquisition(backend ratelimit.Backend, elapsed time.Duration, failed bool) {
+	index := 0
+	switch backend {
+	case ratelimit.Postgres:
+	case ratelimit.Redis:
+		index = 1
+	default:
+		return
+	}
+	m.mu.Lock()
+	m.counts[index]++
+	m.seconds[index] += max(0, elapsed.Seconds())
+	if backend == ratelimit.Redis && failed {
+		m.redisErrors++
+	}
+	m.mu.Unlock()
+	if m.extra != nil {
+		m.extra.RecordAcquisition(backend, elapsed, failed)
+	}
+}
+
+func (m *foundationMetrics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	m.mu.Lock()
+	counts, seconds, failures := m.counts, m.seconds, m.redisErrors
+	m.mu.Unlock()
+	w.Header().Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+	fmt.Fprintln(w, "# HELP personalos_rate_limit_acquire_seconds 共享模型限流获取耗时。")
+	fmt.Fprintln(w, "# TYPE personalos_rate_limit_acquire_seconds summary")
+	for i, backend := range []string{"postgres", "redis"} {
+		fmt.Fprintf(w, "personalos_rate_limit_acquire_seconds_count{backend=%q} %d\n", backend, counts[i])
+		fmt.Fprintf(w, "personalos_rate_limit_acquire_seconds_sum{backend=%q} %g\n", backend, seconds[i])
+	}
+	fmt.Fprintln(w, "# HELP personalos_rate_limit_errors_total 专用Redis限流错误次数。")
+	fmt.Fprintln(w, "# TYPE personalos_rate_limit_errors_total counter")
+	fmt.Fprintf(w, "personalos_rate_limit_errors_total{backend=\"redis\"} %d\n", failures)
+}
+
+// ManagementHandler仅在monitoring有效profile下可用，必须挂到独立监听器。
+// 不凭转发头或请求URL猜测本地端口，不将管理权限开放给业务handler。
+func (f *Foundation) ManagementHandler() http.Handler { return f.management }
+
+func (f *Foundation) attachManagement(metrics *foundationMetrics, clients []*redisclient.Client, logger *slog.Logger) {
+	f.management = f.track(newManagementHandler(func(ctx context.Context) bool {
+		if f.health.CurrentStatus(ctx).Status != "UP" {
+			return false
+		}
+		for _, client := range clients {
+			if client != nil {
+				if err := client.Ping(ctx); err != nil {
+					return false
+				}
+			}
+		}
+		return true
+	}, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		metrics.ServeHTTP(w, r)
+		pool, executor := f.pool.Stats(), f.executor.Stats()
+		fmt.Fprintln(w, "# TYPE personalos_go_database_connections gauge")
+		fmt.Fprintf(w, "personalos_go_database_connections{state=\"open\"} %d\npersonalos_go_database_connections{state=\"active\"} %d\npersonalos_go_database_connections{state=\"idle\"} %d\npersonalos_go_database_connections{state=\"max\"} %d\n", pool.OpenConnections, pool.InUse, pool.Idle, pool.MaxOpenConnections)
+		fmt.Fprintln(w, "# TYPE personalos_go_post_turn_tasks gauge")
+		fmt.Fprintf(w, "personalos_go_post_turn_tasks{state=\"active\"} %d\npersonalos_go_post_turn_tasks{state=\"queued\"} %d\n", executor.Active, executor.Queued)
+	}), logger))
+}

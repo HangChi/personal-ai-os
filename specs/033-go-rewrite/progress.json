@@ -67,9 +67,12 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation.go",
         "backend-go/internal/app/foundation_http.go",
-        "backend-go/internal/app/foundation_postgres_integration_test.go"
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "backend-go/internal/app/management.go",
+        "backend-go/internal/app/serve.go",
+        "backend-go/internal/app/management_test.go"
       ],
-      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
+      "note": "诊断入口已完成五种角色真实 HTTP/SIGTERM 冒烟；数据库/业务/调度/完整装配仍待完成，不能 verified。 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。 monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。"
     },
     "file:backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java": {
       "status": "in_progress",
@@ -185,9 +188,13 @@
         "backend-go/internal/platform/ratelimit/README.md",
         "scripts/migration/java_model_paths_fixture.py",
         "scripts/migration/ModelRequestPathsOracle.java",
-        "backend-go/internal/platform/http/testdata/java-model-request-paths.json"
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json",
+        "backend-go/internal/app/management.go",
+        "backend-go/internal/app/serve.go",
+        "backend-go/internal/app/management_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go"
       ],
-      "note": "本地桶与共享选择/故障/指标回调策略已移植；受控替身证明 Redis 错误拒绝不回退、PostgreSQL 错误透传。真实共享适配器、指标系统和应用装配未完成，不能 verified。"
+      "note": "本地桶与共享选择/故障/指标回调策略已移植；受控替身证明 Redis 错误拒绝不回退、PostgreSQL 错误透传。真实共享适配器、指标系统和应用装配未完成，不能 verified。 monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。"
     },
     "file:backend/src/test/java/com/personalos/common/web/TokenBucketRateLimiterTest.java": {
       "status": "implemented",
@@ -2415,6 +2422,16 @@
         "backend-go/internal/app/foundation_postgres_integration_test.go"
       ],
       "note": " 显式Foundation已通过TLS临时库双实例/五角色和关闭顺序集成；CLI/业务Worker/管理观测仍待验。"
+    },
+    "file:backend/src/main/java/com/personalos/common/auth/MonitoringSecurityConfig.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/app/management.go",
+        "backend-go/internal/app/serve.go",
+        "backend-go/internal/app/management_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go"
+      ],
+      "note": " monitoring独立管理GET白名单/最小指标与显式回环双监听通过真实TLS临时库集成；CLI/完整观测与业务Worker仍开放。"
     }
   },
   "release_gates": {

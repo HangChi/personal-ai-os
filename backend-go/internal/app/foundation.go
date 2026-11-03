@@ -48,10 +48,12 @@ type Foundation struct {
 	health      *health.Service
 	history     migration.HistoryStatus
 	handler     http.Handler
+	management  http.Handler
 	ctx         context.Context
 	cancel      context.CancelFunc
 	mu          sync.Mutex
 	closing     bool
+	served      bool
 	active      sync.WaitGroup
 	closeOnce   sync.Once
 	done        chan struct{}
@@ -172,7 +174,8 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if err != nil {
 		return nil, err
 	}
-	limiter, err := ratelimit.NewShared(ratelimit.Options{Enabled: settings.RateLimit.Enabled, Capacity: settings.RateLimit.Capacity, Period: settings.RateLimit.Period}, postgresBucket, redisBucket, options.Observer)
+	metrics := &foundationMetrics{extra: options.Observer}
+	limiter, err := ratelimit.NewShared(ratelimit.Options{Enabled: settings.RateLimit.Enabled, Capacity: settings.RateLimit.Capacity, Period: settings.RateLimit.Period}, postgresBucket, redisBucket, metrics)
 	if err != nil {
 		return nil, err
 	}
@@ -195,6 +198,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		return nil, err
 	}
 	f.handler = f.track(newFoundationHandler(settings.Role, security, limiter, f.gate, f.health, options.Business, logger))
+	if settings.Monitoring {
+		f.attachManagement(metrics, []*redisclient.Client{options.SessionRedis, options.RateRedis}, logger)
+	}
 	return f, nil
 }
 

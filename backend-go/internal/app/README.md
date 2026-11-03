@@ -18,4 +18,14 @@ API/combined提供原四个Auth路由和真实`/api/v1/health`。健康仍为统
 python3 scripts/migration/run_go_postgres_tests.py --tls --flyway --package app
 ```
 
-通过两个实例共享保护、CookieJar登录/CSRF轮换/注销、五角色池上限、在途取消/执行器排空/租约先于关池、历史损坏拒绝与失败连接清理。管理端口/指标、完整网络故障/框架差分、CLI接线与业务Worker仍需验收，T102–T109父项保持开放。
+通过两个实例共享保护、CookieJar登录/CSRF轮换/注销、五角色池上限、在途取消/执行器排空/租约先于关池、历史损坏拒绝与失败连接清理。完整网络故障/框架差分、CLI接线与业务Worker仍需验收，T102–T109父项保持开放。
+
+## 独立管理监听与最小指标
+
+有效profile包含`monitoring`时，`ManagementHandler()`提供独立管理链，否则返回nil。仅允许GET `/actuator/health`、GET `/actuator/prometheus`，其他路径/方法（包括HEAD）403，不创建业务会话。健康仅输出`{"status":"UP"}`或`{"status":"DOWN"}`，实际探测自有数据库和已启用的专用Redis，失败HTTP503，不套业务信封或公开依赖详情。模型未配置不影响健康，健康UP不代表迁移已就绪。
+
+Prometheus文本提供原限流timer的count/sum（秒）及Redis错误counter，backend标签固定postgres/redis；另以`personalos_go_*`命名自有池和轮末队列gauge。这是最小指标集，没有伪造完整Micrometer、业务HTTP histogram、JVM或未迁移业务指标。
+
+`Serve(ctx, businessListener, managementListener, shutdownTimeout)`接管调用方显式创建的监听器；仅允许回环TCP，管理必须不同端口并与monitoring开关一致。拒绝参数也会关闭已接管监听器；Foundation未启动时由调用方另行Close。每个实例只Serve一次。关闭时两个HTTP服务同时停止入口并排空，之后关闭Foundation；一侧监听异常会关闭另一侧。宽限耗尽强制关闭连接/取消请求并报告期限错误，另给资源清理有限窗口；不响应取消的任务仍可能延后最终清理，不能把它们标作成功完成。
+
+真实双监听集成验证Worker业务健康空404、业务端口不提供管理指标、管理端口不允许Auth/业务API、GET健康/指标及HEAD403、正常退出/异常退出释放端口，以及真实流式请求关闭超时。主CLI仍只使用离线诊断，尚未自动开启这些监听器。

@@ -284,6 +284,12 @@ Go逐项覆盖全部查询结果/profile/defaults、空值、环境别名冲突�
 
 验证跨两个HTTP实例共享预算、限流/并发早于CSRF/认证、登录/轮换/注销、数据库UP且模型NOT_CONFIGURED、五角色池上限与Worker空404。关闭期限取消在途请求；共享租约先于池释放，执行器排空时池仍可用；损坏目录拒绝后pg_stat_activity无失败实例连接。单测确认拒绝配置不连接数据库、panic脱敏/已提交SSE不混JSON。全量14包race、integration vet/build通过（/private/tmp/personal-ai-os-go-foundation-all.log），Python编译/基线check/diff通过。未验证app+Redis真实组合，未切CLI、未做业务Worker或管理端口/指标，P1父项保持开放。
 
+## 增量：独立管理链、最小指标与双监听退出（T108b）
+
+记录缺少管理API的编译失败（/private/tmp/personal-ai-os-go-management-red.log）以及Serve尚未实现的编译失败（/private/tmp/personal-ai-os-go-foundation-serve-red.log）。随后按原MonitoringSecurityConfig只开放两个精确GET；健康无信封/内部组件，UP200/DOWN503。先前共用业务JSON帮助函数附加换行，改为管理状态独立序列化后精确响应断言通过。
+
+配置/app定向race通过（/private/tmp/personal-ai-os-go-management-unit.log）。新建自建CA/TLS PostgreSQL并运行真实Java Flyway后，全部app集成通过（/private/tmp/personal-ai-os-go-management-postgres.log），容器已清理。验证真实回环业务/管理双端口隔离、HEAD403、池/限流指标、实际池失败DOWN、单监听异常联动关闭、流式请求宽限耗尽取消/期限错误及端口释放；100路指标更新固定标签无竞态。全量14包race、integration vet/build通过（/private/tmp/personal-ai-os-go-management-all.log），Python测试/基线check/diff通过。完整Micrometer/业务histogram、Redis组合、CLI与业务Worker仍未完成，P1不勾选。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

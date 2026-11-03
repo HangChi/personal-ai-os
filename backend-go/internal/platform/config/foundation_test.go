@@ -76,3 +76,19 @@ func TestFoundationPropertiesRejectAndRedact(t *testing.T) {
 		t.Fatal("nil来源必须拒绝")
 	}
 }
+
+func TestFoundationMonitoringProfile(t *testing.T) {
+	for _, source := range []map[string]string{{}, {"SPRING_PROFILES_ACTIVE": "monitoring"}, {"SPRING_PROFILES_DEFAULT": "monitoring"}} {
+		p, err := LoadBaselineProperties(PropertyOptions{System: source})
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := p.Foundation()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got.Monitoring != (len(source) > 0) {
+			t.Fatal("独立管理链未按有效profile装配")
+		}
+	}
+}
