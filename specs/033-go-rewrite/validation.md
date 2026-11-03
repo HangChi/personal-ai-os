@@ -39,6 +39,8 @@ go build -o /private/tmp/personal-ai-os-go-cb5d694 ./cmd/personalos
 
 - 已提交：`f255fec chore(go): 固定 Java 迁移基线及防遗漏检查`。
 - 用户已在本地完成：`b125f7e docs(go): 制定全量兼容迁移规格与分阶段验收计划`、`d59f85b feat(go): 添加基础响应契约与诊断启动入口`；本轮开始时工作区干净，分支仍为 go。
+- 本轮已完成配置小阶段提交：`9614b84 feat(go): 移植环境配置来源与生产安全启动守卫`。
+- 随后事务基础的独立暂存/提交请求又被自动审批服务 503 阻断，命令未执行；事务代码和本轮后续记录仍保存在工作区，尚未提交。第一笔配置提交不受影响。
 - 此前文档的后续暂存/提交尝试被自动审批服务连续返回 503 阻断，失败的操作未执行。这是审批基础设施故障，不是对修改安全性的否定；日志没有提供具体服务端原因。
 - 后续仍按小阶段提交，不绕过 Git 写入审批。未完成的提交不算已保存到提交历史。
 
@@ -50,7 +52,17 @@ go build -o /private/tmp/personal-ai-os-go-cb5d694 ./cmd/personalos
 
 Java 已实际执行 `./mvnw -o -B -Dapp.dotenv.enabled=false verify`，失败：汇总 859 tests、0 failures、494 errors；报告包含 Docker 环境不可访问、HTTP 模拟器 Socket Operation not permitted 等沙箱限制。未跳过失败项来声称全绿；真实环境 Java 全量质量门禁仍待恢复环境后重跑。
 
+另执行 `./mvnw -o -B -Dapp.dotenv.enabled=false -Dtest=DotEnvParserTest test`：11 个解析测试全部通过，但 Maven 整体仍失败，原因是单独执行测试后的全项目 JaCoCo 覆盖率检查（0.80 < 0.83，并有已有执行数据与 class 不匹配警告）。未关闭覆盖率门禁；该结果只用于核对原 Java 解析用例，不能视为 Java 质量门禁通过或 Go 行为差分。
+
 查询 pgx 可用版本时 DNS 失败，联网审批返回 503，命令未执行；未下载或锁定未经验证的驱动。Docker socket 访问被拒绝，未启动容器、未连接现有数据库。T102/T103 仍未完成。
+
+## 本轮：P1 标准库连接池与事务
+
+先加入事务测试，确认因待实现 API 而编译失败，再实现 Pool。最终重新执行 `go test -race -count=1 ./...`、`go vet ./...`、`go build -o /private/tmp/personal-ai-os-go-p1 ./cmd/personalos`，六个有测试的包全部通过；没有新增外部依赖。
+
+受控测试驱动覆盖：API/Worker 池上限与 5s 默认值、非法配置在连接前失败、探测失败清理、握手期限、同连接执行/提交、只读/隔离选项透传、业务失败/panic 回滚、原始错误可用 errors.Is 识别但普通格式化脱敏、回滚失败保留业务错误、连接池队列超时不取消父 context、独立嵌套事务、父取消不提交、幂等关闭与关闭后拒绝、32 路并发与 Worker 4 连接上限。提交失败不重试。
+
+这些测试不验证 PostgreSQL SQL、数据原子性、锁、TLS、驱动类型、pgvector 或 Flyway 历史；Pool 尚未接入应用或生产退出流程。完整 T102、T103、T108 和 P1 验收仍待完成。驱动联网查询的第二次审批仍返回 503，未执行；后续需先恢复依赖下载与隔离数据库环境。
 
 ## 未执行 / 尚未实现
 
