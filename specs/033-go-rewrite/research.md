@@ -192,3 +192,11 @@ Decision：Java夹具使用两个独立Flyway实例/线程，由同一latch同�
 空重放和合成升级均为39表/287列/116约束/84索引/10序列/13触发器/9函数逐项一致。实际在Go副本加额外列必须产生差分，随后清理。不比较数据/部署属主ACL/注释或未来新增对象类型；这些另列验收，不能仅凭同一SQL来源宣称全库完全等价。
 
 Alternatives considered：只比表数或最终版本；用Go自身预期生成双方结构；正例通过但比较器从不失败；忽略全部默认值/函数体以消掉差异；在原Java数据库故障注入。当前所有DDL仅在脚本新集群或自己的重放副本。
+
+## R-023 合成备份恢复与表达式重解析
+
+Decision：--backup隐含--flyway，只对新建migration专用集群注入明确虚构的数据，使用原生pg_dump custom和pg_restore --exit-on-error到同一临时集群另一个空数据库personalos_go_restore。备份仅驻留进程内存，--no-owner/--no-acl，退出删除本次容器，不接触现有服务。恢复后只读验证42条Flyway历史；40表（含历史）的全部行列排序后SHA-256及10序列last_value/is_called逐项一致。补充中文/emoji/组合字符、时区、含NUL的bytea、1024维向量与余弦查询、虚构opaque字符串，以及恢复后BIGSERIAL继续、唯一约束和源库不受写入影响。
+
+发现PostgreSQL17 dump/restore将ANY数组整体::text[]重排为逐元素::text，部分索引条件也有相同变化。保留原始Java/Go结构对照的严格定义比较；仅备份场景在同版本PostgreSQL的临时空表重解析双方CHECK/索引，再比较规范化结果，不忽略常量/运算/类型。分别改变CHECK的QUEUE和部分索引PENDING为DIFFERENT，必须仍检出差异。临时表创建/删除不改业务DDL。
+
+Alternatives considered：删除全部cast或跳过约束（可能掩盖真实差异）；仅比较表数/恢复命令退出码（不证明数据一致）；直接使用真实用户备份（越过本轮隔离）；把opaque字符串保留误报为真实密文加解密。此证据不覆盖生产属主/ACL、真实用户备份、真实密文/附件或跨PostgreSQL版本恢复；T103父任务和发布门禁继续开放。

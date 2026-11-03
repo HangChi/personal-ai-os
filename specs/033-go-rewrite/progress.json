@@ -421,9 +421,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V10__create_task_tag.sql": {
       "status": "in_progress",
@@ -439,9 +442,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V11__create_chat_message_citation.sql": {
       "status": "in_progress",
@@ -457,9 +463,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V12__add_chat_session_summary.sql": {
       "status": "in_progress",
@@ -475,9 +484,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V13__add_memory_source.sql": {
       "status": "in_progress",
@@ -493,9 +505,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V14__add_message_attachments.sql": {
       "status": "in_progress",
@@ -511,9 +526,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V15__create_token_usage.sql": {
       "status": "in_progress",
@@ -529,9 +547,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V16__add_confirmation_failed_status.sql": {
       "status": "in_progress",
@@ -547,9 +568,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V17__add_memory_content_hash.sql": {
       "status": "in_progress",
@@ -565,9 +589,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V18__add_task_previous_status.sql": {
       "status": "in_progress",
@@ -583,9 +610,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V19__index_vector_store_document_id.sql": {
       "status": "in_progress",
@@ -601,9 +631,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V1__enable_extensions.sql": {
       "status": "in_progress",
@@ -619,9 +652,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V20__create_ai_model_config.sql": {
       "status": "in_progress",
@@ -637,9 +673,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V21__create_ai_model_profile.sql": {
       "status": "in_progress",
@@ -655,9 +694,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V22__add_ai_model_profile_protocol.sql": {
       "status": "in_progress",
@@ -673,9 +715,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V23__add_profile_models_and_session_model.sql": {
       "status": "in_progress",
@@ -691,9 +736,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V24__add_profile_audio_model.sql": {
       "status": "in_progress",
@@ -709,9 +757,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V25__add_model_context_window.sql": {
       "status": "in_progress",
@@ -727,9 +778,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V26__memory_layering_and_dedup.sql": {
       "status": "in_progress",
@@ -745,9 +799,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V27__create_agent_plan.sql": {
       "status": "in_progress",
@@ -763,9 +820,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V28__create_web_push.sql": {
       "status": "in_progress",
@@ -781,9 +841,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V29__expand_encrypted_model_key.sql": {
       "status": "in_progress",
@@ -799,9 +862,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V2__create_chat_tables.sql": {
       "status": "in_progress",
@@ -817,9 +883,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V30__index_operation_record_retention.sql": {
       "status": "in_progress",
@@ -835,9 +904,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V31__persist_chat_context_budget.sql": {
       "status": "in_progress",
@@ -853,9 +925,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V32__durable_chat_runs.sql": {
       "status": "in_progress",
@@ -871,9 +946,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V33__agent_questions_and_followups.sql": {
       "status": "in_progress",
@@ -889,9 +967,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V34__knowledge_index_jobs.sql": {
       "status": "in_progress",
@@ -907,9 +988,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V35__search_projection_outbox.sql": {
       "status": "in_progress",
@@ -925,9 +1009,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V36__knowledge_provenance_conflicts.sql": {
       "status": "in_progress",
@@ -943,9 +1030,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V38__durable_worker_signals.sql": {
       "status": "in_progress",
@@ -961,9 +1051,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V39__search_projection_leases.sql": {
       "status": "in_progress",
@@ -979,9 +1072,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V3__create_task_and_agent_tables.sql": {
       "status": "in_progress",
@@ -997,9 +1093,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V40__reminder_webhook_delivery.sql": {
       "status": "in_progress",
@@ -1015,9 +1114,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V41__reminder_broadcast.sql": {
       "status": "in_progress",
@@ -1033,9 +1135,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V42__knowledge_candidate_cache_generation.sql": {
       "status": "in_progress",
@@ -1051,9 +1156,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V4__create_knowledge_tables.sql": {
       "status": "in_progress",
@@ -1069,9 +1177,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V5__generalize_confirmation_table.sql": {
       "status": "in_progress",
@@ -1087,9 +1198,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V6__rename_confirmation_primary_key.sql": {
       "status": "in_progress",
@@ -1105,9 +1219,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V7__create_calendar_tables.sql": {
       "status": "in_progress",
@@ -1123,9 +1240,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V8__extend_confirmation_action_mcp.sql": {
       "status": "in_progress",
@@ -1141,9 +1261,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "file:backend/src/main/resources/db/migration/V9__create_memory.sql": {
       "status": "in_progress",
@@ -1159,9 +1282,12 @@
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
         "scripts/migration/java_flyway_fixture.py",
-        "backend-go/internal/platform/migration/schema_diff_integration_test.go"
+        "backend-go/internal/platform/migration/schema_diff_integration_test.go",
+        "backend-go/internal/platform/migration/backup_postgres_integration_test.go",
+        "scripts/migration/disposable_postgres_backup.py",
+        "scripts/migration/backup_seed.sql"
       ],
-      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。"
+      "note": "原文件 SHA-256 对照基线一致，已在一次性 PostgreSQL 空 schema/合成历史数据顺序重放；最终 39 表/13 触发器与部分向量/约束/数据搬迁断言通过。真实 Flyway 历史/锁、备份恢复及完整业务语义未验收，不能 verified。 真实Flyway12.4.0已执行/validate/二次零执行，Go只读校验42条历史及实际CRC32通过；完整结构差分/恢复/锁与应用装配仍待验收。 双Flyway锁竞争和七类schema定义对照通过；未涉及用户备份/部署ACL。 合成pg_dump/restore到独立空库的42历史/七类DDL/40表数据/10序列和继续写入已验证；非用户备份/生产权限/真实密文验收。"
     },
     "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:33": {
       "status": "implemented",

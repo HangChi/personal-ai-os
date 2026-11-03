@@ -19,6 +19,10 @@ import (
 )
 
 func historyFixture(t *testing.T) *database.Pool {
+	return historyDatabase(t, false)
+}
+
+func historyDatabase(t *testing.T, restored bool) *database.Pool {
 	t.Helper()
 	settings := database.DefaultPostgresOptions()
 	settings.Host, settings.Database = os.Getenv("GO_TEST_POSTGRES_HOST"), os.Getenv("GO_TEST_POSTGRES_DB")
@@ -28,6 +32,12 @@ func historyFixture(t *testing.T) *database.Pool {
 		t.Fatal("不是专用临时迁移库")
 	}
 	settings.Port = port
+	if restored {
+		if os.Getenv("GO_TEST_BACKUP") != "disposable" {
+			t.Fatal("恢复库没有显式临时测试标记")
+		}
+		settings.Database = "personalos_go_restore"
+	}
 	settings.SSLMode, settings.RootCert = os.Getenv("GO_TEST_POSTGRES_SSL_MODE"), os.Getenv("GO_TEST_POSTGRES_ROOT_CERT")
 	if settings.SSLMode == "" {
 		settings.SSLMode = "disable"

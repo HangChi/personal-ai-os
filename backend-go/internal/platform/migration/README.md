@@ -23,7 +23,7 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 ## 待完成
 
-生产部署迁移角色、未支持的历史标记、存量备份恢复、对象属主/ACL/注释等结构边界仍未完成。合成历史数据不是用户备份。以上 schema/触发器断言不代表业务仓储、索引 Worker、消息发布或完整模块已迁移；T103 与 P1 保持未完成。
+生产部署迁移角色、未支持的历史标记、真实用户备份恢复、对象属主/ACL/注释等结构边界仍未完成。合成历史数据不是用户备份。以上 schema/触发器断言不代表业务仓储、索引 Worker、消息发布或完整模块已迁移；T103 与 P1 保持未完成。
 
 ## 真实 Flyway 历史与只读校验
 
@@ -40,3 +40,13 @@ FlywayChecksum保留UTF-8/空白/注释，忽略CR/LF和开头单个BOM，返回
 
 
 最新 --flyway 夹具由两个独立Flyway实例同时竞争，合计执行42迁移，validate/再次零执行通过。Go空重放与合成升级均和Java真实public比较七类pg_catalog定义，39表/287列/116约束/84索引/10序列/13触发器/9自有函数逐项一致；额外列的真实DDL反例被发现。比较只归一化schema限定符，排除Flyway自身历史/扩展拥有函数，不掩盖默认值/函数体/约束；属主ACL/注释/数据与未来对象类型不在本次结构证据内。
+
+## 合成备份恢复
+
+```bash
+python3 scripts/migration/run_go_postgres_tests.py --tls --backup
+```
+
+--backup隐含--flyway；仅migration专用新建集群注入backup_seed.sql虚构数据，pg_dump custom → 同集群独立空库personalos_go_restore。无owner/ACL，不读取真实备份；备份仅在内存，容器退出清理。Go验证42历史、七类DDL、40表全行列摘要/10序列状态、Unicode/时区/bytea/NUL/1024维向量/opaque字符串，以及继续写入/唯一约束/源库不变。
+
+PostgreSQL恢复会重排ANY数组cast；仅备份比较用同版本临时表重解析双方CHECK/索引，再逐项比较，条件值变更反例必须被检测。直接Java/Go重放仍用原始严格定义。此处不是跨版本、真实用户备份、生产ACL、真实密文或附件恢复验收。

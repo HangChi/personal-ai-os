@@ -28,7 +28,7 @@ def capture(command, **kwargs):
 PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health"]
 
 
-def run_package(image, package, tls_mode=False, flyway=False):
+def run_package(image, package, tls_mode=False, flyway=False, backup=False):
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, POSTGRES_PASSWORD=password)
     container = None
@@ -90,6 +90,10 @@ def run_package(image, package, tls_mode=False, flyway=False):
             from java_flyway_fixture import migrate_disposable
             migrate_disposable(go_env)
             go_env["GO_TEST_FLYWAY"] = "disposable"
+            if backup:
+                from disposable_postgres_backup import verify_backup_fixture
+                verify_backup_fixture(container)
+                go_env["GO_TEST_BACKUP"] = "disposable"
         print("运行 %s 集成测试" % package, flush=True)
         subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
                         "./internal/platform/" + package],
@@ -110,9 +114,10 @@ def main():
     parser.add_argument("--package", choices=PACKAGES, action="append", help="只测试指定包，可重复；各包独占新容器")
     parser.add_argument("--tls", action="store_true", help="新建 CA/服务端证书，以 verify-full 重跑并拒绝明文连接")
     parser.add_argument("--flyway", action="store_true", help="migration包先以基线Java Flyway真实执行42迁移，验证只读历史校验")
+    parser.add_argument("--backup", action="store_true", help="隐含--flyway，只在新建容器填合成数据并备份恢复到另一空库")
     args = parser.parse_args()
     for package in args.package or PACKAGES:
-        run_package(args.image, package, args.tls, args.flyway)
+        run_package(args.image, package, args.tls, args.flyway or args.backup, args.backup)
 
 
 if __name__ == "__main__":

@@ -210,6 +210,14 @@ run_go_postgres_tests.py --tls --flyway --package migration 通过。两个独�
 
 Java真实public和Go空schema/合成升级schema的七类定义全部逐项相同：39表、287列、116约束、84索引、10序列、13用户触发器、9自有函数。采集包含列类型/默认值/排序/nullable、CHECK/FK/唯一、索引/序列/触发器/函数定义；排除Flyway历史/扩展函数，仅归一化当前schema限定符。每个Go副本实际加列的反例均被比较器检测，之后删除。日志 /private/tmp/personal-ai-os-go-flyway-schema-tls.log；含integration标签vet通过，容器清理。此处未比较数据/部署属主ACL/注释或备份恢复，T103继续开放。
 
+## 增量：合成数据备份恢复与继续写入（T103d）
+
+执行run_go_postgres_tests.py --tls --backup，六个专用包database/ratelimit/migration/coordination/modelgate/health全部integration/race通过。migration真实双Flyway竞争后，原生pg_dump custom → 同一临时集群独立空库pg_restore通过；恢复42历史、七类DDL、40表全行列摘要和10序列状态一致，Unicode/时区/bytea/NUL/1024维向量/opaque值可读，恢复库继续插入ID递增、重复序号23505，源库摘要不变。
+
+首次严格比较发现CHECK/部分索引的text数组cast被pg_restore解析为逐元素cast。没有忽略条件：仅备份测试用同版本临时空表重解析双方表达式，再严格比较；改变QUEUE/PENDING常量的两个反例都被发现。Java/Go直接重放仍保持原始七类定义逐项一致。日志 /private/tmp/personal-ai-os-go-final-postgres.log；先前诊断日志 /private/tmp/personal-ai-os-go-backup-restore-tls.log。备份无owner/ACL，只含虚构数据，不能代表用户备份、生产权限、真实密文或附件验收。
+
+同时run_go_redis_tests.py --tls三包通过，日志 /private/tmp/personal-ai-os-go-final-redis.log。全量十四包race、integration标签vet、构建、五种角色真实进程smoke和go mod verify通过，日志 /private/tmp/personal-ai-os-go-final-race.log。本次容器/临时证书清理，诊断入口仍保持readyz=503及业务404。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

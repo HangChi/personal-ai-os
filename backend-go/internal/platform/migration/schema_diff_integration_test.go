@@ -90,7 +90,7 @@ func compareSchema(expected, actual schemaSnapshot) error {
 		if !slices.Equal(want, got) {
 			for i, row := range want {
 				if row != got[i] {
-					return fmt.Errorf("%s 定义不一致: %s", category, row.name)
+					return fmt.Errorf("%s 定义不一致: %s; expected=%s actual=%s", category, row.name, row.definition, got[i].definition)
 				}
 			}
 		}
