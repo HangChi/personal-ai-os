@@ -140,7 +140,8 @@ func NewChatClient(resolved Resolved, protocol Protocol, transport http.RoundTri
 	}
 	return &ChatClient{protocol: protocol, resolved: resolved, http: httpClient(transport), timeout: 120 * time.Second}, nil
 }
-func (c *ChatClient) Name() string { return c.resolved.ChatModel }
+func (c *ChatClient) Provider() string { return string(c.protocol) }
+func (c *ChatClient) Name() string     { return c.resolved.ChatModel }
 func (c *ChatClient) payload(r ChatRequest, stream bool) (map[string]any, error) {
 	messages := make([]any, 0, len(r.Messages))
 	for _, m := range r.Messages {

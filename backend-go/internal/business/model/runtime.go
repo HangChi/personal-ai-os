@@ -112,3 +112,18 @@ func (r *Runtime) Target(ctx context.Context, name string) (*ChatClient, error) 
 	}
 	return c, nil
 }
+
+// TargetSnapshot 将客户端和证据代配对，热切换中的旧请求不能污染新端点证据。
+func (r *Runtime) TargetSnapshot(ctx context.Context, name string) (*ChatClient, uint64, error) {
+	for attempt := 0; attempt < 3; attempt++ {
+		epoch := r.Evidence.Generation()
+		client, e := r.Target(ctx, name)
+		if e != nil {
+			return nil, 0, e
+		}
+		if epoch == r.Evidence.Generation() {
+			return client, epoch, nil
+		}
+	}
+	return nil, 0, errors.New("模型配置正在切换，请稍后重试")
+}

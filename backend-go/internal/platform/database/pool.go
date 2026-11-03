@@ -115,10 +115,26 @@ func (pool *Pool) WithConn(ctx context.Context, callback func(*sql.Conn) error) 
 // WithTx 在独占连接中开始事务；回调成功才提交，错误或 panic 均回滚。
 // 需要加入同一事务时向仓储显式传递 tx；再次调用 WithTx 是独立事务，
 // 会占用另一连接并遵守池等待上限。不会自动重试未知结果的提交。
-func (pool *Pool) WithTx(ctx context.Context, options sql.TxOptions, callback func(*sql.Tx) error) error {
+func (pool *Pool) WithTx(ctx context.Context, options sql.TxOptions, callback func(*sql.Tx) error) (err error) {
 	if callback == nil {
 		return errors.New("数据库事务回调不能为空")
 	}
+	var guarded *Transaction
+	defer func() {
+		original := recover()
+		var completionPanic any
+		if guarded != nil {
+			completionErr, p := guarded.complete()
+			err = combine(err, operationError("事务完成回调", completionErr))
+			completionPanic = p
+		}
+		if original != nil {
+			panic(original)
+		}
+		if completionPanic != nil {
+			panic(completionPanic)
+		}
+	}()
 	return pool.WithConn(ctx, func(connection *sql.Conn) (err error) {
 		tx, beginErr := connection.BeginTx(ctx, &options)
 		if beginErr != nil {
@@ -130,6 +146,14 @@ func (pool *Pool) WithTx(ctx context.Context, options sql.TxOptions, callback fu
 				err = combine(err, operationError("回滚", rollbackErr))
 			}
 		}()
+		if !options.ReadOnly {
+			if guard, ok := ctx.Value(writeGuardKey{}).(func(context.Context, *Transaction) error); ok {
+				guarded = &Transaction{sql: tx, active: true}
+				if err = guard(ctx, guarded); err != nil {
+					return err
+				}
+			}
+		}
 		if err = callback(tx); err != nil {
 			return err
 		}

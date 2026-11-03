@@ -7,6 +7,40 @@ import (
 	"testing"
 )
 
+func TestWriteGuardCompletionAndRejection(t *testing.T) {
+	for _, reject := range []bool{false, true} {
+		pool := openTestPool(t, &testDriver{}, DefaultPoolOptions(true))
+		called, body := 0, false
+		var saved *Transaction
+		failure := errors.New("lost lease")
+		ctx := WithWriteGuard(context.Background(), func(ctx context.Context, tx *Transaction) error {
+			saved = tx
+			if !tx.Writable() {
+				t.Fatal("guard needs writable transaction")
+			}
+			_ = tx.AfterCompletion(func() error {
+				called++
+				if tx.SQL() != nil || pool.Stats().InUse != 0 {
+					t.Error("guard cleanup before connection return")
+				}
+				return nil
+			})
+			if reject {
+				return failure
+			}
+			return nil
+		})
+		err := pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error { body = true; return nil })
+		if called != 1 || body == reject || errors.Is(err, failure) != reject || saved.Writable() {
+			t.Fatal(called, body, err)
+		}
+		called = 0
+		if err := pool.WithTx(ctx, sql.TxOptions{ReadOnly: true}, func(*sql.Tx) error { return nil }); err != nil || called != 0 {
+			t.Fatal("read transaction fenced", err)
+		}
+	}
+}
+
 func TestManagedTransactionCompletionAfterTerminalAndConnectionRelease(t *testing.T) {
 	for _, mode := range []string{"commit", "rollback", "panic", "commit failure"} {
 		t.Run(mode, func(t *testing.T) {

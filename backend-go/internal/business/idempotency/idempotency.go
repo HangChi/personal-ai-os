@@ -191,7 +191,7 @@ func validate(request Request, action func(context.Context) (Result, error)) err
 
 func finalOutcome(outcome Outcome) error {
 	switch outcome {
-	case Success, RequiresConfirmation, Rejected:
+	case Success, RequiresConfirmation, Rejected, Failed:
 		return nil
 	default:
 		return fmt.Errorf("动作返回了非法最终状态 %q", outcome)

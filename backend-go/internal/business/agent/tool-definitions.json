@@ -1,0 +1,397 @@
+[
+  {
+    "name": "askUser",
+    "description": "关键意图或必要信息不明确且无法从已有上下文确定时，向用户提一个明确问题。可给最多4个选项及简短影响说明，用户也可自由输入。调用后引擎暂停任务等待回答；不要自行替用户选择。不用于授权删除或外部写操作，那些仍走人工确认。已回答的问题不要重复问。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string",
+          "description": "需要用户澄清的一个问题"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "description",
+              "label"
+            ],
+            "additionalProperties": false
+          },
+          "description": "0到4个选项，label为选项名，description说明选择的影响"
+        }
+      },
+      "required": [
+        "question"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "completePlanStep",
+    "description": "把计划中的某一步标记为完成。**需要产出证据**：这一步必须已经调用过工具，或者在 summary 里写下可核对的结果 —— 两者都没有会被拒绝。不要在没做任何事的情况下声称完成。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "description": "步骤序号（从 1 开始）"
+        },
+        "summary": {
+          "type": "string",
+          "description": "这一步的结论或产出；本步没有调用工具时必填"
+        }
+      },
+      "required": [
+        "seq"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "createPlan",
+    "description": "为一个多步骤任务建立执行计划。**仅当任务需要 2 步以上且步骤之间有依赖时调用**（例如「整理上周会议并给每人发提醒」）。单步任务、纯问答、单次查询不要调用。计划建立后，系统会在每一轮把「当前该做哪一步」作为执行约束推送给你。同一会话只保留一个进行中的计划，新计划会取代旧的。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "goal": {
+          "type": "string",
+          "description": "目标的一句话复述，例如：把本周所有未完成任务按优先级重排"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "有序的步骤标题列表，2~12 步。每步应是一个可验证的动作，例如 [\"查询未完成任务\", \"按截止时间排序\", \"更新优先级\"]"
+        }
+      },
+      "required": [
+        "goal",
+        "steps"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "createTask",
+    "description": "创建一个新的个人任务。当用户要求新增待办、或提到「帮我记一下」「提醒我做某事」时调用。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "任务标题，1~200 字，例如：交周报"
+        },
+        "description": {
+          "type": "string",
+          "description": "任务描述，可省略"
+        },
+        "priority": {
+          "type": "string",
+          "description": "优先级，取值 LOW / MEDIUM / HIGH，省略则默认 MEDIUM"
+        },
+        "dueAt": {
+          "type": "string",
+          "description": "截止时间，ISO-8601，例如 2026-10-17T10:00:00Z 或 2026-10-17，可省略"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "标签，最多 5 个，例如 [\"工作\",\"本周\"]，可省略"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "deleteTask",
+    "description": "申请删除一个或多个任务。这是不可逆操作：调用后不会立即删除，而是生成一条待确认事项，必须由用户在界面上确认后才会真正删除。调用后请告知用户「需要在界面上确认」，不要声称已经删除。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "taskIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "要删除的任务 id 列表，1~50 个。可先调用 findTasks 获取 id。"
+        }
+      },
+      "required": [
+        "taskIds"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "failPlanStep",
+    "description": "把计划中的某一步标记为失败。失败后可以重试该步（startPlanStep），或用 revisePlan 换一条路线。不要反复用同样的参数重试。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "description": "步骤序号（从 1 开始）"
+        },
+        "reason": {
+          "type": "string",
+          "description": "失败原因，例如：任务不存在 / 缺少必要参数 / 权限不足"
+        }
+      },
+      "required": [
+        "seq",
+        "reason"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "findTasks",
+    "description": "按关键词或状态查询任务列表。用户问「我有哪些待办」「找一下周报相关的任务」时调用。返回结果包含任务 id，后续需要按 id 操作时必须先调用本工具获取 id。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "keyword": {
+          "type": "string",
+          "description": "关键词，匹配标题或描述，可省略"
+        },
+        "status": {
+          "type": "string",
+          "description": "状态筛选：TODO / DOING / DONE，可省略"
+        },
+        "tag": {
+          "type": "string",
+          "description": "标签精确筛选，例如「工作」，可省略"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "返回条数上限，默认 20，最大 50"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "getPlan",
+    "description": "查看当前会话的计划与各步状态。上下文被裁剪后用它确认「还剩哪几步没做」。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "getTask",
+    "description": "按 id 查看单个任务的详细信息。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "description": "任务 id"
+        }
+      },
+      "required": [
+        "taskId"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "revisePlan",
+    "description": "放弃当前计划并建立新计划（换路线）。原计划保留为已放弃状态，便于回溯。当某步失败且重试也无意义、或用户改了需求时调用。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "description": "为什么要换路线，例如：任务接口不可用，改为先导出再处理"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "新的步骤标题列表，2~12 步"
+        },
+        "goal": {
+          "type": "string",
+          "description": "新的目标复述；省略则沿用原目标"
+        }
+      },
+      "required": [
+        "reason",
+        "steps"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "scheduleTask",
+    "description": "申请修改任务的截止时间。截止时间属于关键字段，调用后不会立即生效，而是生成待确认事项，需用户在界面上确认。省略 dueAt 表示清除截止时间。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "description": "任务 id"
+        },
+        "dueAt": {
+          "type": "string",
+          "description": "新的截止时间，ISO-8601；省略或留空表示清除截止时间"
+        }
+      },
+      "required": [
+        "taskId"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "setTaskCompleted",
+    "description": "把任务标记为已完成，或恢复已完成的任务。该操作可逆且不破坏数据，因此无需用户确认。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "description": "任务 id"
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "true 表示标记完成，false 表示恢复"
+        }
+      },
+      "required": [
+        "taskId",
+        "completed"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "setTaskPriority",
+    "description": "申请修改任务的优先级。优先级属于关键字段，调用后不会立即生效，而是生成待确认事项，需用户在界面上确认。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "description": "任务 id"
+        },
+        "priority": {
+          "type": "string",
+          "description": "新的优先级，取值 LOW / MEDIUM / HIGH"
+        }
+      },
+      "required": [
+        "taskId",
+        "priority"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "skipPlanStep",
+    "description": "跳过计划中的某一步（例如它依赖的数据不存在）。跳过计入已处理，计划仍能正常完成。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "description": "步骤序号（从 1 开始）"
+        },
+        "reason": {
+          "type": "string",
+          "description": "跳过原因，可省略"
+        }
+      },
+      "required": [
+        "seq"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "startPlanStep",
+    "description": "开始执行计划中的某一步。**必须按序推进**：只能开始第一个尚未结束的步骤，跳到后面的步骤会被拒绝。失败过的步骤可以通过它重试。开始后该步状态为 RUNNING，期间的工具调用结果会自动归到这一步。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "description": "步骤序号（从 1 开始）"
+        }
+      },
+      "required": [
+        "seq"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "updateTaskDetails",
+    "description": "修改任务的标题或描述。这两个字段可逆、影响局部，因此无需用户确认。修改截止时间请用 scheduleTask，修改优先级请用 setTaskPriority。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "description": "任务 id"
+        },
+        "title": {
+          "type": "string",
+          "description": "新的标题，可省略"
+        },
+        "description": {
+          "type": "string",
+          "description": "新的描述，可省略"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "新的标签列表（整体替换，最多 5 个），可省略；传空数组表示清空"
+        }
+      },
+      "required": [
+        "taskId"
+      ],
+      "additionalProperties": false
+    }
+  }
+]

@@ -7,6 +7,14 @@ import (
 	"sync"
 )
 
+type writeGuardKey struct{}
+
+// WithWriteGuard 为显式后台执行传播最终写入栅栏；只在写事务内校验。
+// 它不创建环境事务，不重试回调，租约行锁随每个短事务提交释放。
+func WithWriteGuard(ctx context.Context, guard func(context.Context, *Transaction) error) context.Context {
+	return context.WithValue(ctx, writeGuardKey{}, guard)
+}
+
 // Transaction 是显式事务作用域。SQL 不得逃逸或由回调自行 Commit/Rollback；
 // 完成回调在数据库事务结束且连接归还后执行，成功、错误与 panic 都会执行。
 type Transaction struct {

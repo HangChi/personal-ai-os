@@ -69,8 +69,8 @@ func (s *PostgresStore) DeleteStaleHTTP(ctx context.Context, record Record, thre
 }
 
 func (s *PostgresStore) Complete(ctx context.Context, key string, outcome Outcome, payload *string, duration int) error {
-	return s.pool.WithConn(ctx, func(conn *sql.Conn) error {
-		result, err := conn.ExecContext(ctx, `UPDATE operation_record SET outcome=$2,response_payload=$3,duration_ms=$4
+	return s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
+		result, err := tx.ExecContext(ctx, `UPDATE operation_record SET outcome=$2,response_payload=$3,duration_ms=$4
  WHERE idempotency_key=$1 AND outcome='IN_PROGRESS'`, key, outcome, payload, duration)
 		if err != nil {
 			return err
