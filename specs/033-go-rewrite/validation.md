@@ -494,3 +494,18 @@ T300–T305已完成；此前“P3首批”的未完成描述为历史记录，�
 所有模型网络只到本地模拟器，数据库/Redis只到脚本新建的临时TLS容器，资源已清理。未读取现有.env/真实密钥，未推送/部署。外部将原工作区切到main时，自动checkpoint `cd710f7`保存主体实现；后续在独立工作区的go分支完成收尾，保留main的选择。阶段收口不等于全量release：P4–P8、2438项逐项verified及五个发布门禁仍需后续审计，readyz503与prod拒绝保留。
 
 提交前最终复验：15项Python索引/配置台账测试、1093文件基线/派生索引、78项配置处置及变更Markdown本地链接、git diff --check均通过。`check-complete`仍按预期拒绝全部2438项未verified与五发布门禁。最终完整Go race/vet/build与重试配置收紧后的P3应用/三Redis五角色进程均重新通过。代码与测试已提交为`837f2e5 feat(go): 完成P3模型协议与缓存验收`；本验收文档和台账单独提交。
+
+## P4 首批 T400a：会话存储与独立接口（2026-11-04）
+
+本批范围和未完成职责见 [p4-storage.md](p4-storage.md)。T400a 完成，T400 父项/T401–T409 保持开放；没有挂载生产 Foundation/CLI，readyz503/prod拒绝及五发布门禁均保留。未修改原 Java/前端/SQL 源码、Go依赖或覆盖率门禁。
+
+- `python3 scripts/migration/java_chat_storage_fixture.py`：默认重新编译固定原22个Java源文件并核对夹具，138个MVC参数绑定、22个Markdown、22个附件快照、12个查询、12个首标题场景共206项通过。新增校准了UTF-16截断、附件size缺失/null、BMP数字/十六进制以及前缀后符号/补充平面数字拒绝的原行为，不以手写期望冒充差分。
+- `python3 scripts/migration/run_go_postgres_tests.py --package chat --tls`：真实TLS PostgreSQL/pgvector、原42迁移/validate、六组存储集成测试通过。最终补充双池24路原子批次后TOOL/SYSTEM/未知角色持久化、空批次无读取、活动时间和完整1025条历史引用分批；注入NUL、引用中途失败和删除触发器失败均无部分事务残留。runner清理本次临时容器/证书。
+- `python3 scripts/migration/run_go_postgres_tests.py --package app --tls --run P4`：显式Business端口组合的真实库/HTTP认证401、CSRF403、登录后创建201和读取200、三Worker空404与readyz503通过；不是生产启动路径验收。
+- `go test -race -count=1 ./...`：20包通过（app126.773s）；后续HTTP参数补充/移除未使用的消息导出查询字段后，chat包race定向复验通过。`go vet -tags=integration ./...`、`go build ./...`通过。Go命令使用本地工具链/离线代理和已有专用临时cache/GOPATH。
+- 原Java重新执行 `./mvnw -o -B -Dapp.dotenv.enabled=false verify`：BUILD SUCCESS，1137 tests，0 failures/errors/skipped；JaCoCo行85.80%、分支69.87%，原83%/65%门禁保留。前端 `npm run type-check` 与 `npm run build` 通过。两者使用最小子进程环境，不加载现有.env。
+- `python3 -m unittest discover -s scripts/migration -p 'test_*.py'`：15项通过。`python3 scripts/migration/go_inventory.py check`：固定1093文件/104路由/27工具/95钩子/1119原测试声明及证据路径检查通过。`check-complete`仍按预期拒绝2438项未verified和五门禁，未把本批implemented提升为全量verified。
+
+主要日志在 `/private/tmp/personal-ai-os-p4-*`：`java-oracle.log`、`chat-postgres-final.log`、`app-postgres.log`、`go-race.log`、`go-vet.log`、`go-build.log`、`java.log`、`frontend.log`、`python.log`、`release-guard.log`。长期证据为入库的脚本/夹具/断言与文档；临时日志不替代它们。未推送、部署或连接用户已有数据库/Redis/模型服务。
+
+工作树清理：四个已检查干净、无独有提交且提交可由go分支到达的临时工作树已通过非force的`git worktree remove`删除。原仓库当前为go；本聊天绑定的P3工作树被受管归档接口以“primary checkout不能删除”拒绝，未绕过保护删除。保留工作树不改变本批在原仓库go分支上的实现。

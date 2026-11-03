@@ -1,0 +1,3814 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/chat/service/ChatSessionService.java": "e0ccc3c178ea626e85d3cc7844ae6956af08d3713e501b52a7ccb46f7aac8f98",
+    "backend/src/main/java/com/personalos/chat/service/ChatMessageService.java": "a823fa37fb6c722bf8c8278a619312d3ad16321c10ce4831a2bb15ddcefdd08e",
+    "backend/src/main/java/com/personalos/chat/service/ChatCitationService.java": "ce53f963db8e1e9b5caf70fb2a9f658f25601a9586052604dc014e19a7bd4993",
+    "backend/src/main/java/com/personalos/chat/service/ChatMarkdownExporter.java": "507da43bd310cabb4f07e1b44081b4c33a59cdc39d5707bc05283871c07ef672",
+    "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java": "75fe9a3994989405f43de1289ed49bba5ed57c6444039b38b6f695da7787eadd",
+    "backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": "4136408eb3c012f332671b6cd4b6ef6c9e4bdeac667ed29de67701359cebb478",
+    "backend/src/main/java/com/personalos/chat/entity/ChatSessionEntity.java": "58f20fe09829d4d9822cf79699ddf83fae644c35c5261d44f77669c5d740cc3a",
+    "backend/src/main/java/com/personalos/chat/entity/ChatMessageEntity.java": "610d550f21b795ec79f57e29e737b72b1702f993fdc02d810987c918059d3896",
+    "backend/src/main/java/com/personalos/chat/repository/ChatSessionRepository.java": "04b96f994483830a558e5582126bac30b20eff5904a7eb88c64037ede246d702",
+    "backend/src/main/java/com/personalos/chat/repository/ChatMessageRepository.java": "28d682d8b8d849c4cace26c8c62be60294a0d09c27957e0fe9ff53f773fc6d26",
+    "backend/src/main/java/com/personalos/chat/repository/ChatMessageCitationRepository.java": "3172bd32665d2920db7ef2c0c1e67613f0de8b5310ec41fc8075c57a2069cafa",
+    "backend/src/main/java/com/personalos/chat/dto/ChatSessionDto.java": "7b06bf609d70157f456042369e603f6a5acb39da16514acd9ab0e1759bc9931a",
+    "backend/src/main/java/com/personalos/chat/dto/ChatMessageDto.java": "8fd48c3b05f299200a39001068aed8f58f17bd43136fc68c6cd19a6053261630",
+    "backend/src/main/java/com/personalos/chat/dto/ChatSessionQuery.java": "3944b8f866374ded989b8856492549184438b162e2dc988a4529d86b0b4cd5e5",
+    "backend/src/main/java/com/personalos/chat/dto/ChatCitationDto.java": "57f3bf6b8e556be7b0e5008e8781a6b23dfdcf03ee163f52225bf93b368fa045",
+    "backend/src/main/java/com/personalos/chat/dto/ChatAttachmentDto.java": "fcbeb809bf9a0313d7b05a913ea156a69e86029b99b32076cd4513f5a90d844d",
+    "backend/src/main/java/com/personalos/chat/dto/CreateSessionRequest.java": "29a08e765e735d5f322101992ecd322121df48b0646c1ff61153c1ef35ddff55",
+    "backend/src/main/java/com/personalos/chat/dto/RenameSessionRequest.java": "59bcd24106b20a50c4b8800951dd0ef308391f96011d7e676fa65ccd864addf8",
+    "backend/src/main/java/com/personalos/chat/dto/SetSessionModelRequest.java": "48e3c66555e5a64a55fc2027504a6c4618331d5e690e445b35849817f1cf82d2",
+    "backend/src/main/java/com/personalos/common/text/Texts.java": "615cd8eebee1a6ef721e89a5e121f78f384dbe5321f80474e14814b6365d3086",
+    "backend/src/main/java/com/personalos/common/search/SearchPatterns.java": "5bedb5bd7938550f40b56e8ad341eecd658619e929b75e413d09799dc5bb1a4c",
+    "backend/src/main/java/com/personalos/common/json/JsonCodec.java": "22022d0932e72c6c67ab34e1ccd21b8592bcfe1e5d4f678bf7e5fcb6a484038e"
+  },
+  "inputs": {
+    "bindings": [
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": null}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \"\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \" \\t\\u3000\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \" \\u4e2d\\u6587\\u3000\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \"\\u00a0\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \"\\u0085\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \"\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \"\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\": \"                    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                    \"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "null",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "[]",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "true",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\":\"a\"} {}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\":12}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\":true}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\":{}}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"TITLE\":\"upper\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\":\"first\",\"title\":\"last\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\":\"fixture\",\"ignored\":[]}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions",
+        "body": "{\"title\":\"fixture\"}",
+        "contentType": "text/plain"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": null}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \"\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \" \\t\\u3000\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \" \\u4e2d\\u6587\\u3000\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \"\\u00a0\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \"\\u0085\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \"\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \"\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\": \"                    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                    \"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "null",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "[]",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "true",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\":\"a\"} {}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\":12}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\":true}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\":{}}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"TITLE\":\"upper\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\":\"first\",\"title\":\"last\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\":\"fixture\",\"ignored\":[]}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "{\"title\":\"fixture\"}",
+        "contentType": "text/plain"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "null",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{\"model\":null}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{\"model\":\" \u3000\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{\"model\":\" custom \"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{\"model\":12}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{\"model\":false}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{\"model\":{}}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{\"model\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{\"model\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/c-existing/model",
+        "body": "{\"model\": \"\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "null",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{\"model\":null}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{\"model\":\" \u3000\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{\"model\":\" custom \"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{\"model\":12}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{\"model\":false}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{\"model\":{}}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{\"model\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{\"model\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/chat/sessions/missing/model",
+        "body": "{\"model\": \"\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\\ud83d\\ude00\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/bad_id",
+        "body": "{\"title\": null}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/bad_id",
+        "body": "{\"title\": \"\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/bad_id",
+        "body": "{\"title\": \"fixture\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/bad_id",
+        "body": "{\"title\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/missing",
+        "body": "{\"title\": null}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/missing",
+        "body": "{\"title\": \"\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/missing",
+        "body": "{\"title\": \"fixture\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/chat/sessions/missing",
+        "body": "{\"title\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=3",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=3",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=3&beforeSeq=5",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=3&beforeSeq=5",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?beforeSeq=0",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?beforeSeq=0",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=0",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=0",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=201",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=201",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=2&beforeSeq=0",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=2&beforeSeq=0",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=abc",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=abc",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=2147483648",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=2147483648",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=%20",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=%20",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=%202%20",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=%202%20",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=2&limit=4",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=2&limit=4",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=+2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=+2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=%EF%BC%92",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=%EF%BC%92",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=0x2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=0x2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=%232",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=%232",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=02",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=02",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=1%202",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=1%202",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=%E3%80%80",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=%E3%80%80",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=-0x2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=-0x2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=0x80000000",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=0x80000000",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=0x%2B2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=0x%2B2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=0x-2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=0x-2",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/c-existing/messages?limit=%F0%9D%9F%9A",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/chat/sessions/missing/messages?limit=%F0%9D%9F%9A",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions/c-existing/rewind",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions/c-existing/rewind?fromSequenceNo=0",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions/c-existing/rewind?fromSequenceNo=3",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/chat/sessions/c-existing/rewind?fromSequenceNo=abc",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/v1/chat/sessions/c-existing",
+        "body": "",
+        "contentType": "application/json"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/v1/chat/sessions/missing",
+        "body": "",
+        "contentType": "application/json"
+      }
+    ],
+    "exports": [
+      {
+        "title": "",
+        "zone": "Asia/Shanghai",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "",
+        "zone": "UTC",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "",
+        "zone": "America/New_York",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": " \u3000",
+        "zone": "Asia/Shanghai",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": " \u3000",
+        "zone": "UTC",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": " \u3000",
+        "zone": "America/New_York",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "\u6392\u8bfe\u8ba8\u8bba",
+        "zone": "Asia/Shanghai",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "\u6392\u8bfe\u8ba8\u8bba",
+        "zone": "UTC",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "\u6392\u8bfe\u8ba8\u8bba",
+        "zone": "America/New_York",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "bad\\/:*?\"<>|\r\nname",
+        "zone": "Asia/Shanghai",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "bad\\/:*?\"<>|\r\nname",
+        "zone": "UTC",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "bad\\/:*?\"<>|\r\nname",
+        "zone": "America/New_York",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807",
+        "zone": "Asia/Shanghai",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807",
+        "zone": "UTC",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807",
+        "zone": "America/New_York",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ud83d\ude00\ud83d\ude00",
+        "zone": "Asia/Shanghai",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ud83d\ude00\ud83d\ude00",
+        "zone": "UTC",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ud83d\ude00\ud83d\ude00",
+        "zone": "America/New_York",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "*~ \u6807\u9898",
+        "zone": "Asia/Shanghai",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "*~ \u6807\u9898",
+        "zone": "UTC",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "*~ \u6807\u9898",
+        "zone": "America/New_York",
+        "messages": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "  \u9700\u6c42\n```ts\nconst a=1;",
+            "sequenceNo": 1,
+            "citations": [],
+            "attachments": [
+              {
+                "id": "att-1",
+                "filename": "\u9700\u6c42.txt",
+                "contentType": "text/plain",
+                "size": 12
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "\u7b54\u590d [1]",
+            "sequenceNo": 2,
+            "attachments": [],
+            "citations": [
+              {
+                "index": 1,
+                "documentId": "deleted-doc",
+                "documentTitle": "\u8bf4\u660e",
+                "filename": "a.md",
+                "chunkIndex": 2,
+                "content": "\u4e0d\u5bfc\u51fa\u7247\u6bb5\u539f\u6587"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "role": "TOOL",
+            "content": "result",
+            "sequenceNo": 3,
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "title": "\u7a7a\u4f1a\u8bdd",
+        "zone": "Asia/Shanghai",
+        "messages": []
+      }
+    ],
+    "snapshots": [
+      null,
+      "",
+      " \u3000",
+      "not-json",
+      "null",
+      "[]",
+      "{}",
+      "[null]",
+      "[{}]",
+      "[{\"id\":\"a\",\"filename\":\"\u9700\u6c42.txt\",\"contentType\":\"text/plain\",\"size\":12}]",
+      "[{\"ID\":\"a\",\"Filename\":\"wrong\",\"SIZE\":12}]",
+      "[{\"id\":12,\"filename\":true,\"size\":1.9}]",
+      "[{\"size\":\"12\"}]",
+      "[{\"size\":\" 12 \"}]",
+      "[{\"size\":\"\"}]",
+      "[{\"size\":null}]",
+      "[{\"size\":true}]",
+      "[{\"size\":9223372036854775808}]",
+      "[{\"id\":\"a\"},null]",
+      "[{\"size\":1e3}]",
+      "[{\"size\":\"1.9\"}]",
+      "[{\"id\":\"a\"}] {}"
+    ],
+    "queries": [
+      {
+        "keyword": "",
+        "page": 0,
+        "size": 20
+      },
+      {
+        "keyword": "",
+        "page": -1,
+        "size": 0
+      },
+      {
+        "keyword": "",
+        "page": 2147483647,
+        "size": 1000
+      },
+      {
+        "keyword": " \u3000",
+        "page": 0,
+        "size": 20
+      },
+      {
+        "keyword": " \u3000",
+        "page": -1,
+        "size": 0
+      },
+      {
+        "keyword": " \u3000",
+        "page": 2147483647,
+        "size": 1000
+      },
+      {
+        "keyword": "a_b%\\",
+        "page": 0,
+        "size": 20
+      },
+      {
+        "keyword": "a_b%\\",
+        "page": -1,
+        "size": 0
+      },
+      {
+        "keyword": "a_b%\\",
+        "page": 2147483647,
+        "size": 1000
+      },
+      {
+        "keyword": " \u0130 \u03a3\u039f\u03a3 ",
+        "page": 0,
+        "size": 20
+      },
+      {
+        "keyword": " \u0130 \u03a3\u039f\u03a3 ",
+        "page": -1,
+        "size": 0
+      },
+      {
+        "keyword": " \u0130 \u03a3\u039f\u03a3 ",
+        "page": 2147483647,
+        "size": 1000
+      }
+    ],
+    "titles": [
+      {
+        "title": "\u65b0\u4f1a\u8bdd",
+        "content": "  \u7b2c\u4e00\u6761\n\t\u6d88\u606f  ",
+        "count": 0
+      },
+      {
+        "title": "\u65b0\u4f1a\u8bdd",
+        "content": "\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d",
+        "count": 0
+      },
+      {
+        "title": "\u65b0\u4f1a\u8bdd",
+        "content": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00",
+        "count": 0
+      },
+      {
+        "title": "\u65b0\u4f1a\u8bdd",
+        "content": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx\ud83d\ude00",
+        "count": 0
+      },
+      {
+        "title": "\u65b0\u4f1a\u8bdd",
+        "content": "new",
+        "count": 1
+      },
+      {
+        "title": "\u65b0\u4f1a\u8bdd",
+        "content": " \u3000",
+        "count": 0
+      },
+      {
+        "title": "\u81ea\u5b9a\u4e49",
+        "content": "  \u7b2c\u4e00\u6761\n\t\u6d88\u606f  ",
+        "count": 0
+      },
+      {
+        "title": "\u81ea\u5b9a\u4e49",
+        "content": "\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d",
+        "count": 0
+      },
+      {
+        "title": "\u81ea\u5b9a\u4e49",
+        "content": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00",
+        "count": 0
+      },
+      {
+        "title": "\u81ea\u5b9a\u4e49",
+        "content": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx\ud83d\ude00",
+        "count": 0
+      },
+      {
+        "title": "\u81ea\u5b9a\u4e49",
+        "content": "new",
+        "count": 1
+      },
+      {
+        "title": "\u81ea\u5b9a\u4e49",
+        "content": " \u3000",
+        "count": 0
+      }
+    ]
+  },
+  "expected": {
+    "bindings": [
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u65b0\u4f1a\u8bdd",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u65b0\u4f1a\u8bdd",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u65b0\u4f1a\u8bdd",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u4e2d\u6587",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u00a0",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u0085",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 200",
+        "data": null
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 200",
+        "data": null
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u65b0\u4f1a\u8bdd",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u65b0\u4f1a\u8bdd",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u65b0\u4f1a\u8bdd",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "12",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "true",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "\u65b0\u4f1a\u8bdd",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "last",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 201,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "<generated>",
+          "title": "fixture",
+          "messageCount": 0,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 500,
+        "code": 50000,
+        "message": "\u670d\u52a1\u5668\u5185\u90e8\u9519\u8bef",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u4e0d\u80fd\u4e3a\u7a7a",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u4e0d\u80fd\u4e3a\u7a7a",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u4e0d\u80fd\u4e3a\u7a7a",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u4e2d\u6587",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u00a0",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u0085",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 200",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 200",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u4e0d\u80fd\u4e3a\u7a7a",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u4e0d\u80fd\u4e3a\u7a7a",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u4e0d\u80fd\u4e3a\u7a7a",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "12",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "true",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u4e0d\u80fd\u4e3a\u7a7a",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "last",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "fixture",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 500,
+        "code": 50000,
+        "message": "\u670d\u52a1\u5668\u5185\u90e8\u9519\u8bef",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u65e7\u6807\u9898",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u65e7\u6807\u9898",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u65e7\u6807\u9898",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u65e7\u6807\u9898",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u65e7\u6807\u9898",
+          "messageCount": 7,
+          "chatModel": null
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u65e7\u6807\u9898",
+          "messageCount": 7,
+          "chatModel": "custom"
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u65e7\u6807\u9898",
+          "messageCount": 7,
+          "chatModel": "12"
+        }
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u65e7\u6807\u9898",
+          "messageCount": 7,
+          "chatModel": "false"
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "conversationId": "c-existing",
+          "title": "\u65e7\u6807\u9898",
+          "messageCount": 7,
+          "chatModel": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6a21\u578b\u540d\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 120 \u4e2a\u5b57\u7b26",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6a21\u578b\u540d\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 120 \u4e2a\u5b57\u7b26",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u8bf7\u6c42\u4f53\u683c\u5f0f\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5 JSON \u7ed3\u6784\u4e0e\u5b57\u6bb5\u7c7b\u578b",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u4f1a\u8bdd\u6807\u8bc6\u683c\u5f0f\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u4f1a\u8bdd\u6807\u8bc6\u683c\u5f0f\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u4f1a\u8bdd\u6807\u8bc6\u683c\u5f0f\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u4f1a\u8bdd\u6807\u8bc6\u683c\u5f0f\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u4e0d\u80fd\u4e3a\u7a7a",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u4e0d\u80fd\u4e3a\u7a7a",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u6807\u9898\u957f\u5ea6\u4e0d\u80fd\u8d85\u8fc7 200",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "m1",
+            "sequenceNo": 1,
+            "createdAt": "2026-10-27T01:59:59Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "m2",
+            "sequenceNo": 2,
+            "createdAt": "2026-10-27T01:59:58Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 3,
+            "role": "USER",
+            "content": "m3",
+            "sequenceNo": 3,
+            "createdAt": "2026-10-27T01:59:57Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 4,
+            "role": "ASSISTANT",
+            "content": "m4",
+            "sequenceNo": 4,
+            "createdAt": "2026-10-27T01:59:56Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 5,
+            "role": "USER",
+            "content": "m5",
+            "sequenceNo": 5,
+            "createdAt": "2026-10-27T01:59:55Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 5,
+            "role": "USER",
+            "content": "m5",
+            "sequenceNo": 5,
+            "createdAt": "2026-10-27T01:59:55Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "m2",
+            "sequenceNo": 2,
+            "createdAt": "2026-10-27T01:59:58Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 3,
+            "role": "USER",
+            "content": "m3",
+            "sequenceNo": 3,
+            "createdAt": "2026-10-27T01:59:57Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 4,
+            "role": "ASSISTANT",
+            "content": "m4",
+            "sequenceNo": 4,
+            "createdAt": "2026-10-27T01:59:56Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "m1",
+            "sequenceNo": 1,
+            "createdAt": "2026-10-27T01:59:59Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "m2",
+            "sequenceNo": 2,
+            "createdAt": "2026-10-27T01:59:58Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 3,
+            "role": "USER",
+            "content": "m3",
+            "sequenceNo": 3,
+            "createdAt": "2026-10-27T01:59:57Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 4,
+            "role": "ASSISTANT",
+            "content": "m4",
+            "sequenceNo": 4,
+            "createdAt": "2026-10-27T01:59:56Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 5,
+            "role": "USER",
+            "content": "m5",
+            "sequenceNo": 5,
+            "createdAt": "2026-10-27T01:59:55Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "limit \u5fc5\u987b\u5728 1~200 \u4e4b\u95f4",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "limit \u5fc5\u987b\u5728 1~200 \u4e4b\u95f4",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "beforeSeq \u5fc5\u987b\u4e3a\u6b63\u6574\u6570",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "m1",
+            "sequenceNo": 1,
+            "createdAt": "2026-10-27T01:59:59Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "m2",
+            "sequenceNo": 2,
+            "createdAt": "2026-10-27T01:59:58Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 3,
+            "role": "USER",
+            "content": "m3",
+            "sequenceNo": 3,
+            "createdAt": "2026-10-27T01:59:57Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 4,
+            "role": "ASSISTANT",
+            "content": "m4",
+            "sequenceNo": 4,
+            "createdAt": "2026-10-27T01:59:56Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 5,
+            "role": "USER",
+            "content": "m5",
+            "sequenceNo": 5,
+            "createdAt": "2026-10-27T01:59:55Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "m1",
+            "sequenceNo": 1,
+            "createdAt": "2026-10-27T01:59:59Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "m2",
+            "sequenceNo": 2,
+            "createdAt": "2026-10-27T01:59:58Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 3,
+            "role": "USER",
+            "content": "m3",
+            "sequenceNo": 3,
+            "createdAt": "2026-10-27T01:59:57Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 4,
+            "role": "ASSISTANT",
+            "content": "m4",
+            "sequenceNo": 4,
+            "createdAt": "2026-10-27T01:59:56Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 5,
+            "role": "USER",
+            "content": "m5",
+            "sequenceNo": 5,
+            "createdAt": "2026-10-27T01:59:55Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "m1",
+            "sequenceNo": 1,
+            "createdAt": "2026-10-27T01:59:59Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "m2",
+            "sequenceNo": 2,
+            "createdAt": "2026-10-27T01:59:58Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 3,
+            "role": "USER",
+            "content": "m3",
+            "sequenceNo": 3,
+            "createdAt": "2026-10-27T01:59:57Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 4,
+            "role": "ASSISTANT",
+            "content": "m4",
+            "sequenceNo": 4,
+            "createdAt": "2026-10-27T01:59:56Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 5,
+            "role": "USER",
+            "content": "m5",
+            "sequenceNo": 5,
+            "createdAt": "2026-10-27T01:59:55Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": [
+          {
+            "id": 1,
+            "role": "USER",
+            "content": "m1",
+            "sequenceNo": 1,
+            "createdAt": "2026-10-27T01:59:59Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 2,
+            "role": "ASSISTANT",
+            "content": "m2",
+            "sequenceNo": 2,
+            "createdAt": "2026-10-27T01:59:58Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 3,
+            "role": "USER",
+            "content": "m3",
+            "sequenceNo": 3,
+            "createdAt": "2026-10-27T01:59:57Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 4,
+            "role": "ASSISTANT",
+            "content": "m4",
+            "sequenceNo": 4,
+            "createdAt": "2026-10-27T01:59:56Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 5,
+            "role": "USER",
+            "content": "m5",
+            "sequenceNo": 5,
+            "createdAt": "2026-10-27T01:59:55Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 6,
+            "role": "ASSISTANT",
+            "content": "m6",
+            "sequenceNo": 6,
+            "createdAt": "2026-10-27T01:59:54Z",
+            "citations": [],
+            "attachments": []
+          },
+          {
+            "id": 7,
+            "role": "USER",
+            "content": "m7",
+            "sequenceNo": 7,
+            "createdAt": "2026-10-27T01:59:53Z",
+            "citations": [],
+            "attachments": []
+          }
+        ]
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "limit \u5fc5\u987b\u5728 1~200 \u4e4b\u95f4",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 limit \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u7f3a\u5c11\u53c2\u6570 fromSequenceNo",
+        "data": null
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "fromSequenceNo \u5fc5\u987b\u4e3a\u6b63\u6574\u6570",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": {
+          "deleted": 2
+        }
+      },
+      {
+        "status": 400,
+        "code": 40000,
+        "message": "\u53c2\u6570\u6821\u9a8c\u5931\u8d25: \u53c2\u6570 fromSequenceNo \u53d6\u503c\u975e\u6cd5",
+        "data": null
+      },
+      {
+        "status": 200,
+        "code": 0,
+        "message": "OK",
+        "data": null
+      },
+      {
+        "status": 404,
+        "code": 40004,
+        "message": "\u4f1a\u8bdd\u4e0d\u5b58\u5728\uff1amissing",
+        "data": null
+      }
+    ],
+    "exports": [
+      {
+        "filename": "\u672a\u547d\u540d\u4f1a\u8bdd-20261027-1000.md",
+        "markdown": "# \u672a\u547d\u540d\u4f1a\u8bdd\n\n> \u521b\u5efa\u4e8e 2026-10-27 10:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%9C%AA%E5%91%BD%E5%90%8D%E4%BC%9A%E8%AF%9D-20261027-1000.md"
+      },
+      {
+        "filename": "\u672a\u547d\u540d\u4f1a\u8bdd-20261027-0200.md",
+        "markdown": "# \u672a\u547d\u540d\u4f1a\u8bdd\n\n> \u521b\u5efa\u4e8e 2026-10-27 02:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%9C%AA%E5%91%BD%E5%90%8D%E4%BC%9A%E8%AF%9D-20261027-0200.md"
+      },
+      {
+        "filename": "\u672a\u547d\u540d\u4f1a\u8bdd-20261026-2200.md",
+        "markdown": "# \u672a\u547d\u540d\u4f1a\u8bdd\n\n> \u521b\u5efa\u4e8e 2026-10-26 22:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%9C%AA%E5%91%BD%E5%90%8D%E4%BC%9A%E8%AF%9D-20261026-2200.md"
+      },
+      {
+        "filename": "\u672a\u547d\u540d\u4f1a\u8bdd-20261027-1000.md",
+        "markdown": "# \u672a\u547d\u540d\u4f1a\u8bdd\n\n> \u521b\u5efa\u4e8e 2026-10-27 10:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%9C%AA%E5%91%BD%E5%90%8D%E4%BC%9A%E8%AF%9D-20261027-1000.md"
+      },
+      {
+        "filename": "\u672a\u547d\u540d\u4f1a\u8bdd-20261027-0200.md",
+        "markdown": "# \u672a\u547d\u540d\u4f1a\u8bdd\n\n> \u521b\u5efa\u4e8e 2026-10-27 02:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%9C%AA%E5%91%BD%E5%90%8D%E4%BC%9A%E8%AF%9D-20261027-0200.md"
+      },
+      {
+        "filename": "\u672a\u547d\u540d\u4f1a\u8bdd-20261026-2200.md",
+        "markdown": "# \u672a\u547d\u540d\u4f1a\u8bdd\n\n> \u521b\u5efa\u4e8e 2026-10-26 22:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%9C%AA%E5%91%BD%E5%90%8D%E4%BC%9A%E8%AF%9D-20261026-2200.md"
+      },
+      {
+        "filename": "\u6392\u8bfe\u8ba8\u8bba-20261027-1000.md",
+        "markdown": "# \u6392\u8bfe\u8ba8\u8bba\n\n> \u521b\u5efa\u4e8e 2026-10-27 10:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%8E%92%E8%AF%BE%E8%AE%A8%E8%AE%BA-20261027-1000.md"
+      },
+      {
+        "filename": "\u6392\u8bfe\u8ba8\u8bba-20261027-0200.md",
+        "markdown": "# \u6392\u8bfe\u8ba8\u8bba\n\n> \u521b\u5efa\u4e8e 2026-10-27 02:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%8E%92%E8%AF%BE%E8%AE%A8%E8%AE%BA-20261027-0200.md"
+      },
+      {
+        "filename": "\u6392\u8bfe\u8ba8\u8bba-20261026-2200.md",
+        "markdown": "# \u6392\u8bfe\u8ba8\u8bba\n\n> \u521b\u5efa\u4e8e 2026-10-26 22:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%8E%92%E8%AF%BE%E8%AE%A8%E8%AE%BA-20261026-2200.md"
+      },
+      {
+        "filename": "bad___________name-20261027-1000.md",
+        "markdown": "# bad\\/:*?\"<>|\r\nname\n\n> \u521b\u5efa\u4e8e 2026-10-27 10:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "bad___________name-20261027-1000.md"
+      },
+      {
+        "filename": "bad___________name-20261027-0200.md",
+        "markdown": "# bad\\/:*?\"<>|\r\nname\n\n> \u521b\u5efa\u4e8e 2026-10-27 02:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "bad___________name-20261027-0200.md"
+      },
+      {
+        "filename": "bad___________name-20261026-2200.md",
+        "markdown": "# bad\\/:*?\"<>|\r\nname\n\n> \u521b\u5efa\u4e8e 2026-10-26 22:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "bad___________name-20261026-2200.md"
+      },
+      {
+        "filename": "\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807-20261027-1000.md",
+        "markdown": "# \u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\n\n> \u521b\u5efa\u4e8e 2026-10-27 10:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87-20261027-1000.md"
+      },
+      {
+        "filename": "\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807-20261027-0200.md",
+        "markdown": "# \u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\n\n> \u521b\u5efa\u4e8e 2026-10-27 02:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87-20261027-0200.md"
+      },
+      {
+        "filename": "\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807-20261026-2200.md",
+        "markdown": "# \u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\u6807\n\n> \u521b\u5efa\u4e8e 2026-10-26 22:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87%E6%A0%87-20261026-2200.md"
+      },
+      {
+        "filename": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa?-20261027-1000.md",
+        "markdown": "# aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ud83d\ude00\ud83d\ude00\n\n> \u521b\u5efa\u4e8e 2026-10-27 10:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%3F-20261027-1000.md"
+      },
+      {
+        "filename": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa?-20261027-0200.md",
+        "markdown": "# aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ud83d\ude00\ud83d\ude00\n\n> \u521b\u5efa\u4e8e 2026-10-27 02:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%3F-20261027-0200.md"
+      },
+      {
+        "filename": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa?-20261026-2200.md",
+        "markdown": "# aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ud83d\ude00\ud83d\ude00\n\n> \u521b\u5efa\u4e8e 2026-10-26 22:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%3F-20261026-2200.md"
+      },
+      {
+        "filename": "_~ \u6807\u9898-20261027-1000.md",
+        "markdown": "# *~ \u6807\u9898\n\n> \u521b\u5efa\u4e8e 2026-10-27 10:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "_%7E%20%E6%A0%87%E9%A2%98-20261027-1000.md"
+      },
+      {
+        "filename": "_~ \u6807\u9898-20261027-0200.md",
+        "markdown": "# *~ \u6807\u9898\n\n> \u521b\u5efa\u4e8e 2026-10-27 02:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "_%7E%20%E6%A0%87%E9%A2%98-20261027-0200.md"
+      },
+      {
+        "filename": "_~ \u6807\u9898-20261026-2200.md",
+        "markdown": "# *~ \u6807\u9898\n\n> \u521b\u5efa\u4e8e 2026-10-26 22:00 \u00b7 \u5171 3 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n### \u4f60\n\n\u9700\u6c42\n```ts\nconst a=1;\n```\n\n**\u9644\u4ef6**\uff1a\u9700\u6c42.txt\n\n---\n\n### \u52a9\u624b\n\n\u7b54\u590d [1]\n\n**\u5f15\u7528\u6765\u6e90**\n\n1. \u300a\u8bf4\u660e\u300b\uff08a.md\uff0c\u7b2c 3 \u6bb5\uff09\n\n---\n\n### \u52a9\u624b\n\nresult\n\n---\n\n",
+        "encodedFilename": "_%7E%20%E6%A0%87%E9%A2%98-20261026-2200.md"
+      },
+      {
+        "filename": "\u7a7a\u4f1a\u8bdd-20261027-1000.md",
+        "markdown": "# \u7a7a\u4f1a\u8bdd\n\n> \u521b\u5efa\u4e8e 2026-10-27 10:00 \u00b7 \u5171 0 \u6761\u6d88\u606f\n> \u5bfc\u51fa\u81ea Personal AI OS\n\n---\n\n_\uff08\u8fd9\u4e2a\u4f1a\u8bdd\u8fd8\u6ca1\u6709\u6d88\u606f\uff09_\n",
+        "encodedFilename": "%E7%A9%BA%E4%BC%9A%E8%AF%9D-20261027-1000.md"
+      }
+    ],
+    "snapshots": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [
+        {
+          "id": "a",
+          "filename": "\u9700\u6c42.txt",
+          "contentType": "text/plain",
+          "size": 12
+        }
+      ],
+      [],
+      [
+        {
+          "id": "12",
+          "filename": "true",
+          "contentType": null,
+          "size": 1
+        }
+      ],
+      [
+        {
+          "id": null,
+          "filename": null,
+          "contentType": null,
+          "size": 12
+        }
+      ],
+      [
+        {
+          "id": null,
+          "filename": null,
+          "contentType": null,
+          "size": 12
+        }
+      ],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [
+        {
+          "id": null,
+          "filename": null,
+          "contentType": null,
+          "size": 1000
+        }
+      ],
+      [],
+      []
+    ],
+    "queries": [
+      {
+        "page": 0,
+        "size": 20,
+        "pattern": ""
+      },
+      {
+        "page": 0,
+        "size": 20,
+        "pattern": ""
+      },
+      {
+        "page": 2147483647,
+        "size": 100,
+        "pattern": ""
+      },
+      {
+        "page": 0,
+        "size": 20,
+        "pattern": ""
+      },
+      {
+        "page": 0,
+        "size": 20,
+        "pattern": ""
+      },
+      {
+        "page": 2147483647,
+        "size": 100,
+        "pattern": ""
+      },
+      {
+        "page": 0,
+        "size": 20,
+        "pattern": "%a\\_b\\%\\\\%"
+      },
+      {
+        "page": 0,
+        "size": 20,
+        "pattern": "%a\\_b\\%\\\\%"
+      },
+      {
+        "page": 2147483647,
+        "size": 100,
+        "pattern": "%a\\_b\\%\\\\%"
+      },
+      {
+        "page": 0,
+        "size": 20,
+        "pattern": "%i\u0307 \u03c3\u03bf\u03c2%"
+      },
+      {
+        "page": 0,
+        "size": 20,
+        "pattern": "%i\u0307 \u03c3\u03bf\u03c2%"
+      },
+      {
+        "page": 2147483647,
+        "size": 100,
+        "pattern": "%i\u0307 \u03c3\u03bf\u03c2%"
+      }
+    ],
+    "titles": [
+      "\u7b2c\u4e00\u6761 \u6d88\u606f",
+      "\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d\u4e2d",
+      "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00",
+      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx?",
+      "\u65b0\u4f1a\u8bdd",
+      "\u65b0\u4f1a\u8bdd",
+      "\u81ea\u5b9a\u4e49",
+      "\u81ea\u5b9a\u4e49",
+      "\u81ea\u5b9a\u4e49",
+      "\u81ea\u5b9a\u4e49",
+      "\u81ea\u5b9a\u4e49",
+      "\u81ea\u5b9a\u4e49"
+    ]
+  }
+}

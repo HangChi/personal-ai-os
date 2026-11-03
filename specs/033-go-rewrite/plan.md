@@ -59,7 +59,7 @@ P6 | 知识摄入/索引/RAG/治理与可选检索设施 | P5 | 同步/异步摄
 P7 | MCP 双向、全局搜索、导入/导出 | P6 | 协议接入、安全边界、导入导出与跨模块查询通过
 P8 | 部署、监控、脚本、性能、全量前端和切换 | P7 | 五个发布门禁 verified，check-complete 通过
 
-各阶段只能在前置验收完成后推进。当前P0–P3已完成，P4–P8尚未开始。P3的配置写入/热应用、协议/探测/音频、缓存和全部模型路由已接Foundation与CLI；共享P4类仅完成P3所需接口。P1支持边界见p1-foundation-contract.md，P3边界和验收见p3-completion.md及validation.md。
+各阶段只能在前置验收完成后推进。当前P0–P3已完成，P4已开始并完成独立会话存储首批T400a，T400父项/T401–T409及P5–P8仍开放。P3的配置写入/热应用、协议/探测/音频、缓存和全部模型路由已接Foundation与CLI；P4首批尚未装配生产入口，边界见p4-storage.md。P1支持边界见p1-foundation-contract.md，P3边界和验收见p3-completion.md及validation.md。
 
 ## 数据迁移路线
 

@@ -420,3 +420,12 @@ Decision：复用Go标准库HTTP/JSON/SSE与已有pgx/go-redis，不新增模型
 网络诊断不透出Java异常类、代理/TLS细节，音频multipart额外去CR/LF/转义文件名，非有限或索引不完整向量不缓存；这些安全收紧及原测试职责适配在p3-completion.md公开记录。最小P3表/序列权限、真实TLS存储、损坏配置可修复启动、认证/CSRF、Worker隔离与五角色CLI均实际验收。原Java verify/前端门禁保留，P4–P8和生产门禁未解除。
 
 Alternatives considered：引入SDK并继承未知默认重试；在长事务内调用模型；保存应用失败时回滚或丢弃已提交设置；启动时擅自将active替代V20；所有profile协议热应用为原生协议；向量批次部分写缓存；共享P1 Redis账号；用在线目录替代固定Java事实。上述方案改变兼容或失败边界，未采用。
+
+
+## R-047 P4 首批显式事务存储与附件清理边界
+
+Decision：复用原三张会话表和迁移，以显式Store.Transact/Tx接口收敛Service写路径；写事务锁定会话分配序号，读事务repeatable-read，引用每512条消息批量读取。无新增运行时依赖，沿用pgx与x/text。独立HTTP模块通过现有Business端口进行安全组合测试，完整P4验收前不挂载生产Foundation/CLI。
+
+附件清理是提交后的显式端口，快照必须在删除前读取，提交失败不调用清理；未装配端口时拒绝删除带附件历史，不以空实现冒充T408。本批只迁移快照格式，真实本地/S3文件所有权、重试/孤儿清理留待T408。Markdown使用显式时区，避免隐式读取宿主配置。
+
+Alternatives considered：逐消息查询引用（N+1）；单个无限长IN列表（可超数据库参数上限）；提交前删除文件（回滚不能恢复）；忽略未迁移的附件清理（留下不可追溯孤儿）；在启动入口提前打开不完整P4。均未采用。206个固定原Java差分场景与原42迁移后的真实TLS库验证见p4-storage.md和validation.md；T400父项/T401–T409及生产门禁保持开放。

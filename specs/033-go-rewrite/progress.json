@@ -5547,6 +5547,754 @@
         "specs/033-go-rewrite/p3-completion.md"
       ],
       "note": "音频status/transcribe在P3完成并通过共享multipart/安全链验证；附件与聊天语音消息落库链仍属P4。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/chat/service.go",
+        "backend-go/internal/business/chat/postgres.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a存储/九条路由已实现；完整导出贡献者/Memory接口/stream/context、生产接线及真实附件生命周期未完成，仅部分覆盖，不标记完整文件完成。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/dto/ChatAttachmentDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/dto/ChatCitationDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/dto/ChatMessageDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/dto/ChatSessionDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/dto/ChatSessionQuery.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/dto/CreateSessionRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/dto/RenameSessionRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/dto/SetSessionModelRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/entity/ChatMessageCitationEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/entity/ChatMessageEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/entity/ChatSessionEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/entity/MessageRole.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/memory/JpaChatMemory.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/chat/service.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "仅迁移持久追加/会话锁/连续序号/活动时间/TOOL持久化；上下文窗口、预算、角色映射、clear及调用链待T401，不标记完整Memory已实现。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/repository/ChatMessageCitationRepository.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/chat/service.go",
+        "backend-go/internal/business/chat/postgres.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a存储/九条路由已实现；完整导出贡献者/Memory接口/stream/context、生产接线及真实附件生命周期未完成，仅部分覆盖，不标记完整文件完成。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/repository/ChatMessageRepository.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/chat/service.go",
+        "backend-go/internal/business/chat/postgres.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a存储/九条路由已实现；完整导出贡献者/Memory接口/stream/context、生产接线及真实附件生命周期未完成，仅部分覆盖，不标记完整文件完成。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/repository/ChatSessionRepository.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/chat/service.go",
+        "backend-go/internal/business/chat/postgres.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a存储/九条路由已实现；完整导出贡献者/Memory接口/stream/context、生产接线及真实附件生命周期未完成，仅部分覆盖，不标记完整文件完成。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/chat/model.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "只迁移历史附件快照反序列化及删除后的清理端口；缺少清理器时拒绝有附件删除/rewind。文件上传/读取/真实清理/本地与S3待T408。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/service/ChatCitationService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/service.go",
+        "backend-go/internal/business/chat/postgres.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/service/ChatMarkdownExporter.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/markdown.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/service/ChatMessageService.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/chat/service.go",
+        "backend-go/internal/business/chat/postgres.go",
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a存储/九条路由已实现；完整导出贡献者/Memory接口/stream/context、生产接线及真实附件生命周期未完成，仅部分覆盖，不标记完整文件完成。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/service/ChatSessionService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/service.go",
+        "backend-go/internal/business/chat/postgres.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立模块已实现，206个固定原Java场景/真实TLS库验证见p4-storage.md；生产Foundation/CLI尚未接线，状态不提升verified。"
+    },
+    "route:POST:/api/v1/chat/sessions:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_chat_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立HTTP路由及测试端口组合通过，未开启生产Foundation/CLI。删除/rewind只提供提交后清理端口，有附件且缺清理器时拒绝；真实附件文件清理和完整Servlet OPTIONS/协商验收仍开放。"
+    },
+    "route:GET:/api/v1/chat/sessions:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_chat_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立HTTP路由及测试端口组合通过，未开启生产Foundation/CLI。删除/rewind只提供提交后清理端口，有附件且缺清理器时拒绝；真实附件文件清理和完整Servlet OPTIONS/协商验收仍开放。"
+    },
+    "route:GET:/api/v1/chat/sessions/search:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_chat_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立HTTP路由及测试端口组合通过，未开启生产Foundation/CLI。删除/rewind只提供提交后清理端口，有附件且缺清理器时拒绝；真实附件文件清理和完整Servlet OPTIONS/协商验收仍开放。"
+    },
+    "route:GET:/api/v1/chat/sessions/{conversationId}/messages:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_chat_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立HTTP路由及测试端口组合通过，未开启生产Foundation/CLI。删除/rewind只提供提交后清理端口，有附件且缺清理器时拒绝；真实附件文件清理和完整Servlet OPTIONS/协商验收仍开放。"
+    },
+    "route:PATCH:/api/v1/chat/sessions/{conversationId}:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_chat_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立HTTP路由及测试端口组合通过，未开启生产Foundation/CLI。删除/rewind只提供提交后清理端口，有附件且缺清理器时拒绝；真实附件文件清理和完整Servlet OPTIONS/协商验收仍开放。"
+    },
+    "route:PUT:/api/v1/chat/sessions/{conversationId}/model:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_chat_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立HTTP路由及测试端口组合通过，未开启生产Foundation/CLI。删除/rewind只提供提交后清理端口，有附件且缺清理器时拒绝；真实附件文件清理和完整Servlet OPTIONS/协商验收仍开放。"
+    },
+    "route:DELETE:/api/v1/chat/sessions/{conversationId}:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_chat_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立HTTP路由及测试端口组合通过，未开启生产Foundation/CLI。删除/rewind只提供提交后清理端口，有附件且缺清理器时拒绝；真实附件文件清理和完整Servlet OPTIONS/协商验收仍开放。"
+    },
+    "route:POST:/api/v1/chat/sessions/{conversationId}/rewind:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_chat_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立HTTP路由及测试端口组合通过，未开启生产Foundation/CLI。删除/rewind只提供提交后清理端口，有附件且缺清理器时拒绝；真实附件文件清理和完整Servlet OPTIONS/协商验收仍开放。"
+    },
+    "route:GET:/api/v1/chat/sessions/{conversationId}/export:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/http.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_chat_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a独立HTTP路由及测试端口组合通过，未开启生产Foundation/CLI。删除/rewind只提供提交后清理端口，有附件且缺清理器时拒绝；真实附件文件清理和完整Servlet OPTIONS/协商验收仍开放。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java:102": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java:111": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java:122": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java:134": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java:144": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java:155": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/memory/JpaChatMemoryTest.java:67": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a追加/活动时间/TOOL持久化对应职责已在真实TLS库覆盖；完整Memory上下文接口及集成仍待T401。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/memory/JpaChatMemoryTest.java:89": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a追加/活动时间/TOOL持久化对应职责已在真实TLS库覆盖；完整Memory上下文接口及集成仍待T401。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/memory/JpaChatMemoryTest.java:245": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "T400a追加/活动时间/TOOL持久化对应职责已在真实TLS库覆盖；完整Memory上下文接口及集成仍待T401。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java:53": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java:72": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java:86": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java:97": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java:106": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java:116": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java:128": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java:140": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMessageServiceRewindTest.java:48": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMessageServiceRewindTest.java:77": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatMessageServiceRewindTest.java:88": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:43": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:57": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:67": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:76": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:86": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:95": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:107": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:122": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:137": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:157": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:170": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:180": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:194": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:205": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:215": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:228": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:243": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:259": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:271": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:281": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:290": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
+    },
+    "test:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java:297": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/model_test.go",
+        "backend-go/internal/business/chat/java_oracle_test.go",
+        "backend-go/internal/business/chat/postgres_integration_test.go",
+        "specs/033-go-rewrite/p4-storage.md"
+      ],
+      "note": "原测试职责由T400a单测/固定原Java夹具/真实TLS库对应覆盖，映射见p4-storage.md；未宣称全P4、真实文件删除或完整控制器已验收。"
     }
   },
   "release_gates": {
