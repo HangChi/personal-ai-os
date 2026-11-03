@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 	"strings"
 	"time"
 
@@ -56,7 +57,10 @@ func (s *PostgresStore) Update(ctx context.Context, r Task) (Task, error) {
 			return err
 		}
 		r.Tags = tags
-		return writeTags(ctx, tx, r.ID, tags)
+		if err := writeTags(ctx, tx, r.ID, tags); err != nil {
+			return err
+		}
+		return syncPendingReminders(ctx, tx, r.ID)
 	})
 	if errors.Is(err, sql.ErrNoRows) {
 		return Task{}, ErrNotFound
@@ -65,14 +69,20 @@ func (s *PostgresStore) Update(ctx context.Context, r Task) (Task, error) {
 }
 func (s *PostgresStore) Delete(ctx context.Context, id string) (bool, error) {
 	var deleted bool
-	err := s.pool.WithConn(ctx, func(c *sql.Conn) error {
-		result, err := c.ExecContext(ctx, `DELETE FROM task WHERE id=$1::uuid`, id)
+	err := s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
+		result, err := tx.ExecContext(ctx, `DELETE FROM task WHERE id=$1::uuid`, id)
 		if err != nil {
 			return err
 		}
 		count, err := result.RowsAffected()
 		deleted = count == 1
-		return err
+		if err != nil {
+			return err
+		}
+		if !deleted {
+			return nil
+		}
+		return syncPendingReminders(ctx, tx, id)
 	})
 	return deleted, err
 }
@@ -161,5 +171,116 @@ func (s *PostgresStore) Stats(ctx context.Context, now time.Time) (stats Stats, 
 	err = s.pool.WithConn(ctx, func(c *sql.Conn) error {
 		return c.QueryRowContext(ctx, `SELECT count(*) FILTER(WHERE status<>'DONE'),count(*) FILTER(WHERE status<>'DONE' AND due_at<$1) FROM task`, now).Scan(&stats.Pending, &stats.Overdue)
 	})
+	return
+}
+func (s *PostgresStore) ListTags(ctx context.Context) (tags []string, err error) {
+	err = s.pool.WithConn(ctx, func(c *sql.Conn) error {
+		rows, e := c.QueryContext(ctx, `SELECT DISTINCT tag FROM task_tag ORDER BY tag`)
+		if e != nil {
+			return e
+		}
+		defer rows.Close()
+		tags = make([]string, 0)
+		for rows.Next() {
+			var tag string
+			if e := rows.Scan(&tag); e != nil {
+				return e
+			}
+			tags = append(tags, tag)
+		}
+		return rows.Err()
+	})
+	return
+}
+func (s *PostgresStore) DeleteAll(ctx context.Context, ids []string) (count int, err error) {
+	err = s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
+		for _, id := range ids {
+			result, e := tx.ExecContext(ctx, `DELETE FROM task WHERE id=$1::uuid`, id)
+			if e != nil {
+				return e
+			}
+			n, e := result.RowsAffected()
+			if e != nil {
+				return e
+			}
+			count += int(n)
+			if n > 0 {
+				if e := syncPendingReminders(ctx, tx, id); e != nil {
+					return e
+				}
+			}
+		}
+		return nil
+	})
+	return
+}
+func syncPendingReminders(ctx context.Context, tx *sql.Tx, id string) error {
+	if _, err := tx.ExecContext(ctx, `DELETE FROM reminder r WHERE r.source_type='TASK' AND r.source_id=$1::uuid AND r.status='PENDING' AND NOT EXISTS (SELECT 1 FROM task t WHERE t.id=r.source_id AND t.status<>'DONE' AND t.due_at=r.occurrence_at)`, id); err != nil {
+		return err
+	}
+	_, err := tx.ExecContext(ctx, `UPDATE reminder r SET title=t.title FROM task t WHERE r.source_type='TASK' AND r.source_id=$1::uuid AND r.status='PENDING' AND t.id=r.source_id AND r.title IS DISTINCT FROM t.title`, id)
+	return err
+}
+func (s *PostgresStore) ExportBatch(ctx context.Context, page, size int) ([]Task, error) {
+	return s.queryTasks(ctx, `SELECT `+columns+` FROM task ORDER BY id LIMIT $1 OFFSET $2`, size, int64(page)*int64(size))
+}
+func (s *PostgresStore) SearchHits(ctx context.Context, keyword string, limit int) ([]Task, error) {
+	pattern := "%" + strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(strings.ToLower(strings.TrimSpace(keyword))) + "%"
+	return s.queryTasks(ctx, `SELECT `+columns+` FROM task WHERE lower(title) LIKE $1 ESCAPE '\' OR lower(coalesce(description,'')) LIKE $1 ESCAPE '\' ORDER BY updated_at DESC,id ASC LIMIT $2`, pattern, limit)
+}
+func (s *PostgresStore) queryTasks(ctx context.Context, query string, args ...any) (items []Task, err error) {
+	err = s.pool.WithConn(ctx, func(c *sql.Conn) error {
+		rows, e := c.QueryContext(ctx, query, args...)
+		if e != nil {
+			return e
+		}
+		items = make([]Task, 0)
+		for rows.Next() {
+			var task Task
+			if e = scan(rows, &task); e != nil {
+				rows.Close()
+				return e
+			}
+			items = append(items, task)
+		}
+		if e = rows.Err(); e != nil {
+			rows.Close()
+			return e
+		}
+		if e = rows.Close(); e != nil {
+			return e
+		}
+		for i := range items {
+			if e = readTags(ctx, c, &items[i]); e != nil {
+				return e
+			}
+		}
+		return nil
+	})
+	return
+}
+
+const displayOrder = ` ORDER BY CASE WHEN status='DONE' THEN 1 ELSE 0 END, CASE WHEN due_at IS NULL THEN 1 ELSE 0 END,due_at ASC,created_at DESC,id ASC`
+
+func (s *PostgresStore) DueBetween(ctx context.Context, from, to time.Time) ([]Task, error) {
+	return s.queryTasks(ctx, `SELECT `+columns+` FROM task WHERE due_at BETWEEN $1 AND $2 AND status<>'DONE' ORDER BY due_at ASC,id ASC`, from, to)
+}
+func (s *PostgresStore) ListAll(ctx context.Context) ([]Task, error) {
+	return s.queryTasks(ctx, `SELECT `+columns+` FROM task`+displayOrder)
+}
+func (s *PostgresStore) FindByIDs(ctx context.Context, ids []string) ([]Task, error) {
+	if len(ids) == 0 {
+		return []Task{}, nil
+	}
+	args := make([]any, len(ids))
+	placeholders := make([]string, len(ids))
+	for i, id := range ids {
+		args[i] = id
+		placeholders[i] = "$" + strconv.Itoa(i+1) + "::uuid"
+	}
+	return s.queryTasks(ctx, `SELECT `+columns+` FROM task WHERE id IN (`+strings.Join(placeholders, ",")+`)`+displayOrder, args...)
+}
+func (s *PostgresStore) CountAll(ctx context.Context) (count int64, err error) {
+	err = s.pool.WithConn(ctx, func(c *sql.Conn) error { return c.QueryRowContext(ctx, `SELECT count(*) FROM task`).Scan(&count) })
 	return
 }

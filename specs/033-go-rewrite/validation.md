@@ -444,3 +444,10 @@ Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退
 
 - 实现标签去空白、去空、去重、首现顺序和5个/UTF-16 20字符上限；任务创建与更新在同一数据库事务写`task`/`task_tag`，查询按`tag_index`恢复顺序。`run_go_postgres_tests.py --package task`再次通过真实原迁移库与race测试。
 - T203其余提醒同步与更完整PATCH语义尚未验收，因此父项保持未勾选。
+
+## P2任务领域收口（T202–T204，2026-11-03）
+
+- 原42条迁移的独立PostgreSQL中通过任务CRUD、列表筛选/排序/分页/统计、完成后回到previous_status、标签去重/首现顺序/UTF-16上限、PATCH省略保留与空数组清空。`FindByIDs`按原展示顺序返回，忽略不存在ID。
+- 更新或删除任务时，在同一事务内清除已失效的PENDING任务提醒并同步仍有效提醒标题；真实库用例验证截止时间、完成、改标题与删除。提醒扫描/投递Worker仍属P6。
+- 导出批读取和任务搜索贡献接口已实现并在真实库测试；跨模块导出/全局搜索端点仍属后续阶段。P2最小数据库角色的实际GRANT及缺权启动拒绝均已验证。
+- `run_go_postgres_tests.py --package task`、任务包race、integration vet/build通过，独立临时容器已清理。Java原`TaskTagsTest`与`ConfirmationTransactionTest`追加15例通过；任务/确认HTTP对照由T205收口。

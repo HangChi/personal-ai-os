@@ -13,7 +13,10 @@ type Page struct {
 	Page, Size int
 	Total      int64
 }
-type Stats struct{ Pending, Overdue int64 }
+type Stats struct {
+	Pending int64 `json:"pending"`
+	Overdue int64 `json:"overdue"`
+}
 type Store interface {
 	Insert(context.Context, Task) (Task, error)
 	Get(context.Context, string) (Task, bool, error)
@@ -21,6 +24,14 @@ type Store interface {
 	Delete(context.Context, string) (bool, error)
 	Search(context.Context, Query) (Page, error)
 	Stats(context.Context, time.Time) (Stats, error)
+	ListTags(context.Context) ([]string, error)
+	DeleteAll(context.Context, []string) (int, error)
+	ExportBatch(context.Context, int, int) ([]Task, error)
+	SearchHits(context.Context, string, int) ([]Task, error)
+	DueBetween(context.Context, time.Time, time.Time) ([]Task, error)
+	ListAll(context.Context) ([]Task, error)
+	CountAll(context.Context) (int64, error)
+	FindByIDs(context.Context, []string) ([]Task, error)
 }
 type Service struct {
 	store Store
@@ -47,7 +58,7 @@ func (s *Service) Create(ctx context.Context, r CreateRequest) (Task, error) {
 		priority = *r.Priority
 	}
 	if priority != Low && priority != Medium && priority != High {
-		return Task{}, errors.New("任务优先级无效")
+		return Task{}, invalid("任务优先级无效")
 	}
 	now := s.now().UTC()
 	tags, err := NormalizeTags(r.Tags)
@@ -86,7 +97,7 @@ func (s *Service) Update(ctx context.Context, id string, change UpdateRequest) (
 	}
 	if change.Priority != nil {
 		if *change.Priority != Low && *change.Priority != Medium && *change.Priority != High {
-			return Task{}, errors.New("任务优先级无效")
+			return Task{}, invalid("任务优先级无效")
 		}
 		r.Priority = *change.Priority
 	}
@@ -132,4 +143,66 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 func (s *Service) Search(ctx context.Context, q Query) (Page, error) {
 	return s.store.Search(ctx, q.Normalize())
 }
-func (s *Service) Stats(ctx context.Context) (Stats, error) { return s.store.Stats(ctx, s.now().UTC()) }
+func (s *Service) Stats(ctx context.Context) (Stats, error)       { return s.store.Stats(ctx, s.now().UTC()) }
+func (s *Service) ListTags(ctx context.Context) ([]string, error) { return s.store.ListTags(ctx) }
+func (s *Service) DeleteAll(ctx context.Context, ids []string) (int, error) {
+	unique := make([]string, 0, len(ids))
+	seen := make(map[string]bool)
+	for _, id := range ids {
+		if !seen[id] {
+			seen[id] = true
+			unique = append(unique, id)
+		}
+	}
+	if len(unique) > 50 {
+		return 0, invalid("一次最多处理 50 个任务，请拆分后重试")
+	}
+	if len(unique) == 0 {
+		return 0, nil
+	}
+	return s.store.DeleteAll(ctx, unique)
+}
+func (s *Service) Reschedule(ctx context.Context, id string, due *time.Time) (Task, error) {
+	r, err := s.Get(ctx, id)
+	if err != nil {
+		return Task{}, err
+	}
+	r.DueAt = due
+	r.UpdatedAt = s.now().UTC()
+	return s.store.Update(ctx, r)
+}
+func (s *Service) ChangePriority(ctx context.Context, id string, p Priority) (Task, error) {
+	if p != Low && p != Medium && p != High {
+		return Task{}, invalid("任务优先级无效")
+	}
+	r, err := s.Get(ctx, id)
+	if err != nil {
+		return Task{}, err
+	}
+	r.Priority = p
+	r.UpdatedAt = s.now().UTC()
+	return s.store.Update(ctx, r)
+}
+func (s *Service) ExportBatch(ctx context.Context, page, size int) ([]Task, error) {
+	if page < 0 || size <= 0 {
+		return nil, errors.New("导出分页参数无效")
+	}
+	return s.store.ExportBatch(ctx, page, size)
+}
+func (s *Service) SearchHits(ctx context.Context, keyword string, limit int) ([]Task, error) {
+	if limit <= 0 {
+		return []Task{}, nil
+	}
+	return s.store.SearchHits(ctx, keyword, limit)
+}
+func (s *Service) FindDueBetween(ctx context.Context, from, to time.Time) ([]Task, error) {
+	return s.store.DueBetween(ctx, from, to)
+}
+func (s *Service) ListAll(ctx context.Context) ([]Task, error) { return s.store.ListAll(ctx) }
+func (s *Service) CountAll(ctx context.Context) (int64, error) { return s.store.CountAll(ctx) }
+func (s *Service) FindByIDs(ctx context.Context, ids []string) ([]Task, error) {
+	if len(ids) == 0 {
+		return []Task{}, nil
+	}
+	return s.store.FindByIDs(ctx, ids)
+}
