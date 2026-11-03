@@ -15,7 +15,11 @@
     "backend/src/main/java/com/personalos/common/auth/AuthProperties.java": "e8f9177f681ee0483a496b8259679944dcd914a13ba5e34f61d43979f7f312b3",
     "backend/src/main/java/com/personalos/common/auth/CurrentUserDto.java": "94cac4ba8b5f50aac4c12ff2037bd274912a0653715d117246dbd36f430c7f94",
     "backend/src/main/java/com/personalos/common/auth/LoginRequest.java": "3822d3036e221469c149c281db5ccc9ba3a9536ce2318fa288dbfd45cde4b80c",
-    "backend/src/main/java/com/personalos/common/json/JsonCodec.java": "22022d0932e72c6c67ab34e1ccd21b8592bcfe1e5d4f678bf7e5fcb6a484038e"
+    "backend/src/main/java/com/personalos/common/json/JsonCodec.java": "22022d0932e72c6c67ab34e1ccd21b8592bcfe1e5d4f678bf7e5fcb6a484038e",
+    "backend/src/main/java/com/personalos/common/health/HealthController.java": "c9666093628ab1f8d908a2b930fa894f300de5b03089527db57bb188254bacbc",
+    "backend/src/main/java/com/personalos/common/health/HealthService.java": "ecf4650c82d69fd0f0c6f88e94ecdcef34479d9087f5bb6d6b1b25d90f9afd00",
+    "backend/src/main/java/com/personalos/common/health/HealthStatusDto.java": "7c8d62cda258d4377e2abe45eb3c14adba4a7e8a27906af0c4f9a0e44eacea61",
+    "backend/src/main/java/com/personalos/common/config/AppProperties.java": "55b75e93c8833c80cf97de1c7ac18ebe7a0fc2f4d45aa3176dd1b64e6e942156"
   },
   "jars_sha256": {
     "spring-boot-4.1.1.jar": "0d92b532b1d4020640e72d78c31af175c23db8e0ddd45b81855b7fdf4c9c70f0",
@@ -42,6 +46,7 @@
     "spring-web-7.0.9.jar": "941ced476427bde2533872f293da535fd0258de3f3a650a7f1bfe01ed2927302",
     "spring-webmvc-7.0.9.jar": "8f114c1461692c5e534e82b27de23b7fb23370db8dee7ce0c92d5106906c9555",
     "spring-tx-7.0.9.jar": "bfb15da6e096e2c0752e9db9987d2415bf0da1d744efc988535c10c6b6c2eedd",
+    "spring-jdbc-7.0.9.jar": "ca0d9af1c5721eef8cac1f94c8b9d27a753248bc33c86e3472bd3d1dbd78f450",
     "spring-security-core-7.1.1.jar": "98a5011baa78df36fb184e6ce0e8e086ca9a64fcdd8f161c0a96475a3a0907bd",
     "spring-security-web-7.1.1.jar": "dece134a2332c976a2c94ecf13f816c64e8ea7f2139795485afe655fba0408f3",
     "spring-security-config-7.1.1.jar": "1f947c853f14cab76563464ee22e72f6672f3913db52647d2f5d1df5f2b1e5a5",
@@ -67,7 +72,7 @@
     "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc",
     "jspecify-1.0.1.jar": "070d75f261fe4c5b8202508366715f7f2d4660f88c8ef7e6d3575e48c9683b66"
   },
-  "scope": "real embedded Servlet/Security/Jackson/Validator/Actuator with original foundation sources; synthetic auth, database HealthIndicator and fixed rate metric samples; metric names filtered to personalos.rate.limit only",
+  "scope": "real Servlet/Security/Jackson/Validator/Actuator and original HealthController/HealthService; synthetic credentials, JdbcTemplate, model-state adapter, database HealthIndicator and fixed metric samples; metric names filtered to personalos.rate.limit only",
   "cases": [
     {
       "auth": false,
@@ -394,6 +399,31 @@
         "name": "me-accept-15",
         "method": "GET",
         "path": "/api/v1/auth/me",
+        "accept": "application/problem+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": false
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-16",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
         "accept": "application/json;q=0"
       },
       "response": {
@@ -416,7 +446,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "me-accept-16",
+        "name": "me-accept-17",
         "method": "GET",
         "path": "/api/v1/auth/me",
         "accept": "*/*"
@@ -441,7 +471,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "me-accept-17",
+        "name": "me-accept-18",
         "method": "GET",
         "path": "/api/v1/auth/me",
         "accept": "application/json;q=0,text/html;q=1"
@@ -844,7 +874,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-33",
+        "name": "login-media-34",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -868,7 +898,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-34",
+        "name": "login-media-35",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -895,7 +925,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-35",
+        "name": "login-media-36",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -922,7 +952,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-36",
+        "name": "login-media-37",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -946,7 +976,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-37",
+        "name": "login-media-38",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -1423,7 +1453,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-58",
+        "name": "metric-filter-59",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres"
       },
@@ -1457,7 +1487,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-59",
+        "name": "metric-filter-60",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis"
       },
@@ -1491,7 +1521,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-60",
+        "name": "metric-filter-61",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:missing"
       },
@@ -1507,7 +1537,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-61",
+        "name": "metric-filter-62",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=other:value"
       },
@@ -1523,7 +1553,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-62",
+        "name": "metric-filter-63",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend"
       },
@@ -1544,7 +1574,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-63",
+        "name": "metric-filter-64",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres&tag=backend:redis"
       },
@@ -1560,7 +1590,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-64",
+        "name": "metric-filter-65",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis&tag=other:value"
       },
@@ -1693,6 +1723,453 @@
         "contentType": "",
         "allow": "",
         "body": ""
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-GET",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-HEAD",
+        "method": "HEAD",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": "",
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-POST",
+        "method": "POST",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-PUT",
+        "method": "PUT",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 PUT 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-DELETE",
+        "method": "DELETE",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 DELETE 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-OPTIONS",
+        "method": "OPTIONS",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "",
+        "allow": "GET,HEAD,OPTIONS",
+        "body": "",
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-no-csrf",
+        "method": "POST",
+        "path": "/api/v1/health"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-down",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "databaseDown": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "DOWN",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "DOWN",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-model",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "modelConfigured": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-79",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-80",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "text/event-stream"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-81",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-82",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/*+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-83",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/problem+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-84",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-85",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "*/*"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": false,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-head-html",
+        "method": "HEAD",
+        "path": "/api/v1/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": "",
+        "databaseProbes": 1
       }
     },
     {
@@ -2102,6 +2579,31 @@
         "name": "me-accept-15",
         "method": "GET",
         "path": "/api/v1/auth/me",
+        "accept": "application/problem+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-16",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
         "accept": "application/json;q=0"
       },
       "response": {
@@ -2124,7 +2626,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "me-accept-16",
+        "name": "me-accept-17",
         "method": "GET",
         "path": "/api/v1/auth/me",
         "accept": "*/*"
@@ -2149,7 +2651,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "me-accept-17",
+        "name": "me-accept-18",
         "method": "GET",
         "path": "/api/v1/auth/me",
         "accept": "application/json;q=0,text/html;q=1"
@@ -2543,7 +3045,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-33",
+        "name": "login-media-34",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -2567,7 +3069,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-34",
+        "name": "login-media-35",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -2594,7 +3096,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-35",
+        "name": "login-media-36",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -2621,7 +3123,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-36",
+        "name": "login-media-37",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -2645,7 +3147,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "login-media-37",
+        "name": "login-media-38",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -3130,7 +3632,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-58",
+        "name": "metric-filter-59",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres"
       },
@@ -3151,7 +3653,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-59",
+        "name": "metric-filter-60",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis"
       },
@@ -3172,7 +3674,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-60",
+        "name": "metric-filter-61",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:missing"
       },
@@ -3193,7 +3695,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-61",
+        "name": "metric-filter-62",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=other:value"
       },
@@ -3214,7 +3716,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-62",
+        "name": "metric-filter-63",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend"
       },
@@ -3235,7 +3737,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-63",
+        "name": "metric-filter-64",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres&tag=backend:redis"
       },
@@ -3256,7 +3758,7 @@
       "csrf": false,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-64",
+        "name": "metric-filter-65",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis&tag=other:value"
       },
@@ -3357,6 +3859,453 @@
           "data": null,
           "timestamp": "<generated>"
         }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-GET",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-HEAD",
+        "method": "HEAD",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": "",
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-POST",
+        "method": "POST",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-PUT",
+        "method": "PUT",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 PUT 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-DELETE",
+        "method": "DELETE",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 DELETE 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-OPTIONS",
+        "method": "OPTIONS",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "",
+        "allow": "GET,HEAD,OPTIONS",
+        "body": "",
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-no-csrf",
+        "method": "POST",
+        "path": "/api/v1/health"
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-down",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "databaseDown": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "DOWN",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "DOWN",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-model",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "modelConfigured": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-79",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-80",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "text/event-stream"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-81",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-82",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/*+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-83",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/problem+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-84",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-85",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "*/*"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": false,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-head-html",
+        "method": "HEAD",
+        "path": "/api/v1/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": "",
+        "databaseProbes": 1
       }
     },
     {
@@ -3766,6 +4715,31 @@
         "name": "me-accept-15",
         "method": "GET",
         "path": "/api/v1/auth/me",
+        "accept": "application/problem+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "me-accept-16",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
         "accept": "application/json;q=0"
       },
       "response": {
@@ -3788,7 +4762,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "me-accept-16",
+        "name": "me-accept-17",
         "method": "GET",
         "path": "/api/v1/auth/me",
         "accept": "*/*"
@@ -3813,7 +4787,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "me-accept-17",
+        "name": "me-accept-18",
         "method": "GET",
         "path": "/api/v1/auth/me",
         "accept": "application/json;q=0,text/html;q=1"
@@ -4207,7 +5181,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "login-media-33",
+        "name": "login-media-34",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -4231,7 +5205,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "login-media-34",
+        "name": "login-media-35",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -4258,7 +5232,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "login-media-35",
+        "name": "login-media-36",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -4285,7 +5259,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "login-media-36",
+        "name": "login-media-37",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -4309,7 +5283,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "login-media-37",
+        "name": "login-media-38",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -4788,7 +5762,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-58",
+        "name": "metric-filter-59",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres"
       },
@@ -4809,7 +5783,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-59",
+        "name": "metric-filter-60",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis"
       },
@@ -4830,7 +5804,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-60",
+        "name": "metric-filter-61",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:missing"
       },
@@ -4851,7 +5825,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-61",
+        "name": "metric-filter-62",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=other:value"
       },
@@ -4872,7 +5846,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-62",
+        "name": "metric-filter-63",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend"
       },
@@ -4893,7 +5867,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-63",
+        "name": "metric-filter-64",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres&tag=backend:redis"
       },
@@ -4914,7 +5888,7 @@
       "csrf": true,
       "monitoring": false,
       "request": {
-        "name": "metric-filter-64",
+        "name": "metric-filter-65",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis&tag=other:value"
       },
@@ -5015,6 +5989,453 @@
           "data": null,
           "timestamp": "<generated>"
         }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-GET",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-HEAD",
+        "method": "HEAD",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": "",
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-POST",
+        "method": "POST",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-PUT",
+        "method": "PUT",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 PUT 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-DELETE",
+        "method": "DELETE",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 DELETE 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-OPTIONS",
+        "method": "OPTIONS",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "",
+        "allow": "GET,HEAD,OPTIONS",
+        "body": "",
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-no-csrf",
+        "method": "POST",
+        "path": "/api/v1/health"
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-down",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "databaseDown": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "DOWN",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "DOWN",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-model",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "modelConfigured": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-79",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-80",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "text/event-stream"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-81",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-82",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/*+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-83",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/problem+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-84",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-accept-85",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "*/*"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": false,
+      "request": {
+        "name": "business-health-head-html",
+        "method": "HEAD",
+        "path": "/api/v1/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": "",
+        "databaseProbes": 1
       }
     },
     {
@@ -5423,6 +6844,31 @@
         "name": "me-accept-15",
         "method": "GET",
         "path": "/api/v1/auth/me",
+        "accept": "application/problem+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "username": null,
+            "authEnabled": true
+          },
+          "timestamp": "<generated>"
+        }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "me-accept-16",
+        "method": "GET",
+        "path": "/api/v1/auth/me",
         "accept": "application/json;q=0"
       },
       "response": {
@@ -5445,7 +6891,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "me-accept-16",
+        "name": "me-accept-17",
         "method": "GET",
         "path": "/api/v1/auth/me",
         "accept": "*/*"
@@ -5470,7 +6916,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "me-accept-17",
+        "name": "me-accept-18",
         "method": "GET",
         "path": "/api/v1/auth/me",
         "accept": "application/json;q=0,text/html;q=1"
@@ -5864,7 +7310,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "login-media-33",
+        "name": "login-media-34",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -5888,7 +7334,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "login-media-34",
+        "name": "login-media-35",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -5915,7 +7361,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "login-media-35",
+        "name": "login-media-36",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -5942,7 +7388,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "login-media-36",
+        "name": "login-media-37",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -5966,7 +7412,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "login-media-37",
+        "name": "login-media-38",
         "method": "POST",
         "path": "/api/v1/auth/login",
         "body": "{\"username\":\"admin\",\"password\":\"fixture-password\"}",
@@ -6428,7 +7874,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "metric-filter-58",
+        "name": "metric-filter-59",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres"
       },
@@ -6449,7 +7895,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "metric-filter-59",
+        "name": "metric-filter-60",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis"
       },
@@ -6470,7 +7916,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "metric-filter-60",
+        "name": "metric-filter-61",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:missing"
       },
@@ -6491,7 +7937,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "metric-filter-61",
+        "name": "metric-filter-62",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=other:value"
       },
@@ -6512,7 +7958,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "metric-filter-62",
+        "name": "metric-filter-63",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend"
       },
@@ -6533,7 +7979,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "metric-filter-63",
+        "name": "metric-filter-64",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:postgres&tag=backend:redis"
       },
@@ -6554,7 +8000,7 @@
       "csrf": true,
       "monitoring": true,
       "request": {
-        "name": "metric-filter-64",
+        "name": "metric-filter-65",
         "method": "GET",
         "path": "/actuator/metrics/personalos.rate.limit.acquire?tag=backend:redis&tag=other:value"
       },
@@ -6655,6 +8101,453 @@
           "data": null,
           "timestamp": "<generated>"
         }
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-GET",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-HEAD",
+        "method": "HEAD",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": "",
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-POST",
+        "method": "POST",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 POST 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-PUT",
+        "method": "PUT",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 PUT 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-DELETE",
+        "method": "DELETE",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 405,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40005,
+          "message": "请求方法 DELETE 不被支持",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-OPTIONS",
+        "method": "OPTIONS",
+        "path": "/api/v1/health",
+        "csrf": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "",
+        "allow": "GET,HEAD,OPTIONS",
+        "body": "",
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-no-csrf",
+        "method": "POST",
+        "path": "/api/v1/health"
+      },
+      "response": {
+        "status": 403,
+        "contentType": "application/json;charset=UTF-8",
+        "allow": "",
+        "body": {
+          "code": 40300,
+          "message": "请求被拒绝",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 0
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-down",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "databaseDown": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "DOWN",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "DOWN",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-model",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "modelConfigured": true
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-accept-79",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-accept-80",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "text/event-stream"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 40600,
+          "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+          "data": null,
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-accept-81",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-accept-82",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/*+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-accept-83",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/problem+json"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/problem+json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-accept-84",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "application/json;q=0"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-accept-85",
+        "method": "GET",
+        "path": "/api/v1/health",
+        "accept": "*/*"
+      },
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "allow": "",
+        "body": {
+          "code": 0,
+          "message": "OK",
+          "data": {
+            "status": "UP",
+            "application": "fixture",
+            "version": "test",
+            "timestamp": "<generated>",
+            "components": {
+              "database": "UP",
+              "ai": "NOT_CONFIGURED"
+            }
+          },
+          "timestamp": "<generated>"
+        },
+        "databaseProbes": 1
+      }
+    },
+    {
+      "auth": true,
+      "csrf": true,
+      "monitoring": true,
+      "request": {
+        "name": "business-health-head-html",
+        "method": "HEAD",
+        "path": "/api/v1/health",
+        "accept": "text/html"
+      },
+      "response": {
+        "status": 406,
+        "contentType": "application/json",
+        "allow": "",
+        "body": "",
+        "databaseProbes": 1
       }
     },
     {

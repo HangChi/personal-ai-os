@@ -14,6 +14,7 @@ from java_exception_fixture import NS, ROOT, SOURCES
 
 TARGET = ROOT / "backend-go/internal/app/testdata/java-foundation-http.json"
 AUTH_SOURCES = ["common/auth/" + name + ".java" for name in ["SecurityConfig", "MonitoringSecurityConfig", "AuthController", "CsrfController", "AuthService", "AuthProperties", "CurrentUserDto", "LoginRequest"]] + ["common/json/JsonCodec.java"]
+HEALTH_SOURCES = ["common/health/"+name+".java" for name in ["HealthController", "HealthService", "HealthStatusDto"]] + ["common/config/AppProperties.java"]
 
 
 def run(command, **kwargs):
@@ -36,7 +37,7 @@ def cases():
         ("health", "GET", "/actuator/health"), ("health-head", "HEAD", "/actuator/health"),
         ("health-post", "POST", "/actuator/health"), ("info", "GET", "/actuator/info"),
     ]: add(name, method, path)
-    for accept in ["text/html", "text/event-stream", "application/json", "application/*+json", "application/json;q=0", "*/*", "application/json;q=0,text/html;q=1"]:
+    for accept in ["text/html", "text/event-stream", "application/json", "application/*+json", "application/problem+json", "application/json;q=0", "*/*", "application/json;q=0,text/html;q=1"]:
         add("me-accept-"+str(len(rows)), accept=accept)
     bodies = [
         ("valid", '{"username":"admin","password":"fixture-password"}'),
@@ -81,6 +82,14 @@ def cases():
     add("metric-html", path="/actuator/metrics/personalos.rate.limit.acquire", accept="text/html")
     add("metric-expired", path="/actuator/metrics/personalos.rate.limit.acquire", metricExpired=True)
     add("metric-counter-filter", path="/actuator/metrics/personalos.rate.limit.errors?tag=backend:postgres")
+    for method in ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"]:
+        add("business-health-"+method, method, "/api/v1/health", csrf=True)
+    add("business-health-no-csrf", "POST", "/api/v1/health")
+    add("business-health-down", path="/api/v1/health", databaseDown=True)
+    add("business-health-model", path="/api/v1/health", modelConfigured=True)
+    for accept in ["text/html", "text/event-stream", "application/json", "application/*+json", "application/problem+json", "application/json;q=0", "*/*"]:
+        add("business-health-accept-"+str(len(rows)), path="/api/v1/health", accept=accept)
+    add("business-health-head-html", "HEAD", "/api/v1/health", accept="text/html")
     for name, method, path in [("management-health", "GET", "/actuator/health"), ("management-head", "HEAD", "/actuator/health"),
                                ("management-subpath", "GET", "/actuator/health/db"), ("management-business", "GET", "/api/v1/auth/me")]:
         add(name, method, path, management=True)
@@ -94,7 +103,7 @@ def generate(m2):
     bom = ET.parse(m2 / f"org/springframework/boot/spring-boot-dependencies/{boot}/spring-boot-dependencies-{boot}.pom")
     def version(name): return bom.find("m:properties/m:" + name + ".version", NS).text
     artifacts = [("org/springframework/boot", "spring-boot" + suffix, boot) for suffix in ["", "-autoconfigure", "-servlet", "-web-server", "-tomcat", "-webmvc", "-http-converter", "-http-codec", "-jackson", "-validation", "-security", "-actuator", "-actuator-autoconfigure", "-health", "-micrometer-metrics", "-micrometer-observation"]]
-    artifacts += [("org/springframework", "spring-"+name, version("spring-framework")) for name in ["core", "beans", "context", "expression", "aop", "web", "webmvc", "tx"]]
+    artifacts += [("org/springframework", "spring-"+name, version("spring-framework")) for name in ["core", "beans", "context", "expression", "aop", "web", "webmvc", "tx", "jdbc"]]
     artifacts += [("org/springframework/security", "spring-security-"+name, version("spring-security")) for name in ["core", "web", "config", "crypto"]]
     artifacts += [("io/micrometer", "micrometer-"+name, version("micrometer")) for name in ["core", "commons", "observation"]]
     artifacts += [("org/apache/tomcat/embed", "tomcat-embed-"+name, version("tomcat")) for name in ["core", "el", "websocket"]]
@@ -113,7 +122,7 @@ def generate(m2):
     hashes, scenarios = {}, []
     with tempfile.TemporaryDirectory(prefix="personalos-java-foundation-http-") as directory:
         sources = []
-        for name in SOURCES + AUTH_SOURCES:
+        for name in SOURCES + AUTH_SOURCES + HEALTH_SOURCES:
             relative = "backend/src/main/java/com/personalos/" + name
             source = run(["git", "show", baseline + ":" + relative], cwd=ROOT)
             path = Path(directory, name)
@@ -121,6 +130,11 @@ def generate(m2):
             path.write_text(source)
             sources.append(str(path))
             hashes[relative] = hashlib.sha256(source.encode()).hexdigest()
+        # 模型运行时属于P3：这里仅提供HealthService编译所需接口适配器，不声称执行原模型实现。
+        model_adapter = Path(directory, "fixture-adapters/com/personalos/common/ai/AiChatClientProvider.java")
+        model_adapter.parent.mkdir(parents=True, exist_ok=True)
+        model_adapter.write_text("package com.personalos.common.ai; public class AiChatClientProvider { public boolean isConfigured() { return false; } }")
+        sources.append(str(model_adapter))
         cp = os.pathsep.join(str(path) for path in jars)
         run(["javac", "-parameters", "-encoding", "UTF-8", "-cp", cp, "-d", directory, *sources, str(ROOT / "scripts/migration/FoundationHttpOracle.java")])
         for auth, csrf, management in [(False, False, False), (True, False, False), (True, True, False), (True, True, True)]:
@@ -142,10 +156,11 @@ def generate(m2):
                         response["body"]["timestamp"] = "<generated>"
                     data = response["body"].get("data")
                     if isinstance(data, dict) and data.get("token") is not None: data["token"] = "<generated>"
+                    if isinstance(data, dict) and "timestamp" in data: data["timestamp"] = "<generated>"
                 scenarios.append(dict(auth=auth, csrf=csrf, monitoring=management, request=request, response=response))
     return dict(baseline_commit=baseline, spring_boot=boot, sources_sha256=hashes,
                 jars_sha256={jar.name: hashlib.sha256(jar.read_bytes()).hexdigest() for jar in jars},
-                scope="real embedded Servlet/Security/Jackson/Validator/Actuator with original foundation sources; synthetic auth, database HealthIndicator and fixed rate metric samples; metric names filtered to personalos.rate.limit only", cases=scenarios)
+                scope="real Servlet/Security/Jackson/Validator/Actuator and original HealthController/HealthService; synthetic credentials, JdbcTemplate, model-state adapter, database HealthIndicator and fixed metric samples; metric names filtered to personalos.rate.limit only", cases=scenarios)
 
 
 def main():

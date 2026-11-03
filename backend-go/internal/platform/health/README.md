@@ -4,12 +4,13 @@
 
 `New` 必须显式提供元信息/正探测期限、Probe、模型状态回调和日志；不会自行加载配置或连接服务。`NewPostgresProbe` 复用调用方 Pool、受限获取连接并执行 SELECT 1，不访问业务表、不执行 DDL。Probe 必须支持 context，父请求较早的取消/期限优先；不创建超时后遗留的探测 goroutine。数据库错误不抛到响应，不输出驱动消息/凭据，日志保留安全请求 ID。
 
-`Handler` 由调用方挂载到 `/api/v1/health`。GET 总是 HTTP 200 的统一成功信封，数据库 DOWN 时前端仍能读取状态；HEAD 探测后无正文，其他方法405。此处不是 `/readyz` 发布就绪门禁。未自动接入诊断应用，五种角色/Worker 隔离和 ready=false 保持既有边界；完整生产装配与 Actuator/内容协商另行验收。
+`Handler` 已接入显式Foundation的 `/api/v1/health`，默认离线诊断入口保持独立。可接受JSON的GET返回HTTP200统一信封，数据库DOWN仍可读；HEAD同样执行一次探测但无正文。OPTIONS空200且Allow，其他方法交原全局异常契约返回具体405文案且无Allow。默认媒体类型application/json，也支持协商后的application/problem+json；不兼容Accept为406，且按原MVC顺序仍执行一次探测。五角色/Worker隔离与ready=false保持既有边界。
 
 ## 已验证
 
 - 对照原三种服务状态、控制器信封/透传值；增加取消/较早父期限、100路并发报告、可变对象隔离和日志脱敏。
 - 实际 HTTP/认证安全链证明匿名健康报告不要求登录、不创建会话。
+- 真实Boot Servlet运行原HealthController/HealthService/HealthStatusDto/AppProperties，合成JdbcTemplate与模型状态接口适配器；对照68个健康场景的状态/信封/媒体/方法/CSRF/探测次数，包含DOWN与可选模型。夹具不访问真实服务，也不冒充执行原模型运行时。
 - `python3 scripts/migration/run_go_postgres_tests.py --tls --package health` 使用自己创建的临时集群/维护连接，实际禁止新连接并终止探针连接：HTTP 200/DOWN；恢复后UP。连接池单槽耗尽时按50ms期限报告DOWN，释放后UP且无占用泄漏。
 
 原 Java 的无界查询由显式 Go ProbeTimeout 收紧；Java 原日志会输出驱动消息，Go有意脱敏。以上不是完整运行应用/前端差分，也未解除安全启动守卫。

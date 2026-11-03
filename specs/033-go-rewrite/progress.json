@@ -1969,7 +1969,10 @@
         "backend-go/internal/app/actuator_health.go",
         "backend-go/internal/platform/config/actuator.go",
         "backend-go/internal/platform/config/actuator_test.go",
-        "backend-go/internal/app/foundation_http_oracle_test.go"
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "scripts/migration/FoundationHttpOracle.java",
+        "scripts/migration/java_foundation_http_fixture.py",
+        "backend-go/internal/platform/health/http.go"
       ],
       "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。 T106d: 真实Servlet夹具扩展220例全部对照通过，修正业务/管理健康与信息、分组/媒体类型及详情权限；不是完整Micrometer或通用框架验收。"
     },
@@ -1978,7 +1981,11 @@
       "evidence": [
         "backend-go/internal/platform/health/service.go",
         "backend-go/internal/platform/health/service_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/FoundationHttpOracle.java",
+        "scripts/migration/java_foundation_http_fixture.py",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "backend-go/internal/platform/health/http.go"
       ],
       "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。"
     },
@@ -1988,7 +1995,10 @@
         "backend-go/internal/platform/health/http.go",
         "backend-go/internal/platform/health/http_test.go",
         "backend-go/internal/platform/health/postgres_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/FoundationHttpOracle.java",
+        "scripts/migration/java_foundation_http_fixture.py",
+        "backend-go/internal/app/foundation_http_oracle_test.go"
       ],
       "note": "健康报告规则/HTTP信封与真实临时PostgreSQL断连恢复/池饱和已验证；未接应用/模型provider和配置，完整Java服务/前端差分仍待完成，不能verified。"
     },

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -17,17 +18,19 @@ import (
 	"time"
 
 	"personal-ai-os/backend-go/internal/platform/config"
+	"personal-ai-os/backend-go/internal/platform/health"
 	"personal-ai-os/backend-go/internal/platform/ratelimit"
 )
 
 type foundationHTTPFixture struct {
 	Auth, CSRF, Monitoring bool
 	Request                struct {
-		Name, Method, Path, ContentType, Accept, Body                 string
-		CSRF, BadCSRF, Management, DatabaseDown, Login, MetricExpired bool
+		Name, Method, Path, ContentType, Accept, Body                                  string
+		CSRF, BadCSRF, Management, DatabaseDown, Login, MetricExpired, ModelConfigured bool
 	}
 	Response struct {
 		Status             int
+		DatabaseProbes     int
 		ContentType, Allow string
 		Body               any
 	}
@@ -43,7 +46,7 @@ func readFoundationHTTPFixture(t *testing.T) []foundationHTTPFixture {
 	if err := json.Unmarshal(data, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	if len(fixture.Cases) != 292 {
+	if len(fixture.Cases) != 364 {
 		t.Fatal("真实 HTTP 场景数量改变，需审查")
 	}
 	return fixture.Cases
@@ -67,6 +70,12 @@ func normalizeFoundationBody(t *testing.T, data []byte) any {
 		}
 		if payload, ok := body["data"].(map[string]any); ok && payload["token"] != nil {
 			payload["token"] = "<generated>"
+		}
+		if payload, ok := body["data"].(map[string]any); ok && payload["timestamp"] != nil {
+			if _, err := time.Parse(time.RFC3339Nano, payload["timestamp"].(string)); err != nil {
+				t.Fatal("健康状态时间戳无效", err)
+			}
+			payload["timestamp"] = "<generated>"
 		}
 	}
 	return result
@@ -203,13 +212,52 @@ func TestFoundationAuthRealServletOracle(t *testing.T) {
 		server := httptest.NewServer(h)
 		transport := &http.Transport{Proxy: nil}
 		for _, test := range fixtures {
-			if test.Auth != mode.auth || test.CSRF != mode.csrf || test.Monitoring != mode.monitoring || test.Request.Management || strings.HasPrefix(test.Request.Path, "/actuator/") {
+			if test.Auth != mode.auth || test.CSRF != mode.csrf || test.Monitoring != mode.monitoring || test.Request.Management || strings.HasPrefix(test.Request.Path, "/actuator/") || test.Request.Path == "/api/v1/health" {
 				continue
 			}
 			t.Run(strings.Join([]string{map[bool]string{true: "auth", false: "anonymous"}[mode.auth], map[bool]string{true: "csrf", false: "plain"}[mode.csrf], map[bool]string{true: "monitoring", false: "business"}[mode.monitoring], test.Request.Name}, "/"), func(t *testing.T) {
 				jar, _ := cookiejar.New(nil)
 				client := &http.Client{Transport: transport, Jar: jar, Timeout: 5 * time.Second}
 				compareFoundationResponse(t, client, server.URL, test)
+			})
+		}
+		transport.CloseIdleConnections()
+		server.Close()
+	}
+}
+
+func TestFoundationBusinessHealthRealServletOracle(t *testing.T) {
+	fixtures := readFoundationHTTPFixture(t)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	for _, mode := range []struct{ auth, csrf, monitoring bool }{{false, false, false}, {true, false, false}, {true, true, false}, {true, true, true}} {
+		var down, modelConfigured atomic.Bool
+		var probes atomic.Int64
+		probe, err := health.New(health.Options{Application: "fixture", Version: "test", ProbeTimeout: time.Second}, func(context.Context) error {
+			probes.Add(1)
+			if down.Load() {
+				return errors.New("synthetic-unavailable")
+			}
+			return nil
+		}, modelConfigured.Load, logger)
+		if err != nil {
+			t.Fatal(err)
+		}
+		server := httptest.NewServer(fixtureFoundationProbeHandler(t, config.API, mode.auth, mode.csrf, &fixtureLimiter{allowed: true}, nil, probe, nil))
+		transport := &http.Transport{Proxy: nil}
+		for _, test := range fixtures {
+			if test.Auth != mode.auth || test.CSRF != mode.csrf || test.Monitoring != mode.monitoring || test.Request.Management || test.Request.Path != "/api/v1/health" {
+				continue
+			}
+			t.Run(strings.Join([]string{map[bool]string{true: "auth", false: "anonymous"}[mode.auth], map[bool]string{true: "csrf", false: "plain"}[mode.csrf], map[bool]string{true: "monitoring", false: "business"}[mode.monitoring], test.Request.Name}, "/"), func(t *testing.T) {
+				down.Store(test.Request.DatabaseDown)
+				modelConfigured.Store(test.Request.ModelConfigured)
+				probes.Store(0)
+				jar, _ := cookiejar.New(nil)
+				client := &http.Client{Transport: transport, Jar: jar, Timeout: 5 * time.Second}
+				compareFoundationResponse(t, client, server.URL, test)
+				if probes.Load() != int64(test.Response.DatabaseProbes) {
+					t.Error("数据库探测调用次数不同", probes.Load(), test.Response.DatabaseProbes)
+				}
 			})
 		}
 		transport.CloseIdleConnections()

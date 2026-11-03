@@ -29,6 +29,10 @@ func (l *fixtureLimiter) TryAcquire(context.Context) (bool, error) {
 }
 
 func fixtureFoundationHandler(t *testing.T, role config.Role, secured, csrf bool, limiter *fixtureLimiter, gate *modelgate.Gate, business http.Handler, actuator ...http.Handler) http.Handler {
+	return fixtureFoundationProbeHandler(t, role, secured, csrf, limiter, gate, nil, business, actuator...)
+}
+
+func fixtureFoundationProbeHandler(t *testing.T, role config.Role, secured, csrf bool, limiter *fixtureLimiter, gate *modelgate.Gate, probe *health.Service, business http.Handler, actuator ...http.Handler) http.Handler {
 	t.Helper()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	service, err := auth.New(auth.Options{Enabled: secured, Username: "admin", Password: "fixture-password", MaxFailures: 5, Lockout: time.Minute})
@@ -43,9 +47,11 @@ func fixtureFoundationHandler(t *testing.T, role config.Role, secured, csrf bool
 	if err != nil {
 		t.Fatal(err)
 	}
-	probe, err := health.New(health.Options{Application: "fixture", Version: "test", ProbeTimeout: time.Second}, func(context.Context) error { return nil }, func() bool { return false }, logger)
-	if err != nil {
-		t.Fatal(err)
+	if probe == nil {
+		probe, err = health.New(health.Options{Application: "fixture", Version: "test", ProbeTimeout: time.Second}, func(context.Context) error { return nil }, func() bool { return false }, logger)
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 	if gate == nil {
 		gate, err = modelgate.NewLocal(1)

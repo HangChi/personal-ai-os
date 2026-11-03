@@ -344,3 +344,11 @@ Decision：默认业务exposure包含metrics，必须接入而非恒定404。真
 注册是惰性的：无样本不列timer，无Redis错误不列counter；未知名称/无匹配标签为空404，非法无冒号标签保留原全局500，OPTIONS空200且Allow。标签聚合的COUNT/TOTAL_TIME求和、MAX取最大，选择backend后不再返回已选availableTags。列表差分只筛共同的personalos.rate.limit名称，不在Go伪造JVM/Hikari或尚未采集的业务指标。monitoring仍仅两个精确GET，未因此放宽管理权限。
 
 真实TLS应用验证一次允许、一次预算拒绝都进入postgres timer且耗时为实际测量。完整HTTP histogram、日志格式和后续业务指标仍开放，不能将292个基础场景当作全业务差分完成。
+
+## R-039 业务健康控制器与内容协商顺序
+
+Decision：真实Servlet直接运行基线HealthController/HealthService/HealthStatusDto/AppProperties，JdbcTemplate只接受SELECT 1并由合成开关返回成功或DataAccessException；模型适配器仅提供isConfigured，不编译或替代P3的真实模型实现。记录每请求实际探测次数，不仅比较响应。
+
+GET/HEAD先调用服务再协商；不兼容Accept为406但仍探测一次。HEAD成功无正文，OPTIONS不探测/空200/Allow，错误方法不探测并由原全局405处理且无Allow。数据库DOWN仍HTTP200，模型CONFIGURED只影响分量。具体application/problem+json被原Jackson接受且作为响应媒体类型，健康与认证成功使用同一协商器保留这个值，安全过滤器仍沿用其UTF-8响应。
+
+先保存Go差分失败证据后修正，364基础场景逐项通过；仅归一化信封/健康生成时间，状态、应用名/版本、组件和探测次数都不忽略。完整请求解析/multipart及业务DTO继续开放。

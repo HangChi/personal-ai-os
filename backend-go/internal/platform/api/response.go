@@ -41,6 +41,11 @@ func WriteControllerJSON(w http.ResponseWriter, status int, value any) error {
 	return writeJSON(w, status, value, "application/json")
 }
 
+// WriteControllerMediaJSON 接收内容协商器已选定的JSON媒体类型，不直接接收原始Accept。
+func WriteControllerMediaJSON(w http.ResponseWriter, status int, value any, contentType string) error {
+	return writeJSON(w, status, value, contentType)
+}
+
 func writeJSON(w http.ResponseWriter, status int, value any, contentType string) error {
 	data, marshalErr := json.Marshal(value)
 	if marshalErr != nil {

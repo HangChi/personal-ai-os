@@ -336,6 +336,12 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 
 `run_go_postgres_tests.py --tls --package app`全app race通过（/private/tmp/personal-ai-os-go-metrics-tls.log），真实Flyway后允许/拒绝的模型路径各执行一次，业务Actuator实际报告COUNT=2与正TOTAL_TIME/MAX；未启用Redis不虚构错误counter，默认业务Prometheus仍404。临时容器清理。新增窗口/空注册表测试与integration vet通过。完整观测、业务HTTP histogram和P1父项仍开放。
 
+## 增量：真实业务健康HTTP（T106e）
+
+夹具引入原HealthController/HealthService/HealthStatusDto/AppProperties，明确用合成JdbcTemplate/模型状态适配器，未接模型或现有数据库；累计364场景。初始健康差分失败证据在/private/tmp/personal-ai-os-go-business-health-red.log。修正媒体/方法/协商后364基础场景全部对照；app/health/auth/api四包race通过（/private/tmp/personal-ai-os-go-business-health.log）。integration vet通过，真实Java默认重生成比较另存/private/tmp/personal-ai-os-java-business-health-check.log。
+
+健康68例检查GET/HEAD/OPTIONS/405、CSRF安全链、DOWN/可选模型、Accept406与具体+json媒体；每例还比较数据库探测次数，保留探测先于响应协商的原MVC行为。两个生成时间字段只验证UTC格式后归一化。未声明完成整个Servlet绑定或P1父项。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

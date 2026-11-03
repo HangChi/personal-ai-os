@@ -39,12 +39,12 @@ func TestJavaHealthHTTPReportAndMethods(t *testing.T) {
 		}
 		response = httptest.NewRecorder()
 		handler.ServeHTTP(response, httptest.NewRequest("HEAD", "/api/v1/health", nil))
-		if response.Code != 200 || response.Body.Len() != 0 || calls != 2 || response.Header().Get("Content-Type") != "application/json;charset=UTF-8" {
+		if response.Code != 200 || response.Body.Len() != 0 || calls != 2 || response.Header().Get("Content-Type") != "application/json" {
 			t.Fatal("HEAD 未保持状态探测/无正文")
 		}
 		response = httptest.NewRecorder()
 		handler.ServeHTTP(response, httptest.NewRequest("POST", "/api/v1/health", nil))
-		if response.Code != 405 || response.Header().Get("Allow") != "GET, HEAD" || calls != 2 {
+		if response.Code != 405 || response.Header().Get("Allow") != "" || calls != 2 {
 			t.Fatal("错误方法不能探测依赖")
 		}
 	}

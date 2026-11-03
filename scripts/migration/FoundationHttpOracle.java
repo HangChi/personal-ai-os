@@ -1,6 +1,9 @@
 import com.personalos.common.auth.*;
 import com.personalos.common.exception.GlobalExceptionHandler;
 import com.personalos.common.json.JsonCodec;
+import com.personalos.common.health.*;
+import com.personalos.common.config.AppProperties;
+import com.personalos.common.ai.AiChatClientProvider;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.MockClock;
 import io.micrometer.core.instrument.simple.SimpleConfig;
@@ -17,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.WebApplicationType;
@@ -29,15 +33,19 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.DataAccessResourceFailureException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 /** 真实嵌入式 Servlet/Security/Jackson/Validator/Actuator，只加载显式原基础源码。 */
 @SpringBootConfiguration(proxyBeanMethods = false)
 @EnableAutoConfiguration(excludeName = "org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration")
-@Import({SecurityConfig.class, MonitoringSecurityConfig.class, AuthController.class, CsrfController.class, GlobalExceptionHandler.class})
+@Import({SecurityConfig.class, MonitoringSecurityConfig.class, AuthController.class, CsrfController.class, HealthController.class, GlobalExceptionHandler.class})
 public class FoundationHttpOracle {
     private static final AtomicBoolean DATABASE_UP = new AtomicBoolean(true);
+    private static final AtomicBoolean MODEL_CONFIGURED = new AtomicBoolean(false);
+    private static final AtomicInteger DATABASE_PROBES = new AtomicInteger();
     @Bean MockClock fixtureClock() { return new MockClock(); }
     @Bean MeterRegistry fixtureRegistry(MockClock clock) { return new SimpleMeterRegistry(SimpleConfig.DEFAULT, clock); }
     @Bean AuthProperties authProperties(org.springframework.core.env.Environment env) {
@@ -47,6 +55,20 @@ public class FoundationHttpOracle {
     @Bean JsonCodec jsonCodec(ObjectMapper mapper) { return new JsonCodec(mapper); }
     @Bean HealthIndicator dbHealthIndicator() {
         return () -> (DATABASE_UP.get() ? Health.up() : Health.down()).withDetail("database", "fixture").build();
+    }
+    @Bean HealthService fixtureHealthService() {
+        var jdbc = new JdbcTemplate() {
+            @Override public <T> T queryForObject(String sql, Class<T> type) {
+                if (!sql.equals("SELECT 1") || type != Integer.class) throw new IllegalStateException("探测越界");
+                DATABASE_PROBES.incrementAndGet();
+                if (!DATABASE_UP.get()) throw new DataAccessResourceFailureException("synthetic-unavailable");
+                return type.cast(1);
+            }
+        };
+        var model = new AiChatClientProvider() {
+            @Override public boolean isConfigured() { return MODEL_CONFIGURED.get(); }
+        };
+        return new HealthService(new AppProperties("fixture", "test"), jdbc, model);
     }
 
     @SuppressWarnings("unchecked")
@@ -87,6 +109,8 @@ public class FoundationHttpOracle {
                 for (String line; (line = reader.readLine()) != null;) {
                     Map<String, Object> input = mapper.readValue(line, Map.class);
                     DATABASE_UP.set(!Boolean.TRUE.equals(input.get("databaseDown")));
+                    MODEL_CONFIGURED.set(Boolean.TRUE.equals(input.get("modelConfigured")));
+                    DATABASE_PROBES.set(0);
                     // 只合成原限流器相同名称/标签的样本，端点序列化/过滤/聚合由真实Actuator执行。
                     var registry = context.getBean(MeterRegistry.class);
                     registry.getMeters().stream().filter(meter -> meter.getId().getName().startsWith("personalos.rate.limit.")).toList().forEach(registry::remove);
@@ -123,6 +147,7 @@ public class FoundationHttpOracle {
                         output.put("contentType", response.headers().firstValue("content-type").orElse(""));
                         output.put("allow", response.headers().firstValue("allow").orElse(""));
                         output.put("body", response.body());
+                        if (input.get("path").equals("/api/v1/health")) output.put("databaseProbes", DATABASE_PROBES.get());
                         System.out.println("CASE\t" + mapper.writeValueAsString(output));
                     }
                 }

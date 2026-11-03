@@ -331,16 +331,17 @@ func (layer *HTTP) login(w http.ResponseWriter, r *http.Request, session *reques
 }
 
 func (layer *HTTP) success(w http.ResponseWriter, r *http.Request, data any) {
-	if !httpmiddleware.JSONAcceptable(r.Header.Get("Accept")) {
+	contentType, acceptable := httpmiddleware.SelectJSONMediaType(r.Header.Get("Accept"), []string{"application/json", "application/*+json"})
+	if !acceptable {
 		layer.controllerError(w, api.NotAcceptable, "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept")
 		return
 	}
 	if r.Method == http.MethodHead {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", contentType)
 		w.WriteHeader(200)
 		return
 	}
-	if err := api.WriteControllerJSON(w, http.StatusOK, api.OK(data)); err != nil {
+	if err := api.WriteControllerMediaJSON(w, http.StatusOK, api.OK(data), contentType); err != nil {
 		layer.logger.Error("写入认证响应失败")
 	}
 }
