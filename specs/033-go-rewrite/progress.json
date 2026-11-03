@@ -446,9 +446,11 @@
         "backend-go/internal/platform/modelgate/gate_test.go",
         "backend-go/internal/platform/modelgate/postgres_integration_test.go",
         "backend-go/internal/platform/http/concurrency.go",
-        "backend-go/internal/platform/http/concurrency_test.go"
+        "backend-go/internal/platform/http/concurrency_test.go",
+        "backend-go/internal/app/foundation_network_integration_test.go",
+        "backend-go/internal/app/foundation_acl_integration_test.go"
       ],
-      "note": "consume、租约/续租/fencing/事务后释放、API 预留对应场景已实现并在一次性 PostgreSQL 验证；应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。"
+      "note": "consume、租约/续租/fencing/事务后释放、API 预留对应场景已实现并在一次性 PostgreSQL 验证；应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。 T102d/T107h: TLS schema ACL, TCP partition/recovery and lost COMMIT response verified; parent tasks remain open."
     },
     "file:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java": {
       "status": "implemented",
@@ -1884,7 +1886,8 @@
         "backend-go/internal/platform/config/cookie_sources_test.go",
         "backend-go/internal/app/foundation_redis_integration_test.go",
         "scripts/migration/run_go_postgres_tests.py",
-        "scripts/migration/smoke_go_foundation.py"
+        "scripts/migration/smoke_go_foundation.py",
+        "backend-go/internal/app/foundation_network_integration_test.go"
       ],
       "note": "专用 standalone redis/rediss 解析/TLS 配置/2 秒操作与 Go 独立版本化键已实现；真实 Redis 跨客户端/HTTP 实例/OS 进程共享注销通过。不导入 Spring 序列化会话，切换须重新登录；实际 TLS/ACL/配置与应用装配仍待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。 已通过Foundation双实例与PostgreSQL/Redis TLS、独立ACL组合：共享会话/预算、专用客户端故障不回退和借用资源所有权；真实应用网络分区/CLI仍待验。 T108e: 真实二进制在自建TLS存储中验证五角色/双端口/跨OS预算与共享会话、启动失败/退出资源释放；不代表业务Worker或网络故障完成。"
     },
@@ -1924,9 +1927,10 @@
         "backend-go/internal/platform/redis/security_integration_test.go",
         "backend-go/internal/platform/redis/response_loss_integration_test.go",
         "backend-go/internal/app/foundation_redis_integration_test.go",
-        "scripts/migration/run_go_postgres_tests.py"
+        "scripts/migration/run_go_postgres_tests.py",
+        "backend-go/internal/app/foundation_network_integration_test.go"
       ],
-      "note": "原 Java Lua 逐词对照，真实 Redis 验证共享容量/分数/回拨/配置拒绝/TTL/取消/故障与跨进程预算；使用显式专用客户端和 150ms 边界。实际 TLS/网络不确定响应/应用配置指标装配待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。 已通过Foundation双实例与PostgreSQL/Redis TLS、独立ACL组合：共享会话/预算、专用客户端故障不回退和借用资源所有权；真实应用网络分区/CLI仍待验。"
+      "note": "原 Java Lua 逐词对照，真实 Redis 验证共享容量/分数/回拨/配置拒绝/TTL/取消/故障与跨进程预算；使用显式专用客户端和 150ms 边界。实际 TLS/网络不确定响应/应用配置指标装配待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。 已通过Foundation双实例与PostgreSQL/Redis TLS、独立ACL组合：共享会话/预算、专用客户端故障不回退和借用资源所有权；真实应用网络分区/CLI仍待验。 T102d/T107h: TLS schema ACL, TCP partition/recovery and lost COMMIT response verified; parent tasks remain open."
     },
     "file:backend/src/test/java/com/personalos/common/web/RedisRateBucketIntegrationTest.java": {
       "status": "implemented",

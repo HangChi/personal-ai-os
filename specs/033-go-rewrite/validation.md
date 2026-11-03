@@ -324,6 +324,12 @@ runner 新增 command 套件，先在自建 TLS PostgreSQL 执行真实 Java Fly
 
 配置/app定向race通过（/private/tmp/personal-ai-os-go-actuator-unit.log），integration vet/build通过。真实TLS/ACL全app与真实二进制command套件通过（/private/tmp/personal-ai-os-go-actuator-redis.log），两个容器/证书均清理。smoke同步按真实健康groups契约断言。此批覆盖健康/info与最小Prometheus，不宣称完整Micrometer metrics/histogram或所有管理扩展配置已迁移；T106/T108/T109父项仍开放。
 
+## 增量：完整schema最小权限与TCP故障（T102d/T107h）
+
+`run_go_postgres_tests.py --tls --package app`通过（/private/tmp/personal-ai-os-go-foundation-acl.log）。42迁移/40表下随机无管理权限账号只获P1最小授权；五角色启动、共享桶/租约、其余37表与DDL/提权拒绝、撤权启动失败及连接清理均通过。后续业务表尚未授权。
+
+`run_go_redis_tests.py --tls --package app`首次三个新增网络测试通过，旧共享预算断言因固定ACL桶污染失败。补独立容器精确键清理后全app race通过（/private/tmp/personal-ai-os-go-foundation-network.log）。PG/两专用Redis真实TCP分区与恢复、租约保持/释放、无回退验证通过；COMMIT响应实际被丢、调用超时，直连确认仅一次提交。两临时容器和证书finally清理。integration标签全量vet通过；父项和发布门禁保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

@@ -328,3 +328,11 @@ Decision：真实Boot HTTP而非源码白名单推断决定端点位置/响应�
 绑定原exposure/include/exclude、details、info环境开关及固定应用信息；数据库与专用Redis实际探测，Linux/macOS磁盘容量实际读取，未验收平台返回UNKNOWN而不造容量。入站监听器没有HTTPS证书链，ssl分量仅报告空链；不把数据库出站TLS当作入站证书健康。Go数据库验证描述为SELECT 1，专用Redis分量按实际功能命名，完整JDBC/JVM细节不伪造。
 
 Alternatives considered：所有业务Actuator永久404；匿名只status而丢失groups；监控HEAD自动放行；认证后仍忽略详情配置；复用业务health信封。均由真实220场景排除。metrics完整清单/业务histogram与扩展管理配置继续单独追踪。
+
+## R-037 完整schema的P1最小权限与真实网络故障
+
+Decision：只在runner自建且已执行42迁移的TLS PostgreSQL创建随机受限角色，授予历史SELECT与两协调表SELECT/INSERT/UPDATE。五种基础角色均能启动，其他37表读取及DDL/临时表/历史写/提权均拒绝；撤销历史读取后启动失败且无连接泄漏。后续业务CRUD与生产迁移账号另定权限。
+
+透明TCP代理保留端到端TLS，不解密或记录数据；分区关闭已有连接并拒绝新连接，恢复后真实重连。两专用Redis分别故障验证隔离、恢复原会话及无PG回退。单独丢弃服务端COMMIT响应、继续转发客户端写入；调用返回DeadlineExceeded，直连证实一次持久副作用，禁止透明重试不确定写入。
+
+首次整套回归发现两个测试共用ACL固定桶，新增测试改为仅清理本次独立容器的精确键后全app通过。没有放宽生产ACL或忽略旧断言。这些是P1组件证据，不是五发布门禁或真实用户备份/生产验收。
