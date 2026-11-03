@@ -18,6 +18,7 @@ class RagRetrievalPipelineTest {
     @BeforeEach void setup() {
         var properties=new KnowledgeProperties(1024,4,.3,50000,List.of("md"),10,1200,0,true,60,1);
         pipeline=new RagRetrievalPipeline(recall,model,new EvidenceReview(model,json),properties,json,new SimpleMeterRegistry(),true,20000);
+        when(recall.hasContent()).thenReturn(true);
         when(recall.candidates(anyString(),anyInt())).thenReturn(List.of(a,b));
     }
     void responses(String rewrite,String order,String evidence) {
@@ -60,8 +61,10 @@ class RagRetrievalPipelineTest {
     }
 
     @Test void emptyLibraryDoesNotCallGeneration() {
-        when(recall.candidates(anyString(),anyInt())).thenReturn(List.of());
-        assertThat(pipeline.retrieve("问题",4).status()).isEqualTo("INSUFFICIENT");verifyNoInteractions(model);
+        when(recall.hasContent()).thenReturn(false);
+        assertThat(pipeline.retrieve("问题",4).status()).isEqualTo("INSUFFICIENT");
+        verify(recall, never()).candidates(anyString(), anyInt());
+        verifyNoInteractions(model);
     }
     @Test void unavailableStagesRetainOriginalAndRefuseToInventConclusion() {
         when(model.call(anyString(),anyString(),anyLong())).thenThrow(new IllegalStateException("timeout"));

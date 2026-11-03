@@ -198,6 +198,11 @@ public class VectorStoreInspector {
         return jdbcTemplate.queryForList(sql, String.class, id.toString(), size, (long) page * size);
     }
 
+    public boolean hasContent() {
+        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM " + qualifiedTable() + ")", Boolean.class));
+    }
+
     /**
      * 统计整张向量表的行数（测试与排错用）。
      */

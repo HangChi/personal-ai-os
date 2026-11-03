@@ -77,38 +77,48 @@ public class KnowledgeRetrievalService implements KnowledgeSearchPort {
             org.springframework.ai.embedding.EmbeddingModel embeddings) {
         this.external=external.getIfAvailable(); this.projection=projection.getIfAvailable(); this.embeddings=embeddings;
     }
+    @org.springframework.beans.factory.annotation.Autowired
+    private io.micrometer.core.instrument.MeterRegistry recallMetrics;
+
+    private <T> T measureRecall(String stage, java.util.function.Supplier<T> operation) {
+        if (recallMetrics == null) return operation.get();
+        var timer = recallMetrics.timer("personalos.knowledge.recall", "stage", stage);
+        return timer.record(operation);
+    }
+
     private RedisCandidateCache candidateCache;
     @org.springframework.beans.factory.annotation.Autowired
     void configureCandidateCache(org.springframework.beans.factory.ObjectProvider<RedisCandidateCache> cache) {
         candidateCache = cache.getIfAvailable();
     }
 
-    public boolean hasContent(){return inspector.countAll()>0;}
+    public boolean hasContent(){return inspector.hasContent();}
     /** Chunk-level candidate pool, before final diversity selection. */
     public List<KnowledgeHitDto> candidates(String query,int requested) {
         if(query==null || query.isBlank()) throw new BusinessException(ErrorCode.VALIDATION_FAILED,"Empty query");
         int limit=Math.max(1,Math.min(requested,60));
         if (candidateCache != null) {
-            return candidateCache.get(query, limit, () -> external != null && projection.pending() == 0,
+            return candidateCache.get(query, limit, () -> external != null && !projection.hasPending(),
                     ready -> loadCandidates(query, limit, ready));
         }
-        return loadCandidates(query, limit, external != null && projection.pending() == 0);
+        return loadCandidates(query, limit, external != null && !projection.hasPending());
     }
 
     private List<KnowledgeHitDto> loadCandidates(String query, int limit, boolean externalReady) {
         if(externalReady) {
             try {
-                var channels=external.search(query,embeddings.embed(query),limit);
+                var queryVector = measureRecall("query_embedding", () -> embeddings.embed(query));
+                var channels = measureRecall("opensearch_hybrid", () -> external.search(query, queryVector, limit));
                 Map<UUID,Double> ranks=new LinkedHashMap<>();
                 for(var channel:List.of(channels.lexical(),channels.vector()))
                     for(int i=0;i<channel.size();i++) ranks.merge(channel.get(i),1.0/(properties.rrfK()+i+1),Double::sum);
-                var rows=inspector.projectionChunks(new ArrayList<>(ranks.keySet()));
+                var rows = measureRecall("candidate_hydration", () -> inspector.projectionChunks(new ArrayList<>(ranks.keySet())));
                 return rows.stream().sorted(Comparator.comparingDouble((VectorStoreInspector.IndexedChunk c)->ranks.get(c.id())).reversed())
                     .map(c->fromKeywordChunk(new VectorStoreInspector.KeywordChunk(c.id().toString(),c.content(),c.metadata()),
                         channels.lexical().contains(c.id())?(channels.vector().contains(c.id())?MatchedBy.BOTH:MatchedBy.KEYWORD):MatchedBy.VECTOR)).toList();
             } catch(RuntimeException ex) { log.warn("External search unavailable; using PostgreSQL recall"); }
         }
-        var vectors=vectorSearch(query,limit);
+        var vectors = measureRecall("postgres_vector_path", () -> vectorSearch(query, limit));
         var keywords=keywordSearch(query,limit);
         if(properties.hybridSearchEnabled() && KeywordExtractor.extract(query).isEmpty()) {
             var tokens=new LinkedHashSet<String>();

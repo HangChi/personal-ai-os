@@ -27,6 +27,10 @@ public final class SearchProjection {
         if (role.allows("api")) reindex();
     }
 
+    public boolean hasPending() {
+        return Boolean.TRUE.equals(db.queryForObject("SELECT EXISTS (SELECT 1 FROM knowledge_search_outbox)", Boolean.class));
+    }
+
     public long pending() {
         return db.queryForObject("SELECT count(*) FROM knowledge_search_outbox",Long.class);
     }

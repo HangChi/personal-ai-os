@@ -50,10 +50,13 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         long deadline=System.nanoTime()+TimeUnit.MILLISECONDS.toNanos(budget);
         var stages=new ArrayList<RagResult.Stage>(); var warnings=new ArrayList<String>();
         var queries=new LinkedHashSet<String>(); queries.add(query.strip());
-        // Empty libraries avoid auxiliary LLM calls too.
-        long start=System.nanoTime(); var initial=enrich(recall.candidates(query,40));
-        stage(stages,"recall",start,1,initial.size(),"OK");
-        if(initial.isEmpty() && !recall.hasContent()) return new RagResult(List.of(),List.copyOf(queries),stages,warnings,"INSUFFICIENT",List.of(),"");
+        long start=System.nanoTime();
+        if (!recall.hasContent()) {
+            stage(stages, "recall", start, 1, 0, "EMPTY");
+            return new RagResult(List.of(), List.copyOf(queries), stages, warnings, "INSUFFICIENT", List.of(), "");
+        }
+        var initial = enrich(recall.candidates(query, 40));
+        stage(stages, "recall", start, 1, initial.size(), "OK");
         start=System.nanoTime();
         try {
             var rewritten=model.call("保持原问题的对象、时间和限制，只补充检索用同义词和拆分子问题，不生成答案，不虚构实体。返回 {\"queries\":[\"改写1\",\"改写2\"]}，最多两条，每条不超过500字符。",json.writeValueAsString(Map.of("query",query)),remaining(deadline));
