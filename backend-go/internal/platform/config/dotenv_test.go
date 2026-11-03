@@ -194,7 +194,7 @@ func TestDotEnvStaysBelowStaticProfileConfiguration(t *testing.T) {
 	if err != nil || settings.Role != Review {
 		t.Fatalf("系统环境应覆盖静态 profile：%v，%v", settings, err)
 	}
-	writeDotEnv(t, dir, "SPRING_PROFILES_ACTIVE=prod\nAUTH_ENABLED=false\nAUTH_PASSWORD=fixture-password-16\nPOSTGRES_PASSWORD=fixture-db")
+	writeDotEnv(t, dir, "SPRING_PROFILES_ACTIVE=prod\nAUTH_ENABLED=false\nAUTH_PASSWORD=fixture-password-16\nPOSTGRES_PASSWORD=fixture-db\nSERVER_SERVLET_SESSION_COOKIE_SECURE=true")
 	env, err = LoadEnvironment(environment(map[string]string{"GO_DOTENV_ENABLED": "true"}), dir)
 	if err != nil {
 		t.Fatal(err)

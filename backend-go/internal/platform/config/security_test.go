@@ -71,9 +71,9 @@ func TestSecurityDefaultsProfilesOverrideAndRedaction(t *testing.T) {
 	if err != nil || security.Production || security.AuthEnabled || security.CSRFEnabled || security.CookieSecure {
 		t.Fatalf("本地默认值错误：%v，%v", security, err)
 	}
-	security, err = LoadSecurity(environment(map[string]string{"AUTH_PASSWORD": "fixture-private-auth", "POSTGRES_PASSWORD": "fixture-private-db"}), true)
+	security, err = LoadSecurity(environment(map[string]string{"AUTH_PASSWORD": "fixture-private-auth", "POSTGRES_PASSWORD": "fixture-private-db", "SERVER_SERVLET_SESSION_COOKIE_SECURE": "true"}), true)
 	if err != nil || security.ValidateProduction() != nil {
-		t.Fatalf("prod 应启用四个安全开关：%v，%v", security, err)
+		t.Fatalf("prod 三个安全开关与显式canonical Cookie应通过：%v，%v", security, err)
 	}
 	for _, format := range []string{"%v", "%+v", "%#v"} {
 		if strings.Contains(fmt.Sprintf(format, security), "fixture-private") {
@@ -94,9 +94,9 @@ func TestSecurityDefaultsProfilesOverrideAndRedaction(t *testing.T) {
 
 func TestBootstrapRejectsUnimplementedSecurityBeforeListening(t *testing.T) {
 	for _, variables := range []map[string]string{
-		{"SPRING_PROFILES_ACTIVE": "prod", "AUTH_PASSWORD": "fixture-password-16", "POSTGRES_PASSWORD": "fixture-db"},
+		{"SPRING_PROFILES_ACTIVE": "prod", "AUTH_PASSWORD": "fixture-password-16", "POSTGRES_PASSWORD": "fixture-db", "SERVER_SERVLET_SESSION_COOKIE_SECURE": "true"},
 		{"SPRING_PROFILES_ACTIVE": "prod", "APP_SECURITY_PRODUCTION_MODE": "false", "AUTH_ENABLED": "false", "APP_SECURITY_CSRF_ENABLED": "false"},
-		{"APP_SECURITY_PRODUCTION_MODE": "true", "AUTH_ENABLED": "true", "APP_SECURITY_CSRF_ENABLED": "true", "SESSION_COOKIE_SECURE": "true", "AUTH_PASSWORD": "fixture-password-16", "POSTGRES_PASSWORD": "fixture-db"},
+		{"APP_SECURITY_PRODUCTION_MODE": "true", "AUTH_ENABLED": "true", "APP_SECURITY_CSRF_ENABLED": "true", "SERVER_SERVLET_SESSION_COOKIE_SECURE": "true", "AUTH_PASSWORD": "fixture-password-16", "POSTGRES_PASSWORD": "fixture-db"},
 		{"AUTH_ENABLED": "true"},
 		{"APP_SECURITY_CSRF_ENABLED": "true"},
 	} {
@@ -104,7 +104,7 @@ func TestBootstrapRejectsUnimplementedSecurityBeforeListening(t *testing.T) {
 			t.Fatalf("未实现的安全能力必须阻止启动：%v", err)
 		}
 	}
-	for _, key := range []string{"APP_SECURITY_PRODUCTION_MODE", "AUTH_ENABLED", "APP_SECURITY_CSRF_ENABLED", "SESSION_COOKIE_SECURE"} {
+	for _, key := range []string{"APP_SECURITY_PRODUCTION_MODE", "AUTH_ENABLED", "APP_SECURITY_CSRF_ENABLED", "SERVER_SERVLET_SESSION_COOKIE_SECURE"} {
 		_, err := Load(environment(map[string]string{key: "fixture-private-value"}))
 		if err == nil || strings.Contains(err.Error(), "fixture-private-value") {
 			t.Fatalf("无效安全配置不能静默关闭或回显原值：%v", err)

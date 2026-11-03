@@ -1,0 +1,2134 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "project_version": "0.1.0-SNAPSHOT",
+  "jars_sha256": {
+    "spring-boot-4.1.1.jar": "0d92b532b1d4020640e72d78c31af175c23db8e0ddd45b81855b7fdf4c9c70f0",
+    "snakeyaml-2.6.jar": "c8f7a98e7394adda02f6317249710e4d1b4c7a25aa8c7eace0c2eea52eb8bf85",
+    "spring-core-7.0.9.jar": "5195f4722699b39878d99a832549fe65df2890b159d063b88fff31b1ca65ae36",
+    "spring-context-7.0.9.jar": "7552a2fcfa30cea53eb14d7a65a7a8e1b1dd82e832a7164fb7e6fb105f438858",
+    "spring-beans-7.0.9.jar": "ff218b827a25c9e8929b0cd56dfb56916cea9d5b669ed97dc7cb262508ff548b",
+    "spring-expression-7.0.9.jar": "046434c40f43819729b9b1db0e6c659dfa68184c1c2c2efa5f7b3a5b27c4e2e2",
+    "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc"
+  },
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/agent/plan/PlanProperties.java": "0436c17befcd176fda8db1ad08b0419337bd29477269225d7d2d04bb7efc9413",
+    "backend/src/main/java/com/personalos/calendar/config/CalendarProperties.java": "2f1d82fe30a02e0e818591687314b798b6e4ab8ea1d2b1b9bf7ad837ebb05b9b",
+    "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java": "3ed98e0b28a23da817d4b049d8217d457c2b6ad424581483781b7e973d436a68",
+    "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java": "3d8a8ea3da122b5f03897a829363f4e9ec494f41a1dae2675f2cc1fddc24758a",
+    "backend/src/main/java/com/personalos/chat/service/ChatAttachmentJanitor.java": "ad2ce017c2cc8f501f2054cdd7f347067f0128d245491513bc922b2aa745920f",
+    "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java": "75fe9a3994989405f43de1289ed49bba5ed57c6444039b38b6f695da7787eadd",
+    "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java": "400368d26cd5851759899b8d52896c1dd1cde9b5073df5eba8edf531b72456f6",
+    "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java": "8b48e0a2197cf559e80a02216dc3ffdc1d725da0b2650c83dd1ffe76418c28c0",
+    "backend/src/main/java/com/personalos/chat/support/SseHeartbeatScheduler.java": "3dc4523ad6ac7a2db237ea1aa689b1c419d5da2de14fa4a42d4a1a70752475c2",
+    "backend/src/main/java/com/personalos/common/ai/AgentExecutionProperties.java": "c9b4cfc769d6d36783c4b00737fc9657d71edb6d86ec2054e1a79ba8863f5dc5",
+    "backend/src/main/java/com/personalos/common/ai/AiProperties.java": "a3955dd16afa567ba66aa35318f3077feb0ffe77461588894026d795cd6d4cde",
+    "backend/src/main/java/com/personalos/common/ai/ContextProperties.java": "cb04ec5342d71aa3b67c4005af86dd19dc30b2d1553f5573c603bb4d166da63e",
+    "backend/src/main/java/com/personalos/common/ai/ContextProtectionProperties.java": "6a4521e1a8eb63b707cb6970513652da39f7bfbe700074c545d084516022cb57",
+    "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java": "422c4f1caf8df73fd856debc4da92ac94193cbb7a904bac3997bd6b2e63d812b",
+    "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java": "862f2b5eb56e5e2709de567e51555312b9fa53bde1f8f9fa9f75d0827b00e162",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java": "5cedd32b895dc758e4dd97f797a43cabba35afea5cf944c0d678e920b97fab49",
+    "backend/src/main/java/com/personalos/common/ai/config/ModelKeyConverter.java": "e9b6df5c77ae7dccddedd5fe160acf2c4d759cc876de9b884f21108ada271a79",
+    "backend/src/main/java/com/personalos/common/auth/AuthProperties.java": "e8f9177f681ee0483a496b8259679944dcd914a13ba5e34f61d43979f7f312b3",
+    "backend/src/main/java/com/personalos/common/auth/MonitoringSecurityConfig.java": "958cbcea10dd4c61d37f3390e3ba7f271ebfbfe17b1eeabfcad881ef26172af0",
+    "backend/src/main/java/com/personalos/common/auth/SecurityConfig.java": "5d33cf7f6dc00140dc2b46dd45cf32272fc9df890bd293fef6c1e84b5f240ba4",
+    "backend/src/main/java/com/personalos/common/auth/SharedSessionConfig.java": "712b78acc554bc99963651234c65d5db925d232994f030b5acfc0b723bed8df0",
+    "backend/src/main/java/com/personalos/common/config/AppProperties.java": "55b75e93c8833c80cf97de1c7ac18ebe7a0fc2f4d45aa3176dd1b64e6e942156",
+    "backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java": "165fea69776a677b3c5413bd202a1462232f6d31a3c51794860940908309ed5a",
+    "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java": "a20f3b51107d34cecf5c8a73490c3c46d1f210159c2b7f55acea1eaa7411838f",
+    "backend/src/main/java/com/personalos/common/config/RateLimitProperties.java": "50327e4e19e367ab49a9772ca8ee606e26182daf062d6e4000587fa9fc2851ed",
+    "backend/src/main/java/com/personalos/common/config/RuntimeRole.java": "a11f56661ba5b7e8ec9a018c740fb68c0ff62c524d3481e0b7b7c4a5d728cc36",
+    "backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java": "cd4dacb0ac9e4d52c9ea774ebe0a97180be0e3e83e721ebb8efc8b73766f5025",
+    "backend/src/main/java/com/personalos/common/web/ModelConcurrencyGate.java": "80630062fada14eda9bccb95e44b8b912c557929edb6a4279b949f1faa8d2cf1",
+    "backend/src/main/java/com/personalos/common/web/RedisRateBucket.java": "da8b2203ceadd75c6b76646582fb1a1a8108b567671e1cf73abfd8745d3edf7a",
+    "backend/src/main/java/com/personalos/knowledge/config/KnowledgeProperties.java": "8918e7b94d4ed84f7fa133a9a4e3b87564740271016e3b2836fc807414d5a4f4",
+    "backend/src/main/java/com/personalos/knowledge/governance/IngestionReviewWorker.java": "ca028adb3ddfaea2cbc430473abc77f817798914b58fe36b819920f98191cced",
+    "backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java": "15519d6b024b56b473920fa5b24f949485049fc2a1d4f65bca5278d9c6006380",
+    "backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java": "92f210f0235e790f339321ba609a9c0272398e7d304ebc6ef4daa7e092f626c9",
+    "backend/src/main/java/com/personalos/knowledge/jobs/messaging/WorkSignalRelay.java": "59b48f44f4d558bc5fce544fd6d49fc59a845bd89a5fa81241bb2e1afe33cda2",
+    "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java": "c15d9711b5ca8563f52815df3b61f5241472a49e3f126bed76daaf87757144b2",
+    "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java": "eec047083a8a2af1dac273bb3ee640ca17de14545764cd2545c0f026aa4a3921",
+    "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java": "0dc19e885aa2856385159a2feb00b788b84130d16ac179bd43526d84862c5163",
+    "backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java": "a5206d6fa8f10f79f63bc0da04f0c8469e53b3a17c833cebf2b31d1be8f54e29",
+    "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java": "bd0e9e2d9a0613151e1c4046de7d883399129ef4b545f8798da046b2ece7b3ee",
+    "backend/src/main/java/com/personalos/mcp/config/McpProperties.java": "ed7f139e92a71a4cfcc6a130d7d3c88b032814b68043056788b2fb54ef1f0fc9",
+    "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java": "199403c4721faba28138ded0f4daeb9e609456dac15a0d27c737ea5bf5140ef4",
+    "backend/src/main/java/com/personalos/memory/MemoryProperties.java": "385e694f1f0c33e0f6314e01f88805f3a86edb4f679b26d604429b5f0d3227b8",
+    "backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java": "45c0027b2f23ff2de2968380a9f9bc309c4dc0bc20e07cf2a3c88559490ac943",
+    "backend/src/main/resources/application-monitoring.yml": "faae22feba4c1be606d8d60e3a13aeee85f55c90077639967346aff3eeb01e7b",
+    "backend/src/main/resources/application-prod.yml": "5d82063a7736e7708835b1c9b6eb6cfa198df3ac53b38314bd7a292b39b4da14",
+    "backend/src/main/resources/application-runtime-api.yml": "909ee56a6cac69342af968008d87fb1eb21db0245032948cd24ec2e550f50947",
+    "backend/src/main/resources/application-worker-delivery.yml": "276677be13f4316f376c28f7ac73700e5363e778773f3cba97d0a3ea2d4fbeb6",
+    "backend/src/main/resources/application-worker-index.yml": "20252ecfd193ac16a4c287d92759c755749a0d1f684cb8215864b5b81303aa81",
+    "backend/src/main/resources/application-worker-review.yml": "a9761a80024eec6e289b0a882caa9d176e0e2a8da4db92793cf0f32f8ec15f89",
+    "backend/src/main/resources/application.yml": "068bc97f8ec29a3a646c42d2bc5e367ad527e6dd82bc567e5056b771c2c253e7"
+  },
+  "configuration_records": [
+    {
+      "class": "com.personalos.agent.plan.PlanProperties",
+      "path": "backend/src/main/java/com/personalos/agent/plan/PlanProperties.java",
+      "prefix": "app.plan"
+    },
+    {
+      "class": "com.personalos.calendar.config.CalendarProperties",
+      "path": "backend/src/main/java/com/personalos/calendar/config/CalendarProperties.java",
+      "prefix": "app.calendar"
+    },
+    {
+      "class": "com.personalos.common.ai.AgentExecutionProperties",
+      "path": "backend/src/main/java/com/personalos/common/ai/AgentExecutionProperties.java",
+      "prefix": "app.agent"
+    },
+    {
+      "class": "com.personalos.common.ai.AiProperties",
+      "path": "backend/src/main/java/com/personalos/common/ai/AiProperties.java",
+      "prefix": "app.ai"
+    },
+    {
+      "class": "com.personalos.common.ai.ContextProperties",
+      "path": "backend/src/main/java/com/personalos/common/ai/ContextProperties.java",
+      "prefix": "app.context"
+    },
+    {
+      "class": "com.personalos.common.ai.ContextProtectionProperties",
+      "path": "backend/src/main/java/com/personalos/common/ai/ContextProtectionProperties.java",
+      "prefix": "app.context.protection"
+    },
+    {
+      "class": "com.personalos.common.auth.AuthProperties",
+      "path": "backend/src/main/java/com/personalos/common/auth/AuthProperties.java",
+      "prefix": "app.auth"
+    },
+    {
+      "class": "com.personalos.common.config.AppProperties",
+      "path": "backend/src/main/java/com/personalos/common/config/AppProperties.java",
+      "prefix": "app"
+    },
+    {
+      "class": "com.personalos.common.config.RateLimitProperties",
+      "path": "backend/src/main/java/com/personalos/common/config/RateLimitProperties.java",
+      "prefix": "app.rate-limit"
+    },
+    {
+      "class": "com.personalos.knowledge.config.KnowledgeProperties",
+      "path": "backend/src/main/java/com/personalos/knowledge/config/KnowledgeProperties.java",
+      "prefix": "app.knowledge"
+    },
+    {
+      "class": "com.personalos.mcp.config.McpProperties",
+      "path": "backend/src/main/java/com/personalos/mcp/config/McpProperties.java",
+      "prefix": "mcp"
+    },
+    {
+      "class": "com.personalos.memory.MemoryProperties",
+      "path": "backend/src/main/java/com/personalos/memory/MemoryProperties.java",
+      "prefix": "app.memory"
+    }
+  ],
+  "record_fields": [
+    {
+      "owner": "com.personalos.agent.plan.PlanProperties",
+      "key": "app.plan.enabled",
+      "java_type": "boolean",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.agent.plan.PlanProperties",
+      "key": "app.plan.max-inject-chars",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.calendar.config.CalendarProperties",
+      "key": "app.calendar.scan-enabled",
+      "java_type": "boolean",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.calendar.config.CalendarProperties",
+      "key": "app.calendar.scan-interval-ms",
+      "java_type": "long",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.calendar.config.CalendarProperties",
+      "key": "app.calendar.scan-initial-delay-ms",
+      "java_type": "long",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.calendar.config.CalendarProperties",
+      "key": "app.calendar.scan-lookahead",
+      "java_type": "java.time.Duration",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.calendar.config.CalendarProperties",
+      "key": "app.calendar.scan-lookback",
+      "java_type": "java.time.Duration",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.calendar.config.CalendarProperties",
+      "key": "app.calendar.default-reminder-lead",
+      "java_type": "java.time.Duration",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.calendar.config.CalendarProperties",
+      "key": "app.calendar.max-range-days",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.calendar.config.CalendarProperties",
+      "key": "app.calendar.default-query-limit",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.calendar.config.CalendarProperties",
+      "key": "app.calendar.max-query-limit",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.AgentExecutionProperties",
+      "key": "app.agent.max-model-calls",
+      "java_type": "int",
+      "default_annotation": [
+        "12"
+      ]
+    },
+    {
+      "owner": "com.personalos.common.ai.AgentExecutionProperties",
+      "key": "app.agent.max-consecutive-failures",
+      "java_type": "int",
+      "default_annotation": [
+        "2"
+      ]
+    },
+    {
+      "owner": "com.personalos.common.ai.AiProperties",
+      "key": "app.ai.memory",
+      "java_type": "com.personalos.common.ai.AiProperties$Memory",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.AiProperties",
+      "key": "app.ai.memory.max-messages",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.AiProperties",
+      "key": "app.ai.memory.context-window-tokens",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.AiProperties",
+      "key": "app.ai.system-prompt",
+      "java_type": "java.lang.String",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProperties",
+      "key": "app.context.summary",
+      "java_type": "com.personalos.common.ai.ContextProperties$Summary",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProperties",
+      "key": "app.context.summary.enabled",
+      "java_type": "boolean",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProperties",
+      "key": "app.context.summary.min-messages",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProperties",
+      "key": "app.context.summary.max-excerpt-chars",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProperties",
+      "key": "app.context.summary.max-summary-chars",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProperties",
+      "key": "app.context.summary.timeout",
+      "java_type": "java.time.Duration",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProperties",
+      "key": "app.context.auto-memory",
+      "java_type": "com.personalos.common.ai.ContextProperties$AutoMemory",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProperties",
+      "key": "app.context.auto-memory.enabled",
+      "java_type": "boolean",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProperties",
+      "key": "app.context.auto-memory.max-items",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProtectionProperties",
+      "key": "app.context.protection.output-reserve-tokens",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProtectionProperties",
+      "key": "app.context.protection.safety-margin-tokens",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProtectionProperties",
+      "key": "app.context.protection.image-reserve-tokens",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.ai.ContextProtectionProperties",
+      "key": "app.context.protection.max-retries",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.auth.AuthProperties",
+      "key": "app.auth.enabled",
+      "java_type": "boolean",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.auth.AuthProperties",
+      "key": "app.auth.username",
+      "java_type": "java.lang.String",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.auth.AuthProperties",
+      "key": "app.auth.password",
+      "java_type": "java.lang.String",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.auth.AuthProperties",
+      "key": "app.auth.max-failures",
+      "java_type": "int",
+      "default_annotation": [
+        "5"
+      ]
+    },
+    {
+      "owner": "com.personalos.common.auth.AuthProperties",
+      "key": "app.auth.lockout",
+      "java_type": "java.time.Duration",
+      "default_annotation": [
+        "60s"
+      ]
+    },
+    {
+      "owner": "com.personalos.common.config.AppProperties",
+      "key": "app.name",
+      "java_type": "java.lang.String",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.config.AppProperties",
+      "key": "app.version",
+      "java_type": "java.lang.String",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.common.config.RateLimitProperties",
+      "key": "app.rate-limit.enabled",
+      "java_type": "boolean",
+      "default_annotation": [
+        "true"
+      ]
+    },
+    {
+      "owner": "com.personalos.common.config.RateLimitProperties",
+      "key": "app.rate-limit.capacity",
+      "java_type": "int",
+      "default_annotation": [
+        "60"
+      ]
+    },
+    {
+      "owner": "com.personalos.common.config.RateLimitProperties",
+      "key": "app.rate-limit.period",
+      "java_type": "java.time.Duration",
+      "default_annotation": [
+        "1m"
+      ]
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.embedding-dimensions",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.top-k",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.similarity-threshold",
+      "java_type": "double",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.max-file-size-bytes",
+      "java_type": "long",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.allowed-extensions",
+      "java_type": "java.util.List<java.lang.String>",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.min-chunk-size-chars",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.chunk-size-chars",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.chunk-overlap-chars",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.hybrid-search-enabled",
+      "java_type": "boolean",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.rrf-k",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.knowledge.config.KnowledgeProperties",
+      "key": "app.knowledge.keyword-channel-weight",
+      "java_type": "double",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.mcp.config.McpProperties",
+      "key": "mcp.enabled",
+      "java_type": "boolean",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.mcp.config.McpProperties",
+      "key": "mcp.servers",
+      "java_type": "java.util.Map<java.lang.String, com.personalos.mcp.config.McpProperties$ServerConfig>",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.mcp.config.McpProperties",
+      "key": "mcp.servers.*.command",
+      "java_type": "java.lang.String",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.mcp.config.McpProperties",
+      "key": "mcp.servers.*.args",
+      "java_type": "java.util.List<java.lang.String>",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.mcp.config.McpProperties",
+      "key": "mcp.servers.*.env",
+      "java_type": "java.util.Map<java.lang.String, java.lang.String>",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.mcp.config.McpProperties",
+      "key": "mcp.servers.*.auto-tools",
+      "java_type": "java.util.Set<java.lang.String>",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.mcp.config.McpProperties",
+      "key": "mcp.servers.*.connect-timeout",
+      "java_type": "java.time.Duration",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.memory.MemoryProperties",
+      "key": "app.memory.pinned-max-count",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.memory.MemoryProperties",
+      "key": "app.memory.similar-threshold",
+      "java_type": "double",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.memory.MemoryProperties",
+      "key": "app.memory.ranking",
+      "java_type": "com.personalos.memory.MemoryProperties$Ranking",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.memory.MemoryProperties",
+      "key": "app.memory.ranking.enabled",
+      "java_type": "boolean",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.memory.MemoryProperties",
+      "key": "app.memory.ranking.timeout",
+      "java_type": "java.time.Duration",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.memory.MemoryProperties",
+      "key": "app.memory.ranking.half-life-days",
+      "java_type": "int",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.memory.MemoryProperties",
+      "key": "app.memory.backfill",
+      "java_type": "com.personalos.memory.MemoryProperties$Backfill",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.memory.MemoryProperties",
+      "key": "app.memory.backfill.enabled",
+      "java_type": "boolean",
+      "default_annotation": null
+    },
+    {
+      "owner": "com.personalos.memory.MemoryProperties",
+      "key": "app.memory.backfill.batch-size",
+      "java_type": "int",
+      "default_annotation": null
+    }
+  ],
+  "value_injections": [
+    {
+      "path": "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java",
+      "line": 14,
+      "expression": "${app.web-push.enabled:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java",
+      "line": 15,
+      "expression": "${app.web-push.public-key:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java",
+      "line": 16,
+      "expression": "${app.web-push.private-key:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java",
+      "line": 17,
+      "expression": "${app.web-push.subject:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java",
+      "line": 42,
+      "expression": "${app.reminders.webhook.url:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java",
+      "line": 43,
+      "expression": "${app.reminders.webhook.secret:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java",
+      "line": 44,
+      "expression": "${app.reminders.webhook.allow-local-http:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/service/ChatAttachmentJanitor.java",
+      "line": 56,
+      "expression": "${app.chat.attachment-janitor-enabled:true}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java",
+      "line": 58,
+      "expression": "${app.chat.upload-dir:data/uploads}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java",
+      "line": 59,
+      "expression": "${app.chat.max-attachment-bytes:6291456}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java",
+      "line": 138,
+      "expression": "${app.chat.stream-timeout:120s}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 16,
+      "expression": "${app.storage.s3.endpoint}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 17,
+      "expression": "${app.storage.s3.region:us-east-1}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 18,
+      "expression": "${app.storage.s3.access-key:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 19,
+      "expression": "${app.storage.s3.secret-key:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 29,
+      "expression": "${app.storage.s3.bucket}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 30,
+      "expression": "${app.storage.s3.namespace}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 30,
+      "expression": "${app.storage.s3.cleanup:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java",
+      "line": 31,
+      "expression": "${app.chat.max-attachment-bytes:6291456}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/chat/support/SseHeartbeatScheduler.java",
+      "line": 63,
+      "expression": "${app.chat.heartbeat-interval:15s}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java",
+      "line": 14,
+      "expression": "${app.redis.uri}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java",
+      "line": 15,
+      "expression": "${app.redis.timeout-ms:150}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java",
+      "line": 21,
+      "expression": "${app.redis.namespace}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 128,
+      "expression": "${spring.ai.openai.base-url:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 129,
+      "expression": "${spring.ai.openai.api-key:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 130,
+      "expression": "${spring.ai.openai.chat.model:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 131,
+      "expression": "${spring.ai.openai.embedding.model:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 132,
+      "expression": "${spring.ai.openai.chat.temperature:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelKeyConverter.java",
+      "line": 24,
+      "expression": "${app.model-key-encryption-key:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/auth/SecurityConfig.java",
+      "line": 64,
+      "expression": "${server.servlet.session.cookie.secure:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/auth/SecurityConfig.java",
+      "line": 65,
+      "expression": "${app.security.csrf-enabled:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/auth/SharedSessionConfig.java",
+      "line": 23,
+      "expression": "${app.shared-session.uri}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/auth/SharedSessionConfig.java",
+      "line": 49,
+      "expression": "${server.servlet.session.cookie.secure:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 11,
+      "expression": "${app.security.production-mode:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 12,
+      "expression": "${app.auth.enabled:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 13,
+      "expression": "${app.security.csrf-enabled:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 14,
+      "expression": "${server.servlet.session.cookie.secure:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 15,
+      "expression": "${app.auth.password:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java",
+      "line": 16,
+      "expression": "${spring.datasource.password:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/config/RuntimeRole.java",
+      "line": 11,
+      "expression": "${app.runtime.role:combined}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java",
+      "line": 24,
+      "expression": "${app.retention.token-usage-days:0}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java",
+      "line": 25,
+      "expression": "${app.retention.operation-record-days:0}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/web/ModelConcurrencyGate.java",
+      "line": 15,
+      "expression": "${app.model-max-concurrent-requests:4}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/web/RedisRateBucket.java",
+      "line": 41,
+      "expression": "${app.rate-limit.redis.uri}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/web/RedisRateBucket.java",
+      "line": 42,
+      "expression": "${app.rate-limit.redis.namespace}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/governance/IngestionReviewWorker.java",
+      "line": 26,
+      "expression": "${app.knowledge.rag.evidence-timeout-ms:12000}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java",
+      "line": 53,
+      "expression": "${app.knowledge.jobs.enabled:true}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java",
+      "line": 16,
+      "expression": "${app.rabbitmq.uri}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java",
+      "line": 23,
+      "expression": "${app.rabbitmq.queue:personalos.knowledge.ready}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/jobs/messaging/WorkSignalRelay.java",
+      "line": 32,
+      "expression": "${app.rabbitmq.queue:personalos.knowledge.ready}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java",
+      "line": 23,
+      "expression": "${app.knowledge.rag.reranker.endpoint:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java",
+      "line": 24,
+      "expression": "${app.knowledge.rag.reranker.api-key:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java",
+      "line": 24,
+      "expression": "${app.knowledge.rag.reranker.model:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java",
+      "line": 24,
+      "expression": "${app.knowledge.rag.reranker.protocol:cohere}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
+      "line": 29,
+      "expression": "${app.knowledge.rag.enabled:true}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
+      "line": 30,
+      "expression": "${app.knowledge.rag.budget-ms:20000}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
+      "line": 36,
+      "expression": "${app.knowledge.rag.evidence-timeout-ms:12000}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java",
+      "line": 15,
+      "expression": "${app.knowledge.search.endpoint:http://localhost:9200}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java",
+      "line": 16,
+      "expression": "${app.knowledge.search.index:personalos-chunks-v1}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java",
+      "line": 17,
+      "expression": "${app.knowledge.search.username:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java",
+      "line": 17,
+      "expression": "${app.knowledge.search.password:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java",
+      "line": 31,
+      "expression": "${app.redis.namespace}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java",
+      "line": 41,
+      "expression": "${spring.ai.vectorstore.pgvector.table-name:vector_store}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java",
+      "line": 42,
+      "expression": "${spring.ai.vectorstore.pgvector.schema-name:public}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java",
+      "line": 40,
+      "expression": "${spring.ai.mcp.server.enabled:false}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java",
+      "line": 41,
+      "expression": "${spring.ai.mcp.server.name:personal-ai-os}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java",
+      "line": 42,
+      "expression": "${spring.ai.mcp.server.version:0.1.0}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java",
+      "line": 43,
+      "expression": "${spring.ai.mcp.server.streamable-http.mcp-endpoint:/mcp}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java",
+      "line": 51,
+      "expression": "${spring.ai.openai.embedding.model:}"
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java",
+      "line": 52,
+      "expression": "${spring.ai.ollama.embedding.model:}"
+    }
+  ],
+  "property_lookups": [
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java",
+      "line": 21,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "\"app.embedding-cache.enabled\", Boolean.class, false",
+      "literal_key": "app.embedding-cache.enabled",
+      "dynamic_key": false
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java",
+      "line": 22,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "\"app.embedding-cache.capacity\", Integer.class, 1000",
+      "literal_key": "app.embedding-cache.capacity",
+      "dynamic_key": false
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java",
+      "line": 23,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "\"app.embedding-cache.ttl\", Duration.class, Duration.ofMinutes(10)",
+      "literal_key": "app.embedding-cache.ttl",
+      "dynamic_key": false
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java",
+      "line": 28,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "key, \"\"",
+      "literal_key": null,
+      "dynamic_key": true
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java",
+      "line": 532,
+      "receiver": "environment",
+      "method": "getProperty",
+      "arguments": "key",
+      "literal_key": null,
+      "dynamic_key": true
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/auth/MonitoringSecurityConfig.java",
+      "line": 18,
+      "receiver": "environment",
+      "method": "getProperty",
+      "arguments": "\"local.management.port\", Integer.class, 9091",
+      "literal_key": "local.management.port",
+      "dynamic_key": false
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java",
+      "line": 73,
+      "receiver": "environment",
+      "method": "getProperty",
+      "arguments": "\"app.dotenv.enabled\", Boolean.class, true",
+      "literal_key": "app.dotenv.enabled",
+      "dynamic_key": false
+    },
+    {
+      "path": "backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java",
+      "line": 39,
+      "receiver": "env",
+      "method": "getProperty",
+      "arguments": "key, \"\"",
+      "literal_key": null,
+      "dynamic_key": true
+    }
+  ],
+  "cookie_resolution_cases": [
+    {
+      "scenario": "local-default",
+      "yaml_cookie_secure": false,
+      "guard_cookie_secure": false,
+      "production_guard": "accepted"
+    },
+    {
+      "scenario": "local-cookie-alias",
+      "yaml_cookie_secure": true,
+      "guard_cookie_secure": false,
+      "production_guard": "accepted"
+    },
+    {
+      "scenario": "prod-cookie-alias",
+      "yaml_cookie_secure": true,
+      "guard_cookie_secure": false,
+      "production_guard": "生产配置必须启用 SESSION_COOKIE_SECURE=true"
+    },
+    {
+      "scenario": "prod-canonical-env",
+      "yaml_cookie_secure": true,
+      "guard_cookie_secure": true,
+      "production_guard": "accepted"
+    }
+  ],
+  "yaml_documents": [
+    {
+      "path": "backend/src/main/resources/application-monitoring.yml",
+      "document_index": 0,
+      "properties": [
+        {
+          "key": "management.endpoints.web.exposure.include",
+          "java_type": "java.lang.String",
+          "value": "health,prometheus"
+        },
+        {
+          "key": "management.metrics.distribution.percentiles-histogram.http.server.requests",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "management.metrics.distribution.percentiles-histogram.personalos.embedding.duration",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "management.metrics.distribution.percentiles-histogram.personalos.knowledge.rag.stage",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "management.metrics.distribution.percentiles-histogram.personalos.knowledge.recall",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "management.server.port",
+          "java_type": "java.lang.Integer",
+          "value": "9091"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application-prod.yml",
+      "document_index": 0,
+      "properties": [
+        {
+          "key": "app.auth.enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "app.security.csrf-enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "app.security.production-mode",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "management.endpoint.health.show-details",
+          "java_type": "java.lang.String",
+          "value": "never"
+        },
+        {
+          "key": "management.endpoints.web.exposure.include",
+          "java_type": "java.lang.String",
+          "value": "health,info"
+        },
+        {
+          "key": "server.forward-headers-strategy",
+          "java_type": "java.lang.String",
+          "value": "framework"
+        },
+        {
+          "key": "spring.config.activate.on-profile",
+          "java_type": "java.lang.String",
+          "value": "prod"
+        },
+        {
+          "key": "spring.servlet.session.cookie.http-only",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "spring.servlet.session.cookie.same-site",
+          "java_type": "java.lang.String",
+          "value": "strict"
+        },
+        {
+          "key": "spring.servlet.session.cookie.secure",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application-runtime-api.yml",
+      "document_index": 0,
+      "properties": [
+        {
+          "key": "app.runtime.role",
+          "java_type": "java.lang.String",
+          "value": "api"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application-worker-delivery.yml",
+      "document_index": 0,
+      "properties": [
+        {
+          "key": "app.calendar.scan-enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "app.chat.attachment-janitor-enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "app.runtime.role",
+          "java_type": "java.lang.String",
+          "value": "delivery"
+        },
+        {
+          "key": "spring.datasource.hikari.maximum-pool-size",
+          "java_type": "java.lang.Integer",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application-worker-index.yml",
+      "document_index": 0,
+      "properties": [
+        {
+          "key": "app.calendar.scan-enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "app.chat.attachment-janitor-enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "app.runtime.role",
+          "java_type": "java.lang.String",
+          "value": "index"
+        },
+        {
+          "key": "spring.datasource.hikari.maximum-pool-size",
+          "java_type": "java.lang.Integer",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application-worker-review.yml",
+      "document_index": 0,
+      "properties": [
+        {
+          "key": "app.calendar.scan-enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "app.chat.attachment-janitor-enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "app.runtime.role",
+          "java_type": "java.lang.String",
+          "value": "review"
+        },
+        {
+          "key": "spring.datasource.hikari.maximum-pool-size",
+          "java_type": "java.lang.Integer",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 0,
+      "properties": [
+        {
+          "key": "app.agent.max-consecutive-failures",
+          "java_type": "java.lang.String",
+          "value": "${AI_AGENT_MAX_CONSECUTIVE_FAILURES:2}"
+        },
+        {
+          "key": "app.agent.max-model-calls",
+          "java_type": "java.lang.String",
+          "value": "${AI_AGENT_MAX_MODEL_CALLS:12}"
+        },
+        {
+          "key": "app.ai.memory.max-context-chars",
+          "java_type": "java.lang.String",
+          "value": "${AI_MEMORY_MAX_CONTEXT_CHARS:12000}"
+        },
+        {
+          "key": "app.ai.memory.max-messages",
+          "java_type": "java.lang.String",
+          "value": "${AI_MEMORY_MAX_MESSAGES:20}"
+        },
+        {
+          "key": "app.ai.system-prompt",
+          "java_type": "java.lang.String",
+          "value": "${AI_SYSTEM_PROMPT:你是 Personal AI OS 的个人助手。回答简洁、准确，默认使用中文，必要时使用列表。}"
+        },
+        {
+          "key": "app.auth.enabled",
+          "java_type": "java.lang.String",
+          "value": "${AUTH_ENABLED:false}"
+        },
+        {
+          "key": "app.auth.password",
+          "java_type": "java.lang.String",
+          "value": "${AUTH_PASSWORD:}"
+        },
+        {
+          "key": "app.auth.username",
+          "java_type": "java.lang.String",
+          "value": "${AUTH_USERNAME:admin}"
+        },
+        {
+          "key": "app.calendar.default-query-limit",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_DEFAULT_QUERY_LIMIT:100}"
+        },
+        {
+          "key": "app.calendar.default-reminder-lead",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_DEFAULT_LEAD:15m}"
+        },
+        {
+          "key": "app.calendar.max-query-limit",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_MAX_QUERY_LIMIT:500}"
+        },
+        {
+          "key": "app.calendar.max-range-days",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_MAX_RANGE_DAYS:90}"
+        },
+        {
+          "key": "app.calendar.scan-enabled",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_SCAN_ENABLED:true}"
+        },
+        {
+          "key": "app.calendar.scan-initial-delay-ms",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_SCAN_INITIAL_DELAY_MS:10000}"
+        },
+        {
+          "key": "app.calendar.scan-interval-ms",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_SCAN_INTERVAL_MS:10000}"
+        },
+        {
+          "key": "app.calendar.scan-lookahead",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_SCAN_LOOKAHEAD:24h}"
+        },
+        {
+          "key": "app.calendar.scan-lookback",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_SCAN_LOOKBACK:24h}"
+        },
+        {
+          "key": "app.calendar.stream-check-interval-ms",
+          "java_type": "java.lang.String",
+          "value": "${AI_CALENDAR_STREAM_CHECK_INTERVAL_MS:1000}"
+        },
+        {
+          "key": "app.chat.max-attachment-bytes",
+          "java_type": "java.lang.String",
+          "value": "${AI_CHAT_MAX_ATTACHMENT_BYTES:6291456}"
+        },
+        {
+          "key": "app.chat.stream-timeout",
+          "java_type": "java.lang.String",
+          "value": "${AI_CHAT_STREAM_TIMEOUT:120s}"
+        },
+        {
+          "key": "app.chat.upload-dir",
+          "java_type": "java.lang.String",
+          "value": "${AI_CHAT_UPLOAD_DIR:data/uploads}"
+        },
+        {
+          "key": "app.context.auto-memory.enabled",
+          "java_type": "java.lang.String",
+          "value": "${AI_CONTEXT_AUTO_MEMORY_ENABLED:false}"
+        },
+        {
+          "key": "app.context.auto-memory.max-items",
+          "java_type": "java.lang.String",
+          "value": "${AI_CONTEXT_AUTO_MEMORY_MAX_ITEMS:3}"
+        },
+        {
+          "key": "app.context.protection.image-reserve-tokens",
+          "java_type": "java.lang.String",
+          "value": "${CONTEXT_IMAGE_RESERVE_TOKENS:4096}"
+        },
+        {
+          "key": "app.context.protection.max-retries",
+          "java_type": "java.lang.String",
+          "value": "${CONTEXT_MAX_RETRIES:1}"
+        },
+        {
+          "key": "app.context.protection.output-reserve-tokens",
+          "java_type": "java.lang.String",
+          "value": "${CONTEXT_OUTPUT_RESERVE_TOKENS:4096}"
+        },
+        {
+          "key": "app.context.protection.safety-margin-tokens",
+          "java_type": "java.lang.String",
+          "value": "${CONTEXT_SAFETY_MARGIN_TOKENS:512}"
+        },
+        {
+          "key": "app.context.summary.enabled",
+          "java_type": "java.lang.String",
+          "value": "${AI_CONTEXT_SUMMARY_ENABLED:true}"
+        },
+        {
+          "key": "app.context.summary.max-excerpt-chars",
+          "java_type": "java.lang.String",
+          "value": "${AI_CONTEXT_SUMMARY_MAX_EXCERPT:4000}"
+        },
+        {
+          "key": "app.context.summary.max-summary-chars",
+          "java_type": "java.lang.String",
+          "value": "${AI_CONTEXT_SUMMARY_MAX_CHARS:1200}"
+        },
+        {
+          "key": "app.context.summary.min-messages",
+          "java_type": "java.lang.String",
+          "value": "${AI_CONTEXT_SUMMARY_MIN_MESSAGES:4}"
+        },
+        {
+          "key": "app.knowledge.allowed-extensions",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_ALLOWED_EXTENSIONS:md,markdown,txt,pdf,docx,png,jpg,jpeg,webp,gif}"
+        },
+        {
+          "key": "app.knowledge.chunk-overlap-chars",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_CHUNK_OVERLAP_CHARS:0}"
+        },
+        {
+          "key": "app.knowledge.chunk-size-chars",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_CHUNK_SIZE_CHARS:1200}"
+        },
+        {
+          "key": "app.knowledge.embedding-dimensions",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_EMBEDDING_DIMENSIONS:1024}"
+        },
+        {
+          "key": "app.knowledge.hybrid-search-enabled",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_HYBRID_ENABLED:true}"
+        },
+        {
+          "key": "app.knowledge.keyword-channel-weight",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_KEYWORD_CHANNEL_WEIGHT:1.0}"
+        },
+        {
+          "key": "app.knowledge.max-file-size-bytes",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_MAX_FILE_SIZE:5242880}"
+        },
+        {
+          "key": "app.knowledge.min-chunk-size-chars",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_MIN_CHUNK_SIZE_CHARS:350}"
+        },
+        {
+          "key": "app.knowledge.rrf-k",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_RRF_K:60}"
+        },
+        {
+          "key": "app.knowledge.similarity-threshold",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_SIMILARITY_THRESHOLD:0.3}"
+        },
+        {
+          "key": "app.knowledge.top-k",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_TOP_K:4}"
+        },
+        {
+          "key": "app.memory.backfill.batch-size",
+          "java_type": "java.lang.String",
+          "value": "${APP_MEMORY_BACKFILL_BATCH:20}"
+        },
+        {
+          "key": "app.memory.backfill.enabled",
+          "java_type": "java.lang.String",
+          "value": "${APP_MEMORY_BACKFILL_ENABLED:true}"
+        },
+        {
+          "key": "app.memory.pinned-max-count",
+          "java_type": "java.lang.String",
+          "value": "${APP_MEMORY_PINNED_MAX:10}"
+        },
+        {
+          "key": "app.memory.ranking.enabled",
+          "java_type": "java.lang.String",
+          "value": "${APP_MEMORY_RANKING_ENABLED:true}"
+        },
+        {
+          "key": "app.memory.ranking.half-life-days",
+          "java_type": "java.lang.String",
+          "value": "${APP_MEMORY_HALF_LIFE_DAYS:30}"
+        },
+        {
+          "key": "app.memory.ranking.timeout",
+          "java_type": "java.lang.String",
+          "value": "${APP_MEMORY_RANKING_TIMEOUT:400ms}"
+        },
+        {
+          "key": "app.memory.similar-threshold",
+          "java_type": "java.lang.String",
+          "value": "${APP_MEMORY_SIMILAR_THRESHOLD:0.92}"
+        },
+        {
+          "key": "app.model-key-encryption-key",
+          "java_type": "java.lang.String",
+          "value": "${MODEL_KEY_ENCRYPTION_KEY:}"
+        },
+        {
+          "key": "app.model-max-concurrent-requests",
+          "java_type": "java.lang.String",
+          "value": "${AI_MODEL_MAX_CONCURRENT_REQUESTS:4}"
+        },
+        {
+          "key": "app.name",
+          "java_type": "java.lang.String",
+          "value": "personal-ai-os"
+        },
+        {
+          "key": "app.plan.enabled",
+          "java_type": "java.lang.String",
+          "value": "${APP_PLAN_ENFORCE:true}"
+        },
+        {
+          "key": "app.plan.max-inject-chars",
+          "java_type": "java.lang.String",
+          "value": "${APP_PLAN_MAX_INJECT_CHARS:1200}"
+        },
+        {
+          "key": "app.rate-limit.capacity",
+          "java_type": "java.lang.String",
+          "value": "${APP_RATE_LIMIT_CAPACITY:60}"
+        },
+        {
+          "key": "app.rate-limit.enabled",
+          "java_type": "java.lang.String",
+          "value": "${APP_RATE_LIMIT_ENABLED:true}"
+        },
+        {
+          "key": "app.rate-limit.period",
+          "java_type": "java.lang.String",
+          "value": "${APP_RATE_LIMIT_PERIOD:1m}"
+        },
+        {
+          "key": "app.retention.operation-record-days",
+          "java_type": "java.lang.String",
+          "value": "${OPERATION_RECORD_RETENTION_DAYS:0}"
+        },
+        {
+          "key": "app.retention.token-usage-days",
+          "java_type": "java.lang.String",
+          "value": "${TOKEN_USAGE_RETENTION_DAYS:0}"
+        },
+        {
+          "key": "app.security.csrf-enabled",
+          "java_type": "java.lang.String",
+          "value": "${APP_SECURITY_CSRF_ENABLED:false}"
+        },
+        {
+          "key": "app.security.production-mode",
+          "java_type": "java.lang.String",
+          "value": "${APP_SECURITY_PRODUCTION_MODE:false}"
+        },
+        {
+          "key": "app.version",
+          "java_type": "java.lang.String",
+          "value": "0.1.0-SNAPSHOT"
+        },
+        {
+          "key": "app.web-push.enabled",
+          "java_type": "java.lang.String",
+          "value": "${WEB_PUSH_ENABLED:false}"
+        },
+        {
+          "key": "app.web-push.private-key",
+          "java_type": "java.lang.String",
+          "value": "${WEB_PUSH_PRIVATE_KEY:}"
+        },
+        {
+          "key": "app.web-push.public-key",
+          "java_type": "java.lang.String",
+          "value": "${WEB_PUSH_PUBLIC_KEY:}"
+        },
+        {
+          "key": "app.web-push.subject",
+          "java_type": "java.lang.String",
+          "value": "${WEB_PUSH_SUBJECT:}"
+        },
+        {
+          "key": "info.app.name",
+          "java_type": "java.lang.String",
+          "value": "${spring.application.name}"
+        },
+        {
+          "key": "info.app.version",
+          "java_type": "java.lang.String",
+          "value": "${app.version}"
+        },
+        {
+          "key": "logging.pattern.console",
+          "java_type": "java.lang.String",
+          "value": "%d{HH:mm:ss.SSS} %5p [%X{requestId:------------}] [%15.15t] %-40.40logger{39} : %msg%n"
+        },
+        {
+          "key": "management.endpoint.health.show-details",
+          "java_type": "java.lang.String",
+          "value": "${ACTUATOR_HEALTH_DETAILS:when_authorized}"
+        },
+        {
+          "key": "management.endpoints.web.exposure.include",
+          "java_type": "java.lang.String",
+          "value": "health,info,metrics"
+        },
+        {
+          "key": "management.info.env.enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "server.port",
+          "java_type": "java.lang.String",
+          "value": "${SERVER_PORT:8080}"
+        },
+        {
+          "key": "server.shutdown",
+          "java_type": "java.lang.String",
+          "value": "graceful"
+        },
+        {
+          "key": "spring.ai.mcp.server.enabled",
+          "java_type": "java.lang.String",
+          "value": "${PERSONAL_MCP_SERVER_ENABLED:false}"
+        },
+        {
+          "key": "spring.ai.mcp.server.expose-mcp-client-tools",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "spring.ai.mcp.server.instructions",
+          "java_type": "java.lang.String",
+          "value": "${PERSONAL_MCP_SERVER_INSTRUCTIONS:Personal AI OS personal assistant data tools. Read-only tools are enabled by default.}"
+        },
+        {
+          "key": "spring.ai.mcp.server.name",
+          "java_type": "java.lang.String",
+          "value": "${PERSONAL_MCP_SERVER_NAME:personal-ai-os}"
+        },
+        {
+          "key": "spring.ai.mcp.server.protocol",
+          "java_type": "java.lang.String",
+          "value": "${PERSONAL_MCP_SERVER_PROTOCOL:streamable}"
+        },
+        {
+          "key": "spring.ai.mcp.server.streamable-http.mcp-endpoint",
+          "java_type": "java.lang.String",
+          "value": "${PERSONAL_MCP_SERVER_ENDPOINT:/mcp}"
+        },
+        {
+          "key": "spring.ai.mcp.server.tool-callback-converter",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "spring.ai.mcp.server.version",
+          "java_type": "java.lang.String",
+          "value": "${PERSONAL_MCP_SERVER_VERSION:0.1.0}"
+        },
+        {
+          "key": "spring.ai.model.audio.speech",
+          "java_type": "java.lang.String",
+          "value": "none"
+        },
+        {
+          "key": "spring.ai.model.audio.transcription",
+          "java_type": "java.lang.String",
+          "value": "none"
+        },
+        {
+          "key": "spring.ai.model.chat",
+          "java_type": "java.lang.String",
+          "value": "${AI_CHAT_PROVIDER:ollama}"
+        },
+        {
+          "key": "spring.ai.model.embedding",
+          "java_type": "java.lang.String",
+          "value": "${AI_EMBEDDING_PROVIDER:ollama}"
+        },
+        {
+          "key": "spring.ai.model.image",
+          "java_type": "java.lang.String",
+          "value": "none"
+        },
+        {
+          "key": "spring.ai.model.moderation",
+          "java_type": "java.lang.String",
+          "value": "none"
+        },
+        {
+          "key": "spring.ai.ollama.base-url",
+          "java_type": "java.lang.String",
+          "value": "${OLLAMA_BASE_URL:http://localhost:11434}"
+        },
+        {
+          "key": "spring.ai.ollama.chat.model",
+          "java_type": "java.lang.String",
+          "value": "${OLLAMA_CHAT_MODEL:qwen2.5:7b}"
+        },
+        {
+          "key": "spring.ai.ollama.chat.temperature",
+          "java_type": "java.lang.Double",
+          "value": "0.7"
+        },
+        {
+          "key": "spring.ai.ollama.embedding.model",
+          "java_type": "java.lang.String",
+          "value": "${OLLAMA_EMBEDDING_MODEL:bge-m3}"
+        },
+        {
+          "key": "spring.ai.openai.api-key",
+          "java_type": "java.lang.String",
+          "value": "${OPENAI_API_KEY:}"
+        },
+        {
+          "key": "spring.ai.openai.base-url",
+          "java_type": "java.lang.String",
+          "value": "${OPENAI_BASE_URL:https://api.openai.com}"
+        },
+        {
+          "key": "spring.ai.openai.chat.max-retries",
+          "java_type": "java.lang.Integer",
+          "value": "0"
+        },
+        {
+          "key": "spring.ai.openai.chat.model",
+          "java_type": "java.lang.String",
+          "value": "${OPENAI_CHAT_MODEL:gpt-4o-mini}"
+        },
+        {
+          "key": "spring.ai.openai.chat.options.extra-body.enable_thinking",
+          "java_type": "java.lang.String",
+          "value": "${OPENAI_ENABLE_THINKING:false}"
+        },
+        {
+          "key": "spring.ai.openai.chat.temperature",
+          "java_type": "java.lang.Double",
+          "value": "0.7"
+        },
+        {
+          "key": "spring.ai.openai.embedding.max-retries",
+          "java_type": "java.lang.Integer",
+          "value": "0"
+        },
+        {
+          "key": "spring.ai.openai.embedding.model",
+          "java_type": "java.lang.String",
+          "value": "${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}"
+        },
+        {
+          "key": "spring.ai.openai.max-retries",
+          "java_type": "java.lang.Integer",
+          "value": "0"
+        },
+        {
+          "key": "spring.ai.retry.backoff.initial-interval",
+          "java_type": "java.lang.String",
+          "value": "500ms"
+        },
+        {
+          "key": "spring.ai.retry.backoff.max-interval",
+          "java_type": "java.lang.String",
+          "value": "2s"
+        },
+        {
+          "key": "spring.ai.retry.backoff.multiplier",
+          "java_type": "java.lang.Integer",
+          "value": "2"
+        },
+        {
+          "key": "spring.ai.retry.max-attempts",
+          "java_type": "java.lang.String",
+          "value": "${AI_RETRY_MAX_ATTEMPTS:1}"
+        },
+        {
+          "key": "spring.ai.tools.limits.max-calls-per-tool-default",
+          "java_type": "java.lang.String",
+          "value": "${AI_TOOL_MAX_CALLS_PER_TOOL:3}"
+        },
+        {
+          "key": "spring.ai.tools.limits.max-total-tool-calls",
+          "java_type": "java.lang.String",
+          "value": "${AI_TOOL_MAX_TOTAL_CALLS:12}"
+        },
+        {
+          "key": "spring.ai.tools.limits.on-limit-exceeded",
+          "java_type": "java.lang.String",
+          "value": "${AI_TOOL_ON_LIMIT_EXCEEDED:throw}"
+        },
+        {
+          "key": "spring.ai.vectorstore.pgvector.dimensions",
+          "java_type": "java.lang.String",
+          "value": "${AI_KNOWLEDGE_EMBEDDING_DIMENSIONS:1024}"
+        },
+        {
+          "key": "spring.ai.vectorstore.pgvector.distance-type",
+          "java_type": "java.lang.String",
+          "value": "COSINE_DISTANCE"
+        },
+        {
+          "key": "spring.ai.vectorstore.pgvector.index-type",
+          "java_type": "java.lang.String",
+          "value": "HNSW"
+        },
+        {
+          "key": "spring.ai.vectorstore.pgvector.initialize-schema",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "spring.ai.vectorstore.pgvector.max-document-batch-size",
+          "java_type": "java.lang.Integer",
+          "value": "10000"
+        },
+        {
+          "key": "spring.ai.vectorstore.pgvector.schema-name",
+          "java_type": "java.lang.String",
+          "value": "public"
+        },
+        {
+          "key": "spring.ai.vectorstore.pgvector.table-name",
+          "java_type": "java.lang.String",
+          "value": "vector_store"
+        },
+        {
+          "key": "spring.ai.vectorstore.type",
+          "java_type": "java.lang.String",
+          "value": "pgvector"
+        },
+        {
+          "key": "spring.application.name",
+          "java_type": "java.lang.String",
+          "value": "personal-ai-os"
+        },
+        {
+          "key": "spring.datasource.hikari.connection-timeout",
+          "java_type": "java.lang.Integer",
+          "value": "5000"
+        },
+        {
+          "key": "spring.datasource.hikari.maximum-pool-size",
+          "java_type": "java.lang.Integer",
+          "value": "10"
+        },
+        {
+          "key": "spring.datasource.hikari.pool-name",
+          "java_type": "java.lang.String",
+          "value": "personalos-pool"
+        },
+        {
+          "key": "spring.datasource.password",
+          "java_type": "java.lang.String",
+          "value": "${POSTGRES_PASSWORD:personalos}"
+        },
+        {
+          "key": "spring.datasource.url",
+          "java_type": "java.lang.String",
+          "value": "jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:55432}/${POSTGRES_DB:personal_ai_os}"
+        },
+        {
+          "key": "spring.datasource.username",
+          "java_type": "java.lang.String",
+          "value": "${POSTGRES_USER:personalos}"
+        },
+        {
+          "key": "spring.flyway.baseline-on-migrate",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "spring.flyway.enabled",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "spring.flyway.locations",
+          "java_type": "java.lang.String",
+          "value": "classpath:db/migration"
+        },
+        {
+          "key": "spring.jpa.hibernate.ddl-auto",
+          "java_type": "java.lang.String",
+          "value": "validate"
+        },
+        {
+          "key": "spring.jpa.open-in-view",
+          "java_type": "java.lang.Boolean",
+          "value": "false"
+        },
+        {
+          "key": "spring.jpa.properties.hibernate.jdbc.time_zone",
+          "java_type": "java.lang.String",
+          "value": "UTC"
+        },
+        {
+          "key": "spring.mvc.async.request-timeout",
+          "java_type": "java.lang.String",
+          "value": "${ASYNC_REQUEST_TIMEOUT:10m}"
+        },
+        {
+          "key": "spring.servlet.multipart.max-file-size",
+          "java_type": "java.lang.String",
+          "value": "8MB"
+        },
+        {
+          "key": "spring.servlet.multipart.max-request-size",
+          "java_type": "java.lang.String",
+          "value": "10MB"
+        },
+        {
+          "key": "spring.servlet.session.cookie.http-only",
+          "java_type": "java.lang.Boolean",
+          "value": "true"
+        },
+        {
+          "key": "spring.servlet.session.cookie.same-site",
+          "java_type": "java.lang.String",
+          "value": "lax"
+        },
+        {
+          "key": "spring.servlet.session.cookie.secure",
+          "java_type": "java.lang.String",
+          "value": "${SESSION_COOKIE_SECURE:false}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 1,
+      "properties": [
+        {
+          "key": "app.embedding-cache.capacity",
+          "java_type": "java.lang.String",
+          "value": "${EMBEDDING_CACHE_CAPACITY:1000}"
+        },
+        {
+          "key": "app.embedding-cache.enabled",
+          "java_type": "java.lang.String",
+          "value": "${EMBEDDING_CACHE_ENABLED:false}"
+        },
+        {
+          "key": "app.embedding-cache.ttl",
+          "java_type": "java.lang.String",
+          "value": "${EMBEDDING_CACHE_TTL:10m}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 2,
+      "properties": [
+        {
+          "key": "app.redis.enabled",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_ENABLED:false}"
+        },
+        {
+          "key": "app.redis.namespace",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_NAMESPACE:}"
+        },
+        {
+          "key": "app.redis.timeout-ms",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_TIMEOUT_MS:150}"
+        },
+        {
+          "key": "app.redis.uri",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_URI:redis://localhost:6379}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 3,
+      "properties": [
+        {
+          "key": "app.rabbitmq.enabled",
+          "java_type": "java.lang.String",
+          "value": "${RABBITMQ_ENABLED:false}"
+        },
+        {
+          "key": "app.rabbitmq.queue",
+          "java_type": "java.lang.String",
+          "value": "${RABBITMQ_QUEUE:personalos.knowledge.ready}"
+        },
+        {
+          "key": "app.rabbitmq.uri",
+          "java_type": "java.lang.String",
+          "value": "${RABBITMQ_URI:amqp://localhost:5672}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 4,
+      "properties": [
+        {
+          "key": "app.storage.s3.access-key",
+          "java_type": "java.lang.String",
+          "value": "${S3_ACCESS_KEY:}"
+        },
+        {
+          "key": "app.storage.s3.bucket",
+          "java_type": "java.lang.String",
+          "value": "${S3_BUCKET:personalos}"
+        },
+        {
+          "key": "app.storage.s3.cleanup",
+          "java_type": "java.lang.String",
+          "value": "${S3_ORPHAN_CLEANUP_ENABLED:false}"
+        },
+        {
+          "key": "app.storage.s3.enabled",
+          "java_type": "java.lang.String",
+          "value": "${S3_ENABLED:false}"
+        },
+        {
+          "key": "app.storage.s3.endpoint",
+          "java_type": "java.lang.String",
+          "value": "${S3_ENDPOINT:http://localhost:8333}"
+        },
+        {
+          "key": "app.storage.s3.namespace",
+          "java_type": "java.lang.String",
+          "value": "${S3_NAMESPACE:}"
+        },
+        {
+          "key": "app.storage.s3.region",
+          "java_type": "java.lang.String",
+          "value": "${S3_REGION:us-east-1}"
+        },
+        {
+          "key": "app.storage.s3.secret-key",
+          "java_type": "java.lang.String",
+          "value": "${S3_SECRET_KEY:}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 5,
+      "properties": [
+        {
+          "key": "app.knowledge.search.enabled",
+          "java_type": "java.lang.String",
+          "value": "${OPENSEARCH_ENABLED:false}"
+        },
+        {
+          "key": "app.knowledge.search.endpoint",
+          "java_type": "java.lang.String",
+          "value": "${OPENSEARCH_ENDPOINT:http://localhost:9200}"
+        },
+        {
+          "key": "app.knowledge.search.index",
+          "java_type": "java.lang.String",
+          "value": "${OPENSEARCH_INDEX:personalos-chunks-v1}"
+        },
+        {
+          "key": "app.knowledge.search.password",
+          "java_type": "java.lang.String",
+          "value": "${OPENSEARCH_PASSWORD:}"
+        },
+        {
+          "key": "app.knowledge.search.username",
+          "java_type": "java.lang.String",
+          "value": "${OPENSEARCH_USERNAME:}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 6,
+      "properties": [
+        {
+          "key": "app.knowledge.rag.budget-ms",
+          "java_type": "java.lang.String",
+          "value": "${RAG_BUDGET_MS:20000}"
+        },
+        {
+          "key": "app.knowledge.rag.enabled",
+          "java_type": "java.lang.String",
+          "value": "${RAG_ENABLED:true}"
+        },
+        {
+          "key": "app.knowledge.rag.evidence-timeout-ms",
+          "java_type": "java.lang.String",
+          "value": "${RAG_EVIDENCE_TIMEOUT_MS:12000}"
+        },
+        {
+          "key": "app.knowledge.rag.reranker.api-key",
+          "java_type": "java.lang.String",
+          "value": "${RAG_RERANKER_API_KEY:}"
+        },
+        {
+          "key": "app.knowledge.rag.reranker.enabled",
+          "java_type": "java.lang.String",
+          "value": "${RAG_RERANKER_ENABLED:false}"
+        },
+        {
+          "key": "app.knowledge.rag.reranker.endpoint",
+          "java_type": "java.lang.String",
+          "value": "${RAG_RERANKER_ENDPOINT:}"
+        },
+        {
+          "key": "app.knowledge.rag.reranker.model",
+          "java_type": "java.lang.String",
+          "value": "${RAG_RERANKER_MODEL:}"
+        },
+        {
+          "key": "app.knowledge.rag.reranker.protocol",
+          "java_type": "java.lang.String",
+          "value": "${RAG_RERANKER_PROTOCOL:cohere}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 7,
+      "properties": [
+        {
+          "key": "app.reminders.webhook.enabled",
+          "java_type": "java.lang.String",
+          "value": "${REMINDER_WEBHOOK_ENABLED:false}"
+        },
+        {
+          "key": "app.reminders.webhook.secret",
+          "java_type": "java.lang.String",
+          "value": "${REMINDER_WEBHOOK_SECRET:}"
+        },
+        {
+          "key": "app.reminders.webhook.url",
+          "java_type": "java.lang.String",
+          "value": "${REMINDER_WEBHOOK_URL:}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 8,
+      "properties": [
+        {
+          "key": "app.shared-session.enabled",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_SESSION_ENABLED:false}"
+        },
+        {
+          "key": "app.shared-session.namespace",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_SESSION_NAMESPACE:personalos:sessions}"
+        },
+        {
+          "key": "app.shared-session.uri",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_SESSION_URI:}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 9,
+      "properties": [
+        {
+          "key": "app.rate-limit.redis.enabled",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_RATE_LIMIT_ENABLED:false}"
+        },
+        {
+          "key": "app.rate-limit.redis.namespace",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_RATE_LIMIT_NAMESPACE:personalos:model}"
+        },
+        {
+          "key": "app.rate-limit.redis.uri",
+          "java_type": "java.lang.String",
+          "value": "${REDIS_RATE_LIMIT_URI:}"
+        }
+      ]
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "document_index": 10,
+      "properties": [
+        {
+          "key": "app.knowledge.candidate-cache.enabled",
+          "java_type": "java.lang.String",
+          "value": "${RAG_CANDIDATE_CACHE_ENABLED:false}"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "只反射record与构造器DefaultValue；紧凑构造器的归一化仍需行为验证。",
+    "YAML按原文件/文档保留，未合并profile/激活条件或展开环境占位符。",
+    "动态Map的record值展开为*；String Map/List/Set保留原类型，不能枚举运行时键。",
+    "@Value是词法单字面量索引，非SpEL/占位符求值或完整Binder验收。",
+    "Spring/第三方动态配置面仍需结合全部145环境引用与运行钩子审查。"
+  ]
+}

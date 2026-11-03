@@ -238,6 +238,12 @@ Go逐项核对HTTP状态/业务码/文案/null data/UTC时间/JSON媒体类型�
 
 普通42 SQL历史仍通过；单测额外覆盖缺项/乱序/重复标记/失败/未知类型与NULL字段。Go不执行baseline，不把标记算成SQL执行，不代替实际schema与权限验证。其余历史类型和自定义基线仍失败关闭。 最终--tls --backup --baseline六包integration/race全部通过（/private/tmp/personal-ai-os-go-baseline-final-postgres.log），全量十四包race/integration vet/构建/五角色进程smoke/go mod verify通过（/private/tmp/personal-ai-os-go-baseline-all-race.log），本次容器已清理。
 
+## 增量：全配置来源索引与Cookie来源修正（T104c）
+
+go_config_inventory.py从固定Git基线加载全部7 YAML文件，实际Spring加载器保留17文档/205属性出现项；独立编译反射12配置record/67字段与DefaultValue，词法索引70处@Value/8处getProperty。默认重新生成比较通过，10项Python索引边界单测与1,093文件基线检查通过；不启动Spring/Binder或读取真实.env。
+
+隔离StandardEnvironment排除宿主来源，实际Spring属性解析与原ProductionSecurityValidator的4场景证明spring.servlet/server.servlet Cookie路径差异。Go先加入对照测试确认旧实现失败，再改canonical环境别名与系统高于.env的优先级。旧dotenv测试依赖了错误的prod Cookie默认值，补显式canonical fixture后保留其原先三个开关优先级断言。定向race通过（/private/tmp/personal-ai-os-go-cookie-sources.log），全量十四包race/integration vet/build通过（/private/tmp/personal-ai-os-go-config-sources-all.log）。进程smoke初次漏传必填--binary未执行，随后明确构建临时二进制，五角色真实HTTP/退出复验全部通过。生产/认证/CSRF启动守卫保持，完整绑定/装配仍待完成。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

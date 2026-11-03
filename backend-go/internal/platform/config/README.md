@@ -2,6 +2,14 @@
 
 默认入口只接受隔离诊断配置：回环8081，不读.env，不连接基础设施，生产/认证/CSRF模式在监听前拒绝。`.env`读取必须由系统环境显式开启，优先级与生产校验已有独立测试；任意YAML/profile/全部属性绑定仍待迁移。
 
+## Cookie真实配置来源
+
+原Java的SecurityConfig、SharedSessionConfig和ProductionSecurityValidator读取`server.servlet.session.cookie.secure`，对应环境变量`SERVER_SERVLET_SESSION_COOKIE_SECURE`。原base/prod YAML却将`SESSION_COOKIE_SECURE`占位符/静态true放在`spring.servlet.session.cookie.secure`。这两个路径不同，不能把后者误认为已开启安全Cookie。
+
+Go保留实际canonical路径及SystemEnvironment的点/下划线/大写别名，先查全部系统环境别名，再查低优先级.env；canonical缺席时保持false，即使prod或SESSION_COOKIE_SECURE=true也不伪造true。真实Spring来源与原生产守卫的4场景见`specs/033-go-rewrite/config-inventory.json`。原Java/YAML未改；Go生产、认证与CSRF启动守卫仍生效。此前参数级生产校验测试不代表完整来源绑定等价。
+
+`python3 scripts/migration/go_config_inventory.py`可离线复验全部配置record字段/默认注解、@Value、直接getProperty及逐文档YAML来源。它不执行完整Binder、profile激活或动态MCP装配。
+
 ## 时长与数据大小
 
 `ParseDuration(string)` 返回 `*time.Duration,error`，`ParseDataSize(string)` 返回 `*int64,error`。空源字符串返回nil、nil，与Java转换器null一致；零值、负值和null不同，由使用方执行正值等业务校验。每次成功返回独立指针，错误不带配置原文。构造本身不读环境或文件、不连接服务。

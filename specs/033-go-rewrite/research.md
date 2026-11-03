@@ -230,3 +230,13 @@ Go保留NewHistoryValidator的默认严格策略；新增NewHistoryValidatorWith
 真实生成历史调用前后全字段摘要相同，破坏测试只改副本，所有失败均零成功状态/脱敏。不伪造或修复Flyway历史，不执行baseline或争抢DDL锁。历史标记不能证明V1扩展已存在，显式兼容也不替代实际结构验证；生产角色/属主ACL、其他基线版本/标记或用户备份仍待验收。
 
 Alternatives considered：默许任意BASELINE就跳过校验（可隐藏缺失迁移）；Go自动baseline（更改迁移执行权）；把42行直接报告为42个已执行脚本（误导）；只改一个合成SQL行冒充真实Flyway行为。当前场景使用真实默认Flyway生成和校验，未连接现有数据库。
+
+## R-027 全配置来源索引与Cookie真实读取路径
+
+Decision：用基线离线依赖的YamlPropertySourceLoader和独立编译record反射，固定7 YAML文件/17文档/205属性出现项、12配置record/67字段及容器节点、构造器DefaultValue；另按词法提取70处@Value和8处直接getProperty。动态键不丢弃，MCP Map值递归展开通配record；保留泛型、源码位置、依赖/基线哈希、原始占位符。只替换构建期project.version，不读取真实.env，不实例化配置record或启动Spring。默认重新生成并比较，显式--write才更新；不支持的声明失败关闭。
+
+索引发现原YAML在spring.servlet.session.cookie.secure放值，三个安全类却读取server.servlet.session.cookie.secure。用覆盖customizePropertySources的StandardEnvironment排除宿主属性/环境，只放原base/prod YAML和合成SystemEnvironment来源，实际调用原ProductionSecurityValidator。4场景证明：SESSION_COOKIE_SECURE=true会改变YAML路径但不会改变守卫读取值，prod仍拒绝；额外canonical环境变量才通过。原Java/YAML保留，历史差异显式记录。
+
+Go LoadSecurity改按canonical路径的四种真实环境别名解析，先查系统来源所有别名再查.env，防止低优先级精确键压过高优先级别名。不把prod错误路径/未被消费的SESSION_COOKIE_SECURE强行当true。原三个prod开关优先级保持；诊断生产/认证/CSRF监听守卫不放开。此前参数级生产校验虽通过，但未证明来源绑定，本次以真实Java来源结果修正。完整YAML/profile、Binder默认与所有属性仍属T104。
+
+Alternatives considered：只grep环境变量（漏record默认与重复文档）；先合并YAML再索引（丢来源/profile）；同时改原Java消掉差异（破坏固定基线）；把SESSION_COOKIE_SECURE当canonical别名（掩盖原行为）；为拿到true绕过生产守卫。当前只对合成来源验证，不接现有服务。

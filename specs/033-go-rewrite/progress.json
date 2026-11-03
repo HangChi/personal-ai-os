@@ -73,14 +73,20 @@
       "note": "Java 字面量解析/查找/顺序/来源优先级已移植并单测；Go 默认不读文件，需显式开启。Spring relaxed binding/动态 MCP 装配与完整配置仍未迁移，不能 verified。"
     },
     "file:backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/config/security.go",
         "backend-go/internal/platform/config/security_test.go",
         "backend-go/cmd/personalos/main_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/ConfigInventoryOracle.java",
+        "scripts/migration/go_config_inventory.py",
+        "scripts/migration/test_go_config_inventory.py",
+        "specs/033-go-rewrite/config-inventory.json",
+        "specs/033-go-rewrite/config-inventory.md",
+        "backend-go/internal/platform/config/cookie_sources_test.go"
       ],
-      "note": "开关/中文错误顺序、Java isBlank 和 UTF-8 密码边界已移植。生产启动仍额外拒绝；真实认证/CSRF 与业务差分尚未完成，不能 verified。"
+      "note": "开关/中文错误顺序、Java isBlank 和 UTF-8 密码边界已移植。生产启动仍额外拒绝；真实认证/CSRF 与业务差分尚未完成，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。"
     },
     "file:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java": {
       "status": "in_progress",
@@ -114,9 +120,15 @@
         "backend-go/internal/platform/config/scalars_test.go",
         "backend-go/internal/platform/config/testdata/java-scalars.json",
         "scripts/migration/java_config_scalar_fixture.py",
-        "scripts/migration/ConfigScalarOracle.java"
+        "scripts/migration/ConfigScalarOracle.java",
+        "scripts/migration/ConfigInventoryOracle.java",
+        "scripts/migration/go_config_inventory.py",
+        "scripts/migration/test_go_config_inventory.py",
+        "specs/033-go-rewrite/config-inventory.json",
+        "specs/033-go-rewrite/config-inventory.md",
+        "backend-go/internal/platform/config/cookie_sources_test.go"
       ],
-      "note": "运行/安全配置子集、连接池/显式事务和固定 pgx 配置/UTC 已实现；一次性 PostgreSQL 验证事务/类型/取消/并发与真实 TLS/证书拒绝、受限账号事务探针。未接应用，完整数据源/profile 配置、全部 schema 权限/Flyway/绝大多数属性待迁移，不能 verified。 已补真实Flyway执行和Go只读历史验证，未支持标记/完整装配继续开放。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。"
+      "note": "运行/安全配置子集、连接池/显式事务和固定 pgx 配置/UTC 已实现；一次性 PostgreSQL 验证事务/类型/取消/并发与真实 TLS/证书拒绝、受限账号事务探针。未接应用，完整数据源/profile 配置、全部 schema 权限/Flyway/绝大多数属性待迁移，不能 verified。 已补真实Flyway执行和Go只读历史验证，未支持标记/完整装配继续开放。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。"
     },
     "file:backend/src/main/java/com/personalos/common/config/RateLimitProperties.java": {
       "status": "in_progress",
@@ -1678,9 +1690,15 @@
         "backend-go/internal/platform/auth/http_test.go",
         "backend-go/internal/platform/auth/session.go",
         "backend-go/internal/platform/auth/session_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/ConfigInventoryOracle.java",
+        "scripts/migration/go_config_inventory.py",
+        "scripts/migration/test_go_config_inventory.py",
+        "specs/033-go-rewrite/config-inventory.json",
+        "specs/033-go-rewrite/config-inventory.md",
+        "backend-go/internal/platform/config/cookie_sources_test.go"
       ],
-      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。"
+      "note": "匿名白名单、全请求认证、CSRF 先行、MCP 仅免 CSRF 已移植；保守拒绝歧义路径，未与实际 Servlet 安全链完整差分/生产装配，不能 verified。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。"
     },
     "route:POST:/api/v1/auth/login:backend/src/main/java/com/personalos/common/auth/AuthController.java": {
       "status": "implemented",
@@ -1770,9 +1788,15 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/platform/redis/client_integration_test.go",
         "backend-go/internal/platform/redis/security_integration_test.go",
-        "backend-go/internal/platform/redis/response_loss_integration_test.go"
+        "backend-go/internal/platform/redis/response_loss_integration_test.go",
+        "scripts/migration/ConfigInventoryOracle.java",
+        "scripts/migration/go_config_inventory.py",
+        "scripts/migration/test_go_config_inventory.py",
+        "specs/033-go-rewrite/config-inventory.json",
+        "specs/033-go-rewrite/config-inventory.md",
+        "backend-go/internal/platform/config/cookie_sources_test.go"
       ],
-      "note": "专用 standalone redis/rediss 解析/TLS 配置/2 秒操作与 Go 独立版本化键已实现；真实 Redis 跨客户端/HTTP 实例/OS 进程共享注销通过。不导入 Spring 序列化会话，切换须重新登录；实际 TLS/ACL/配置与应用装配仍待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。"
+      "note": "专用 standalone redis/rediss 解析/TLS 配置/2 秒操作与 Go 独立版本化键已实现；真实 Redis 跨客户端/HTTP 实例/OS 进程共享注销通过。不导入 Spring 序列化会话，切换须重新登录；实际 TLS/ACL/配置与应用装配仍待验，不能 verified。 真实 rediss 下共享会话/跨进程注销/限流均已通过，未知 CA/主机名错误/明文访问 TLS 端口被拒；ACL 与应用装配仍待验。 真实 plain/TLS 精确 ACL 和已执行写入丢响应验证通过，拒绝越权且不重放；完整网络分区和应用装配仍待验收。 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/SharedSessionIntegrationTest.java": {
       "status": "implemented",
@@ -2153,6 +2177,18 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "TestJavaExceptionHandler36ResponseFixtures/TestExceptionBoundaryHEADPanicAndDisconnect与真实JavaOracle覆盖日志契约；完整应用差分仍待验收。"
+    },
+    "file:backend/src/main/resources/application-prod.yml": {
+      "status": "in_progress",
+      "evidence": [
+        "scripts/migration/ConfigInventoryOracle.java",
+        "scripts/migration/go_config_inventory.py",
+        "scripts/migration/test_go_config_inventory.py",
+        "specs/033-go-rewrite/config-inventory.json",
+        "specs/033-go-rewrite/config-inventory.md",
+        "backend-go/internal/platform/config/cookie_sources_test.go"
+      ],
+      "note": " 全配置来源索引与真实Spring/原生产守卫4场景确认Cookie的spring.servlet/server.servlet路径差异；Go canonical来源与优先级已修正。不是完整Binder/profile/生产装配验收，不能verified。"
     }
   },
   "release_gates": {

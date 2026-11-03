@@ -33,6 +33,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [ ] T104 对齐 .env 加载优先级、application 多文档/profile/属性默认值、prod 启动守卫；逐个审查所有配置类和 @Value。
 - [x] T104a 完成 .env 解析/查找/优先级及生产安全校验子集、运行角色 profile 覆盖，并在启动前拒绝尚未完成的生产/认证/CSRF 模式；默认不读本地文件。T104 的 YAML/全量属性/动态 MCP 绑定仍待完成。
 - [x] T104b 显式时长/数据大小转换器保留null、Java单位/大小写/空白/ISO符号/精度；真实Boot转换器228项逐项对照，超出Go int64纳秒的8个Java合法值明确拒绝且不截断。补充Java秒数中间加法顺序/Unicode折叠反例；尚未完成全属性绑定或装入主入口。
+- [x] T104c 固定全部12配置record/67字段、70处@Value、8处getProperty与7 YAML文件/17文档/205属性来源；真实Spring/原生产守卫4场景发现并对齐Cookie canonical路径与系统环境优先级。索引默认重生成比较；非完整Binder/profile装配，T104保持开放。
 - [ ] T105 实现认证/失败锁定/会话/轮换/注销/me/CSRF/Cookie/匿名白名单，移植 Auth*、SharedSession、Security 与生产验证相关断言。
 - [x] T105a 移植单用户凭据、BCrypt 2a/cost10、Java strip/空值与失败锁定；固定真实 Java 编码器的 74 项 Unicode/NUL/长度边界对照，串行化并发校验。会话/CSRF/配置与应用接线仍属 T105。
 - [x] T105b 实现原子本地会话/过期续期/登录轮换/注销/me/CSRF/Cookie 和可组合 HTTP 安全链；真实回环 CookieJar 验证登录前后令牌/旧 ID 失效，补充表单令牌/匿名/错误/路径边界。Redis/完整框架差分/应用接线仍属 T105。

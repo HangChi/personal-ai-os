@@ -40,7 +40,6 @@ func loadSecurity(lookup, system Lookup, prodProfile bool) (Security, error) {
 		{"APP_SECURITY_PRODUCTION_MODE", &security.Production},
 		{"AUTH_ENABLED", &security.AuthEnabled},
 		{"APP_SECURITY_CSRF_ENABLED", &security.CSRFEnabled},
-		{"SESSION_COOKIE_SECURE", &security.CookieSecure},
 	} {
 		// prod YAML 为静态 true，.env 处于其后；系统环境仍有更高优先级。
 		boolLookup := lookup
@@ -55,6 +54,25 @@ func loadSecurity(lookup, system Lookup, prodProfile bool) (Security, error) {
 			return Security{}, err
 		}
 		*setting.target = value
+	}
+	// 原YAML把SESSION_COOKIE_SECURE放在spring.servlet下，但原安全代码读取server.servlet。
+	// 不把未被消费的别名或prod错误路径伪造成true；按真实SystemEnvironment别名/来源顺序解析。
+	var err error
+	security.CookieSecure, err = boolean(func(string) (string, bool) {
+		for _, source := range []Lookup{system, lookup} {
+			if source == nil {
+				continue
+			}
+			for _, key := range []string{"server.servlet.session.cookie.secure", "server_servlet_session_cookie_secure", "SERVER.SERVLET.SESSION.COOKIE.SECURE", "SERVER_SERVLET_SESSION_COOKIE_SECURE"} {
+				if value, found := source(key); found {
+					return value, true
+				}
+			}
+		}
+		return "", false
+	}, "SERVER_SERVLET_SESSION_COOKIE_SECURE", false)
+	if err != nil {
+		return Security{}, err
 	}
 	security.authPassword, _ = lookup("AUTH_PASSWORD")
 	if value, found := lookup("POSTGRES_PASSWORD"); found {

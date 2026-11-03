@@ -13,7 +13,8 @@ func TestRunRejectsProductionBeforeOpeningListener(t *testing.T) {
 		"GO_DOTENV_ENABLED": "false", "SERVER_PORT": "8081", "APP_RUNTIME_ROLE": "api",
 		"SPRING_PROFILES_ACTIVE": "prod", "APP_SECURITY_PRODUCTION_MODE": "true",
 		"AUTH_ENABLED": "true", "APP_SECURITY_CSRF_ENABLED": "true", "SESSION_COOKIE_SECURE": "true",
-		"AUTH_PASSWORD": "fixture-password-16", "POSTGRES_PASSWORD": "fixture-db",
+		"SERVER_SERVLET_SESSION_COOKIE_SECURE": "true",
+		"AUTH_PASSWORD":                        "fixture-password-16", "POSTGRES_PASSWORD": "fixture-db",
 	} {
 		t.Setenv(key, value)
 	}
