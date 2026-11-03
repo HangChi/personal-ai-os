@@ -1956,6 +1956,104 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "已有显式Go执行器/诊断context替代，未接应用和实际业务调用点。"
+    },
+    "file:backend/src/main/java/com/personalos/common/exception/GlobalExceptionHandler.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/api/business.go",
+        "backend-go/internal/platform/api/business_test.go",
+        "backend-go/internal/platform/http/errors.go",
+        "backend-go/internal/platform/http/errors_test.go",
+        "backend-go/internal/platform/http/testdata/java-exceptions.json",
+        "scripts/migration/java_exception_fixture.py",
+        "scripts/migration/ExceptionHandlerOracle.java",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "真实Java处理器36响应与Go边界逐项对照；业务错误和资源自定义/空文案保留，日志脱敏与已提交HTTP响应保护通过。完整Servlet/业务调用点装配尚未完成。"
+    },
+    "file:backend/src/main/java/com/personalos/common/exception/BusinessException.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/business.go",
+        "backend-go/internal/platform/api/business_test.go",
+        "backend-go/internal/platform/http/errors.go",
+        "backend-go/internal/platform/http/errors_test.go",
+        "backend-go/internal/platform/http/testdata/java-exceptions.json",
+        "scripts/migration/java_exception_fixture.py",
+        "scripts/migration/ExceptionHandlerOracle.java",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "真实Java处理器36响应与Go边界逐项对照；业务错误和资源自定义/空文案保留，日志脱敏与已提交HTTP响应保护通过。完整Servlet/业务调用点装配尚未完成。"
+    },
+    "file:backend/src/main/java/com/personalos/common/exception/ResourceNotFoundException.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/business.go",
+        "backend-go/internal/platform/api/business_test.go",
+        "backend-go/internal/platform/http/errors.go",
+        "backend-go/internal/platform/http/errors_test.go",
+        "backend-go/internal/platform/http/testdata/java-exceptions.json",
+        "scripts/migration/java_exception_fixture.py",
+        "scripts/migration/ExceptionHandlerOracle.java",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "真实Java处理器36响应与Go边界逐项对照；业务错误和资源自定义/空文案保留，日志脱敏与已提交HTTP响应保护通过。完整Servlet/业务调用点装配尚未完成。"
+    },
+    "file:backend/src/test/java/com/personalos/common/exception/GlobalExceptionHandlerLogTest.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/api/business.go",
+        "backend-go/internal/platform/api/business_test.go",
+        "backend-go/internal/platform/http/errors.go",
+        "backend-go/internal/platform/http/errors_test.go",
+        "backend-go/internal/platform/http/testdata/java-exceptions.json",
+        "scripts/migration/java_exception_fixture.py",
+        "scripts/migration/ExceptionHandlerOracle.java",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "405路径/无查询串和断连DEBUG已有Go替代断言，JavaOracle真实重验原处理器日志；完整应用分派未装配，不能verified。"
+    },
+    "test:backend/src/test/java/com/personalos/common/exception/GlobalExceptionHandlerLogTest.java:61": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/api/business.go",
+        "backend-go/internal/platform/api/business_test.go",
+        "backend-go/internal/platform/http/errors.go",
+        "backend-go/internal/platform/http/errors_test.go",
+        "backend-go/internal/platform/http/testdata/java-exceptions.json",
+        "scripts/migration/java_exception_fixture.py",
+        "scripts/migration/ExceptionHandlerOracle.java",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestJavaExceptionHandler36ResponseFixtures/TestExceptionBoundaryHEADPanicAndDisconnect与真实JavaOracle覆盖日志契约；完整应用差分仍待验收。"
+    },
+    "test:backend/src/test/java/com/personalos/common/exception/GlobalExceptionHandlerLogTest.java:78": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/api/business.go",
+        "backend-go/internal/platform/api/business_test.go",
+        "backend-go/internal/platform/http/errors.go",
+        "backend-go/internal/platform/http/errors_test.go",
+        "backend-go/internal/platform/http/testdata/java-exceptions.json",
+        "scripts/migration/java_exception_fixture.py",
+        "scripts/migration/ExceptionHandlerOracle.java",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestJavaExceptionHandler36ResponseFixtures/TestExceptionBoundaryHEADPanicAndDisconnect与真实JavaOracle覆盖日志契约；完整应用差分仍待验收。"
+    },
+    "test:backend/src/test/java/com/personalos/common/exception/GlobalExceptionHandlerLogTest.java:93": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/platform/api/business.go",
+        "backend-go/internal/platform/api/business_test.go",
+        "backend-go/internal/platform/http/errors.go",
+        "backend-go/internal/platform/http/errors_test.go",
+        "backend-go/internal/platform/http/testdata/java-exceptions.json",
+        "scripts/migration/java_exception_fixture.py",
+        "scripts/migration/ExceptionHandlerOracle.java",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestJavaExceptionHandler36ResponseFixtures/TestExceptionBoundaryHEADPanicAndDisconnect与真实JavaOracle覆盖日志契约；完整应用差分仍待验收。"
     }
   },
   "release_gates": {

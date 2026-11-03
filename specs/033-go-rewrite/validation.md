@@ -218,6 +218,14 @@ Java真实public和Go空schema/合成升级schema的七类定义全部逐项相�
 
 同时run_go_redis_tests.py --tls三包通过，日志 /private/tmp/personal-ai-os-go-final-redis.log。全量十四包race、integration标签vet、构建、五种角色真实进程smoke和go mod verify通过，日志 /private/tmp/personal-ai-os-go-final-race.log。本次容器/临时证书清理，诊断入口仍保持readyz=503及业务404。
 
+## 增量：Java异常处理对照与HTTP响应边界（T106b）
+
+先加入Go测试，确认BusinessError/HTTP异常API未实现时编译失败（/private/tmp/personal-ai-os-go-errors-red.log），再实现。java_exception_fixture.py --write直接运行固定Java源码和BOM依赖，生成36响应快照；默认重复执行完全一致。包含18业务错误码、自定义/空文案、资源不存在、字段与约束校验、参数类型/缺失、404/405/406、上传超限、JSON畸形、数据库完整性和未知错误；Java405路径/无查询串与断连DEBUG实际断言通过。
+
+Go逐项核对HTTP状态/业务码/文案/null data/UTC时间/JSON媒体类型，SSE Accept前置错误仍为JSON。定向10轮race通过（/private/tmp/personal-ai-os-go-errors-stress.log），验证50路真实HTTP不串请求、HEAD/panic脱敏、已提交流后error/panic不追加JSON、真实连接读到partial后unexpected EOF、103之后仍可返回400、旧下载头清理、Flusher/Hijacker/ResponseController、输入拷贝/Allow注入拒绝、最外层分类优先和多原因失败关闭。全量十四包race、integration标签vet、基线检查通过（/private/tmp/personal-ai-os-go-errors-all-race.log）。
+
+此处直接调用Java处理器，不是完整Servlet路由/内容协商/Bean Validation/JSON解析差分；Go类型仍需真实控制器/仓储显式装配。诊断入口/生产启动守卫保持原行为，T106/T109与发布门禁继续开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

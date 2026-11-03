@@ -200,3 +200,13 @@ Decision：--backup隐含--flyway，只对新建migration专用集群注入明�
 发现PostgreSQL17 dump/restore将ANY数组整体::text[]重排为逐元素::text，部分索引条件也有相同变化。保留原始Java/Go结构对照的严格定义比较；仅备份场景在同版本PostgreSQL的临时空表重解析双方CHECK/索引，再比较规范化结果，不忽略常量/运算/类型。分别改变CHECK的QUEUE和部分索引PENDING为DIFFERENT，必须仍检出差异。临时表创建/删除不改业务DDL。
 
 Alternatives considered：删除全部cast或跳过约束（可能掩盖真实差异）；仅比较表数/恢复命令退出码（不证明数据一致）；直接使用真实用户备份（越过本轮隔离）；把opaque字符串保留误报为真实密文加解密。此证据不覆盖生产属主/ACL、真实用户备份、真实密文/附件或跨PostgreSQL版本恢复；T103父任务和发布门禁继续开放。
+
+## R-024 显式错误分类与已提交响应保护
+
+Decision：业务层使用api.BusinessError承载明确公开文案，保留显式空字符串；非法/成功业务码失败关闭为50000。HTTP层提供显式校验/参数/404/405/406/上传/完整性冲突/断连类型，普通包装按最外层已知分类处理，不从原始异常字符串猜业务语义，多原因Join/循环链均通用500。仓储负责明确标记数据完整性冲突，网络失败不能误报409。
+
+从固定基线直接编译ApiResponse/ErrorCode/BusinessException/ResourceNotFoundException/GlobalExceptionHandler，使用实际Boot BOM的Spring7.0.9和离线依赖，真实调用36个返回分支，同时检查405路径无查询串及断连DEBUG。只对照处理器输出，不把它声称为Servlet/JSON绑定/Bean Validation provider或安全链全量差分。Go普通错误强制JSON，即使Accept为SSE；HEAD不写body；日志仅级别/方法/路径/安全ID/业务码，不含原始错误、正文、查询串和panic堆栈，是原日志的安全收紧。
+
+用显式Endpoint返回错误和局部响应状态适配器，保留ResponseController解包及原有Flusher/Hijacker可用性。100/103不是最终提交，101/写入/Flush/Hijack才锁定响应；已提交后的异常或panic抛http.ErrAbortHandler，由net/http中止连接，不能追加JSON。明确客户端断连只记DEBUG且无响应，不将所有context取消/超时都误当断连。正常SSE仍由业务协议发送错误事件，边界只是兜底。未接入主诊断应用。
+
+Alternatives considered：直接回显err.Error（泄密）；errors.As任意深层业务cause覆盖外层JSON错误（错误优先级反转）；panic后始终补500（污染SSE/下载）；无限缓冲所有响应（破坏实时流和内存上限）；伪造不支持的Flusher/Hijacker（改变能力检测）；把上游deadline当客户端离开（吞掉真实服务故障）。

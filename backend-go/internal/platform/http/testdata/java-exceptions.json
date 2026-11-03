@@ -1,0 +1,284 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/common/api/ApiResponse.java": "28667b149d0a3c059437086c4a561ab5c8f1154e0961d8999c03321cfac2297d",
+    "backend/src/main/java/com/personalos/common/api/ErrorCode.java": "6307f7c9616c1b84fbfe190614359005b553cb0ace569ac9d04cc5d552f7ff9b",
+    "backend/src/main/java/com/personalos/common/exception/BusinessException.java": "68a7f80359c4043ff1533c271d78c511b4d22537fe5bb9e80de6c04979736f92",
+    "backend/src/main/java/com/personalos/common/exception/ResourceNotFoundException.java": "1cfbb96093786de75e85c9f04a8226674ac1e5ae34ae191efde0e8082b386b5b",
+    "backend/src/main/java/com/personalos/common/exception/GlobalExceptionHandler.java": "4d5c909f18728d3995935cf302f810b32fc9aa6c9e5ae5ddefc8f19a98b56839"
+  },
+  "spring_framework": "7.0.9",
+  "jars": {
+    "spring-core-7.0.9.jar": "5195f4722699b39878d99a832549fe65df2890b159d063b88fff31b1ca65ae36",
+    "spring-beans-7.0.9.jar": "ff218b827a25c9e8929b0cd56dfb56916cea9d5b669ed97dc7cb262508ff548b",
+    "spring-context-7.0.9.jar": "7552a2fcfa30cea53eb14d7a65a7a8e1b1dd82e832a7164fb7e6fb105f438858",
+    "spring-expression-7.0.9.jar": "046434c40f43819729b9b1db0e6c659dfa68184c1c2c2efa5f7b3a5b27c4e2e2",
+    "spring-web-7.0.9.jar": "941ced476427bde2533872f293da535fd0258de3f3a650a7f1bfe01ed2927302",
+    "spring-webmvc-7.0.9.jar": "8f114c1461692c5e534e82b27de23b7fb23370db8dee7ce0c92d5106906c9555",
+    "spring-tx-7.0.9.jar": "bfb15da6e096e2c0752e9db9987d2415bf0da1d744efc988535c10c6b6c2eedd",
+    "spring-test-7.0.9.jar": "6ce8fc116f5d309b9ac50a6738bd1b15ea4012a4a5563c0ee89b795bfc9af0dc",
+    "slf4j-api-2.0.18.jar": "44508fd1576500688c790b190acdd16fec4f8c79a3e0b900afd70503cf055f55",
+    "logback-core-1.5.38.jar": "a855a0fc97b1d06f4efb1c3bba5ebd0eb508d8b58e68e89e4bbc23a85135c883",
+    "logback-classic-1.5.38.jar": "afb439c61fa287c9e1925523b13baab03617e724406a389d48b61c2c3e46b700",
+    "tomcat-embed-core-11.0.24.jar": "e7b966dcaac8c5ffa4f10e44031ebf5b71f2123560c08ac8b7120028615aea08",
+    "jakarta.validation-api-3.1.1.jar": "63ce00156388c365f3ac1be71fcfaf114682fc0c452020b5df6e7ec236e142ab",
+    "jackson-annotations-2.21.jar": "53ca085f4a150f703f49e1aabd935bd03b43e1ea3d55d135438292af22cef56b",
+    "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc"
+  },
+  "scope": "direct baseline exception handlers only; not servlet dispatch/JSON binding/validation providers",
+  "disconnect": "DEBUG/no-body",
+  "cases": [
+    {
+      "name": "business-40000",
+      "status": 400,
+      "code": 40000,
+      "message": "参数校验失败",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-40001",
+      "status": 409,
+      "code": 40001,
+      "message": "幂等键与请求内容不一致，同一幂等键必须对应相同请求",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-40002",
+      "status": 409,
+      "code": 40002,
+      "message": "该确认已失效或已被使用",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-40003",
+      "status": 400,
+      "code": 40003,
+      "message": "不支持的文档",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-40004",
+      "status": 404,
+      "code": 40004,
+      "message": "资源不存在",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-40005",
+      "status": 405,
+      "code": 40005,
+      "message": "请求方法不被支持",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-40600",
+      "status": 406,
+      "code": 40600,
+      "message": "响应格式不被支持",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-40100",
+      "status": 401,
+      "code": 40100,
+      "message": "未登录或登录已过期",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-40300",
+      "status": 403,
+      "code": 40300,
+      "message": "请求被拒绝",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-40900",
+      "status": 409,
+      "code": 40900,
+      "message": "业务规则冲突",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-42900",
+      "status": 429,
+      "code": 42900,
+      "message": "请求过于频繁，请稍后再试",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-41301",
+      "status": 400,
+      "code": 41301,
+      "message": "上下文超出当前模型可用空间，请减少附件或检索内容、降低思考深度，或切换更大窗口模型",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-50200",
+      "status": 502,
+      "code": 50200,
+      "message": "AI 服务调用失败，请稍后重试或检查模型配置",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-50201",
+      "status": 500,
+      "code": 50201,
+      "message": "嵌入模型输出维度与向量表结构不一致，请检查嵌入模型配置或新增迁移重建向量列",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-50202",
+      "status": 504,
+      "code": 50202,
+      "message": "模型响应超时，请稍后重试或降低思考深度",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-50203",
+      "status": 502,
+      "code": 50203,
+      "message": "工具调用已停止：重复失败或执行步数达到上限。已完成的操作不会撤销，请先查看执行记录。",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-50300",
+      "status": 503,
+      "code": 50300,
+      "message": "AI 模型未配置，请设置 AI_CHAT_PROVIDER 为 ollama 或 openai",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-50000",
+      "status": 500,
+      "code": 50000,
+      "message": "服务器内部错误",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-custom",
+      "status": 409,
+      "code": 40900,
+      "message": "任务已完成😀",
+      "content_type": "application/json"
+    },
+    {
+      "name": "business-empty",
+      "status": 409,
+      "code": 40900,
+      "message": "",
+      "content_type": "application/json"
+    },
+    {
+      "name": "resource-custom",
+      "status": 404,
+      "code": 40004,
+      "message": "指定任务不存在",
+      "content_type": "application/json"
+    },
+    {
+      "name": "validation-false",
+      "status": 400,
+      "code": 40000,
+      "message": "参数校验失败",
+      "content_type": "application/json"
+    },
+    {
+      "name": "validation-true",
+      "status": 400,
+      "code": 40000,
+      "message": "参数校验失败: title 不能为空; tags[0] 长度超限😀",
+      "content_type": "application/json"
+    },
+    {
+      "name": "constraint",
+      "status": 400,
+      "code": 40000,
+      "message": "参数校验失败: list.page 必须大于等于0; list.size 必须小于等于200",
+      "content_type": "application/json"
+    },
+    {
+      "name": "constraint-empty",
+      "status": 400,
+      "code": 40000,
+      "message": "参数校验失败",
+      "content_type": "application/json"
+    },
+    {
+      "name": "type",
+      "status": 400,
+      "code": 40000,
+      "message": "参数校验失败: 参数 page 取值非法",
+      "content_type": "application/json"
+    },
+    {
+      "name": "not-found-resource",
+      "status": 404,
+      "code": 40004,
+      "message": "资源不存在",
+      "content_type": "application/json"
+    },
+    {
+      "name": "not-found-handler",
+      "status": 404,
+      "code": 40004,
+      "message": "资源不存在",
+      "content_type": "application/json"
+    },
+    {
+      "name": "upload",
+      "status": 400,
+      "code": 40003,
+      "message": "文件过大，请压缩或拆分后重新上传",
+      "content_type": "application/json"
+    },
+    {
+      "name": "json",
+      "status": 400,
+      "code": 40000,
+      "message": "请求体格式错误，请检查 JSON 结构与字段类型",
+      "content_type": "application/json"
+    },
+    {
+      "name": "missing-query",
+      "status": 400,
+      "code": 40000,
+      "message": "参数校验失败: 缺少参数 page",
+      "content_type": "application/json"
+    },
+    {
+      "name": "missing-part",
+      "status": 400,
+      "code": 40000,
+      "message": "参数校验失败: 缺少参数 file",
+      "content_type": "application/json"
+    },
+    {
+      "name": "method",
+      "status": 405,
+      "code": 40005,
+      "message": "请求方法 GET 不被支持",
+      "content_type": "application/json"
+    },
+    {
+      "name": "accept",
+      "status": 406,
+      "code": 40600,
+      "message": "该接口不提供客户端要求的响应格式（Accept 头），请调整 Accept",
+      "content_type": "application/json"
+    },
+    {
+      "name": "integrity",
+      "status": 409,
+      "code": 40900,
+      "message": "数据不符合服务端约束（可能超出长度限制或与已有记录冲突），请检查后重试",
+      "content_type": "application/json"
+    },
+    {
+      "name": "unexpected",
+      "status": 500,
+      "code": 50000,
+      "message": "服务器内部错误",
+      "content_type": "application/json"
+    }
+  ]
+}
