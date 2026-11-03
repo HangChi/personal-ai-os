@@ -8,7 +8,7 @@
 
 - `internal/platform/api`：响应信封、19 个 Java 错误码及 HTTP 映射、两类分页与 Java offset 溢出边界。
 - `internal/platform/config`：五种角色/端口、显式开启的 .env 解析/父目录查找、系统环境/profile/文件优先级、Java 生产安全校验与未完成安全能力的启动拒绝。
-- `internal/platform/database`：显式 Connector 连接池与事务生命周期、获取超时/取消、错误脱敏；尚未接入真实驱动或应用。边界见 [说明](internal/platform/database/README.md)。
+- `internal/platform/database`：显式 pgx 连接器、连接池与事务生命周期、获取超时/取消、UTC 类型与错误脱敏；已通过一次性 PostgreSQL 真实集成测试，尚未接入应用。边界见 [说明](internal/platform/database/README.md)。
 - `internal/platform/ratelimit`：本地令牌桶、默认值/校验、共享后端选择/故障策略和指标回调；真实共享适配器和应用接线尚未完成，见 [边界说明](internal/platform/ratelimit/README.md)。
 - `internal/platform/http`：请求 ID 校验/回显/context、模型请求路径匹配、限流拒绝 JSON 与日志脱敏；限流尚未接入诊断应用。
 - `internal/app`：迁移诊断端点、未知 API 明确返回 404、Worker 业务入口隔离。
@@ -16,7 +16,7 @@
 
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
-尚无数据库连接/迁移、认证/CSRF/登录、模型、任务、聊天、Agent、知识库、日历、记忆、MCP 或后台调度。请求 ID 的后台执行/日志传播也尚未接入。没有第三方 Go 运行时依赖。
+应用尚未装配数据库连接/迁移、认证/CSRF/登录、模型、任务、聊天、Agent、知识库、日历、记忆、MCP 或后台调度。请求 ID 的后台执行/日志传播也尚未接入。第三方运行时依赖为固定版本的 pgx 及其间接依赖，见 [许可证声明](THIRD_PARTY_NOTICES.md)；首次构建需 `go mod download`，已有完整缓存后可离线验证。
 
 ## 构建与验证
 
@@ -65,6 +65,12 @@ SERVER_PORT=8081 APP_RUNTIME_ROLE=api go run ./cmd/personalos
 
 ```bash
 python3 scripts/migration/smoke_go_process.py --binary /absolute/path/to/personalos
+```
+
+真实数据库集成仅连接脚本创建的独立临时容器（需 Docker 和固定镜像/模块缓存），从仓库根目录运行：
+
+```bash
+python3 scripts/migration/run_go_postgres_tests.py
 ```
 
 完整依赖/Worker/生产退出仍未验收，详见 [验证记录](../specs/033-go-rewrite/validation.md)。

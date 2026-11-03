@@ -90,10 +90,18 @@ HTTP 测试覆盖原 Java 四项断言及编码、单次消费、请求 ID 先�
 
 该结果解除此前端口绑定受限造成的 T100a 阻塞；不证明数据库/认证/真实 Worker/生产优雅退出已完成。没有访问现有 Java 监听端口、数据库、模型或用户数据。
 
+## 增量：P1 pgx 连接器与真实 PostgreSQL（T102b）
+
+2026-11-03 下载并固定 pgx/v5 v5.12.0 与间接依赖，保留实际模块许可证。连接器配置单测覆盖非法参数、隐式 PG* 拒绝、显式特殊字符凭据、禁回退、TLS 1.2/verify-full/根证书、格式化与错误脱敏。配置测试不证明真实 TLS 握手通过。
+
+执行 python3 scripts/migration/run_go_postgres_tests.py，在固定镜像摘要的独立 tmpfs PostgreSQL/pgvector 容器中运行 integration 标签、race 与 count=1 测试，三个真实集成测试均通过：提交、业务错误/panic/父取消回滚、只读 SQLSTATE 25006、serializable、UTC/UUID/JSON；pg_sleep(30) 被 100ms deadline 取消且池可恢复；32 路事务竞争验证 Worker 最大 4 连接与释放。脚本已清理本次容器，不使用持久卷、现有 Compose 或 Java 数据库。
+
+全部七个 Go 包的 race 单测、go vet、二进制构建和 go mod verify 通过。尚未接入应用/原 SQL、验证 pgvector、真实 TLS、最小权限、Flyway 历史/锁或恢复。该阶段补充此前受限驱动/数据库验收，不改变历史执行记录，也不代表 T102/T103/T107 完成。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。
-- 没有跑 Java/Go 业务差分、数据库或任何真实第三方基础设施集成。
+- 已有一次性 PostgreSQL 驱动/事务集成；Java/Go 业务差分及其他真实第三方设施集成尚未执行。
 - 没有迁移现有数据库、模型密钥、附件、Redis 会话、RabbitMQ/OpenSearch/S3 数据。
 - 没有替换本地运行实例、推送分支、合并 main 或执行部署。
 - 全部业务模块和路由迁移、完整配置/认证/安全/持久化/模型/后台任务均未完成。

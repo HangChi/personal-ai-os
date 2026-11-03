@@ -21,7 +21,8 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [x] T100a 权限调整后以真实二进制分别启动五种角色，验证 livez/readyz、HEAD/405/未知 API、Worker 空 404、SIGTERM 零退出及端口释放；脚本仅使用临时目录/最小环境，未访问现有数据。完整依赖与 Worker 生命周期仍属 T108。
 - [x] T101 移植 ApiResponse、完整 ErrorCode、PageDto 的 of/ofPage/offsetOverflows、RuntimeRole 和 RequestId 基础契约，增加边界测试。仅基础代码实现，不代表全量 P1/异步传播 verified。
 - [ ] T102 决策并锁定 PostgreSQL 驱动/连接池、数据库配置、事务接口、超时/退出与最小权限；形成 research 补充。
-- [x] T102a 实现标准库显式 Connector 连接池、受限获取/探测、显式事务/独立事务、错误与 panic 回滚、取消/资源释放/错误脱敏，验证 32 路并发。尚未注册真实 PostgreSQL 驱动、接入应用或验证数据库语义，T102 仍未完成。
+- [x] T102a 实现标准库显式 Connector 连接池、受限获取/探测、显式事务/独立事务、错误与 panic 回滚、取消/资源释放/错误脱敏，验证 32 路并发。真实驱动另列 T102b，T102 仍未完成。
+- [x] T102b 固定 pgx v5.12.0 与许可证，提供显式配置/脱敏/UTC/受限 TLS 连接器；独立临时 PostgreSQL 验证提交/回滚/只读/隔离/类型、真实取消与并发池上限。未接入应用、未验证真实 TLS/最小权限/全部数据源配置，T102 仍未完成。
 - [ ] T103 在隔离数据库重放全部 42 个 SQL；记录 schema、历史/锁、约束、向量与 Flyway 执行权。验证空库及存量备份启动。
 - [ ] T104 对齐 .env 加载优先级、application 多文档/profile/属性默认值、prod 启动守卫；逐个审查所有配置类和 @Value。
 - [x] T104a 完成 .env 解析/查找/优先级及生产安全校验子集、运行角色 profile 覆盖，并在启动前拒绝尚未完成的生产/认证/CSRF 模式；默认不读本地文件。T104 的 YAML/全量属性/动态 MCP 绑定仍待完成。

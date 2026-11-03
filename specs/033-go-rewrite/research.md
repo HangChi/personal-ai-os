@@ -82,3 +82,13 @@ Decision：先移植可独立执行的本地桶、共享后端选择和 HTTP 保
 模型路径不能简化为对解码后 URL.Path 的前缀判断。使用固定 Git blob 和基线 BOM 对应的本机缓存 Spring/Tomcat，离线编译执行原始 ModelRequestPaths，记录包含编码、上下文、空段和末尾斜杠的 216 项结果。Go 用单次 PathUnescape 和固定逐段模式匹配对照；不引入通用 Ant 匹配器。快照生成器不启动 Spring、不下载依赖、不读 .env，也不取代 Maven 质量门禁或服务器端安全测试。
 
 Alternatives considered：只复制注释中的聊天/知识路径（遗漏上传/转写/探测/PUT）；以 Go 行为生成 expected（失去独立对照）；对 URL.Path 再解码（双编码路径语义改变）；共享设施错误回退本地（多实例可超发）。Servlet 容器错误映射和实际安全链仍待集成差分。
+
+## R-010 显式 pgx 连接器与一次性数据库验收
+
+Decision：2026-11-03 已通过 Go 官方模块代理查询并下载 pgx/v5 v5.12.0（模块发布记录 2026-10-31，来源提交 b2ef08bbb951384e3936e45de60de60609f2d2ba），使用 stdlib.GetConnector 接入既有 database/sql Pool，不再增加另一套连接池。go.mod/go.sum 固定版本，MIT/BSD 许可证正文见 backend-go/THIRD_PARTY_NOTICES.md。模块归档 SHA 为 h1:hWwax8YiGT0YiN50U1oIDn5kgR7KC2tG3rmavwpPkxY=。
+
+配置只接受显式字段，拒绝任何 PG* 环境，避免 pgx 解析器隐式读取用户的 service/pass/cert 文件；不临时改写全局环境。固定非敏感种子后设置完整参数，禁止 fallback。默认 verify-full、最低 TLS 1.2，可显式根证书；仅回环测试可 disable。会话和 timestamptz 扫描均固定 UTC；对外格式化与连接错误脱敏。这只是受限子集，不宣称已覆盖 Java 所有 JDBC/TLS 配置。
+
+验收采用现有 Compose 同系列的 pgvector/pgvector pg17 镜像，固定已验证摘要 sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d。脚本创建独立容器、tmpfs 数据目录、随机密码与回环端口，并在 finally 中仅清理自身容器。不读取 .env、不使用现有数据库、不执行原 SQL 或伪造 Flyway 历史。应用尚不装配数据库，readyz 继续 503。
+
+Alternatives considered：直接 ParseConfig 用户 DSN（隐式来源可能越过迁移隔离）；默认非回环明文连接或 require/prefer（未验证的降级）；同时引入 pgxpool（重复现有连接池边界）。真实 TLS 握手、最小权限和全部迁移重放仍单列验收。

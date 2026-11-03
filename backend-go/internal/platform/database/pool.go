@@ -49,7 +49,7 @@ type Pool struct {
 }
 
 // Open 只使用调用方显式提供的 Connector，校验和探测失败时关闭新建池。
-// 生产 Connector 必须支持 context 取消；当前尚未接入 PostgreSQL 驱动。
+// Connector 必须支持 context 取消；PostgreSQL 调用方可显式使用 NewPostgresConnector。
 func Open(ctx context.Context, connector driver.Connector, options PoolOptions) (*Pool, error) {
 	if ctx == nil {
 		return nil, errors.New("数据库 context 不能为空")
