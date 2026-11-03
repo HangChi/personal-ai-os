@@ -109,18 +109,28 @@
         "backend-go/internal/platform/migration/history_postgres_integration_test.go",
         "backend-go/internal/platform/migration/testdata/java-flyway-checksums.json",
         "scripts/migration/FlywayOracle.java",
-        "scripts/migration/java_flyway_fixture.py"
+        "scripts/migration/java_flyway_fixture.py",
+        "backend-go/internal/platform/config/scalars.go",
+        "backend-go/internal/platform/config/scalars_test.go",
+        "backend-go/internal/platform/config/testdata/java-scalars.json",
+        "scripts/migration/java_config_scalar_fixture.py",
+        "scripts/migration/ConfigScalarOracle.java"
       ],
-      "note": "运行/安全配置子集、连接池/显式事务和固定 pgx 配置/UTC 已实现；一次性 PostgreSQL 验证事务/类型/取消/并发与真实 TLS/证书拒绝、受限账号事务探针。未接应用，完整数据源/profile 配置、全部 schema 权限/Flyway/绝大多数属性待迁移，不能 verified。 已补真实Flyway执行和Go只读历史验证，未支持标记/完整装配继续开放。"
+      "note": "运行/安全配置子集、连接池/显式事务和固定 pgx 配置/UTC 已实现；一次性 PostgreSQL 验证事务/类型/取消/并发与真实 TLS/证书拒绝、受限账号事务探针。未接应用，完整数据源/profile 配置、全部 schema 权限/Flyway/绝大多数属性待迁移，不能 verified。 已补真实Flyway执行和Go只读历史验证，未支持标记/完整装配继续开放。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。"
     },
     "file:backend/src/main/java/com/personalos/common/config/RateLimitProperties.java": {
       "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/ratelimit/local.go",
         "backend-go/internal/platform/ratelimit/local_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/platform/config/scalars.go",
+        "backend-go/internal/platform/config/scalars_test.go",
+        "backend-go/internal/platform/config/testdata/java-scalars.json",
+        "scripts/migration/java_config_scalar_fixture.py",
+        "scripts/migration/ConfigScalarOracle.java"
       ],
-      "note": "默认 enabled/capacity/period 与正数校验已移植；环境/YAML 属性绑定及完整共享后端装配仍待迁移。"
+      "note": "默认 enabled/capacity/period 与正数校验已移植；环境/YAML 属性绑定及完整共享后端装配仍待迁移。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。"
     },
     "file:backend/src/main/java/com/personalos/common/web/TokenBucketRateLimiter.java": {
       "status": "in_progress",
@@ -1403,9 +1413,14 @@
         "backend-go/internal/platform/auth/service_test.go",
         "backend-go/internal/platform/auth/testdata/java-bcrypt.json",
         "scripts/migration/java_bcrypt_fixture.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/platform/config/scalars.go",
+        "backend-go/internal/platform/config/scalars_test.go",
+        "backend-go/internal/platform/config/testdata/java-scalars.json",
+        "scripts/migration/java_config_scalar_fixture.py",
+        "scripts/migration/ConfigScalarOracle.java"
       ],
-      "note": "凭据/BCrypt/Java strip/失败锁定基础实现与 74 项实际 Java 编码器对照通过；并发校验串行化，未装配 HTTP/会话/CSRF/配置绑定，不能 verified。"
+      "note": "凭据/BCrypt/Java strip/失败锁定基础实现与 74 项实际 Java 编码器对照通过；并发校验串行化，未装配 HTTP/会话/CSRF/配置绑定，不能 verified。 未注解Duration/DataSize的228项真实转换对照完成；8个Java超Go纳秒范围值明确失败。完整属性绑定仍待完成。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java": {
       "status": "implemented",

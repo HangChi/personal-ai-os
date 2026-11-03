@@ -226,6 +226,12 @@ Go逐项核对HTTP状态/业务码/文案/null data/UTC时间/JSON媒体类型�
 
 此处直接调用Java处理器，不是完整Servlet路由/内容协商/Bean Validation/JSON解析差分；Go类型仍需真实控制器/仓储显式装配。诊断入口/生产启动守卫保持原行为，T106/T109与发布门禁继续开放。
 
+## 增量：Spring配置标量对照（T104b）
+
+先加入Go测试确认未实现API编译失败（/private/tmp/personal-ai-os-go-scalars-red.log）。java_config_scalar_fixture.py --write执行实际基线ApplicationConversionService，固定228个Duration/DataSize输入；默认复验完全相同。覆盖简写/ISO/大小写/Unicode空白/null/负值/小数与纳秒精度、Java long和Go Duration边界；8个Java合法但超Go纳秒范围的值必须明确拒绝。Go实现无新依赖，结果无共享可变状态，100路解析与10轮race通过（/private/tmp/personal-ai-os-go-scalars-stress.log）。
+
+初次Java夹具因泛型条件Class参数不兼容而编译失败，拆分两个convert调用后通过。复查真实JDK代码发现加法嵌套顺序需按秒→分→时→日；补充实际转换器正反例并修正，另拒绝Go Unicode Fold会接受的长s/全角/非ASCII数字。转换错误不回显原文，10000位非法数不会留下巨大日志。全量十四包race、integration标签vet、228项快照复验、1,093文件基线与diff检查通过（/private/tmp/personal-ai-os-go-scalars-all-race.log）。仅转换能力，不代表所有属性/profile/环境绑定完成。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

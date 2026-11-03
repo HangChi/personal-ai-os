@@ -1,0 +1,1840 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "spring_boot": "4.1.1",
+  "spring_framework": "7.0.9",
+  "jars": {
+    "spring-boot-4.1.1.jar": "0d92b532b1d4020640e72d78c31af175c23db8e0ddd45b81855b7fdf4c9c70f0",
+    "spring-core-7.0.9.jar": "5195f4722699b39878d99a832549fe65df2890b159d063b88fff31b1ca65ae36",
+    "spring-context-7.0.9.jar": "7552a2fcfa30cea53eb14d7a65a7a8e1b1dd82e832a7164fb7e6fb105f438858",
+    "spring-beans-7.0.9.jar": "ff218b827a25c9e8929b0cd56dfb56916cea9d5b669ed97dc7cb262508ff548b",
+    "spring-expression-7.0.9.jar": "046434c40f43819729b9b1db0e6c659dfa68184c1c2c2efa5f7b3a5b27c4e2e2",
+    "commons-logging-1.4.0.jar": "d175dbd751dd782a63bde28c7a039520e971f25e84b79c19b8435edc3603e0dc"
+  },
+  "scope": "unannotated ApplicationConversionService Duration/DataSize only; no binding/property precedence",
+  "cases": [
+    {
+      "kind": "duration",
+      "input": "",
+      "java_error": false,
+      "null": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": " ",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1",
+      "java_error": false,
+      "null": false,
+      "value": "1000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1",
+      "java_error": false,
+      "null": false,
+      "value": "-1000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+1",
+      "java_error": false,
+      "null": false,
+      "value": "1000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "00",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1.5s",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1h30m",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1µs",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1μs",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1uS",
+      "java_error": false,
+      "null": false,
+      "value": "1000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1w",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1y",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1 s",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": " 1s",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1s ",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1s\n",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1　s",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "一秒",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "١s",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "１２s",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "9223372036854775807ns",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854775807",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-9223372036854775808ns",
+      "java_error": false,
+      "null": false,
+      "value": "-9223372036854775808",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "9223372036854775808ns",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "9223372036854775us",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854775000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "9223372036854776us",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854776000",
+      "go_overflow": true
+    },
+    {
+      "kind": "duration",
+      "input": "-9223372036854776us",
+      "java_error": false,
+      "null": false,
+      "value": "-9223372036854776000",
+      "go_overflow": true
+    },
+    {
+      "kind": "duration",
+      "input": "9223372036854ms",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "9223372036855ms",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036855000000",
+      "go_overflow": true
+    },
+    {
+      "kind": "duration",
+      "input": "9223372036854775807d",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P1DT",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P1D",
+      "java_error": false,
+      "null": false,
+      "value": "86400000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P-1D",
+      "java_error": false,
+      "null": false,
+      "value": "-86400000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-P1D",
+      "java_error": false,
+      "null": false,
+      "value": "-86400000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+PT1S",
+      "java_error": false,
+      "null": false,
+      "value": "1000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "pt1.5s",
+      "java_error": false,
+      "null": false,
+      "value": "1500000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT1,5S",
+      "java_error": false,
+      "null": false,
+      "value": "1500000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT.5S",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT1.S",
+      "java_error": false,
+      "null": false,
+      "value": "1000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT1,S",
+      "java_error": false,
+      "null": false,
+      "value": "1000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT0.000000001S",
+      "java_error": false,
+      "null": false,
+      "value": "1",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT0.0000000001S",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT-0.5S",
+      "java_error": false,
+      "null": false,
+      "value": "-500000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-PT-0.5S",
+      "java_error": false,
+      "null": false,
+      "value": "500000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P1DT2H3M4.5S",
+      "java_error": false,
+      "null": false,
+      "value": "93784500000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P-1DT+2H-3M+4.5S",
+      "java_error": false,
+      "null": false,
+      "value": "-79375500000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT-1.5S",
+      "java_error": false,
+      "null": false,
+      "value": "-1500000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-PT-1.5S",
+      "java_error": false,
+      "null": false,
+      "value": "1500000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P1W",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P1M",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT1D",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT1H1H",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT1S1M",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT9223372036.854775807S",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854775807",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT9223372036.854775808S",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854775808",
+      "go_overflow": true
+    },
+    {
+      "kind": "duration",
+      "input": "PT-9223372036.854775808S",
+      "java_error": false,
+      "null": false,
+      "value": "-9223372036854775808",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT-9223372036.854775809S",
+      "java_error": false,
+      "null": false,
+      "value": "-9223372036854775809",
+      "go_overflow": true
+    },
+    {
+      "kind": "duration",
+      "input": "P106752D",
+      "java_error": false,
+      "null": false,
+      "value": "9223372800000000000",
+      "go_overflow": true
+    },
+    {
+      "kind": "duration",
+      "input": "PT9223372036854775807S",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854775807000000000",
+      "go_overflow": true
+    },
+    {
+      "kind": "duration",
+      "input": "PT9223372036854775808S",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT9223372036854775807H-9223372036854775807H",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P106751DT23H47M16.854775807S",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854775807",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-P106751DT23H47M16.854775808S",
+      "java_error": false,
+      "null": false,
+      "value": "-9223372036854775808",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT+1H-60M",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT-9223372036854775808S",
+      "java_error": false,
+      "null": false,
+      "value": "-9223372036854775808000000000",
+      "go_overflow": true
+    },
+    {
+      "kind": "duration",
+      "input": "PT1ſ",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT1Ｓ",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "PT١S",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "ＰＴ１Ｓ",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P106751991167300DT16H-9223372036854775807S",
+      "java_error": false,
+      "null": false,
+      "value": "1793000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "P-106751991167300DT153722867280912930M8S",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0ns",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0NS",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0us",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0Us",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0ms",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0MS",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0s",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0S",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0m",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0M",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0h",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0H",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0d",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0D",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1ns",
+      "java_error": false,
+      "null": false,
+      "value": "1",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1NS",
+      "java_error": false,
+      "null": false,
+      "value": "1",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1us",
+      "java_error": false,
+      "null": false,
+      "value": "1000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1Us",
+      "java_error": false,
+      "null": false,
+      "value": "1000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1ms",
+      "java_error": false,
+      "null": false,
+      "value": "1000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1MS",
+      "java_error": false,
+      "null": false,
+      "value": "1000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1s",
+      "java_error": false,
+      "null": false,
+      "value": "1000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1S",
+      "java_error": false,
+      "null": false,
+      "value": "1000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1m",
+      "java_error": false,
+      "null": false,
+      "value": "60000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1M",
+      "java_error": false,
+      "null": false,
+      "value": "60000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1h",
+      "java_error": false,
+      "null": false,
+      "value": "3600000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1H",
+      "java_error": false,
+      "null": false,
+      "value": "3600000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1d",
+      "java_error": false,
+      "null": false,
+      "value": "86400000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "1D",
+      "java_error": false,
+      "null": false,
+      "value": "86400000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1ns",
+      "java_error": false,
+      "null": false,
+      "value": "-1",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1NS",
+      "java_error": false,
+      "null": false,
+      "value": "-1",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1us",
+      "java_error": false,
+      "null": false,
+      "value": "-1000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1Us",
+      "java_error": false,
+      "null": false,
+      "value": "-1000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1ms",
+      "java_error": false,
+      "null": false,
+      "value": "-1000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1MS",
+      "java_error": false,
+      "null": false,
+      "value": "-1000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1s",
+      "java_error": false,
+      "null": false,
+      "value": "-1000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1S",
+      "java_error": false,
+      "null": false,
+      "value": "-1000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1m",
+      "java_error": false,
+      "null": false,
+      "value": "-60000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1M",
+      "java_error": false,
+      "null": false,
+      "value": "-60000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1h",
+      "java_error": false,
+      "null": false,
+      "value": "-3600000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1H",
+      "java_error": false,
+      "null": false,
+      "value": "-3600000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1d",
+      "java_error": false,
+      "null": false,
+      "value": "-86400000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "-1D",
+      "java_error": false,
+      "null": false,
+      "value": "-86400000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12ns",
+      "java_error": false,
+      "null": false,
+      "value": "12",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12NS",
+      "java_error": false,
+      "null": false,
+      "value": "12",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12us",
+      "java_error": false,
+      "null": false,
+      "value": "12000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12Us",
+      "java_error": false,
+      "null": false,
+      "value": "12000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12ms",
+      "java_error": false,
+      "null": false,
+      "value": "12000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12MS",
+      "java_error": false,
+      "null": false,
+      "value": "12000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12s",
+      "java_error": false,
+      "null": false,
+      "value": "12000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12S",
+      "java_error": false,
+      "null": false,
+      "value": "12000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12m",
+      "java_error": false,
+      "null": false,
+      "value": "720000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12M",
+      "java_error": false,
+      "null": false,
+      "value": "720000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12h",
+      "java_error": false,
+      "null": false,
+      "value": "43200000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12H",
+      "java_error": false,
+      "null": false,
+      "value": "43200000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12d",
+      "java_error": false,
+      "null": false,
+      "value": "1036800000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "+12D",
+      "java_error": false,
+      "null": false,
+      "value": "1036800000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012ns",
+      "java_error": false,
+      "null": false,
+      "value": "12",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012NS",
+      "java_error": false,
+      "null": false,
+      "value": "12",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012us",
+      "java_error": false,
+      "null": false,
+      "value": "12000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012Us",
+      "java_error": false,
+      "null": false,
+      "value": "12000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012ms",
+      "java_error": false,
+      "null": false,
+      "value": "12000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012MS",
+      "java_error": false,
+      "null": false,
+      "value": "12000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012s",
+      "java_error": false,
+      "null": false,
+      "value": "12000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012S",
+      "java_error": false,
+      "null": false,
+      "value": "12000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012m",
+      "java_error": false,
+      "null": false,
+      "value": "720000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012M",
+      "java_error": false,
+      "null": false,
+      "value": "720000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012h",
+      "java_error": false,
+      "null": false,
+      "value": "43200000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012H",
+      "java_error": false,
+      "null": false,
+      "value": "43200000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012d",
+      "java_error": false,
+      "null": false,
+      "value": "1036800000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "duration",
+      "input": "0012D",
+      "java_error": false,
+      "null": false,
+      "value": "1036800000000000",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "",
+      "java_error": false,
+      "null": true,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": " ",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1",
+      "java_error": false,
+      "null": false,
+      "value": "1",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1",
+      "java_error": false,
+      "null": false,
+      "value": "-1",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+1",
+      "java_error": false,
+      "null": false,
+      "value": "1",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "00",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "8MB",
+      "java_error": false,
+      "null": false,
+      "value": "8388608",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "10MB",
+      "java_error": false,
+      "null": false,
+      "value": "10485760",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1.5MB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1MiB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1PB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1KB2B",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "١KB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "１２KB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1 KB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1KB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1 KB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1 KB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "9223372036854775807",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854775807",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-9223372036854775808",
+      "java_error": false,
+      "null": false,
+      "value": "-9223372036854775808",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "9223372036854775808",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "9007199254740991KB",
+      "java_error": false,
+      "null": false,
+      "value": "9223372036854774784",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "9007199254740992KB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-9007199254740992KB",
+      "java_error": false,
+      "null": false,
+      "value": "-9223372036854775808",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "8388607TB",
+      "java_error": false,
+      "null": false,
+      "value": "9223370937343148032",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "8388608TB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-8388608TB",
+      "java_error": false,
+      "null": false,
+      "value": "-9223372036854775808",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-8388609TB",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0B",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0KB",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0MB",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0GB",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0TB",
+      "java_error": false,
+      "null": false,
+      "value": "0",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0b",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0kb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0Mb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0K",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0M",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1B",
+      "java_error": false,
+      "null": false,
+      "value": "1",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1KB",
+      "java_error": false,
+      "null": false,
+      "value": "1024",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1MB",
+      "java_error": false,
+      "null": false,
+      "value": "1048576",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1GB",
+      "java_error": false,
+      "null": false,
+      "value": "1073741824",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1TB",
+      "java_error": false,
+      "null": false,
+      "value": "1099511627776",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1b",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1kb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1Mb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1K",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1M",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1B",
+      "java_error": false,
+      "null": false,
+      "value": "-1",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1KB",
+      "java_error": false,
+      "null": false,
+      "value": "-1024",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1MB",
+      "java_error": false,
+      "null": false,
+      "value": "-1048576",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1GB",
+      "java_error": false,
+      "null": false,
+      "value": "-1073741824",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1TB",
+      "java_error": false,
+      "null": false,
+      "value": "-1099511627776",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1b",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1kb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1Mb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1K",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "-1M",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12B",
+      "java_error": false,
+      "null": false,
+      "value": "12",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12KB",
+      "java_error": false,
+      "null": false,
+      "value": "12288",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12MB",
+      "java_error": false,
+      "null": false,
+      "value": "12582912",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12GB",
+      "java_error": false,
+      "null": false,
+      "value": "12884901888",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12TB",
+      "java_error": false,
+      "null": false,
+      "value": "13194139533312",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12b",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12kb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12Mb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12K",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "+12M",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012B",
+      "java_error": false,
+      "null": false,
+      "value": "12",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012KB",
+      "java_error": false,
+      "null": false,
+      "value": "12288",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012MB",
+      "java_error": false,
+      "null": false,
+      "value": "12582912",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012GB",
+      "java_error": false,
+      "null": false,
+      "value": "12884901888",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012TB",
+      "java_error": false,
+      "null": false,
+      "value": "13194139533312",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012b",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012kb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012Mb",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012K",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "0012M",
+      "java_error": true,
+      "null": false,
+      "value": null,
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": " 1 KB ",
+      "java_error": false,
+      "null": false,
+      "value": "1024",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1\tK\nB",
+      "java_error": false,
+      "null": false,
+      "value": "1024",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1　KB",
+      "java_error": false,
+      "null": false,
+      "value": "1024",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": "1\u001cKB",
+      "java_error": false,
+      "null": false,
+      "value": "1024",
+      "go_overflow": false
+    },
+    {
+      "kind": "size",
+      "input": " 1 MB ",
+      "java_error": false,
+      "null": false,
+      "value": "1048576",
+      "go_overflow": false
+    }
+  ]
+}

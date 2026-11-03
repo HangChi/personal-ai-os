@@ -210,3 +210,13 @@ Decision：业务层使用api.BusinessError承载明确公开文案，保留显�
 用显式Endpoint返回错误和局部响应状态适配器，保留ResponseController解包及原有Flusher/Hijacker可用性。100/103不是最终提交，101/写入/Flush/Hijack才锁定响应；已提交后的异常或panic抛http.ErrAbortHandler，由net/http中止连接，不能追加JSON。明确客户端断连只记DEBUG且无响应，不将所有context取消/超时都误当断连。正常SSE仍由业务协议发送错误事件，边界只是兜底。未接入主诊断应用。
 
 Alternatives considered：直接回显err.Error（泄密）；errors.As任意深层业务cause覆盖外层JSON错误（错误优先级反转）；panic后始终补500（污染SSE/下载）；无限缓冲所有响应（破坏实时流和内存上限）；伪造不支持的Flusher/Hijacker（改变能力检测）；把上游deadline当客户端离开（吞掉真实服务故障）。
+
+## R-025 Spring时长与数据大小转换
+
+Decision：直接调用固定Boot4.1.1/Spring7.0.9的ApplicationConversionService，使用离线缓存依赖与合成字符串，不启动应用。固定228项未注解Duration/DataSize结果；空字符串保持null，纯空白不是null。Go转换返回新指针，区分null与零，不对负值/零值擅自增加业务限制。时长无后缀为毫秒，简写只允许整数ns/us/ms/s/m/h/d且后缀忽略ASCII大小写，不接受Go的1.5s/1h30m/µs；ISO支持Java的日/时/分/秒、符号、点/逗号与最多9位纳秒。
+
+DataSize无单位为byte，B/KB/MB/GB/TB使用1024倍率且大小写敏感，移除全部Java Character.isWhitespace（包括中间空白），不把NBSP/NEL等额外吞掉。错误仅给通用文案，不回显配置值。用big.Int检查精确乘法/加法，返回前必须fit int64；8个Java合法但Go Duration纳秒范围无法表达的对照值明确返回ErrScalarOverflow，此为有意范围收紧，不能饱和或截断。
+
+复查本机JDK Duration源与真实转换器，确认ISO实际按days + (hours + (minutes + seconds))检测long溢出，不能换成左结合或一次大数相加后才检查。补充两个会区分顺序的真实Java反例：一项合法1793秒、一项中间溢出必须拒绝；Go按相同顺序。正则用显式ASCII大小写，不用Go Unicode Fold接受Java不认的长s/全角字符。
+
+Alternatives considered：直接time.ParseDuration（默认单位/ISO/简写不一致）；浮点解析小数（边界精度丢失）；空字符串直接默认（隐藏明确空值）；不限范围转time.Duration（整数回绕）；把8MB解释为十进制8,000,000（改变容器上传限制）。此处只完成标量转换，不宣称任意YAML、profile、relaxed绑定或所有配置类验收。
