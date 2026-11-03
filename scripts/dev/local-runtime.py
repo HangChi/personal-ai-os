@@ -84,7 +84,7 @@ def stop():
     print('本项目后端已优雅停止')
 
 
-def start(jar, without_integrations=False):
+def start(jar, without_integrations=False, distributed=False):
     if owned(current()):
         raise RuntimeError('后端已经运行，请先停止；未启动重复进程')
     jar = jar.resolve()
@@ -99,20 +99,22 @@ def start(jar, without_integrations=False):
     RUNTIME.mkdir(parents=True, exist_ok=True)
     log = RUNTIME / ('backend-' + datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S') + '.log')
     fd = os.open(log, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    profiles = 'monitoring,runtime-api' if distributed else 'monitoring'
     with os.fdopen(fd, 'w') as output:
-        process = subprocess.Popen([JAVA, '-jar', str(jar), '--spring.profiles.active=monitoring',
+        process = subprocess.Popen([JAVA, '-jar', str(jar), '--spring.profiles.active=' + profiles,
                                     '--management.server.address=127.0.0.1', '--server.address=127.0.0.1'],
                                    cwd=ROOT, env=values, stdin=subprocess.DEVNULL, stdout=output,
                                    stderr=subprocess.STDOUT, start_new_session=True)
     commit = subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()
     state = {'pid': process.pid, 'jar': str(jar), 'log': str(log), 'commit': commit,
-             'startedAt': datetime.now(timezone.utc).isoformat(), 'integrations': not without_integrations}
+             'startedAt': datetime.now(timezone.utc).isoformat(), 'integrations': not without_integrations, 'distributed': distributed}
     private_json(STATE, state)
     LEGACY_PID.write_text(str(process.pid))
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     deadline = time.monotonic() + 60
     while time.monotonic() < deadline and process.poll() is None:
         try:
-            with urllib.request.urlopen('http://127.0.0.1:9091/actuator/health', timeout=2) as response:
+            with opener.open('http://127.0.0.1:9091/actuator/health', timeout=2) as response:
                 if json.load(response).get('status') == 'UP':
                     print(json.dumps({'status': 'UP', 'pid': process.pid, 'commit': commit, 'log': str(log)}))
                     return
@@ -127,6 +129,7 @@ def main():
     parser.add_argument('command', choices=['status', 'stop', 'start'])
     parser.add_argument('--jar', type=Path)
     parser.add_argument('--without-integrations', action='store_true')
+    parser.add_argument('--distributed', action='store_true', help='Run the API role with separate workers')
     args = parser.parse_args()
     if args.command == 'status':
         state = current()
@@ -136,7 +139,7 @@ def main():
     else:
         if not args.jar:
             parser.error('start 需要 --jar')
-        start(args.jar, args.without_integrations)
+        start(args.jar, args.without_integrations, args.distributed)
 
 
 if __name__ == '__main__':

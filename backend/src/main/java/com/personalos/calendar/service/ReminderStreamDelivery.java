@@ -66,7 +66,7 @@ public class ReminderStreamDelivery {
 
     /** 无订阅者不读库；无论标签页数量多少，每轮只查询一次。 */
     @Scheduled(fixedDelayString = "${app.calendar.stream-check-interval-ms:1000}")
-    public void publish() {
+    public synchronized void publish() {
         if (closed || clients.isEmpty()) return;
         final List<ReminderDto> snapshot;
         try {

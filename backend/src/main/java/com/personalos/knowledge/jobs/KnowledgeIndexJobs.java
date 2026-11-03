@@ -83,7 +83,7 @@ public class KnowledgeIndexJobs {
 
     @Scheduled(fixedDelayString="${app.knowledge.jobs.poll-ms:1000}",initialDelay=1000)
     public synchronized void dispatch() {
-        if (!enabled || !role.allows("index") || active.get()>=1) return;
+        if (!enabled || !role.allows("index") || active.get()>=(role.worker()?1:2)) return;
         active.incrementAndGet();
         try { workers.submit(() -> { try { runNext(); } finally { active.decrementAndGet(); } }); }
         catch (RejectedExecutionException ex) { active.decrementAndGet(); }

@@ -34,4 +34,22 @@ class RabbitJobNotifierIntegrationTest {
             admin.deleteQueue(queue);
         } finally { factory.destroy(); }
     }
+    @Test void fanoutDeliversToTwoIndependentSubscribers() {
+        var factory=new CachingConnectionFactory(BROKER.getHost(),BROKER.getMappedPort(5672));
+        factory.setUsername("test"); factory.setPassword("test-password");
+        try {
+            var admin=new RabbitAdmin(factory);
+            var exchange=new FanoutExchange("test.fanout."+UUID.randomUUID());
+            var first=new AnonymousQueue();
+            var second=new AnonymousQueue();
+            admin.declareExchange(exchange);
+            admin.declareQueue(first); admin.declareQueue(second);
+            admin.declareBinding(BindingBuilder.bind(first).to(exchange));
+            admin.declareBinding(BindingBuilder.bind(second).to(exchange));
+            var template=new RabbitTemplate(factory);
+            template.convertAndSend(exchange.getName(),"","changed");
+            assertThat(template.receiveAndConvert(first.getName(),3000)).isEqualTo("changed");
+            assertThat(template.receiveAndConvert(second.getName(),3000)).isEqualTo("changed");
+        } finally { factory.destroy(); }
+    }
 }
