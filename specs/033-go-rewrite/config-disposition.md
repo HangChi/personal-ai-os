@@ -1,8 +1,8 @@
-# 配置调用方逐项处置（P1/P3收口）
+# 配置调用方逐项处置（P1/P3/P4收口）
 
 固定Java基线：`cb5d694d62fa93742b5789b97273e76d931ce335`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。
 
-12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection属于P4，AI模型配置/协议属于P3，提示与预算仍属于P4，Calendar/Memory属于P5，Knowledge属于P6，MCP属于P7；不创建业务空壳。
+12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory属于P5，Knowledge属于P6，MCP属于P7；不创建业务空壳。
 
 | 来源与行号 | 原表达式/键 | 阶段/任务 | 状态与处置 |
 | --- | --- | --- | --- |
@@ -13,19 +13,19 @@
 | `backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:42` | `${app.reminders.webhook.url:}` | P5/T506 | deferred：Webhook目的地址/签名/本地HTTP开关随真实投递迁移 |
 | `backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:43` | `${app.reminders.webhook.secret:}` | P5/T506 | deferred：Webhook目的地址/签名/本地HTTP开关随真实投递迁移 |
 | `backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:44` | `${app.reminders.webhook.allow-local-http:false}` | P5/T506 | deferred：Webhook目的地址/签名/本地HTTP开关随真实投递迁移 |
-| `backend/src/main/java/com/personalos/chat/service/ChatAttachmentJanitor.java:56` | `${app.chat.attachment-janitor-enabled:true}` | P4/T408 | deferred：附件清理开关随存储与孤儿清理迁移 |
-| `backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java:58` | `${app.chat.upload-dir:data/uploads}` | P4/T408 | deferred：持久目录与6MB业务限制；区别于已装配的8MB容器限制 |
-| `backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java:59` | `${app.chat.max-attachment-bytes:6291456}` | P4/T408 | deferred：持久目录与6MB业务限制；区别于已装配的8MB容器限制 |
-| `backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java:138` | `${app.chat.stream-timeout:120s}` | P4/T404 | deferred：流超时与取消随真实模型流迁移 |
-| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:16` | `${app.storage.s3.endpoint}` | P4/T408 | deferred：S3连接/凭据/命名空间与清理；P1不创建客户端 |
-| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:17` | `${app.storage.s3.region:us-east-1}` | P4/T408 | deferred：S3连接/凭据/命名空间与清理；P1不创建客户端 |
-| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:18` | `${app.storage.s3.access-key:}` | P4/T408 | deferred：S3连接/凭据/命名空间与清理；P1不创建客户端 |
-| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:19` | `${app.storage.s3.secret-key:}` | P4/T408 | deferred：S3连接/凭据/命名空间与清理；P1不创建客户端 |
-| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:29` | `${app.storage.s3.bucket}` | P4/T408 | deferred：S3连接/凭据/命名空间与清理；P1不创建客户端 |
-| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:30` | `${app.storage.s3.namespace}` | P4/T408 | deferred：S3连接/凭据/命名空间与清理；P1不创建客户端 |
-| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:30` | `${app.storage.s3.cleanup:false}` | P4/T408 | deferred：S3连接/凭据/命名空间与清理；P1不创建客户端 |
-| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:31` | `${app.chat.max-attachment-bytes:6291456}` | P4/T408 | deferred：S3连接/凭据/命名空间与清理；P1不创建客户端 |
-| `backend/src/main/java/com/personalos/chat/support/SseHeartbeatScheduler.java:63` | `${app.chat.heartbeat-interval:15s}` | P4/T404 | deferred：心跳间隔随业务SSE调度；P1只完成通用HTTP流生命周期 |
+| `backend/src/main/java/com/personalos/chat/service/ChatAttachmentJanitor.java:56` | `${app.chat.attachment-janitor-enabled:true}` | P4/T408 | wired：附件清理开关已接Foundation/角色；cron默认本地04:30，关闭不清理；扩展L/W/#显式拒绝 |
+| `backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java:58` | `${app.chat.upload-dir:data/uploads}` | P4/T408 | wired：持久目录与6MB业务限制已接上传/真实大小/本地与S3；区别于8MB容器限制 |
+| `backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java:59` | `${app.chat.max-attachment-bytes:6291456}` | P4/T408 | wired：持久目录与6MB业务限制已接上传/真实大小/本地与S3；区别于8MB容器限制 |
+| `backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java:138` | `${app.chat.stream-timeout:120s}` | P4/T404 | wired：流超时与取消已接真实模型流，部分回复与空输出有落库断言 |
+| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:16` | `${app.storage.s3.endpoint}` | P4/T408 | wired：S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端 |
+| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:17` | `${app.storage.s3.region:us-east-1}` | P4/T408 | wired：S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端 |
+| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:18` | `${app.storage.s3.access-key:}` | P4/T408 | wired：S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端 |
+| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:19` | `${app.storage.s3.secret-key:}` | P4/T408 | wired：S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端 |
+| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:29` | `${app.storage.s3.bucket}` | P4/T408 | wired：S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端 |
+| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:30` | `${app.storage.s3.namespace}` | P4/T408 | wired：S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端 |
+| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:30` | `${app.storage.s3.cleanup:false}` | P4/T408 | wired：S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端 |
+| `backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java:31` | `${app.chat.max-attachment-bytes:6291456}` | P4/T408 | wired：S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端 |
+| `backend/src/main/java/com/personalos/chat/support/SseHeartbeatScheduler.java:63` | `${app.chat.heartbeat-interval:15s}` | P4/T404 | wired：心跳间隔已接两种业务SSE，默认15s，非正或不足1ms启动拒绝；真实5ms心跳/停止有断言 |
 | `backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java:14` | `${app.redis.uri}` | P3/T304 | wired：第三专用Redis客户端已接CLI/Foundation；哈希namespace、150ms超时、TLS/最小ACL与故障回退已验收 |
 | `backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java:15` | `${app.redis.timeout-ms:150}` | P3/T304 | wired：第三专用Redis客户端已接CLI/Foundation；哈希namespace、150ms超时、TLS/最小ACL与故障回退已验收 |
 | `backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java:21` | `${app.redis.namespace}` | P3/T304 | wired：第三专用Redis客户端已接CLI/Foundation；哈希namespace、150ms超时、TLS/最小ACL与故障回退已验收 |

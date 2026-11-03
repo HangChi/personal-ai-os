@@ -47,8 +47,14 @@ python3 scripts/migration/run_go_redis_tests.py --tls --package app
 
 ## P3 模型模块
 
-显式`EnableP3`在Flyway只读校验后装配模型服务、运行时工厂、14条模型/档案/音频路由与嵌入缓存，并组合既有P2处理器、安全链/CSRF、限流/租约和multipart生命周期。CLI显式foundation模式同时启用P2/P3；默认诊断仍离线。Worker不开放这些业务路由。
+显式`EnableP3`在Flyway只读校验后装配模型服务、运行时工厂、14条模型/档案/音频路由与嵌入缓存，并组合既有P2处理器、安全链/CSRF、限流/租约和multipart生命周期。CLI显式foundation模式同时启用P2/P3/P4；默认诊断仍离线。Worker不开放这些业务路由。
 
 P3要求原模型三表SELECT/INSERT/UPDATE/DELETE及`ai_model_profile_model_id_seq`的USAGE；缺项启动拒绝，失败释放池。`EmbeddingRedis`必须为第三个专用客户端，调用者持有生命周期，禁止与会话/限流复用。Foundation拥有其自建HTTP transport，关闭后清理空闲连接；所有真实模型请求都在事务外。嵌入Redis是可回退缓存，不沿用会话/限流的失败关闭策略。
 
 模型真实配置状态进入业务健康报告。嵌入metrics按实际计量暴露cache requests、duration COUNT/TOTAL_TIME/MAX、Redis错误；monitoring下原`personalos.embedding.duration`直方图开关已消费。完整职责与验证见[P3收口报告](../../../specs/033-go-rewrite/p3-completion.md)。prod拒绝/readyz503继续保留。
+
+## P4 对话模块
+
+`EnableP4`要求P2/P3依赖已启用；只读Flyway验证后检查会话/消息/引用/预算/计划/运行/事件/交互的最小表与序列权限，再装配流/Run与用量。API和单体角色启用Run恢复/队列与可配置附件cron，Worker不开放业务路由、不运行P4后台循环。流与最终业务写入均受会话租约及事务内fencing保护，关闭先取消Run、排空有界轮末任务，再释放连接池。
+
+引用在done前尽力提交；用量按原契约在完成后限时尽力记账，统计失败不回滚回答。metrics进入既有Actuator/Prometheus与直方图。真实TLS最小权限、跨实例停止/互斥/恢复、故障与前端原API联调见[P4收口报告](../../../specs/033-go-rewrite/p4-completion.md)。完整RAG、记忆/日历、跨模块搜索导出及保留期清理按P5–P8推进，prod拒绝/readyz503保留。

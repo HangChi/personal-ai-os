@@ -11,10 +11,11 @@
 - P1已完成：显式Foundation/真实二进制已接数据库、认证/CSRF、共享限流/模型租约、健康、管理双端口、执行器、上传生命周期、HTTP观测与ECS日志。五角色/跨OS共享、真实TLS/最小ACL、网络故障恢复及提交响应丢失验证通过；844个基础HTTP场景、160个观测标签场景和68个直方图边界对照真实框架。父项验收状态见[P1收口矩阵](p1-remaining.md)和[tasks.md](tasks.md)。
 - P2已完成：任务9路由、标签、统计、幂等、确认和任务侧导出/搜索贡献能力已接Foundation；真实原迁移库、最小P2权限、跨连接竞争与Java相关测试通过。跨模块导出/全局搜索端点仍按后续阶段实施。
 - P3已完成：配置/档案CRUD、激活/排序与密钥三态、OpenAI/Ollama协议、窗口/音频探测、嵌入本地/专用Redis缓存及14条路由已接显式Foundation/CLI；224场景原Java差分、真实TLS存储/最小权限与五角色进程通过。边界与原测试映射见[P3收口报告](p3-completion.md)。
+- P4已完成：会话/历史/摘要、离线BPE预算保护、16个Agent工具与计划、新旧SSE、持久Run/恢复/问答/QUEUE/STEER、本地与S3附件、用量及流指标已接Foundation/CLI；真实TLS库/Redis/MinIO、五角色进程和原前端API22组联调通过。职责与限制见[P4收口报告](p4-completion.md)，45类379声明见[映射](p4-test-mapping.md)。
 - 全42原SQL、真实Flyway历史/锁竞争、七类DDL差分和合成pg_dump/restore数据/序列已验证；完整schema的P1最小权限及恢复库五角色Foundation实际启动/关闭通过。扩展schema/历史明确拒绝，支持边界见[P1契约](p1-foundation-contract.md)；合成恢复不等于真实用户备份验收。
 - **Go 尚不能替代 Java。104 个注解 HTTP 路由仍有后续业务模块待迁移。**
 - Go默认离线诊断不读现有`.env`、不连数据库、不迁移或启业务Worker，`/readyz`固定503。显式GO_DOTENV_ENABLED才允许加载配置；显式基础模式要求独立连接参数/迁移目录，允许已实现的认证/CSRF，生产继续拒绝。
-- 不修改现有 Java、前端、SQL、Compose 或本地运行实例。两个后端必须使用独立测试数据验证。
+- 不修改现有 Java、前端业务源码、SQL、Compose 或本地运行实例。两个后端必须使用独立测试数据验证。
 
 基础代码的可执行验证结果见 [validation.md](validation.md)。实施状态见 [tasks.md](tasks.md)；逐项证据见 [progress.json](progress.json)。
 
@@ -34,6 +35,8 @@
 [progress.json](progress.json) | 独立于生成清单维护的状态和验证证据
 [validation.md](validation.md) | 本次实际运行的验证与未验证事项
 [p3-completion.md](p3-completion.md) | P3职责、231个原测试声明映射、兼容差异及实际验收
+[p4-completion.md](p4-completion.md) | P4职责、新旧流/工具/恢复/附件装配与实际验收
+[p4-test-mapping.md](p4-test-mapping.md) | 45类379个测试声明的职责入口及后续阶段边界
 [p1-foundation-contract.md](p1-foundation-contract.md) | P1实际支持、明确拒绝及后续业务/发布边界
 [config-disposition.md](config-disposition.md) | 78处直接配置调用方逐项装配或后续阶段归属
 
@@ -68,4 +71,4 @@ python3 scripts/migration/go_inventory.py generate \
 
 ## 继续实施的入口
 
-P3已收口，下一阶段从[tasks.md的P4](tasks.md#p4-对话agent-与持久化交互)开始会话、上下文、Agent及持久交互。每阶段保留对应Java来源、Go用例、差分结果和进度证据。
+P4已收口，下一阶段从[tasks.md的P5](tasks.md#p5-记忆日历与提醒投递)开始记忆、日历与提醒投递。每阶段保留对应Java来源、Go用例、差分结果和进度证据。

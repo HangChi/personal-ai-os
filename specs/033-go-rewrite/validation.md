@@ -509,3 +509,44 @@ T300–T305已完成；此前“P3首批”的未完成描述为历史记录，�
 主要日志在 `/private/tmp/personal-ai-os-p4-*`：`java-oracle.log`、`chat-postgres-final.log`、`app-postgres.log`、`go-race.log`、`go-vet.log`、`go-build.log`、`java.log`、`frontend.log`、`python.log`、`release-guard.log`。长期证据为入库的脚本/夹具/断言与文档；临时日志不替代它们。未推送、部署或连接用户已有数据库/Redis/模型服务。
 
 工作树清理：四个已检查干净、无独有提交且提交可由go分支到达的临时工作树已通过非force的`git worktree remove`删除。原仓库当前为go；本聊天绑定的P3工作树被受管归档接口以“primary checkout不能删除”拒绝，未绕过保护删除。保留工作树不改变本批在原仓库go分支上的实现。
+
+## P4 最终收口（2026-11-04）
+
+在原仓库 `go` 分支完成T400–T409；T400a保留历史。当前职责/边界见[p4-completion.md](p4-completion.md)，45类379个Java测试声明映射见[p4-test-mapping.md](p4-test-mapping.md)。`progress.json`逐来源关联了实现及具体测试文件，不批量升级为verified。Java、前端业务文件、42条SQL固定基线未改。
+
+本轮实际验证：
+
+- `go test -race -count=1 ./...` 最终22包通过；最后新增了可配置心跳/cron和真实关闭清理开关测试，随后再次全量race通过。`go vet -tags=integration ./...`、`go build -tags=integration ./...`、`go mod verify`通过。
+- 原Java差分：存储206；P4预算150轮/4500动作、绑定504、参数21、工具定义16、usage快照56、估算100；原JTokkit1325 token场景。四词表/JAR SHA复验通过。夹具默认比较，未从Go结果生成期望。
+- TLS PostgreSQL `chat/app/command`全包通过。最终契约和配置修正后 `--package chat --package app --run P4` 再通过（9.088s/9.571s，均race）；覆盖用量故障不回滚回答、done时引用可读/检索与引用失败降级、上下文网络边界、停止/恢复/租约fence、问答/队列/引导、最小权限及405事件批次。
+- TLS PostgreSQL + TLS Redis + 最小ACL + 合成备份/恢复完整 `app/command`回归通过（106.308s/1.667s），含五角色真实race二进制、跨进程共享/双监听、失败启动清理、SIGTERM与资源释放。
+- 一次性MinIO真实S3生命周期通过（1.424s）。上传/读取/大小/owner/namespace/引用保留/孤儿GC均有断言；普通PG runner无S3时该单项跳过，另由独立S3 runner执行，不能把跳过当实际S3验收。
+- 附件开关关闭保留旧孤儿，开启按cron清理；默认本地04:30与非法cron拒绝有测试。两种HTTP流实际使用5ms配置发送ping。只支持报告中列出的六字段cron子集，Spring扩展L/W/#启动明确拒绝。
+- 原前端API客户端→Go真实联调22组通过。新增联调资产移到 `scripts/migration/frontend/` 后定向重跑通过（app4.080s）；仅替换Vite base URL，原Axios/CSRF/SSE/业务API未改。前端type-check/build通过，逻辑1151/1151、组件30文件195/195通过。未宣称浏览器视觉验收。
+- 原Java禁dotenv、最小环境离线verify：1137测试、0失败/错误/跳过、BUILD SUCCESS；JaCoCo行85.798%、分支69.866%，保留83%/65%原门禁。较早一次完整运行失败，随后最小环境重跑通过；未据日志尾部猜测最初根因、未改原测试或降低阈值。
+- Python索引/配置16项测试、78项配置处置默认比较、基线check、`git diff --check`通过。13项P4直接配置调用方逐项wired，不改变后续P5–P8的配置状态。
+
+Go命令使用独立缓存 `GOCACHE=/private/tmp/personal-ai-os-go-build GOPATH=/private/tmp/personal-ai-os-go GOPROXY=off GOTOOLCHAIN=local`。S3 SDK为本轮明确下载并锁定的新增依赖，不把本次整体描述为“零依赖下载”。BPE数据、SDK和Smithy许可证/NOTICE均保留；PDF外部工具实际为Poppler26.10.0，不随Go二进制分发。
+
+全部数据库/Redis/MinIO/备份是runner本轮创建的合成资源，测试后清理；不读取既有.env、不连接用户现有数据库、不使用真实云/模型凭据。恢复测试通过持久中断状态及新执行组件接管验证，尚无OS强杀演练。下一阶段为P5，未提前实现P5–P8。`check-complete`最终按预期返回1：2438项尚未verified，frontend_e2e/java_go_differential/database_upgrade_restore/failure_recovery/operations_cutover五门禁保持未验收；prod拒绝、回环监听和readyz503继续保留。
+
+复验：
+
+```bash
+python3 scripts/migration/java_chat_storage_fixture.py
+python3 scripts/migration/java_p4_fixture.py
+python3 scripts/migration/java_context_token_fixture.py
+python3 scripts/migration/go_token_assets.py
+go -C backend-go test -race -count=1 ./...
+go -C backend-go vet -tags=integration ./...
+go -C backend-go build -tags=integration ./...
+go -C backend-go mod verify
+python3 scripts/migration/run_go_postgres_tests.py --tls --package chat --package app --package command
+python3 scripts/migration/run_go_redis_tests.py --tls --backup --package app --package command
+python3 scripts/migration/run_go_s3_tests.py
+python3 -m unittest discover -s scripts/migration -p 'test_*.py' -v
+python3 scripts/migration/go_config_disposition.py
+python3 scripts/migration/go_inventory.py check
+```
+
+本地分笔提交：`3ab544a feat(go): 完成P4上下文预算与Agent工具计划`；`4026c9f feat(go): 完成P4持久对话交互与附件接线`。两笔均从各自Git提交独立导出backend-go快照后实际 `go build ./...` 通过，避免仅用完整工作区掩盖中间提交的依赖。任务、配置台账与验收文档另作第三笔提交。未推送。

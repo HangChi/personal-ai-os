@@ -115,12 +115,16 @@
       "expression": "${app.chat.attachment-janitor-enabled:true}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "附件清理开关随存储与孤儿清理迁移",
+      "note": "附件清理开关已接Foundation/角色；cron默认本地04:30，关闭不清理；扩展L/W/#显式拒绝",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/service/ChatAttachmentJanitor.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -130,12 +134,16 @@
       "expression": "${app.chat.upload-dir:data/uploads}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "持久目录与6MB业务限制；区别于已装配的8MB容器限制",
+      "note": "持久目录与6MB业务限制已接上传/真实大小/本地与S3；区别于8MB容器限制",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -145,12 +153,16 @@
       "expression": "${app.chat.max-attachment-bytes:6291456}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "持久目录与6MB业务限制；区别于已装配的8MB容器限制",
+      "note": "持久目录与6MB业务限制已接上传/真实大小/本地与S3；区别于8MB容器限制",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -160,12 +172,15 @@
       "expression": "${app.chat.stream-timeout:120s}",
       "phase": "P4",
       "task": "T404",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "流超时与取消随真实模型流迁移",
+      "note": "流超时与取消已接真实模型流，部分回复与空输出有落库断言",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/module_http.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/scheduling_test.go",
+        "backend-go/internal/business/chat/execution_integration_test.go"
       ]
     },
     {
@@ -175,12 +190,16 @@
       "expression": "${app.storage.s3.endpoint}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "note": "S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -190,12 +209,16 @@
       "expression": "${app.storage.s3.region:us-east-1}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "note": "S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -205,12 +228,16 @@
       "expression": "${app.storage.s3.access-key:}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "note": "S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -220,12 +247,16 @@
       "expression": "${app.storage.s3.secret-key:}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "note": "S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -235,12 +266,16 @@
       "expression": "${app.storage.s3.bucket}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "note": "S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -250,12 +285,16 @@
       "expression": "${app.storage.s3.namespace}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "note": "S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -265,12 +304,16 @@
       "expression": "${app.storage.s3.cleanup:false}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "note": "S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -280,12 +323,16 @@
       "expression": "${app.chat.max-attachment-bytes:6291456}",
       "phase": "P4",
       "task": "T408",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "S3连接/凭据/命名空间与清理；P1不创建客户端",
+      "note": "S3开关/连接/凭据/命名空间/清理与大小已接官方SDK及一次性MinIO；关闭不创建客户端",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/storage/S3StorageConfig.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/attachments.go",
+        "backend-go/internal/business/chat/s3.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/s3_integration_test.go",
+        "backend-go/internal/app/foundation_p4_integration_test.go"
       ]
     },
     {
@@ -295,12 +342,15 @@
       "expression": "${app.chat.heartbeat-interval:15s}",
       "phase": "P4",
       "task": "T404",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "心跳间隔随业务SSE调度；P1只完成通用HTTP流生命周期",
+      "note": "心跳间隔已接两种业务SSE，默认15s，非正或不足1ms启动拒绝；真实5ms心跳/停止有断言",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/chat/support/SseHeartbeatScheduler.java"
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/chat/module_http.go",
+        "backend-go/internal/business/chat/scheduling.go",
+        "backend-go/internal/business/chat/scheduling_test.go",
+        "backend-go/internal/business/chat/execution_integration_test.go"
       ]
     },
     {
