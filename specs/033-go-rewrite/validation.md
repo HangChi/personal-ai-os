@@ -274,6 +274,10 @@ Go逐项覆盖全部查询结果/profile/defaults、空值、环境别名冲突�
 
 此为显式map与内置固定基线的来源解析，不读取真实.env，不连接设施，不执行任意外部YAML/导入/profile分组，尚未替换诊断入口的窄配置加载或完成全record到应用接线。完整T104/T109继续开放。
 
+## 增量：P1配置组合（T104h）
+
+先验证缺少Foundation API的编译失败（/private/tmp/personal-ai-os-go-foundation-config-red.log），再实现显式来源到既有record Binder的组合。配置包全量race通过（/private/tmp/personal-ai-os-go-foundation-config.log）。验证系统profile、dotenv晚激活、显式角色、安全开关、原每分钟60次/模型并发4、ConditionalOnProperty精确true与大小写；非法配置/生产守卫拒绝，格式化/JSON脱敏。基线check通过；主诊断入口仍未切换，P1父项不勾选。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

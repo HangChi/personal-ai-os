@@ -35,9 +35,11 @@
         "backend-go/internal/platform/config/config.go",
         "backend-go/internal/platform/config/config_test.go",
         "specs/033-go-rewrite/validation.md",
-        "scripts/migration/smoke_go_process.py"
+        "scripts/migration/smoke_go_process.py",
+        "backend-go/internal/platform/config/foundation.go",
+        "backend-go/internal/platform/config/foundation_test.go"
       ],
-      "note": "角色解析/allows/worker 及五种角色真实诊断进程/Worker 空 404 已验证；实际 Worker 任务与数据库协调尚未实现，不能 verified。"
+      "note": "角色解析/allows/worker 及五种角色真实诊断进程/Worker 空 404 已验证；实际 Worker 任务与数据库协调尚未实现，不能 verified。 已组合显式ConfigData到P1配置；完整运行时仍待装配。"
     },
     "file:backend/src/main/java/com/personalos/common/web/RequestIdFilter.java": {
       "status": "in_progress",
