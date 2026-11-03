@@ -29,6 +29,10 @@ func fixturePool(t *testing.T) *database.Pool {
 		t.Fatal("只允许专用测试库")
 	}
 	opts.Port, opts.SSLMode = port, "disable"
+	if mode := os.Getenv("GO_TEST_POSTGRES_SSL_MODE"); mode != "" {
+		opts.SSLMode = mode
+		opts.RootCert = os.Getenv("GO_TEST_POSTGRES_ROOT_CERT")
+	}
 	connector, err := database.NewPostgresConnector(opts)
 	if err != nil {
 		t.Fatal(err)

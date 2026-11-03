@@ -97,9 +97,11 @@
         "backend-go/internal/platform/database/postgres.go",
         "backend-go/internal/platform/database/postgres_test.go",
         "backend-go/internal/platform/database/postgres_integration_test.go",
-        "scripts/migration/run_go_postgres_tests.py"
+        "scripts/migration/run_go_postgres_tests.py",
+        "backend-go/internal/platform/database/postgres_security_integration_test.go",
+        "scripts/migration/disposable_tls.py"
       ],
-      "note": "运行/安全配置子集、连接池/显式事务和固定 pgx 显式配置/UTC 已实现；一次性 PostgreSQL 验证事务/类型/取消/并发。未接应用，完整数据源配置/真实 TLS/最小权限/Flyway/绝大多数属性与 profile 装配待迁移，不能 verified。"
+      "note": "运行/安全配置子集、连接池/显式事务和固定 pgx 配置/UTC 已实现；一次性 PostgreSQL 验证事务/类型/取消/并发与真实 TLS/证书拒绝、受限账号事务探针。未接应用，完整数据源/profile 配置、全部 schema 权限/Flyway/绝大多数属性待迁移，不能 verified。"
     },
     "file:backend/src/main/java/com/personalos/common/config/RateLimitProperties.java": {
       "status": "in_progress",

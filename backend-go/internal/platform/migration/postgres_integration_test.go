@@ -34,6 +34,10 @@ func TestPostgresOriginalMigrationsIntegration(t *testing.T) {
 		t.Fatal("仅允许脚本创建的专用回环测试库")
 	}
 	settings.Port, settings.SSLMode = port, "disable"
+	if mode := os.Getenv("GO_TEST_POSTGRES_SSL_MODE"); mode != "" {
+		settings.SSLMode = mode
+		settings.RootCert = os.Getenv("GO_TEST_POSTGRES_ROOT_CERT")
+	}
 	connector, err := database.NewPostgresConnector(settings)
 	if err != nil {
 		t.Fatal(err)

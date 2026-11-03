@@ -31,6 +31,10 @@ func fixturePostgres(t *testing.T, options PoolOptions) *Pool {
 		t.Fatal("测试端口无效")
 	}
 	settings.Port, settings.SSLMode = port, "disable"
+	if mode := os.Getenv("GO_TEST_POSTGRES_SSL_MODE"); mode != "" {
+		settings.SSLMode = mode
+		settings.RootCert = os.Getenv("GO_TEST_POSTGRES_ROOT_CERT")
+	}
 	if settings.Host != "127.0.0.1" || settings.Database != "personalos_go_test" || settings.Username != "go_fixture" {
 		t.Fatal("集成测试只允许专用回环测试库与用户")
 	}

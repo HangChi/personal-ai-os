@@ -140,3 +140,11 @@ Decision：扩展同一隔离 Redis 脚本的 --tls 模式，每包新建临时 
 客户端真实握手验证受信根/正确主机名通过，未知根和错误主机名保留可识别的 x509 原因并拒绝，明文访问该端口不成功；同一套会话/两个 HTTP 实例/独立进程注销和原 Lua 限流竞争在 TLS 下均通过。原 R-014/R-015 的实际 Redis TLS 待验项由此补充，生产 ACL/真实网络分区/不确定写入与应用装配仍未完成。
 
 Alternatives considered：只检查 tls.Config 字段（不证明握手）；修改系统 CA 或 InsecureSkipVerify（绕过实际验证）；将 CA 私钥装入 Redis 容器（不必要）；拿现有生产 Redis 做测试（破坏隔离）。首次证书生成复用 CA 主题配置造成测试就绪失败，分离 server.cnf 并补齐证书标识后修复，失败资源均清理。
+
+## R-017 PostgreSQL TLS 与受限事务账号
+
+Decision：复用显式临时 TLS 证书夹具，PostgreSQL 只挂载本次服务端证书源，容器内复制并设置私钥 0600/postgres 属主。测试只修改自己创建的 pg_hba.conf，在原规则前加 hostnossl reject；TCP 就绪后重载，不使用初始化阶段的 Unix-only 临时服务。五个数据库包以 verify-full/显式临时根复跑，检查真实 pg_stat_ssl；未知 CA/错误主机名保留 x509 原因，明文被拒。
+
+仅在本次集群创建 NOSUPERUSER/NOCREATEDB/NOCREATEROLE/NOREPLICATION/NOBYPASSRLS 账号，独立 schema 内授权一张表的 DML/identity 序列。真实完成 Unicode 事务读写；创建角色/数据库/表、DROP、读未授权表和自提 SUPERUSER 均 42501。该探针验证连接器/事务权限边界，不是全 42 schema 的部署权限方案。
+
+Alternatives considered：只检查 TLS 配置字段（无法证明握手）；sslmode=require 或忽略证书（失去身份验证）；更改现有集群 pg_hba 或系统信任（越过隔离）；超级用户通过便宣称最小权限（证据不成立）。CA 私钥不进容器，所有资源 finally 清理。

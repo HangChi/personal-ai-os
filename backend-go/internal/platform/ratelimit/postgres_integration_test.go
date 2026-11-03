@@ -36,6 +36,10 @@ func fixtureBucketPool(t *testing.T) *database.Pool {
 		t.Fatal("仅允许脚本创建的专用回环测试库")
 	}
 	options.Port, options.SSLMode = port, "disable"
+	if mode := os.Getenv("GO_TEST_POSTGRES_SSL_MODE"); mode != "" {
+		options.SSLMode = mode
+		options.RootCert = os.Getenv("GO_TEST_POSTGRES_ROOT_CERT")
+	}
 	connector, err := database.NewPostgresConnector(options)
 	if err != nil {
 		t.Fatal(err)

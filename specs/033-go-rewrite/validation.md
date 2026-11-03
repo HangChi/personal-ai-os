@@ -172,6 +172,12 @@ Go 值格式刻意不兼容 Java 序列化，命名空间附加 :go:v1:，切换
 
 另在最小环境、禁 .env、Maven 离线模式执行 -Dtest=AuthServiceTest test：原 Java 10 项断言全部通过，Maven 目标仍因 JaCoCo 累计行覆盖率 0.80 < 0.83 失败；没有关闭/跳过覆盖率门禁，也不据此声称 Java verify 通过。日志 /private/tmp/personal-ai-os-java-auth-test.log。
 
+## 增量：真实 PostgreSQL TLS 与事务权限（T102c）
+
+执行 run_go_postgres_tests.py --tls --package database 后，再执行 --tls 全五包；database/ratelimit/migration/coordination/modelgate 全部 integration/race 通过。真实 pg_stat_ssl 为受支持 TLS；未知 CA、错误主机名、明文拒绝，正常连接不受失败探测影响。全部原 SQL、共享桶、数据库租约及实际续租、模型并发测试同时在 TLS 复验。日志 /private/tmp/personal-ai-os-go-postgres-tls-all.log。
+
+同一临时集群新建无管理权限账号，仅授独立探针 schema/单表 DML/identity 序列权限；Unicode 事务写读更新删除成功，建库/角色/DDL/未授权读/自提权限均 SQLSTATE 42501。plain database 模式也通过。提取 disposable_tls.py 为 PostgreSQL/Redis 共用，Redis --tls --package redis 回归通过。日志 /private/tmp/personal-ai-os-go-postgres-security-plain.log 与 /private/tmp/personal-ai-os-go-redis-tls-refactor.log。含 integration 标签的 go vet、1,093 文件基线及 diff 检查通过；本次容器清理。完整配置/全部 schema 权限、Flyway 历史锁/恢复、真实网络分区与应用装配仍未完成，T102/P1 保持开放。
+
 ## 未执行 / 尚未实现
 
 - Java 全量 Maven 回归已尝试但未通过；前端类型与构建已通过，完整前端检查仍待完成；本次未修改原 Java/前端实现。

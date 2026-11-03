@@ -8,7 +8,7 @@
 
 默认 `verify-full` 校验证书链和主机名，最低 TLS 1.2，可显式传入根证书。`disable` 只允许回环测试主机；不支持 require/prefer 或静默明文回退。这是有意受限的显式配置子集，完整 Java 数据源配置仍待迁移。连接器与选项的普通/Go/JSON 格式化均脱敏。
 
-会话时区固定 UTC，timestamptz 二进制扫描也显式使用 UTC。仅单元测试验证了 TLS 配置和根证书解析，真实 TLS 握手尚未验收。
+会话时区固定 UTC，timestamptz 二进制扫描也显式使用 UTC。临时自建 CA 的真实 PostgreSQL 已验证 TLS 1.2/1.3、受信根与主机名成功、未知 CA/错误主机名和明文连接拒绝。
 
 ## 生命周期
 
@@ -37,4 +37,6 @@
 
 从仓库根目录运行 `python3 scripts/migration/run_go_postgres_tests.py`，仅创建和清理自己的临时 PostgreSQL/pgvector 容器：固定镜像摘要、tmpfs 数据目录、无持久卷、随机回环端口、随机测试密码，不读取 .env 或使用现有 Compose。
 
-全部 42 个原 SQL 的空库/合成数据重放与 pgvector/schema/触发器测试另见 [migration](../migration/README.md)。待完成：完整数据库配置、真实 TLS/最小权限角色、应用装配、真实 Flyway 历史/锁与存量备份恢复、跨连接故障回归、生产优雅关闭。
+`python3 scripts/migration/run_go_postgres_tests.py --tls` 使用临时 CA/服务端证书，拒绝明文，全部五个数据库集成包在 TLS 下复验。`postgres_security_integration_test.go` 在本次集群创建无管理权限的账号，仅授独立探针 schema 的 USAGE、单表 DML 和 identity 序列权限；验证中文/emoji 事务读写以及建库/建角色/DDL/读未授权表/自提超级用户全部拒绝。该探针不代表完整 42 个迁移后的部署权限已验收。
+
+全部 42 个原 SQL 的空库/合成数据重放与 pgvector/schema/触发器测试另见 [migration](../migration/README.md)。待完成：完整数据库配置、全部业务 schema 最小权限角色、应用装配、真实 Flyway 历史/锁与存量备份恢复、跨连接故障回归、生产优雅关闭。

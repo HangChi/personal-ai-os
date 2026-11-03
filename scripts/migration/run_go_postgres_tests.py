@@ -11,8 +11,11 @@ import os
 from pathlib import Path
 import secrets
 import subprocess
+import tempfile
 import time
 import uuid
+
+from disposable_tls import create_tls_fixture
 
 ROOT = Path(__file__).resolve().parents[2]
 IMAGE = "pgvector/pgvector@sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d"
@@ -25,29 +28,46 @@ def capture(command, **kwargs):
 PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate"]
 
 
-def run_package(image, package):
+def run_package(image, package, tls_mode=False):
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, POSTGRES_PASSWORD=password)
     container = None
+    certificates = tempfile.TemporaryDirectory(prefix="personalos-go-postgres-tls-") if tls_mode else None
     try:
-        print("启动 %s 专用 PostgreSQL/pgvector 容器（无持久卷、随机回环端口）" % package, flush=True)
+        print("启动 %s 专用 PostgreSQL/pgvector%s 容器（无持久卷、随机回环端口）" % (package, " TLS" if tls_mode else ""), flush=True)
+        mounts, command = [], []
+        root_cert = ""
+        if tls_mode:
+            folder, _ = create_tls_fixture(certificates.name)
+            root_cert = str(folder / "ca.crt")
+            mounts = ["--mount", f"type=bind,source={folder},target=/tls-source,readonly"]
+            command = ["sh", "-c",
+                       "mkdir -p /tls && cp /tls-source/* /tls/ && chown postgres:postgres /tls/* && "
+                       "chmod 600 /tls/server.key && exec docker-entrypoint.sh postgres -c ssl=on "
+                       "-c ssl_cert_file=/tls/server.crt -c ssl_key_file=/tls/server.key -c ssl_ca_file=/tls/ca.crt"]
         container = capture([
             "docker", "run", "--detach", "--rm", "--name", "personalos-go-test-" + uuid.uuid4().hex[:12],
             "--label", "personalos.go-test=true", "--memory", "512m",
             "--tmpfs", "/var/lib/postgresql/data:rw,nosuid,size=384m",
             "--publish", "127.0.0.1::5432", "--env", "POSTGRES_PASSWORD",
-            "--env", "POSTGRES_USER=go_fixture", "--env", "POSTGRES_DB=personalos_go_test", image,
+            "--env", "POSTGRES_USER=go_fixture", "--env", "POSTGRES_DB=personalos_go_test", *mounts, image, *command,
         ], env=docker_env)
         if not container or not all(char in "0123456789abcdef" for char in container):
             raise RuntimeError("Docker 未返回可验证的独立容器 ID")
         deadline = time.monotonic() + 60
         while True:
-            result = subprocess.run(["docker", "exec", container, "pg_isready", "-U", "go_fixture", "-d", "personalos_go_test"], capture_output=True, timeout=10)
+            result = subprocess.run(["docker", "exec", container, "pg_isready", "-h", "127.0.0.1", "-U", "go_fixture", "-d", "personalos_go_test"], capture_output=True, timeout=10)
             if result.returncode == 0:
                 break
             if time.monotonic() >= deadline:
-                raise TimeoutError("独立 PostgreSQL 启动超时")
+                raise TimeoutError("独立 PostgreSQL 启动超时: " + capture(["docker", "logs", container]).replace(password, "[redacted]"))
             time.sleep(0.2)
+        if tls_mode:
+            # 只修改本脚本创建的临时集群，拒绝明文并保留全部既有认证规则。
+            capture(["docker", "exec", "--user", "postgres", container, "sh", "-c",
+                     "{ printf 'hostnossl all all 0.0.0.0/0 reject\nhostnossl all all ::/0 reject\n'; "
+                     'cat "$PGDATA/pg_hba.conf"; } > "$PGDATA/pg_hba.conf.go" && '
+                     'mv "$PGDATA/pg_hba.conf.go" "$PGDATA/pg_hba.conf" && pg_ctl reload -D "$PGDATA"'])
         info = json.loads(capture(["docker", "inspect", container]))[0]
         bindings = info["NetworkSettings"]["Ports"]["5432/tcp"]
         if len(bindings) != 1 or bindings[0]["HostIp"] != "127.0.0.1":
@@ -63,24 +83,31 @@ def run_package(image, package):
             "GO_TEST_POSTGRES_HOST": "127.0.0.1", "GO_TEST_POSTGRES_PORT": port,
             "GO_TEST_POSTGRES_USER": "go_fixture", "GO_TEST_POSTGRES_DB": "personalos_go_test",
             "GO_TEST_POSTGRES_PASSWORD": password,
+            "GO_TEST_POSTGRES_SSL_MODE": "verify-full" if tls_mode else "disable",
+            "GO_TEST_POSTGRES_ROOT_CERT": root_cert,
         })
         print("运行 %s 集成测试" % package, flush=True)
         subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
                         "./internal/platform/" + package],
                        cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
     finally:
-        if container:
-            subprocess.run(["docker", "rm", "--force", container], check=True, capture_output=True, timeout=30)
-            print("已清理本次独立测试容器", flush=True)
+        try:
+            if container:
+                subprocess.run(["docker", "rm", "--force", container], check=True, capture_output=True, timeout=30)
+                print("已清理本次独立测试容器", flush=True)
+        finally:
+            if certificates:
+                certificates.cleanup()
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", default=IMAGE, help="仅用于显式测试其他 PostgreSQL/pgvector 镜像")
     parser.add_argument("--package", choices=PACKAGES, action="append", help="只测试指定包，可重复；各包独占新容器")
+    parser.add_argument("--tls", action="store_true", help="新建 CA/服务端证书，以 verify-full 重跑并拒绝明文连接")
     args = parser.parse_args()
     for package in args.package or PACKAGES:
-        run_package(args.image, package)
+        run_package(args.image, package, args.tls)
 
 
 if __name__ == "__main__":
