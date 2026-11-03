@@ -331,6 +331,8 @@ Redis 故障在短超时后回到上游模型，错误记录在 `personalos.embe
 
 ## 可选 RabbitMQ 任务通知
 
+独立进程部署及通知配置见 [独立 worker 与提醒广播](distributed-workers.md)。
+
 `compose.integrations.yml --profile queue` 启动 RabbitMQ 4.4.0，AMQP 与管理端口仅绑定回环地址。
 设置 `RABBITMQ_ENABLED=true`、包含应用账户的 `RABBITMQ_URI`；默认队列 personalos.knowledge.ready。
 任务先写数据库，再向持久队列发送 UUID，等待发布确认（有超时）；不可路由、连接失败均记录 poll_fallback，仍返回已接受的数据库任务。
