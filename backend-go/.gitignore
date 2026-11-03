@@ -1,0 +1,6 @@
+# 生成物保持在 Go 子目录内，不修改固定 Java 基线的忽略规则。
+/personalos
+*.exe
+*.test
+*.out
+/vendor/

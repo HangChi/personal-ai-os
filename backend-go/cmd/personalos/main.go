@@ -27,9 +27,16 @@ func main() {
 }
 
 func run(ctx context.Context, logger *slog.Logger) error {
-	settings, err := config.Load(os.LookupEnv)
+	env, err := config.LoadEnvironment(os.LookupEnv, "")
 	if err != nil {
 		return err
+	}
+	settings, err := env.Config()
+	if err != nil {
+		return err
+	}
+	if env.Status() != "disabled" {
+		logger.Info("Go 配置来源已检查", "dotenv", env.Status(), "keys", len(env.DotEnvKeys()))
 	}
 	listener, err := net.Listen("tcp", settings.Address())
 	if err != nil {

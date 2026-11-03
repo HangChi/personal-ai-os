@@ -8,6 +8,7 @@
 
 - `internal/platform/api`：响应信封、19 个 Java 错误码及 HTTP 映射、两类分页与 Java offset 溢出边界。
 - `internal/platform/config`：combined/api/index/review/delivery 角色规则、严格端口与角色解析。
+- `internal/platform/config`：显式开启的 .env 解析/父目录查找、系统环境/profile/文件优先级、Java 生产安全校验与未完成安全能力的启动拒绝。
 - `internal/platform/http`：请求 ID 校验、Java trim 兼容、响应回显及 context 传递。
 - `internal/app`：迁移诊断端点、未知 API 明确返回 404、Worker 业务入口隔离。
 - `cmd/personalos`：回环监听、启动提示、信号处理和超时退出。
@@ -41,7 +42,13 @@ GOPROXY=off GOTOOLCHAIN=local go test -race -count=1 ./...
 SERVER_PORT=8081 APP_RUNTIME_ROLE=api go run ./cmd/personalos
 ```
 
-本进程默认只监听 `127.0.0.1:8081`，不读取现有 `.env`、不连接数据库、不应用 SQL、不调用模型、不启动提醒/索引 Worker。显式设置 SERVER_PORT 会覆盖端口，但监听地址仍固定回环。
+本进程默认只监听 `127.0.0.1:8081`，默认不读取现有 `.env`，不连接数据库、不应用 SQL、不调用模型、不启动提醒/索引 Worker。显式设置 SERVER_PORT 会覆盖端口，但监听地址仍固定回环。
+
+只有在系统环境显式设置 `GO_DOTENV_ENABLED=true` 后才查找 .env（当前目录和最多三层父目录），`APP_DOTENV_ENABLED=false` 仍可关闭。系统环境优先于 profile 静态值，静态值优先于文件；占位变量仍可从文件回落。解析保持 Java 的引号、空值、重复键顺序、Unicode strip 与 `$`/`#` 字面量规则，不执行 shell。测试只使用临时目录里的虚构数据。
+
+支持 `SPRING_PROFILES_ACTIVE`/`SPRING_PROFILES_DEFAULT` 中现有运行角色 profile 的顺序覆盖，以及 `APP_RUNTIME_ROLE` 系统环境覆盖。这只是配置子集，尚无任意 YAML、命令行属性、动态 MCP 绑定和完整 145 个环境变量的装配。
+
+`prod`、`APP_SECURITY_PRODUCTION_MODE=true`、`AUTH_ENABLED=true` 或 `APP_SECURITY_CSRF_ENABLED=true` 会在监听前被拒绝。Java 的生产密码/开关校验已移植，但认证、会话与 CSRF 实现尚未完成，不能因校验通过而允许生产启动。
 
 端点 | 行为
 --- | ---

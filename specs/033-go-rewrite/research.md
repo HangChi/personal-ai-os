@@ -58,3 +58,19 @@ MCP SDK/协议实现 | P7 | stdio/HTTP、动态工具、命名冲突、确认策
 Prometheus | P8 | 业务指标/标签、采集配置、角色拓扑与访问控制
 
 首批没有新增第三方运行时依赖，也没有下载 SDK、修改本地基础设施或探测真实模型。
+
+## R-007 P1 配置来源与生产守卫
+
+Decision：按固定 Java 的 DotEnvEnvironmentPostProcessor/ProductionSecurityValidator 移植解析、查找、系统环境优先级与安全校验。保留重复键顺序、字面量 `$`/`#`、Java strip/isBlank 和 UTF-8 字节长度语义。Go 迁移进程只有显式 `GO_DOTENV_ENABLED=true` 才允许查找 .env；现有 `APP_DOTENV_ENABLED=false` 仍可以关闭。测试只使用临时目录里的虚构数据。
+
+原因：配置兼容不能让未完成迁移的进程自动读取当前 Java 凭据。配置校验不是认证实现；在认证与生产装配完成前，Go 启动遇到 prod/production-mode 或显式启用认证/CSRF 时应失败，不能给出已经受保护的假象。
+
+Alternatives considered：默认加载仓库 .env（打破当前隔离约定）；直接用 Go TrimSpace（与 Java 对 NBSP、NEL、控制字符的处理不同）；只做密码长度检查后允许生产启动（认证/CSRF 尚未实现）。完整 YAML/profile/relaxed binding 仍属于 T104 的后续范围。
+
+## R-008 无外部驱动的数据库事务基础
+
+Decision：先用标准库 database/sql 与 driver.Connector 实现连接池生命周期、获取连接超时和显式事务。调用方在事务回调中拿到同一 *sql.Tx，通过显式传参加入事务；再次从 Pool 开始事务代表独立事务。不做全局/context 隐式事务、自动重试、自动建表或 Flyway 历史写入。
+
+原因：2026-11-03 查询 pgx 可用版本时，沙箱 DNS 不可用，联网审批返回 503。未确认和下载的版本不能写入 go.mod，也不能声称已接入 PostgreSQL。标准库事务边界可先用受控测试驱动验证；真实 pgx Connector 与 PostgreSQL/pgvector 集成保持待完成。
+
+Alternatives considered：猜测并锁定 pgx 版本（无法验证或构建）；自写 PostgreSQL 协议（增加认证/TLS/类型/取消风险）；仅增加空数据库接口（没有可执行的事务与资源管理行为）。获取超时仅约束连接池等待，不把已取消的获取 context 用作事务 context；提交失败不自动重试，以防重复副作用。
