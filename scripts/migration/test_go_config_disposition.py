@@ -11,7 +11,7 @@ class ConfigDispositionTest(unittest.TestCase):
         self.assertEqual(len(data["items"]), 78)
         self.assertEqual(sum(row["kind"] == "value_injections" for row in data["items"]), 70)
         self.assertEqual(sum(row["kind"] == "property_lookups" for row in data["items"]), 8)
-        self.assertTrue(all(row["phase"] == "P1" or row["status"] == "deferred" for row in data["items"]))
+        self.assertTrue(all(row["phase"] in {"P1", "P3"} or row["status"] == "deferred" for row in data["items"]))
 
     def test_unknown_or_unused_source_rule_fails(self):
         for rules in [dict(subject.RULES, **{"Unreviewed.java": ("P1", "T104", "invalid")}),
@@ -30,4 +30,11 @@ class ConfigDispositionTest(unittest.TestCase):
 
     def test_missing_p1_evidence_fails(self):
         with patch.object(subject, "P1_EVIDENCE", dict(subject.P1_EVIDENCE, T104=["backend-go/nonexistent-evidence"])), self.assertRaises(ValueError):
+            subject.generate()
+
+    def test_p3_consumers_have_wiring_evidence(self):
+        rows = [row for row in subject.generate()["items"] if row["phase"] == "P3"]
+        self.assertEqual(len(rows), 14)
+        self.assertTrue(all(row["status"] == "wired" for row in rows))
+        with patch.object(subject, "P3_EVIDENCE", dict(subject.P3_EVIDENCE, T304=["backend-go/missing-p3-evidence"])), self.assertRaises(ValueError):
             subject.generate()

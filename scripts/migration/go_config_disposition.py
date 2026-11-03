@@ -21,9 +21,9 @@ RULES = {
     "ChatCompletionService.java": ("P4", "T404", "流超时与取消随真实模型流迁移"),
     "S3StorageConfig.java": ("P4", "T408", "S3连接/凭据/命名空间与清理；P1不创建客户端"),
     "SseHeartbeatScheduler.java": ("P4", "T404", "心跳间隔随业务SSE调度；P1只完成通用HTTP流生命周期"),
-    "RedisCacheConfig.java": ("P3", "T304", "embedding共享缓存URI/命名空间/150ms超时；区别于P1两个专用Redis"),
-    "ModelConfigService.java": ("P3", "T300", "模型配置值与原始环境来源判定均随模型持久化迁移"),
-    "ModelKeyConverter.java": ("P3", "T301", "密钥转换器不在P1中使用真实密钥或解密业务数据"),
+    "RedisCacheConfig.java": ("P3", "T304", "第三专用Redis客户端已接CLI/Foundation；哈希namespace、150ms超时、TLS/最小ACL与故障回退已验收"),
+    "ModelConfigService.java": ("P3", "T300", "配置逐字段回落/原始环境来源已接持久化、启动覆盖和运行时工厂"),
+    "ModelKeyConverter.java": ("P3", "T301", "原AES-GCM格式及三态密钥写入已接仓储；仅用合成密钥双向Java对照"),
     "SecurityConfig.java": ("P1", "T105", "Foundation安全链已读取canonical Secure/CSRF；保留历史spring/server路径差异"),
     "SharedSessionConfig.java": ("P1", "T105", "独立Redis URI与Secure已装配；SESSION/Lax/HttpOnly/30分钟保持固定策略"),
     "ProductionSecurityValidator.java": ("P1", "T104", "原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动"),
@@ -42,7 +42,7 @@ RULES = {
     "VectorStoreInspector.java": ("P6", "T601", "向量表/schema检查随向量仓储迁移；P1只验证原DDL"),
     "McpStatusService.java": ("P7", "T702", "对外MCP开关/名称/版本/端点随协议入口迁移"),
     "MemoryEmbeddingService.java": ("P5", "T501", "embedding模型名随记忆向量写入/回填迁移"),
-    "EmbeddingCacheConfig.java": ("P3", "T304", "缓存开关/容量/TTL与指纹键随真实模型缓存迁移"),
+    "EmbeddingCacheConfig.java": ("P3", "T304", "默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器"),
     "MonitoringSecurityConfig.java": ("P1", "T108", "local.management.port由独立监听器结构保证；不依据用户Host/转发头授予管理权限"),
     "DotEnvEnvironmentPostProcessor.java": ("P1", "T104", "默认禁读；显式开关/来源优先级/晚于ConfigData已验证"),
 }
@@ -58,6 +58,13 @@ P1_EVIDENCE = {
     "T105": ["backend-go/internal/platform/auth/http.go", "backend-go/internal/platform/config/session.go", "backend-go/internal/app/foundation.go", "backend-go/internal/app/foundation_redis_integration_test.go"],
     "T107": ["backend-go/internal/platform/ratelimit/redis.go", "backend-go/internal/platform/modelgate/gate.go", "backend-go/internal/app/foundation.go", "backend-go/internal/app/foundation_network_integration_test.go"],
     "T108": ["backend-go/internal/app/management.go", "backend-go/internal/app/serve.go", "scripts/migration/smoke_go_foundation.py"],
+}
+
+
+P3_EVIDENCE = {
+ "T300": ["backend-go/internal/business/model/config.go", "backend-go/internal/business/model/write.go", "backend-go/internal/business/model/module.go", "backend-go/internal/business/model/write_integration_test.go"],
+ "T301": ["backend-go/internal/business/model/keys.go", "backend-go/internal/business/model/write_integration_test.go", "scripts/migration/java_model_config_fixture.py"],
+ "T304": ["backend-go/internal/business/model/embedding.go", "backend-go/internal/business/model/module.go", "backend-go/cmd/personalos/startup.go", "backend-go/internal/business/model/redis_integration_test.go", "specs/033-go-rewrite/p3-completion.md"],
 }
 
 
@@ -105,7 +112,7 @@ def generate():
                 raise ValueError("配置来源未逐项分配：" + filename)
             used.add(filename)
             phase, task, note = RULES[filename]
-            evidence = P1_EVIDENCE[task] if phase == "P1" else ["specs/033-go-rewrite/tasks.md", entry["path"]]
+            evidence = (P1_EVIDENCE[task] if phase == "P1" else P3_EVIDENCE[task] if phase == "P3" else ["specs/033-go-rewrite/tasks.md", entry["path"]])
             for path in evidence:
                 if not (ROOT / path).is_file():
                     raise ValueError("配置证据路径不存在：" + path)
@@ -116,20 +123,20 @@ def generate():
                 source = subprocess.run(["git", "show", inventory["baseline_commit"] + ":" + entry["path"]], cwd=ROOT, check=True, capture_output=True, text=True).stdout
                 if keys != source_dynamic_keys(filename, source):
                     raise ValueError("动态键集合与原调用方不一致")
-            rows.append(dict(kind=kind, **entry, phase=phase, task=task, status="wired" if phase == "P1" else "deferred", dynamic_keys=keys, note=note, evidence=evidence))
+            rows.append(dict(kind=kind, **entry, phase=phase, task=task, status="wired" if phase in {"P1", "P3"} else "deferred", dynamic_keys=keys, note=note, evidence=evidence))
     if set(RULES) != used or len(rows) != 78:
         raise ValueError("配置规则有遗漏或多余，必须显式审查")
     return dict(schema_version=1, baseline_commit=inventory["baseline_commit"], inventory_sha256=hashlib.sha256(inventory_path.read_bytes()).hexdigest(), items=rows)
 
 
 def render(data):
-    lines = ["# 配置调用方逐项处置（P1收口）", "", "固定Java基线：`" + data["baseline_commit"] + "`。70处@Value与8处getProperty全部列出；wired只表示P1该调用方已装配，deferred是明确的后续业务任务，不表示已实现。", "",
-             "12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection属于P4，AI属于P3，Calendar/Memory属于P5，Knowledge属于P6，MCP属于P7；不创建业务空壳。", "",
+    lines = ["# 配置调用方逐项处置（P1/P3收口）", "", "固定Java基线：`" + data["baseline_commit"] + "`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。", "",
+             "12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection属于P4，AI模型配置/协议属于P3，提示与预算仍属于P4，Calendar/Memory属于P5，Knowledge属于P6，MCP属于P7；不创建业务空壳。", "",
              "| 来源与行号 | 原表达式/键 | 阶段/任务 | 状态与处置 |", "| --- | --- | --- | --- |"]
     for row in data["items"]:
         key = row.get("expression") or row.get("literal_key") or "动态：" + ", ".join(row["dynamic_keys"])
         lines.append(f"| `{row['path']}:{row['line']}` | `{key}` | {row['phase']}/{row['task']} | {row['status']}：{row['note']} |")
-    lines += ["", "## 附加边界", "", "- datasource/Hikari/Flyway/Servlet/管理/日志的支持与拒绝列表见`p1-foundation-contract.md`；未知扩展在创建连接前拒绝，不静默接受。", "- prod原安全校验已完成；全量迁移切换属于P8，Go基础运行时仍额外拒绝prod，readyz仍503。", "- 原spring.servlet.session.cookie配置路径差异继续保留；实际消费的是server.servlet.session.cookie。", "- 完整机器可读来源、动态键集合与P1证据见同名JSON；台账不改变任何全量迁移条目的verified状态。", "- 复验：`python3 scripts/migration/go_config_disposition.py`，默认比较；仅显式`--write`重建。", ""]
+    lines += ["", "## 附加边界", "", "- datasource/Hikari/Flyway/Servlet/管理/日志的支持与拒绝列表见`p1-foundation-contract.md`；未知扩展在创建连接前拒绝，不静默接受。", "- prod原安全校验已完成；全量迁移切换属于P8，Go基础运行时仍额外拒绝prod，readyz仍503。", "- 原spring.servlet.session.cookie配置路径差异继续保留；实际消费的是server.servlet.session.cookie。", "- 完整机器可读来源、动态键集合与对应阶段证据见同名JSON；台账不改变任何全量迁移条目的verified状态。", "- 复验：`python3 scripts/migration/go_config_disposition.py`，默认比较；仅显式`--write`重建。", ""]
     return "\n".join(lines)
 
 

@@ -1,6 +1,6 @@
 # Personal AI OS：Go 迁移起点
 
-本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1基础设施与P2任务能力已完成，P3–P8尚未完成，不能替代现有Java后端。**
+本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1基础设施、P2任务与P3模型协议已完成，P4–P8尚未完成，不能替代现有Java后端。**
 
 全量范围、逐文件来源、迁移状态与验收要求见 [迁移文档](../specs/033-go-rewrite/README.md)。现有 Java 源码、前端、SQL 与运行实例继续保留。
 
@@ -11,7 +11,7 @@
 - `internal/platform/database`：显式pgx连接器、池与事务、超时/取消/UTC/脱敏；已接Foundation并通过真实TLS/最小权限/不确定提交验证。边界见[说明](internal/platform/database/README.md)。
 - `internal/platform/migration`：42原SQL、真实Flyway只读历史、锁竞争、七类DDL、默认V1基线与合成备份恢复启动验证；迁移执行权仍归独立Java Flyway。见[说明](internal/platform/migration/README.md)。
 - `internal/platform/coordination`：数据库时钟租约、续租、fencing与事务后释放；已接Foundation并验证断网/恢复/退出。见[说明](internal/platform/coordination/README.md)。
-- `internal/platform/modelgate`：本地/共享并发与Worker的API预留容量；基础HTTP持有整段SSE许可，模型业务在P3/P4。见[说明](internal/platform/modelgate/README.md)。
+- `internal/platform/modelgate`：本地/共享并发与Worker的API预留容量；基础HTTP持有整段SSE许可，模型协议已在P3接入，对话/Agent链路在P4。见[说明](internal/platform/modelgate/README.md)。
 - `internal/platform/ratelimit`：本地/PostgreSQL/Redis共享桶、显式后端与指标；已装配并验证跨实例/OS进程预算和故障拒绝。见[说明](internal/platform/ratelimit/README.md)。
 - `internal/platform/auth`：单用户BCrypt/失败锁定、本地/Redis会话与登录/轮换/注销/me/CSRF，已接显式Foundation；真实Servlet/TLS/ACL/跨进程与网络故障验证，见[边界说明](internal/platform/auth/README.md)。
 - `internal/platform/redis`：显式专用 Redis 客户端、TLS 配置、受限超时/连接池/生命周期与脱敏错误，见 [说明](internal/platform/redis/README.md)。
@@ -26,6 +26,8 @@
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
 默认命令仍仅装配离线诊断；显式`--foundation`已接P1基础能力和P2任务/确认路由。844个基础HTTP场景、160个原观测标签场景和68个直方图边界通过真实框架对照。完整P1边界见[P1契约](../specs/033-go-rewrite/p1-foundation-contract.md)，78处配置调用方见[台账](../specs/033-go-rewrite/config-disposition.md)。模型、聊天、Agent工具、知识库、日历、记忆、MCP和业务后台调度仍未迁移。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
+
+- `internal/business/model`：配置/档案/密钥、运行时按名继承、OpenAI/Ollama协议、探测/音频、本地与Redis嵌入缓存，见[说明](internal/business/model/README.md)。
 
 ## 构建与验证
 
@@ -86,7 +88,7 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 ## 接下来实施
 
-下一阶段为[P3模型配置与协议](../specs/033-go-rewrite/tasks.md#p3-模型配置与协议)。每阶段填写源码/测试/差分证据并独立提交。
+下一阶段为[P4对话、Agent与持久化交互](../specs/033-go-rewrite/tasks.md#p4-对话agent-与持久化交互)。P3收口见[验收报告](../specs/033-go-rewrite/p3-completion.md)。每阶段填写源码/测试/差分证据并独立提交。
 
 ## 显式 P1 基础模式（尚未验收发布）
 
@@ -95,6 +97,6 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 数据库实际读取解析后的 `spring.datasource.*`，支持单主机 JDBC TCP 地址和显式端口，不接受查询参数或多主机。默认 TLS `verify-full`；`GO_POSTGRES_ROOT_CERT` 指向测试 CA，回环明文测试需显式 `GO_POSTGRES_SSL_MODE=disable`。绝不为测试关闭非回环 TLS 校验。
 
-基线 Hikari 最大连接数/毫秒等待已接入；`worker-index`、`worker-review`、`worker-delivery` profile 上限4，其余默认10。仅设运行角色不会自动加载 profile 文件。`monitoring` profile 启动独立回环管理端口（默认9091，可设 `MANAGEMENT_SERVER_PORT`），限流和会话 Redis 仍由各自原开关/URI/namespace 配置；两份 CA 分别使用 `GO_REDIS_SESSION_ROOT_CERT`、`GO_REDIS_RATE_LIMIT_ROOT_CERT` 的绝对路径。
+基线 Hikari 最大连接数/毫秒等待已接入；`worker-index`、`worker-review`、`worker-delivery` profile 上限4，其余默认10。仅设运行角色不会自动加载 profile 文件。`monitoring` profile 启动独立回环管理端口（默认9091，可设 `MANAGEMENT_SERVER_PORT`），限流和会话 Redis 仍由各自原开关/URI/namespace 配置；三份 CA 分别使用 `GO_REDIS_SESSION_ROOT_CERT`、`GO_REDIS_RATE_LIMIT_ROOT_CERT`、`GO_REDIS_EMBEDDING_ROOT_CERT` 的绝对路径。P3共享嵌入缓存使用独立的`REDIS_ENABLED/REDIS_URI/REDIS_NAMESPACE/REDIS_TIMEOUT_MS`，不能复用会话/限流客户端。
 
 基础模式允许已实现的认证/CSRF；`prod`继续拒绝。默认诊断规则不变。基础模式不执行业务Worker，`readyz`保持未就绪；P2任务/确认路由已接，其他未实现业务404。P1/P2验收通过不表示P8发布验收，禁止替换Java实例。

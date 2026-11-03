@@ -478,3 +478,19 @@ Java测试结束阶段仍出现原Surefire的fork JVM退出等待30s后强制退
 - `python3 scripts/migration/run_go_postgres_tests.py --tls --package model`通过（最终model 1.726s）：自建TLS PostgreSQL/pgvector，真实Flyway重放原42迁移；验证legacy/active/环境逐层回落、修订/时间、有序子表、部分清单不混旧列、Java密文持久化读取、错误不返回半份配置、无关密文不影响当前解析、取消和读取无副作用。容器/证书由脚本清理。最终补充非null温度/预设字段映射也通过。日志：`/private/tmp/personal-ai-os-p3-model-integration-final.log`。
 - `go test -race -count=1 ./...`19包通过（app 94.568s、model 1.225s）；integration标签`go vet ./...`与`go build ./...`通过。固定基线1093文件/104路由/27工具/95钩子/1119测试声明及14个Python测试通过。日志：`/private/tmp/personal-ai-os-p3-race.log`、`/private/tmp/personal-ai-os-p3-vet.log`、`/private/tmp/personal-ai-os-p3-build.log`、`/private/tmp/personal-ai-os-p3-python.log`。
 - 本请求在两项P2修复提交前已运行原Java offline verify（1137测试全通过）及前端类型/生产构建；P3首批未修改Java/前端/SQL，沿用本次已通过门禁，不重复启动原全量测试。P2两项分开提交为`260e5c7`和`6433a0b`。T300/T301父项、T302–T305、P4–P8及五发布门禁保持开放；`check-complete`按预期拒绝（2438项尚未verified及五门禁），不以首批代码冒充全量验收。未装配模型路由/启动应用/协议调用，未推送或部署。
+
+
+## P3 全部收口：配置写入、协议、音频与嵌入缓存（2026-11-03）
+
+T300–T305已完成；此前“P3首批”的未完成描述为历史记录，由本次收口结果覆盖。完整职责/原231个测试声明映射/安全收紧见[p3-completion.md](p3-completion.md)，不在此重复所有实现细节。
+
+- 固定原Java配置/掩码/双向密文脚本重新通过；新增P3原Java差分224场景（39元数据、92目录、14参考、54真实MVC绑定、25探测结果）通过。Go模拟协议还验证OpenAI图片/工具/extra-body/usage/SSE、Ollama聊天/嵌入、取消/无重试/不完整流、探测并发/429/预算和音频HTTP状态。
+- `go test -race -count=1 ./...`19包通过；integration标签vet/build通过。后续新增模拟协议、启动继承、人工窗口和最小P3权限断言均已定向复验。新测试中出现的计数器race和知识表名拼写已修正并重跑通过，未掩盖失败。
+- `run_go_postgres_tests.py --tls --package model --package app --package command`全部通过；原42迁移、事务/密文/并发激活/全14路由及P1/P2装配回归。补充`TestP3StartupLegacyOverrideNamedInheritanceAndManualWindows`及`TestFoundationP3`通过；受限P3角色越权拒绝、撤表写/序列权限后启动拒绝与零连接泄漏通过。NaN真实约束返回安全409，revision/key/list均无残留更改。
+- `run_go_redis_tests.py --tls --package model`通过；专用ACL、TTL/namespace/模型隔离、损坏值、跨实例命中与故障回退验证通过。command组合初次因旧P1脚本假定无模型失败；测试夹具现显式设置两个provider为none，并注入第三个受限Redis账号，完整重跑通过。五角色/双进程/双端口/会话与预算/SIGTERM/启动拒绝清理通过，不用真实模型冒充探测。
+- 原Java重新执行`./mvnw -o -B -Dapp.dotenv.enabled=false verify`通过：1137 tests，0 failures/errors/skipped；JaCoCo行85.79%、分支69.73%，高于原83%/65%门禁。前端`npm run type-check`及`npm run build`通过。最小环境运行，Java/前端/SQL源码未修改，未降低覆盖率或跳过测试。
+- 主要日志：`/private/tmp/personal-ai-os-p3-go-final-verified.log`、`personal-ai-os-p3-postgres-final.log`、`personal-ai-os-p3-model-postgres-final-extra.log`、`personal-ai-os-p3-app-acl-final-verified.log`、`personal-ai-os-p3-command-redis-final-verified.log`、`personal-ai-os-p3-java-verify.log`、`personal-ai-os-p3-frontend.log`。它们均在本机临时目录，长期证据为入库脚本、夹具、断言和本报告。
+
+所有模型网络只到本地模拟器，数据库/Redis只到脚本新建的临时TLS容器，资源已清理。未读取现有.env/真实密钥，未推送/部署。外部将原工作区切到main时，自动checkpoint `cd710f7`保存主体实现；后续在独立工作区的go分支完成收尾，保留main的选择。阶段收口不等于全量release：P4–P8、2438项逐项verified及五个发布门禁仍需后续审计，readyz503与prod拒绝保留。
+
+提交前最终复验：15项Python索引/配置台账测试、1093文件基线/派生索引、78项配置处置及变更Markdown本地链接、git diff --check均通过。`check-complete`仍按预期拒绝全部2438项未verified与五发布门禁。最终完整Go race/vet/build与重试配置收紧后的P3应用/三Redis五角色进程均重新通过。代码与测试已提交为`837f2e5 feat(go): 完成P3模型协议与缓存验收`；本验收文档和台账单独提交。

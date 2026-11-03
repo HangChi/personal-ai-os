@@ -2672,128 +2672,2881 @@
       "note": "T106c–T106g及T200：844个真实基础HTTP场景已对照；幂等路径另实现确定性map键JSON、禁HTML转义与SHA-256。未代替所有未来业务DTO或框架配置验收。 P2审查修复：UpdateTaskRequest可空Boolean的四个原Java摘要已逐项对照，省略/null不再误编码为false。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/model/config.go",
         "backend-go/internal/business/model/read.go",
-        "backend-go/internal/business/model/config_test.go",
-        "backend-go/internal/business/model/java_oracle_test.go",
-        "backend-go/internal/business/model/testdata/java-config-read.json",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "T300a逐字段合并/原始变量来源、旧单行与active读取解析已对照23个Java场景；保存、运行时工厂与启动应用仍待实现。"
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/config/ModelProfileService.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
-        "backend-go/internal/business/model/read.go",
-        "backend-go/internal/business/model/postgres_read.go",
-        "backend-go/internal/business/model/dto.go",
-        "backend-go/internal/business/model/postgres_read_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/postgres_write.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "T300a有序批量档案/模型读取、整子表为空才回落旧列、active优先/V20回落已验证；CRUD/激活/排序写入与运行时应用仍待完成。"
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/config/AiModelConfigRepository.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/model/postgres_read.go",
-        "backend-go/internal/business/model/postgres_read_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/postgres_write.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "T300a原三表查询/排序/批量模型加载与TLS真实库读取已实现；仓储写路径及后续职责未完成。"
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/config/AiModelProfileRepository.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/model/postgres_read.go",
-        "backend-go/internal/business/model/postgres_read_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/postgres_write.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "T300a原三表查询/排序/批量模型加载与TLS真实库读取已实现；仓储写路径及后续职责未完成。"
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/config/AiModelProfileModelRepository.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/model/postgres_read.go",
-        "backend-go/internal/business/model/postgres_read_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/postgres_write.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "T300a原三表查询/排序/批量模型加载与TLS真实库读取已实现；仓储写路径及后续职责未完成。"
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/config/ModelKeyConverter.java": {
       "status": "implemented",
       "evidence": [
         "backend-go/internal/business/model/keys.go",
         "backend-go/internal/business/model/keys_test.go",
-        "backend-go/internal/business/model/java_oracle_test.go",
-        "backend-go/internal/business/model/testdata/java-config-read.json",
-        "backend-go/internal/business/model/postgres_read_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "T301a原格式/AAD/随机IV/认证、旧明文/禁用、错误脱敏及原Java↔Go双向合成密文通过；不能据此关闭T301的业务密钥更新和全路由验收。"
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/config/dto/ModelConfigDto.java": {
       "status": "implemented",
       "evidence": [
         "backend-go/internal/business/model/dto.go",
-        "backend-go/internal/business/model/config.go",
-        "backend-go/internal/business/model/config_test.go",
-        "backend-go/internal/business/model/postgres_read_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "T300a读取DTO字段/null/空集合/来源/掩码/顺序已实现；未代表模型HTTP端点和运行时应用已验收。"
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/config/dto/ModelProfileDto.java": {
       "status": "implemented",
       "evidence": [
         "backend-go/internal/business/model/dto.go",
-        "backend-go/internal/business/model/config.go",
-        "backend-go/internal/business/model/config_test.go",
-        "backend-go/internal/business/model/postgres_read_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "T300a读取DTO字段/null/空集合/来源/掩码/顺序已实现；未代表模型HTTP端点和运行时应用已验收。"
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/config/dto/ModelProfileListDto.java": {
       "status": "implemented",
       "evidence": [
         "backend-go/internal/business/model/dto.go",
-        "backend-go/internal/business/model/config.go",
-        "backend-go/internal/business/model/config_test.go",
-        "backend-go/internal/business/model/postgres_read_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "T300a读取DTO字段/null/空集合/来源/掩码/顺序已实现；未代表模型HTTP端点和运行时应用已验收。"
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
     },
     "file:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
-        "backend-go/internal/business/model/config_test.go",
         "backend-go/internal/business/model/java_oracle_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "已移植配置合并、来源、无默认语音和掩码读取断言；保存/热切换/启动等写侧断言尚未完成。"
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
     },
     "file:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
         "backend-go/internal/business/model/config_test.go",
         "backend-go/internal/business/model/read_test.go",
-        "backend-go/internal/business/model/postgres_read_integration_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "已覆盖读取、批量子表及active/V20解析；CRUD/激活竞争/删除保护/密钥三态/排序写入断言尚未完成。"
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
     },
     "file:backend/src/test/java/com/personalos/common/ai/config/ModelKeyConverterTest.java": {
       "status": "implemented",
       "evidence": [
         "backend-go/internal/business/model/keys_test.go",
         "backend-go/internal/business/model/java_oracle_test.go",
-        "backend-go/internal/business/model/testdata/java-config-read.json",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/p3-completion.md"
       ],
-      "note": "三个原转换器测试的随机IV/认证/旧明文/禁用/非法参数/长Unicode密钥行为已移植，并增加双向Java合成密文证据；未代替整个T301业务写路径。"
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/cache/CachedEmbeddingModel.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/embedding_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/embedding_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/cache/RedisEmbeddingCache.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/cache/SharedEmbeddingCache.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/AiModelConfigEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/postgres_write.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/AiModelProfileEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/postgres_write.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/AiModelProfileModelEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/postgres_write.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/AudioTranscriptionService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ContextWindowRegistrar.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3已提供active窗口查询/失败回落接口并真实库验证；注册到完整ContextBudgetService消费者随T401，未提前宣称P4预算链完成。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ModelConfigController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ModelConfigStartupApplier.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ModelConnectionTestService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ModelListProbeService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/metadata.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/ModelProtocol.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/OpenAiChatModelFactory.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol.go",
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3职责已实现并接显式Foundation/CLI，固定Java差分/模拟协议/真实TLS存储验收通过；详细边界见P3收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/ModelConnectionTestResult.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/ModelListResult.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/ProbeModelsRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/ProbeWindowRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/ReorderModelProfilesRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/SaveModelConfigRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/SaveModelProfileRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/config/dto/TranscriptionResult.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/dto.go",
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/probe.go",
+        "backend-go/internal/business/model/audio.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "DTO与绑定已接14条模型路由，真实MVC差分及原schema副作用验收通过；密钥只返回掩码。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/cache/CachedEmbeddingModelTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/embedding_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/cache/RedisEmbeddingCacheIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/AiModelConfigEntityTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileEntityTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileModelEntityTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/ContextWindowReconcileTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/ModelWindowProbeHttpTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "file:backend/src/test/java/com/personalos/common/ai/config/OpenAiChatModelFactoryTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原测试职责已适配为Go断言并实际执行；逐类映射/中间JPA状态适配及安全诊断差异见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/cache/CachedEmbeddingModelTest.java:14": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/embedding_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 observesWithoutCachingAndEnabledCacheKeepsBatchOrderAndOptionsIsolated 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/cache/CachedEmbeddingModelTest.java:38": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/embedding_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 neverCachesFailures 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/cache/RedisEmbeddingCacheIntegrationTest.java:20": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 sharesVectorsAcrossInstancesWithExpiryNamespaceIsolationAndOutageFallback 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelConfigEntityTest.java:20": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 revisionStartsAtZeroBeforeFirstSave 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelConfigEntityTest.java:32": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 overwriteAdvancesRevisionAndTime 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelConfigEntityTest.java:43": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 allFieldsNullable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelConfigEntityTest.java:64": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 overwriteClearsFieldsWithNull 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelConfigEntityTest.java:79": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 zeroTemperatureIsPreserved 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileEntityTest.java:20": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 newEntityStartsFresh 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileEntityTest.java:31": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 overwriteAdvancesRevisionFromZero 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileEntityTest.java:51": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 renameLeavesRevisionAlone 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileEntityTest.java:64": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 activeFlagToggles 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileEntityTest.java:77": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 reorderTouchesNothingButOrder 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileEntityTest.java:91": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 configFieldsAreNullable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileModelEntityTest.java:28": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 constructorStoresFields 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileModelEntityTest.java:40": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 kindEnumParsesChat 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileModelEntityTest.java:47": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 kindEnumParsesEmbedding 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileModelEntityTest.java:54": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 kindEnumFallsBackToChatWhenNull 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileModelEntityTest.java:66": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 kindEnumFallsBackToChatWhenUnknown 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileModelEntityTest.java:75": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 kindHasExactlyThreeValues 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AiModelProfileModelEntityTest.java:87": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/postgres_read_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 kindEnumRecognizesAudio 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:142": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 transcribesSuccessfully 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:159": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 contentTypeBoundaryMatchesBody 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:176": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 bodyHasFileAndModelParts 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:194": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 defaultsFilename 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:207": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 unavailableWhenNoAudioModel 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:223": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 unauthorizedIsReadable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:237": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 notFoundMentionsPath 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:250": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 nonJsonBodyIsReadable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:262": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 missingTextField 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:274": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 emptyTextIsNotFailure 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:287": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 parsesNestedDataText 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:299": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 emptyAudioRejectedLocally 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceHttpTest.java:311": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 oversizedAudioRejectedLocally 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:33": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 appendsV1 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:40": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 keepsExistingV1 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:47": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 trimsTrailingSlashAndSpaces 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:54": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 keepsPathPrefix 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:62": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 localEndpoint 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:69": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 nullBaseUrlDoesNotThrow 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:78": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 unavailableIsNotAnError 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:90": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 emptyIsSuccess 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:102": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 failedIsNotUnavailable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionServiceTest.java:112": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 successCarriesText 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ContextWindowReconcileTest.java:11": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldRespectSmallerConfiguredWindow 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ContextWindowReconcileTest.java:17": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldPreferLargerProbedWindow 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ContextWindowReconcileTest.java:23": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldUseWhicheverExists 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ContextWindowReconcileTest.java:30": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldReturnNullWhenNeitherKnown 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ContextWindowReconcileTest.java:36": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldBeIdempotent 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:88": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 fallsBackToBuiltInDefaults 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:104": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 usesEnvironmentWhenNoDatabaseRow 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:129": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 mergesPerField 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:150": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 databaseOverridesEverything 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:176": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 audioModelHasNoBuiltInDefault 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:189": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 audioModelFromProfile 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:207": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 revisionStartsAtOne 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:227": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 nullApiKeyKeepsExisting 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:240": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 blankApiKeyClearsAndFallsBack 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:254": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 nonBlankApiKeyOverwrites 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:272": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 resolveFromProfileUsesSameFallback 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:295": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 resolveFromNullProfileFallsBackToEnvironment 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:309": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 resolveFromNullLegacyFallsBackToDefaults 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:320": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 applyResolvedIsAliasOfApplyToRuntime 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:332": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 masksKeepingTail 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:338": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 maskBlankReturnsEmpty 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:346": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 maskShortKeyHidesAll 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:355": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 skipsRuntimeApplyWithoutKey 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:366": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 appliesToRuntimeWithKey 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:377": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 wrapsFactoryFailure 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:390": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 startupWithoutDatabaseRowKeepsModel 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:400": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 startupFailureDoesNotThrow 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:412": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 invalidTemperatureFallsBackToNull 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:461": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 nonBlankValueWithoutDefinedVariableIsDefault 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:477": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 definedVariableIsEnvironment 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java:494": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 databaseWinsOverEnvironmentForSource 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelKeyConverterTest.java:13": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/keys_test.go",
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 encryptionUsesFreshIvAndAuthenticatesCiphertext 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelKeyConverterTest.java:25": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/keys_test.go",
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 legacyAndDisabledBehaviorPreserveLocalConfiguration 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelKeyConverterTest.java:36": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/keys_test.go",
+        "backend-go/internal/business/model/java_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 invalidKeyAndPayloadAreRejectedWithoutLeakingInput 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:106": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 openAiParsesDataIds 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:129": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 anthropicSendsApiKeyHeader 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:147": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaParsesModelNames 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:164": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaStripsV1InRealRequest 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:176": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 deduplicatesModels 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:188": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 acceptsBareArray 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:201": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 acceptsModelsWithId 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:214": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaFallsBackToDataIds 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:229": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 notFoundIsReadable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:241": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 unauthorizedIsReadable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:252": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 forbiddenAndRateLimitedHaveOwnMessages 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:264": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 nonJsonIsReadable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:275": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 emptyListIsReadable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:286": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 connectionRefusedIsReadable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:301": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 notFoundIsUnsupportedKind 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:312": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 methodNotAllowedIsUnsupportedKind 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:322": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 htmlResponseIsUnsupportedKind 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:332": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 emptyListIsUnsupportedKind 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:342": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 realErrorsAreErrorKind 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:360": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 preconditionFailuresAreErrorKind 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:369": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 successHasNullKind 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:377": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 fourArgConstructorDefaultsToError 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:386": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 preconditionsStopBeforeNetwork 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:401": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 nullProtocolFallsBackToOpenAi 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:412": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 trimsKeyInRealRequest 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:422": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 handlesMessyBaseUrlInRealRequest 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:446": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 parsesContextLengthFromOpenAiCompatible 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:464": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 parsesAlternateWindowFieldNames 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:483": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 parsesNestedOllamaModelInfo 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:498": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 absentWindowFieldsYieldEmptyMap 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:511": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 rejectsImplausibleWindowValues 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:545": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 fallsBackToDetailEndpointForWindows 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:569": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 encodesModelNameSegmentsButKeepsSlash 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:584": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 skipsDetailLookupWhenListHasWindows 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:598": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 detailFailureDoesNotBreakProbe 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:612": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaDoesNotProbeDetails 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:627": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 findsDeeplyNestedWindow 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:642": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 detailWindowStillValidated 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:670": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 preferredModelsAreLookedUpEvenWhenFarDownAlphabeticalOrder 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:697": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 preferredModelsMissingFromEndpointAreNotRequested 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:713": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 emptyPreferredListFallsBackToAlphabetical 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:735": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 orderedTargetsPutsPreferredFirstWithoutExceedingLimit 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:756": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 orderedTargetsCapsPreferredAtLimit 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:775": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 orderedTargetsHandlesEmptyInputs 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceHttpTest.java:784": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 rateLimitStopsFurtherDetailLookups 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:31": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 openAiAppendsV1 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:38": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 openAiKeepsExistingV1 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:45": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 trimsTrailingSlashAndSpaces 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:52": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 keepsPathPrefix 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:60": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 singleV1 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:69": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 anthropicAppendsV1Models 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:76": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 anthropicDoesNotDoubleV1 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:85": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaUsesApiTags 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:92": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaStripsV1 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:101": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 openAiUsesBearer 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:109": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 anthropicUsesApiKeyAndVersion 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:121": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaWithoutKeyHasNoAuth 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:129": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaWithKeyUsesBearer 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:137": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 alwaysGetJson 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:146": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 trimsKeyWhitespace 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:156": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 blankProtocolFallsBack 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:163": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 protocolCaseInsensitive 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:170": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 unknownProtocolFallsBack 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:179": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 requiresBaseUrl 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:185": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 requiresKeyForNonOllama 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:194": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaNeedsNoKey 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:201": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 passesWhenReady 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:221": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 tunnelFailureIsHumanized 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:228": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 genericIoIsPrefixed 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:234": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 networkErrorKindsAreDistinct 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:241": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 sslFailureIsReadable 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:247": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 emptyMessageFallsBackToClassName 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:254": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 longMessageIsAbbreviated 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:261": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ignoresDerivedDefaultsWithoutDiscardingActualMetadata 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:274": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 readsOllamaArchitectureAndAnthropicContextMetadata 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceTest.java:282": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/probe_test.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 parsesNestedNumericStringsWithoutOverflowOrConfusingInputAndTotalLimits 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:117": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldIgnoreDerivedWindow 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:131": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldAcceptIndependentWindow 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:141": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldReadTopLevelField 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:151": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldNotDuplicateV1 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:159": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldKeepSlashInModelName 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:167": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldReportRateLimit 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:178": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldReportUnsupportedOn404 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:189": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldReportUnsupportedWhenFieldMissing 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:199": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 shouldRejectBlankInput 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:210": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 detailBaseShouldNormalize 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:218": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 readsModelsThatExposeMetadataOnlyInTheList 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:227": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 distinguishesAuthAndPermissionFailuresAndDoesNotHideThemWithReferences 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:238": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 distinguishesInputLimitFromTotalContext 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:246": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 explainsDefaultParametersInsteadOfPretendingNoResponse 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelListProbeServiceWindowTest.java:255": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 unknownReferencesAreNeverInventedAndHttpFailuresRemainVisible 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:68": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 listReturnsActiveId 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:83": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 listWithoutActiveHasNullId 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:98": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 responseNeverContainsPlaintextKey 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:110": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 blankKeyRendersEmptyMask 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:124": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 createDoesNotSwitchModel 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:139": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 createRejectsBadBaseUrl 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:148": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 createRejectsOutOfRangeTemperature 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:157": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 createRejectsTooLongModelName 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:167": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 createRejectsNullBody 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:177": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 updateActiveProfileReappliesModel 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:189": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 updateInactiveProfileDoesNotReapply 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:203": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 probeModelsUsesFormValues 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:220": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 probeModelsFallsBackToStoredKey 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:235": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 probeModelsFallsBackToStoredEndpointToo 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:249": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 probeModelsWithoutProfileIdDoesNotQueryDatabase 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:265": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 probeModelsPassesProtocol 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:276": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 probeModelsPassesPreferredModels 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:304": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 probeModelsRejectsNullBody 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:312": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 probeModelsRejectsTooLongBaseUrl 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:321": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 probeModelsReturnsOkFalseOnFailure 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:339": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 activateAppliesModel 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:353": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 deleteAcknowledges 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:364": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 reorderDelegatesAndReturnsList 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerTest.java:376": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 reorderNullBodyIsTolerated 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:165": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 createDoesNotActivate 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:176": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 createAppendsToEnd 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:185": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 createRejectsBadName 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:198": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 createTrimsName 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:214": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 activateDeactivatesBeforeActivating 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:231": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 activateSameTwiceIsNoop 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:245": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 activateMissingThrowsNotFound 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:254": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 updateNullApiKeyKeepsExisting 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:268": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 updateBlankApiKeyClears 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:279": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 updateAdvancesRevision 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:297": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 deleteActiveIsRejected 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:310": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 deleteLastOneIsRejected 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:320": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 deleteInactiveSucceeds 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:335": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 reorderAppliesGivenOrder 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:349": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 reorderEmptyIsNoop 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:362": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 resolveCurrentFallsBackToLegacy 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:374": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 resolveCurrentUsesActiveProfile 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:386": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 renameDoesNotTouchRevision 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:400": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 applyCurrentDelegatesToConfigService 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:410": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 firstChatModelBecomesDefault 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:424": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 listIsSanitizedButKeepsOrder 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:436": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 emptyListFallsBackToSingleModel 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:447": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 updateReplacesWholeList 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:463": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 listWinsOverSingleField 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:475": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 modelsOfGroupsByKind 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:489": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 modelsOfBatchCoversAllProfiles 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:508": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 modelsOfEmptyProfiles 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java:514": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/business/model/config_test.go",
+        "backend-go/internal/business/model/read_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 noModelsAtAll 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelWindowProbeHttpTest.java:14": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 fillsMissingWindowsEvenWhenListContainsOtherModelsWindow 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/ModelWindowProbeHttpTest.java:34": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "backend-go/internal/business/model/probe_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 ollamaQueriesShowWithOriginalModelTag 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/OpenAiChatModelFactoryTest.java:79": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 serverErrorsAreNotRetriedBySdk 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/OpenAiChatModelFactoryTest.java:101": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 startupConfigurationDisablesSdkRetries 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/OpenAiChatModelFactoryTest.java:123": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 sendsApiKeyAsBearerToken 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/OpenAiChatModelFactoryTest.java:135": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 sendsModelInBody 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/OpenAiChatModelFactoryTest.java:153": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 appliesTemperature 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/OpenAiChatModelFactoryTest.java:165": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 omitsTemperatureWhenNull 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/OpenAiChatModelFactoryTest.java:176": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 appliesExtraBody 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "test:backend/src/test/java/com/personalos/common/ai/config/OpenAiChatModelFactoryTest.java:195": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/protocol_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原断言 canPerformRealCall 的职责映射到同类Go行为测试；实际执行命令与JPA中间状态/安全文案适配见P3收口报告。"
+    },
+    "route:GET:/api/v1/chat/transcribe/status:backend/src/main/java/com/personalos/chat/controller/AudioTranscriptionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:POST:/api/v1/chat/transcribe:backend/src/main/java/com/personalos/chat/controller/AudioTranscriptionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:GET:/api/v1/settings/model:backend/src/main/java/com/personalos/common/ai/config/ModelConfigController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:PUT:/api/v1/settings/model:backend/src/main/java/com/personalos/common/ai/config/ModelConfigController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:POST:/api/v1/settings/model/test:backend/src/main/java/com/personalos/common/ai/config/ModelConfigController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:GET:/api/v1/settings/model/profiles:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:POST:/api/v1/settings/model/profiles:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:PUT:/api/v1/settings/model/profiles/{id}:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:POST:/api/v1/settings/model/profiles/{id}/activate:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:DELETE:/api/v1/settings/model/profiles/{id}:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:PUT:/api/v1/settings/model/profiles/order:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:POST:/api/v1/settings/model/profiles/test:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:POST:/api/v1/settings/model/profiles/probe-models:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "route:POST:/api/v1/settings/model/profiles/probe-window:backend/src/main/java/com/personalos/common/ai/config/ModelProfileController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原路由已接Foundation原安全链，真实42迁移TLS库/本地模拟协议验证响应与副作用；Worker不暴露业务路由。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java:14:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原配置/事件职责由显式构造装配：模型工厂注册、嵌入装饰与第三专用Redis；不依赖自动Bean扫描，不自动请求上游。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java:12:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原配置/事件职责由显式构造装配：模型工厂注册、嵌入装饰与第三专用Redis；不依赖自动Bean扫描，不自动请求上游。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java:14:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原配置/事件职责由显式构造装配：模型工厂注册、嵌入装饰与第三专用Redis；不依赖自动Bean扫描，不自动请求上游。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java:20:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原配置/事件职责由显式构造装配：模型工厂注册、嵌入装饰与第三专用Redis；不依赖自动Bean扫描，不自动请求上游。"
+    },
+    "hook:backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java:464:EventListener": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "原配置/事件职责由显式构造装配：模型工厂注册、嵌入装饰与第三专用Redis；不依赖自动Bean扫描，不自动请求上游。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/AiChatClientProvider.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/runtime.go",
+        "backend-go/internal/business/model/runtime_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3已实现模型引用/按名继承/单次并发构造与失代；Advisor、双客户端工具/预算组合仍属P4。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/ContextWindowEvidence.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/evidence.go",
+        "backend-go/internal/business/model/runtime_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3已实现按模型/代隔离的被动上下界证据；接聊天预算/收敛重试和usage消费随P4。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/ModelContextWindows.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/windows.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3已实现并差分固定Java窗口目录；P4预算消费者仍待实施。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/ModelWindowReferences.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/windows.go",
+        "backend-go/internal/business/model/p3_oracle_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3已实现并差分官方参考及保守输入上限；完整预算消费者仍待实施。"
+    },
+    "file:backend/src/main/java/com/personalos/common/ai/RuntimeChatModelResolver.java": {
+      "status": "in_progress",
+      "evidence": [
+        "backend-go/internal/business/model/runtime.go",
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/runtime_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "P3按名解析接口已提供与验证；会话/消息持久化消费者仍属P4。"
+    },
+    "file:backend/src/main/java/com/personalos/chat/controller/AudioTranscriptionController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/model/http.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "backend-go/internal/app/foundation_model_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
+      ],
+      "note": "音频status/transcribe在P3完成并通过共享multipart/安全链验证；附件与聊天语音消息落库链仍属P4。"
     }
   },
   "release_gates": {

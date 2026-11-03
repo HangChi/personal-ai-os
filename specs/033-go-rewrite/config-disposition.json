@@ -310,12 +310,15 @@
       "expression": "${app.redis.uri}",
       "phase": "P3",
       "task": "T304",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "embedding共享缓存URI/命名空间/150ms超时；区别于P1两个专用Redis",
+      "note": "第三专用Redis客户端已接CLI/Foundation；哈希namespace、150ms超时、TLS/最小ACL与故障回退已验收",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java"
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ]
     },
     {
@@ -325,12 +328,15 @@
       "expression": "${app.redis.timeout-ms:150}",
       "phase": "P3",
       "task": "T304",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "embedding共享缓存URI/命名空间/150ms超时；区别于P1两个专用Redis",
+      "note": "第三专用Redis客户端已接CLI/Foundation；哈希namespace、150ms超时、TLS/最小ACL与故障回退已验收",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java"
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ]
     },
     {
@@ -340,12 +346,15 @@
       "expression": "${app.redis.namespace}",
       "phase": "P3",
       "task": "T304",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "embedding共享缓存URI/命名空间/150ms超时；区别于P1两个专用Redis",
+      "note": "第三专用Redis客户端已接CLI/Foundation；哈希namespace、150ms超时、TLS/最小ACL与故障回退已验收",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/cache/RedisCacheConfig.java"
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ]
     },
     {
@@ -355,12 +364,14 @@
       "expression": "${spring.ai.openai.base-url:}",
       "phase": "P3",
       "task": "T300",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "note": "配置逐字段回落/原始环境来源已接持久化、启动覆盖和运行时工厂",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/write_integration_test.go"
       ]
     },
     {
@@ -370,12 +381,14 @@
       "expression": "${spring.ai.openai.api-key:}",
       "phase": "P3",
       "task": "T300",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "note": "配置逐字段回落/原始环境来源已接持久化、启动覆盖和运行时工厂",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/write_integration_test.go"
       ]
     },
     {
@@ -385,12 +398,14 @@
       "expression": "${spring.ai.openai.chat.model:}",
       "phase": "P3",
       "task": "T300",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "note": "配置逐字段回落/原始环境来源已接持久化、启动覆盖和运行时工厂",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/write_integration_test.go"
       ]
     },
     {
@@ -400,12 +415,14 @@
       "expression": "${spring.ai.openai.embedding.model:}",
       "phase": "P3",
       "task": "T300",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "note": "配置逐字段回落/原始环境来源已接持久化、启动覆盖和运行时工厂",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/write_integration_test.go"
       ]
     },
     {
@@ -415,12 +432,14 @@
       "expression": "${spring.ai.openai.chat.temperature:}",
       "phase": "P3",
       "task": "T300",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "note": "配置逐字段回落/原始环境来源已接持久化、启动覆盖和运行时工厂",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/write_integration_test.go"
       ]
     },
     {
@@ -430,12 +449,13 @@
       "expression": "${app.model-key-encryption-key:}",
       "phase": "P3",
       "task": "T301",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "密钥转换器不在P1中使用真实密钥或解密业务数据",
+      "note": "原AES-GCM格式及三态密钥写入已接仓储；仅用合成密钥双向Java对照",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/config/ModelKeyConverter.java"
+        "backend-go/internal/business/model/keys.go",
+        "backend-go/internal/business/model/write_integration_test.go",
+        "scripts/migration/java_model_config_fixture.py"
       ]
     },
     {
@@ -1091,12 +1111,15 @@
       "dynamic_key": false,
       "phase": "P3",
       "task": "T304",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "缓存开关/容量/TTL与指纹键随真实模型缓存迁移",
+      "note": "默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java"
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ]
     },
     {
@@ -1110,12 +1133,15 @@
       "dynamic_key": false,
       "phase": "P3",
       "task": "T304",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "缓存开关/容量/TTL与指纹键随真实模型缓存迁移",
+      "note": "默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java"
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ]
     },
     {
@@ -1129,12 +1155,15 @@
       "dynamic_key": false,
       "phase": "P3",
       "task": "T304",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "缓存开关/容量/TTL与指纹键随真实模型缓存迁移",
+      "note": "默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java"
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ]
     },
     {
@@ -1148,7 +1177,7 @@
       "dynamic_key": true,
       "phase": "P3",
       "task": "T304",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [
         "spring.ai.model.embedding",
         "spring.ai.openai.base-url",
@@ -1157,10 +1186,13 @@
         "spring.ai.ollama.embedding.model",
         "app.embedding-cache.revision"
       ],
-      "note": "缓存开关/容量/TTL与指纹键随真实模型缓存迁移",
+      "note": "默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java"
+        "backend-go/internal/business/model/embedding.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/cmd/personalos/startup.go",
+        "backend-go/internal/business/model/redis_integration_test.go",
+        "specs/033-go-rewrite/p3-completion.md"
       ]
     },
     {
@@ -1174,17 +1206,19 @@
       "dynamic_key": true,
       "phase": "P3",
       "task": "T300",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [
         "OPENAI_BASE_URL",
         "OPENAI_API_KEY",
         "OPENAI_CHAT_MODEL",
         "OPENAI_EMBEDDING_MODEL"
       ],
-      "note": "模型配置值与原始环境来源判定均随模型持久化迁移",
+      "note": "配置逐字段回落/原始环境来源已接持久化、启动覆盖和运行时工厂",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java"
+        "backend-go/internal/business/model/config.go",
+        "backend-go/internal/business/model/write.go",
+        "backend-go/internal/business/model/module.go",
+        "backend-go/internal/business/model/write_integration_test.go"
       ]
     },
     {
