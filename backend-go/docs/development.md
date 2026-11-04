@@ -91,6 +91,21 @@ python3 scripts/migration/run_go_paired_eval_tests.py \
 
 2026-11-04首轮`p8-eval-paired-20261104-233557.json`实际退出0：129题完整标题顺序/严格及判平名次全相同，索引全行哈希不变；该轮R@5同96.124%、各五miss。164次真实embedding、零chat、129次Go精确回放，零上游失败/重试，进程/容器清理。只证明这组同输入结果一致，先前独立调用的四miss与指标差异保持；不得合并为同一轮或自动批准质量。
 
+原合成政策冲突/澄清场景使用独立入口，不调用原脚本的固定容器、端口、共享状态或`.env`运行时：
+
+```bash
+python3 scripts/migration/run_go_live_conflict_tests.py \
+  --model-env-file /absolute/project/.env --backend go
+python3 scripts/migration/run_go_live_conflict_tests.py \
+  --model-env-file /absolute/project/.env --backend java
+```
+
+每次新建TLS PostgreSQL/pgvector和独立OpenSearch（固定本地镜像digest、随机回环端口、tmpfs、内存限制），凭据/认证CSRF只属于本次夹具。验证原脚本固定SHA后仅执行原场景try/finally及最终断言，排除其共享环境/正式库准备代码；两份政策、三条问题及CONFLICT/CONFLICT/CLARIFY/双来源/不回答断言原样保留。另核对引用真实持久分块及四阶段全OK/每题三次前台chat；回答仅私有0600文件，Git只收状态/计数/来源SHA。首轮Go缺可选搜索服务的404失败保留，补齐本次真实OpenSearch后Go/Java各三场景全部通过，各11 embedding/9 chat、零上游失败或重试。报告`p8-live-conflicts-go-20261104-234459.json`、`p8-live-conflicts-java-20261104-234606.json`；不替代完整原18条项目知识RAG场景、129条公开文章多阶段或Agent/发布验收。
+
+另加`--mode ingestion-review`执行原两份合成政策后台审查：先关闭本次后台审查上传/设元数据，再停止旧进程并核对连接归零，只重启本次候选开启审查并重新登录。原110秒期限、两份CHECKED_CANDIDATES及OPEN冲突断言保留；UNAVAILABLE不手工重复提交，明确失败并保存状态。默认模型上限不变，既有用户库/配置及生产开关均不触碰。
+
+2026-11-04两端后台审查首轮通过，报告`p8-live-ingestion-review-go-20261104-234857.json`、`p8-live-ingestion-review-java-20261104-235054.json`，各4 embedding/2 chat、零失败重试、一次受控重启和清理归零。OPEN冲突实际Go1/Java2，原断言仅要求存在，保留数量差异而不据此声称全部结果等价；合成政策不是用户存量资料验收。
+
 另加`--mode no-evidence`运行一个补充负例“量子引力理论能否解释黑洞信息悖论的最终答案是什么？”，不是原标注查询。每端仍重新上传16篇并核验142向量；关闭隔离进程后台审查，明确执行原查询0条、84条材料齐备题未执行、45条缺材料，不跑检索/噪声套件或生成质量比较。严格要求answered=false、空引用/命中、固定无内容答复、INSUFFICIENT、四阶段全OK/零warning及恰好三次前台chat，不能调用最终回答模型。
 
 ```bash

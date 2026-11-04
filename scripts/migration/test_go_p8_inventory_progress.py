@@ -31,6 +31,9 @@ class P8InventoryDispositionTest(unittest.TestCase):
             self.assertIn("specs/033-go-rewrite/p8-real-model-review-20261104-232203.json", entry["evidence"])
             self.assertIn("specs/033-go-rewrite/p8-eval-paired-20261104-233557.json", entry["evidence"])
             self.assertIn("该轮共同五miss", entry["note"])
+            self.assertIn("specs/033-go-rewrite/p8-live-conflicts-java-20261104-234606.json", entry["evidence"])
+            self.assertIn("specs/033-go-rewrite/p8-live-ingestion-review-go-20261104-234857.json", entry["evidence"])
+            self.assertIn("开放冲突Go1/Java2差异保留", entry["note"])
             self.assertIn("specs/033-go-rewrite/p8-real-model-review.json", entry["evidence"])
         for group in ("java_test_cases", "tools"):
             for entry in self.inventory[group]:

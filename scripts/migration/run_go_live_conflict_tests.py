@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Frozen three-case real-model conflict/clarification evaluation on a fresh TLS database."""
+"""Frozen real-model policy conflicts or background review on a fresh TLS database."""
 import argparse
 from contextlib import ExitStack
 from datetime import datetime, timezone

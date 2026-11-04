@@ -1,5 +1,15 @@
 # 验证记录
 
+## 2026-11-04 P8 原真实模型政策冲突与后台审查
+
+`75a7afa`先提交原场景固定SHA/原try-finally与最终断言、独立HTTP/私有报告适配。首轮Go缺可选搜索的404失败报告`p8-live-conflicts-go-20261104-234305.json`与日志`/tmp/personalos-p8-real-conflicts-go-1.log`保留；`6dbf847`增加独立真实OpenSearch（原本地镜像digest、随机回环、tmpfs、1536m）后，Go第二轮`p8-live-conflicts-go-20261104-234459.json`及Java首轮`p8-live-conflicts-java-20261104-234606.json`实际均退出0。各新TLS库/42迁移/认证CSRF、三原问题及期望不改，均CONFLICT/CONFLICT/CLARIFY、不回答/双来源，四阶段全OK/零warning、每题三次实际chat、全部引用匹配持久分块；各11 embedding/9 chat，零上游失败或重试，默认模型上限不变。Go/Java原finally清理四表归零、停机连接归零及本次两容器清理，报告及时提交`ad66f70`/`5b981bc`。
+
+`2fa1936`提交原后台两政策场景隔离重启适配，原110秒和两来源CHECKED_CANDIDATES/存在OPEN冲突断言不改。只停旧候选/核对连接0后重启本次候选开启审查并重新登录；拒绝UNAVAILABLE手工重试，不清除现有review-job或读共享配置/模型档案。Go`p8-live-ingestion-review-go-20261104-234857.json`和Java`p8-live-ingestion-review-java-20261104-235054.json`首轮均退出0，各4 embedding/2 chat、零失败重试、四表及停机连接归零、两临时容器清理。OPEN冲突实际Go1/Java2，原断言通过但保留数量差异，不判定全量等价。日志`/tmp/personalos-p8-real-ingestion-{go,java}-1.log`；Go报告及时提交`e1c1b61`。
+
+六项场景/归属/脱敏/重启与不重试工具单测通过；首轮ingestion单测mock清理参数错误已修正，失败日志`/tmp/personalos-p8-live-ingestion-tooling.log`保留。完整138项Python迁移回归通过（7.709s，`/tmp/personalos-p8-python-with-ingestion.log`）。这两种原场景已执行，不再作为完全缺材料项；18条项目知识RAG场景、公开文章另128题多阶段、完整Agent和真实存量/事实/发布仍开放，父项与五门禁不升级。
+
+最终证据台账更新后完整138项Python复验通过（9.944s，`/tmp/personalos-p8-python-evidence-final.log`）。固定1093原文件/104路由/27工具/95钩子/1119声明、78配置处置、144声明映射及全文件派生台账/diff检查全部通过；逐项比较2415 implemented/23 in_progress和五release_gates与前次提交不变，零verified。`go_inventory.py check-complete`仍实际退出1（`/tmp/personalos-p8-check-complete-evidence-final.log`），2438项未verified、五门禁未验证，不伪造P8全部完成。两种独立Docker归属标签分别检查均无残留；本批无Go生产源码修改，不重复已通过且未变的Go全量长回归。原Java/前端/SQL/评估及所有失败报告保持，没有推送/合并/生产部署。
+
 ## 2026-11-04 P8 同输入真实向量检索定位
 
 新增同索引/真实查询向量回放runner，五项定向边界单测通过，完整132项Python回归通过（4.482s，`/tmp/personalos-p8-python-with-paired.log`），先提交`eb592a0`。实际首轮新TLS库/原42迁移/认证CSRF、固定Java上传完整26篇/241向量/输入SHA核验，129条原查询真实向量录制后停机，Go同库依序精确回放，实际退出0（`/tmp/personalos-p8-real-paired-1.log`）。报告`p8-eval-paired-20261104-233557.json`已及时提交`d3aa181`；129题标题顺序、严格和判平名次全一致，文档/向量/Flyway全行哈希前后一致，两端连接归零并清理本次资源。

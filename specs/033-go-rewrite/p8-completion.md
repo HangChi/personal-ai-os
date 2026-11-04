@@ -10,14 +10,32 @@
 
 新增同输入定位对照已完成：在同一份新隔离索引和129个真实查询向量下，两端所有标题顺序/严格/判平名次一致，索引不变；该轮共同五miss。它只隔离该次检索实现，Go向量为精确回放而非重新调用上游，不推翻前次独立调用的四miss/指标差异，也不批准事实质量或完整多阶段。
 
+原合成政策冲突/澄清三场景和后台两来源审查亦已在两端使用真实模型完成，见T801p/q。它们不再是完全未执行项；后台OPEN冲突数量Go1/Java2差异保留，且不替代真实存量审查、18条原项目知识RAG场景或完整Agent。
+
 | 项目 | 当前证据与下一步所需条件 |
 | --- | --- |
 | T800 生产入口 | 私有CA/续期/重启已通过；还需受控公网域名、ACME/DNS挑战与实际续期证据，以及明确生产部署批准。prod拒绝/readyz503保留。 |
 | T801 告警通知 | 独立Alertmanager和本地HTTP接收端触发/重试/恢复已验证；真实渠道还需显式提供测试收件配置、发送授权与最终接收确认。六条规则单测不等于六种持续真实故障。 |
-| T801/T804 原评估 | 已完成26篇/129原查询双端真实模型全量执行，每端241向量输入核对、两次传统问答/引用及50噪声请求；R@5同96.90%、各四条漏召回，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915。完整库BRIN单题多阶段通过，另128题未跑。旧无证据负例CLARIFY未满足严格INSUFFICIENT仍FAIL。历史快照身份、人工事实审查、完整多阶段/Agent/后台审查及指标差异未验收，不解除质量门禁。 |
+| T801/T804 原评估 | 已完成26篇/129原查询双端真实模型全量执行，每端241向量输入核对、两次传统问答/引用及50噪声请求；R@5同96.90%、各四条漏召回，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915。同索引/真实向量129题回放名次全一致但该轮各五miss。BRIN单题多阶段、原政策三场景冲突/澄清与两来源后台审查双端通过；后台冲突数量Go1/Java2保留。公开文章另128题多阶段、18条原项目知识RAG场景、完整Agent未跑；旧无证据负例严格INSUFFICIENT仍FAIL。历史身份/人工事实、真实存量与指标差异未验收，不解除质量门禁。 |
 | T802 浏览器验收 | 原E2E两端全84项同为81通过/1预算失败/1 saveMemory跳过/1工具超限观察；独立预算边界确认长当前输入本地拒绝、旧历史可裁剪且不删库、恢复可继续，原case仍FAIL。仍需原跳过/观察及预算契约审查，真实Push未送达，保留原30秒/15秒期限。 |
 | T804/T805 存量与切换 | 合成Java备份→Go→Java回退已通过；还需明确授权的真实备份副本及密钥/附件/S3恢复材料、目标负载与容量标准、待办及外部副作用清单。只在新隔离目标恢复，不能直接操作当前服务或重放未知TOOL。 |
 | T803/T806/T808 证据与批准 | 全清单处置已记录；五release_gates仍需逐项人工核验和用户验收。Java归档须在验收后另作明确决定；不自动推送、合并、生产部署或删除原实现。 |
+
+## T801q 原后台入库审查与受控重启
+
+`2fa1936`提交原`rag-live-ingestion.py`固定SHA场景适配：原两政策/元数据、110秒期限、两来源CHECKED_CANDIDATES与存在OPEN冲突的最终断言原样执行；不执行原共享库review-job清除、固定环境加载或读取现有模型档案。先在本次新TLS空库/真实OpenSearch、关闭后台审查时上传，停止本次旧候选并核对连接0，再只重启该候选开启审查/重新认证。若UNAVAILABLE，拒绝原脚本的手工重复审查分支并保留失败，不靠重试通过；默认模型上限不变。
+
+Go实际首轮退出0，报告[`p8-live-ingestion-review-go-20261104-234857.json`](p8-live-ingestion-review-go-20261104-234857.json)，日志`/tmp/personalos-p8-real-ingestion-go-1.log`，及时提交`e1c1b61`。固定Java首轮亦退出0，报告[`p8-live-ingestion-review-java-20261104-235054.json`](p8-live-ingestion-review-java-20261104-235054.json)，日志`/tmp/personalos-p8-real-ingestion-java-1.log`。均在原期限内两来源CHECKED_CANDIDATES、零手工重试、实际4 embedding/2 chat、零上游失败/重试；Go4060 total tokens。原finally清理后文档/向量/来源/审查任务均0，两次停止连接归零、本次PostgreSQL/OpenSearch容器清理。
+
+开放冲突数量Go1、Java2，明确保留差异。原断言要求至少一个开放冲突，两端据此通过；不能据此声称冲突去重/数量相同或直接断定实现缺陷，因为模型调用及不同引用选择独立。工具单测覆盖原成功和UNAVAILABLE时拒绝重复审查及finally删除；首轮单测mock只接收一个参数而清理传两个参数导致失败，已修正mock并保留日志`/tmp/personalos-p8-live-ingestion-tooling.log`，六项定向复验通过（`/tmp/personalos-p8-live-ingestion-tooling-green.log`）。完整138项迁移Python测试通过（7.709s，`/tmp/personalos-p8-python-with-ingestion.log`）。仅关闭这两合成政策的原后台场景，不是全量用户知识事实审查或发布批准，父项/五门禁保持。
+
+## T801p 原真实模型冲突与澄清三场景
+
+原`rag-live-conflicts.py`固定SHA验证后，原场景try/finally和最终断言直接编译执行，不改两份500/800元政策、三个问题、CONFLICT/CONFLICT/CLARIFY/answered=false/双来源断言。只替换IO绑定：认证CSRF、本次随机TLS库与真实OpenSearch（原本地3.9.0镜像digest、随机回环端口、tmpfs、1536m上限），不执行原共享状态/固定端口/正式库或根环境配置加载；密钥仍只从模型白名单读取。新增原断言拒绝缺来源、越界HTTP拒绝、公开报告脱敏及OpenSearch归属/端口/存储边界测试，`75a7afa`先提交工具。
+
+Go首轮在原搜索就绪GET返回404退出1，报告`p8-live-conflicts-go-20261104-234305.json`和`/tmp/personalos-p8-real-conflicts-go-1.log`保留；当时未启用可选搜索服务，没有将404变成成功。`6dbf847`补齐独立真实OpenSearch前置条件后，Go第二轮报告[`p8-live-conflicts-go-20261104-234459.json`](p8-live-conflicts-go-20261104-234459.json)、日志`/tmp/personalos-p8-real-conflicts-go-2.log`实际退出0，及时提交`ad66f70`。固定Java独立首轮报告[`p8-live-conflicts-java-20261104-234606.json`](p8-live-conflicts-java-20261104-234606.json)、日志`/tmp/personalos-p8-real-conflicts-java-1.log`实际退出0，及时提交`5b981bc`。
+
+两端各三场景均匹配原期望，引用两来源、不提供确定答案，四阶段全OK/零warning、每题三次真实前台chat，无最终回答调用；额外核对每条引用内容/标题/文档ID/分块序号和持久库SHA。各11 embedding/9 chat，Go8194/Java8157 total tokens，无上游失败/重试，默认600请求/12chat/百万字符上限不变。原finally清理后文档/向量/来源/审查任务均0，进程停机连接0、本次两个容器清理。最新完整137项Python测试通过（11.276s，`/tmp/personalos-p8-python-live-conflicts-final.log`）；后台审查工具新增后完整138项通过（7.709s，`/tmp/personalos-p8-python-with-ingestion.log`），不把工具测试当真实后台验收。该子项不是18条原项目知识RAG场景、129条公开文章全多阶段、Agent、真实存量事实或发布验收，父项/五门禁保持。
 
 ## T801o 同一索引与真实查询向量的完整检索定位
 

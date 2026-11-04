@@ -178,9 +178,17 @@ def disposition(entry, old):
                            "scripts/migration/run_go_paired_eval_tests.py",
                            "scripts/migration/test_go_paired_eval.py",
                            "specs/033-go-rewrite/p8-eval-paired-20261104-233557.json",
+                           "scripts/migration/go_live_conflicts.py",
+                           "scripts/migration/test_go_live_conflicts.py",
+                           "scripts/migration/run_go_live_conflict_tests.py",
+                           "specs/033-go-rewrite/p8-live-conflicts-go-20261104-234305.json",
+                           "specs/033-go-rewrite/p8-live-conflicts-go-20261104-234459.json",
+                           "specs/033-go-rewrite/p8-live-conflicts-java-20261104-234606.json",
+                           "specs/033-go-rewrite/p8-live-ingestion-review-go-20261104-234857.json",
+                           "specs/033-go-rewrite/p8-live-ingestion-review-java-20261104-235054.json",
                            "specs/033-go-rewrite/p8-real-model-review.json"]
         negative_note = "补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
-        full_note = "完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。完整库BRIN多阶段四次调用/引用通过，另128题未执行、零缺材料；历史快照身份/人工事实/完整RAG与Agent/后台审查仍开放，五门禁保持。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。"
+        full_note = "完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。完整库BRIN多阶段四次调用/引用通过，另128题未执行、零缺材料；历史快照身份/人工事实/完整RAG与Agent/真实存量审查仍开放，五门禁保持。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。"
         if path == "scripts/eval/fetch-corpus-juejin.py":
             return "in_progress", "retained-live-evaluation-open", public_evidence, "原提取器固定SHA复用；16篇直接抓取、6篇补取及4篇正常浏览器呈现DOM经来源收据/哈希校验后完整26篇已齐，全文仅私有目录，不冒充原始HTTP或历史快照。原fetch/main未操作；原查询/标注本来在仓库，不再缺10篇或45题材料。" + full_note
         if path in {"scripts/eval/queries.py", "scripts/eval/rebuild-corpus.py", "scripts/eval/retrieval-eval.py", "scripts/eval/noise-floor.py"}:
