@@ -22,3 +22,11 @@ P7 开始于 2026-11-04，T700–T705 仍按实际验收逐项关闭；P8 和五
 - 加法 HTTP 配置：`mcp.http-servers.<name>.endpoint/headers/auto-tools/connect-timeout`，环境变量使用 `MCP_HTTPSERVERS_<NAME>_ENDPOINT`；与 stdio 同名拒绝。
 - CLI `--p7` 包含 P6/P5，默认开关、生产拒绝与 readiness 守卫不变。
 - 定向 P7 race 测试通过，最终整体验收后关闭 T700–T702。
+
+## 批次 3：五模块全局搜索
+
+- 任务/对话/日程/知识库/记忆贡献器，中文模块名排序、空组省略、返回条数求和。
+- 关键词 Java strip、100 UTF-16 限制；limit 默认 5、钳制 1–20；参数化 SQL 显式转义 `%`、`_` 和反斜线。
+- 对话标题优先，再按消息内容补齐；知识标题/文件名优先，再由正文补齐，均按实体去重。
+- 独立模块读事务，失败不污染其他组；正文脏 document_id 不做不安全 UUID 强转。
+- 纯服务/HTTP 定向 race 通过；真实 SQL 与 P7 路由在下一批集成验收。

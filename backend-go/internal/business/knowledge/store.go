@@ -42,6 +42,9 @@ type Store struct {
 	table     string
 }
 
+// VectorTable returns only the identifier validated by NewStore; callers cannot inject SQL names.
+func (s *Store) VectorTable() string { return s.table }
+
 var safeIdentifier = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
 func NewStore(ctx context.Context, pool *database.Pool, reader Reader, embedding model.EmbeddingModel, locks *coordination.Coordinator, schema, table string) (*Store, error) {
@@ -170,12 +173,15 @@ func (s *Store) PrepareChunks(ctx context.Context, upload Upload, id string) ([]
 	if len(blocks) == 0 {
 		return nil, unsupported("解析后没有可索引的内容")
 	}
+	return s.prepareTextChunks(ctx, blocks, id, upload.Title, upload.Filename)
+}
+func (s *Store) prepareTextChunks(ctx context.Context, blocks []string, id, title, filename string) ([]Chunk, error) {
 	if s.Embedding == nil {
 		return nil, api.NewBusinessError(api.AINotConfigured, api.AINotConfigured.Message())
 	}
 	chunks := make([]Chunk, len(blocks))
 	for i, text := range blocks {
-		chunks[i] = Chunk{ID: newID(), Content: text, Metadata: map[string]any{"document_id": id, "document_title": upload.Title, "filename": upload.Filename, "chunk_index": i}}
+		chunks[i] = Chunk{ID: newID(), Content: text, Metadata: map[string]any{"document_id": id, "document_title": title, "filename": filename, "chunk_index": i}}
 	}
 	// 限制单次模型批量；全部嵌入准备完成之后才进入最终写事务。
 	for start := 0; start < len(blocks); start += 100 {
