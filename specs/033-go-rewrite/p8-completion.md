@@ -118,3 +118,9 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 核查原ListSearchIntegrationTest.taskTagsAreBatchLoaded发现Go列表与搜索逐任务读取标签，违反原最多三次查询的断言。改为按最多1000个UUID分批读取标签，保留任务顺序、tag_index顺序及非nil空标签；单任务读取不变。真实pgx驱动装饰器计数，不以SQL字符串或内存mock证明查询数。
 
 `python3 scripts/migration/run_go_postgres_tests.py --package task --tls`全部race通过（1.970s），日志`/tmp/personalos-p8-task-batch.log`。新增TestPostgresP8TaskBatchTagsPaginationAndStats验证25条合成任务：20条页恰好三查询、ID批取恰好两查询、每四条翻页无重漏且顺序一致、标签顺序、溢出页只计总数、全局待办统计随完成减一。仅删除本测试创建的ID，临时TLS容器已清理；不据此把原任务全部声明标为verified。
+
+## T803c 任务原断言补验
+
+新增三个真实库用例，逐项补足原任务测试的遗漏：标签持久顺序、PATCH省略保持描述/截止/标签、替换与空数组、标签精确匹配/去重列表/删除级联；未完成优先/截止升序/null在后、批删51个拒绝及重复/缺失ID的实际影响数；TODO与DOING重复完成不覆盖previous_status，重开清完成时间并重新计算下一轮；Schedule/Priority确认前均无写入、确认后准确生效。单测另覆盖nil/空标签非nil列表、恰好20个UTF-16单位/5标签、先去重再限量。
+
+`python3 scripts/migration/run_go_postgres_tests.py --package task --tls`全包race通过（2.556s），日志`/tmp/personalos-p8-task-contracts.log`，所有临时资源已清理。原Java断言未修改，发布门禁保持开放。

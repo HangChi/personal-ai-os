@@ -1,6 +1,8 @@
 package task
 
 import (
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -25,6 +27,25 @@ func TestCompletionRestoresPreviousStatus(t *testing.T) {
 	}
 	if task.Status != Doing || task.CompletedAt != nil || task.PreviousStatus != nil {
 		t.Fatalf("reopened=%+v", task)
+	}
+}
+
+func TestP8TagEmptyUniqueAndExactBoundaries(t *testing.T) {
+	for _, values := range [][]string{nil, {}, {"  ", ""}} {
+		tags, err := NormalizeTags(values)
+		if err != nil || tags == nil || len(tags) != 0 {
+			t.Fatal("empty tags must be a nonnil list", err)
+		}
+	}
+	for _, values := range [][]string{{strings.Repeat("标", 20)}, {"a", "b", "c", "d", "e"}, {strings.Repeat("😀", 10)}} {
+		tags, err := NormalizeTags(values)
+		if err != nil || !reflect.DeepEqual(tags, values) {
+			t.Fatal("exact boundary rejected", err)
+		}
+	}
+	tags, err := NormalizeTags([]string{"a", "a", "b", "b", "c", "c"})
+	if err != nil || !reflect.DeepEqual(tags, []string{"a", "b", "c"}) {
+		t.Fatal("limit applied before deduplication", err)
 	}
 }
 func TestQueryAndTitleBoundaries(t *testing.T) {
