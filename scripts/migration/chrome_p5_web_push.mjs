@@ -7,9 +7,9 @@ import { tmpdir } from 'node:os'
 import { once } from 'node:events'
 import { parseArgs } from 'node:util'
 import { setTimeout as timeout } from 'node:timers/promises'
-import { gcmSnapshot } from './chrome_push_diagnostics.mjs'
+import { chromeLaunchArgs, gcmSnapshot } from './chrome_push_diagnostics.mjs'
 const dir = await mkdtemp(join(tmpdir(), 'personalos-p5-chrome-'))
-const {values: arguments_} = parseArgs({options: {report: {type: 'string'}}})
+const {values: arguments_} = parseArgs({options: {report: {type: 'string'}, headed: {type: 'boolean', default: false}}})
 let receive
 const received = new Promise(resolve => { receive = resolve })
 let controlReceive
@@ -63,7 +63,7 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
 const origin = `http://127.0.0.1:${server.address().port}`
 const profile = join(dir, 'profile')
 const chrome = spawn(process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  ['--headless', '--disable-gpu', '--no-first-run', '--remote-debugging-port=0', `--user-data-dir=${profile}`, origin],
+  chromeLaunchArgs(profile, origin, arguments_.headed),
   {stdio:'ignore'})
 let ws
 let registrationId
@@ -199,6 +199,7 @@ try {
   await rm(dir, {recursive: true, force: true})
   if (arguments_.report) await writeFile(arguments_.report, JSON.stringify({
     date: new Date().toISOString(), result: delivered ? 'PASS' : 'FAIL', stage, platformAccepted: accepted,
+    browserMode: arguments_.headed ? 'headed' : 'headless', subscriptionDeadlineMs: 30000, controlDeadlineMs: 3000,
     realPushDelivered: delivered, realDeliveryDeadlineMs: 15000, ...diagnostics,
     controlScope: 'CDP synthetic push bypasses FCM and encryption; it verifies only the disposable worker and callback.',
   }, null, 2) + '\n')

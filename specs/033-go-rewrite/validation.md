@@ -1,5 +1,9 @@
 # 验证记录
 
+## 2026-11-04 P8 Push有界面对照
+
+T802d两轮headed新profile均订阅/CDP控制/Go新TLS库发送成功，但FCM接受后15秒无真实Push，实际runner均退出1。报告`p8-e2e/push-go-headed{,-normalized}.json`为DELIVERY/FAIL；第一轮Go发送测试0.82s，日志`/tmp/personalos-p8-browser-push-headed{,-normalized}.log`。未放宽期限，只有控制消息1次push；零GCM接收/解密记录及OTHER状态不足以定位原因。四项Node纯单测和JS语法检查通过；本次profile/进程/容器清理。T802/五门禁仍开放。
+
 ## 2026-11-04 P8 E2E失败隔离与真实计划
 
 T802c：五项预算隔离和五项模型夹具测试通过，完整83项迁移Python测试通过（`/tmp/personalos-p8-python-plan.log`）。原84项Java/Go全suite最终同为81通过/1预算失败/1原跳过/1工具上限观察，均实际退出1，报告`p8-e2e/go/e2e-20261104-201958.json`与`p8-e2e/java/e2e-20261104-202003.json`。G4失败后finally恢复原32768，未改原函数或断言。

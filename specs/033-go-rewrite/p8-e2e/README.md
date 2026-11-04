@@ -46,6 +46,12 @@ python3 scripts/migration/run_go_e2e_tests.py --backend java --mode plan
 
 ## Push 的控制测试与真实失败
 
+新增显式`--headed`对照，只去掉headless参数，仍使用本次新随机profile与相同30秒订阅/3秒控制/15秒送达期限，不访问用户Chrome资料。报告新增浏览器模式与三项期限。连接状态只对安全白名单进行大小写/空格/连字符归一化，带额外未知信息仍输出OTHER；四项Node纯单测通过。
+
+两轮有界面对照均成功订阅，本地CDP控制回传/显示成功，Go在本次新TLS库真实投递并被FCM接受（第一轮0.82s、第二轮见日志）；但15秒内仍无真实Push。报告[push-go-headed.json](push-go-headed.json)与[push-go-headed-normalized.json](push-go-headed-normalized.json)都为DELIVERY/FAIL，只有控制消息产生的1次pushEvents；workerErrors/notificationErrors=0，GCM接收/解密失败记录均0，连接状态仍OTHER。诊断不足以确定原因，不能断言headless导致故障。日志`/tmp/personalos-p8-browser-push-headed.log`、`/tmp/personalos-p8-browser-push-headed-normalized.log`。全部本次Chrome/profile/容器已清理；真实送达继续阻止验收。
+
+复验命令：`node scripts/migration/chrome_p5_web_push.mjs --headed --report <新的报告路径>`。默认继续headless，保留既有失败报告；不通过扩大期限或只看平台SENT状态凑通过。
+
 `node scripts/migration/chrome_p5_web_push.mjs --report specs/033-go-rewrite/p8-e2e/push-go.json`两轮诊断仍未通过；第二轮Go实际投递测试0.48s通过、FCM接受，但原15秒期限内无真实push事件。CDP合成push控制消息成功触发同一Worker、回传并显示通知，notificationErrors/workerErrors均0，唯一一次pushEvents来自控制消息。该控制明确绕过FCM/加密，只排查本地Worker与回传路径，不能替代真实送达证据，不能据此断言FCM通道或解密的具体故障原因。
 
 报告只记录布尔/计数，不包含订阅URL、浏览器密钥或VAPID私钥；临时profile/合成密钥/数据库已删除。日志`/tmp/personalos-p8-browser-push-diagnostic.log`与`/tmp/personalos-p8-browser-push-diagnostic-2.log`保留，T802/发布门禁继续开放。
