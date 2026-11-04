@@ -1,13 +1,44 @@
+import io
 import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
-from go_live_conflicts import OwnedConflictClient, execute, public_cases
+from go_live_conflicts import OwnedConflictClient, execute, owned_search, public_cases
 
 
 class LiveConflictTest(unittest.TestCase):
+    def test_owned_search_uses_pinned_image_bounded_ephemeral_loopback_and_always_cleans_up(self):
+        info = dict(owned="true", bindings=[dict(HostIp="127.0.0.1", HostPort="12345")], mounts=[dict(Type="tmpfs")])
+        with patch("go_live_conflicts.subprocess.check_output") as capture, patch("go_live_conflicts.subprocess.run") as run, \
+                patch("go_live_conflicts.urllib.request.build_opener") as opener:
+            capture.side_effect = ["opensearchproject/opensearch@sha256:" + "a" * 64, "b" * 64, json.dumps(info)]
+            opener.return_value.open.return_value = io.BytesIO(b'{"status":"green"}')
+            with owned_search() as (values, image):
+                self.assertEqual(values["OPENSEARCH_ENDPOINT"], "http://127.0.0.1:12345")
+                self.assertTrue(image.endswith("a" * 64))
+            args = capture.call_args_list[1].args[0]
+            self.assertIn("127.0.0.1::9200", args)
+            self.assertIn("1536m", args)
+            self.assertIn("--tmpfs", args)
+            self.assertNotIn("--volume", args)
+            self.assertNotIn(".Config.Env", str(capture.call_args_list))
+            self.assertEqual(run.call_args.args[0], ["docker", "rm", "--force", "b" * 64])
+
+    def test_search_refuses_unowned_public_port_volume_or_invalid_port_before_http(self):
+        for change in (dict(owned="false"), dict(bindings=[dict(HostIp="0.0.0.0", HostPort="12345")]),
+                       dict(mounts=[dict(Type="volume")]), dict(bindings=[dict(HostIp="127.0.0.1", HostPort="invalid")])):
+            info = dict(owned="true", bindings=[dict(HostIp="127.0.0.1", HostPort="12345")], mounts=[])
+            info.update(change)
+            with self.subTest(change=change), patch("go_live_conflicts.subprocess.check_output") as capture, \
+                    patch("go_live_conflicts.subprocess.run") as run, patch("go_live_conflicts.urllib.request.build_opener") as opener:
+                capture.side_effect = ["opensearchproject/opensearch@sha256:" + "a" * 64, "b" * 64, json.dumps(info)]
+                with self.assertRaises(ValueError):
+                    with owned_search(): self.fail("unsafe search fixture accepted")
+                opener.assert_not_called()
+                run.assert_called_once()
+
     def test_original_three_case_expectations_and_cleanup_execute_without_runtime_setup(self):
         for mismatch in (False, True):
             client, model = Mock(), Mock()

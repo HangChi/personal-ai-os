@@ -1,0 +1,166 @@
+{
+  "result": "PASS",
+  "backend": "go",
+  "started_at": "2026-11-04T15:44:59.988782+00:00",
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "configured_real_model_used": true,
+  "synthetic_documents": true,
+  "private_answer_evidence": "/private/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-live-conflict-evidence-lqdp_d2c",
+  "expected_cases": 3,
+  "semantic_quality_manually_approved": false,
+  "release_gates_changed": false,
+  "limits": "Original frozen synthetic-policy conflict/clarification cases; owned TLS database only. No production configuration, original runtime entry point, existing data or model fallback. Background ingestion review disabled only for the isolated foreground test; this does not cover the 129 original retrieval queries, full Agent or production acceptance.",
+  "owned_opensearch_image": "opensearchproject/opensearch@sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e",
+  "sources_sha256": {
+    "scripts/eval/rag-live-conflicts.py": "d42fdb10c2a5a6e087d84f5dce13096512fb1b85c823d2d78ec6d447c9656b93"
+  },
+  "cases": [
+    {
+      "case": "sameScope",
+      "expected": "CONFLICT",
+      "status": "CONFLICT",
+      "answered": false,
+      "citations": 2,
+      "hasBothSources": true,
+      "durationMs": 3978,
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 436
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 693
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 561
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 1880
+        }
+      ],
+      "actual_chat_calls": 3
+    },
+    {
+      "case": "ambiguous",
+      "expected": "CONFLICT",
+      "status": "CONFLICT",
+      "answered": false,
+      "citations": 2,
+      "hasBothSources": true,
+      "durationMs": 5549,
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 165
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 771
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 580
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 3627
+        }
+      ],
+      "actual_chat_calls": 3
+    },
+    {
+      "case": "differentPeriods",
+      "expected": "CLARIFY",
+      "status": "CLARIFY",
+      "answered": false,
+      "citations": 2,
+      "hasBothSources": true,
+      "durationMs": 4886,
+      "stages": [
+        {
+          "name": "recall",
+          "status": "OK",
+          "durationMs": 140
+        },
+        {
+          "name": "rewrite",
+          "status": "OK",
+          "durationMs": 665
+        },
+        {
+          "name": "rerank",
+          "status": "OK",
+          "durationMs": 506
+        },
+        {
+          "name": "evidence",
+          "status": "OK",
+          "durationMs": 3132
+        }
+      ],
+      "actual_chat_calls": 3
+    }
+  ],
+  "cleanup_counts": {
+    "knowledge_document": 0,
+    "vector_store": 0,
+    "knowledge_source": 0,
+    "knowledge_review_job": 0
+  },
+  "citation_chunks_match_database": true,
+  "background_ingestion_review_enabled": false,
+  "processes_stopped": true,
+  "database_connections_after_stop": 0,
+  "owned_opensearch_removed": true,
+  "finished_at": "2026-11-04T15:45:57.597079+00:00",
+  "real_model_requests": {
+    "calls": {
+      "embedding": 11,
+      "chat": 9
+    },
+    "failures": {},
+    "input_characters": 13590,
+    "routes": {
+      "/v1/embeddings": 11,
+      "/v1/chat/completions": 9
+    },
+    "transport": "node-pooled-fetch",
+    "usage": {
+      "prompt_tokens": 7378,
+      "total_tokens": 8194,
+      "completion_tokens": 816
+    },
+    "successful_embedding_inputs": 11,
+    "last_upstream_rejection": null,
+    "last_transport_failure": null,
+    "last_rejected_embedding_shape": null,
+    "unique_embedding_inputs": 11,
+    "unique_embedding_vectors": 11,
+    "limits": {
+      "requests": 600,
+      "chat_requests": 12,
+      "input_characters": 1000000,
+      "chat_max_tokens": 1024,
+      "upstream_timeout_seconds": 90,
+      "retries": 0
+    }
+  }
+}

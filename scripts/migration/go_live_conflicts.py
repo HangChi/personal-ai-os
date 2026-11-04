@@ -42,6 +42,9 @@ def owned_search():
         if (info.get("owned") != "true" or len(bindings) != 1 or bindings[0]["HostIp"] != "127.0.0.1"
                 or any(mount["Type"] != "tmpfs" for mount in info.get("mounts", []))):
             raise ValueError("Live conflict search fixture isolation violated")
+        port = bindings[0].get("HostPort", "")
+        if not port.isascii() or not port.isdecimal() or not 0 < int(port) < 65536:
+            raise ValueError("Live conflict search fixture port invalid")
         endpoint = "http://127.0.0.1:" + bindings[0]["HostPort"]
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         deadline = time.monotonic() + 120
