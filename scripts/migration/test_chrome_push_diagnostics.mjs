@@ -40,3 +40,10 @@ test('display capitalization and separators normalize only to known states', () 
   assert.equal(gcmSnapshot(page({'connection-state': 'Connection-failed'})).connectionState, 'CONNECTION_FAILED')
   assert.equal(gcmSnapshot(page({'connection-state': 'Connected for private address'})).connectionState, 'OTHER')
 })
+
+test('Chromium handshake and backoff states are recognized without connection details', () => {
+  for (const state of ['HANDSHAKE IN PROGRESS', 'WAITING FOR BACKOFF', 'WAITING FOR NETWORK CHANGE']) {
+    assert.equal(gcmSnapshot(page({'connection-state': state})).connectionState, state.replaceAll(' ', '_'))
+    assert.equal(gcmSnapshot(page({'connection-state': state + ' private-address'})).connectionState, 'OTHER')
+  }
+})

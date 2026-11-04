@@ -477,10 +477,11 @@ func (p *Pipeline) Retrieve(parent context.Context, q string, topK *int) (RagRes
 					}
 				}
 			}
-		case strip(assessed.Clarification) != "":
-			result.Status = "CLARIFY"
 		case len(assessed.Relevant) == 0:
 			result.Status = "INSUFFICIENT"
+			result.Clarification = ""
+		case strip(assessed.Clarification) != "":
+			result.Status = "CLARIFY"
 		default:
 			result.Status = "READY"
 			limit := p.TopK

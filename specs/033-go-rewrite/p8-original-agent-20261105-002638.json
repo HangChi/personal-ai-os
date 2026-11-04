@@ -1,0 +1,73 @@
+{
+  "result": "FAIL",
+  "mode": "agent",
+  "started_at": "2026-11-04T16:26:38.482576+00:00",
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "backends": {
+    "java": {
+      "backend": "java",
+      "sources_sha256": {
+        "scripts/eval/agent-eval.py": "23f612801558cd9f4944ad4fcb3a82a03e0bfa40344b667f4fa0f801e0c9b0ba"
+      },
+      "result": "FAIL",
+      "error_type": "ModelFailure",
+      "processes_stopped": true,
+      "database_connections_after_stop": 0
+    }
+  },
+  "private_evidence": "/private/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-original-evidence-mo_kvl75",
+  "release_gates_changed": false,
+  "factual_quality_manually_approved": false,
+  "error_type": "ModelFailure",
+  "failure": "AGENT_UPSTREAM_FAILURE_NO_RETRY",
+  "finished_at": "2026-11-04T16:26:58.471925+00:00",
+  "real_model_requests": {
+    "calls": {},
+    "failures": {
+      "AGENT_CHAT_REQUEST_INVALID": 1
+    },
+    "input_characters": 0,
+    "routes": {
+      "/chat/completions": 1
+    },
+    "transport": "node-pooled-fetch",
+    "usage": {},
+    "successful_embedding_inputs": 0,
+    "last_upstream_rejection": null,
+    "last_transport_failure": null,
+    "last_rejected_embedding_shape": null,
+    "unique_embedding_inputs": 0,
+    "unique_embedding_vectors": 0,
+    "limits": {
+      "requests": 1600,
+      "chat_requests": 400,
+      "input_characters": 30000000,
+      "chat_max_tokens": 1024,
+      "upstream_timeout_seconds": 90,
+      "retries": 0
+    },
+    "last_rejected_agent_shape": {
+      "fields": {
+        "messages": "list",
+        "model": "str",
+        "max_tokens": "int",
+        "stream_options": "dict",
+        "temperature": "float",
+        "tools": "list",
+        "enable_thinking": "str",
+        "stream": "bool"
+      },
+      "stream_options": {
+        "include_obfuscation": "bool",
+        "include_usage": "bool"
+      }
+    }
+  }
+}

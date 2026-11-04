@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Derive an explicit strict/tied quality assessment without rerunning models or approving release."""
 import argparse
+from collections import Counter
 import hashlib
 import json
 from pathlib import Path
@@ -10,9 +11,78 @@ from run_go_eval_tests import query_subset
 from run_go_real_eval_tests import SPEC, comparison, metrics
 
 
+def review_multistage(report, raw, path):
+    if (report.get("result") not in ("PASS", "FAIL") or report.get("synthetic_model") is not False
+            or report.get("configured_real_model_used") is not True
+            or set(report.get("backends", {})) != {"go", "java"}
+            or report.get("real_model_requests", {}).get("failures")):
+        raise ValueError("Multistage review requires both completed real backends without upstream failures")
+    modules, hashes = original_modules()
+    annotations = modules["queries.py"].QUERIES
+    documents = len(modules["rebuild-corpus.py"].CORPUS)
+    summaries, total_calls = {}, 1  # The runner performs one chat connectivity preflight.
+    for name, backend in report["backends"].items():
+        rows = backend.get("multistage_cases", [])
+        if (backend.get("mode") != "multistage-full" or backend.get("stage") != "complete"
+                or backend.get("documents") != documents or backend.get("sources_sha256") != hashes
+                or backend.get("queries") != len(annotations) or len(rows) != len(annotations)
+                or backend.get("executed_original_queries") != len(rows)
+                or backend.get("unexecuted_eligible_queries") != 0 or backend.get("excluded_queries") != 0
+                or backend.get("all_original_questions_executed") is not True
+                or backend.get("processes_stopped") is not True or backend.get("database_connections_after_stop") != 0
+                or [(row.get("question"), row.get("acceptable_documents")) for row in rows] !=
+                   [(row["q"], row["docs"]) for row in annotations]):
+            raise ValueError("Multistage review coverage, original annotations or shutdown evidence differs")
+        passed = sum(row.get("result") == "PASS" for row in rows)
+        if (any(row.get("result") not in ("PASS", "FAIL") for row in rows)
+                or backend.get("multistage_passed") != passed or backend.get("multistage_failed") != len(rows) - passed
+                or backend.get("result") != ("PASS" if passed == len(rows) else "FAIL")):
+            raise ValueError("Multistage source outcome counters differ")
+        for row in rows:
+            calls = row.get("actual_chat_calls")
+            if type(calls) is not int or calls < 0:
+                raise ValueError("Multistage actual call counter is invalid")
+            total_calls += calls
+            if row.get("result") == "PASS" and (row.get("retrieval_status") != "READY"
+                    or row.get("answered") is not True or row.get("warning_count") != 0 or calls != 4
+                    or [(stage.get("name"), stage.get("status")) for stage in row.get("stages", [])] !=
+                       [(stage, "OK") for stage in ("recall", "rewrite", "rerank", "evidence")]
+                    or row.get("answer", {}).get("explicit_marks_match") is not True
+                    or row.get("answer", {}).get("citation_chunks_match_database") is not True
+                    or row.get("answer", {}).get("acceptable_document_cited") is not True):
+                raise ValueError("Multistage PASS lacks original pipeline or persisted citation checks")
+        summaries[name] = dict(attempted=len(rows), response_observed=sum("retrieval_status" in row for row in rows),
+            strict_passed=passed, strict_failed=len(rows) - passed,
+            status_counts=dict(Counter(row.get("retrieval_status", "NO_RESPONSE") for row in rows)),
+            cases_with_warnings=sum(row.get("warning_count", 0) > 0 for row in rows),
+            fallback_stages=dict(Counter(stage["name"] for row in rows for stage in row.get("stages", [])
+                                         if stage["status"] != "OK")),
+            failed_cases=[dict(index=index, question=row["question"],
+                retrieval_status=row.get("retrieval_status"), warning_count=row.get("warning_count"),
+                failure=row.get("failure", row.get("error_type")))
+                for index, row in enumerate(rows, 1) if row.get("result") != "PASS"])
+    expected_result = "PASS" if all(value["strict_failed"] == 0 for value in summaries.values()) else "FAIL"
+    if report.get("result") != expected_result:
+        raise ValueError("Multistage overall result differs from original case outcomes")
+    if report["real_model_requests"].get("calls", {}).get("chat") != total_calls:
+        raise ValueError("Multistage actual model totals differ from original case receipts and preflight")
+    paired = Counter((left["result"], right["result"]) for left, right in zip(
+        report["backends"]["go"]["multistage_cases"], report["backends"]["java"]["multistage_cases"]))
+    return dict(result="FULL_MULTISTAGE_ATTEMPTED_QUALITY_NOT_APPROVED", source_report=path.name,
+        source_sha256=hashlib.sha256(raw).hexdigest(), documents=documents, queries_per_backend=len(annotations),
+        model=report["model"], backends=summaries, factual_quality_manually_approved=False,
+        paired_strict_outcomes=[dict(go=go, java=java, cases=count) for (go, java), count in sorted(paired.items())],
+        release_gate_approved=False, semantic_quality_verified=False, historical_corpus_identity_verified=False,
+        limits="Every original case retained in its original order, including guarded and degraded responses. "
+               "Independent model calls and shared per-backend governance state are not isolated per-question experiments. "
+               "Matching failures or complete execution do not approve factual quality or release gates.")
+
+
 def review(path):
     raw = path.read_bytes()
     report = json.loads(raw)
+    if report.get("mode") == "multistage-full":
+        return review_multistage(report, raw, path)
     if (report.get("result") != "PASS" or report.get("synthetic_model") is not False
             or report.get("mode", "retrieval") != "retrieval"
             or report.get("configured_real_model_used") is not True
@@ -68,7 +138,7 @@ def main():
             parser.error("Review output must be a new file in the migration spec directory")
         with path.open("x", encoding="utf-8") as output:
             output.write(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
-        print("Real-model subset reviewed; strict quality and release approval remain separate: " + str(path))
+        print("Real-model report reviewed; strict quality and release approval remain separate: " + str(path))
     else:
         print(json.dumps(result, ensure_ascii=False, indent=2))
 

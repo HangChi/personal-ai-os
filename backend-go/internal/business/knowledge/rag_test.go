@@ -128,6 +128,35 @@ func TestPipelineReadyConflictTopOneFallbackAndNoContent(t *testing.T) {
 	}
 }
 
+func TestPipelineNoRelevantEvidenceCannotBecomeClarification(t *testing.T) {
+	hits := twoHits()
+	recall := &recallFixture{hits: hits}
+	m := structuredFunc(func(_ context.Context, rules string, _ any, _ time.Duration) (json.RawMessage, error) {
+		switch {
+		case strings.Contains(rules, "queries"):
+			return json.Marshal(map[string]any{"queries": []string{"related"}})
+		case strings.Contains(rules, "order"):
+			return json.Marshal(map[string]any{"order": []int{1, 2}})
+		default:
+			return json.Marshal(map[string]any{"evidence": []any{map[string]any{"index": 1, "grade": "IRRELEVANT"}, map[string]any{"index": 2, "grade": "IRRELEVANT"}}, "conflicts": []any{}, "clarification": "Which version?"})
+		}
+	})
+	p := &Pipeline{Recall: recall, Model: m, Review: &EvidenceReviewer{m}, Enabled: true}
+	result, err := p.Retrieve(context.Background(), "unrelated question", nil)
+	if err != nil || result.Status != "INSUFFICIENT" || len(result.Hits) != 0 || result.Clarification != "" || len(result.Warnings) != 0 {
+		t.Fatal(result, err)
+	}
+	answerCalls := 0
+	qa := &QA{Search: p, Answer: func(context.Context, model.ChatRequest) (model.ChatResult, error) {
+		answerCalls++
+		return model.ChatResult{}, errors.New("must not answer without evidence")
+	}}
+	answer, err := qa.Ask(context.Background(), "unrelated question", nil)
+	if err != nil || answer.Answered || len(answer.Citations) != 0 || answerCalls != 0 {
+		t.Fatal(answer, err, answerCalls)
+	}
+}
+
 func TestPipelineRewriteRecoveryAndFailedStages(t *testing.T) {
 	for _, scenario := range []string{"rewrite_recovery", "invalid_rerank", "unavailable"} {
 		t.Run(scenario, func(t *testing.T) {

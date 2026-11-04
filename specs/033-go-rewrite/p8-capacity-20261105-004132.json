@@ -1,0 +1,137 @@
+{
+  "result": "PASS",
+  "started_at": "2026-11-04T16:41:32.871367+00:00",
+  "scope": "Local closed-loop authenticated HTTP reads; one worker owns each client, no connection pooling; response and data integrity only.",
+  "timestamp_normalization": "Original baseline instant comparator, UTC microsecond precision; raw response hashes retained separately.",
+  "production_capacity_accepted": false,
+  "target_slo_provided": false,
+  "release_gates_changed": false,
+  "real_model_used": false,
+  "synthetic_only": true,
+  "backends": {
+    "java": {
+      "result": "PASS",
+      "requests": 10000,
+      "concurrency": 32,
+      "elapsed_seconds": 6.842,
+      "requests_per_second": 1461.536,
+      "failures": 0,
+      "failure_types": [],
+      "response_hashes": {
+        "/tasks?size=20": "e14b94a976d63af39686ffa920d059d17a3f41af195658cf7bb0827ab9e47fc3",
+        "/chat/sessions": "4b142a5bca467f6673fc5863797aa33055d86921c617e4a1caeb63230e763b9b",
+        "/knowledge/documents": "cfe372c4f45e55cc4fff84231f3ed7f2f4b464107125c18795ad976f7e07897e"
+      },
+      "raw_response_hashes": {
+        "/tasks?size=20": "e53bf031721bcfe400518b3f09aba1e975c93167ea32eae8761ff0520f92e362",
+        "/chat/sessions": "e656975e3e2459f73462908e1aa3074e532aa5e2ab5cdd9b074800c43a3c659f",
+        "/knowledge/documents": "4407cb711c297dfbf6a5c06e453feb4d6492ce6f8880158d945bfdaa143a14cd"
+      },
+      "endpoints": {
+        "/tasks?size=20": {
+          "requests": 3334,
+          "failures": 0,
+          "p50_ms": 24.382,
+          "p95_ms": 43.994,
+          "p99_ms": 64.405,
+          "max_ms": 127.061
+        },
+        "/chat/sessions": {
+          "requests": 3333,
+          "failures": 0,
+          "p50_ms": 18.838,
+          "p95_ms": 37.145,
+          "p99_ms": 50.349,
+          "max_ms": 110.877
+        },
+        "/knowledge/documents": {
+          "requests": 3333,
+          "failures": 0,
+          "p50_ms": 16.912,
+          "p95_ms": 35.511,
+          "p99_ms": 49.43,
+          "max_ms": 112.534
+        }
+      },
+      "rss_kib_after_load": 615424,
+      "business_data_unchanged": true,
+      "processes_stopped": true,
+      "database_connections_after_stop": 0
+    },
+    "go": {
+      "result": "PASS",
+      "requests": 10000,
+      "concurrency": 32,
+      "elapsed_seconds": 5.004,
+      "requests_per_second": 1998.442,
+      "failures": 0,
+      "failure_types": [],
+      "response_hashes": {
+        "/tasks?size=20": "e14b94a976d63af39686ffa920d059d17a3f41af195658cf7bb0827ab9e47fc3",
+        "/chat/sessions": "4b142a5bca467f6673fc5863797aa33055d86921c617e4a1caeb63230e763b9b",
+        "/knowledge/documents": "cfe372c4f45e55cc4fff84231f3ed7f2f4b464107125c18795ad976f7e07897e"
+      },
+      "raw_response_hashes": {
+        "/tasks?size=20": "f4f1ddbecb62e1b9f291b1775bdb09b53b51854d87bcd068ad237bd3c9da18cf",
+        "/chat/sessions": "3eb9b22645318e53b12b48d73f3cd57604833ca387384fe8ca700dfe382b7980",
+        "/knowledge/documents": "d7425c79ccfb18af7db4c1f4ffb300f018141aca3781087de8f01e2f0d5b4f25"
+      },
+      "endpoints": {
+        "/tasks?size=20": {
+          "requests": 3334,
+          "failures": 0,
+          "p50_ms": 18.318,
+          "p95_ms": 32.272,
+          "p99_ms": 41.22,
+          "max_ms": 56.161
+        },
+        "/chat/sessions": {
+          "requests": 3333,
+          "failures": 0,
+          "p50_ms": 13.921,
+          "p95_ms": 27.624,
+          "p99_ms": 36.101,
+          "max_ms": 50.768
+        },
+        "/knowledge/documents": {
+          "requests": 3333,
+          "failures": 0,
+          "p50_ms": 11.44,
+          "p95_ms": 25.87,
+          "p99_ms": 35.108,
+          "max_ms": 56.317
+        }
+      },
+      "rss_kib_after_load": 38080,
+      "business_data_unchanged": true,
+      "processes_stopped": true,
+      "database_connections_after_stop": 0
+    }
+  },
+  "stage": "complete",
+  "seed_progress": {
+    "tasks": 5000,
+    "sessions": 30,
+    "documents": 10
+  },
+  "fixture_counts": {
+    "task": 5000,
+    "task_tag": 10000,
+    "calendar_event": 0,
+    "reminder": 0,
+    "knowledge_document": 10,
+    "vector_store": 10,
+    "memory": 0,
+    "chat_session": 30,
+    "chat_message": 0,
+    "chat_message_citation": 0,
+    "agent_plan": 0,
+    "agent_plan_step": 0,
+    "confirmation": 0,
+    "operation_record": 0,
+    "token_usage": 0
+  },
+  "matching_response_hashes": true,
+  "raw_response_hashes_match": false,
+  "finished_at": "2026-11-04T16:42:22.268645+00:00"
+}

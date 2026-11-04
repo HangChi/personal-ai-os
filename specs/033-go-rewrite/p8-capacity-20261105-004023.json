@@ -1,0 +1,137 @@
+{
+  "result": "PASS",
+  "started_at": "2026-11-04T16:40:23.373887+00:00",
+  "scope": "Local closed-loop authenticated HTTP reads; one worker owns each client, no connection pooling; response and data integrity only.",
+  "timestamp_normalization": "Original baseline instant comparator, UTC microsecond precision; raw response hashes retained separately.",
+  "production_capacity_accepted": false,
+  "target_slo_provided": false,
+  "release_gates_changed": false,
+  "real_model_used": false,
+  "synthetic_only": true,
+  "backends": {
+    "java": {
+      "result": "PASS",
+      "requests": 480,
+      "concurrency": 8,
+      "elapsed_seconds": 0.365,
+      "requests_per_second": 1314.548,
+      "failures": 0,
+      "failure_types": [],
+      "response_hashes": {
+        "/tasks?size=20": "f670c109f0a220862b1b3c7357b94c08dbb05977a3211b832c0091c9ff379ab3",
+        "/chat/sessions": "5e968d4d54f4e498119ea1569eb2ac38251eeb1f6dcec5450ae073762454012e",
+        "/knowledge/documents": "018f5b07617a6769e89b16406fdd4e95660f6a4aa7ece54158eb38b1beeb378a"
+      },
+      "raw_response_hashes": {
+        "/tasks?size=20": "79867ae9d6b672312ff7ebdb6bad731e762cd904c594f47ca2ad95bad88eb6ae",
+        "/chat/sessions": "1460711f24a4248ccaa215fa133c85633fae0abccd926811135d0f779a0a04bb",
+        "/knowledge/documents": "97449fa4bf30ac2beeed81a0e81895349976699790b7d3864c387b8a6569029f"
+      },
+      "endpoints": {
+        "/tasks?size=20": {
+          "requests": 160,
+          "failures": 0,
+          "p50_ms": 7.527,
+          "p95_ms": 11.512,
+          "p99_ms": 12.947,
+          "max_ms": 13.08
+        },
+        "/chat/sessions": {
+          "requests": 160,
+          "failures": 0,
+          "p50_ms": 5.496,
+          "p95_ms": 8.747,
+          "p99_ms": 10.038,
+          "max_ms": 10.501
+        },
+        "/knowledge/documents": {
+          "requests": 160,
+          "failures": 0,
+          "p50_ms": 3.898,
+          "p95_ms": 6.325,
+          "p99_ms": 10.738,
+          "max_ms": 13.607
+        }
+      },
+      "rss_kib_after_load": 562912,
+      "business_data_unchanged": true,
+      "processes_stopped": true,
+      "database_connections_after_stop": 0
+    },
+    "go": {
+      "result": "PASS",
+      "requests": 480,
+      "concurrency": 8,
+      "elapsed_seconds": 0.187,
+      "requests_per_second": 2572.998,
+      "failures": 0,
+      "failure_types": [],
+      "response_hashes": {
+        "/tasks?size=20": "f670c109f0a220862b1b3c7357b94c08dbb05977a3211b832c0091c9ff379ab3",
+        "/chat/sessions": "5e968d4d54f4e498119ea1569eb2ac38251eeb1f6dcec5450ae073762454012e",
+        "/knowledge/documents": "018f5b07617a6769e89b16406fdd4e95660f6a4aa7ece54158eb38b1beeb378a"
+      },
+      "raw_response_hashes": {
+        "/tasks?size=20": "df0f5f11d1871151f121dfa0788dc6b5f8a7bf89d137eef6c2acf440a4ec7d2c",
+        "/chat/sessions": "e465cfedf401436fa22a09f01adbbfb8d1528c8bad769e6f8c1d891a5fcc084b",
+        "/knowledge/documents": "48d529f68e05fb5ff429222e7b75039dd36d6e0c604ee1401bd0434bd95e419f"
+      },
+      "endpoints": {
+        "/tasks?size=20": {
+          "requests": 160,
+          "failures": 0,
+          "p50_ms": 3.495,
+          "p95_ms": 5.412,
+          "p99_ms": 12.961,
+          "max_ms": 13.837
+        },
+        "/chat/sessions": {
+          "requests": 160,
+          "failures": 0,
+          "p50_ms": 2.96,
+          "p95_ms": 5.027,
+          "p99_ms": 7.56,
+          "max_ms": 13.307
+        },
+        "/knowledge/documents": {
+          "requests": 160,
+          "failures": 0,
+          "p50_ms": 1.701,
+          "p95_ms": 3.137,
+          "p99_ms": 9.691,
+          "max_ms": 9.967
+        }
+      },
+      "rss_kib_after_load": 34320,
+      "business_data_unchanged": true,
+      "processes_stopped": true,
+      "database_connections_after_stop": 0
+    }
+  },
+  "stage": "complete",
+  "seed_progress": {
+    "tasks": 500,
+    "sessions": 30,
+    "documents": 10
+  },
+  "fixture_counts": {
+    "task": 500,
+    "task_tag": 1000,
+    "calendar_event": 0,
+    "reminder": 0,
+    "knowledge_document": 10,
+    "vector_store": 10,
+    "memory": 0,
+    "chat_session": 30,
+    "chat_message": 0,
+    "chat_message_citation": 0,
+    "agent_plan": 0,
+    "agent_plan_step": 0,
+    "confirmation": 0,
+    "operation_record": 0,
+    "token_usage": 0
+  },
+  "matching_response_hashes": true,
+  "raw_response_hashes_match": false,
+  "finished_at": "2026-11-04T16:40:48.817514+00:00"
+}

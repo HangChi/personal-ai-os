@@ -125,6 +125,38 @@ OpenAI知识文档输入现遵循固定Spring AI 2.0.1默认EMBED格式，包含
 
 真实密钥只在独立验收/传输进程内存中，通过标准输入交给支持`--use-env-proxy`的Node运行时，使用内置fetch复用HTTPS连接；不会放入进程参数、子应用环境或文件。子应用仅持随机回环代理令牌。默认上限600请求、12聊天请求、100万输入字符、每次聊天最多1024输出token、上游90秒；不自动重试、不跟随重定向，保留证书验证。此为请求/用量上限，不等于金额承诺，报告记录提供商实际返回的token用量。完整回答和引用仅保存于新0700本地证据目录；仓库报告仅含来源/哈希/统计/原查询排序。每次失败另存，不覆盖旧报告；受控子集通过仍不自动认证历史26篇语料、多阶段RAG、事实正确性或发布门禁。
 
+## 完整多阶段、原项目与Agent验收
+
+完整26篇和原129题可以显式执行全部多阶段流程。此模式必须提供三个调用预算，不沿用默认单题预算；每次模型输出仍最多1024 token，不重试失败，不改原查询或可接受来源。以下示例是本次双端运行采用的有界预算：
+
+```bash
+python3 scripts/migration/run_go_real_eval_tests.py --model-env-file /absolute/project/.env --downloaded-corpus-dir /absolute/full-corpus --backend both --mode multistage-full --max-requests 2400 --max-chat-requests 1100 --max-input-characters 40000000
+python3 scripts/migration/review_go_real_eval.py --report specs/033-go-rewrite/p8-eval-real-TIMESTAMP.json --write
+```
+
+每题严格要求READY、四阶段OK、零warning、四次实际前台调用以及原可接受文档/持久分块/显式引用标记匹配。业务失败逐题保留并继续执行原顺序，上游失败立即停止；全部执行不等于全部通过。每端共享本次治理状态，独立模型调用与跨题冲突记录可能影响后续结果，不是逐题状态隔离实验。复核器接受完整执行且无上游失败的PASS/FAIL报告，检查原SHA、覆盖、调用总数与停机连接，保留保护性和降级失败，不批准事实或发布。单题和负例报告仍不能作为完整质量证据。
+
+2026-11-05全量报告`p8-eval-real-20261105-000811.json`Go严格79/129、Java84/129，实际退出1；独立复核已生成同时间戳新文件，质量未批准。Go批次在零证据分类修复前编译，修复后的新二进制负例另验通过；不将两次结果拼成完整新版通过。每端各一条显式引用不匹配及全部保护/降级失败保留，详见P8的T801t。
+
+原项目知识和Agent直接复用固定SHA校验后的原场景及断言；分别执行：
+
+```bash
+python3 scripts/migration/run_go_original_eval_tests.py --model-env-file /absolute/project/.env --backend both --mode project
+python3 scripts/migration/run_go_original_eval_tests.py --model-env-file /absolute/project/.env --backend both --mode agent
+```
+
+项目模式各18题基础/增强，使用本次TLS库及真实OpenSearch。Agent模式保留原滚动摘要默认行为、原六种行为和长历史事实；独立代理只允许登记工具和相互链接的调用历史，将真实非流式完成帧化为本地SSE，不验证上游流式首字延迟。默认RAG模型代理仍拒绝工具/流式请求。所有降级、重复工具保护及先前代理兼容失败均另存，不挑选绿色结果。
+
+2026-11-05原项目报告为Go严格31/36、Java30/36，全部预期来源进入前五但重排等降级保留；Agent修正后的报告为Go7/7、Java6/7，Java知识检索触发原50203保护。Go另已修复零相关证据误归CLARIFY，完整26篇负例严格INSUFFICIENT/空引用/三次前台调用通过，旧Java失败保留；证据见P8进度。
+
+## 本机并发读取补验
+
+```bash
+python3 scripts/migration/run_go_capacity_tests.py --concurrency 32 --requests 10000 --tasks 5000
+```
+
+三个规模参数均必填，最大32并发/每端10000请求/5000任务，只新建本次TLS库。固定Java合成任务/标签、30会话、10文档/向量后停止；两端依次读取同库，每工作线程独立CookieJar。逐响应哈希核对，前后业务全量导出不变，保留原始与按原UTC微秒规则归一化的哈希，停止连接归零后清理。此为数秒本机闭环读取观测，不包含模型、写入、真实备份或持续生产负载，不替代目标p95/错误率/峰值/时长验收。
+
 ## 变更规则
 
 从固定Java断言推导Go期望值，不能从Go实现生成自己的期望。原Java测试文件及1119个声明逐项记账；补充真实副作用、事务/查询数、失败/取消与并发证据。跳过、观察项和同Java基线失败都必须保留，不能当成PASS。

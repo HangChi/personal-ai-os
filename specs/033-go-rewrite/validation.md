@@ -761,3 +761,15 @@ T801f原评估四工具安全适配：固定哈希、显式语料预检和清库
 工具链首轮暴露上传title未生效；固定Java→Go真实10标题参数差分首轮失败，证实URL、重复字段和form在前/query在后的顺序。Go共享上传读取器已修，14个定向子场景先红后绿，knowledge/http两包race通过（`/tmp/personalos-p8-upload-params-green.log`）；实际Java/Go10场景一致见`p8-upload-binding.json`。原演示新增上传响应及列表的filename/title精确校验，五项安全单测和七组真实配方重跑通过（`/tmp/personalos-p8-demo-title-1.log`），清理本次资源。旧失败日志保留。
 
 本批最终66项迁移Python单测通过（`/tmp/personalos-p8-python-eval-final.log`）；knowledge完整真实TLS PostgreSQL/pgvector/Flyway42回归race6.403s通过并清理（`/tmp/personalos-p8-knowledge-after-params.log`）。Go integration vet/build、1093文件基线/78配置/两派生映射和diff检查通过；未重复无关全项目长回归。`check-complete`实际退出1（`/tmp/personalos-p8-check-complete-https-eval.log`），2415implemented/23in_progress/零verified与五发布门禁不变。
+
+## P8真实评估与资源补验（2026-11-05）
+
+Go修复零相关证据误归CLARIFY，新增回归先复现后通过；完整26篇真实负例返回严格INSUFFICIENT、无回答/命中/引用、四阶段OK及三次前台chat，见`p8-eval-real-20261105-001920.json`。原Java失败保留。原项目18题基础/增强已双端各执行36行，Go严格31/36、Java30/36，全部预期来源召回但降级仍FAIL；Agent恢复原默认摘要并兼容SDK布尔流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留。新代理只验证真实工具/行为，本地SSE帧化不等于上游流式延迟验收。
+
+本机5000任务/10000标签、32并发、每端10000次列表读取零失败，归一化响应一致，业务全量导出前后不变；两端原始时间字符串哈希差异和先前夹具/比较器失败保留。见`p8-capacity-20261105-004132.json`。数秒闭环回环HTTP读取不批准生产SLO、持续负载、写入、模型或分布式容量。
+
+Push新随机有界面profile仍未在原15秒内收到真实消息；订阅/控制/Go加密发送/FCM接受已成功，发送前CONNECTING、截止WAITING_FOR_BACKOFF，无接收或解密失败记录。四TCP端口可连不证明FCM协议成功，不改变系统网络设置。见`p8-e2e/push-go-handshake-20261105.json`，真实送达门禁仍开放。
+
+Go全包串行race、普通和integration vet、build与mod verify通过。修复后另跑knowledge真实TLS PostgreSQL/pgvector全包race4.046s通过，Flyway双执行器合计42迁移/validate/再次零执行及本次容器清理通过；Redis/OpenSearch/RabbitMQ三个缺独立资源用例和仅供子进程启动的helper显式SKIP，不计入本轮设施通过。Node脱敏诊断5项通过，原源码/期限保持。当前完整多阶段结果及最终清单校验见P8进度；本记录不解除真实备份、通知最终接收、公网ACME、人工事实或发布验收。
+
+最终完整多阶段报告`p8-eval-real-20261105-000811.json`实际退出1：双端各129题全部执行，Go严格79/129、Java84/129，811embedding/976chat零上游失败/重试；独立复核`p8-real-model-review-20261105-000811.json`拒绝将全部执行当质量批准。每端共享治理状态、Go编译在零证据修复前及两条显式引用失败的限制见T801t。两端进程停止/连接0，Docker任务标签过滤无本次PostgreSQL/OpenSearch容器残留。最终162项迁移Python测试6.136s通过，5项Node诊断和JS语法检查通过；1093文件/104路由/27工具/95钩子/1119声明及78配置台账检查通过。check-complete仍实际退出1：2438项未verified、五门禁未验证，不以实现/诊断完成自动改状态。

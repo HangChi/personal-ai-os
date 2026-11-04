@@ -2,6 +2,16 @@
 
 固定Java基线：`cb5d694d62fa93742b5789b97273e76d931ce335`。本记录区分代码职责移植、原样保留与尚未通过的真实验收，不能据清单条数宣布等价或发布完成。
 
+## 2026-11-05最新范围
+
+下列按批次记录的16篇/84题、缺10篇/45题、另128题未执行、原项目/Agent未跑及无证据负例均FAIL是历史状态；当前以本节和[p8-completion.md](p8-completion.md)为准，旧报告不覆盖。完整26篇/129题多阶段已双端执行，报告`p8-eval-real-20261105-000811.json`及独立复核`p8-real-model-review-20261105-000811.json`记录Go严格79/129、Java84/129；59题双端通过、25题双端失败、25题仅Java通过、20题仅Go通过。Go15题warning、Java33题warning，各一条显式引用不匹配保留，质量未批准。共811embedding/976chat零上游失败/重试，进程连接0及本次容器清理。每端共享治理状态和独立模型调用限制保留，不按总分推断每项根因。
+
+Go另修复零相关证据误归CLARIFY，新二进制完整库负例严格INSUFFICIENT/无引用/三次前台调用通过，见`p8-eval-real-20261105-001920.json`；固定Java旧失败保持。129题批次Go在修复前编译，20条CLARIFY均有引用，不冒称完整批次覆盖了新二进制。原项目知识18题基础/增强已各端执行36行，Go严格31/36、Java30/36，所有来源前五但降级保留；Agent修正摘要/SDK选项后Go7/7、Java6/7，Java知识检索50203保护失败不重跑挑绿，真实存量及人工事实仍待审查。
+
+Push新报告`p8-e2e/push-go-handshake-20261105.json`在原15秒仍FAIL，订阅/控制/FCM接受成功，发送前CONNECTING、截止WAITING_FOR_BACKOFF，接收0；TCP端口可达不证明FCM登录。新增本机容量`p8-capacity-20261105-004132.json`仅证明5000任务/32并发/每端10000次短时读取零失败、归一化响应一致/业务数据未变，不批准生产目标SLO。
+
+23个原文件继续in_progress，五个release_gates原样保留，未新增verified。真实备份及独立密钥/附件/S3、外部副作用清单、生产负载标准、公网ACME、告警实际收件与人工发布/用户验收仍缺材料或最终证据；不据执行范围扩大自动收口。
+
 逐文件SHA-256、处置类型与状态见[p8-inventory-disposition.json](p8-inventory-disposition.json)，原声明逐项测试见[p8-test-mapping.md](p8-test-mapping.md)。前阶段实现/差分证据保留；新增源代码职责不是按目录统一通过，而是在`go_p8_inventory_progress.py`显式列出原文件、Go实现、测试与架构对应说明。任何未映射Java代码或运行钩子使审计失败。
 
 ## 剩余运行职责

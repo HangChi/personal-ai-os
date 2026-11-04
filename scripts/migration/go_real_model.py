@@ -246,6 +246,25 @@ class RealModel:
         with self.lock:
             return self.inputs.copy()
 
+    def prepare_chat(self, payload):
+        messages = payload.get("messages")
+        if (payload.get("stream", False) is not False or payload.get("tools")
+                or not isinstance(messages, list) or not messages
+                or any(not isinstance(row, dict) or row.get("role") not in ("system", "user", "assistant")
+                       or not isinstance(row.get("content"), str) for row in messages)
+                or not set(payload) <= {"model", "messages", "stream", "temperature", "max_tokens",
+                                       "enable_thinking", "response_format", "top_p"}):
+            raise ModelFailure("CHAT_REQUEST_INVALID")
+        return sum(len(row["content"]) for row in messages)
+
+    def validate_chat(self, result):
+        choices = result.get("choices")
+        if (not isinstance(choices, list) or not choices or not isinstance(choices[0], dict)
+                or not isinstance(choices[0].get("message"), dict)
+                or not isinstance(choices[0]["message"].get("content"), str)
+                or not choices[0]["message"]["content"].strip()):
+            raise ModelFailure("UPSTREAM_CHAT_CONTENT_MISSING")
+
     def forward(self, path, payload):
         # Java SDK appends /embeddings directly; Go uses the /v1 route.
         aliases = {"/embeddings": "/v1/embeddings", "/chat/completions": "/v1/chat/completions"}
@@ -283,15 +302,7 @@ class RealModel:
             characters = sum(len(text) for text in inputs)
         elif path == "/v1/chat/completions":
             kind, model = "chat", self.config.chat_model
-            messages = payload.get("messages")
-            if (payload.get("stream", False) is not False or payload.get("tools")
-                    or not isinstance(messages, list) or not messages
-                    or any(not isinstance(row, dict) or row.get("role") not in ("system", "user", "assistant")
-                           or not isinstance(row.get("content"), str) for row in messages)
-                    or not set(payload) <= {"model", "messages", "stream", "temperature", "max_tokens",
-                                           "enable_thinking", "response_format", "top_p"}):
-                raise ModelFailure("CHAT_REQUEST_INVALID")
-            characters = sum(len(row["content"]) for row in messages)
+            characters = self.prepare_chat(payload)
             maximum = payload.get("max_tokens", 1024)
             if type(maximum) is not int or maximum <= 0:
                 raise ModelFailure("CHAT_TOKEN_LIMIT_INVALID")
@@ -393,12 +404,7 @@ class RealModel:
                 self.inputs.update(hashlib.sha256(text.encode()).hexdigest() for text in inputs)
                 self.vectors.update(hashlib.sha256(json.dumps(row["embedding"]).encode()).hexdigest() for row in rows)
         else:
-            choices = result.get("choices")
-            if (not isinstance(choices, list) or not choices or not isinstance(choices[0], dict)
-                    or not isinstance(choices[0].get("message"), dict)
-                    or not isinstance(choices[0]["message"].get("content"), str)
-                    or not choices[0]["message"]["content"].strip()):
-                raise ModelFailure("UPSTREAM_CHAT_CONTENT_MISSING")
+            self.validate_chat(result)
         usage = result.get("usage")
         if isinstance(usage, dict):
             with self.lock:
@@ -424,14 +430,21 @@ def serve(model):
                 size = int(self.headers.get("Content-Length", "0"))
                 if not 0 < size <= 4 * 1024 * 1024:
                     raise ModelFailure("LOCAL_MODEL_REQUEST_SIZE")
-                result = model.forward(self.path, json.loads(self.rfile.read(size)))
+                payload = json.loads(self.rfile.read(size))
+                stream = payload.get("stream") is True
+                result = model.forward(self.path, payload)
                 status = 200
             except (ValueError, TypeError):
                 result, status = {"error": {"message": "Real model test request failed; inspect redacted counters"}}, 502
-            raw = json.dumps(result).encode()
+            if status == 200 and stream:
+                raw = model.stream_response(result)
+                content_type = "text/event-stream"
+            else:
+                raw = json.dumps(result).encode()
+                content_type = "application/json"
             try:
                 self.send_response(status)
-                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Type", content_type)
                 self.send_header("Content-Length", str(len(raw)))
                 self.end_headers()
                 self.wfile.write(raw)

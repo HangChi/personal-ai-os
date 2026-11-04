@@ -1,0 +1,750 @@
+{
+  "result": "FULL_MULTISTAGE_ATTEMPTED_QUALITY_NOT_APPROVED",
+  "source_report": "p8-eval-real-20261105-000811.json",
+  "source_sha256": "e10abd8ecd442cf4353ae6948b5d968f8a0a24fa7adadf2ec449a1ba4746ba0d",
+  "documents": 26,
+  "queries_per_backend": 129,
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "backends": {
+    "go": {
+      "attempted": 129,
+      "response_observed": 129,
+      "strict_passed": 79,
+      "strict_failed": 50,
+      "status_counts": {
+        "READY": 92,
+        "CLARIFY": 20,
+        "INSUFFICIENT": 2,
+        "CONFLICT": 14,
+        "UNVERIFIED": 1
+      },
+      "cases_with_warnings": 15,
+      "fallback_stages": {
+        "rerank": 14,
+        "evidence": 1
+      },
+      "failed_cases": [
+        {
+          "index": 1,
+          "question": "BRIN 索引适合什么场景",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 2,
+          "question": "索引在什么情况下会失效",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 4,
+          "question": "日志表按时间顺序不断写入、想用很小的索引先筛掉一批数据块，该建哪种索引",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 5,
+          "question": "数组字段要支持「包含」查询怎么建索引",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 6,
+          "question": "Hash 索引有哪些限制",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 11,
+          "question": "组件卸载后副作用没清掉，Vue3 有什么办法管理副作用作用域",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 22,
+          "question": "内存满了之后如何决定删除哪些数据",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 25,
+          "question": "HTTP/3 相比 HTTP/2 解决了什么问题",
+          "retrieval_status": "INSUFFICIENT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 28,
+          "question": "HTTP 各个状态码段分别代表什么",
+          "retrieval_status": "READY",
+          "warning_count": 0,
+          "failure": "Real answer citation marks differ from actual citation records"
+        },
+        {
+          "index": 32,
+          "question": "catch 住异常之后事务为什么没有回滚",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 33,
+          "question": "给一个不存在的 id 加锁为什么会把区间锁住",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 36,
+          "question": "Work Stealing 是怎么回事",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 38,
+          "question": "并行度配额的数量由什么决定",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 39,
+          "question": "网络 IO 阻塞时会占住系统线程吗",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 41,
+          "question": "I/O 密集型任务适合哪种并发模式",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 45,
+          "question": "多个微服务的数据要并行拉取再合并，用哪个库更合适",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 52,
+          "question": "EXPLAIN 的 type 列有哪些取值",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 57,
+          "question": "怎么看一条 SQL 有没有走索引",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 59,
+          "question": "怎么把一个进程限制到只能用两个 CPU 核",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 60,
+          "question": "容器里的进程为什么看不到宿主机上的其他进程",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 64,
+          "question": "容器删掉之后里面的数据去哪了",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 65,
+          "question": "Dockerfile 的每条指令为什么能单独复用缓存",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 68,
+          "question": "读一下 offsetWidth 为什么反而让页面更慢",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 81,
+          "question": "Page Cache 在 Kafka 里起什么作用",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 87,
+          "question": "几万个并发连接该用线程还是协程",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 89,
+          "question": "线程、进程、协程三者的切换开销怎么排",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 93,
+          "question": "怎么确认自己的协程真的在并发执行",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 97,
+          "question": "映射类型能做什么",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 100,
+          "question": "unknown 和 any 到底差在哪",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 101,
+          "question": "void 和 undefined 是同一个东西吗",
+          "retrieval_status": "INSUFFICIENT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 106,
+          "question": "拜占庭将军问题要解决的是什么",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 107,
+          "question": "2PC 有什么问题，3PC 改进了什么",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 108,
+          "question": "跨多个服务的长事务，不想一直持锁，该用什么模式",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 110,
+          "question": "怎么验证一个共识算法的实现有没有 bug",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 112,
+          "question": "动态规划五部曲是哪五步",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 113,
+          "question": "01 背包压成一维数组之后，内层循环为什么要倒着走",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 114,
+          "question": "写完状态转移方程，怎么确认自己没写错",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 115,
+          "question": "怎么快速判断一道题是不是该用动态规划",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 116,
+          "question": "动态规划成立需要哪两个前提",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 117,
+          "question": "记忆化递归和自底向上填表怎么选",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 118,
+          "question": "只保留前两个状态、不要整个数组，这叫什么技巧",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 119,
+          "question": "动态规划和分治有什么区别",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 121,
+          "question": "proxy_pass 末尾加斜杠和不加，转发路径有什么不同",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 122,
+          "question": "upstream 里 backup 是什么意思",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 123,
+          "question": "怎么按请求频率限制访问",
+          "retrieval_status": "UNVERIFIED",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 125,
+          "question": "worker_connections 和 keepalive 该怎么配",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 126,
+          "question": "后端是有状态的，想让同一个客户端始终打到同一台",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 127,
+          "question": "504 一般是前端还是后端的锅",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 128,
+          "question": "文件名带 hash 的静态资源能不能设成永久缓存",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 129,
+          "question": "同一 IP 哈希分配会有什么副作用",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        }
+      ]
+    },
+    "java": {
+      "attempted": 129,
+      "response_observed": 129,
+      "strict_passed": 84,
+      "strict_failed": 45,
+      "status_counts": {
+        "READY": 109,
+        "UNVERIFIED": 3,
+        "CLARIFY": 11,
+        "INSUFFICIENT": 1,
+        "CONFLICT": 5
+      },
+      "cases_with_warnings": 33,
+      "fallback_stages": {
+        "rerank": 31,
+        "evidence": 3,
+        "rewrite": 1
+      },
+      "failed_cases": [
+        {
+          "index": 5,
+          "question": "数组字段要支持「包含」查询怎么建索引",
+          "retrieval_status": "UNVERIFIED",
+          "warning_count": 2,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 6,
+          "question": "Hash 索引有哪些限制",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 7,
+          "question": "只给未完成的订单建索引，能做到吗",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 11,
+          "question": "组件卸载后副作用没清掉，Vue3 有什么办法管理副作用作用域",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 12,
+          "question": "watch 的回调什么时候执行，能配置吗",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 14,
+          "question": "在 synchronized 块里等 IO 会发生什么",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 15,
+          "question": "纯计算任务适合用虚拟线程吗",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 22,
+          "question": "内存满了之后如何决定删除哪些数据",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 25,
+          "question": "HTTP/3 相比 HTTP/2 解决了什么问题",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 27,
+          "question": "浏览器同源策略限制下怎么跨域请求",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 34,
+          "question": "读写分离会带来什么问题",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 37,
+          "question": "死循环为什么不饿死其他协程",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 38,
+          "question": "并行度配额的数量由什么决定",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 39,
+          "question": "网络 IO 阻塞时会占住系统线程吗",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 40,
+          "question": "并发度失控会引发什么问题",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 41,
+          "question": "I/O 密集型任务适合哪种并发模式",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 48,
+          "question": "反向代理怎么把真实客户端 IP 传下去",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 71,
+          "question": "官方对单帧合成该控制在多少毫秒有过建议吗",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 72,
+          "question": "重排和重绘哪个代价更大",
+          "retrieval_status": "UNVERIFIED",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 75,
+          "question": "新手最容易卡在渲染流程的哪个阶段",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 78,
+          "question": "为什么顺序追加写磁盘能比随机写快上百倍",
+          "retrieval_status": "READY",
+          "warning_count": 0,
+          "failure": "Real answer citation marks differ from actual citation records"
+        },
+        {
+          "index": 79,
+          "question": "消费端是推送模式还是拉取模式",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 81,
+          "question": "Page Cache 在 Kafka 里起什么作用",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 82,
+          "question": "一个分区的消息在磁盘上是怎么切的，有哪些文件",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 83,
+          "question": "消息的 offset 是全局唯一的编号吗",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 87,
+          "question": "几万个并发连接该用线程还是协程",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 89,
+          "question": "线程、进程、协程三者的切换开销怎么排",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 98,
+          "question": "手写一个 Pick 要用到哪些类型工具",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 99,
+          "question": "never 在联合类型和条件类型里起什么作用",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 100,
+          "question": "unknown 和 any 到底差在哪",
+          "retrieval_status": "UNVERIFIED",
+          "warning_count": 2,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 101,
+          "question": "void 和 undefined 是同一个东西吗",
+          "retrieval_status": "INSUFFICIENT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 106,
+          "question": "拜占庭将军问题要解决的是什么",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 108,
+          "question": "跨多个服务的长事务，不想一直持锁，该用什么模式",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 111,
+          "question": "副本之间暂时不一致，但保证最终收敛，这叫什么",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 113,
+          "question": "01 背包压成一维数组之后，内层循环为什么要倒着走",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 114,
+          "question": "写完状态转移方程，怎么确认自己没写错",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 115,
+          "question": "怎么快速判断一道题是不是该用动态规划",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 121,
+          "question": "proxy_pass 末尾加斜杠和不加，转发路径有什么不同",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 123,
+          "question": "怎么按请求频率限制访问",
+          "retrieval_status": "CLARIFY",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 124,
+          "question": "改完配置文件怎么验证语法、怎么平滑生效",
+          "retrieval_status": "READY",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 125,
+          "question": "worker_connections 和 keepalive 该怎么配",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 126,
+          "question": "后端是有状态的，想让同一个客户端始终打到同一台",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 127,
+          "question": "504 一般是前端还是后端的锅",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 128,
+          "question": "文件名带 hash 的静态资源能不能设成永久缓存",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 0,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        },
+        {
+          "index": 129,
+          "question": "同一 IP 哈希分配会有什么副作用",
+          "retrieval_status": "CONFLICT",
+          "warning_count": 1,
+          "failure": "Real multistage RAG was guarded, degraded or lacked four actual model calls"
+        }
+      ]
+    }
+  },
+  "factual_quality_manually_approved": false,
+  "paired_strict_outcomes": [
+    {
+      "go": "FAIL",
+      "java": "FAIL",
+      "cases": 25
+    },
+    {
+      "go": "FAIL",
+      "java": "PASS",
+      "cases": 25
+    },
+    {
+      "go": "PASS",
+      "java": "FAIL",
+      "cases": 20
+    },
+    {
+      "go": "PASS",
+      "java": "PASS",
+      "cases": 59
+    }
+  ],
+  "release_gate_approved": false,
+  "semantic_quality_verified": false,
+  "historical_corpus_identity_verified": false,
+  "limits": "Every original case retained in its original order, including guarded and degraded responses. Independent model calls and shared per-backend governance state are not isolated per-question experiments. Matching failures or complete execution do not approve factual quality or release gates."
+}

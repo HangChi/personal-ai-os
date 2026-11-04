@@ -154,6 +154,10 @@ try {
       return false;
     })()`})
     diagnostics.gcmRecordingStarted = recording.result?.value === true
+    const beforeSend = await gcmCall('Runtime.evaluate', {returnByValue: true,
+      expression: '(' + gcmSnapshot.toString() + ')(document)'})
+    if (beforeSend.exceptionDetails || !beforeSend.result?.value) throw new Error('Unavailable GCM counters')
+    diagnostics.gcmBeforeSend = beforeSend.result.value
   } catch {
     diagnostics.gcmRecordingStarted = false
   }

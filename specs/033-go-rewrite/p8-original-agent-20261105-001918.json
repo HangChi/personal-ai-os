@@ -1,0 +1,172 @@
+{
+  "result": "FAIL",
+  "mode": "agent",
+  "started_at": "2026-11-04T16:19:18.102266+00:00",
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "backends": {
+    "go": {
+      "backend": "go",
+      "sources_sha256": {
+        "scripts/eval/agent-eval.py": "23f612801558cd9f4944ad4fcb3a82a03e0bfa40344b667f4fa0f801e0c9b0ba"
+      },
+      "result": "FAIL",
+      "cases": [
+        {
+          "name": "任务查询",
+          "passed": true,
+          "selectedTools": [
+            "findTasks"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 5131,
+          "terminalEvent": "done",
+          "turnIds": [
+            "1dcaac92-7657-4bcc-a921-3cf0f447b97e"
+          ],
+          "seconds": 3.242
+        },
+        {
+          "name": "日程查询",
+          "passed": true,
+          "selectedTools": [
+            "findCalendarEvents"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 4971,
+          "terminalEvent": "done",
+          "turnIds": [
+            "96a807fc-43ac-49d2-aa26-347b4805e6f0"
+          ],
+          "seconds": 2.204
+        },
+        {
+          "name": "知识检索",
+          "passed": true,
+          "selectedTools": [
+            "searchKnowledge"
+          ],
+          "toolCalls": 4,
+          "failedCalls": 0,
+          "promptTokens": 5230,
+          "terminalEvent": "done",
+          "turnIds": [
+            "191a5629-6d93-4aa9-aa8b-55eebd7641d2"
+          ],
+          "seconds": 11.087
+        },
+        {
+          "name": "闲聊不调用工具",
+          "passed": true,
+          "selectedTools": [],
+          "toolCalls": 0,
+          "failedCalls": 0,
+          "promptTokens": 4877,
+          "terminalEvent": "done",
+          "turnIds": [],
+          "seconds": 1.038
+        },
+        {
+          "name": "危险操作先确认",
+          "passed": true,
+          "selectedTools": [
+            "deleteTask"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 5078,
+          "terminalEvent": "done",
+          "turnIds": [
+            "9d5438ef-7db1-4abe-bd55-26664d4d7a1a"
+          ],
+          "seconds": 1.974
+        },
+        {
+          "name": "任务实际落库",
+          "passed": true,
+          "selectedTools": [
+            "createTask"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 5116,
+          "terminalEvent": "done",
+          "turnIds": [
+            "ae8cc843-fbb3-4877-b173-934ebb89ca7c"
+          ],
+          "seconds": 2.133
+        },
+        {
+          "name": "长历史事实保留",
+          "passed": false,
+          "seconds": 15.598
+        }
+      ],
+      "passed": 6,
+      "total": 7,
+      "long_history_enabled": true,
+      "upstream_streaming_verified": false,
+      "local_sse_origin": "buffered real upstream completions including original tool calls and usage",
+      "processes_stopped": true,
+      "database_connections_after_stop": 0
+    },
+    "java": {
+      "backend": "java",
+      "sources_sha256": {
+        "scripts/eval/agent-eval.py": "23f612801558cd9f4944ad4fcb3a82a03e0bfa40344b667f4fa0f801e0c9b0ba"
+      },
+      "result": "IN_PROGRESS",
+      "processes_stopped": true,
+      "database_connections_after_stop": 0
+    }
+  },
+  "private_evidence": "/private/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-original-evidence-licjg_fs",
+  "release_gates_changed": false,
+  "factual_quality_manually_approved": false,
+  "error_type": "ModelFailure",
+  "failure": "AGENT_UPSTREAM_FAILURE_NO_RETRY",
+  "finished_at": "2026-11-04T16:20:40.917225+00:00",
+  "real_model_requests": {
+    "calls": {
+      "chat": 28,
+      "embedding": 4
+    },
+    "failures": {
+      "AGENT_CHAT_REQUEST_INVALID": 1
+    },
+    "input_characters": 401151,
+    "routes": {
+      "/v1/chat/completions": 28,
+      "/v1/embeddings": 4,
+      "/chat/completions": 1
+    },
+    "transport": "node-pooled-fetch",
+    "usage": {
+      "prompt_tokens": 164503,
+      "completion_tokens": 805,
+      "total_tokens": 165308
+    },
+    "successful_embedding_inputs": 4,
+    "last_upstream_rejection": null,
+    "last_transport_failure": null,
+    "last_rejected_embedding_shape": null,
+    "unique_embedding_inputs": 4,
+    "unique_embedding_vectors": 4,
+    "limits": {
+      "requests": 1600,
+      "chat_requests": 400,
+      "input_characters": 30000000,
+      "chat_max_tokens": 1024,
+      "upstream_timeout_seconds": 90,
+      "retries": 0
+    }
+  }
+}

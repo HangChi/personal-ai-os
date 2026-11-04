@@ -62,6 +62,8 @@ python3 scripts/migration/run_go_e2e_tests.py --backend java --mode context
 
 ## Push 的控制测试与真实失败
 
+2026-11-05新增[push-go-handshake-20261105.json](push-go-handshake-20261105.json)进一步定位：保留30秒订阅/3秒控制/15秒送达期限，原白名单新增Chromium实际握手/退避/等待网络状态与发送前快照。实际CONNECTING→WAITING_FOR_BACKOFF，真实Go TLS库投递被FCM接受，控制成功但仍只有控制产生的1次pushEvents；接收/解密失败记录0、通知/Worker错误0，报告FAIL。5项Node测试通过，未知附加文本仍脱敏为OTHER。补充TCP只读检查mtalk.google.com的5228/5229/5230/443均建连；不证明Chrome的FCM登录/消息通道完成，不把未送达归因于已证实的防火墙或代理问题。全部临时Chrome/profile/密钥及本次库清理，真实送达继续开放。
+
 新增显式`--headed`对照，只去掉headless参数，仍使用本次新随机profile与相同30秒订阅/3秒控制/15秒送达期限，不访问用户Chrome资料。报告新增浏览器模式与三项期限。连接状态只对安全白名单进行大小写/空格/连字符归一化，带额外未知信息仍输出OTHER；四项Node纯单测通过。
 
 两轮有界面对照均成功订阅，本地CDP控制回传/显示成功，Go在本次新TLS库真实投递并被FCM接受（第一轮0.82s、第二轮见日志）；但15秒内仍无真实Push。报告[push-go-headed.json](push-go-headed.json)与[push-go-headed-normalized.json](push-go-headed-normalized.json)都为DELIVERY/FAIL，只有控制消息产生的1次pushEvents；workerErrors/notificationErrors=0，GCM接收/解密失败记录均0，连接状态仍OTHER。诊断不足以确定原因，不能断言headless导致故障。日志`/tmp/personalos-p8-browser-push-headed.log`、`/tmp/personalos-p8-browser-push-headed-normalized.log`。全部本次Chrome/profile/容器已清理；真实送达继续阻止验收。

@@ -31,6 +31,62 @@ QA_QUERIES = ("BRIN 索引适合什么场景", "goroutine 为什么比操作系�
 NO_EVIDENCE_QUERY = "量子引力理论能否解释黑洞信息悖论的最终答案是什么？"
 
 
+def configure_budget(model, args, query_count):
+    fields = (("max_requests", "max_calls", 5000),
+              ("max_chat_requests", "max_chat_calls", 2500),
+              ("max_input_characters", "max_characters", 100_000_000))
+    values = [getattr(args, field, None) for field, _, _ in fields]
+    if args.mode == "multistage-full" and any(value is None for value in values):
+        raise ValueError("Full multistage evaluation requires three explicit model budgets")
+    for (field, attribute, maximum), value in zip(fields, values):
+        if value is not None:
+            if type(value) is not int or not 1 <= value <= maximum:
+                raise ValueError("Invalid explicit model evaluation budget: " + field)
+            setattr(model, attribute, value)
+    backends = 2 if args.backend == "both" else 1
+    if args.mode == "multistage-full" and model.max_chat_calls < 1 + 4 * query_count * backends:
+        raise ValueError("Full multistage chat budget cannot cover all original questions")
+
+
+def multistage_batch(client, model, queries, uploaded, stored, save_answer, progress):
+    if not queries or len({row["q"] for row in queries}) != len(queries):
+        raise ValueError("Full multistage questions must be nonempty and unique")
+    rows = []
+    progress.update(expected_original_queries=len(queries), executed_original_queries=0,
+                    unexecuted_eligible_queries=len(queries), multistage_cases=rows)
+    for position, query in enumerate(queries, 1):
+        before = model.snapshot()["calls"].get("chat", 0)
+        started = time.monotonic()
+        row = dict(question=query["q"], acceptable_documents=query["docs"], result="FAIL")
+        try:
+            response = client.request("/knowledge/ask", "POST", {"question": query["q"], "topK": 5})
+            save_answer(position, response)
+            row.update(retrieval_status=response.get("retrieval", {}).get("status"),
+                       answered=response.get("answered"),
+                       stages=[dict(name=stage.get("name"), status=stage.get("status"))
+                               for stage in response.get("retrieval", {}).get("stages", [])],
+                       warning_count=len(response.get("retrieval", {}).get("warnings", [])))
+            calls = model.snapshot()["calls"].get("chat", 0) - before
+            row["pipeline"] = check_multistage(response, calls)
+            row["answer"] = check_answer(response, query["docs"], uploaded, stored)
+            row["result"] = "PASS"
+        except AssertionError as error:
+            row["failure"] = str(error)
+        except Exception as error:
+            row["error_type"] = type(error).__name__
+        row.update(actual_chat_calls=model.snapshot()["calls"].get("chat", 0) - before,
+                   duration_ms=round((time.monotonic() - started) * 1000))
+        rows.append(row)
+        progress.update(executed_original_queries=position, unexecuted_eligible_queries=len(queries) - position)
+        print("Full multistage " + str(position) + "/" + str(len(queries)) + ": " + row["result"], flush=True)
+        if model.snapshot()["failures"]:
+            raise ModelFailure("FULL_MULTISTAGE_UPSTREAM_FAILURE_NO_RETRY")
+    progress.update(multistage_passed=sum(row["result"] == "PASS" for row in rows),
+                    multistage_failed=sum(row["result"] != "PASS" for row in rows),
+                    all_original_questions_executed=True)
+    return rows
+
+
 def corpus_coverage(documents, modules):
     eligible = query_subset(modules["queries.py"].QUERIES, documents)
     return dict(documents=len(documents), expected_documents=len(modules["rebuild-corpus.py"].CORPUS),
@@ -129,10 +185,11 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
     queries = query_subset(modules["queries.py"].QUERIES, documents)
     result = progress
     multistage = mode != "retrieval"
+    full_multistage = mode == "multistage-full"
     no_evidence = mode == "no-evidence"
-    executed_original = 0 if no_evidence else 1 if multistage else len(queries)
+    executed_original = 0 if no_evidence or full_multistage else 1 if multistage else len(queries)
     result.update(backend=backend, result="IN_PROGRESS", documents=len(documents),
-                  queries=1 if multistage else len(queries), eligible_original_queries=len(queries), mode=mode,
+                  queries=1 if multistage and not full_multistage else len(queries), eligible_original_queries=len(queries), mode=mode,
                   executed_original_queries=executed_original,
                   unexecuted_eligible_queries=len(queries) - executed_original,
                   background_ingestion_review_enabled=False,
@@ -198,6 +255,11 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
             answers = []
             result["stage"] = "multistage_answer" if multistage else "knowledge_answers"
             questions = (NO_EVIDENCE_QUERY,) if no_evidence else QA_QUERIES[:1] if multistage else QA_QUERIES
+            if full_multistage:
+                multistage_batch(client, relay, queries, adapter.uploaded, stored,
+                    lambda number, response: private_json(artifact_dir / (backend + "-full-answer-" + str(number) + ".json"), response),
+                    result)
+                questions = ()
             for question in questions:
                 calls = relay.snapshot()["calls"].get("chat", 0)
                 response = client.request("/knowledge/ask", "POST", {"question": question, "topK": 5})
@@ -250,7 +312,7 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
             if relay.config.api_key.encode() in path.read_bytes():
                 raise AssertionError("Real model credential leaked into a runtime log")
         latencies = sorted(adapter.latencies)
-        result.update(result="PASS", processes_stopped=True, database_connections_after_stop=0,
+        result.update(result="FAIL" if result.get("multistage_failed", 0) else "PASS", processes_stopped=True, database_connections_after_stop=0,
                       stage="complete",
                       real_model_before=before, real_model_after=relay.snapshot())
         if latencies:
@@ -291,7 +353,10 @@ def main():
     parser.add_argument("--model-env-file", required=True, type=Path, help="Only explicitly authorized model keys are loaded")
     parser.add_argument("--downloaded-corpus-dir", required=True, type=Path)
     parser.add_argument("--backend", choices=("both", "go", "java"), default="both")
-    parser.add_argument("--mode", choices=("retrieval", "multistage", "no-evidence"), default="retrieval")
+    parser.add_argument("--mode", choices=("retrieval", "multistage", "multistage-full", "no-evidence"), default="retrieval")
+    parser.add_argument("--max-requests", type=int)
+    parser.add_argument("--max-chat-requests", type=int)
+    parser.add_argument("--max-input-characters", type=int)
     args = parser.parse_args()
     config = load_config(args.model_env_file)
     with pooled_transport(config) as opener:
@@ -303,6 +368,9 @@ def run(args, config, opener):
     modules, _ = original_modules()
     downloaded = load_corpus(args.downloaded_corpus_dir, modules)
     coverage = corpus_coverage(downloaded[0], modules)
+    if args.mode == "multistage-full" and coverage["excluded_original_queries"]:
+        raise ValueError("Full multistage evaluation refuses incomplete original corpus coverage")
+    configure_budget(model, args, coverage["eligible_original_queries"])
     artifact_dir = Path(tempfile.mkdtemp(prefix="personalos-p8-real-evidence-")).resolve()
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     report_path = SPEC / ("p8-eval-real-" + stamp + ".json")
@@ -315,7 +383,8 @@ def run(args, config, opener):
                   limits=str(coverage["documents"]) + " of " + str(coverage["expected_documents"]) +
                          " fresh public articles; current-page coverage is not authenticated historical corpus identity. "
                          "Independent live model calls can have noise. Retrieval mode uses legacy QA; "
-                         "multistage mode probes one original question without replacing the full retrieval suite. "
+                         "multistage mode probes one original question; multistage-full executes every original question "
+                         "with explicit budgets and retains each failed case without approving factual quality. "
                          "No-evidence mode is one supplemental negative control, not an original annotated query. "
                          "Factual answer review and full production acceptance remain separate. No existing DB, "
                          "production mutation, automatic release approval or synthetic fallback.")
@@ -346,6 +415,8 @@ def run(args, config, opener):
                 report["comparison"] = comparison(report["backends"])
         if model.snapshot()["failures"]:
             raise AssertionError("Real model upstream failures were observed")
+        if any(value.get("result") != "PASS" for value in report["backends"].values()):
+            raise AssertionError("Complete multistage evaluation retained failed original cases")
         report["result"], code = "PASS", 0
     except Exception as error:
         report["result"] = "FAIL"

@@ -1,0 +1,270 @@
+{
+  "result": "FAIL",
+  "mode": "agent",
+  "started_at": "2026-11-04T16:27:44.897801+00:00",
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "backends": {
+    "go": {
+      "backend": "go",
+      "sources_sha256": {
+        "scripts/eval/agent-eval.py": "23f612801558cd9f4944ad4fcb3a82a03e0bfa40344b667f4fa0f801e0c9b0ba"
+      },
+      "result": "PASS",
+      "cases": [
+        {
+          "name": "任务查询",
+          "passed": true,
+          "selectedTools": [
+            "findTasks"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 5113,
+          "terminalEvent": "done",
+          "turnIds": [
+            "bd1b1afd-3233-4d23-a6ea-a94a3541ec30"
+          ],
+          "seconds": 3.4
+        },
+        {
+          "name": "日程查询",
+          "passed": true,
+          "selectedTools": [
+            "findCalendarEvents"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 4942,
+          "terminalEvent": "done",
+          "turnIds": [
+            "af8b7ec0-902a-4630-83e1-23ba1a24c58a"
+          ],
+          "seconds": 1.76
+        },
+        {
+          "name": "知识检索",
+          "passed": true,
+          "selectedTools": [
+            "searchKnowledge"
+          ],
+          "toolCalls": 3,
+          "failedCalls": 0,
+          "promptTokens": 5136,
+          "terminalEvent": "done",
+          "turnIds": [
+            "63abcea7-60b2-4c3c-941b-a458037de916"
+          ],
+          "seconds": 6.62
+        },
+        {
+          "name": "闲聊不调用工具",
+          "passed": true,
+          "selectedTools": [],
+          "toolCalls": 0,
+          "failedCalls": 0,
+          "promptTokens": 4877,
+          "terminalEvent": "done",
+          "turnIds": [],
+          "seconds": 0.539
+        },
+        {
+          "name": "危险操作先确认",
+          "passed": true,
+          "selectedTools": [
+            "deleteTask"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 5096,
+          "terminalEvent": "done",
+          "turnIds": [
+            "86beb235-4216-43f3-95ed-6d649b31624c"
+          ],
+          "seconds": 2.622
+        },
+        {
+          "name": "任务实际落库",
+          "passed": true,
+          "selectedTools": [
+            "createTask"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 5122,
+          "terminalEvent": "done",
+          "turnIds": [
+            "b91201a8-c611-4067-8a00-6bd8625f9100"
+          ],
+          "seconds": 1.614
+        },
+        {
+          "name": "长历史事实保留",
+          "passed": true,
+          "seconds": 14.052
+        }
+      ],
+      "passed": 7,
+      "total": 7,
+      "long_history_enabled": true,
+      "rolling_summary_enabled": true,
+      "upstream_streaming_verified": false,
+      "local_sse_origin": "buffered real upstream completions including original tool calls and usage",
+      "processes_stopped": true,
+      "database_connections_after_stop": 0
+    },
+    "java": {
+      "backend": "java",
+      "sources_sha256": {
+        "scripts/eval/agent-eval.py": "23f612801558cd9f4944ad4fcb3a82a03e0bfa40344b667f4fa0f801e0c9b0ba"
+      },
+      "result": "FAIL",
+      "cases": [
+        {
+          "name": "任务查询",
+          "passed": true,
+          "selectedTools": [
+            "findTasks"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 9950,
+          "terminalEvent": "done",
+          "turnIds": [
+            "68e693c6-58b4-4fff-babf-3217f1b7dec9"
+          ],
+          "seconds": 3.841
+        },
+        {
+          "name": "日程查询",
+          "passed": true,
+          "selectedTools": [
+            "findCalendarEvents"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 9831,
+          "terminalEvent": "done",
+          "turnIds": [
+            "360d9a4d-6493-4224-a435-4eb3686bf7a3"
+          ],
+          "seconds": 2.692
+        },
+        {
+          "name": "知识检索",
+          "passed": false,
+          "selectedTools": [
+            "searchKnowledge"
+          ],
+          "toolCalls": 3,
+          "failedCalls": 0,
+          "promptTokens": null,
+          "terminalEvent": "error",
+          "turnIds": [
+            "27c2c039-e9c7-43ad-9301-fb2f7c010325"
+          ],
+          "seconds": 3.925
+        },
+        {
+          "name": "闲聊不调用工具",
+          "passed": true,
+          "selectedTools": [],
+          "toolCalls": 0,
+          "failedCalls": 0,
+          "promptTokens": 4856,
+          "terminalEvent": "done",
+          "turnIds": [],
+          "seconds": 0.66
+        },
+        {
+          "name": "危险操作先确认",
+          "passed": true,
+          "selectedTools": [
+            "deleteTask"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 9961,
+          "terminalEvent": "done",
+          "turnIds": [
+            "d3dacecf-82e0-45a8-9b80-fff2dd33ce0e"
+          ],
+          "seconds": 2.568
+        },
+        {
+          "name": "任务实际落库",
+          "passed": true,
+          "selectedTools": [
+            "createTask"
+          ],
+          "toolCalls": 1,
+          "failedCalls": 0,
+          "promptTokens": 9963,
+          "terminalEvent": "done",
+          "turnIds": [
+            "9e397bc6-dfab-48fd-afda-fabe5ae2e88c"
+          ],
+          "seconds": 1.407
+        },
+        {
+          "name": "长历史事实保留",
+          "passed": true,
+          "seconds": 18.524
+        }
+      ],
+      "passed": 6,
+      "total": 7,
+      "long_history_enabled": true,
+      "rolling_summary_enabled": true,
+      "upstream_streaming_verified": false,
+      "local_sse_origin": "buffered real upstream completions including original tool calls and usage",
+      "processes_stopped": true,
+      "database_connections_after_stop": 0
+    }
+  },
+  "private_evidence": "/private/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-original-evidence-vzwq50_m",
+  "release_gates_changed": false,
+  "factual_quality_manually_approved": false,
+  "finished_at": "2026-11-04T16:29:13.710750+00:00",
+  "real_model_requests": {
+    "calls": {
+      "chat": 59,
+      "embedding": 6
+    },
+    "failures": {},
+    "input_characters": 774734,
+    "routes": {
+      "/v1/chat/completions": 30,
+      "/v1/embeddings": 3,
+      "/chat/completions": 29,
+      "/embeddings": 3
+    },
+    "transport": "node-pooled-fetch",
+    "usage": {
+      "prompt_tokens": 315067,
+      "completion_tokens": 1620,
+      "total_tokens": 316687
+    },
+    "successful_embedding_inputs": 6,
+    "last_upstream_rejection": null,
+    "last_transport_failure": null,
+    "last_rejected_embedding_shape": null,
+    "unique_embedding_inputs": 6,
+    "unique_embedding_vectors": 6,
+    "limits": {
+      "requests": 1600,
+      "chat_requests": 400,
+      "input_characters": 30000000,
+      "chat_max_tokens": 1024,
+      "upstream_timeout_seconds": 90,
+      "retries": 0
+    },
+    "last_rejected_agent_shape": null
+  }
+}
