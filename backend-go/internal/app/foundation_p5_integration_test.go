@@ -4,7 +4,13 @@ package app
 
 import (
 	"bufio"
+	"bytes"
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/hex"
+	"encoding/json"
 	"io"
 	"log/slog"
 	"net/http"
@@ -12,6 +18,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -179,4 +186,145 @@ func TestP5ReminderRabbitFanout(t *testing.T) {
 		t.Fatal(err)
 	}
 	expect("[]")
+}
+
+func TestP5WebhookRecovery(t *testing.T) {
+	f := fixtureFoundation(t, nil, nil)
+	ctx := context.Background()
+	settings, _ := config.BindCalendarProperties(nil)
+	events := calendar.NewEvents(f.Pool(), settings, time.UTC)
+	const secret = "fixture-only-secret-at-least-32-characters"
+	var mu sync.Mutex
+	var ids []string
+	redirected := false
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		defer mu.Unlock()
+		if r.URL.Path == "/redirect" {
+			redirected = true
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Error(err)
+		}
+		mac := hmac.New(sha256.New, []byte(secret))
+		_, _ = mac.Write([]byte(r.Header.Get("X-PersonalOS-Timestamp") + "."))
+		_, _ = mac.Write(body)
+		if r.Header.Get("X-PersonalOS-Signature") != "sha256="+hex.EncodeToString(mac.Sum(nil)) {
+			t.Error("webhook signature mismatch")
+		}
+		var payload map[string]string
+		if err := json.Unmarshal(body, &payload); err != nil {
+			t.Error(err)
+		}
+		id := r.Header.Get("Idempotency-Key")
+		if id == "" || id != payload["id"] || payload["event"] != "reminder.due" {
+			t.Error("invalid webhook identity")
+		}
+		ids = append(ids, id)
+		if len(ids) == 1 {
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		http.Redirect(w, r, "/redirect", http.StatusTemporaryRedirect)
+	}))
+	defer server.Close()
+	worker, err := calendar.NewWebhook(events, server.URL, secret, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer worker.Close()
+	if err := worker.Dispatch(ctx); err != nil {
+		t.Fatal(err)
+	}
+	appExec(t, f, `UPDATE reminder_webhook_target SET enabled_at=now()-interval '1 hour'`)
+	now := time.Now().UTC().Truncate(time.Microsecond).Add(-time.Minute)
+	title := "webhook fixture"
+	lead := 0
+	event, err := events.Create(ctx, calendar.EventRequest{Title: &title, StartsAt: &now, EndsAt: &now, Lead: &lead})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer events.Delete(ctx, event.ID)
+	if _, err := events.Scan(ctx, now); err != nil {
+		t.Fatal(err)
+	}
+	if err := worker.Dispatch(ctx); err != nil {
+		t.Fatal(err)
+	}
+	appExec(t, f, `UPDATE reminder_webhook_delivery SET state='SENDING',next_attempt_at=now()-interval '1 second' WHERE state='PENDING' AND attempts=1`)
+	if err := worker.Dispatch(ctx); err != nil {
+		t.Fatal(err)
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	if len(ids) != 2 || ids[0] != ids[1] || redirected {
+		t.Fatalf("attempt count = %d, retry stable ID = %v, redirected = %v", len(ids), len(ids) == 2 && ids[0] == ids[1], redirected)
+	}
+	var state string
+	err = f.Pool().WithConn(ctx, func(conn *sql.Conn) error {
+		return conn.QueryRowContext(ctx, `SELECT state FROM reminder_webhook_delivery WHERE id=$1`, ids[0]).Scan(&state)
+	})
+	if err != nil || state != "FAILED" {
+		t.Fatalf("webhook state = %s, %v", state, err)
+	}
+}
+
+func TestP5BrowserWebPush(t *testing.T) {
+	path := os.Getenv("GO_TEST_REMINDER_BROWSER_SUBSCRIPTION")
+	if path == "" {
+		t.Skip("需要本次 Chrome 生成的真实订阅")
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal("无法读取 Chrome 测试订阅")
+	}
+	var fixture struct {
+		PublicKey    string
+		PrivateKey   string
+		Subscription json.RawMessage
+	}
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal("Chrome 测试订阅格式非法")
+	}
+	f := fixtureFoundation(t, nil, nil)
+	ctx := context.Background()
+	settings, _ := config.BindCalendarProperties(nil)
+	events := calendar.NewEvents(f.Pool(), settings, time.UTC)
+	push, err := calendar.NewPush(events, true, fixture.PublicKey, fixture.PrivateKey, "mailto:fixture@example.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer push.Close()
+	handler := push.Handler(slog.New(slog.NewTextHandler(io.Discard, nil)))
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/reminders/push/subscriptions", bytes.NewReader(fixture.Subscription))
+	req.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, req)
+	if response.Code != http.StatusOK {
+		t.Fatalf("订阅 HTTP %d", response.Code)
+	}
+	now := time.Now().UTC().Truncate(time.Microsecond).Add(10 * time.Millisecond)
+	title := "P5 browser delivery fixture"
+	lead := 0
+	event, err := events.Create(ctx, calendar.EventRequest{Title: &title, StartsAt: &now, EndsAt: &now, Lead: &lead})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer events.Delete(ctx, event.ID)
+	if _, err := events.Scan(ctx, now); err != nil {
+		t.Fatal(err)
+	}
+	if err := push.Dispatch(ctx, now); err != nil {
+		t.Fatal(err)
+	}
+	var state string
+	err = f.Pool().WithConn(ctx, func(conn *sql.Conn) error {
+		return conn.QueryRowContext(ctx, `SELECT d.state FROM web_push_delivery d JOIN reminder r ON r.id=d.reminder_id WHERE r.source_id=$1`, event.ID).Scan(&state)
+	})
+	if err != nil || state != "SENT" {
+		t.Fatalf("browser delivery state = %s, %v", state, err)
+	}
 }

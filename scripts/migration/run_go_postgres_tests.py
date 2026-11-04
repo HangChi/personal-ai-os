@@ -76,7 +76,7 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
         # 最小 Go 子进程环境，不继承任何 PG* 或现有应用配置。
         go_env = {key: value for key, value in os.environ.items() if key in {
             "PATH", "HOME", "TMPDIR", "CC", "CXX", "CGO_ENABLED", "SSL_CERT_FILE", "SSL_CERT_DIR",
-            "GO_TEST_REMINDER_RABBIT_URI",
+            "GO_TEST_REMINDER_RABBIT_URI", "GO_TEST_REMINDER_BROWSER_SUBSCRIPTION",
         }}
         go_env.update({
             "GOCACHE": "/private/tmp/personal-ai-os-go-build", "GOPATH": "/private/tmp/personal-ai-os-go",
