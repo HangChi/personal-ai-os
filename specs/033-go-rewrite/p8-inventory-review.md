@@ -38,7 +38,7 @@
 
 23个文件仍为in_progress：3个生产配置、4个真实Push相关源码/测试、原E2E入口，以及15个原在线语料/模型评估集合文件。原演示配方隔离适配已完成，证据见[p8-demo-seed.json](p8-demo-seed.json)。数量只帮助定位，不能替代逐项说明。
 
-- 生产TLS/证书续期及发布批准没有实测材料；原生产安全校验通过不等于生产入口通过。prod拒绝、readyz503继续保持。
+- 候选Caddy已在新随机项目用私有CA实际验证HTTPS/自动续期/重启保留，并修复跳转丢失外部端口，见[p8-https.json](p8-https.json)。公网ACME/DNS/真实生产证书续期及发布批准仍无实测材料；prod拒绝、readyz503继续保持。
 - 真实FCM接受后15秒内无Service Worker push事件；synthetic CDP控制通过只说明本地通知链，不能升级真实投递状态。
 - 原演示脚本main固定连接现有容器、默认清空全部业务表，仍禁止直接运行。Go适配仅加载原七组配方并替换IO边界；原main/reset从未调用，已验证隔离回读不等于对用户库执行授权。
 - 原E2E保持80 PASS/1与固定Java同FAIL/1原case SKIP/2 NOTE，不修改原断言凑绿。

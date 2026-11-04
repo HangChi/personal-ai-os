@@ -9,6 +9,7 @@ services:
   web:
     environment:
       GO_PUBLIC_HOST: ${GO_PUBLIC_HOST:?set GO_PUBLIC_HOST}
+      GO_HTTPS_PORT: ${GO_HTTPS_PORT:-18443}
     ports: !override
       - "${GO_PUBLIC_BIND:-127.0.0.1}:${GO_HTTPS_PORT:-18443}:8443"
       - "${GO_PUBLIC_BIND:-127.0.0.1}:${GO_HTTP_PORT:-18080}:8080"

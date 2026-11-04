@@ -26,7 +26,9 @@ docker compose --env-file /dev/null -f backend-go/deploy/compose.yml config --qu
 
 共享会话使用默认SESSION/HttpOnly/SameSite=Lax，不接受Servlet专属Cookie覆盖，基础Compose不设置这些冗余项。`compose.monitoring.yml`默认用于combined；分布角色另设`GO_PROMETHEUS_CONFIG=prometheus.yml`，以DNS发现三个Worker。Grafana显式关闭插件预安装/自动更新，固定镜像内插件随镜像审查升级；不依赖启动时下载。
 
-`compose.prod.yml`提供安全Cookie、TLS Caddy及持久证书卷的候选定义，要求Compose2.24.4+；`GO_PUBLIC_HOST`必须是真实受控域名，公网发布还须显式`GO_PUBLIC_BIND`/80/443映射。默认仍回环18443/18080。当前Go拒绝prod，因此该叠加只用于配置审查，不能启动成功，更不能据此勾选生产验收。TLS证书卷须事先允许UID10001写入；不得通过改为root解决权限问题。ACME/DNS/证书续期和实际公网入口需在发布验收另行验证。
+`compose.prod.yml`提供安全Cookie、TLS Caddy及持久证书卷的候选定义，要求Compose2.24.4+；`GO_PUBLIC_HOST`必须是真实受控域名，公网发布还须显式`GO_PUBLIC_BIND`/80/443映射。默认仍回环18443/18080。`GO_HTTPS_PORT`同时用于宿主映射和显式308跳转；公网443入口应设为443，避免自动跳转丢失外部端口。当前Go拒绝prod，因此该叠加不能直接启动成功，更不能据此勾选生产验收。TLS证书卷须允许UID10001写入；不得通过改为root解决权限问题。ACME/DNS/公网续期和实际入口需在发布验收另行验证。
+
+`python3 scripts/migration/run_go_compose_tests.py --https`仅创建随机项目/端口/新卷。它原生转换候选Caddyfile，保留HTTP配置，只将签发器/续期时钟替换为90秒测试私有证书；后端明确使用monitoring测试profile，未绕过prod守卫。CA只加载到本次Python客户端，不安装系统信任。实际验证未知CA/错误域名拒绝、外部端口跳转、安全头/Secure Cookie/认证CSRF、SPA与上传下载、非root/只读、自动续期及重启后证书/会话保留，最后清理本次资源。该演练不能代表公网ACME或生产批准，报告见[p8-https.json](../../specs/033-go-rewrite/p8-https.json)。
 
 ## 运维与复验
 

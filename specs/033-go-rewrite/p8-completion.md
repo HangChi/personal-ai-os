@@ -12,6 +12,16 @@
 6. 真实设施全量/故障/恢复、性能与隔离切换演练；证据通过后才核验发布门禁。
 7. 更新Go运维/开发说明，保留迁移历史；Java归档须用户验收后另作决定。
 
+## T800d 私有CA HTTPS与证书续期
+
+`run_go_compose_tests.py --https`原生转换当前候选Caddyfile，HTTP路由/监听/安全头保持相同；只在临时JSON叠加内部签发器、90秒leaf与2秒续期检查。全新随机回环端口、Compose项目和证书卷，CA不安装系统信任。后端使用明确monitoring测试profile；prod配置本身仍被守卫拒绝，不通过测试解除。
+
+实际第4轮完整通过：可信链/localhost、未知CA与错误SNI拒绝、HSTS/四安全头、Secure/HttpOnly/Lax Cookie、认证CSRF/任务持久化、管理路径404、原SPA、附件字节相等、原42迁移/重复validate、UID10001/只读/零capability；自动取得不同serial且更晚到期的证书，重启Web后CA和续期leaf保持，已有认证会话可用；SIGTERM与本次资源清理通过。新卷可写，没有通过改root或放开权限修复。日志`/tmp/personalos-p8-https-4.log`。
+
+首轮测试只捕获证书校验错误，但Caddy对未知SNI在发证前拒绝握手；验证器保留未知CA必须是证书校验错误，另明确允许未知SNI的TLS拒绝。第2/3轮证实生产候选真实缺陷：随机发布端口的HTTP入口308到`https://localhost/tasks?fixture=p8`，丢失外部端口。现显式308引用与Compose映射相同的`GO_HTTPS_PORT`，内部8080/8443和ACME自动管理不变。前三轮失败日志保留；没有放宽跳转、认证或续期断言。
+
+第5轮用最终带报告runner再次完整通过（`/tmp/personalos-p8-https-5.log`），清理后生成脱敏[p8-https.json](p8-https.json)。59项迁移Python单测与固定1093文件基线检查通过；五原生Compose配置测试通过。这只是内部CA的回环演练，不验证公网ACME/DNS挑战/公有证书续期或生产容量；T800父项与五门禁继续开放。
+
 ## T801a 数据保留策略
 
 `--foundation --p8` 包含P7及全部前序业务，新增用量/操作记录清理；默认保持回环监听，不解除prod拒绝或readyz503。`app.retention.token-usage-days`与`app.retention.operation-record-days`默认0（永久保留），负值/超过Java int的值启动拒绝。两类截止时间独立，按UTC瞬时减整天，严格早于截止时间才删除；不能用Go time.Duration乘天数导致大整数溢出。

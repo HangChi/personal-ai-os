@@ -167,6 +167,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [x] T800a 独立Go/Web镜像实际构建，Go镜像五角色在新建TLS库实际验证认证/CSRF/管理隔离/non-root/SIGTERM；Compose combined/distributed/prod候选4项原生配置检查通过。完整Compose/Web反代/生产TLS仍由父项追踪。
 - [x] T800b 新随机Compose项目实际完成原42迁移/重复validate、verify-full数据库、原前端Caddy反代/SPA、认证/CSRF、管理路径404、上传下载和优雅停止；仅清理本次资源。distributed完整栈和prod/TLS验收仍由父项追踪。
 - [x] T800c distributed完整Compose在新建PostgreSQL/Redis TLS下验证API与三个Worker、共享会话重启持久、四目标实际采集、只读Grafana无自动插件安装及四角色优雅停止；修复共享会话不接受Servlet Cookie覆盖的部署冲突。prod/TLS父项仍开放。
+- [x] T800d 候选Caddy原生配置在新随机私有CA/证书卷实际完成HTTPS、安全头/Secure Cookie/认证CSRF、未知CA/错误域名拒绝、续期及重启保留；修复308跳转丢失发布端口。仅测试profile，公网ACME/生产批准与父项仍开放。
 - [ ] T801 适配本地启动/停止/Worker discovery、备份恢复/保留清理、Push key、监控/告警/仪表盘与评估脚本。
 - [x] T801a 显式P8接入用量/操作记录独立保留期与本地cron/关闭；默认永久保留、真实TLS库严格截止/重复清理和未知TOOL占位保护通过。备份/恢复/监控仍由父项追踪。
 - [x] T801b 独立Go本地启停/身份核对/Worker发现、显式目标备份封装，五角色实际启停与发现更新、原归档格式备份/隔离恢复和Push密钥权限/防覆盖已通过；不读取Java.env或PID。

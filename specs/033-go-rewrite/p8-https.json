@@ -1,0 +1,21 @@
+{
+  "result": "PASS",
+  "private_ca_only": true,
+  "public_acme_verified": false,
+  "source_sha256": {
+    "backend-go/deploy/Caddyfile.prod": "a553fab584a115a8db7e0dc0258c547bfa95cd9e2d816a58dde83e5cf1cf1e8b",
+    "backend-go/deploy/compose.prod.yml": "47440f6f7ce1e4b0cfb7cb850b13a359bcfa6b8f8cafc6a664fbb661367f1c8e"
+  },
+  "checks": [
+    "native candidate Caddyfile adapted; only private issuer/timing overlaid",
+    "trusted chain and localhost; unknown CA and wrong SNI rejected",
+    "308 preserves external HTTPS port/path/query; HSTS and security headers",
+    "Secure/HttpOnly/SameSite cookie and authenticated CSRF persistence",
+    "private management paths hidden; original SPA; multipart byte identity",
+    "UID10001/read-only/no capabilities; new certificate volumes writable",
+    "90-second leaf automatically renewed; new serial and later expiry",
+    "web restart retained CA and renewed leaf; authenticated session remains valid",
+    "original Flyway42/revalidate; graceful stop; random project/volumes removed"
+  ],
+  "limits": "Loopback private CA only; backend uses explicit monitoring test profile. Prod rejection/readyz503 and all release gates remain. No public ACME/DNS or real deployment approval."
+}

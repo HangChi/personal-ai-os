@@ -2,12 +2,14 @@
 """Actual candidate Compose in a new random project; no existing stack, .env or volume."""
 import argparse
 import base64
+import hashlib
 import http.cookiejar
 import json
 import os
 from pathlib import Path
 import secrets
 import socket
+import ssl
 import subprocess
 import tempfile
 import time
@@ -24,7 +26,9 @@ def capture(command, **kwargs):
     return subprocess.run(command, check=True, text=True, capture_output=True, timeout=180, **kwargs).stdout.strip()
 
 
-def run(monitoring=False, distributed=False):
+def run(monitoring=False, distributed=False, https=False):
+    if https and (monitoring or distributed):
+        raise ValueError("HTTPS fixture currently exercises the combined candidate only")
     project = "personalos-go-p8-drill-" + uuid.uuid4().hex[:12]
     with tempfile.TemporaryDirectory(prefix="personalos-p8-compose-") as temporary:
         server, _ = create_tls_fixture(temporary, dns_names=("postgres",))
@@ -70,6 +74,15 @@ def run(monitoring=False, distributed=False):
             environment.update(GO_GRAFANA_ADMIN_USER="p8-monitor", GO_GRAFANA_ADMIN_PASSWORD=secrets.token_urlsafe(24),
                                GO_GRAFANA_PORT=str(grafana_port), GO_PROMETHEUS_CONFIG="prometheus.yml" if distributed else "prometheus.combined.yml")
             command += ["-f", str(ROOT / "backend-go/deploy/compose.monitoring.yml")]
+        http_port = None
+        if https:
+            from p8_https_fixture import write_overlay
+            with socket.socket() as probe:
+                probe.bind(("127.0.0.1", 0))
+                http_port = probe.getsockname()[1]
+            environment.update(GO_PUBLIC_HOST="localhost", GO_HTTPS_PORT=str(port), GO_HTTP_PORT=str(http_port))
+            command += ["-f", str(ROOT / "backend-go/deploy/compose.prod.yml"),
+                        "-f", str(write_overlay(temporary, environment))]
         started = False
         containers = {}
         try:
@@ -103,7 +116,13 @@ def run(monitoring=False, distributed=False):
                     if status != "404":
                         raise AssertionError("Worker exposes business endpoints: " + service)
             jar = http.cookiejar.CookieJar()
-            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(jar))
+            context = ssl.create_default_context()
+            ca_sha256 = None
+            if https:
+                from p8_https_fixture import root_context
+                context, ca_sha256 = root_context(containers["web"])
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(jar),
+                                                urllib.request.HTTPSHandler(context=context))
 
             def request(path, method="GET", body=None, token=None, expected=200, headers=None, target_port=port):
                 values = dict(headers or {})
@@ -112,7 +131,8 @@ def run(monitoring=False, distributed=False):
                     values["Content-Type"] = "application/json"
                 if token:
                     values["X-CSRF-TOKEN"] = token
-                message = urllib.request.Request("http://127.0.0.1:" + str(target_port) + path, data=body, headers=values, method=method)
+                origin = "https://localhost:" if https and target_port == port else "http://127.0.0.1:"
+                message = urllib.request.Request(origin + str(target_port) + path, data=body, headers=values, method=method)
                 try:
                     response = opener.open(message, timeout=10)
                 except urllib.error.HTTPError as error:
@@ -136,6 +156,18 @@ def run(monitoring=False, distributed=False):
                 raise AssertionError("Original frontend or security headers missing")
             if capture(["docker", "exec", containers["web"], "id", "-u"]) != "10001":
                 raise AssertionError("Disposable Web is not running as UID 10001")
+            original_certificate = None
+            if https:
+                from p8_https_fixture import verify_entry
+                original_certificate = verify_entry(context, port, http_port)
+                for name, value in {"Strict-Transport-Security": "max-age=31536000", "X-Frame-Options": "DENY",
+                                    "Referrer-Policy": "strict-origin-when-cross-origin",
+                                    "Permissions-Policy": "camera=(), geolocation=(), payment=()"}.items():
+                    if headers.get(name) != value:
+                        raise AssertionError("HTTPS security header missing: " + name)
+                flags = json.loads(capture(["docker", "inspect", "--format", "{{json .HostConfig}}", containers["web"]]))
+                if not flags["ReadonlyRootfs"] or flags["CapDrop"] != ["ALL"] or "no-new-privileges:true" not in flags["SecurityOpt"]:
+                    raise AssertionError("Candidate HTTPS lost read-only/capability restrictions")
             for path in ("/actuator", "/actuator/health", "/actuator/prometheus", "/livez", "/readyz"):
                 request(path, expected=404)
             request("/api/v1/tasks", expected=401)
@@ -145,6 +177,8 @@ def run(monitoring=False, distributed=False):
             session_cookie = login_headers.get("Set-Cookie", "")
             if "HttpOnly" not in session_cookie or "SameSite=Lax" not in session_cookie or (distributed and not session_cookie.startswith("SESSION=")):
                 raise AssertionError("Session cookie security/shared-session identity changed")
+            if https and "Secure" not in session_cookie:
+                raise AssertionError("Candidate HTTPS session cookie is not Secure")
             csrf = json.loads(request("/api/v1/auth/csrf")[0])["data"]["token"]
             task = json.loads(request("/api/v1/tasks", "POST", {"title": "P8 Compose persisted"}, token=csrf, expected=201)[0])["data"]
             request("/api/v1/tasks/" + task["id"])
@@ -169,6 +203,26 @@ def run(monitoring=False, distributed=False):
                 raise AssertionError("Candidate Flyway did not apply exactly 42 original migrations")
             # Re-run the same external executor; Go never performs the migration itself.
             capture(command + ["run", "--rm", "--no-deps", "migrate"], cwd=ROOT, env=environment)
+            if https:
+                from p8_https_fixture import peer, root_context, verify_renewal
+                renewed = verify_renewal(context, port, original_certificate)
+                capture(command + ["restart", "web"], cwd=ROOT, env=environment)
+                _, restarted_ca = root_context(containers["web"])
+                if restarted_ca != ca_sha256:
+                    raise AssertionError("HTTPS restart replaced the persisted CA")
+                deadline = time.monotonic() + 20
+                while True:
+                    try:
+                        restarted = peer(context, port)
+                        break
+                    except (OSError, ssl.SSLError):
+                        if time.monotonic() >= deadline:
+                            raise TimeoutError("HTTPS did not resume after Caddy restart") from None
+                        time.sleep(.2)
+                if restarted["sha256"] != renewed["sha256"]:
+                    raise AssertionError("Caddy restart did not reuse the renewed certificate")
+                request("/api/v1/tasks/" + task["id"])
+                print("P8 private-CA HTTPS: trusted chain/hostname, unknown CA/wrong host rejection, public redirect, headers/Secure cookie, renewal and persisted restart passed", flush=True)
             if monitoring:
                 capture(["docker", "exec", containers["prometheus"], "/bin/promtool", "check", "config", "/etc/prometheus/prometheus.yml"])
                 capture(["docker", "exec", containers["prometheus"], "/bin/promtool", "check", "rules", "/etc/prometheus/alerts.yml"])
@@ -229,11 +283,27 @@ def run(monitoring=False, distributed=False):
             if started:
                 capture(command + ["down", "--volumes", "--remove-orphans", "--timeout", "40"], cwd=ROOT, env=environment)
                 print("Removed only this runner's random Compose project/volumes", flush=True)
+        if https:
+            report = dict(result="PASS", private_ca_only=True, public_acme_verified=False,
+                source_sha256={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in (
+                    "backend-go/deploy/Caddyfile.prod", "backend-go/deploy/compose.prod.yml")},
+                checks=["native candidate Caddyfile adapted; only private issuer/timing overlaid",
+                        "trusted chain and localhost; unknown CA and wrong SNI rejected",
+                        "308 preserves external HTTPS port/path/query; HSTS and security headers",
+                        "Secure/HttpOnly/SameSite cookie and authenticated CSRF persistence",
+                        "private management paths hidden; original SPA; multipart byte identity",
+                        "UID10001/read-only/no capabilities; new certificate volumes writable",
+                        "90-second leaf automatically renewed; new serial and later expiry",
+                        "web restart retained CA and renewed leaf; authenticated session remains valid",
+                        "original Flyway42/revalidate; graceful stop; random project/volumes removed"],
+                limits="Loopback private CA only; backend uses explicit monitoring test profile. Prod rejection/readyz503 and all release gates remain. No public ACME/DNS or real deployment approval.")
+            (ROOT / "specs/033-go-rewrite/p8-https.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--monitoring", action="store_true")
     parser.add_argument("--distributed", action="store_true")
+    parser.add_argument("--https", action="store_true", help="Fresh private-CA HTTPS drill; never production/public ACME")
     arguments = parser.parse_args()
-    run(arguments.monitoring, arguments.distributed)
+    run(arguments.monitoring, arguments.distributed, arguments.https)

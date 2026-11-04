@@ -633,3 +633,7 @@ T801e原演示七组配方隔离适配完成：四安全单测通过；第二轮
 T802b新增Push阶段/有界CDP/GCM脱敏诊断，两项Node纯单测与语法检查通过；两轮冷profile复验均在订阅30秒期限失败，最新报告stage=SUBSCRIPTION、未到Go投递。首轮空连接诊断不推断根因，原FCM接受但15秒未送达的失败保留；没有放宽期限或把控制测试当送达。证据/日志与原saveMemory case恒为观察跳过的说明见`p8-e2e/README.md`，T802及五门禁继续开放。
 
 最终57项Python单测（`/tmp/personalos-p8-python-final-gcm.log`）、2项Node脱敏单测、JS语法/固定基线/两派生映射/workflow YAML/diff检查通过；`check-complete`实际退出1（`/tmp/personalos-p8-check-complete-with-demo-gcm.log`）。2415implemented、23in_progress、零verified，五发布门禁未验证，未据失败或缺材料自动升级。
+
+T800d隔离私有CA HTTPS第4轮完整通过，日志`/tmp/personalos-p8-https-4.log`：候选Caddy原生HTTP配置、安全头/Secure Cookie/认证CSRF、原SPA与附件、未知CA/错误SNI拒绝、自动续期及重启保留；新随机项目/证书卷/端口已清理。第2/3轮真实发现308丢失发布端口，现显式绑定GO_HTTPS_PORT，前三轮失败日志保留。59项Python单测（`/tmp/personalos-p8-python-https.log`）、原生Compose5项/固定基线/diff检查通过。测试profile与内部CA不代表生产启动或公网ACME，T800父项/生产三文件/五发布门禁不升级verified。
+
+最终第5轮完整通过并在清理后生成`p8-https.json`，日志`/tmp/personalos-p8-https-5.log`。59项Python最终复验（`/tmp/personalos-p8-python-https-final.log`）通过；生产三文件新增私有CA证据但仍in_progress，总2415implemented/23in_progress/零verified，五门禁原样保留。

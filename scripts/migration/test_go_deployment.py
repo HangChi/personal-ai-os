@@ -88,6 +88,7 @@ class GoDeploymentTest(unittest.TestCase):
         self.assertEqual(services["backend"]["environment"]["SPRING_PROFILES_ACTIVE"], "monitoring,prod")
         self.assertEqual(services["backend"]["environment"]["SERVER_SERVLET_SESSION_COOKIE_SECURE"], "true")
         self.assertEqual({str(port["target"]) for port in services["web"]["ports"]}, {"8080", "8443"})
+        self.assertEqual(services["web"]["environment"]["GO_HTTPS_PORT"], "18443")
         self.assertTrue(all(port["host_ip"] == "127.0.0.1" for port in services["web"]["ports"]))
 
     def test_readonly_monitoring_never_preinstalls_or_updates_plugins(self):

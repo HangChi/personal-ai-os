@@ -2596,9 +2596,11 @@
         "backend-go/deploy/Caddyfile.prod",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/p8_https_fixture.py",
+        "specs/033-go-rewrite/p8-https.json"
       ],
-      "note": "P8职责处置：候选配置/原安全校验已有；无生产TLS/续期/人工批准，prod拒绝与readyz503保持。"
+      "note": "P8职责处置：新随机项目私有CA验证可信HTTPS/拒绝未知CA与错误域名、安全Cookie/跳转端口、自动续期/重启保留；不等于公网ACME/生产批准，prod拒绝与readyz503保持。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/AgentExecutionProperties.java": {
       "status": "implemented",
@@ -26376,9 +26378,11 @@
         "backend-go/deploy/Caddyfile.prod",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/p8_https_fixture.py",
+        "specs/033-go-rewrite/p8-https.json"
       ],
-      "note": "P8职责处置：候选配置/原安全校验已有；无生产TLS/续期/人工批准，prod拒绝与readyz503保持。"
+      "note": "P8职责处置：新随机项目私有CA验证可信HTTPS/拒绝未知CA与错误域名、安全Cookie/跳转端口、自动续期/重启保留；不等于公网ACME/生产批准，prod拒绝与readyz503保持。"
     },
     "file:compose.yml": {
       "status": "implemented",
@@ -26399,9 +26403,11 @@
         "backend-go/deploy/Caddyfile.prod",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/p8_https_fixture.py",
+        "specs/033-go-rewrite/p8-https.json"
       ],
-      "note": "P8职责处置：候选配置/原安全校验已有；无生产TLS/续期/人工批准，prod拒绝与readyz503保持。"
+      "note": "P8职责处置：新随机项目私有CA验证可信HTTPS/拒绝未知CA与错误域名、安全Cookie/跳转端口、自动续期/重启保留；不等于公网ACME/生产批准，prod拒绝与readyz503保持。"
     },
     "file:deploy/Caddyfile.local": {
       "status": "implemented",

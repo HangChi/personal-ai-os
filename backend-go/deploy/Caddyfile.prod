@@ -2,6 +2,11 @@
     admin off
     http_port 8080
     https_port 8443
+    auto_https disable_redirects
+}
+
+http://{$GO_PUBLIC_HOST} {
+    redir https://{$GO_PUBLIC_HOST}:{$GO_HTTPS_PORT:18443}{uri} 308
 }
 
 https://{$GO_PUBLIC_HOST} {
