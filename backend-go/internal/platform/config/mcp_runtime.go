@@ -16,8 +16,11 @@ func (p *Properties) mcpRuntime(http bool) (MCPProperties, error) {
 	if err != nil {
 		return MCPProperties{}, err
 	}
+	if !found {
+		return MCPProperties{servers: map[string]MCPServerConfig{}}, nil
+	}
 	active, err := bindBoolean(map[string]string{"mcp.enabled": enabled}, "mcp.enabled", false)
-	if !found || err != nil || !active {
+	if err != nil || !active {
 		return MCPProperties{servers: map[string]MCPServerConfig{}}, err
 	}
 	sources := []BindingSource{}

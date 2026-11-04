@@ -473,17 +473,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 
 	if options.EnableP7 {
-		protocol := mcp.NewPersonalServer(personalMCP, mcp.PersonalServices{Tasks: tasks, Knowledge: f.p6.Retriever, Calendar: p5.events, Memories: p5.store})
-		h := &mcp.HTTP{Registry: f.mcp, Personal: personalMCP, Protocol: protocol}
-		handler := h.Handler(logger)
-		previous := options.Business
-		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if h.OwnsPath(r.URL.Path) {
-				handler.ServeHTTP(w, r)
-				return
-			}
-			previous.ServeHTTP(w, r)
-		})
+		options.Business = f.p7Route(tasks, p5, personalMCP, name, version, logger, options.Business)
 	}
 	var actuator http.Handler
 	if !settings.Monitoring {

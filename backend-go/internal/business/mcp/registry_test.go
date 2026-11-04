@@ -8,7 +8,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
+	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 
@@ -37,8 +41,78 @@ func TestP7StdioHelper(t *testing.T) {
 	if os.Getenv("PERSONALOS_P7_HELPER") != "true" {
 		t.Skip("child process only")
 	}
+	if marker := os.Getenv("PERSONALOS_P7_PID"); marker != "" {
+		if e := os.WriteFile(marker, []byte(strconv.Itoa(os.Getpid())), 0600); e != nil {
+			os.Exit(2)
+		}
+	}
+	if os.Getenv("PERSONALOS_P7_HANG") == "true" {
+		time.Sleep(30 * time.Second)
+		os.Exit(2)
+	}
 	_ = testServer().Run(context.Background(), &sdk.StdioTransport{})
 	os.Exit(0)
+}
+
+func TestP7StdioHandshakeTimeoutReapsChild(t *testing.T) {
+	bin, e := os.Executable()
+	if e != nil {
+		t.Fatal(e)
+	}
+	marker := filepath.Join(t.TempDir(), "child.pid")
+	start := time.Now()
+	r, e := OpenRegistry(context.Background(), Options{Enabled: true, Name: "test", Version: "1", Servers: map[string]ServerConfig{"hung": {Command: bin, Args: []string{"-test.run=^TestP7StdioHelper$"}, Env: map[string]string{"PERSONALOS_P7_HELPER": "true", "PERSONALOS_P7_HANG": "true", "PERSONALOS_P7_PID": marker}, Timeout: time.Second}}}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if e != nil {
+		t.Fatal(e)
+	}
+	r.Close()
+	if r.Statuses()[0].Available || time.Since(start) > 5*time.Second {
+		t.Fatal("unbounded handshake/shutdown", r.Statuses())
+	}
+	raw, e := os.ReadFile(marker)
+	if e != nil {
+		t.Fatal("child did not start", e)
+	}
+	pid, e := strconv.Atoi(string(raw))
+	if e != nil {
+		t.Fatal(e)
+	}
+	if e = syscall.Kill(pid, 0); e == nil {
+		t.Fatal("timed out child was not reaped", pid)
+	}
+}
+
+func TestP7HTTPHeadersAndRedactedFailureStatus(t *testing.T) {
+	server := testServer()
+	protocol := sdk.NewStreamableHTTPHandler(func(*http.Request) *sdk.Server { return server }, &sdk.StreamableHTTPOptions{Stateless: true, JSONResponse: true})
+	var calls atomic.Int32
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "Bearer synthetic-p7-private" {
+			t.Error("missing configured header")
+			w.WriteHeader(401)
+			return
+		}
+		calls.Add(1)
+		protocol.ServeHTTP(w, r)
+	}))
+	defer s.Close()
+	var logs strings.Builder
+	r, e := OpenRegistry(context.Background(), Options{Enabled: true, Name: "test", Version: "1", Servers: map[string]ServerConfig{"remote": {Endpoint: s.URL + "/?synthetic-p7-private", Headers: http.Header{"Authorization": {"Bearer synthetic-p7-private"}}, Timeout: time.Second}}}, slog.New(slog.NewTextHandler(&logs, nil)))
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer r.Close()
+	if _, e := r.Call(context.Background(), "remote", "echo", nil); e != nil || calls.Load() < 3 {
+		t.Fatal(e, calls.Load())
+	}
+	s.Close()
+	if e := r.Reconnect(context.Background(), "remote"); e != nil {
+		t.Fatal(e)
+	}
+	raw, _ := json.Marshal(r.Statuses())
+	if r.Statuses()[0].Available || strings.Contains(string(raw)+logs.String(), "synthetic-p7-private") || strings.Contains(string(raw), s.URL) {
+		t.Fatal("status leaked endpoint or headers")
+	}
 }
 
 func TestP7NamesPolicyAndSchema(t *testing.T) {

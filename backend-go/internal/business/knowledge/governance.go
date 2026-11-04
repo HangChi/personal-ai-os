@@ -167,22 +167,28 @@ func (g *Governance) Enrich(ctx context.Context, hits []Hit) ([]Hit, error) {
 	}
 	return out, nil
 }
-func (g *Governance) Update(ctx context.Context, id string, m Metadata) (SourceInfo, error) {
+func validateMetadata(m Metadata) error {
 	if _, ok := api.ParseJavaUUID(m.SpaceID); !ok || (m.Lifecycle != "ACTIVE" && m.Lifecycle != "SUPERSEDED") {
-		return SourceInfo{}, invalid("请选择知识库与文档状态")
+		return invalid("请选择知识库与文档状态")
 	}
 	for _, date := range []*string{m.EffectiveFrom, m.EffectiveUntil} {
 		if date != nil {
 			if _, e := time.Parse("2006-01-02", *date); e != nil {
-				return SourceInfo{}, invalid("日期格式无效")
+				return invalid("日期格式无效")
 			}
 		}
 	}
 	if m.EffectiveFrom != nil && m.EffectiveUntil != nil && *m.EffectiveUntil < *m.EffectiveFrom {
-		return SourceInfo{}, invalid("有效截止日期早于生效日期")
+		return invalid("有效截止日期早于生效日期")
 	}
 	if chars(m.Version) > 120 || chars(m.Scope) > 500 || chars(m.Authority) > 300 {
-		return SourceInfo{}, invalid("字段超过长度限制")
+		return invalid("字段超过长度限制")
+	}
+	return nil
+}
+func (g *Governance) Update(ctx context.Context, id string, m Metadata) (SourceInfo, error) {
+	if e := validateMetadata(m); e != nil {
+		return SourceInfo{}, e
 	}
 	var result SourceInfo
 	e := g.Store.Pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {

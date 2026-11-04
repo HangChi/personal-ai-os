@@ -6,6 +6,9 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var invalidName = regexp.MustCompile(`[^a-z0-9_]+`)
@@ -13,7 +16,7 @@ var underscores = regexp.MustCompile(`_+`)
 
 func PrefixedName(server, tool string) string {
 	clean := func(s string) string {
-		s = strings.Trim(underscores.ReplaceAllString(invalidName.ReplaceAllString(strings.ToLower(s), "_"), "_"), "_")
+		s = strings.Trim(underscores.ReplaceAllString(invalidName.ReplaceAllString(cases.Lower(language.Und).String(s), "_"), "_"), "_")
 		if s == "" {
 			return "unknown"
 		}

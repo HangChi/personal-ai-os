@@ -10,6 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf16"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type Hit struct {
@@ -45,7 +48,7 @@ func Strip(s string) string {
 	})
 }
 func Pattern(s string) string {
-	return "%" + strings.NewReplacer("\\", "\\\\", "%", "\\%", "_", "\\_").Replace(strings.ToLower(Strip(s))) + "%"
+	return "%" + strings.NewReplacer("\\", "\\\\", "%", "\\%", "_", "\\_").Replace(cases.Lower(language.Und).String(Strip(s))) + "%"
 }
 func (s *Service) Search(ctx context.Context, keyword string, limit int) (Result, error) {
 	keyword = Strip(keyword)

@@ -3,6 +3,10 @@ package config
 import "testing"
 
 func TestP7ResolvedMCPPrecedenceAndDisabled(t *testing.T) {
+	defaults, _ := LoadBaselineProperties(PropertyOptions{})
+	if m, e := defaults.MCP(); e != nil || m.Enabled() {
+		t.Fatal("default MCP must stay disabled", e)
+	}
 	p, e := LoadBaselineProperties(PropertyOptions{Overrides: map[string]string{"mcp.enabled": "true", "mcp.servers.demo.command": "${BIN}", "BIN": "safe", "mcp.servers.demo.args": "${ARG},two", "ARG": "one", "mcp.servers.demo.connect-timeout": "${TIME:1s}"}, DotEnv: map[string]string{"MCP_SERVERS_DEMO_COMMAND": "${MISSING}", "MCP_SERVERS_DEMO_ARGS": "${MISSING}"}})
 	if e != nil {
 		t.Fatal(e)
