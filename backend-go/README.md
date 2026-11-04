@@ -1,6 +1,6 @@
 # Personal AI OS：Go 迁移起点
 
-本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1基础设施、P2任务、P3模型协议与P4对话执行已完成，P5–P8尚未完成，不能替代现有Java后端。**
+本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1 基础设施、P2 任务、P3 模型协议、P4 对话执行和 P5 记忆、日历与提醒投递已完成。P6–P8 及切换门禁仍开放。**
 
 全量范围、逐文件来源、迁移状态与验收要求见 [迁移文档](../specs/033-go-rewrite/README.md)。现有 Java 源码、前端业务源码、SQL 与运行实例继续保留。
 
@@ -16,7 +16,7 @@
 - `internal/platform/auth`：单用户BCrypt/失败锁定、本地/Redis会话与登录/轮换/注销/me/CSRF，已接显式Foundation；真实Servlet/TLS/ACL/跨进程与网络故障验证，见[边界说明](internal/platform/auth/README.md)。
 - `internal/platform/redis`：显式专用 Redis 客户端、TLS 配置、受限超时/连接池/生命周期与脱敏错误，见 [说明](internal/platform/redis/README.md)。
 - `internal/platform/health`：真实SELECT 1与模型状态报告，已挂显式Foundation；真实Servlet方法/内容协商/探测次数与数据库断连/恢复验证，见[说明](internal/platform/health/README.md)。
-- `internal/platform/taskexec`：原策略有界轮末队列、请求ID捕获和排空/停止；已接Foundation且验证HTTP后台传播，摘要已在P4接入，记忆业务待P5，见 [说明](internal/platform/taskexec/README.md)。
+- `internal/platform/taskexec`：原策略有界轮末队列、请求ID捕获和排空/停止；已接Foundation且验证HTTP后台传播，摘要与轮末记忆沉淀已接入，见 [说明](internal/platform/taskexec/README.md)。
 - `internal/platform/http`：请求ID/模型路径/共享限流与并发/异常边界、JSON协商/多编码，以及显式有界multipart解析。保护链已接Foundation，默认离线诊断保持独立。
 - `internal/app`：默认迁移诊断入口，以及显式P1基础组合（池/Flyway只读校验、认证/CSRF、共享保护、健康与执行器/关闭）；两实例/五角色已通过临时TLS PostgreSQL集成，见 [装配边界](internal/app/README.md)。
 - `cmd/personalos`：回环监听、启动提示、信号处理和超时退出。
@@ -25,7 +25,7 @@
 
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
-默认命令仍仅装配离线诊断；显式`--foundation`已接P1基础能力、P2任务/确认、P3模型与P4对话路由。844个基础HTTP场景、160个原观测标签场景和68个直方图边界通过真实框架对照。完整P1边界见[P1契约](../specs/033-go-rewrite/p1-foundation-contract.md)，78处配置调用方见[台账](../specs/033-go-rewrite/config-disposition.md)。知识库、日历、记忆、MCP及其业务后台调度仍待P5–P7迁移；P4仅运行本阶段的Run恢复与附件清理。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
+默认命令仍仅装配离线诊断；显式`--foundation`已接P1基础能力、P2任务/确认、P3模型与P4对话路由。844个基础HTTP场景、160个原观测标签场景和68个直方图边界通过真实框架对照。完整P1边界见[P1契约](../specs/033-go-rewrite/p1-foundation-contract.md)，78处配置调用方见[台账](../specs/033-go-rewrite/config-disposition.md)。加 `--p5` 启用记忆、日历、提醒扫描、SSE 与投递。知识库和 MCP 按 P6–P7 迁移。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
 
 - `internal/business/model`：配置/档案/密钥、运行时按名继承、OpenAI/Ollama协议、探测/音频、本地与Redis嵌入缓存，见[说明](internal/business/model/README.md)。
 
@@ -94,11 +94,11 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 ## 接下来实施
 
-下一阶段为[P5记忆、日历与提醒投递](../specs/033-go-rewrite/tasks.md#p5-记忆日历与提醒投递)。P4收口见[验收报告](../specs/033-go-rewrite/p4-completion.md)。每阶段填写源码/测试/差分证据并独立提交。
+P5 见 [验收报告](../specs/033-go-rewrite/p5-completion.md)。下一阶段为 [P6 知识、RAG 与后台运行](../specs/033-go-rewrite/tasks.md#p6-知识rag-与后台运行)。
 
 ## 显式 P1 基础模式（尚未验收发布）
 
-使用 `personalos --foundation --migrations /absolute/backend/src/main/resources/db/migration` 启动。
+使用 `personalos --foundation --migrations /absolute/backend/src/main/resources/db/migration` 启动。加 `--p5` 启用记忆、日历和提醒模块。
 必须在专用环境显式设置 `SERVER_PORT`、`POSTGRES_HOST`、`POSTGRES_PORT`、`POSTGRES_DB`、`POSTGRES_USER`、`POSTGRES_PASSWORD`，不能使用 YAML 连接默认值。不自动执行、baseline 或 repair SQL；需要先由独立 Java Flyway 完成原迁移。已有真实默认 V1 基线历史时才加 `--allow-baseline-v1`。
 
 数据库实际读取解析后的 `spring.datasource.*`，支持单主机 JDBC TCP 地址和显式端口，不接受查询参数或多主机。默认 TLS `verify-full`；`GO_POSTGRES_ROOT_CERT` 指向测试 CA，回环明文测试需显式 `GO_POSTGRES_SSL_MODE=disable`。绝不为测试关闭非回环 TLS 校验。

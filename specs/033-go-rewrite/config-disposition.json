@@ -10,12 +10,13 @@
       "expression": "${app.web-push.enabled:false}",
       "phase": "P5",
       "task": "T505",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "Web Push密钥/开关/subject随真实浏览器订阅验收",
+      "note": "Web Push开关/公私钥/subject已接Foundation；真实Chrome订阅并收到解密后的提醒",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java"
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/push.go",
+        "scripts/migration/chrome_p5_web_push.mjs"
       ]
     },
     {
@@ -25,12 +26,13 @@
       "expression": "${app.web-push.public-key:}",
       "phase": "P5",
       "task": "T505",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "Web Push密钥/开关/subject随真实浏览器订阅验收",
+      "note": "Web Push开关/公私钥/subject已接Foundation；真实Chrome订阅并收到解密后的提醒",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java"
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/push.go",
+        "scripts/migration/chrome_p5_web_push.mjs"
       ]
     },
     {
@@ -40,12 +42,13 @@
       "expression": "${app.web-push.private-key:}",
       "phase": "P5",
       "task": "T505",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "Web Push密钥/开关/subject随真实浏览器订阅验收",
+      "note": "Web Push开关/公私钥/subject已接Foundation；真实Chrome订阅并收到解密后的提醒",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java"
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/push.go",
+        "scripts/migration/chrome_p5_web_push.mjs"
       ]
     },
     {
@@ -55,12 +58,13 @@
       "expression": "${app.web-push.subject:}",
       "phase": "P5",
       "task": "T505",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "Web Push密钥/开关/subject随真实浏览器订阅验收",
+      "note": "Web Push开关/公私钥/subject已接Foundation；真实Chrome订阅并收到解密后的提醒",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java"
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/push.go",
+        "scripts/migration/chrome_p5_web_push.mjs"
       ]
     },
     {
@@ -70,12 +74,13 @@
       "expression": "${app.reminders.webhook.url:}",
       "phase": "P5",
       "task": "T506",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "Webhook目的地址/签名/本地HTTP开关随真实投递迁移",
+      "note": "Webhook目的地址/签名/本地HTTP开关已接delivery角色；回环验证签名、重试与禁重定向",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java"
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go"
       ]
     },
     {
@@ -85,12 +90,13 @@
       "expression": "${app.reminders.webhook.secret:}",
       "phase": "P5",
       "task": "T506",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "Webhook目的地址/签名/本地HTTP开关随真实投递迁移",
+      "note": "Webhook目的地址/签名/本地HTTP开关已接delivery角色；回环验证签名、重试与禁重定向",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java"
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go"
       ]
     },
     {
@@ -100,12 +106,13 @@
       "expression": "${app.reminders.webhook.allow-local-http:false}",
       "phase": "P5",
       "task": "T506",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "Webhook目的地址/签名/本地HTTP开关随真实投递迁移",
+      "note": "Webhook目的地址/签名/本地HTTP开关已接delivery角色；回环验证签名、重试与禁重定向",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java"
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go"
       ]
     },
     {
@@ -1127,12 +1134,13 @@
       "expression": "${spring.ai.openai.embedding.model:}",
       "phase": "P5",
       "task": "T501",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "embedding模型名随记忆向量写入/回填迁移",
+      "note": "模型名已接记忆向量写入、同模型排序、近重复取代和回填",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java"
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go"
       ]
     },
     {
@@ -1142,12 +1150,13 @@
       "expression": "${spring.ai.ollama.embedding.model:}",
       "phase": "P5",
       "task": "T501",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "embedding模型名随记忆向量写入/回填迁移",
+      "note": "模型名已接记忆向量写入、同模型排序、近重复取代和回填",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java"
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go"
       ]
     },
     {

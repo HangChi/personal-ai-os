@@ -1,18 +1,18 @@
-# 配置调用方逐项处置（P1/P3/P4收口）
+# 配置调用方逐项处置（P1/P3/P4/P5收口）
 
 固定Java基线：`cb5d694d62fa93742b5789b97273e76d931ce335`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。
 
-12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory属于P5，Knowledge属于P6，MCP属于P7；不创建业务空壳。
+12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge属于P6，MCP属于P7；不创建业务空壳。
 
 | 来源与行号 | 原表达式/键 | 阶段/任务 | 状态与处置 |
 | --- | --- | --- | --- |
-| `backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java:14` | `${app.web-push.enabled:false}` | P5/T505 | deferred：Web Push密钥/开关/subject随真实浏览器订阅验收 |
-| `backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java:15` | `${app.web-push.public-key:}` | P5/T505 | deferred：Web Push密钥/开关/subject随真实浏览器订阅验收 |
-| `backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java:16` | `${app.web-push.private-key:}` | P5/T505 | deferred：Web Push密钥/开关/subject随真实浏览器订阅验收 |
-| `backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java:17` | `${app.web-push.subject:}` | P5/T505 | deferred：Web Push密钥/开关/subject随真实浏览器订阅验收 |
-| `backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:42` | `${app.reminders.webhook.url:}` | P5/T506 | deferred：Webhook目的地址/签名/本地HTTP开关随真实投递迁移 |
-| `backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:43` | `${app.reminders.webhook.secret:}` | P5/T506 | deferred：Webhook目的地址/签名/本地HTTP开关随真实投递迁移 |
-| `backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:44` | `${app.reminders.webhook.allow-local-http:false}` | P5/T506 | deferred：Webhook目的地址/签名/本地HTTP开关随真实投递迁移 |
+| `backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java:14` | `${app.web-push.enabled:false}` | P5/T505 | wired：Web Push开关/公私钥/subject已接Foundation；真实Chrome订阅并收到解密后的提醒 |
+| `backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java:15` | `${app.web-push.public-key:}` | P5/T505 | wired：Web Push开关/公私钥/subject已接Foundation；真实Chrome订阅并收到解密后的提醒 |
+| `backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java:16` | `${app.web-push.private-key:}` | P5/T505 | wired：Web Push开关/公私钥/subject已接Foundation；真实Chrome订阅并收到解密后的提醒 |
+| `backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java:17` | `${app.web-push.subject:}` | P5/T505 | wired：Web Push开关/公私钥/subject已接Foundation；真实Chrome订阅并收到解密后的提醒 |
+| `backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:42` | `${app.reminders.webhook.url:}` | P5/T506 | wired：Webhook目的地址/签名/本地HTTP开关已接delivery角色；回环验证签名、重试与禁重定向 |
+| `backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:43` | `${app.reminders.webhook.secret:}` | P5/T506 | wired：Webhook目的地址/签名/本地HTTP开关已接delivery角色；回环验证签名、重试与禁重定向 |
+| `backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:44` | `${app.reminders.webhook.allow-local-http:false}` | P5/T506 | wired：Webhook目的地址/签名/本地HTTP开关已接delivery角色；回环验证签名、重试与禁重定向 |
 | `backend/src/main/java/com/personalos/chat/service/ChatAttachmentJanitor.java:56` | `${app.chat.attachment-janitor-enabled:true}` | P4/T408 | wired：附件清理开关已接Foundation/角色；cron默认本地04:30，关闭不清理；扩展L/W/#显式拒绝 |
 | `backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java:58` | `${app.chat.upload-dir:data/uploads}` | P4/T408 | wired：持久目录与6MB业务限制已接上传/真实大小/本地与S3；区别于8MB容器限制 |
 | `backend/src/main/java/com/personalos/chat/service/ChatAttachmentService.java:59` | `${app.chat.max-attachment-bytes:6291456}` | P4/T408 | wired：持久目录与6MB业务限制已接上传/真实大小/本地与S3；区别于8MB容器限制 |
@@ -74,8 +74,8 @@
 | `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:41` | `${spring.ai.mcp.server.name:personal-ai-os}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
 | `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:42` | `${spring.ai.mcp.server.version:0.1.0}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
 | `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:43` | `${spring.ai.mcp.server.streamable-http.mcp-endpoint:/mcp}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
-| `backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java:51` | `${spring.ai.openai.embedding.model:}` | P5/T501 | deferred：embedding模型名随记忆向量写入/回填迁移 |
-| `backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java:52` | `${spring.ai.ollama.embedding.model:}` | P5/T501 | deferred：embedding模型名随记忆向量写入/回填迁移 |
+| `backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java:51` | `${spring.ai.openai.embedding.model:}` | P5/T501 | wired：模型名已接记忆向量写入、同模型排序、近重复取代和回填 |
+| `backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java:52` | `${spring.ai.ollama.embedding.model:}` | P5/T501 | wired：模型名已接记忆向量写入、同模型排序、近重复取代和回填 |
 | `backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java:21` | `app.embedding-cache.enabled` | P3/T304 | wired：默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器 |
 | `backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java:22` | `app.embedding-cache.capacity` | P3/T304 | wired：默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器 |
 | `backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java:23` | `app.embedding-cache.ttl` | P3/T304 | wired：默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器 |

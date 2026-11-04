@@ -71,4 +71,4 @@ python3 scripts/migration/go_inventory.py generate \
 
 ## 继续实施的入口
 
-P4已收口，下一阶段从[tasks.md的P5](tasks.md#p5-记忆日历与提醒投递)开始记忆、日历与提醒投递。每阶段保留对应Java来源、Go用例、差分结果和进度证据。
+P5 已完成，验收与边界见 [P5 验收](p5-completion.md)。下一阶段为 [P6 知识、RAG 与后台运行](tasks.md#p6-知识rag-与后台运行)。

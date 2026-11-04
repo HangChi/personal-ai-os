@@ -11,7 +11,7 @@ class ConfigDispositionTest(unittest.TestCase):
         self.assertEqual(len(data["items"]), 78)
         self.assertEqual(sum(row["kind"] == "value_injections" for row in data["items"]), 70)
         self.assertEqual(sum(row["kind"] == "property_lookups" for row in data["items"]), 8)
-        self.assertTrue(all(row["phase"] in {"P1", "P3", "P4"} or row["status"] == "deferred" for row in data["items"]))
+        self.assertTrue(all(row["phase"] in {"P1", "P3", "P4", "P5"} or row["status"] == "deferred" for row in data["items"]))
 
     def test_unknown_or_unused_source_rule_fails(self):
         for rules in [dict(subject.RULES, **{"Unreviewed.java": ("P1", "T104", "invalid")}),
@@ -45,3 +45,9 @@ class ConfigDispositionTest(unittest.TestCase):
         self.assertTrue(all(row["status"] == "wired" for row in rows))
         with patch.object(subject, "P4_EVIDENCE", dict(subject.P4_EVIDENCE, T408=["backend-go/missing-p4-evidence"])), self.assertRaises(ValueError):
             subject.generate()
+
+    def test_p5_settings_are_wired(self):
+        rows = [row for row in subject.generate()["items"] if row["phase"] == "P5"]
+        self.assertEqual(len(rows), 9)
+        self.assertEqual({row["task"] for row in rows}, {"T501", "T505", "T506"})
+        self.assertTrue(all(row["status"] == "wired" for row in rows))

@@ -2486,9 +2486,14 @@
         "backend-go/internal/platform/config/binding_test.go",
         "backend-go/internal/platform/config/testdata/java-binding.json",
         "scripts/migration/java_config_binding_fixture.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-completion.md"
       ],
-      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/AiProperties.java": {
       "status": "implemented",
@@ -2576,9 +2581,11 @@
         "backend-go/internal/platform/config/binding_test.go",
         "backend-go/internal/platform/config/testdata/java-binding.json",
         "scripts/migration/java_config_binding_fixture.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
       ],
-      "note": "已解析canonical map的record绑定/构造归一与配置辅助方法已实现；12类1475项真实Binder对照和全量race通过。完整来源/profile/应用与业务接线仍未完成，不能verified。"
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
     },
     "file:backend/src/main/java/com/personalos/common/web/WorkerIsolationFilter.java": {
       "status": "in_progress",
@@ -13517,6 +13524,3286 @@
         "specs/033-go-rewrite/p4-test-mapping.md"
       ],
       "note": "P4已装配：预算偏好/窗口、历史副本/工具配对与有界保护重试。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/CalendarExportContributor.java": {
+      "status": "not_started",
+      "evidence": [
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5业务数据已迁移，跨模块搜索和导出聚合接线归 P7。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/CalendarSearchContributor.java": {
+      "status": "not_started",
+      "evidence": [
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5业务数据已迁移，跨模块搜索和导出聚合接线归 P7。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/config/CalendarConfig.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/confirmation/CalendarConfirmationHandler.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/confirmation/CalendarConfirmationPayloads.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/confirmation/CalendarConfirmationService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/controller/CalendarController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/controller/ReminderController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/dto/CalendarEventDeletedDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/dto/CalendarEventDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/dto/CalendarOccurrenceDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/dto/CreateEventRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/dto/ReminderDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/dto/ReminderScanResult.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/dto/UpdateEventRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/entity/CalendarEventEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/entity/RecurrenceType.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/entity/ReminderEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/entity/ReminderSource.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/entity/ReminderStatus.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/package-info.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/push/PushTransport.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/push/WebPushConfiguration.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/push/WebPushController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/push/WebPushRepository.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/push/WebPushScheduler.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/push/WebPushService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/push/WebPushTransport.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/recurrence/RecurrenceCalculator.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/repository/CalendarEventRepository.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/repository/ReminderRepository.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/scheduler/ReminderScheduler.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/service/CalendarEventService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/service/ReminderScanner.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/service/ReminderService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/service/ReminderStreamDelivery.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/tool/CalendarToolContributor.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/tool/CalendarTools.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/MemoryEmbeddingBackfill.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/MemoryExportContributor.java": {
+      "status": "not_started",
+      "evidence": [
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5业务数据已迁移，跨模块搜索和导出聚合接线归 P7。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/MemoryPromptContributor.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/MemorySearchContributor.java": {
+      "status": "not_started",
+      "evidence": [
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5业务数据已迁移，跨模块搜索和导出聚合接线归 P7。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/controller/MemoryController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/dto/CreateMemoryRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/dto/MemoryDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/dto/PinMemoryRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/dto/UpdateMemoryRequest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/entity/MemoryEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/entity/MemorySource.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/package-info.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/repository/MemoryRepository.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/service/AutoMemoryService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/auto.go",
+        "backend-go/internal/business/memory/auto_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingStore.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/service/MemoryFactParser.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/auto.go",
+        "backend-go/internal/business/memory/auto_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/service/MemoryRelevance.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/service/MemoryService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/tool/MemoryToolContributor.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/main/java/com/personalos/memory/tool/MemoryTools.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "file:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/calendar/push/WebPushTransportTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/memory/MemoryEmbeddingBackfillTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/memory/MemoryPropertiesTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingStoreTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/memory/service/MemoryFactParserTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/auto.go",
+        "backend-go/internal/business/memory/auto_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "file:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "route:POST:/api/v1/calendar/events:backend/src/main/java/com/personalos/calendar/controller/CalendarController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:GET:/api/v1/calendar/events:backend/src/main/java/com/personalos/calendar/controller/CalendarController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:GET:/api/v1/calendar/events/{id}:backend/src/main/java/com/personalos/calendar/controller/CalendarController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:PATCH:/api/v1/calendar/events/{id}:backend/src/main/java/com/personalos/calendar/controller/CalendarController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:DELETE:/api/v1/calendar/events/{id}:backend/src/main/java/com/personalos/calendar/controller/CalendarController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:GET:/api/v1/reminders/events:backend/src/main/java/com/personalos/calendar/controller/ReminderController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:GET:/api/v1/reminders:backend/src/main/java/com/personalos/calendar/controller/ReminderController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:POST:/api/v1/reminders/{id}/read:backend/src/main/java/com/personalos/calendar/controller/ReminderController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:POST:/api/v1/reminders/scan:backend/src/main/java/com/personalos/calendar/controller/ReminderController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:GET:/api/v1/reminders/push:backend/src/main/java/com/personalos/calendar/push/WebPushController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:POST:/api/v1/reminders/push/subscriptions:backend/src/main/java/com/personalos/calendar/push/WebPushController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:DELETE:/api/v1/reminders/push/subscriptions:backend/src/main/java/com/personalos/calendar/push/WebPushController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:GET:/api/v1/memories:backend/src/main/java/com/personalos/memory/controller/MemoryController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:POST:/api/v1/memories:backend/src/main/java/com/personalos/memory/controller/MemoryController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:PATCH:/api/v1/memories/{id}:backend/src/main/java/com/personalos/memory/controller/MemoryController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:PATCH:/api/v1/memories/{id}/pin:backend/src/main/java/com/personalos/memory/controller/MemoryController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "route:DELETE:/api/v1/memories/{id}:backend/src/main/java/com/personalos/memory/controller/MemoryController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "tool:Tool:createCalendarEvent": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "tool:Tool:findCalendarEvents": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "tool:Tool:findDueReminders": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "tool:Tool:markReminderRead": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "tool:Tool:deleteCalendarEvent": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "tool:Tool:saveMemory": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/config/CalendarConfig.java:23:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/config/CalendarConfig.java:36:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/config/CalendarProperties.java:19:ConfigurationProperties": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java:24:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java:28:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java:30:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java:36:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java:37:ConditionalOnExpression": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java:39:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java:45:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java:79:Scheduled": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/messaging/ReminderBroadcast.java:105:PreDestroy": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/push/WebPushConfiguration.java:9:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/push/WebPushConfiguration.java:11:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/push/WebPushConfiguration.java:20:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/push/WebPushScheduler.java:8:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/push/WebPushScheduler.java:14:Scheduled": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/scheduler/ReminderScheduler.java:34:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/scheduler/ReminderScheduler.java:47:Scheduled": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/service/ReminderStreamDelivery.java:68:Scheduled": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/service/ReminderStreamDelivery.java:115:PreDestroy": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:27:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:56:Scheduled": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/calendar/webhook/ReminderWebhookWorker.java:135:PreDestroy": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "hook:backend/src/main/java/com/personalos/memory/MemoryProperties.java:21:ConfigurationProperties": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:91": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:194": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:219": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:237": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:280": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:303": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:326": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:344": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:372": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:391": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:412": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:435": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:452": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:466": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:491": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:515": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:547": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:567": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:585": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:604": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:631": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java:646": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/events.go",
+        "backend-go/internal/business/calendar/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/reminders.go",
+        "backend-go/internal/business/calendar/reminder_http.go",
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/business/calendar/webhook.go",
+        "backend-go/internal/business/calendar/confirmation.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java:44": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java:66": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java:79": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java:96": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java:113": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java:29": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java:40": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java:48": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java:53": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java:72": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java:90": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java:99": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java:109": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushTransportTest.java:12": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/push/WebPushTransportTest.java:35": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/push.go",
+        "backend-go/internal/business/calendar/push_http.go",
+        "backend-go/internal/business/calendar/push_integration_test.go",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:36": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:53": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:67": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:85": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:100": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:119": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:141": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:155": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:168": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:178": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:193": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:201": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:209": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:221": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:244": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:263": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:274": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:285": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java:302": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/recurrence.go",
+        "backend-go/internal/business/calendar/recurrence_test.go",
+        "scripts/migration/java_p5_fixture.py",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java:45": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java:50": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java:63": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java:71": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java:81": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java:90": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java:103": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java:110": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java:117": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/calendar/stream.go",
+        "backend-go/internal/app/reminder_metrics.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/calendar/broadcast.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryEmbeddingBackfillTest.java:49": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryEmbeddingBackfillTest.java:58": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryEmbeddingBackfillTest.java:70": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryEmbeddingBackfillTest.java:82": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:98": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:123": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:132": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:143": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:156": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:167": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:180": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:202": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:215": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:230": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:244": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:256": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:276": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java:291": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/agent/calendar.go",
+        "backend-go/internal/business/agent/tool-definitions-p5.json",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryPropertiesTest.java:18": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryPropertiesTest.java:31": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryPropertiesTest.java:42": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/module_binding.go",
+        "backend-go/internal/platform/config/module_binding_test.go",
+        "backend-go/internal/app/foundation_p5.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:89": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:97": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:110": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:132": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:149": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:165": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:178": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:198": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:215": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:225": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:235": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:253": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:270": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:279": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:288": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:300": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:336": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:349": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:361": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:373": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java:390": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/store.go",
+        "backend-go/internal/business/memory/http.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java:29": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java:38": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java:46": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java:52": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java:62": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java:72": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java:82": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java:93": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java:103": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingStoreTest.java:40": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingStoreTest.java:47": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingStoreTest.java:59": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingStoreTest.java:66": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingStoreTest.java:77": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingStoreTest.java:85": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingStoreTest.java:100": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingStoreTest.java:115": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/vector.go",
+        "backend-go/internal/business/memory/vector_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryFactParserTest.java:21": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/auto.go",
+        "backend-go/internal/business/memory/auto_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryFactParserTest.java:29": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/auto.go",
+        "backend-go/internal/business/memory/auto_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryFactParserTest.java:43": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/auto.go",
+        "backend-go/internal/business/memory/auto_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryFactParserTest.java:52": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/auto.go",
+        "backend-go/internal/business/memory/auto_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryFactParserTest.java:63": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/auto.go",
+        "backend-go/internal/business/memory/auto_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:38": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:54": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:67": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:81": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:91": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:102": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:112": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:118": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:130": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "test:backend/src/test/java/com/personalos/memory/service/MemoryRelevanceTest.java:142": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/memory/prompt.go",
+        "backend-go/internal/business/memory/prompt_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/p5-test-mapping.md",
+        "specs/033-go-rewrite/p5-completion.md"
+      ],
+      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
     }
   },
   "release_gates": {

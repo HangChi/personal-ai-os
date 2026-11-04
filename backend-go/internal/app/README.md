@@ -57,4 +57,4 @@ P3要求原模型三表SELECT/INSERT/UPDATE/DELETE及`ai_model_profile_model_id_
 
 `EnableP4`要求P2/P3依赖已启用；只读Flyway验证后检查会话/消息/引用/预算/计划/运行/事件/交互的最小表与序列权限，再装配流/Run与用量。API和单体角色启用Run恢复/队列与可配置附件cron，Worker不开放业务路由、不运行P4后台循环。流与最终业务写入均受会话租约及事务内fencing保护，关闭先取消Run、排空有界轮末任务，再释放连接池。
 
-引用在done前尽力提交；用量按原契约在完成后限时尽力记账，统计失败不回滚回答。metrics进入既有Actuator/Prometheus与直方图。真实TLS最小权限、跨实例停止/互斥/恢复、故障与前端原API联调见[P4收口报告](../../../specs/033-go-rewrite/p4-completion.md)。完整RAG、记忆/日历、跨模块搜索导出及保留期清理按P5–P8推进，prod拒绝/readyz503保留。
+引用在done前尽力提交；用量按原契约在完成后限时尽力记账，统计失败不回滚回答。metrics进入既有Actuator/Prometheus与直方图。真实TLS最小权限、跨实例停止/互斥/恢复、故障与前端原API联调见[P4收口报告](../../../specs/033-go-rewrite/p4-completion.md)。记忆、日历与提醒通过 `EnableP5` 或命令行 `--p5` 装配。完整 RAG、跨模块搜索导出及保留期清理按 P6–P8 推进，prod拒绝/readyz503保留。
