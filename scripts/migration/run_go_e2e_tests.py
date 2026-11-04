@@ -19,6 +19,7 @@ import urllib.request
 
 import go_runtime
 from p8_model_fixture import Handler
+from p8_context_probe import RequestObservations, verify_context_boundaries
 from run_go_local_tests import free_port, reap
 from run_go_postgres_tests import IMAGE, ROOT, run_package
 
@@ -242,6 +243,8 @@ def verify_explicit_memory(suite):
 def exercise(container, fixture):
     if fixture.get("GO_TEST_POSTGRES") != "disposable":
         raise ValueError("E2E refuses a non-disposable database")
+    observations = RequestObservations() if MODE == "context" else None
+    Handler.request_observer = observations
     model = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=model.serve_forever, daemon=True)
     thread.start()
@@ -308,6 +311,9 @@ def exercise(container, fixture):
                     if MODE == "memory":
                         verify_explicit_memory(suite)
                         return
+                    if MODE == "context":
+                        verify_context_boundaries(suite, observations, BACKEND)
+                        return
                     original_stream = suite.stream_chat
 
                     def stream_chat(*args, **kwargs):
@@ -326,13 +332,14 @@ def exercise(container, fixture):
         model.shutdown()
         model.server_close()
         thread.join(timeout=5)
+        Handler.request_observer = None
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("go", "java"), default="go")
     parser.add_argument("--groups", nargs="+")
-    parser.add_argument("--mode", choices=("e2e", "cancel", "browser", "plan", "memory"), default="e2e")
+    parser.add_argument("--mode", choices=("e2e", "cancel", "browser", "plan", "memory", "context"), default="e2e")
     arguments = parser.parse_args()
     BACKEND, GROUPS = arguments.backend, set(arguments.groups) if arguments.groups else None
     MODE = arguments.mode

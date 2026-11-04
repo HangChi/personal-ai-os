@@ -138,6 +138,7 @@ def answer(messages):
 
 class Handler(original.Handler):
     stream_canceled = threading.Event()
+    request_observer = None
     def handle(self):
         try:
             super().handle()
@@ -157,6 +158,9 @@ class Handler(original.Handler):
         if not self.path.endswith("/chat/completions"):
             self.send_error(404)
             return
+        observer = type(self).request_observer
+        if observer is not None:
+            observer(request)
         messages = request.get("messages", [])
         tool = choose(messages)
         if tool:

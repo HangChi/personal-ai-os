@@ -1,0 +1,40 @@
+{
+  "backend": "go",
+  "result": "PASS",
+  "scope": "synthetic model, owned TLS database, unchanged Java baseline",
+  "original_e2e_approved": false,
+  "release_gates_changed": false,
+  "oversized_current_input": {
+    "error_code": 41301,
+    "done": false,
+    "delta": false,
+    "upstream_calls": 0,
+    "input_chars": 1811,
+    "input_sha256": "eb948519d4a591f7f8e3518500b7c325d0da310f7c8771b892956073b92dd067",
+    "original_case_outcome": "FAIL unchanged",
+    "original_failure": "第 0 轮应完成（裁剪生效，不应因超预算报错）",
+    "persisted_user_messages": 1,
+    "interruption_markers": 1,
+    "generated_assistant_messages": 0
+  },
+  "old_history_trimming": {
+    "persisted_user_messages": 7,
+    "upstream_user_messages": 2,
+    "removed_from_request": 5,
+    "current_input_sha256": "844a33ef5bbd89afb80bf993a26f628cbbabe3f6b2946c7788d16e78044e7a3c",
+    "persisted_history_unchanged": true,
+    "ordered_suffix": true,
+    "effective_budget": 6729,
+    "upstream_calls": 1,
+    "persisted_messages": 14,
+    "done": true
+  },
+  "restored_budget_recovery": {
+    "done": true,
+    "upstream_calls": 1,
+    "persisted_messages": 4,
+    "rejected_input_unchanged": true
+  },
+  "synthetic_model_requests": 8,
+  "cleanup_empty": true
+}
