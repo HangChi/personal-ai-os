@@ -6,6 +6,8 @@ COPY frontend/ ./
 RUN npm run build
 
 FROM caddy:2.10-alpine
+# Listeners use unprivileged ports; file capabilities would prevent exec with cap_drop ALL.
+RUN setcap -r /usr/bin/caddy
 COPY --from=build /src/dist/ /srv/
 COPY backend-go/deploy/Caddyfile /etc/caddy/Caddyfile
 USER 10001:10001

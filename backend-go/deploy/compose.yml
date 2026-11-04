@@ -10,7 +10,7 @@ x-runtime: &runtime
   read_only: true
   cap_drop: [ALL]
   security_opt: [no-new-privileges:true]
-  tmpfs: [/tmp:rw,noexec,nosuid,size=128m,mode=1777]
+  tmpfs: ["/tmp:rw,noexec,nosuid,size=128m,mode=1777"]
   stop_grace_period: 40s
   restart: unless-stopped
   networks: [private]
@@ -80,6 +80,8 @@ services:
 
   migrate:
     image: redgate/flyway:12.4.0
+    # This pinned Flyway release ships amd64 only; ARM hosts need Docker emulation.
+    platform: linux/amd64
     restart: "no"
     networks: [private]
     environment:
@@ -111,7 +113,7 @@ services:
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    tmpfs: [/config:rw,nosuid,size=16m,mode=1777, /data:rw,nosuid,size=16m,mode=1777, /tmp:rw,noexec,nosuid,size=16m,mode=1777]
+    tmpfs: ["/config:rw,nosuid,size=16m,mode=1777", "/data:rw,nosuid,size=16m,mode=1777", "/tmp:rw,noexec,nosuid,size=16m,mode=1777"]
     ports: ["127.0.0.1:${GO_WEB_PORT:-18088}:8088"]
     networks: [private]
     depends_on: [backend]

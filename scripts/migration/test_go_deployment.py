@@ -48,6 +48,12 @@ class GoDeploymentTest(unittest.TestCase):
         self.assertTrue(backend["read_only"])
         self.assertEqual(backend["cap_drop"], ["ALL"])
         self.assertIn("no-new-privileges:true", backend["security_opt"])
+        self.assertEqual(backend["tmpfs"], ["/tmp:rw,noexec,nosuid,size=128m,mode=1777"])
+        self.assertEqual(len(services["web"]["tmpfs"]), 3)
+        self.assertTrue(all(value.startswith("/") for value in services["web"]["tmpfs"]))
+        self.assertEqual(services["web"]["user"], "10001:10001")
+        self.assertEqual(services["web"]["cap_drop"], ["ALL"])
+        self.assertEqual(services["migrate"]["platform"], "linux/amd64")
         self.assertFalse(any(services[name].get("ports") for name in ("backend", "postgres", "migrate")))
         self.assertTrue(all(port["host_ip"] == "127.0.0.1" for port in services["web"]["ports"]))
         environment = backend["environment"]

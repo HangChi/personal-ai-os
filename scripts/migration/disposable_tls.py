@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 
@@ -11,8 +12,10 @@ def capture(command, **kwargs):
                           timeout=120, **kwargs).stdout.strip()
 
 
-def create_tls_fixture(directory):
+def create_tls_fixture(directory, dns_names=()):
     """只生成本次测试 CA/服务端证书；CA 私钥不挂载入容器。"""
+    if any(not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9.-]{0,252}", name) for name in dns_names):
+        raise ValueError("Invalid disposable TLS DNS name")
     folder = Path(directory)
     server = folder / "server"
     server.mkdir(mode=0o700)
@@ -40,7 +43,7 @@ subjectKeyIdentifier=hash
     extensions = folder / "server.ext"
     extensions.write_text("basicConstraints=critical,CA:false\nkeyUsage=critical,digitalSignature,keyEncipherment\n"
                           "extendedKeyUsage=serverAuth\nsubjectKeyIdentifier=hash\nauthorityKeyIdentifier=keyid,issuer\n"
-                          "subjectAltName=DNS:localhost,IP:127.0.0.1\n")
+                          "subjectAltName=DNS:localhost,IP:127.0.0.1" + "".join(",DNS:" + name for name in dns_names) + "\n")
     capture(["openssl", "x509", "-req", "-in", str(folder / "server.csr"), "-CA", str(folder / "ca.crt"),
              "-CAkey", str(folder / "ca.key"), "-CAcreateserial", "-days", "2", "-sha256",
              "-extfile", str(extensions), "-out", str(server / "server.crt")], env=environment)

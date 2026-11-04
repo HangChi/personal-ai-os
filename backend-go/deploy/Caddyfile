@@ -13,7 +13,9 @@
         Permissions-Policy "camera=(), geolocation=(), payment=()"
     }
     @private path /actuator /actuator/* /livez /readyz
-    respond @private 404
+    handle @private {
+        respond 404
+    }
     handle /api/* {
         reverse_proxy backend:8081 {
             flush_interval -1

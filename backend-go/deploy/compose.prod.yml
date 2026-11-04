@@ -12,7 +12,7 @@ services:
     ports: !override
       - "${GO_PUBLIC_BIND:-127.0.0.1}:${GO_HTTPS_PORT:-18443}:8443"
       - "${GO_PUBLIC_BIND:-127.0.0.1}:${GO_HTTP_PORT:-18080}:8080"
-    tmpfs: !override [/tmp:rw,noexec,nosuid,size=16m,mode=1777]
+    tmpfs: !override ["/tmp:rw,noexec,nosuid,size=16m,mode=1777"]
     volumes:
       - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
       - go-caddy-data:/data

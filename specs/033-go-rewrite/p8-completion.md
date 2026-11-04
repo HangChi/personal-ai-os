@@ -54,3 +54,13 @@ Go和原前端Web候选镜像均实际构建成功。第一次Go构建的Debian 
 `python3 scripts/migration/run_go_local_tests.py`在新建TLS库实际启动combined/api/index/review/delivery五种本地二进制角色，重复拒绝、三Worker同时发现、退出后空发现通过；停止全部进程后，原tar/custom pg_dump格式含合成附件的备份、校验及随机隔离库恢复通过；原Push生成器0600和拒绝覆盖通过。临时证书/密钥/备份/库/进程随测试清理，没有接触现有服务或密钥。日志`/tmp/personalos-p8-local-actual-3.log`。
 
 前两轮本地runner分别发现Python3.9没有hashlib.file_digest、Popen已回收子进程导致重复waitpid；已改流式SHA-256并兼容ECHILD，均属于脚本兼容修复。应用用例三轮均通过；最终完整运维链通过后才勾选T801b。监控、告警、评估和切换仍由父项及后续任务追踪。
+
+## T800b 完整combined Compose实测
+
+原生配置检查之外，独立新随机项目实际运行PostgreSQL、官方Flyway、Go和原前端Caddy。Flyway12.4镜像仅amd64，显式Docker仿真；没有更改原42条SQL。verify-full证书含本次服务DNS SAN。库与后端没有发布宿主端口，Web仅随机回环端口。
+
+实测发现并修复：YAML flow-list的tmpfs逗号必须引用；Caddy官方二进制文件capability与cap_drop ALL冲突，镜像构建时移除无特权端口不需要的文件capability；Caddy管理路径必须使用互斥handle，避免被SPA fallback抢先接管。保留非root、只读根、cap_drop ALL及no-new-privileges。测试fixture另修标准Base64模型密钥和Web readiness等待，未放宽HTTP断言。
+
+第8轮完整链通过：原前端/安全头、管理与探针路径404、未登录401、错误登录/CSRF、登录后真实任务持久化、multipart上传与内容下载一致、SPA页面、42条迁移历史、官方Flyway再次零迁移/validate、SIGTERM退出0。日志：/tmp/personalos-p8-compose-actual-8.log；先前失败日志均保留。runner只删除自己新建项目/卷，未操作现有Compose资产。分布式完整栈与prod/TLS仍待验收，不解除prod拒绝和readyz503。
+
+第9轮在相同链上增加Go/Web实际exec id -u均为10001的断言，完整通过，日志/tmp/personalos-p8-compose-actual-9.log。38项迁移脚本单测通过，git diff --check通过。
