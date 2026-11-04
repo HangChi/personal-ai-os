@@ -115,12 +115,10 @@ func (s *Store) similarities(ctx context.Context, vector string, limit int) map[
 	return result
 }
 
-func (s *Store) Backfill(ctx context.Context, limit int) error {
-	if s.embedding == nil {
-		return nil
-	}
-	type candidate struct{ id, content, hash string }
-	var pending []candidate
+type pendingEmbedding struct{ id, content, hash string }
+
+func (s *Store) pendingEmbeddings(ctx context.Context, limit int) ([]pendingEmbedding, error) {
+	var pending []pendingEmbedding
 	err := s.pool.WithConn(ctx, func(conn *sql.Conn) error {
 		rows, err := conn.QueryContext(ctx, `SELECT id::text,content,content_hash FROM memory
 			WHERE embedded_at IS NULL AND superseded_by IS NULL ORDER BY id LIMIT $1`, limit)
@@ -129,7 +127,7 @@ func (s *Store) Backfill(ctx context.Context, limit int) error {
 		}
 		defer rows.Close()
 		for rows.Next() {
-			var row candidate
+			var row pendingEmbedding
 			if err := rows.Scan(&row.id, &row.content, &row.hash); err != nil {
 				return err
 			}
@@ -137,26 +135,49 @@ func (s *Store) Backfill(ctx context.Context, limit int) error {
 		}
 		return rows.Err()
 	})
-	if err != nil {
-		return err
+	return pending, err
+}
+
+func (s *Store) Backfill(ctx context.Context, limit int) error {
+	if s.embedding == nil {
+		return nil
 	}
-	for _, row := range pending {
-		if err := ctx.Err(); err != nil {
+	for {
+		pending, err := s.pendingEmbeddings(ctx, limit)
+		if err != nil || len(pending) == 0 {
 			return err
 		}
-		vector := s.vector(ctx, row.content, 10*time.Second)
-		if vector == "" {
-			continue
+		progressed, failures := false, 0
+		for _, row := range pending {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			vector := s.vector(ctx, row.content, 10*time.Second)
+			if vector == "" {
+				failures++
+				if failures >= 3 {
+					return nil
+				}
+				continue
+			}
+			err := s.pool.WithConn(ctx, func(conn *sql.Conn) error {
+				// An edit during embedding invalidates the snapshot.
+				change, err := conn.ExecContext(ctx, `UPDATE memory SET embedding=$2::vector,embedding_model=$3,embedded_at=now()
+					WHERE id=$1 AND content_hash=$4 AND embedded_at IS NULL AND superseded_by IS NULL`, row.id, vector, s.modelTag, row.hash)
+				if err != nil {
+					return err
+				}
+				count, err := change.RowsAffected()
+				progressed = progressed || count > 0
+				return err
+			})
+			if err != nil {
+				return err
+			}
+			failures = 0
 		}
-		err := s.pool.WithConn(ctx, func(conn *sql.Conn) error {
-			// An edit during embedding invalidates the snapshot.
-			_, err := conn.ExecContext(ctx, `UPDATE memory SET embedding=$2::vector,embedding_model=$3,embedded_at=now()
-				WHERE id=$1 AND content_hash=$4 AND embedded_at IS NULL AND superseded_by IS NULL`, row.id, vector, s.modelTag, row.hash)
-			return err
-		})
-		if err != nil {
-			return err
+		if !progressed {
+			return nil
 		}
 	}
-	return nil
 }

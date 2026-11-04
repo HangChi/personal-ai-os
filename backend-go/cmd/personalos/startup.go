@@ -22,8 +22,8 @@ import (
 )
 
 type commandOptions struct {
-	foundation, allowBaselineV1 bool
-	migrations                  string
+	foundation, allowBaselineV1, p5 bool
+	migrations                      string
 }
 
 func parseCommand(args []string) (commandOptions, error) {
@@ -31,6 +31,7 @@ func parseCommand(args []string) (commandOptions, error) {
 	flags := flag.NewFlagSet("personalos", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	flags.BoolVar(&options.foundation, "foundation", false, "显式启用 P1 基础运行时")
+	flags.BoolVar(&options.p5, "p5", false, "启用 P5 记忆、日程及提醒")
 	flags.StringVar(&options.migrations, "migrations", "", "原 Java 迁移目录的绝对路径，只读校验")
 	flags.BoolVar(&options.allowBaselineV1, "allow-baseline-v1", false, "允许真实 Flyway 默认 V1 基线标记")
 	if err := flags.Parse(args); err != nil {
@@ -39,8 +40,8 @@ func parseCommand(args []string) (commandOptions, error) {
 		}
 		return commandOptions{}, errors.New("启动参数无效，请使用 --help 查看支持参数")
 	}
-	if flags.NArg() != 0 || (!options.foundation && (options.migrations != "" || options.allowBaselineV1)) {
-		return commandOptions{}, errors.New("迁移参数必须与 --foundation 一起显式设置，且不接受位置参数")
+	if flags.NArg() != 0 || (!options.foundation && (options.migrations != "" || options.allowBaselineV1 || options.p5)) {
+		return commandOptions{}, errors.New("迁移参数和 --p5 必须与 --foundation 一起显式设置，且不接受位置参数")
 	}
 	if options.foundation && (!filepath.IsAbs(options.migrations) || options.migrations == string(filepath.Separator)) {
 		return commandOptions{}, errors.New("基础模式必须显式提供原 Java 迁移目录的绝对路径")
@@ -51,7 +52,7 @@ func parseCommand(args []string) (commandOptions, error) {
 func runCommand(ctx context.Context, args []string, logger *slog.Logger) error {
 	options, err := parseCommand(args)
 	if errors.Is(err, flag.ErrHelp) {
-		_, err = io.WriteString(os.Stdout, "用法: personalos [--foundation --migrations /absolute/java/db/migration [--allow-baseline-v1]]\n默认仅离线诊断；基础模式要求显式 SERVER_PORT 和 POSTGRES_HOST/PORT/DB/USER/PASSWORD。\n")
+		_, err = io.WriteString(os.Stdout, "用法: personalos [--foundation --migrations /absolute/java/db/migration [--allow-baseline-v1] [--p5]]\n默认仅离线诊断；基础模式要求显式 SERVER_PORT 和 POSTGRES_HOST/PORT/DB/USER/PASSWORD。\n")
 		return err
 	}
 	if err != nil {
@@ -216,7 +217,7 @@ func runFoundation(ctx context.Context, options commandOptions, system map[strin
 	pool.MaxOpen, pool.MaxIdle, pool.ConnectionTimeout = runtime.PoolMaximum, runtime.PoolMaximum, runtime.PoolConnectionTimeout
 	foundation, err = app.OpenFoundation(ctx, properties, app.FoundationOptions{
 		Connector: connector, Migrations: os.DirFS(options.migrations), Schema: "public", AllowBaselineV1: options.allowBaselineV1,
-		Pool: &pool, SessionRedis: session, RateRedis: rate, EmbeddingRedis: embedding, EnableP2: true, EnableP3: true, EnableP4: true,
+		Pool: &pool, SessionRedis: session, RateRedis: rate, EmbeddingRedis: embedding, EnableP2: true, EnableP3: true, EnableP4: true, EnableP5: options.p5,
 	}, logger)
 	if err != nil {
 		return err

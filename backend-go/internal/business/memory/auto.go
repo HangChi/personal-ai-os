@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+	"strconv"
 	"strings"
 	"unicode/utf16"
 
@@ -42,19 +44,31 @@ func parseFacts(raw string, limit int) []string {
 	if start < 0 || end <= start || limit <= 0 {
 		return nil
 	}
-	var values []string
-	if err := json.Unmarshal([]byte(raw[start:end+1]), &values); err != nil {
+	var values []any
+	decoder := json.NewDecoder(strings.NewReader(raw[start : end+1]))
+	decoder.UseNumber()
+	if err := decoder.Decode(&values); err != nil || decoder.Decode(new(any)) != io.EOF {
 		return nil
 	}
 	var facts []string
 	for _, value := range values {
-		value = strip(value)
-		length := len(utf16.Encode([]rune(value)))
-		if length >= 5 && length <= 2000 {
-			facts = append(facts, value)
+		var text string
+		switch value := value.(type) {
+		case nil:
+			continue
+		case string:
+			text = value
+		case json.Number:
+			text = value.String()
+		case bool:
+			text = strconv.FormatBool(value)
+		default:
+			return nil
 		}
-		if len(facts) == limit {
-			break
+		text = strip(text)
+		length := len(utf16.Encode([]rune(text)))
+		if len(facts) < limit && length >= 5 && length <= 2000 {
+			facts = append(facts, text)
 		}
 	}
 	return facts

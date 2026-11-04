@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -14,25 +15,18 @@ import (
 func MemoryTool(store *memory.Store) Definition {
 	return Definition{
 		Keys: []string{"content"}, Write: true,
-		Model: model.Tool{Name: "saveMemory", Description: "保存用户明确要求长期记住的事实、偏好或约束。", Parameters: ObjectSchema(map[string]any{"content": StringSchema()}, "content")},
+		Model: model.Tool{Name: "saveMemory"},
 		Action: func(ctx context.Context, _ *Turn, args map[string]any) (Result, error) {
 			entry, err := store.Create(ctx, Text(args, "content"))
-			return OK("已保存长期记忆", entry), err
+			return OK("已记住："+entry.Content, entry), err
 		},
 	}
 }
 
 func CalendarTools(events *calendar.Events, confirms *confirmation.Service) []Definition {
 	fields := []string{"title", "startsAt", "endsAt", "location", "description", "allDay", "recurrenceType", "recurrenceUntil", "reminderLeadMinutes"}
-	create := map[string]any{}
-	for _, field := range fields {
-		create[field] = StringSchema()
-	}
-	create["allDay"] = map[string]any{"type": "boolean"}
-	create["reminderLeadMinutes"] = map[string]any{"type": "integer"}
-	limit := map[string]any{"type": "integer"}
 	return []Definition{
-		{Keys: fields, Write: true, Model: model.Tool{Name: "createCalendarEvent", Description: "创建日程。相对时间按系统提示解释，起止时间使用 ISO-8601。", Parameters: ObjectSchema(create, "title", "startsAt", "endsAt")},
+		{Keys: fields, Write: true, Model: model.Tool{Name: "createCalendarEvent"},
 			Action: func(ctx context.Context, _ *Turn, args map[string]any) (Result, error) {
 				req := calendar.EventRequest{Title: nullableText(args, "title"), Location: nullableText(args, "location"), Description: nullableText(args, "description")}
 				for _, field := range []struct {
@@ -62,7 +56,7 @@ func CalendarTools(events *calendar.Events, confirms *confirmation.Service) []De
 				event, err := events.Create(ctx, req)
 				return OK("已创建日程「"+event.Title+"」", event), err
 			}},
-		{Keys: []string{"from", "to", "limit"}, Model: model.Tool{Name: "findCalendarEvents", Description: "按时间区间查询日程发生实例。", Parameters: ObjectSchema(map[string]any{"from": StringSchema(), "to": StringSchema(), "limit": limit})},
+		{Keys: []string{"from", "to", "limit"}, Model: model.Tool{Name: "findCalendarEvents"},
 			Action: func(ctx context.Context, _ *Turn, args map[string]any) (Result, error) {
 				from, err := ParseToolInstant(Text(args, "from"))
 				if err != nil {
@@ -80,11 +74,15 @@ func CalendarTools(events *calendar.Events, confirms *confirmation.Service) []De
 					}
 				}
 				page, err := events.Search(ctx, from, to, 0, size)
-				return OK("日程查询完成", page.Items), err
+				message := "这个时间段没有日程安排"
+				if len(page.Items) != 0 {
+					message = fmt.Sprintf("找到 %d 项安排", len(page.Items))
+				}
+				return OK(message, page.Items), err
 			}},
-		{Keys: []string{"limit"}, Model: model.Tool{Name: "findDueReminders", Description: "查询已到点且未读的提醒。", Parameters: ObjectSchema(map[string]any{"limit": limit})},
+		{Keys: []string{"limit"}, Model: model.Tool{Name: "findDueReminders"},
 			Action: func(ctx context.Context, _ *Turn, args map[string]any) (Result, error) {
-				size := 50
+				var size int
 				if args["limit"] != nil {
 					var err error
 					size, err = Integer(args, "limit")
@@ -93,20 +91,31 @@ func CalendarTools(events *calendar.Events, confirms *confirmation.Service) []De
 					}
 				}
 				items, err := events.Reminders(ctx, "PENDING", true, size, time.Now())
-				return OK("提醒查询完成", items), err
+				message := "当前没有到点的提醒"
+				if len(items) != 0 {
+					message = fmt.Sprintf("有 %d 条已到点的提醒", len(items))
+				}
+				return OK(message, items), err
 			}},
-		{Keys: []string{"reminderId"}, Write: true, Model: model.Tool{Name: "markReminderRead", Description: "将提醒标为已读。", Parameters: ObjectSchema(map[string]any{"reminderId": StringSchema()}, "reminderId")},
+		{Keys: []string{"reminderId"}, Write: true, Model: model.Tool{Name: "markReminderRead"},
 			Action: func(ctx context.Context, _ *Turn, args map[string]any) (Result, error) {
 				id, err := ParseTaskID(Text(args, "reminderId"), "reminderId")
 				if err != nil {
 					return Result{}, err
 				}
 				item, err := events.MarkRead(ctx, id, time.Now())
-				return OK("提醒已标记为已读", item), err
+				return OK("已把提醒「"+item.Title+"」标记为已处理", item), err
 			}},
-		{Keys: []string{"eventIds"}, Write: true, Model: model.Tool{Name: "deleteCalendarEvent", Description: "申请删除日程，需用户确认。", Parameters: ObjectSchema(map[string]any{"eventIds": map[string]any{"type": "array", "items": StringSchema()}}, "eventIds")},
+		{Keys: []string{"eventIds"}, Write: true, Model: model.Tool{Name: "deleteCalendarEvent"},
 			Action: func(ctx context.Context, turn *Turn, args map[string]any) (Result, error) {
 				ids := stringArray(args["eventIds"])
+				for i, raw := range ids {
+					id, err := ParseTaskID(raw, "eventIds")
+					if err != nil {
+						return Result{}, err
+					}
+					ids[i] = id
+				}
 				result, err := events.RequestDelete(ctx, confirms, ids, turn.ConversationID)
 				if err != nil {
 					return Result{}, err

@@ -16,14 +16,14 @@ func fixtureProcessSystem() map[string]string {
 }
 
 func TestCommandOptionsAreExplicitAndRedacted(t *testing.T) {
-	for _, args := range [][]string{{"--foundation"}, {"--foundation", "--migrations", "relative"}, {"--migrations", "/fixture"}, {"--allow-baseline-v1"}, {"--unknown=fixture-secret"}, {"fixture-secret"}} {
+	for _, args := range [][]string{{"--foundation"}, {"--foundation", "--migrations", "relative"}, {"--migrations", "/fixture"}, {"--allow-baseline-v1"}, {"--p5"}, {"--unknown=fixture-secret"}, {"fixture-secret"}} {
 		_, err := parseCommand(args)
 		if err == nil || strings.Contains(err.Error(), "fixture-secret") {
 			t.Fatalf("参数边界/脱敏错误: %v", err)
 		}
 	}
-	options, err := parseCommand([]string{"--foundation", "--migrations", "/fixture/sql", "--allow-baseline-v1"})
-	if err != nil || !options.foundation || !options.allowBaselineV1 || options.migrations != "/fixture/sql" {
+	options, err := parseCommand([]string{"--foundation", "--migrations", "/fixture/sql", "--allow-baseline-v1", "--p5"})
+	if err != nil || !options.foundation || !options.allowBaselineV1 || !options.p5 || options.migrations != "/fixture/sql" {
 		t.Fatal("显式参数未传递", err)
 	}
 	options, err = parseCommand(nil)
