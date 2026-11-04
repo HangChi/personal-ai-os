@@ -1,5 +1,14 @@
 # 第三方运行时依赖声明
 
+## P7：MCP 协议
+
+使用官方 `github.com/modelcontextprotocol/go-sdk v1.8.0`（MIT），不自行重写 JSON-RPC/stdio/Streamable HTTP。
+新增传递依赖：`github.com/google/jsonschema-go v0.4.3`（BSD-3-Clause）、
+`github.com/yosida95/uritemplate/v3 v3.0.2`（BSD-3-Clause）、
+`github.com/segmentio/encoding v0.5.4` 与 `github.com/segmentio/asm v1.1.3`（MIT）、
+`golang.org/x/oauth2 v0.35.0` 与 `golang.org/x/time v0.15.0`（BSD-3-Clause）。
+完整许可证逐字保存在 `licenses/p7-*-LICENSE.txt`，取自固定版本模块缓存。
+
 ## P6：文档解析
 
 DOCX 使用 Go 标准库 `archive/zip`、`encoding/xml`，未引入第三方解析库。PDF 延用外部 Poppler，另调用同一发行版的 `pdfinfo` 做完整 500 页限制。验收使用 26.10.0；工具不嵌入或随 Go 二进制分发，部署方自行提供并遵守其 GPL 许可证。Go 模块依赖没有变化。

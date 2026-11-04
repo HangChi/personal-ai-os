@@ -456,3 +456,9 @@ Alternatives considered：自行实现SigV4/默认凭据链（维护与兼容风
 Decision：两个业务SSE使用同一已绑定心跳间隔，默认15s，按原Java毫秒调度精度截取、非正/不足1ms启动拒绝。附件GC消费enabled开关及六字段cron，默认本地每天04:30，禁用不启动清理。数字/名称/范围/列表/步长/?与标准宏/禁用符有测试；扩展L/W/#在启动明确拒绝。一个串行GC循环避免重叠运行，使用数据库advisory锁与新提交引用快照，不以十分钟常量代替原调度。Run待调度恢复仍每秒执行，角色隔离保持。
 
 Alternatives considered：仅解析配置不实际接线；忽略清理开关；把所有cron都当默认；引入未经下载验证的cron库。均未采用。真实Foundation已验证关闭保留旧孤儿、开启按cron删除，以及两种HTTP流的自定义心跳。
+
+## R-051 P7 MCP 协议与生命周期
+
+Decision：采用官方 `github.com/modelcontextprotocol/go-sdk` v1.8.0，固定go.mod/go.sum；用SDK的CommandTransport管理stdio子进程、StreamableClientTransport管理HTTP客户端、StreamableHTTPHandler提供独立只读入口。应用保留命名/冲突、默认CONFIRM、显式AUTO名单、持久确认/审计、调用预算、失联降级和代际安全重连；不把SDK客户端直接交给模型。连接和调用都有期限，HTTP无自动业务重试，退出关闭全部连接。原MCP配置的stdio语义不变；HTTP通过显式附加端点配置启用，不推测命令为URL。原四个对外工具通过独立清单注册，不能递归转售Agent或外部工具。依赖许可证随固定模块保存于backend-go/licenses。
+
+Alternatives considered：自行实现JSON-RPC/SSE/stdio帧及取消（协议与生命周期维护风险）；复用Java代理（引入双运行时）；将全部外部工具标成AUTO（破坏确认边界）。均未采用。只在显式P7模式装配，后续P8发布守卫保留。
