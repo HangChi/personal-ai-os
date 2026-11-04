@@ -89,11 +89,12 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
             "GO_TEST_POSTGRES_ROOT_CERT": root_cert,
         })
         if redis_env is not None:
-            if package not in {"app", "command"} or redis_env.get("GO_TEST_REDIS") != "disposable":
+            if package not in {"app", "command", "knowledge"} or redis_env.get("GO_TEST_REDIS") != "disposable":
                 raise ValueError("组合测试只能接收脚本新建的app专用Redis")
             go_env.update({key: redis_env[key] for key in {
                 "GO_TEST_REDIS", "GO_TEST_REDIS_URI", "GO_TEST_REDIS_CA_PEM",
                 "GO_TEST_REDIS_SESSION_URI", "GO_TEST_REDIS_RATE_URI", "GO_TEST_REDIS_EMBEDDING_URI",
+                "GO_TEST_REDIS_CANDIDATE_URI",
             } if key in redis_env})
         if (flyway and package == "migration") or package in BUSINESS_PACKAGES | {"app", "command"}:
             if baseline:
