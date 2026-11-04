@@ -1,0 +1,1603 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/knowledge/service/DocumentFilenameSupport.java": "960b1bbf84bc168446581026928a4e4d2358f29d69bc7280aa59de82488323d9",
+    "backend/src/main/java/com/personalos/knowledge/service/KeywordExtractor.java": "df3c1bc8bdab1b06b7019ce5c4bcfacb65b8a01820d3a11e0b51a8cf8adf28db",
+    "backend/src/main/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitter.java": "e90d9ca71b332c21ce41804f02dab47db2fbf3a044bd652905ed671f2ede9c06",
+    "backend/src/main/java/com/personalos/knowledge/config/KnowledgeProperties.java": "8918e7b94d4ed84f7fa133a9a4e3b87564740271016e3b2836fc807414d5a4f4",
+    "backend/src/main/java/com/personalos/knowledge/service/KnowledgeRetrievalService.java": "544d3e9db4f24ddfbbc1baf3c4db1ae6e056e547bfc5642633e1881ac8cee42f",
+    "backend/src/main/java/com/personalos/knowledge/service/KnowledgeQaService.java": "1ed3f51f227b78dd73e71c19edf7cb82387c029098a19b36f0b4f4e08df7cfb9",
+    "backend/src/main/java/com/personalos/knowledge/tool/KnowledgeTools.java": "70eb72e84e8b423fda7ebeaed985a87762257384a49c47e27332111b2b91bde7",
+    "backend/src/main/java/com/personalos/knowledge/dto/KnowledgeHitDto.java": "003f1c12da263d74f7e1d61e4391df99d82d198bfcd87ad6e8953cfc2dbb0b9b"
+  },
+  "inputs": {
+    "filenames": [
+      null,
+      "",
+      "  ",
+      "../x.TXT",
+      "C:\\fakepath\\x.pdf",
+      "a/",
+      ".hidden",
+      "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中.pdf",
+      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.longextension"
+    ],
+    "queries": [
+      "2PC / 3PC 的区别",
+      "what is ip_hash using C++ and C#",
+      "Object.defineProperty. foo.bar",
+      "123 2026 3.14",
+      "纯中文问题",
+      "BRIN 索引适合什么场景",
+      "索引在什么情况下会失效",
+      "什么时候该用 GIN 而不是 B-tree",
+      "日志表按时间顺序不断写入、想用很小的索引先筛掉一批数据块，该建哪种索引",
+      "数组字段要支持「包含」查询怎么建索引",
+      "Hash 索引有哪些限制",
+      "只给未完成的订单建索引，能做到吗",
+      "Vue3 的 computed 是怎么做缓存的",
+      "为什么 Vue3 放弃了 Object.defineProperty",
+      "ref 和 reactive 该用哪个",
+      "组件卸载后副作用没清掉，Vue3 有什么办法管理副作用作用域",
+      "watch 的回调什么时候执行，能配置吗",
+      "虚拟线程有哪些坑",
+      "在 synchronized 块里等 IO 会发生什么",
+      "纯计算任务适合用虚拟线程吗",
+      "要不要给虚拟线程建线程池",
+      "ThreadLocal 在虚拟线程下有什么风险",
+      "虚拟线程和平台线程有什么区别",
+      "缓存雪崩是什么原因造成的",
+      "Redis 为什么比直接查数据库快",
+      "缓存击穿和雪崩有什么不同",
+      "内存满了之后如何决定删除哪些数据",
+      "Redis 的数据怎么落盘，断电会不会丢",
+      "强缓存和协商缓存应该怎么配合使用",
+      "HTTP/3 相比 HTTP/2 解决了什么问题",
+      "怎么防止页面被注入恶意脚本",
+      "浏览器同源策略限制下怎么跨域请求",
+      "HTTP 各个状态码段分别代表什么",
+      "MVCC 是怎么减少读写之间的阻塞的",
+      "联合索引设计要注意什么",
+      "库存扣减怎么防止超卖",
+      "catch 住异常之后事务为什么没有回滚",
+      "给一个不存在的 id 加锁为什么会把区间锁住",
+      "读写分离会带来什么问题",
+      "goroutine 为什么比操作系统线程轻量",
+      "Work Stealing 是怎么回事",
+      "死循环为什么不饿死其他协程",
+      "并行度配额的数量由什么决定",
+      "网络 IO 阻塞时会占住系统线程吗",
+      "并发度失控会引发什么问题",
+      "I/O 密集型任务适合哪种并发模式",
+      "有状态的对象要并发访问，用什么模式串行化处理",
+      "监控数据大量小包写库太慢，怎么优化",
+      "Worker Pool 的工作协程数量怎么定",
+      "多个微服务的数据要并行拉取再合并，用哪个库更合适",
+      "gzip 对哪类资源几乎没有收益",
+      "断点续传靠协议里的什么机制实现",
+      "反向代理怎么把真实客户端 IP 传下去",
+      "保持连接能带来多少吞吐提升",
+      "做了内容协商却没写某个头，会让缓存串味",
+      "Basic 认证为什么必须配 HTTPS",
+      "EXPLAIN 的 type 列有哪些取值",
+      "InnoDB 默认的事务隔离级别是什么",
+      "字段是字符串但传了数字，会导致索引失效吗",
+      "OR 条件会让索引失效吗",
+      "加了 JOIN 之后查询从毫秒变成 30 秒",
+      "怎么看一条 SQL 有没有走索引",
+      "Namespace 和 Cgroup 各自负责什么",
+      "怎么把一个进程限制到只能用两个 CPU 核",
+      "容器里的进程为什么看不到宿主机上的其他进程",
+      "Docker 启动只要毫秒级，为什么虚拟机要几十秒",
+      "UnionFS 的分层只读和写时复制是怎么回事",
+      "多个镜像为什么能共用同一个基础层",
+      "容器删掉之后里面的数据去哪了",
+      "Dockerfile 的每条指令为什么能单独复用缓存",
+      "transform 和 opacity 为什么能绕开主线程",
+      "只改背景色会不会导致重新计算布局",
+      "读一下 offsetWidth 为什么反而让页面更慢",
+      "想把重排的影响限制在一棵子树里，有什么办法",
+      "合成层是不是开得越多越流畅",
+      "官方对单帧合成该控制在多少毫秒有过建议吗",
+      "重排和重绘哪个代价更大",
+      "动画为什么推荐改 transform 而不是 left",
+      "怎么在开发者工具里亲眼看到重绘发生",
+      "新手最容易卡在渲染流程的哪个阶段",
+      "Kafka 的 ISR 集合是干什么的",
+      "Broker、Topic、Partition 三者是什么关系",
+      "为什么顺序追加写磁盘能比随机写快上百倍",
+      "消费端是推送模式还是拉取模式",
+      "生产者发消息时怎么决定进哪个分区",
+      "Page Cache 在 Kafka 里起什么作用",
+      "一个分区的消息在磁盘上是怎么切的，有哪些文件",
+      "消息的 offset 是全局唯一的编号吗",
+      "零拷贝到底减少了哪几次数据拷贝",
+      "GIL 是什么，为什么多线程吃不满多核",
+      "CPU 密集的计算在 Python 里该怎么并行",
+      "几万个并发连接该用线程还是协程",
+      "FastAPI 的路由写成 async def 和普通 def 有什么区别",
+      "线程、进程、协程三者的切换开销怎么排",
+      "await 一定会把控制权让出去吗",
+      "把 sleep 换成异步版本，为什么还是不并发",
+      "事件循环底层靠什么知道某个 socket 已经可读",
+      "怎么确认自己的协程真的在并发执行",
+      "并发和并行到底差在哪",
+      "分布式条件类型是什么，怎么阻止它分发",
+      "在条件类型里顺手把某个部分的类型取出来，用什么关键字",
+      "映射类型能做什么",
+      "手写一个 Pick 要用到哪些类型工具",
+      "never 在联合类型和条件类型里起什么作用",
+      "unknown 和 any 到底差在哪",
+      "void 和 undefined 是同一个东西吗",
+      "类型和值是不是同一个层面的东西",
+      "CAP 定理为什么只能三选二",
+      "Raft 是怎么选出 Leader 的",
+      "集群被网络切成两半、两边都以为自己是主，怎么防止",
+      "拜占庭将军问题要解决的是什么",
+      "2PC 有什么问题，3PC 改进了什么",
+      "跨多个服务的长事务，不想一直持锁，该用什么模式",
+      "分布式系统里为什么不能相信时钟",
+      "怎么验证一个共识算法的实现有没有 bug",
+      "副本之间暂时不一致，但保证最终收敛，这叫什么",
+      "动态规划五部曲是哪五步",
+      "01 背包压成一维数组之后，内层循环为什么要倒着走",
+      "写完状态转移方程，怎么确认自己没写错",
+      "怎么快速判断一道题是不是该用动态规划",
+      "动态规划成立需要哪两个前提",
+      "记忆化递归和自底向上填表怎么选",
+      "只保留前两个状态、不要整个数组，这叫什么技巧",
+      "动态规划和分治有什么区别",
+      "location 各种写法的匹配优先级",
+      "proxy_pass 末尾加斜杠和不加，转发路径有什么不同",
+      "upstream 里 backup 是什么意思",
+      "怎么按请求频率限制访问",
+      "改完配置文件怎么验证语法、怎么平滑生效",
+      "worker_connections 和 keepalive 该怎么配",
+      "后端是有状态的，想让同一个客户端始终打到同一台",
+      "504 一般是前端还是后端的锅",
+      "文件名带 hash 的静态资源能不能设成永久缓存",
+      "同一 IP 哈希分配会有什么副作用",
+      "怎样确认备份真的能够恢复，而不仅是一个能解压的文件？",
+      "数据库和聊天附件跨资源备份时，怎样保证两者来自同一份应用状态？",
+      "后端直接跑在宿主机，容器中的 Prometheus 应该从哪里采集指标？",
+      "知识库两份资料对同一件事说法不同，是否会自动按上传时间决定谁正确？",
+      "服务重启后，如果某个写工具是否已经生效还不能确定，系统会自动重试吗？",
+      "助手正在等待我回答澄清问题或者人工确认时，还会消耗后面的消息队列吗？",
+      "没有文字层的扫描版 PDF 能当作正常文档直接存进知识库吗？",
+      "登录失败会区分用户名不存在和密码错误，分别告诉访客吗？",
+      "月历如何展示在同一个月重复发生四次的日程？",
+      "有些重要偏好不能因为相似度低而漏掉，系统如何让这些记忆始终参与上下文？",
+      "作为客户端调用外部 MCP 和把自身暴露成 MCP Server，这两个方向是否必须一起启用？",
+      "AI 能自行代替用户确认删除任务吗，还是必须由人在界面操作？",
+      "为什么目前没有把这个个人助手拆成一批微服务？",
+      "RabbitMQ 暂时不可用时，已经接受的文档索引任务会直接丢失吗？",
+      "共享嵌入缓存的 Redis 连接失败后，嵌入请求会怎样处理？",
+      "切换到向量维度不同的模型以后，OpenSearch 可以直接继续用原来的索引吗？",
+      "生产部署能关闭认证、CSRF 或 Secure Cookie 后仍正常启动吗？",
+      "能不能只查看带有某个标签的任务，而不是每次浏览所有任务？"
+    ],
+    "splits": [
+      {
+        "text": "",
+        "target": 1200,
+        "minimum": 10,
+        "overlap": 0
+      },
+      {
+        "text": "",
+        "target": 100,
+        "minimum": 30,
+        "overlap": 10
+      },
+      {
+        "text": "",
+        "target": 35,
+        "minimum": 10,
+        "overlap": 0
+      },
+      {
+        "text": "# A\n正文内容。\n\n## B\n第二节正文。\n# C\n末节正文。",
+        "target": 1200,
+        "minimum": 10,
+        "overlap": 0
+      },
+      {
+        "text": "# A\n正文内容。\n\n## B\n第二节正文。\n# C\n末节正文。",
+        "target": 100,
+        "minimum": 30,
+        "overlap": 10
+      },
+      {
+        "text": "# A\n正文内容。\n\n## B\n第二节正文。\n# C\n末节正文。",
+        "target": 35,
+        "minimum": 10,
+        "overlap": 0
+      },
+      {
+        "text": "# Title\n```go\n# not heading\n```\n\nnext paragraph.",
+        "target": 1200,
+        "minimum": 10,
+        "overlap": 0
+      },
+      {
+        "text": "# Title\n```go\n# not heading\n```\n\nnext paragraph.",
+        "target": 100,
+        "minimum": 30,
+        "overlap": 10
+      },
+      {
+        "text": "# Title\n```go\n# not heading\n```\n\nnext paragraph.",
+        "target": 35,
+        "minimum": 10,
+        "overlap": 0
+      },
+      {
+        "text": "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "target": 1200,
+        "minimum": 10,
+        "overlap": 0
+      },
+      {
+        "text": "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "target": 100,
+        "minimum": 30,
+        "overlap": 10
+      },
+      {
+        "text": "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "target": 35,
+        "minimum": 10,
+        "overlap": 0
+      },
+      {
+        "text": "# 长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n",
+        "target": 1200,
+        "minimum": 10,
+        "overlap": 0
+      },
+      {
+        "text": "# 长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n",
+        "target": 100,
+        "minimum": 30,
+        "overlap": 10
+      },
+      {
+        "text": "# 长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n",
+        "target": 35,
+        "minimum": 10,
+        "overlap": 0
+      }
+    ],
+    "answers": [
+      "没有编号",
+      "[2] 再引用[2][1][9][0]",
+      "[9]",
+      "依据[1]"
+    ],
+    "recalls": [
+      {
+        "id": "backup-drill",
+        "query": "怎样确认备份真的能够恢复，而不仅是一个能解压的文件？",
+        "documents": [
+          {
+            "id": "00000001-0001-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "ackups/具体文件.tar\n```\n\n`verify` 验证外层 SHA-256、内部文件清单和逐文件哈希、pg_restore 目录；`drill` 额外在随机临时数据库执行完整恢复与关键表查询，再删除临时库，绝不接收运行库作为目标。目录验证不能替代恢复演练；建议每周执行一次 drill。业务库本身不受演练影响。\n\n可设置 `BACKUP_DIR`、`DB_CONTAINER`、`BACKUP_UPLOAD_DIR`。附件路径默认 `backend/data/uploads`，也读取 `AI_CHAT_UPLOAD_DIR`。Compose 应用模式使用同一宿主机目录绑定，容器重建后附件仍保留；已有旧容器中的附件应先用 `docker cp` 拷出再切换挂载。如直接备份容器内目录，设置 `BACKUP_BACKEND_CONTA",
+            "score": 0.94
+          },
+          {
+            "id": "00000001-0002-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "时先停止后端；Compose 部署执行 `docker compose stop backend`，备份后再 `docker compose start backend`。数据库快照本身由 pg_dump 保证，但数据库与附件跨资源一致需要暂停应用写入；脚本不会擅自停服务。\n\n```bash\n./scripts/dev/backup-db.sh\n# 输出 backups/personal-ai-os-日期-随机串.tar 及 .sha256，默认永久保留\nBACKUP_RETAIN=30 ./scripts/dev/backup-db.sh\npython3 scripts/dev/backup.py verify backups/具体文件.tar\npython3 scripts/dev/backup.py drill ba",
+            "score": 0.72
+          },
+          {
+            "id": "00000001-0003-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "ash\ndocker compose --env-file .env.monitoring.local -f compose.monitoring.local.yml up -d\n```\n\n此配置面向 Docker Desktop，通过 `host.docker.internal:9091` 采集宿主机后端；不修改或重建原数据库。\nGrafana：`http://127.0.0.1:3000/d/personalos-runtime`，用户 admin，密码在本地环境文件中。\nPrometheus：`http://127.0.0.1:9090`，Targets 中 personal-ai-os 应显示 UP。\n停止监控可将上述 `up -d` 改为 `down`；不加 `-v` 时保留历史指标与看板数据。\n\n## 可选 Redis 共享嵌入缓存\n\n共享会话、模",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "docs/operations.md"
+      },
+      {
+        "id": "backup-consistency",
+        "query": "数据库和聊天附件跨资源备份时，怎样保证两者来自同一份应用状态？",
+        "documents": [
+          {
+            "id": "00000002-0001-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "时先停止后端；Compose 部署执行 `docker compose stop backend`，备份后再 `docker compose start backend`。数据库快照本身由 pg_dump 保证，但数据库与附件跨资源一致需要暂停应用写入；脚本不会擅自停服务。\n\n```bash\n./scripts/dev/backup-db.sh\n# 输出 backups/personal-ai-os-日期-随机串.tar 及 .sha256，默认永久保留\nBACKUP_RETAIN=30 ./scripts/dev/backup-db.sh\npython3 scripts/dev/backup.py verify backups/具体文件.tar\npython3 scripts/dev/backup.py drill ba",
+            "score": 0.94
+          },
+          {
+            "id": "00000002-0002-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "ash\ndocker compose --env-file .env.monitoring.local -f compose.monitoring.local.yml up -d\n```\n\n此配置面向 Docker Desktop，通过 `host.docker.internal:9091` 采集宿主机后端；不修改或重建原数据库。\nGrafana：`http://127.0.0.1:3000/d/personalos-runtime`，用户 admin，密码在本地环境文件中。\nPrometheus：`http://127.0.0.1:9090`，Targets 中 personal-ai-os 应显示 UP。\n停止监控可将上述 `up -d` 改为 `down`；不加 `-v` 时保留历史指标与看板数据。\n\n## 可选 Redis 共享嵌入缓存\n\n共享会话、模",
+            "score": 0.72
+          },
+          {
+            "id": "00000002-0003-4000-8000-000000000001",
+            "title": "specs/029-rag-infrastructure/spec.md",
+            "filename": "spec.md",
+            "content": "有无工具模型提供受限 listwise 重排及证据精审。\n- 知识空间、来源版本、适用范围、有效时间、人工填写发布方和核实依据必须保留。不同范围/时间不直接判为矛盾。\n- 入库审查比较有原文证据的候选事实，保留冲突、审查覆盖状态和人工决策；不自动覆盖资料或按上传时间判真伪。\n- 同范围矛盾和模糊问题不输出无条件的单一结论。并列来源、请求澄清；所有引用由服务端绑定实际片段。\n- 默认不开启新增外部服务；明确配置后才连接。服务故障有超时与降级，原有同步/API 契约兼容。\n- 分阶段测试、提交；隔离工作区构建，避免覆盖运行中的 JAR。\n",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "docs/operations.md"
+      },
+      {
+        "id": "host-monitoring",
+        "query": "后端直接跑在宿主机，容器中的 Prometheus 应该从哪里采集指标？",
+        "documents": [
+          {
+            "id": "00000003-0001-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "ash\ndocker compose --env-file .env.monitoring.local -f compose.monitoring.local.yml up -d\n```\n\n此配置面向 Docker Desktop，通过 `host.docker.internal:9091` 采集宿主机后端；不修改或重建原数据库。\nGrafana：`http://127.0.0.1:3000/d/personalos-runtime`，用户 admin，密码在本地环境文件中。\nPrometheus：`http://127.0.0.1:9090`，Targets 中 personal-ai-os 应显示 UP。\n停止监控可将上述 `up -d` 改为 `down`；不加 `-v` 时保留历史指标与看板数据。\n\n## 可选 Redis 共享嵌入缓存\n\n共享会话、模",
+            "score": 0.94
+          },
+          {
+            "id": "00000003-0002-4000-8000-000000000001",
+            "title": "specs/029-rag-infrastructure/spec.md",
+            "filename": "spec.md",
+            "content": "有无工具模型提供受限 listwise 重排及证据精审。\n- 知识空间、来源版本、适用范围、有效时间、人工填写发布方和核实依据必须保留。不同范围/时间不直接判为矛盾。\n- 入库审查比较有原文证据的候选事实，保留冲突、审查覆盖状态和人工决策；不自动覆盖资料或按上传时间判真伪。\n- 同范围矛盾和模糊问题不输出无条件的单一结论。并列来源、请求澄清；所有引用由服务端绑定实际片段。\n- 默认不开启新增外部服务；明确配置后才连接。服务故障有超时与降级，原有同步/API 契约兼容。\n- 分阶段测试、提交；隔离工作区构建，避免覆盖运行中的 JAR。\n",
+            "score": 0.72
+          },
+          {
+            "id": "00000003-0003-4000-8000-000000000001",
+            "title": "specs/026-durable-agent-execution/spec.md",
+            "filename": "spec.md",
+            "content": "断后可继续；实时看清工具执行和回答生成；人工确认能核对操作对象与影响。\n\n- 浏览器断开不能取消执行，刷新后按游标追赶同一任务，不重新提交用户消息。\n- 显式停止持久化进度；继续沿用执行身份与写工具幂等键。\n- 服务重启恢复结果确定的任务；有未决工具副作用时阻止自动重试。\n- 实际工具开始、结束、待确认、失败与耗时应即时可见；不展示隐藏推理，也不虚构命令执行。\n- 人工确认直接以内联提问卡片展示服务端摘要、影响数和期限；单次点击允许或拒绝，不弹二次确认。暂不选择保留待确认。\n- 完成全部确认后结束等待，只执行已授权操作并更新状态，不追加消息或自动续跑原任务；用户明确排队的新消息仍按序处理。\n\n验收覆盖：无浏览器执行、游标追赶与去重、停止恢复、重启恢复、未知结果阻断、确认前阻断及拒绝后恢复、工具活动顺序、前端重连、授权卡片过期与并发保护。\n",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "docs/operations.md"
+      },
+      {
+        "id": "knowledge-disagreement",
+        "query": "知识库两份资料对同一件事说法不同，是否会自动按上传时间决定谁正确？",
+        "documents": [
+          {
+            "id": "00000004-0001-4000-8000-000000000001",
+            "title": "specs/029-rag-infrastructure/spec.md",
+            "filename": "spec.md",
+            "content": "有无工具模型提供受限 listwise 重排及证据精审。\n- 知识空间、来源版本、适用范围、有效时间、人工填写发布方和核实依据必须保留。不同范围/时间不直接判为矛盾。\n- 入库审查比较有原文证据的候选事实，保留冲突、审查覆盖状态和人工决策；不自动覆盖资料或按上传时间判真伪。\n- 同范围矛盾和模糊问题不输出无条件的单一结论。并列来源、请求澄清；所有引用由服务端绑定实际片段。\n- 默认不开启新增外部服务；明确配置后才连接。服务故障有超时与降级，原有同步/API 契约兼容。\n- 分阶段测试、提交；隔离工作区构建，避免覆盖运行中的 JAR。\n",
+            "score": 0.94
+          },
+          {
+            "id": "00000004-0002-4000-8000-000000000001",
+            "title": "specs/026-durable-agent-execution/spec.md",
+            "filename": "spec.md",
+            "content": "断后可继续；实时看清工具执行和回答生成；人工确认能核对操作对象与影响。\n\n- 浏览器断开不能取消执行，刷新后按游标追赶同一任务，不重新提交用户消息。\n- 显式停止持久化进度；继续沿用执行身份与写工具幂等键。\n- 服务重启恢复结果确定的任务；有未决工具副作用时阻止自动重试。\n- 实际工具开始、结束、待确认、失败与耗时应即时可见；不展示隐藏推理，也不虚构命令执行。\n- 人工确认直接以内联提问卡片展示服务端摘要、影响数和期限；单次点击允许或拒绝，不弹二次确认。暂不选择保留待确认。\n- 完成全部确认后结束等待，只执行已授权操作并更新状态，不追加消息或自动续跑原任务；用户明确排队的新消息仍按序处理。\n\n验收覆盖：无浏览器执行、游标追赶与去重、停止恢复、重启恢复、未知结果阻断、确认前阻断及拒绝后恢复、工具活动顺序、前端重连、授权卡片过期与并发保护。\n",
+            "score": 0.72
+          },
+          {
+            "id": "00000004-0003-4000-8000-000000000001",
+            "title": "specs/027-agent-user-interaction/spec.md",
+            "filename": "spec.md",
+            "content": "接处理新消息；发送框不再提供模式选择。\n- 不取消正在执行的工具；引导在下一次工具或模型调用前、或回答增量到达时交还控制并继续。\n- 队列展示待处理内容，可取消、编辑或转为当前对话的引导；编辑保留位置与附件，转为引导复用原记录避免重复执行。提问和人工确认期间不消耗队列。\n- 意图回答与引导不代表危险操作的人工授权。\n- 网络失败重试复用消息标识，不重复排队，文本和附件保持可重试。\n",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/029-rag-infrastructure/spec.md"
+      },
+      {
+        "id": "unknown-side-effect",
+        "query": "服务重启后，如果某个写工具是否已经生效还不能确定，系统会自动重试吗？",
+        "documents": [
+          {
+            "id": "00000005-0001-4000-8000-000000000001",
+            "title": "specs/026-durable-agent-execution/spec.md",
+            "filename": "spec.md",
+            "content": "断后可继续；实时看清工具执行和回答生成；人工确认能核对操作对象与影响。\n\n- 浏览器断开不能取消执行，刷新后按游标追赶同一任务，不重新提交用户消息。\n- 显式停止持久化进度；继续沿用执行身份与写工具幂等键。\n- 服务重启恢复结果确定的任务；有未决工具副作用时阻止自动重试。\n- 实际工具开始、结束、待确认、失败与耗时应即时可见；不展示隐藏推理，也不虚构命令执行。\n- 人工确认直接以内联提问卡片展示服务端摘要、影响数和期限；单次点击允许或拒绝，不弹二次确认。暂不选择保留待确认。\n- 完成全部确认后结束等待，只执行已授权操作并更新状态，不追加消息或自动续跑原任务；用户明确排队的新消息仍按序处理。\n\n验收覆盖：无浏览器执行、游标追赶与去重、停止恢复、重启恢复、未知结果阻断、确认前阻断及拒绝后恢复、工具活动顺序、前端重连、授权卡片过期与并发保护。\n",
+            "score": 0.94
+          },
+          {
+            "id": "00000005-0002-4000-8000-000000000001",
+            "title": "specs/027-agent-user-interaction/spec.md",
+            "filename": "spec.md",
+            "content": "接处理新消息；发送框不再提供模式选择。\n- 不取消正在执行的工具；引导在下一次工具或模型调用前、或回答增量到达时交还控制并继续。\n- 队列展示待处理内容，可取消、编辑或转为当前对话的引导；编辑保留位置与附件，转为引导复用原记录避免重复执行。提问和人工确认期间不消耗队列。\n- 意图回答与引导不代表危险操作的人工授权。\n- 网络失败重试复用消息标识，不重复排队，文本和附件保持可重试。\n",
+            "score": 0.72
+          },
+          {
+            "id": "00000005-0003-4000-8000-000000000001",
+            "title": "specs/010-rich-document-parsing/spec.md",
+            "filename": "spec.md",
+            "content": "00，`charCount > 0`、`chunkCount > 0`，检索可命中。\n2. **Given** 一个 `.docx`，**When** 上传，**Then** 同上，且段落按原有顺序拼接。\n3. **Given** 一个**扫描版 PDF**（无文本层），**When** 上传，**Then** 明确报错「未提取到文本（可能是扫描件）」，**不写入**文档记录与向量。\n4. **Given** 一个加密/损坏的 PDF，**When** 上传，**Then** 明确报错，不泄漏堆栈。\n5. **Given** 超大文件，**When** 上传，**Then** 仍由既有大小上限拦截（行为不变）。\n\n---\n\n### User Story 2 - 上传图片并检索（Priority: P2）\n\n作为用户，我希望把",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/026-durable-agent-execution/spec.md"
+      },
+      {
+        "id": "followup-wait",
+        "query": "助手正在等待我回答澄清问题或者人工确认时，还会消耗后面的消息队列吗？",
+        "documents": [
+          {
+            "id": "00000006-0001-4000-8000-000000000001",
+            "title": "specs/027-agent-user-interaction/spec.md",
+            "filename": "spec.md",
+            "content": "接处理新消息；发送框不再提供模式选择。\n- 不取消正在执行的工具；引导在下一次工具或模型调用前、或回答增量到达时交还控制并继续。\n- 队列展示待处理内容，可取消、编辑或转为当前对话的引导；编辑保留位置与附件，转为引导复用原记录避免重复执行。提问和人工确认期间不消耗队列。\n- 意图回答与引导不代表危险操作的人工授权。\n- 网络失败重试复用消息标识，不重复排队，文本和附件保持可重试。\n",
+            "score": 0.94
+          },
+          {
+            "id": "00000006-0002-4000-8000-000000000001",
+            "title": "specs/010-rich-document-parsing/spec.md",
+            "filename": "spec.md",
+            "content": "00，`charCount > 0`、`chunkCount > 0`，检索可命中。\n2. **Given** 一个 `.docx`，**When** 上传，**Then** 同上，且段落按原有顺序拼接。\n3. **Given** 一个**扫描版 PDF**（无文本层），**When** 上传，**Then** 明确报错「未提取到文本（可能是扫描件）」，**不写入**文档记录与向量。\n4. **Given** 一个加密/损坏的 PDF，**When** 上传，**Then** 明确报错，不泄漏堆栈。\n5. **Given** 超大文件，**When** 上传，**Then** 仍由既有大小上限拦截（行为不变）。\n\n---\n\n### User Story 2 - 上传图片并检索（Priority: P2）\n\n作为用户，我希望把",
+            "score": 0.72
+          },
+          {
+            "id": "00000006-0003-4000-8000-000000000001",
+            "title": "specs/015-single-user-auth/spec.md",
+            "filename": "spec.md",
+            "content": ". **Given** 输入正确用户名密码，**When** 提交，**Then** 登录成功、cookie 生效、跳到首页。\n4. **Given** 输入错误密码，**When** 提交，**Then** 明确提示「用户名或密码错误」，不透露是哪一个错。\n5. **Given** 已登录，**When** 点登出，**Then** 会话失效，后续请求重新 401。\n\n---\n\n### User Story 2 - 关闭认证时零影响（Priority: P1）\n\n作为本地开发的我，不想为了跑起来先配密码。\n\n**Why this priority**：这个项目的第一版定位就是「本地单用户」。\n如果默认开启认证，所有现有测试、所有文档里的启动命令全部失效。\n\n**Independent Test**：不设任何 `AUTH_*`",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/027-agent-user-interaction/spec.md"
+      },
+      {
+        "id": "scanned-pdf",
+        "query": "没有文字层的扫描版 PDF 能当作正常文档直接存进知识库吗？",
+        "documents": [
+          {
+            "id": "00000007-0001-4000-8000-000000000001",
+            "title": "specs/010-rich-document-parsing/spec.md",
+            "filename": "spec.md",
+            "content": "00，`charCount > 0`、`chunkCount > 0`，检索可命中。\n2. **Given** 一个 `.docx`，**When** 上传，**Then** 同上，且段落按原有顺序拼接。\n3. **Given** 一个**扫描版 PDF**（无文本层），**When** 上传，**Then** 明确报错「未提取到文本（可能是扫描件）」，**不写入**文档记录与向量。\n4. **Given** 一个加密/损坏的 PDF，**When** 上传，**Then** 明确报错，不泄漏堆栈。\n5. **Given** 超大文件，**When** 上传，**Then** 仍由既有大小上限拦截（行为不变）。\n\n---\n\n### User Story 2 - 上传图片并检索（Priority: P2）\n\n作为用户，我希望把",
+            "score": 0.94
+          },
+          {
+            "id": "00000007-0002-4000-8000-000000000001",
+            "title": "specs/015-single-user-auth/spec.md",
+            "filename": "spec.md",
+            "content": ". **Given** 输入正确用户名密码，**When** 提交，**Then** 登录成功、cookie 生效、跳到首页。\n4. **Given** 输入错误密码，**When** 提交，**Then** 明确提示「用户名或密码错误」，不透露是哪一个错。\n5. **Given** 已登录，**When** 点登出，**Then** 会话失效，后续请求重新 401。\n\n---\n\n### User Story 2 - 关闭认证时零影响（Priority: P1）\n\n作为本地开发的我，不想为了跑起来先配密码。\n\n**Why this priority**：这个项目的第一版定位就是「本地单用户」。\n如果默认开启认证，所有现有测试、所有文档里的启动命令全部失效。\n\n**Independent Test**：不设任何 `AUTH_*`",
+            "score": 0.72
+          },
+          {
+            "id": "00000007-0003-4000-8000-000000000001",
+            "title": "specs/013-calendar-month-view/spec.md",
+            "filename": "spec.md",
+            "content": "*Given** 某天有 5 条日程，**When** 渲染该格，**Then** 最多显示 3 条，其余折叠为「还有 2 条」。\n3. **Given** 一条重复日程在本月有 4 次发生，**When** 查看月视图，**Then** 4 个格子各出现一次，\n   且带重复标记。\n4. **Given** 用户在月视图点某一天的空白处，**When** 打开新建表单，**Then** 起始时间预填为该天（保持当前时刻的时:分或 9:00）。\n5. **Given** 点击某条日程，**When** 打开编辑，**Then** 与列表视图点开的编辑行为完全一致。\n\n---\n\n### User Story 2 - 切换月份（Priority: P1）\n\n作为用户，我希望用上一月/下一月/回到今天在月份之间移动，网格与数据同步更新。",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/010-rich-document-parsing/spec.md"
+      },
+      {
+        "id": "login-errors",
+        "query": "登录失败会区分用户名不存在和密码错误，分别告诉访客吗？",
+        "documents": [
+          {
+            "id": "00000008-0001-4000-8000-000000000001",
+            "title": "specs/015-single-user-auth/spec.md",
+            "filename": "spec.md",
+            "content": ". **Given** 输入正确用户名密码，**When** 提交，**Then** 登录成功、cookie 生效、跳到首页。\n4. **Given** 输入错误密码，**When** 提交，**Then** 明确提示「用户名或密码错误」，不透露是哪一个错。\n5. **Given** 已登录，**When** 点登出，**Then** 会话失效，后续请求重新 401。\n\n---\n\n### User Story 2 - 关闭认证时零影响（Priority: P1）\n\n作为本地开发的我，不想为了跑起来先配密码。\n\n**Why this priority**：这个项目的第一版定位就是「本地单用户」。\n如果默认开启认证，所有现有测试、所有文档里的启动命令全部失效。\n\n**Independent Test**：不设任何 `AUTH_*`",
+            "score": 0.94
+          },
+          {
+            "id": "00000008-0002-4000-8000-000000000001",
+            "title": "specs/013-calendar-month-view/spec.md",
+            "filename": "spec.md",
+            "content": "*Given** 某天有 5 条日程，**When** 渲染该格，**Then** 最多显示 3 条，其余折叠为「还有 2 条」。\n3. **Given** 一条重复日程在本月有 4 次发生，**When** 查看月视图，**Then** 4 个格子各出现一次，\n   且带重复标记。\n4. **Given** 用户在月视图点某一天的空白处，**When** 打开新建表单，**Then** 起始时间预填为该天（保持当前时刻的时:分或 9:00）。\n5. **Given** 点击某条日程，**When** 打开编辑，**Then** 与列表视图点开的编辑行为完全一致。\n\n---\n\n### User Story 2 - 切换月份（Priority: P1）\n\n作为用户，我希望用上一月/下一月/回到今天在月份之间移动，网格与数据同步更新。",
+            "score": 0.72
+          },
+          {
+            "id": "00000008-0003-4000-8000-000000000001",
+            "title": "specs/021-memory-layering/spec.md",
+            "filename": "spec.md",
+            "content": "的 `content_hash` 唯一键对「周报每周五下午交」\n   与「周报改成每周五下班前交」完全无效，两条语义冲突的约束会同时注入。\n\n## 决策\n\n### D1 分层，而不是召回\n\n新增 `memory.pinned`。常驻条目**无条件注入并优先占预算**，其余仍在预算内全量填充。\n注入集合不因相似度变小 —— 这是与「向量召回」的关键区别。\n\n### D2 向量只用于两件事\n\n- **排序微调**：决定预算内**先放谁**，不决定「放不放」；\n- **近重复判定**：写入时若与既有条目余弦 ≥ 0.92，旧条目记 `superseded_by`（不物理删除）。\n\n排序降级链：向量余弦 → 字符二元组重叠 → 最近修改优先。任何一环失败都不影响注入。\n\n### D3 常驻意图随内容转移\n\n旧条目被取代时，如果它是常驻的，新",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/015-single-user-auth/spec.md"
+      },
+      {
+        "id": "repeat-calendar",
+        "query": "月历如何展示在同一个月重复发生四次的日程？",
+        "documents": [
+          {
+            "id": "00000009-0001-4000-8000-000000000001",
+            "title": "specs/013-calendar-month-view/spec.md",
+            "filename": "spec.md",
+            "content": "*Given** 某天有 5 条日程，**When** 渲染该格，**Then** 最多显示 3 条，其余折叠为「还有 2 条」。\n3. **Given** 一条重复日程在本月有 4 次发生，**When** 查看月视图，**Then** 4 个格子各出现一次，\n   且带重复标记。\n4. **Given** 用户在月视图点某一天的空白处，**When** 打开新建表单，**Then** 起始时间预填为该天（保持当前时刻的时:分或 9:00）。\n5. **Given** 点击某条日程，**When** 打开编辑，**Then** 与列表视图点开的编辑行为完全一致。\n\n---\n\n### User Story 2 - 切换月份（Priority: P1）\n\n作为用户，我希望用上一月/下一月/回到今天在月份之间移动，网格与数据同步更新。",
+            "score": 0.94
+          },
+          {
+            "id": "00000009-0002-4000-8000-000000000001",
+            "title": "specs/021-memory-layering/spec.md",
+            "filename": "spec.md",
+            "content": "的 `content_hash` 唯一键对「周报每周五下午交」\n   与「周报改成每周五下班前交」完全无效，两条语义冲突的约束会同时注入。\n\n## 决策\n\n### D1 分层，而不是召回\n\n新增 `memory.pinned`。常驻条目**无条件注入并优先占预算**，其余仍在预算内全量填充。\n注入集合不因相似度变小 —— 这是与「向量召回」的关键区别。\n\n### D2 向量只用于两件事\n\n- **排序微调**：决定预算内**先放谁**，不决定「放不放」；\n- **近重复判定**：写入时若与既有条目余弦 ≥ 0.92，旧条目记 `superseded_by`（不物理删除）。\n\n排序降级链：向量余弦 → 字符二元组重叠 → 最近修改优先。任何一环失败都不影响注入。\n\n### D3 常驻意图随内容转移\n\n旧条目被取代时，如果它是常驻的，新",
+            "score": 0.72
+          },
+          {
+            "id": "00000009-0003-4000-8000-000000000001",
+            "title": "docs/mcp.md",
+            "filename": "mcp.md",
+            "content": "# MCP 指南\n\nPersonal AI OS 同时支持 MCP Client 和 MCP Server。两个方向互不依赖，默认都关闭。\n\n本地 Maven / JAR 启动时会自动读取项目根目录 `.env`。外部 stdio 服务在后端所在机器上运行：\nfilesystem 示例需要 Node.js / npx，fetch 示例需要 uv / uvx；这些命令必须在后端进程的 PATH 中。\n\n## 1. 作为 MCP Client\n\n这个模式让 Personal AI OS 的助手调用外部 MCP Server。配置只从环境变量读取，避免把命令、参数和密钥写进数据库。\n\n```bash\nM",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/013-calendar-month-view/spec.md"
+      },
+      {
+        "id": "pinned-memory",
+        "query": "有些重要偏好不能因为相似度低而漏掉，系统如何让这些记忆始终参与上下文？",
+        "documents": [
+          {
+            "id": "0000000a-0001-4000-8000-000000000001",
+            "title": "specs/021-memory-layering/spec.md",
+            "filename": "spec.md",
+            "content": "的 `content_hash` 唯一键对「周报每周五下午交」\n   与「周报改成每周五下班前交」完全无效，两条语义冲突的约束会同时注入。\n\n## 决策\n\n### D1 分层，而不是召回\n\n新增 `memory.pinned`。常驻条目**无条件注入并优先占预算**，其余仍在预算内全量填充。\n注入集合不因相似度变小 —— 这是与「向量召回」的关键区别。\n\n### D2 向量只用于两件事\n\n- **排序微调**：决定预算内**先放谁**，不决定「放不放」；\n- **近重复判定**：写入时若与既有条目余弦 ≥ 0.92，旧条目记 `superseded_by`（不物理删除）。\n\n排序降级链：向量余弦 → 字符二元组重叠 → 最近修改优先。任何一环失败都不影响注入。\n\n### D3 常驻意图随内容转移\n\n旧条目被取代时，如果它是常驻的，新",
+            "score": 0.94
+          },
+          {
+            "id": "0000000a-0002-4000-8000-000000000001",
+            "title": "docs/mcp.md",
+            "filename": "mcp.md",
+            "content": "# MCP 指南\n\nPersonal AI OS 同时支持 MCP Client 和 MCP Server。两个方向互不依赖，默认都关闭。\n\n本地 Maven / JAR 启动时会自动读取项目根目录 `.env`。外部 stdio 服务在后端所在机器上运行：\nfilesystem 示例需要 Node.js / npx，fetch 示例需要 uv / uvx；这些命令必须在后端进程的 PATH 中。\n\n## 1. 作为 MCP Client\n\n这个模式让 Personal AI OS 的助手调用外部 MCP Server。配置只从环境变量读取，避免把命令、参数和密钥写进数据库。\n\n```bash\nM",
+            "score": 0.72
+          },
+          {
+            "id": "0000000a-0003-4000-8000-000000000001",
+            "title": "specs/003-task-agent/spec.md",
+            "filename": "spec.md",
+            "content": "ority**：一旦失守就是**不可逆的数据丢失**。这属于正确性与安全边界，不是体验优化。\n\n**Independent Test**：让助手执行删除，观察任务**仍然存在**且系统产生一条待确认记录；再让助手自行尝试「确认」，观察它**没有任何可用途径**完成删除。\n\n**Acceptance Scenarios**：\n\n1. **Given** 存在一个任务，**When** 助手请求删除它，**Then** 任务仍然存在，系统返回「需要确认」并生成一条待确认记录。\n2. **Given** 已生成待确认记录，**When** 人类用户在界面上确认，**Then** 任务被真正删除，记录状态变为已确认。\n3. **Given** 已生成待确认记录，**When** 人类用户取消，**Then** 任务不受影响，记录状态变",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/021-memory-layering/spec.md"
+      },
+      {
+        "id": "mcp-directions",
+        "query": "作为客户端调用外部 MCP 和把自身暴露成 MCP Server，这两个方向是否必须一起启用？",
+        "documents": [
+          {
+            "id": "0000000b-0001-4000-8000-000000000001",
+            "title": "docs/mcp.md",
+            "filename": "mcp.md",
+            "content": "# MCP 指南\n\nPersonal AI OS 同时支持 MCP Client 和 MCP Server。两个方向互不依赖，默认都关闭。\n\n本地 Maven / JAR 启动时会自动读取项目根目录 `.env`。外部 stdio 服务在后端所在机器上运行：\nfilesystem 示例需要 Node.js / npx，fetch 示例需要 uv / uvx；这些命令必须在后端进程的 PATH 中。\n\n## 1. 作为 MCP Client\n\n这个模式让 Personal AI OS 的助手调用外部 MCP Server。配置只从环境变量读取，避免把命令、参数和密钥写进数据库。\n\n```bash\nM",
+            "score": 0.94
+          },
+          {
+            "id": "0000000b-0002-4000-8000-000000000001",
+            "title": "specs/003-task-agent/spec.md",
+            "filename": "spec.md",
+            "content": "ority**：一旦失守就是**不可逆的数据丢失**。这属于正确性与安全边界，不是体验优化。\n\n**Independent Test**：让助手执行删除，观察任务**仍然存在**且系统产生一条待确认记录；再让助手自行尝试「确认」，观察它**没有任何可用途径**完成删除。\n\n**Acceptance Scenarios**：\n\n1. **Given** 存在一个任务，**When** 助手请求删除它，**Then** 任务仍然存在，系统返回「需要确认」并生成一条待确认记录。\n2. **Given** 已生成待确认记录，**When** 人类用户在界面上确认，**Then** 任务被真正删除，记录状态变为已确认。\n3. **Given** 已生成待确认记录，**When** 人类用户取消，**Then** 任务不受影响，记录状态变",
+            "score": 0.72
+          },
+          {
+            "id": "0000000b-0003-4000-8000-000000000001",
+            "title": "docs/architecture.md",
+            "filename": "architecture.md",
+            "content": "asks）\n├── compose.yml  本地基础设施编排\n└── .specify/    Spec Kit 配置与项目宪法\n```\n\n### 为什么是模块化单体，而不是微服务\n\n当前只有一个部署单元、一个使用者。拆分微服务会立刻引入服务发现、分布式追踪、跨服务事务与部署编排的复杂度，而收益为零。宪法原则 I 明确禁止在第一版引入微服务。\n\n### 为什么后端不拆 Maven 多模块\n\n模块边界落在 **Java 包**上而非 Maven module 上。理由：多模块聚合会带来 POM 继承与依赖管理的维护成本，而对「单部署单元」没有任何可观测收益。待模块数量增长或需要独立发布时，可按包无损迁移为多模块。\n\n## 3. 后端模块划分\n\n根包 `com.personalos`，按**业务模块**分包（packag",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "docs/mcp.md"
+      },
+      {
+        "id": "human-delete",
+        "query": "AI 能自行代替用户确认删除任务吗，还是必须由人在界面操作？",
+        "documents": [
+          {
+            "id": "0000000c-0001-4000-8000-000000000001",
+            "title": "specs/003-task-agent/spec.md",
+            "filename": "spec.md",
+            "content": "ority**：一旦失守就是**不可逆的数据丢失**。这属于正确性与安全边界，不是体验优化。\n\n**Independent Test**：让助手执行删除，观察任务**仍然存在**且系统产生一条待确认记录；再让助手自行尝试「确认」，观察它**没有任何可用途径**完成删除。\n\n**Acceptance Scenarios**：\n\n1. **Given** 存在一个任务，**When** 助手请求删除它，**Then** 任务仍然存在，系统返回「需要确认」并生成一条待确认记录。\n2. **Given** 已生成待确认记录，**When** 人类用户在界面上确认，**Then** 任务被真正删除，记录状态变为已确认。\n3. **Given** 已生成待确认记录，**When** 人类用户取消，**Then** 任务不受影响，记录状态变",
+            "score": 0.94
+          },
+          {
+            "id": "0000000c-0002-4000-8000-000000000001",
+            "title": "docs/architecture.md",
+            "filename": "architecture.md",
+            "content": "asks）\n├── compose.yml  本地基础设施编排\n└── .specify/    Spec Kit 配置与项目宪法\n```\n\n### 为什么是模块化单体，而不是微服务\n\n当前只有一个部署单元、一个使用者。拆分微服务会立刻引入服务发现、分布式追踪、跨服务事务与部署编排的复杂度，而收益为零。宪法原则 I 明确禁止在第一版引入微服务。\n\n### 为什么后端不拆 Maven 多模块\n\n模块边界落在 **Java 包**上而非 Maven module 上。理由：多模块聚合会带来 POM 继承与依赖管理的维护成本，而对「单部署单元」没有任何可观测收益。待模块数量增长或需要独立发布时，可按包无损迁移为多模块。\n\n## 3. 后端模块划分\n\n根包 `com.personalos`，按**业务模块**分包（packag",
+            "score": 0.72
+          },
+          {
+            "id": "0000000c-0003-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "；不可路由、连接失败均记录 poll_fallback，仍返回已接受的数据库任务。\n消费者只唤醒数据库 worker，重复通知不会绕过原子领取或租约；ACK 只代表通知已处理，不代表索引完成。\n消息最多保留 60 秒/1000 条，通知过期仍由数据库轮询恢复；文件和模型密钥不进入消息。\n\n## 可选私有 S3 附件存储\n\n`compose.integrations.yml --profile storage` 使用 SeaweedFS 4.51，端口 8333 仅绑定回环。\n在本地环境文件设置随机 `S3_ACCESS_KEY`、`S3_SECRET_KEY`；mini 自动创建 `S3_BUCKET`。\n应用设置 `S3_ENABLED=true`、端点、区域、bucket、唯一 `S3_NAMESPACE` 和凭据。\n未指定",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/003-task-agent/spec.md"
+      },
+      {
+        "id": "monolith",
+        "query": "为什么目前没有把这个个人助手拆成一批微服务？",
+        "documents": [
+          {
+            "id": "0000000d-0001-4000-8000-000000000001",
+            "title": "docs/architecture.md",
+            "filename": "architecture.md",
+            "content": "asks）\n├── compose.yml  本地基础设施编排\n└── .specify/    Spec Kit 配置与项目宪法\n```\n\n### 为什么是模块化单体，而不是微服务\n\n当前只有一个部署单元、一个使用者。拆分微服务会立刻引入服务发现、分布式追踪、跨服务事务与部署编排的复杂度，而收益为零。宪法原则 I 明确禁止在第一版引入微服务。\n\n### 为什么后端不拆 Maven 多模块\n\n模块边界落在 **Java 包**上而非 Maven module 上。理由：多模块聚合会带来 POM 继承与依赖管理的维护成本，而对「单部署单元」没有任何可观测收益。待模块数量增长或需要独立发布时，可按包无损迁移为多模块。\n\n## 3. 后端模块划分\n\n根包 `com.personalos`，按**业务模块**分包（packag",
+            "score": 0.94
+          },
+          {
+            "id": "0000000d-0002-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "；不可路由、连接失败均记录 poll_fallback，仍返回已接受的数据库任务。\n消费者只唤醒数据库 worker，重复通知不会绕过原子领取或租约；ACK 只代表通知已处理，不代表索引完成。\n消息最多保留 60 秒/1000 条，通知过期仍由数据库轮询恢复；文件和模型密钥不进入消息。\n\n## 可选私有 S3 附件存储\n\n`compose.integrations.yml --profile storage` 使用 SeaweedFS 4.51，端口 8333 仅绑定回环。\n在本地环境文件设置随机 `S3_ACCESS_KEY`、`S3_SECRET_KEY`；mini 自动创建 `S3_BUCKET`。\n应用设置 `S3_ENABLED=true`、端点、区域、bucket、唯一 `S3_NAMESPACE` 和凭据。\n未指定",
+            "score": 0.72
+          },
+          {
+            "id": "0000000d-0003-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "is → 模型。\nRedis 只保存文本/选项的摘要与向量，命名空间按用户和部署隔离；模型端点、名称和请求选项参与隔离。\n模型服务在同名模型下更新时应修改 `app.embedding-cache.revision`，防止复用旧空间向量。\nRedis 故障在短超时后回到上游模型，错误记录在 `personalos.embedding.redis.errors`；共享命中标记为 shared_hit。\n\n## 可选 RabbitMQ 任务通知\n\n独立进程部署及通知配置见 [独立 worker 与提醒广播](distributed-workers.md)。\n\n`compose.integrations.yml --profile queue` 启动 RabbitMQ 4.4.0，AMQP 与管理端口仅绑定回环地址。\n设置 `RABBITMQ_ENABL",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "docs/architecture.md"
+      },
+      {
+        "id": "queue-failure",
+        "query": "RabbitMQ 暂时不可用时，已经接受的文档索引任务会直接丢失吗？",
+        "documents": [
+          {
+            "id": "0000000e-0001-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "；不可路由、连接失败均记录 poll_fallback，仍返回已接受的数据库任务。\n消费者只唤醒数据库 worker，重复通知不会绕过原子领取或租约；ACK 只代表通知已处理，不代表索引完成。\n消息最多保留 60 秒/1000 条，通知过期仍由数据库轮询恢复；文件和模型密钥不进入消息。\n\n## 可选私有 S3 附件存储\n\n`compose.integrations.yml --profile storage` 使用 SeaweedFS 4.51，端口 8333 仅绑定回环。\n在本地环境文件设置随机 `S3_ACCESS_KEY`、`S3_SECRET_KEY`；mini 自动创建 `S3_BUCKET`。\n应用设置 `S3_ENABLED=true`、端点、区域、bucket、唯一 `S3_NAMESPACE` 和凭据。\n未指定",
+            "score": 0.94
+          },
+          {
+            "id": "0000000e-0002-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "is → 模型。\nRedis 只保存文本/选项的摘要与向量，命名空间按用户和部署隔离；模型端点、名称和请求选项参与隔离。\n模型服务在同名模型下更新时应修改 `app.embedding-cache.revision`，防止复用旧空间向量。\nRedis 故障在短超时后回到上游模型，错误记录在 `personalos.embedding.redis.errors`；共享命中标记为 shared_hit。\n\n## 可选 RabbitMQ 任务通知\n\n独立进程部署及通知配置见 [独立 worker 与提醒广播](distributed-workers.md)。\n\n`compose.integrations.yml --profile queue` 启动 RabbitMQ 4.4.0，AMQP 与管理端口仅绑定回环地址。\n设置 `RABBITMQ_ENABL",
+            "score": 0.72
+          },
+          {
+            "id": "0000000e-0003-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "清空时退回 PostgreSQL 召回。`GET /api/v1/knowledge/search-index` 查看积压；\n`POST /api/v1/knowledge/search-index/reindex` 排队重建当前所有片段。换向量维度应使用新索引名。\n索引是可重建投影；删除索引卷不会删除 PostgreSQL 资料。`personalos.knowledge.search.pending/projections` 记录积压与同步结果。\n\n## RAG 管线与资料冲突治理\n\n默认启用 `app.knowledge.rag.enabled`：保留原问题，再生成至多两个改写；每路最多 40 个候选，RRF 融合后重排，\n对多来源片段精审，再截取最终结果。辅助调用使用当前配置的无工具模型，不读对话历史；两条工作线程、四项等待上",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "docs/operations.md"
+      },
+      {
+        "id": "redis-failure",
+        "query": "共享嵌入缓存的 Redis 连接失败后，嵌入请求会怎样处理？",
+        "documents": [
+          {
+            "id": "0000000f-0001-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "is → 模型。\nRedis 只保存文本/选项的摘要与向量，命名空间按用户和部署隔离；模型端点、名称和请求选项参与隔离。\n模型服务在同名模型下更新时应修改 `app.embedding-cache.revision`，防止复用旧空间向量。\nRedis 故障在短超时后回到上游模型，错误记录在 `personalos.embedding.redis.errors`；共享命中标记为 shared_hit。\n\n## 可选 RabbitMQ 任务通知\n\n独立进程部署及通知配置见 [独立 worker 与提醒广播](distributed-workers.md)。\n\n`compose.integrations.yml --profile queue` 启动 RabbitMQ 4.4.0，AMQP 与管理端口仅绑定回环地址。\n设置 `RABBITMQ_ENABL",
+            "score": 0.94
+          },
+          {
+            "id": "0000000f-0002-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "清空时退回 PostgreSQL 召回。`GET /api/v1/knowledge/search-index` 查看积压；\n`POST /api/v1/knowledge/search-index/reindex` 排队重建当前所有片段。换向量维度应使用新索引名。\n索引是可重建投影；删除索引卷不会删除 PostgreSQL 资料。`personalos.knowledge.search.pending/projections` 记录积压与同步结果。\n\n## RAG 管线与资料冲突治理\n\n默认启用 `app.knowledge.rag.enabled`：保留原问题，再生成至多两个改写；每路最多 40 个候选，RRF 融合后重排，\n对多来源片段精审，再截取最终结果。辅助调用使用当前配置的无工具模型，不读对话历史；两条工作线程、四项等待上",
+            "score": 0.72
+          },
+          {
+            "id": "0000000f-0003-4000-8000-000000000001",
+            "title": "specs/025-production-security/spec.md",
+            "filename": "spec.md",
+            "content": "。开发环境必须继续支持 `http://localhost` 和默认关闭认证。\n\n## 目标\n\n- 提供独立的生产 profile 和 Compose 文件。\n- 生产启动对认证、CSRF、Secure Cookie、数据库密码和登录密码 fail closed。\n- 让 SPA 的普通请求、上传和 SSE 都能携带会话 CSRF token。\n- 生产只发布 Caddy 的 80/443，数据库和应用服务留在内部网络。\n- 记录域名、证书和密钥由部署者配置，不在本地申请或暴露服务。\n\n## 非目标\n\n- 多用户、角色权限、账户自助改密。\n- 自动修改现有开发数据库密码或迁移本地卷到生产卷。\n- 代替云防火墙、WAF、备份和主机补丁管理。\n\n## 约束\n\n- 本地默认值保持兼容：认证和 CSRF 默认关闭，Cookie Secure",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "docs/operations.md"
+      },
+      {
+        "id": "vector-dimension",
+        "query": "切换到向量维度不同的模型以后，OpenSearch 可以直接继续用原来的索引吗？",
+        "documents": [
+          {
+            "id": "00000010-0001-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "清空时退回 PostgreSQL 召回。`GET /api/v1/knowledge/search-index` 查看积压；\n`POST /api/v1/knowledge/search-index/reindex` 排队重建当前所有片段。换向量维度应使用新索引名。\n索引是可重建投影；删除索引卷不会删除 PostgreSQL 资料。`personalos.knowledge.search.pending/projections` 记录积压与同步结果。\n\n## RAG 管线与资料冲突治理\n\n默认启用 `app.knowledge.rag.enabled`：保留原问题，再生成至多两个改写；每路最多 40 个候选，RRF 融合后重排，\n对多来源片段精审，再截取最终结果。辅助调用使用当前配置的无工具模型，不读对话历史；两条工作线程、四项等待上",
+            "score": 0.94
+          },
+          {
+            "id": "00000010-0002-4000-8000-000000000001",
+            "title": "specs/025-production-security/spec.md",
+            "filename": "spec.md",
+            "content": "。开发环境必须继续支持 `http://localhost` 和默认关闭认证。\n\n## 目标\n\n- 提供独立的生产 profile 和 Compose 文件。\n- 生产启动对认证、CSRF、Secure Cookie、数据库密码和登录密码 fail closed。\n- 让 SPA 的普通请求、上传和 SSE 都能携带会话 CSRF token。\n- 生产只发布 Caddy 的 80/443，数据库和应用服务留在内部网络。\n- 记录域名、证书和密钥由部署者配置，不在本地申请或暴露服务。\n\n## 非目标\n\n- 多用户、角色权限、账户自助改密。\n- 自动修改现有开发数据库密码或迁移本地卷到生产卷。\n- 代替云防火墙、WAF、备份和主机补丁管理。\n\n## 约束\n\n- 本地默认值保持兼容：认证和 CSRF 默认关闭，Cookie Secure",
+            "score": 0.72
+          },
+          {
+            "id": "00000010-0003-4000-8000-000000000001",
+            "title": "specs/014-task-tags/spec.md",
+            "filename": "spec.md",
+            "content": "存，**Then** 只存一个 `工作`（去空白后去重）。\n5. **Given** 输入 6 个标签，**When** 保存，**Then** 明确报错「最多 5 个标签」，不静默截断。\n\n---\n\n### User Story 2 - 按标签筛选（Priority: P1）\n\n作为用户，我在任务列表上方选择一个标签，只看该标签的任务。\n\n**Independent Test**：造两个不同标签的任务，选其中一个标签，列表只剩对应任务，`total` 同步。\n\n**Acceptance Scenarios**：\n\n1. **Given** 任务分布在不同标签，**When** 选择某标签，**Then** 只返回含该标签的任务。\n2. **Given** 已按标签筛选，**When** 清空筛选，**Then** 回到",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "docs/operations.md"
+      },
+      {
+        "id": "production-csrf",
+        "query": "生产部署能关闭认证、CSRF 或 Secure Cookie 后仍正常启动吗？",
+        "documents": [
+          {
+            "id": "00000011-0001-4000-8000-000000000001",
+            "title": "specs/025-production-security/spec.md",
+            "filename": "spec.md",
+            "content": "。开发环境必须继续支持 `http://localhost` 和默认关闭认证。\n\n## 目标\n\n- 提供独立的生产 profile 和 Compose 文件。\n- 生产启动对认证、CSRF、Secure Cookie、数据库密码和登录密码 fail closed。\n- 让 SPA 的普通请求、上传和 SSE 都能携带会话 CSRF token。\n- 生产只发布 Caddy 的 80/443，数据库和应用服务留在内部网络。\n- 记录域名、证书和密钥由部署者配置，不在本地申请或暴露服务。\n\n## 非目标\n\n- 多用户、角色权限、账户自助改密。\n- 自动修改现有开发数据库密码或迁移本地卷到生产卷。\n- 代替云防火墙、WAF、备份和主机补丁管理。\n\n## 约束\n\n- 本地默认值保持兼容：认证和 CSRF 默认关闭，Cookie Secure",
+            "score": 0.94
+          },
+          {
+            "id": "00000011-0002-4000-8000-000000000001",
+            "title": "specs/014-task-tags/spec.md",
+            "filename": "spec.md",
+            "content": "存，**Then** 只存一个 `工作`（去空白后去重）。\n5. **Given** 输入 6 个标签，**When** 保存，**Then** 明确报错「最多 5 个标签」，不静默截断。\n\n---\n\n### User Story 2 - 按标签筛选（Priority: P1）\n\n作为用户，我在任务列表上方选择一个标签，只看该标签的任务。\n\n**Independent Test**：造两个不同标签的任务，选其中一个标签，列表只剩对应任务，`total` 同步。\n\n**Acceptance Scenarios**：\n\n1. **Given** 任务分布在不同标签，**When** 选择某标签，**Then** 只返回含该标签的任务。\n2. **Given** 已按标签筛选，**When** 清空筛选，**Then** 回到",
+            "score": 0.72
+          },
+          {
+            "id": "00000011-0003-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "ackups/具体文件.tar\n```\n\n`verify` 验证外层 SHA-256、内部文件清单和逐文件哈希、pg_restore 目录；`drill` 额外在随机临时数据库执行完整恢复与关键表查询，再删除临时库，绝不接收运行库作为目标。目录验证不能替代恢复演练；建议每周执行一次 drill。业务库本身不受演练影响。\n\n可设置 `BACKUP_DIR`、`DB_CONTAINER`、`BACKUP_UPLOAD_DIR`。附件路径默认 `backend/data/uploads`，也读取 `AI_CHAT_UPLOAD_DIR`。Compose 应用模式使用同一宿主机目录绑定，容器重建后附件仍保留；已有旧容器中的附件应先用 `docker cp` 拷出再切换挂载。如直接备份容器内目录，设置 `BACKUP_BACKEND_CONTA",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/025-production-security/spec.md"
+      },
+      {
+        "id": "task-tags",
+        "query": "能不能只查看带有某个标签的任务，而不是每次浏览所有任务？",
+        "documents": [
+          {
+            "id": "00000012-0001-4000-8000-000000000001",
+            "title": "specs/014-task-tags/spec.md",
+            "filename": "spec.md",
+            "content": "存，**Then** 只存一个 `工作`（去空白后去重）。\n5. **Given** 输入 6 个标签，**When** 保存，**Then** 明确报错「最多 5 个标签」，不静默截断。\n\n---\n\n### User Story 2 - 按标签筛选（Priority: P1）\n\n作为用户，我在任务列表上方选择一个标签，只看该标签的任务。\n\n**Independent Test**：造两个不同标签的任务，选其中一个标签，列表只剩对应任务，`total` 同步。\n\n**Acceptance Scenarios**：\n\n1. **Given** 任务分布在不同标签，**When** 选择某标签，**Then** 只返回含该标签的任务。\n2. **Given** 已按标签筛选，**When** 清空筛选，**Then** 回到",
+            "score": 0.94
+          },
+          {
+            "id": "00000012-0002-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "ackups/具体文件.tar\n```\n\n`verify` 验证外层 SHA-256、内部文件清单和逐文件哈希、pg_restore 目录；`drill` 额外在随机临时数据库执行完整恢复与关键表查询，再删除临时库，绝不接收运行库作为目标。目录验证不能替代恢复演练；建议每周执行一次 drill。业务库本身不受演练影响。\n\n可设置 `BACKUP_DIR`、`DB_CONTAINER`、`BACKUP_UPLOAD_DIR`。附件路径默认 `backend/data/uploads`，也读取 `AI_CHAT_UPLOAD_DIR`。Compose 应用模式使用同一宿主机目录绑定，容器重建后附件仍保留；已有旧容器中的附件应先用 `docker cp` 拷出再切换挂载。如直接备份容器内目录，设置 `BACKUP_BACKEND_CONTA",
+            "score": 0.72
+          },
+          {
+            "id": "00000012-0003-4000-8000-000000000001",
+            "title": "docs/operations.md",
+            "filename": "operations.md",
+            "content": "时先停止后端；Compose 部署执行 `docker compose stop backend`，备份后再 `docker compose start backend`。数据库快照本身由 pg_dump 保证，但数据库与附件跨资源一致需要暂停应用写入；脚本不会擅自停服务。\n\n```bash\n./scripts/dev/backup-db.sh\n# 输出 backups/personal-ai-os-日期-随机串.tar 及 .sha256，默认永久保留\nBACKUP_RETAIN=30 ./scripts/dev/backup-db.sh\npython3 scripts/dev/backup.py verify backups/具体文件.tar\npython3 scripts/dev/backup.py drill ba",
+            "score": 0.1
+          }
+        ],
+        "expectedSource": "specs/014-task-tags/spec.md"
+      }
+    ]
+  },
+  "expected": {
+    "filenames": [
+      "untitled.txt",
+      "untitled.txt",
+      "untitled.txt",
+      "x.TXT",
+      "x.pdf",
+      "untitled.txt",
+      ".hidden",
+      "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中.pdf",
+      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    ],
+    "keywords": [
+      [
+        "2pc",
+        "3pc"
+      ],
+      [
+        "ip_hash",
+        "c++",
+        "c#"
+      ],
+      [
+        "object.defineproperty",
+        "foo.bar"
+      ],
+      [],
+      [],
+      [
+        "brin"
+      ],
+      [],
+      [
+        "gin",
+        "b-tree"
+      ],
+      [],
+      [],
+      [
+        "hash"
+      ],
+      [],
+      [
+        "vue3",
+        "computed"
+      ],
+      [
+        "vue3",
+        "object.defineproperty"
+      ],
+      [
+        "ref",
+        "reactive"
+      ],
+      [
+        "vue3"
+      ],
+      [
+        "watch"
+      ],
+      [],
+      [
+        "synchronized",
+        "io"
+      ],
+      [],
+      [],
+      [
+        "threadlocal"
+      ],
+      [],
+      [],
+      [
+        "redis"
+      ],
+      [],
+      [],
+      [
+        "redis"
+      ],
+      [],
+      [
+        "http"
+      ],
+      [],
+      [],
+      [
+        "http"
+      ],
+      [
+        "mvcc"
+      ],
+      [],
+      [],
+      [
+        "catch"
+      ],
+      [
+        "id"
+      ],
+      [],
+      [
+        "goroutine"
+      ],
+      [
+        "work",
+        "stealing"
+      ],
+      [],
+      [],
+      [
+        "io"
+      ],
+      [],
+      [],
+      [],
+      [],
+      [
+        "worker",
+        "pool"
+      ],
+      [],
+      [
+        "gzip"
+      ],
+      [],
+      [
+        "ip"
+      ],
+      [],
+      [],
+      [
+        "basic",
+        "https"
+      ],
+      [
+        "explain",
+        "type"
+      ],
+      [
+        "innodb"
+      ],
+      [],
+      [],
+      [
+        "join"
+      ],
+      [
+        "sql"
+      ],
+      [
+        "namespace",
+        "cgroup"
+      ],
+      [
+        "cpu"
+      ],
+      [],
+      [
+        "docker"
+      ],
+      [
+        "unionfs"
+      ],
+      [],
+      [],
+      [
+        "dockerfile"
+      ],
+      [
+        "transform",
+        "opacity"
+      ],
+      [],
+      [
+        "offsetwidth"
+      ],
+      [],
+      [],
+      [],
+      [],
+      [
+        "transform",
+        "left"
+      ],
+      [],
+      [],
+      [
+        "kafka",
+        "isr"
+      ],
+      [
+        "broker",
+        "topic",
+        "partition"
+      ],
+      [],
+      [],
+      [],
+      [
+        "page",
+        "cache",
+        "kafka"
+      ],
+      [],
+      [
+        "offset"
+      ],
+      [],
+      [
+        "gil"
+      ],
+      [
+        "cpu",
+        "python"
+      ],
+      [],
+      [
+        "fastapi",
+        "async",
+        "def"
+      ],
+      [],
+      [
+        "await"
+      ],
+      [
+        "sleep"
+      ],
+      [
+        "socket"
+      ],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [
+        "pick"
+      ],
+      [
+        "never"
+      ],
+      [
+        "unknown",
+        "any"
+      ],
+      [
+        "void",
+        "undefined"
+      ],
+      [],
+      [
+        "cap"
+      ],
+      [
+        "raft",
+        "leader"
+      ],
+      [],
+      [],
+      [
+        "2pc",
+        "3pc"
+      ],
+      [],
+      [],
+      [
+        "bug"
+      ],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [
+        "location"
+      ],
+      [
+        "proxy_pass"
+      ],
+      [
+        "upstream",
+        "backup"
+      ],
+      [],
+      [],
+      [
+        "worker_connections",
+        "keepalive"
+      ],
+      [],
+      [],
+      [
+        "hash"
+      ],
+      [
+        "ip"
+      ],
+      [],
+      [],
+      [
+        "prometheus"
+      ],
+      [],
+      [],
+      [],
+      [
+        "pdf"
+      ],
+      [],
+      [],
+      [],
+      [
+        "mcp",
+        "server"
+      ],
+      [
+        "ai"
+      ],
+      [],
+      [
+        "rabbitmq"
+      ],
+      [
+        "redis"
+      ],
+      [
+        "opensearch"
+      ],
+      [
+        "csrf",
+        "secure",
+        "cookie"
+      ],
+      []
+    ],
+    "splits": [
+      [],
+      [],
+      [],
+      [
+        "【章节：A】\n# A\n正文内容。",
+        "【章节：A > B】\n## B\n第二节正文。\n\n# C\n末节正文。"
+      ],
+      [
+        "【章节：A】\n# A\n正文内容。\n\n## B\n第二节正文。\n\n# C\n末节正文。"
+      ],
+      [
+        "【章节：A】\n# A\n正文内容。",
+        "【章节：A > B】\n## B\n第二节正文。\n\n# C\n末节正文。"
+      ],
+      [
+        "【章节：Title】\n# Title\n```go\n# not heading\n```\n\nnext paragraph."
+      ],
+      [
+        "【章节：Title】\n# Title\n```go\n# not heading\n```\n\nnext paragraph."
+      ],
+      [
+        "【章节：Title】\n# Title\n```go\n# not heading\n```",
+        "【章节：Title】\nnext paragraph."
+      ],
+      [
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。"
+      ],
+      [
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "…没有标题。没有标题。\n没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "…没有标题。没有标题。\n没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "…没有标题。没有标题。\n没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。"
+      ],
+      [
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。没有标题。",
+        "没有标题。没有标题。没有标题。"
+      ],
+      [
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n# 长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。"
+      ],
+      [
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n# 长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n…标题长标题长标题长标\n题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题\n段落文字。",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n…题长标题\n段落文字。\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n…文字。\n\n段落文字。\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n…文字。\n\n段落文字。\n段落文字。"
+      ],
+      [
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n# 长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n题长标题长标题\n段落文字。",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。",
+        "【章节：长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题长标题…】\n段落文字。\n\n段落文字。\n\n段落文字。\n\n段落文字。"
+      ]
+    ],
+    "tools": [
+      {
+        "description": "检索用户的个人知识库（用户上传的笔记与文档）。当用户询问自己的资料、笔记、上传过的文档内容时调用。这是只读操作，不会修改任何数据。返回的片段带有来源标题与序号，回答时请据此说明依据。",
+        "parameters": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "检索词或问题的关键词，1~500 字"
+            },
+            "topK": {
+              "type": "integer",
+              "description": "返回条数，默认 4，上限 20"
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false
+        },
+        "name": "searchKnowledge"
+      }
+    ],
+    "citations": [
+      [
+        {
+          "index": 1,
+          "documentId": "11111111-1111-4111-8111-111111111111",
+          "documentTitle": "A",
+          "filename": "a.md",
+          "chunkIndex": 0,
+          "content": "原文证据一",
+          "score": 0.9
+        },
+        {
+          "index": 2,
+          "documentId": "22222222-2222-4222-8222-222222222222",
+          "documentTitle": "B",
+          "filename": "b.md",
+          "chunkIndex": 1,
+          "content": "原文证据二",
+          "score": 0.8
+        }
+      ],
+      [
+        {
+          "index": 1,
+          "documentId": "11111111-1111-4111-8111-111111111111",
+          "documentTitle": "A",
+          "filename": "a.md",
+          "chunkIndex": 0,
+          "content": "原文证据一",
+          "score": 0.9
+        },
+        {
+          "index": 2,
+          "documentId": "22222222-2222-4222-8222-222222222222",
+          "documentTitle": "B",
+          "filename": "b.md",
+          "chunkIndex": 1,
+          "content": "原文证据二",
+          "score": 0.8
+        }
+      ],
+      [
+        {
+          "index": 1,
+          "documentId": "11111111-1111-4111-8111-111111111111",
+          "documentTitle": "A",
+          "filename": "a.md",
+          "chunkIndex": 0,
+          "content": "原文证据一",
+          "score": 0.9
+        },
+        {
+          "index": 2,
+          "documentId": "22222222-2222-4222-8222-222222222222",
+          "documentTitle": "B",
+          "filename": "b.md",
+          "chunkIndex": 1,
+          "content": "原文证据二",
+          "score": 0.8
+        }
+      ],
+      [
+        {
+          "index": 1,
+          "documentId": "11111111-1111-4111-8111-111111111111",
+          "documentTitle": "A",
+          "filename": "a.md",
+          "chunkIndex": 0,
+          "content": "原文证据一",
+          "score": 0.9
+        }
+      ]
+    ],
+    "recalls": [
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000001-0001-4000-8000-000000000001",
+            "documentTitle": "docs/operations.md",
+            "filename": "operations.md",
+            "chunkIndex": 0,
+            "content": "ackups/具体文件.tar\n```\n\n`verify` 验证外层 SHA-256、内部文件清单和逐文件哈希、pg_restore 目录；`drill` 额外在随机临时数据库执行完整恢复与关键表查询，再删除临时库，绝不接收运行库作为目标。目录验证不能替代恢复演练；建议每周执行一次 drill。业务库本身不受演练影响。\n\n可设置 `BACKUP_DIR`、`DB_CONTAINER`、`BACKUP_UPLOAD_DIR`。附件路径默认 `backend/data/uploads`，也读取 `AI_CHAT_UPLOAD_DIR`。Compose 应用模式使用同一宿主机目录绑定，容器重建后附件仍保留；已有旧容器中的附件应先用 `docker cp` 拷出再切换挂载。如直接备份容器内目录，设置 `BACKUP_BACKEND_CONTA",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000001-0001-4000-8000-000000000001",
+          "00000001-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000002-0001-4000-8000-000000000001",
+            "documentTitle": "docs/operations.md",
+            "filename": "operations.md",
+            "chunkIndex": 0,
+            "content": "时先停止后端；Compose 部署执行 `docker compose stop backend`，备份后再 `docker compose start backend`。数据库快照本身由 pg_dump 保证，但数据库与附件跨资源一致需要暂停应用写入；脚本不会擅自停服务。\n\n```bash\n./scripts/dev/backup-db.sh\n# 输出 backups/personal-ai-os-日期-随机串.tar 及 .sha256，默认永久保留\nBACKUP_RETAIN=30 ./scripts/dev/backup-db.sh\npython3 scripts/dev/backup.py verify backups/具体文件.tar\npython3 scripts/dev/backup.py drill ba",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000002-0001-4000-8000-000000000001",
+          "00000002-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000003-0001-4000-8000-000000000001",
+            "documentTitle": "docs/operations.md",
+            "filename": "operations.md",
+            "chunkIndex": 0,
+            "content": "ash\ndocker compose --env-file .env.monitoring.local -f compose.monitoring.local.yml up -d\n```\n\n此配置面向 Docker Desktop，通过 `host.docker.internal:9091` 采集宿主机后端；不修改或重建原数据库。\nGrafana：`http://127.0.0.1:3000/d/personalos-runtime`，用户 admin，密码在本地环境文件中。\nPrometheus：`http://127.0.0.1:9090`，Targets 中 personal-ai-os 应显示 UP。\n停止监控可将上述 `up -d` 改为 `down`；不加 `-v` 时保留历史指标与看板数据。\n\n## 可选 Redis 共享嵌入缓存\n\n共享会话、模",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000003-0001-4000-8000-000000000001",
+          "00000003-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000004-0001-4000-8000-000000000001",
+            "documentTitle": "specs/029-rag-infrastructure/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": "有无工具模型提供受限 listwise 重排及证据精审。\n- 知识空间、来源版本、适用范围、有效时间、人工填写发布方和核实依据必须保留。不同范围/时间不直接判为矛盾。\n- 入库审查比较有原文证据的候选事实，保留冲突、审查覆盖状态和人工决策；不自动覆盖资料或按上传时间判真伪。\n- 同范围矛盾和模糊问题不输出无条件的单一结论。并列来源、请求澄清；所有引用由服务端绑定实际片段。\n- 默认不开启新增外部服务；明确配置后才连接。服务故障有超时与降级，原有同步/API 契约兼容。\n- 分阶段测试、提交；隔离工作区构建，避免覆盖运行中的 JAR。\n",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000004-0001-4000-8000-000000000001",
+          "00000004-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000005-0001-4000-8000-000000000001",
+            "documentTitle": "specs/026-durable-agent-execution/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": "断后可继续；实时看清工具执行和回答生成；人工确认能核对操作对象与影响。\n\n- 浏览器断开不能取消执行，刷新后按游标追赶同一任务，不重新提交用户消息。\n- 显式停止持久化进度；继续沿用执行身份与写工具幂等键。\n- 服务重启恢复结果确定的任务；有未决工具副作用时阻止自动重试。\n- 实际工具开始、结束、待确认、失败与耗时应即时可见；不展示隐藏推理，也不虚构命令执行。\n- 人工确认直接以内联提问卡片展示服务端摘要、影响数和期限；单次点击允许或拒绝，不弹二次确认。暂不选择保留待确认。\n- 完成全部确认后结束等待，只执行已授权操作并更新状态，不追加消息或自动续跑原任务；用户明确排队的新消息仍按序处理。\n\n验收覆盖：无浏览器执行、游标追赶与去重、停止恢复、重启恢复、未知结果阻断、确认前阻断及拒绝后恢复、工具活动顺序、前端重连、授权卡片过期与并发保护。\n",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000005-0001-4000-8000-000000000001",
+          "00000005-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000006-0001-4000-8000-000000000001",
+            "documentTitle": "specs/027-agent-user-interaction/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": "接处理新消息；发送框不再提供模式选择。\n- 不取消正在执行的工具；引导在下一次工具或模型调用前、或回答增量到达时交还控制并继续。\n- 队列展示待处理内容，可取消、编辑或转为当前对话的引导；编辑保留位置与附件，转为引导复用原记录避免重复执行。提问和人工确认期间不消耗队列。\n- 意图回答与引导不代表危险操作的人工授权。\n- 网络失败重试复用消息标识，不重复排队，文本和附件保持可重试。\n",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000006-0001-4000-8000-000000000001",
+          "00000006-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000007-0001-4000-8000-000000000001",
+            "documentTitle": "specs/010-rich-document-parsing/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": "00，`charCount > 0`、`chunkCount > 0`，检索可命中。\n2. **Given** 一个 `.docx`，**When** 上传，**Then** 同上，且段落按原有顺序拼接。\n3. **Given** 一个**扫描版 PDF**（无文本层），**When** 上传，**Then** 明确报错「未提取到文本（可能是扫描件）」，**不写入**文档记录与向量。\n4. **Given** 一个加密/损坏的 PDF，**When** 上传，**Then** 明确报错，不泄漏堆栈。\n5. **Given** 超大文件，**When** 上传，**Then** 仍由既有大小上限拦截（行为不变）。\n\n---\n\n### User Story 2 - 上传图片并检索（Priority: P2）\n\n作为用户，我希望把",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000007-0001-4000-8000-000000000001",
+          "00000007-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000008-0001-4000-8000-000000000001",
+            "documentTitle": "specs/015-single-user-auth/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": ". **Given** 输入正确用户名密码，**When** 提交，**Then** 登录成功、cookie 生效、跳到首页。\n4. **Given** 输入错误密码，**When** 提交，**Then** 明确提示「用户名或密码错误」，不透露是哪一个错。\n5. **Given** 已登录，**When** 点登出，**Then** 会话失效，后续请求重新 401。\n\n---\n\n### User Story 2 - 关闭认证时零影响（Priority: P1）\n\n作为本地开发的我，不想为了跑起来先配密码。\n\n**Why this priority**：这个项目的第一版定位就是「本地单用户」。\n如果默认开启认证，所有现有测试、所有文档里的启动命令全部失效。\n\n**Independent Test**：不设任何 `AUTH_*`",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000008-0001-4000-8000-000000000001",
+          "00000008-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000009-0001-4000-8000-000000000001",
+            "documentTitle": "specs/013-calendar-month-view/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": "*Given** 某天有 5 条日程，**When** 渲染该格，**Then** 最多显示 3 条，其余折叠为「还有 2 条」。\n3. **Given** 一条重复日程在本月有 4 次发生，**When** 查看月视图，**Then** 4 个格子各出现一次，\n   且带重复标记。\n4. **Given** 用户在月视图点某一天的空白处，**When** 打开新建表单，**Then** 起始时间预填为该天（保持当前时刻的时:分或 9:00）。\n5. **Given** 点击某条日程，**When** 打开编辑，**Then** 与列表视图点开的编辑行为完全一致。\n\n---\n\n### User Story 2 - 切换月份（Priority: P1）\n\n作为用户，我希望用上一月/下一月/回到今天在月份之间移动，网格与数据同步更新。",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000009-0001-4000-8000-000000000001",
+          "00000009-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "0000000a-0001-4000-8000-000000000001",
+            "documentTitle": "specs/021-memory-layering/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": "的 `content_hash` 唯一键对「周报每周五下午交」\n   与「周报改成每周五下班前交」完全无效，两条语义冲突的约束会同时注入。\n\n## 决策\n\n### D1 分层，而不是召回\n\n新增 `memory.pinned`。常驻条目**无条件注入并优先占预算**，其余仍在预算内全量填充。\n注入集合不因相似度变小 —— 这是与「向量召回」的关键区别。\n\n### D2 向量只用于两件事\n\n- **排序微调**：决定预算内**先放谁**，不决定「放不放」；\n- **近重复判定**：写入时若与既有条目余弦 ≥ 0.92，旧条目记 `superseded_by`（不物理删除）。\n\n排序降级链：向量余弦 → 字符二元组重叠 → 最近修改优先。任何一环失败都不影响注入。\n\n### D3 常驻意图随内容转移\n\n旧条目被取代时，如果它是常驻的，新",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "0000000a-0001-4000-8000-000000000001",
+          "0000000a-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "0000000b-0001-4000-8000-000000000001",
+            "documentTitle": "docs/mcp.md",
+            "filename": "mcp.md",
+            "chunkIndex": 0,
+            "content": "# MCP 指南\n\nPersonal AI OS 同时支持 MCP Client 和 MCP Server。两个方向互不依赖，默认都关闭。\n\n本地 Maven / JAR 启动时会自动读取项目根目录 `.env`。外部 stdio 服务在后端所在机器上运行：\nfilesystem 示例需要 Node.js / npx，fetch 示例需要 uv / uvx；这些命令必须在后端进程的 PATH 中。\n\n## 1. 作为 MCP Client\n\n这个模式让 Personal AI OS 的助手调用外部 MCP Server。配置只从环境变量读取，避免把命令、参数和密钥写进数据库。\n\n```bash\nM",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "0000000b-0001-4000-8000-000000000001",
+          "0000000b-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "0000000c-0001-4000-8000-000000000001",
+            "documentTitle": "specs/003-task-agent/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": "ority**：一旦失守就是**不可逆的数据丢失**。这属于正确性与安全边界，不是体验优化。\n\n**Independent Test**：让助手执行删除，观察任务**仍然存在**且系统产生一条待确认记录；再让助手自行尝试「确认」，观察它**没有任何可用途径**完成删除。\n\n**Acceptance Scenarios**：\n\n1. **Given** 存在一个任务，**When** 助手请求删除它，**Then** 任务仍然存在，系统返回「需要确认」并生成一条待确认记录。\n2. **Given** 已生成待确认记录，**When** 人类用户在界面上确认，**Then** 任务被真正删除，记录状态变为已确认。\n3. **Given** 已生成待确认记录，**When** 人类用户取消，**Then** 任务不受影响，记录状态变",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "0000000c-0001-4000-8000-000000000001",
+          "0000000c-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "0000000d-0001-4000-8000-000000000001",
+            "documentTitle": "docs/architecture.md",
+            "filename": "architecture.md",
+            "chunkIndex": 0,
+            "content": "asks）\n├── compose.yml  本地基础设施编排\n└── .specify/    Spec Kit 配置与项目宪法\n```\n\n### 为什么是模块化单体，而不是微服务\n\n当前只有一个部署单元、一个使用者。拆分微服务会立刻引入服务发现、分布式追踪、跨服务事务与部署编排的复杂度，而收益为零。宪法原则 I 明确禁止在第一版引入微服务。\n\n### 为什么后端不拆 Maven 多模块\n\n模块边界落在 **Java 包**上而非 Maven module 上。理由：多模块聚合会带来 POM 继承与依赖管理的维护成本，而对「单部署单元」没有任何可观测收益。待模块数量增长或需要独立发布时，可按包无损迁移为多模块。\n\n## 3. 后端模块划分\n\n根包 `com.personalos`，按**业务模块**分包（packag",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "0000000d-0001-4000-8000-000000000001",
+          "0000000d-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "0000000e-0002-4000-8000-000000000001",
+            "documentTitle": "docs/operations.md",
+            "filename": "operations.md",
+            "chunkIndex": 0,
+            "content": "is → 模型。\nRedis 只保存文本/选项的摘要与向量，命名空间按用户和部署隔离；模型端点、名称和请求选项参与隔离。\n模型服务在同名模型下更新时应修改 `app.embedding-cache.revision`，防止复用旧空间向量。\nRedis 故障在短超时后回到上游模型，错误记录在 `personalos.embedding.redis.errors`；共享命中标记为 shared_hit。\n\n## 可选 RabbitMQ 任务通知\n\n独立进程部署及通知配置见 [独立 worker 与提醒广播](distributed-workers.md)。\n\n`compose.integrations.yml --profile queue` 启动 RabbitMQ 4.4.0，AMQP 与管理端口仅绑定回环地址。\n设置 `RABBITMQ_ENABL",
+            "score": 0.72
+          }
+        ],
+        "ids": [
+          "0000000e-0002-4000-8000-000000000001",
+          "0000000e-0001-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "0000000f-0001-4000-8000-000000000001",
+            "documentTitle": "docs/operations.md",
+            "filename": "operations.md",
+            "chunkIndex": 0,
+            "content": "is → 模型。\nRedis 只保存文本/选项的摘要与向量，命名空间按用户和部署隔离；模型端点、名称和请求选项参与隔离。\n模型服务在同名模型下更新时应修改 `app.embedding-cache.revision`，防止复用旧空间向量。\nRedis 故障在短超时后回到上游模型，错误记录在 `personalos.embedding.redis.errors`；共享命中标记为 shared_hit。\n\n## 可选 RabbitMQ 任务通知\n\n独立进程部署及通知配置见 [独立 worker 与提醒广播](distributed-workers.md)。\n\n`compose.integrations.yml --profile queue` 启动 RabbitMQ 4.4.0，AMQP 与管理端口仅绑定回环地址。\n设置 `RABBITMQ_ENABL",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "0000000f-0001-4000-8000-000000000001",
+          "0000000f-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000010-0001-4000-8000-000000000001",
+            "documentTitle": "docs/operations.md",
+            "filename": "operations.md",
+            "chunkIndex": 0,
+            "content": "清空时退回 PostgreSQL 召回。`GET /api/v1/knowledge/search-index` 查看积压；\n`POST /api/v1/knowledge/search-index/reindex` 排队重建当前所有片段。换向量维度应使用新索引名。\n索引是可重建投影；删除索引卷不会删除 PostgreSQL 资料。`personalos.knowledge.search.pending/projections` 记录积压与同步结果。\n\n## RAG 管线与资料冲突治理\n\n默认启用 `app.knowledge.rag.enabled`：保留原问题，再生成至多两个改写；每路最多 40 个候选，RRF 融合后重排，\n对多来源片段精审，再截取最终结果。辅助调用使用当前配置的无工具模型，不读对话历史；两条工作线程、四项等待上",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000010-0001-4000-8000-000000000001",
+          "00000010-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000011-0001-4000-8000-000000000001",
+            "documentTitle": "specs/025-production-security/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": "。开发环境必须继续支持 `http://localhost` 和默认关闭认证。\n\n## 目标\n\n- 提供独立的生产 profile 和 Compose 文件。\n- 生产启动对认证、CSRF、Secure Cookie、数据库密码和登录密码 fail closed。\n- 让 SPA 的普通请求、上传和 SSE 都能携带会话 CSRF token。\n- 生产只发布 Caddy 的 80/443，数据库和应用服务留在内部网络。\n- 记录域名、证书和密钥由部署者配置，不在本地申请或暴露服务。\n\n## 非目标\n\n- 多用户、角色权限、账户自助改密。\n- 自动修改现有开发数据库密码或迁移本地卷到生产卷。\n- 代替云防火墙、WAF、备份和主机补丁管理。\n\n## 约束\n\n- 本地默认值保持兼容：认证和 CSRF 默认关闭，Cookie Secure",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000011-0001-4000-8000-000000000001",
+          "00000011-0002-4000-8000-000000000001"
+        ]
+      },
+      {
+        "citations": [
+          {
+            "index": 1,
+            "documentId": "00000012-0001-4000-8000-000000000001",
+            "documentTitle": "specs/014-task-tags/spec.md",
+            "filename": "spec.md",
+            "chunkIndex": 0,
+            "content": "存，**Then** 只存一个 `工作`（去空白后去重）。\n5. **Given** 输入 6 个标签，**When** 保存，**Then** 明确报错「最多 5 个标签」，不静默截断。\n\n---\n\n### User Story 2 - 按标签筛选（Priority: P1）\n\n作为用户，我在任务列表上方选择一个标签，只看该标签的任务。\n\n**Independent Test**：造两个不同标签的任务，选其中一个标签，列表只剩对应任务，`total` 同步。\n\n**Acceptance Scenarios**：\n\n1. **Given** 任务分布在不同标签，**When** 选择某标签，**Then** 只返回含该标签的任务。\n2. **Given** 已按标签筛选，**When** 清空筛选，**Then** 回到",
+            "score": 0.94
+          }
+        ],
+        "ids": [
+          "00000012-0001-4000-8000-000000000001",
+          "00000012-0002-4000-8000-000000000001"
+        ]
+      }
+    ]
+  }
+}

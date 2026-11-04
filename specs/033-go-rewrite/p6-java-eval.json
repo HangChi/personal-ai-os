@@ -1,0 +1,27 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "suite": "controlled_java_retrieval",
+  "cases": 18,
+  "latency_micros": [
+    7187,
+    405,
+    19328,
+    803,
+    325,
+    680,
+    2391,
+    283,
+    226,
+    881,
+    2186,
+    980,
+    217,
+    2088,
+    1162,
+    1029,
+    4415,
+    1144
+  ],
+  "uses_mock_vector_and_keyword_channels": true,
+  "semantic_quality_measured": false
+}

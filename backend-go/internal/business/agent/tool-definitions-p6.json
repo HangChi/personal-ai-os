@@ -1,0 +1,24 @@
+[
+  {
+    "description": "检索用户的个人知识库（用户上传的笔记与文档）。当用户询问自己的资料、笔记、上传过的文档内容时调用。这是只读操作，不会修改任何数据。返回的片段带有来源标题与序号，回答时请据此说明依据。",
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "检索词或问题的关键词，1~500 字"
+        },
+        "topK": {
+          "type": "integer",
+          "description": "返回条数，默认 4，上限 20"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "additionalProperties": false
+    },
+    "name": "searchKnowledge"
+  }
+]

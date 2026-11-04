@@ -45,3 +45,11 @@ OpenSearch 使用有界 REST、CJK/HNSW 映射和现有维度验证，external_g
 文档、任务、检索、问答、空间、来源、冲突与可选搜索管理均进入既有认证/CSRF/限流/媒体链。聊天和只读 searchKnowledge 工具共用 KnowledgeSearchPort；保守状态发送 citations/rag/delta/done、保存消息与引用，并跳过确定回答和自动记忆。
 
 实际执行 `python3 scripts/migration/run_go_postgres_tests.py --package app --tls --run '^TestFoundationP6'`，两项真实 TLS PostgreSQL/race 装配测试通过，覆盖 API 不抢索引工作、独立 index 无 Rabbit 轮询、双 API、worker 关闭业务入口、CRUD/分页/参数校验、认证/CSRF/治理与保守聊天引用。完整四设施角色联动与 Java 差分仍在最后验收批次。
+
+## 第七批：固定 Java 契约差分
+
+`java_p6_fixture.py` 从固定提交 `cb5d694d62fa93742b5789b97273e76d931ce335` 提取八个 Java 源文件并记录 SHA-256，以真实 Java 服务生成文件名、152 条查询关键词、15 组结构切分、四种引用编号与只读工具 schema 的契约。152 条包含既有历史查询和当前 live corpus 的问题；Java 与 Go 逐项相等。工具注册消费 Spring ToolCallbacks 生成的原始描述/参数 schema，避免手写元数据漂移。
+
+Java 召回另有 18 组现有 `rag-live-cases.json` 的仓库原文摘录；基线服务使用受控的向量与关键词通道，Go 使用真实 pgvector/SQL，结果对照留在最终评估报告。本批不把受控分数解释成模型语义质量，也不把 Java mock 通道耗时与 Go 数据库耗时当作端到端性能对比。
+
+复验：`python3 scripts/migration/java_p6_fixture.py`、`cd backend-go && go test -race ./internal/business/knowledge ./internal/business/agent`。生成器需要已有 Maven 编译输出和 Surefire classpath；不启动生产服务，不读取应用密钥。

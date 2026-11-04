@@ -12,9 +12,12 @@ var javaToolDefinitions []byte
 //go:embed tool-definitions-p5.json
 var javaP5ToolDefinitions []byte
 
+//go:embed tool-definitions-p6.json
+var javaP6ToolDefinitions []byte
+
 // 固定基线 Spring ToolCallbacks 直接生成；更新必须重跑 Java oracle。
 func builtinDefinition(name string) (model.Tool, bool) {
-	for _, source := range [][]byte{javaToolDefinitions, javaP5ToolDefinitions} {
+	for _, source := range [][]byte{javaToolDefinitions, javaP5ToolDefinitions, javaP6ToolDefinitions} {
 		var definitions []model.Tool
 		if json.Unmarshal(source, &definitions) != nil {
 			panic("内置工具元数据损坏")
