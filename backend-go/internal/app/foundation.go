@@ -316,21 +316,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 		})
 	}
-	if options.EnableP4 {
-		f.chat, err = chat.OpenModule(f.ctx, chat.ModuleOptions{Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem, Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor, Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()})
-		if err != nil {
-			return nil, err
-		}
-		metrics.chat = f.chat
-		previous := options.Business
-		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if chat.OwnsPath(r.URL.Path) {
-				f.chat.Handler.ServeHTTP(w, r)
-				return
-			}
-			previous.ServeHTTP(w, r)
-		})
-	}
+	var memoryPrompt func(context.Context, string, string) (string, error)
 	if options.EnableP5 {
 		if !options.EnableP4 {
 			return nil, errors.New("P5需要启用P4")
@@ -339,11 +325,45 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		if err != nil {
 			return nil, err
 		}
+		values := map[string]string{}
+		for _, key := range []string{"app.memory.pinned-max-count", "app.memory.similar-threshold",
+			"app.memory.ranking.enabled", "app.memory.ranking.timeout", "app.memory.ranking.half-life-days",
+			"app.memory.backfill.enabled", "app.memory.backfill.batch-size"} {
+			value, found, err := properties.Get(key)
+			if err != nil {
+				return nil, err
+			}
+			if found {
+				values[key] = value
+			}
+		}
+		settings, err := config.BindMemoryProperties(values)
+		if err != nil {
+			return nil, err
+		}
+		memoryPrompt = func(ctx context.Context, user, _ string) (string, error) {
+			return store.Prompt(ctx, user, settings)
+		}
 		memories := memory.NewHTTP(store, logger)
 		previous := options.Business
 		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if memory.OwnsPath(r.URL.Path) {
 				memories.ServeHTTP(w, r)
+				return
+			}
+			previous.ServeHTTP(w, r)
+		})
+	}
+	if options.EnableP4 {
+		f.chat, err = chat.OpenModule(f.ctx, chat.ModuleOptions{MemoryPrompt: memoryPrompt, Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem, Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor, Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()})
+		if err != nil {
+			return nil, err
+		}
+		metrics.chat = f.chat
+		previous := options.Business
+		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if chat.OwnsPath(r.URL.Path) {
+				f.chat.Handler.ServeHTTP(w, r)
 				return
 			}
 			previous.ServeHTTP(w, r)

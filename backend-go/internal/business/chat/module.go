@@ -26,6 +26,7 @@ import (
 )
 
 type ModuleOptions struct {
+	MemoryPrompt  func(context.Context, string, string) (string, error)
 	Pool          *database.Pool
 	Properties    *config.Properties
 	Models        *model.Module
@@ -187,6 +188,10 @@ func OpenModule(parent context.Context, o ModuleOptions) (m *Module, err error) 
 		return nil, e
 	}
 	assembler := &Assembler{Service: service, Tools: registry.Definitions, Contributors: []PromptContributor{CurrentTimeContributor(o.Zone, time.Now), {Order: 10, Contribute: func(ctx context.Context, _ string, id string) (string, error) { return plans.Prompt(ctx, id) }}, {Order: 2147483647, Contribute: func(context.Context, string, string) (string, error) { return toolResultConstraint, nil }}}}
+	if o.MemoryPrompt != nil {
+		assembler.Contributors = append(assembler.Contributors, PromptContributor{Contribute: o.MemoryPrompt})
+	}
+
 	budget, e := chatcontext.NewBudget(parent, ai, protection, chatcontext.PostgresPreferences{Pool: o.Pool}, o.Models.Service.LookupWindow, func() string {
 		if c := o.Models.Runtime.Current(); c != nil {
 			return c.Name()
