@@ -53,3 +53,15 @@ OpenSearch 使用有界 REST、CJK/HNSW 映射和现有维度验证，external_g
 Java 召回另有 18 组现有 `rag-live-cases.json` 的仓库原文摘录；基线服务使用受控的向量与关键词通道，Go 使用真实 pgvector/SQL，结果对照留在最终评估报告。本批不把受控分数解释成模型语义质量，也不把 Java mock 通道耗时与 Go 数据库耗时当作端到端性能对比。
 
 复验：`python3 scripts/migration/java_p6_fixture.py`、`cd backend-go && go test -race ./internal/business/knowledge ./internal/business/agent`。生成器需要已有 Maven 编译输出和 Surefire classpath；不启动生产服务，不读取应用密钥。
+
+## 第八批：完整设施与崩溃回归
+
+`python3 scripts/migration/compare_go_p6.py` 已通过。它复用既有 129 条历史查询做关键词契约，并从 `rag-live-cases.json` 取 18 组固定仓库原文，运行真实 TLS PostgreSQL/pgvector、TLS Redis、RabbitMQ 和 OpenSearch。机器可读结果见 `p6-eval-results.json`，包含输入哈希、逐项通过的 Go 测试、18/18 召回与引用相等、受控来源 R@1/引用 precision、逐查询 SQL 耗时，以及索引/审查/投影队列收敛时间。Java 通道的耗时单列在 `p6-java-eval.json`，两种耗时口径不同。
+
+双 API 与独立 index/review/delivery 实际共享持久任务；候选缓存命中后关闭该专用客户端仍可回源 PostgreSQL。combined 在不可连接的 RabbitMQ 下仍轮询完成；关闭 OpenSearch/reranker/candidate cache 时不解析其占位端点或凭据。补齐 `app.knowledge.jobs.enabled`，关闭调度仍可接收任务，再由独立 index 领取。
+
+索引子进程在真实嵌入阶段被 SIGKILL，确认没有文档/向量部分提交、任务负载仍在；仅前移测试库中的 60/120 秒租约到期时间，再启动全新 OS 进程完成一次持久提交。旧 token 拒写另有多连接断言。review 与 projection 的过期/revision/token 对照通过数据库控制边界，不冒充所有角色都经历 OS 强杀。
+
+增加治理扩展查询失败时的 UNVERIFIED/保留双方证据/不再批准模型结论、查询改写救回、非法重排回退，以及真实 EXPLAIN 使用 `idx_vector_store_document_id`、事务内删除该索引后 Seq Scan 的反证。去索引事务最终回滚，保留原迁移结构。原 Java 的 `wordStartPattern` 没有用于生产批量查询；Go 保留原实际 ILIKE 子串查询与转义，不新增未使用的正则 API。
+
+本轮完整 Java 首次执行 1,137 个用例，0 failure、2 error（OpenSearch 启动超时、Redis 首次共享缓存未命中）；两类随后单独 `verify` 全通过，原 JaCoCo 门禁通过。当前再以 `-Dspring.test.context.cache.maxSize=2` 运行全量，减少已销毁测试库对应的缓存 Spring 上下文占用。前端类型检查/构建、Go 全量 race、integration vet/build 与模块校验通过。

@@ -284,7 +284,11 @@ func OpenModule(parent context.Context, o ModuleOptions) (m *Module, err error) 
 			return nil, e
 		}
 	}
-	if o.Role.Allows("index") {
+	jobsEnabled, e := flag("app.knowledge.jobs.enabled", true)
+	if e != nil {
+		return nil, e
+	}
+	if o.Role.Allows("index") && jobsEnabled {
 		if e = start(indexQueue, "app.knowledge.jobs.poll-ms", time.Second, 0, func(ctx context.Context) error { _, e := m.Jobs.RunNext(ctx); return e }); e != nil {
 			return nil, e
 		}

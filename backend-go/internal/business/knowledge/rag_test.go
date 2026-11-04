@@ -21,13 +21,17 @@ func (f structuredFunc) Call(c context.Context, r string, p any, d time.Duration
 }
 
 type recallFixture struct {
-	hits  []Hit
-	calls int
+	hits    []Hit
+	calls   int
+	byQuery map[string][]Hit
 }
 
 func (r *recallFixture) HasContent(context.Context) (bool, error) { return len(r.hits) > 0, nil }
-func (r *recallFixture) Candidates(context.Context, string, int) ([]Hit, error) {
+func (r *recallFixture) Candidates(_ context.Context, query string, _ int) ([]Hit, error) {
 	r.calls++
+	if hits, ok := r.byQuery[query]; ok {
+		return hits, nil
+	}
 	return r.hits, nil
 }
 func (r *recallFixture) Search(context.Context, string, *int) ([]Hit, error) { return r.hits, nil }
@@ -121,6 +125,48 @@ func TestPipelineReadyConflictTopOneFallbackAndNoContent(t *testing.T) {
 	}
 	if _, e = p.Retrieve(context.Background(), strings.Repeat("x", 2001), nil); e == nil {
 		t.Fatal("accepted overlong query")
+	}
+}
+
+func TestPipelineRewriteRecoveryAndFailedStages(t *testing.T) {
+	for _, scenario := range []string{"rewrite_recovery", "invalid_rerank", "unavailable"} {
+		t.Run(scenario, func(t *testing.T) {
+			hits := twoHits()
+			recall := &recallFixture{hits: hits}
+			if scenario == "rewrite_recovery" {
+				recall.byQuery = map[string][]Hit{"原问题": {}}
+			}
+			m := structuredFunc(func(_ context.Context, rules string, _ any, _ time.Duration) (json.RawMessage, error) {
+				if scenario == "unavailable" {
+					return nil, errors.New("model unavailable")
+				}
+				if strings.Contains(rules, "queries") {
+					return json.RawMessage(`{"queries":["住宿限额"]}`), nil
+				}
+				if strings.Contains(rules, "order") {
+					if scenario == "invalid_rerank" {
+						return json.RawMessage(`{"order":[99]}`), nil
+					}
+					return json.RawMessage(`{"order":[1,2]}`), nil
+				}
+				return reviewJSON(hits, "", ""), nil
+			})
+			p := &Pipeline{Recall: recall, Model: m, Review: &EvidenceReviewer{m}, Enabled: true, TopK: 4}
+			result, e := p.Retrieve(context.Background(), "原问题", nil)
+			if e != nil || len(result.Hits) != 2 {
+				t.Fatal(result, e)
+			}
+			if scenario == "unavailable" {
+				if result.Status != "UNVERIFIED" || !result.Guarded() || len(result.Queries) != 1 {
+					t.Fatal(result)
+				}
+			} else if result.Status != "READY" || len(result.Queries) != 2 {
+				t.Fatal(result)
+			}
+			if scenario == "invalid_rerank" && len(result.Warnings) == 0 {
+				t.Fatal("invalid rerank lost its warning")
+			}
+		})
 	}
 }
 

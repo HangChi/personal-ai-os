@@ -24,7 +24,7 @@ def capture(command, **kwargs):
                           timeout=120, **kwargs).stdout.strip()
 
 
-def run_package(image, package, tls_mode=False, backup=False):
+def run_package(image, package, tls_mode=False, backup=False, test_pattern=None):
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, GO_TEST_REDIS_PASSWORD=password)
     container = None
@@ -106,7 +106,7 @@ def run_package(image, package, tls_mode=False, backup=False):
         if package in {"app", "command", "knowledge"}:
             # 外层持有自己的Redis，内层仅创建/清理自己的PostgreSQL；失败逐层finally清理。
             from run_go_postgres_tests import IMAGE as POSTGRES_IMAGE, run_package as run_postgres
-            run_postgres(POSTGRES_IMAGE, package, tls_mode=tls_mode, flyway=True, backup=backup and package == "app", redis_env=child_env)
+            run_postgres(POSTGRES_IMAGE, package, tls_mode=tls_mode, flyway=True, backup=backup and package == "app", redis_env=child_env, test_pattern=test_pattern)
         else:
             subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
                             ("./internal/business/model" if package == "model" else "./internal/platform/" + package)], cwd=ROOT / "backend-go", env=child_env,

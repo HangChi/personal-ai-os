@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -132,6 +133,28 @@ func TestP6GovernanceRejectsForgedQuotesAndKeepBoth(t *testing.T) {
 	review, e := g.ApplyDecisions(ctx, Review{Relevant: hits}, hits, &warnings)
 	if e != nil || len(review.Conflicts) != 1 || len(review.Relevant) != 2 {
 		t.Fatal(review, e)
+	}
+}
+
+func TestP6GovernanceOutageRetainsEvidenceAndGuardsAnswer(t *testing.T) {
+	s, g, hits := fixtureGoverned(t)
+	model := structuredFunc(func(_ context.Context, rules string, _ any, _ time.Duration) (json.RawMessage, error) {
+		if strings.Contains(rules, "queries") {
+			return json.RawMessage(`{"queries":[]}`), nil
+		}
+		if strings.Contains(rules, "order") {
+			if e := s.Pool.Close(); e != nil {
+				t.Fatal(e)
+			}
+			return json.RawMessage(`{"order":[1,2]}`), nil
+		}
+		t.Fatal("governance outage must not proceed to model evidence approval")
+		return nil, nil
+	})
+	p := &Pipeline{Recall: &recallFixture{hits: hits}, Model: model, Review: &EvidenceReviewer{model}, Governance: g, Enabled: true, TopK: 1}
+	result, e := p.Retrieve(context.Background(), "每周工作几天", nil)
+	if e != nil || result.Status != "UNVERIFIED" || !result.Guarded() || len(result.Hits) != 2 || len(result.Warnings) == 0 {
+		t.Fatal(result, e)
 	}
 }
 func TestP6ReviewClaimCompetitionRevisionAndLeaseFencing(t *testing.T) {

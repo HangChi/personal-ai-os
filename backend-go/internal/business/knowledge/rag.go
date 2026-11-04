@@ -431,10 +431,12 @@ func (p *Pipeline) Retrieve(parent context.Context, q string, topK *int) (RagRes
 		stage("rerank", "OK", start, len(candidates), len(ranked))
 	}
 	pool := diverse(ranked, 16, 2)
+	var governanceError error
 	if p.Governance != nil {
-		pool, e = p.Governance.Expand(ctx, pool)
-		if e != nil {
-			return result, e
+		expanded, expandErr := p.Governance.Expand(ctx, pool)
+		governanceError = expandErr
+		if expandErr == nil {
+			pool = expanded
 		}
 	}
 	start = time.Now()
@@ -442,7 +444,11 @@ func (p *Pipeline) Retrieve(parent context.Context, q string, topK *int) (RagRes
 	if timeout == 0 {
 		timeout = 12 * time.Second
 	}
-	assessed, e := p.Review.Review(ctx, q, pool, remaining(max(time.Second, min(30*time.Second, timeout))))
+	var assessed Review
+	e = governanceError
+	if e == nil {
+		assessed, e = p.Review.Review(ctx, q, pool, remaining(max(time.Second, min(30*time.Second, timeout))))
+	}
 	result.Status = "UNVERIFIED"
 	result.Hits = pool
 	if e == nil && p.Governance != nil {

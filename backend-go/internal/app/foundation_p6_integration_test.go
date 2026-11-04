@@ -10,6 +10,7 @@ import (
 	"io"
 	"log/slog"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -19,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"personal-ai-os/backend-go/internal/business/knowledge"
 	"personal-ai-os/backend-go/internal/platform/config"
 	redisclient "personal-ai-os/backend-go/internal/platform/redis"
 )
@@ -65,7 +67,7 @@ func p6Upstream(t *testing.T, calls *atomic.Int32) *httptest.Server {
 	t.Cleanup(s.Close)
 	return s
 }
-func p6Foundation(t *testing.T, role string, upstream *httptest.Server, extra map[string]string, candidate *redisclient.Client) *Foundation {
+func p6Foundation(t *testing.T, role string, upstream *httptest.Server, extra map[string]string, candidate *redisclient.Client, embedding ...*redisclient.Client) *Foundation {
 	t.Helper()
 	values := map[string]string{"app.runtime.role": role, "app.rate-limit.enabled": "false", "app.auth.enabled": "false", "app.security.csrf-enabled": "false", "app.calendar.scan-enabled": "false", "app.memory.backfill.enabled": "false", "app.context.summary.enabled": "false", "app.context.auto-memory.enabled": "false", "app.chat.upload-dir": t.TempDir(), "spring.ai.model.chat": "openai", "spring.ai.model.embedding": "openai", "spring.ai.openai.api-key": "synthetic-p6", "spring.ai.openai.base-url": upstream.URL, "spring.ai.openai.chat.model": "fixture-p6", "spring.ai.openai.embedding.model": "fixture-1024", "app.knowledge.jobs.poll-ms": "50", "app.knowledge.search.poll-ms": "50", "app.knowledge.rag.review-poll-ms": "50", "app.knowledge.rag.enabled": "false"}
 	for k, v := range extra {
@@ -75,7 +77,11 @@ func p6Foundation(t *testing.T, role string, upstream *httptest.Server, extra ma
 	if e != nil {
 		t.Fatal(e)
 	}
-	f, e := OpenFoundation(context.Background(), p, FoundationOptions{Connector: fixtureAppConnector(t, "go-p6-foundation"), Migrations: os.DirFS("../../../backend/src/main/resources/db/migration"), Schema: "public", EnableP2: true, EnableP3: true, EnableP4: true, EnableP5: true, EnableP6: true, ModelTransport: upstream.Client().Transport, CandidateRedis: candidate}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	var embed *redisclient.Client
+	if len(embedding) > 0 {
+		embed = embedding[0]
+	}
+	f, e := OpenFoundation(context.Background(), p, FoundationOptions{Connector: fixtureAppConnector(t, "go-p6-foundation"), Migrations: os.DirFS("../../../backend/src/main/resources/db/migration"), Schema: "public", EnableP2: true, EnableP3: true, EnableP4: true, EnableP5: true, EnableP6: true, ModelTransport: upstream.Client().Transport, CandidateRedis: candidate, EmbeddingRedis: embed}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -87,6 +93,135 @@ func p6Foundation(t *testing.T, role string, upstream *httptest.Server, extra ma
 		}
 	})
 	return f
+}
+
+func TestFoundationP6RealFacilitiesRolesAndCacheFailure(t *testing.T) {
+	rabbit, search := os.Getenv("GO_TEST_KNOWLEDGE_RABBIT_URI"), os.Getenv("GO_TEST_KNOWLEDGE_SEARCH_URL")
+	if rabbit == "" || search == "" {
+		t.Skip("需要本次专用四设施")
+	}
+	var calls atomic.Int32
+	up := p6Upstream(t, &calls)
+	values := map[string]string{"app.rabbitmq.enabled": "true", "app.rabbitmq.uri": rabbit, "app.knowledge.search.enabled": "true", "app.knowledge.search.endpoint": search, "app.knowledge.search.index": "p6-roles", "app.knowledge.rag.ingestion-review-enabled": "true", "app.knowledge.rag.enabled": "true", "app.redis.enabled": "true", "app.redis.namespace": "fixture:embedding", "app.knowledge.candidate-cache.enabled": "true"}
+	open := func(role string) *Foundation {
+		return p6Foundation(t, role, up, values, fixtureAppRedis(t, "GO_TEST_REDIS_CANDIDATE_URI"), fixtureAppRedis(t, "GO_TEST_REDIS_EMBEDDING_URI"))
+	}
+	first := open("api")
+	p6Clean(t, first)
+	defer p6Clean(t, first)
+	second := open("api")
+	open("index")
+	review := open("review")
+	delivery := open("delivery")
+	code, root := p6Upload(t, first.Handler(), "POST", "/api/v1/knowledge/jobs", "roles.md", strings.Repeat("RabbitMQ 唤醒与数据库轮询保持任务可靠，Redis 缓存失败回源。", 20))
+	if code != 202 {
+		t.Fatal(code, root)
+	}
+	id := root["data"].(map[string]any)["id"].(string)
+	started := time.Now()
+	wait := func(check func() bool) {
+		t.Helper()
+		deadline := time.Now().Add(20 * time.Second)
+		for !check() {
+			if time.Now().After(deadline) {
+				t.Fatal("role convergence timeout")
+			}
+			time.Sleep(50 * time.Millisecond)
+		}
+	}
+	var job knowledge.Job
+	wait(func() bool {
+		var e error
+		job, e = second.Knowledge().Jobs.Get(context.Background(), id)
+		if e != nil {
+			t.Fatal(e)
+		}
+		return job.Status == "SUCCEEDED"
+	})
+	indexedMs := time.Since(started).Milliseconds()
+	wait(func() bool {
+		n, e := delivery.Knowledge().Projection.Pending(context.Background())
+		if e != nil {
+			t.Fatal(e)
+		}
+		return n == 0
+	})
+	wait(func() bool {
+		sources, e := review.Knowledge().Governance.Sources(context.Background())
+		if e != nil {
+			t.Fatal(e)
+		}
+		return len(sources) == 1 && sources[0].Source.ReviewState == "CHECKED_CANDIDATES"
+	})
+	refresh, e := http.Post(search+"/p6-roles/_refresh", "application/json", nil)
+	if e != nil {
+		t.Fatal(e)
+	}
+	refresh.Body.Close()
+	for range 2 {
+		hits, e := second.Knowledge().Retriever.Candidates(context.Background(), "RabbitMQ", 10)
+		if e != nil || len(hits) == 0 {
+			t.Fatal(hits, e)
+		}
+	}
+	counters, _ := second.Knowledge().Stats.Snapshot()
+	if counters["candidate.cache|hit"] == 0 {
+		t.Fatal("dedicated candidate cache unused", counters)
+	}
+	// Drop the borrowed cache connection; retrieval must still succeed through PostgreSQL.
+	cache := second.Knowledge().Retriever.Cache.Client.(*redisclient.Client)
+	if e := cache.Close(); e != nil {
+		t.Fatal(e)
+	}
+	hits, e := second.Knowledge().Retriever.Candidates(context.Background(), "Redis", 10)
+	if e != nil || len(hits) == 0 {
+		t.Fatal("cache outage", hits, e)
+	}
+	server := httptest.NewServer(first.Handler())
+	defer server.Close()
+	code, root = appRequest(t, server.Client(), "GET", server.URL+"/api/v1/knowledge/search-index", "", "")
+	if code != 200 || root["data"].(map[string]any)["pending"] != float64(0) {
+		t.Fatal(code, root)
+	}
+	report, _ := json.Marshal(map[string]any{"suite": "real_facilities_roles", "index_completion_ms": indexedMs, "review_projection_completion_ms": time.Since(started).Milliseconds(), "pending_projection": 0, "redis_cache_hits": counters["candidate.cache|hit"], "cache_outage_fallback": true, "roles": []string{"api", "api", "index", "review", "delivery"}})
+	t.Log("P6_EVAL " + string(report))
+}
+
+func TestFoundationP6CombinedBrokerOutageAndDisabledFacilities(t *testing.T) {
+	var calls atomic.Int32
+	up := p6Upstream(t, &calls)
+	listener, e := net.Listen("tcp", "127.0.0.1:0")
+	if e != nil {
+		t.Fatal(e)
+	}
+	address := listener.Addr().String()
+	listener.Close()
+	f := p6Foundation(t, "combined", up, map[string]string{"app.rabbitmq.enabled": "true", "app.rabbitmq.uri": "amqp://fixture:synthetic@" + address + "/", "app.knowledge.search.enabled": "false", "app.knowledge.search.endpoint": "${UNSET_P6_ENDPOINT}", "app.knowledge.rag.reranker.enabled": "false", "app.knowledge.rag.reranker.api-key": "${UNSET_P6_SECRET}", "app.knowledge.candidate-cache.enabled": "false"}, nil)
+	p6Clean(t, f)
+	defer p6Clean(t, f)
+	code, root := p6Upload(t, f.Handler(), "POST", "/api/v1/knowledge/jobs", "outage.md", strings.Repeat("消息代理不可用时仍从数据库领取索引任务。", 30))
+	if code != 202 {
+		t.Fatal(code, root)
+	}
+	id := root["data"].(map[string]any)["id"].(string)
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		job, e := f.Knowledge().Jobs.Get(context.Background(), id)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if job.Status == "SUCCEEDED" {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("broker outage lost persisted work", job)
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	counts, _ := f.Knowledge().Stats.Snapshot()
+	if counts["work.connections|retry"] == 0 {
+		t.Fatal("broker failure not exercised", counts)
+	}
 }
 func p6Upload(t *testing.T, h http.Handler, method, path, name, body string) (int, map[string]any) {
 	t.Helper()
@@ -195,6 +330,39 @@ func TestFoundationP6DocumentsAPIAndRolePolling(t *testing.T) {
 	}
 	if calls.Load() != 0 {
 		t.Fatal("retrieval/ingestion called generation", calls.Load())
+	}
+}
+
+func TestFoundationP6DisabledIndexStillAcceptsDurableJobs(t *testing.T) {
+	var calls atomic.Int32
+	up := p6Upstream(t, &calls)
+	f := p6Foundation(t, "combined", up, map[string]string{"app.knowledge.jobs.enabled": "false"}, nil)
+	p6Clean(t, f)
+	defer p6Clean(t, f)
+	code, root := p6Upload(t, f.Handler(), "POST", "/api/v1/knowledge/jobs", "disabled.md", strings.Repeat("关闭后台调度仍保留持久任务。", 40))
+	if code != 202 {
+		t.Fatal(code, root)
+	}
+	id := root["data"].(map[string]any)["id"].(string)
+	time.Sleep(200 * time.Millisecond)
+	job, e := f.Knowledge().Jobs.Get(context.Background(), id)
+	if e != nil || job.Status != "PENDING" || job.Attempts != 0 {
+		t.Fatal("disabled scheduler claimed a job", job, e)
+	}
+	index := p6Foundation(t, "index", up, nil, nil)
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		job, e = index.Knowledge().Jobs.Get(context.Background(), id)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if job.Status == "SUCCEEDED" {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("enabled index did not recover durable work", job)
+		}
+		time.Sleep(20 * time.Millisecond)
 	}
 }
 

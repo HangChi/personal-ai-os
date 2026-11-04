@@ -64,6 +64,7 @@ def main():
         os.environ['GO_TEST_KNOWLEDGE_SEARCH_URL'] = 'http://127.0.0.1:' + ports['search']
         print('P6 disposable RabbitMQ/OpenSearch + TLS Redis/PostgreSQL: ' + rabbit_image + ' ' + search_image, flush=True)
         run_package(IMAGE, 'knowledge', tls_mode=True)
+        run_package(IMAGE, 'app', tls_mode=True, test_pattern='^TestFoundationP6')
     finally:
         for container in reversed(containers):
             subprocess.run(['docker', 'rm', '--force', container], check=True, capture_output=True, timeout=30)
