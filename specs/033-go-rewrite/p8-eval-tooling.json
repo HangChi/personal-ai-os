@@ -1,0 +1,32 @@
+{
+  "tooling_result": "PASS",
+  "synthetic_only": true,
+  "original_articles_used": false,
+  "semantic_quality_verified": false,
+  "sources_sha256": {
+    "scripts/eval/queries.py": "b5aa3821c2ffab9003a212b15b39db091a7f8ac539ade9e1830d901be0e9098a",
+    "scripts/eval/rebuild-corpus.py": "4d28005af2436c426586492e9097587e9ab80ce2e287ee35ce0faddfccd0edae",
+    "scripts/eval/retrieval-eval.py": "ed7cbc6a7736b02311b2b8c48e7468a646ad761c949d5f1142489b31ad1b42ec",
+    "scripts/eval/noise-floor.py": "9d25cc07c58a1a1f5aac99fd5cffa4133b01eb8755e8ac4116df4cfc6219f9b3"
+  },
+  "documents": 26,
+  "queries": 129,
+  "query_levels": {
+    "term": 24,
+    "natural": 22,
+    "cross": 83
+  },
+  "hybrid_search_calls": 129,
+  "vector_noise_search_calls": 50,
+  "synthetic_summary": "SYNTHETIC  n=129  R@1= 24.8%  R@3= 29.5%  R@5= 29.5%  MRR=0.270  多样性= 11.5%  未中=91\n                  判平后 R@1= 24.8%  MRR=0.270",
+  "synthetic_noise": "样本：3 个（文档×查询）组合，每组合 5 次\n标准差  中位数=0.00000  P90=0.00000  max=0.00000\n极差    中位数=0.00000  P90=0.00000  max=0.00000\n\n建议判平阈值：0.0000（P90 极差的 2 倍，留一倍余量）\n含义：两篇文档得分差小于该值时，谁排前面属于噪声，不应判为排序错误。",
+  "checks": [
+    "owned random TLS PostgreSQL/pgvector and original Flyway42; initially empty",
+    "unchanged original CORPUS titles/query labels/evaluate/summarize/noise algorithms",
+    "only in-memory upload manifest and authenticated CSRF API; no original rebuild main/delete_all/fixed-target IO",
+    "all hits belong to fixture, titles/IDs agree and documents are unique",
+    "default hybrid evaluation; separate explicit pure-vector noise process",
+    "Java and both Go processes stopped and application database connections released"
+  ],
+  "limits": "Synthetic repeated-title documents and deterministic word-bag embeddings only. Scores are tooling observations, not original 26-article/model quality, regression targets or release approval. The 0.007 tie tolerance and default 0.3 similarity threshold were not changed."
+}

@@ -637,3 +637,9 @@ T802b新增Push阶段/有界CDP/GCM脱敏诊断，两项Node纯单测与语法�
 T800d隔离私有CA HTTPS第4轮完整通过，日志`/tmp/personalos-p8-https-4.log`：候选Caddy原生HTTP配置、安全头/Secure Cookie/认证CSRF、原SPA与附件、未知CA/错误SNI拒绝、自动续期及重启保留；新随机项目/证书卷/端口已清理。第2/3轮真实发现308丢失发布端口，现显式绑定GO_HTTPS_PORT，前三轮失败日志保留。59项Python单测（`/tmp/personalos-p8-python-https.log`）、原生Compose5项/固定基线/diff检查通过。测试profile与内部CA不代表生产启动或公网ACME，T800父项/生产三文件/五发布门禁不升级verified。
 
 最终第5轮完整通过并在清理后生成`p8-https.json`，日志`/tmp/personalos-p8-https-5.log`。59项Python最终复验（`/tmp/personalos-p8-python-https-final.log`）通过；生产三文件新增私有CA证据但仍in_progress，总2415implemented/23in_progress/零verified，五门禁原样保留。
+
+T801f原评估四工具安全适配：固定哈希、显式语料预检和清库入口拒绝6项单测通过。原129查询/26标题（不是Java oracle附加场景后的152）在新随机TLS库/认证Go对明确合成材料产生129次hybrid与50次vector噪声请求，第2/3轮完整通过；最终日志`/tmp/personalos-p8-eval-tooling-3.log`，报告`p8-eval-tooling.json`。未提供全文目录的只读预检实际退出2，日志`/tmp/personalos-p8-eval-preflight.json`；真实文章/模型质量不升级verified。
+
+工具链首轮暴露上传title未生效；固定Java→Go真实10标题参数差分首轮失败，证实URL、重复字段和form在前/query在后的顺序。Go共享上传读取器已修，14个定向子场景先红后绿，knowledge/http两包race通过（`/tmp/personalos-p8-upload-params-green.log`）；实际Java/Go10场景一致见`p8-upload-binding.json`。原演示新增上传响应及列表的filename/title精确校验，五项安全单测和七组真实配方重跑通过（`/tmp/personalos-p8-demo-title-1.log`），清理本次资源。旧失败日志保留。
+
+本批最终66项迁移Python单测通过（`/tmp/personalos-p8-python-eval-final.log`）；knowledge完整真实TLS PostgreSQL/pgvector/Flyway42回归race6.403s通过并清理（`/tmp/personalos-p8-knowledge-after-params.log`）。Go integration vet/build、1093文件基线/78配置/两派生映射和diff检查通过；未重复无关全项目长回归。`check-complete`实际退出1（`/tmp/personalos-p8-check-complete-https-eval.log`），2415implemented/23in_progress/零verified与五发布门禁不变。

@@ -72,3 +72,13 @@ class DemoSeedAdapterTest(unittest.TestCase):
             self.assertIn("--no-psqlrc", arguments[0])
             self.assertEqual(options["input"], "private statement")
             self.assertNotIn("private statement", " ".join(arguments[0]))
+
+    def test_original_upload_title_and_persisted_manifest_are_required(self):
+        seed, client = SimpleNamespace(), Mock()
+        subject.bind_recipe(seed, client, Mock())
+        client.request.return_value = dict(id="fixture", filename="a.md", title="a")
+        with self.assertRaisesRegex(AssertionError, "filename/title"):
+            seed.upload_document("a.md", "Original title", "content")
+        client.request.return_value = dict(id="fixture", filename="a.md", title="Original title")
+        seed.upload_document("a.md", "Original title", "content")
+        self.assertEqual(seed._p8_documents, {"fixture": ("a.md", "Original title")})

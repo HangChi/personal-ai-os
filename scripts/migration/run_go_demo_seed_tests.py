@@ -82,6 +82,7 @@ class OwnedDatabase:
 
 
 def bind_recipe(seed, client, database):
+    seed._p8_documents = {}
     def api(method, path, body=None):
         allowed = ((method == "POST" and path in {"/tasks", "/calendar/events", "/memories"})
                    or (method == "POST" and re.fullmatch(r"/tasks/[0-9a-f-]{36}/complete", path))
@@ -98,8 +99,12 @@ def bind_recipe(seed, client, database):
         body = ("--" + boundary + '\r\nContent-Disposition: form-data; name="file"; filename="' + filename
                 + '"\r\nContent-Type: text/markdown; charset=utf-8\r\n\r\n' + content
                 + "\r\n--" + boundary + "--\r\n").encode()
-        return client.request("/knowledge/documents?title=" + quote(title, safe=""), "POST", body, status=201,
-                              headers={"Content-Type": "multipart/form-data; boundary=" + boundary})
+        document = client.request("/knowledge/documents?title=" + quote(title, safe=""), "POST", body, status=201,
+                                  headers={"Content-Type": "multipart/form-data; boundary=" + boundary})
+        if (document.get("filename"), document.get("title")) != (filename, title):
+            raise AssertionError("Original demo upload filename/title differs")
+        seed._p8_documents[document["id"]] = (filename, title)
+        return document
 
     def refuse_reset():
         raise ValueError("The demo adapter never invokes the original reset or main entry point")
@@ -116,6 +121,8 @@ def verify_seed(seed, client, database):
     documents = client.request("/knowledge/documents")
     if len(documents) != 4:
         raise AssertionError("Original demo knowledge document count differs")
+    if {row["id"]: (row["filename"], row["title"]) for row in documents} != seed._p8_documents:
+        raise AssertionError("Original demo persisted document filename/title differs")
     tasks = client.request("/tasks?size=100")["items"]
     actual_tasks = {row["title"]: row for row in tasks}
     if len(tasks) != len(seed.TASKS):
@@ -197,7 +204,7 @@ def exercise(container, fixture):
                           checks=["owned disposable TLS container; empty tables; no original main/reset",
                                   "unchanged seven-function demo recipe; authenticated CSRF API and owned SQL",
                                   "eight task states/tags; six recurrence/all-day events; five memories/two pins",
-                                  "four synchronously ingested Markdown documents with persisted pgvector chunks",
+                                  "four synchronously ingested Markdown documents with exact filenames/titles and persisted pgvector chunks",
                                   "five exact ordered conversations; 31-day actual usage; nine audit outcomes",
                                   "combined stopped and all application connections released"],
                           limits="Disposable synthetic demo only; no existing user database, real model quality, browser rendering or release approval.")

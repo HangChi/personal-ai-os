@@ -22,6 +22,18 @@
 
 第5轮用最终带报告runner再次完整通过（`/tmp/personalos-p8-https-5.log`），清理后生成脱敏[p8-https.json](p8-https.json)。59项迁移Python单测与固定1093文件基线检查通过；五原生Compose配置测试通过。这只是内部CA的回环演练，不验证公网ACME/DNS挑战/公有证书续期或生产容量；T800父项与五门禁继续开放。
 
+## T801f 原评估工具与上传参数差分
+
+`go_eval_adapter.py`先验证原queries/rebuild/retrieval/noise四文件固定SHA再加载，保留CORPUS/QUERIES/evaluate/summarize/noise指标算法，仅替换上传/检索IO。禁止原重建main/delete_all/固定目标；仅本次新随机verify-full库、空表、认证Cookie/CSRF与内存材料清单，返回命中须属于本次文档且标题/ID一致、无重复/非法分数。未提供原26篇全文目录时，预检明确退出2/BLOCKED，不扫描/tmp；即使指定目录文件齐全，也不宣称来源与语义质量已验收。
+
+首轮合成工具链因上传title未生效失败，保留`/tmp/personalos-p8-eval-tooling-1.log`。进一步启动固定Java真实Servlet/认证API、同一新TLS库后再切Go，10场景差分首轮真实发现Go忽略URL title、丢重复值和form/query合并次序，日志`/tmp/personalos-p8-upload-binding-1.log`。Java实际顺序为form在前、query在后；String多值以逗号拼接，空值/中文/加号/百分号/字面逗号保留。Go现按该行为绑定title，同时修复共享读取器丢URL documentId；14个定向Go子场景含target/非法UUID及原payload不变，先红后绿证据保留。knowledge/http两包race通过，日志`/tmp/personalos-p8-upload-params-green.log`；Java/Go实际10标题场景一致见[p8-upload-binding.json](p8-upload-binding.json)。
+
+第2/3轮完整工具链通过，最终`/tmp/personalos-p8-eval-tooling-3.log`：26份重复标题合成材料，经原129查询（24 term/22 natural/83 cross）产生129次实际hybrid请求，再停止进程，用明确关闭hybrid的第二Go进程执行原noise工具10查询×5次。没有过滤null样本来让噪声通过，而是单独pure-vector协议；未改0.3默认相似阈值或0.007判平阈值。Java及两个Go进程停止、应用连接归零，本次容器清理。报告[p8-eval-tooling.json](p8-eval-tooling.json)的合成未命中91/129、MRR0.270与零噪声只作工具观测，不是原26篇文章/真实模型质量或调参依据。
+
+同一缺口使先前演示验证只看文档计数/向量而漏掉标题。现适配器在上传响应和完整列表回读都核对原配方filename/title；新增拒绝错标题单测。`/tmp/personalos-p8-demo-title-1.log`用最终Go重跑七组配方完整通过并清理，四篇标题精确一致，其他数据仍通过。原演示脚本不改，旧失败证据保留；15个在线评估文件、T801父项与五发布门禁仍开放。
+
+最终66项Python单测、完整knowledge真实TLS库race6.403s、Go integration vet/build、固定基线/78配置/派生映射/diff检查通过；`check-complete`实际退出1，五门禁与23个in_progress保持。最终复验日志见validation.md；本批不重复此前无关全包长回归。
+
 ## T801a 数据保留策略
 
 `--foundation --p8` 包含P7及全部前序业务，新增用量/操作记录清理；默认保持回环监听，不解除prod拒绝或readyz503。`app.retention.token-usage-days`与`app.retention.operation-record-days`默认0（永久保留），负值/超过Java int的值启动拒绝。两类截止时间独立，按UTC瞬时减整天，严格早于截止时间才删除；不能用Go time.Duration乘天数导致大整数溢出。

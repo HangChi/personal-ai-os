@@ -1,0 +1,116 @@
+{
+  "result": "PASS",
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "source_sha256": "10843600a0ad34c2789a00031eebb53bd213535eade1716dbcb42af1e4cfccd7",
+  "cases": [
+    {
+      "name": "missing",
+      "query": [],
+      "form": [],
+      "title": "binding"
+    },
+    {
+      "name": "query",
+      "query": [
+        [
+          "title",
+          "query title"
+        ]
+      ],
+      "form": [],
+      "title": "query title"
+    },
+    {
+      "name": "query-repeat",
+      "query": [
+        [
+          "title",
+          "first"
+        ],
+        [
+          "title",
+          "second"
+        ]
+      ],
+      "form": [],
+      "title": "first,second"
+    },
+    {
+      "name": "form",
+      "query": [],
+      "form": [
+        "form title"
+      ],
+      "title": "form title"
+    },
+    {
+      "name": "form-repeat",
+      "query": [],
+      "form": [
+        "first",
+        "second"
+      ],
+      "title": "first,second"
+    },
+    {
+      "name": "query-and-form",
+      "query": [
+        [
+          "title",
+          "query"
+        ]
+      ],
+      "form": [
+        "form"
+      ],
+      "title": "form,query"
+    },
+    {
+      "name": "empty-query-and-form",
+      "query": [
+        [
+          "title",
+          ""
+        ]
+      ],
+      "form": [
+        "form"
+      ],
+      "title": "form,"
+    },
+    {
+      "name": "unicode",
+      "query": [
+        [
+          "title",
+          "中文 标题+%"
+        ]
+      ],
+      "form": [],
+      "title": "中文 标题+%"
+    },
+    {
+      "name": "empty-form",
+      "query": [],
+      "form": [
+        ""
+      ],
+      "title": "binding"
+    },
+    {
+      "name": "query-comma",
+      "query": [
+        [
+          "title",
+          "first,second"
+        ]
+      ],
+      "form": [
+        "third"
+      ],
+      "title": "third,first,second"
+    }
+  ],
+  "synthetic_only": true,
+  "real_servlet_and_database": true
+}

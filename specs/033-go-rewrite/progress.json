@@ -29477,9 +29477,14 @@
         "specs/033-go-rewrite/p6-eval-results.json",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/go_eval_adapter.py",
+        "scripts/migration/run_go_eval_tests.py",
+        "scripts/migration/test_go_eval_adapter.py",
+        "specs/033-go-rewrite/p8-eval-tooling.json",
+        "specs/033-go-rewrite/p8-upload-binding.json"
       ],
-      "note": "P8职责处置：原真实语料/在线模型评估工具保留；18组受控召回不是原外部语料/模型语义质量，未执行有外部副作用的采集。"
+      "note": "P8职责处置：固定哈希的原26标题/129查询/evaluate/summarize/noise算法安全接新随机TLS库；合成材料129次hybrid与50次显式vector请求、Java/Go上传参数差分通过。原26全文未提供、真实模型未评，不以工具链/合成分数解除在线质量门禁。"
     },
     "file:scripts/eval/queries.py": {
       "status": "in_progress",
@@ -29488,9 +29493,14 @@
         "specs/033-go-rewrite/p6-eval-results.json",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/go_eval_adapter.py",
+        "scripts/migration/run_go_eval_tests.py",
+        "scripts/migration/test_go_eval_adapter.py",
+        "specs/033-go-rewrite/p8-eval-tooling.json",
+        "specs/033-go-rewrite/p8-upload-binding.json"
       ],
-      "note": "P8职责处置：原真实语料/在线模型评估工具保留；18组受控召回不是原外部语料/模型语义质量，未执行有外部副作用的采集。"
+      "note": "P8职责处置：固定哈希的原26标题/129查询/evaluate/summarize/noise算法安全接新随机TLS库；合成材料129次hybrid与50次显式vector请求、Java/Go上传参数差分通过。原26全文未提供、真实模型未评，不以工具链/合成分数解除在线质量门禁。"
     },
     "file:scripts/eval/rag-live-cases.json": {
       "status": "in_progress",
@@ -29543,9 +29553,14 @@
         "specs/033-go-rewrite/p6-eval-results.json",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/go_eval_adapter.py",
+        "scripts/migration/run_go_eval_tests.py",
+        "scripts/migration/test_go_eval_adapter.py",
+        "specs/033-go-rewrite/p8-eval-tooling.json",
+        "specs/033-go-rewrite/p8-upload-binding.json"
       ],
-      "note": "P8职责处置：原真实语料/在线模型评估工具保留；18组受控召回不是原外部语料/模型语义质量，未执行有外部副作用的采集。"
+      "note": "P8职责处置：固定哈希的原26标题/129查询/evaluate/summarize/noise算法安全接新随机TLS库；合成材料129次hybrid与50次显式vector请求、Java/Go上传参数差分通过。原26全文未提供、真实模型未评，不以工具链/合成分数解除在线质量门禁。"
     },
     "file:scripts/eval/retrieval-eval.py": {
       "status": "in_progress",
@@ -29554,9 +29569,14 @@
         "specs/033-go-rewrite/p6-eval-results.json",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/go_eval_adapter.py",
+        "scripts/migration/run_go_eval_tests.py",
+        "scripts/migration/test_go_eval_adapter.py",
+        "specs/033-go-rewrite/p8-eval-tooling.json",
+        "specs/033-go-rewrite/p8-upload-binding.json"
       ],
-      "note": "P8职责处置：原真实语料/在线模型评估工具保留；18组受控召回不是原外部语料/模型语义质量，未执行有外部副作用的采集。"
+      "note": "P8职责处置：固定哈希的原26标题/129查询/evaluate/summarize/noise算法安全接新随机TLS库；合成材料129次hybrid与50次显式vector请求、Java/Go上传参数差分通过。原26全文未提供、真实模型未评，不以工具链/合成分数解除在线质量门禁。"
     },
     "file:scripts/eval/test_agent_eval.py": {
       "status": "in_progress",

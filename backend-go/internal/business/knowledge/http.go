@@ -322,11 +322,18 @@ func readUpload(w http.ResponseWriter, r *http.Request) (string, *string, string
 		return "", nil, "", nil, unsupported("请选择要上传的文件")
 	}
 	var title *string
-	if values := upload.Values["title"]; len(values) > 0 {
-		title = &values[0]
+	// The baseline multipart wrapper exposes form values before URL parameters;
+	// Spring converts repeated String parameters to a comma-delimited value.
+	parameters := func(name string) []string {
+		values := append([]string(nil), upload.Values[name]...)
+		return append(values, r.URL.Query()[name]...)
+	}
+	if values := parameters("title"); len(values) > 0 {
+		value := strings.Join(values, ",")
+		title = &value
 	}
 	target := ""
-	if values := upload.Values["documentId"]; len(values) > 0 && values[0] != "" {
+	if values := parameters("documentId"); len(values) > 0 && values[0] != "" {
 		var ok bool
 		target, ok = api.ParseJavaUUID(values[0])
 		if !ok {

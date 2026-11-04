@@ -24,7 +24,7 @@
     "owned disposable TLS container; empty tables; no original main/reset",
     "unchanged seven-function demo recipe; authenticated CSRF API and owned SQL",
     "eight task states/tags; six recurrence/all-day events; five memories/two pins",
-    "four synchronously ingested Markdown documents with persisted pgvector chunks",
+    "four synchronously ingested Markdown documents with exact filenames/titles and persisted pgvector chunks",
     "five exact ordered conversations; 31-day actual usage; nine audit outcomes",
     "combined stopped and all application connections released"
   ],
