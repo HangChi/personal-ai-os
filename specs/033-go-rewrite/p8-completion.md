@@ -106,3 +106,9 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 新增显式公开发现导出：与私有状态目录分离，拒绝符号链接/祖先或后代重叠/非当前用户或错误权限，0755目录与0644原子JSON仅有地址/role。私有目录0700、PID/日志/原发现0600保持；每次启停/targets须传相同导出参数，异常退出后用targets刷新。默认原生监控走回环，Docker Desktop可显式使用host.docker.internal；不宣称Linux同样可达宿主回环。
 
 `python3 scripts/migration/run_go_local_tests.py --monitoring`实际通过：新TLS PostgreSQL下P8 race测试5.211s，五种本地角色启停与重复拒绝、三个并行Worker、UID65534只读Prometheus挂载公开file_sd并真实采集三个UP=1且role一致。停止后发现清空，原格式备份/隔离恢复/附件与Push密钥权限验证通过，仅清理本次资源。日志`/tmp/personalos-p8-local-monitor.log`。六项runtime脚本单测覆盖最小导出/权限/陈旧清空与危险路径拒绝。
+
+## T803a 确认事务补验
+
+审读固定Java ConfirmationTransactionTest八声明后发现，已有Go内存失败状态断言与真实库并发成功不足以证明失败标记独立提交。新增TestPostgresP8ConfirmationTransactionOutcomes：处理器运行中通过第二个池读取已提交CONFIRMED及resolved_at；业务错误/普通错误最终FAILED、缺失目标CANCELLED且无执行、成功影响3行、重复终态令牌均不再调用处理器；独立过期SQL压到过去后抛错仍保留EXPIRED与解决时间。只用本轮合成ID，没有全表清理。
+
+`python3 scripts/migration/run_go_postgres_tests.py --package confirmation --tls --run '^TestPostgresP8'`真实TLS库race通过（1.269s），日志`/tmp/personalos-p8-confirmation-transaction.log`。原八声明分别由同名success/business/runtime/missing子用例及末尾expiry断言覆盖；原Java和生产确认算法未修改。其余声明/来源职责继续核查，T803父项未完成。
