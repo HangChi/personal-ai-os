@@ -1,0 +1,80 @@
+{
+  "result": "PASS",
+  "backend": "java",
+  "started_at": "2026-11-04T15:50:54.065186+00:00",
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "configured_real_model_used": true,
+  "synthetic_documents": true,
+  "private_answer_evidence": "/private/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-live-conflict-evidence-bugwl3up",
+  "mode": "ingestion-review",
+  "expected_cases": 1,
+  "semantic_quality_manually_approved": false,
+  "release_gates_changed": false,
+  "limits": "Original frozen synthetic-policy conflict/clarification cases; owned TLS database only. No production configuration, original runtime entry point, existing data or model fallback. Background ingestion review disabled for conflicts; ingestion-review mode restarts only its owned candidate with review enabled and preserves the original 110-second deadline and CHECKED_CANDIDATES/open-conflict assertions, but refuses manual review retries. this does not cover the 129 original retrieval queries, full Agent or production acceptance.",
+  "owned_opensearch_image": "opensearchproject/opensearch@sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e",
+  "review_restart_count": 1,
+  "review_restart_previous_connections": 0,
+  "sources_sha256": {
+    "scripts/eval/rag-live-ingestion.py": "305d7afb606aece4fb6b66fc0806d05d37031d0dfd5008b920bf3f989b50cf1c"
+  },
+  "ingestion_review": {
+    "states": {
+      "c4438fd0-c63a-41a7-ad5e-b0e75f368e4a": "CHECKED_CANDIDATES",
+      "a768e317-050c-4175-be45-48aa65c0eab0": "CHECKED_CANDIDATES"
+    },
+    "openConflicts": 2,
+    "passed": true,
+    "retriedSources": 0
+  },
+  "manual_review_retry_refused": false,
+  "cleanup_counts": {
+    "knowledge_document": 0,
+    "vector_store": 0,
+    "knowledge_source": 0,
+    "knowledge_review_job": 0
+  },
+  "background_ingestion_review_enabled": true,
+  "processes_stopped": true,
+  "database_connections_after_stop": 0,
+  "owned_opensearch_removed": true,
+  "finished_at": "2026-11-04T15:52:26.975136+00:00",
+  "real_model_requests": {
+    "calls": {
+      "embedding": 4,
+      "chat": 2
+    },
+    "failures": {},
+    "input_characters": 6994,
+    "routes": {
+      "/embeddings": 4,
+      "/chat/completions": 2
+    },
+    "transport": "node-pooled-fetch",
+    "usage": {
+      "prompt_tokens": 3794,
+      "total_tokens": 4181,
+      "completion_tokens": 387
+    },
+    "successful_embedding_inputs": 4,
+    "last_upstream_rejection": null,
+    "last_transport_failure": null,
+    "last_rejected_embedding_shape": null,
+    "unique_embedding_inputs": 4,
+    "unique_embedding_vectors": 4,
+    "limits": {
+      "requests": 600,
+      "chat_requests": 12,
+      "input_characters": 1000000,
+      "chat_max_tokens": 1024,
+      "upstream_timeout_seconds": 90,
+      "retries": 0
+    }
+  }
+}
