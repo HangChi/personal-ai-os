@@ -106,7 +106,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 
 ## P4 对话、Agent 与持久化交互
 
-验收状态：2026-11-04完成T400–T409并接入显式Foundation/CLI；T400a保留首批历史。职责、兼容差异、真实验证见[p4-completion.md](p4-completion.md)，45类/379声明映射见[p4-test-mapping.md](p4-test-mapping.md)。原前端API22组真实联调及既有逻辑/组件通过；无浏览器视觉/OS强杀/真实用户备份验收。P5–P8及五个发布门禁继续开放。
+验收状态：2026-11-04完成T400–T409并接入显式Foundation/CLI；T400a保留首批历史。职责、兼容差异、真实验证见[p4-completion.md](p4-completion.md)，45类/379声明映射见[p4-test-mapping.md](p4-test-mapping.md)。原前端API22组真实联调及既有逻辑/组件通过；无浏览器视觉/OS强杀/真实用户备份验收。P6–P8 及五个发布门禁继续开放。
 
 - [x] T400 移植会话/消息/引用存储、分页/排序/搜索/改名/模型、删除、rewind 和 Markdown 导出。
 - [x] T400a 完成独立会话存储/九条HTTP路由：显式事务/并发序号、分页搜索/改名模型、引用快照/批量读取、rewind摘要失效/提交后清理端口及Markdown；206个固定原Java差分、真实TLS库六组及安全组合测试通过。未装配生产Foundation/CLI，真实附件生命周期/完整Memory与控制器职责仍开放，详见[p4-storage.md](p4-storage.md)。

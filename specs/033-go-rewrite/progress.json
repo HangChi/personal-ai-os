@@ -2682,7 +2682,7 @@
         "backend-go/internal/business/task/patch_http_test.go",
         "specs/033-go-rewrite/validation.md"
       ],
-      "note": "T205九条任务路由接入真实Foundation安全链；创建/更新/删除幂等及跨连接单次副作用已验证。 审查修复：PATCH clearDueAt保留null/false/true；四个Java原摘要和真实库SUCCESS记录回放通过，回放无重复写且显式false仍冲突。"
+      "note": "控制器的所有基线路由已接 Foundation，真实 TLS PostgreSQL 回归通过。"
     },
     "file:backend/src/main/java/com/personalos/task/TaskExportContributor.java": {
       "status": "in_progress",
@@ -16804,6 +16804,182 @@
         "specs/033-go-rewrite/p5-completion.md"
       ],
       "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+    },
+    "route:GET:/api/v1/agent/confirmations:backend/src/main/java/com/personalos/common/confirmation/ConfirmationController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "backend-go/internal/business/task/confirmation_http_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "GET /api/v1/agent/confirmations 已接 Foundation，TestFoundationP2ConfirmationAndCrossConnectionIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:POST:/api/v1/agent/confirmations/{id}/confirm:backend/src/main/java/com/personalos/common/confirmation/ConfirmationController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "backend-go/internal/business/task/confirmation_http_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "POST /api/v1/agent/confirmations/{id}/confirm 已接 Foundation，TestFoundationP2ConfirmationAndCrossConnectionIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:POST:/api/v1/agent/confirmations/{id}/cancel:backend/src/main/java/com/personalos/common/confirmation/ConfirmationController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "backend-go/internal/business/task/confirmation_http_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "POST /api/v1/agent/confirmations/{id}/cancel 已接 Foundation，TestFoundationP2ConfirmationAndCrossConnectionIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:POST:/api/v1/tasks:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "POST /api/v1/tasks 已接 Foundation，TestFoundationP2TaskRoutesAndIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:GET:/api/v1/tasks:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "GET /api/v1/tasks 已接 Foundation，TestFoundationP2TaskRoutesAndIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:GET:/api/v1/tasks/tags:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "GET /api/v1/tasks/tags 已接 Foundation，TestFoundationP2TaskRoutesAndIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:GET:/api/v1/tasks/stats:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "GET /api/v1/tasks/stats 已接 Foundation，TestFoundationP2TaskRoutesAndIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:GET:/api/v1/tasks/{id}:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "GET /api/v1/tasks/{id} 已接 Foundation，TestFoundationP2TaskRoutesAndIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:PATCH:/api/v1/tasks/{id}:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "backend-go/internal/business/task/patch_http_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "PATCH /api/v1/tasks/{id} 已接 Foundation，TestFoundationP2TaskRoutesAndIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:POST:/api/v1/tasks/{id}/complete:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "POST /api/v1/tasks/{id}/complete 已接 Foundation，TestFoundationP2TaskRoutesAndIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:POST:/api/v1/tasks/{id}/reopen:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "POST /api/v1/tasks/{id}/reopen 已接 Foundation，TestFoundationP2TaskRoutesAndIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "route:DELETE:/api/v1/tasks/{id}:backend/src/main/java/com/personalos/task/controller/TaskController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "DELETE /api/v1/tasks/{id} 已接 Foundation，TestFoundationP2TaskRoutesAndIdempotency 在真实 TLS PostgreSQL 回归通过。"
+    },
+    "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/http.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "控制器的所有基线路由已接 Foundation，真实 TLS PostgreSQL 回归通过。"
+    },
+    "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationPromptContributor.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/prompt.go",
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/confirmation/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "会话范围的实时确认提示已接 P4/P5 对话。原 Java 三个用例、TLS PostgreSQL 快照边界与确认前后实际模型请求通过。"
+    },
+    "file:backend/src/test/java/com/personalos/common/confirmation/ConfirmationPromptContributorTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/prompt.go",
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/confirmation/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "会话范围的实时确认提示已接 P4/P5 对话。原 Java 三个用例、TLS PostgreSQL 快照边界与确认前后实际模型请求通过。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationPromptContributorTest.java:33": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/prompt.go",
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/confirmation/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "会话范围的实时确认提示已接 P4/P5 对话。原 Java 三个用例、TLS PostgreSQL 快照边界与确认前后实际模型请求通过。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationPromptContributorTest.java:46": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/prompt.go",
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/confirmation/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "会话范围的实时确认提示已接 P4/P5 对话。原 Java 三个用例、TLS PostgreSQL 快照边界与确认前后实际模型请求通过。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationPromptContributorTest.java:58": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/prompt.go",
+        "backend-go/internal/business/chat/module.go",
+        "backend-go/internal/business/confirmation/postgres_integration_test.go",
+        "backend-go/internal/app/foundation_p5_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "会话范围的实时确认提示已接 P4/P5 对话。原 Java 三个用例、TLS PostgreSQL 快照边界与确认前后实际模型请求通过。"
     }
   },
   "release_gates": {

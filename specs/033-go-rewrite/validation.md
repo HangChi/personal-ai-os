@@ -550,3 +550,10 @@ python3 scripts/migration/go_inventory.py check
 ```
 
 本地分笔提交：`3ab544a feat(go): 完成P4上下文预算与Agent工具计划`；`4026c9f feat(go): 完成P4持久对话交互与附件接线`。两笔均从各自Git提交独立导出backend-go快照后实际 `go build ./...` 通过，避免仅用完整工作区掩盖中间提交的依赖。任务、配置台账与验收文档另作第三笔提交。未推送。
+
+## P2/P4 人工确认实时状态补验
+
+- 对话每轮组装提示词时，从同一 PostgreSQL 快照读取本会话未过期的待确认数量、最多 10 条待确认和最近 12 条决定。到期的待确认记录在提示里显示为 EXPIRED。模型收到的记录字段限于 ID、动作、状态和摘要。摘要最多 180 个 UTF-16 单元，边界处保留完整 Unicode 字符。
+- 原 Java `ConfirmationPromptContributorTest` 三例通过。TLS PostgreSQL 上的 `TestPostgresPromptConversationSnapshot` 验证会话隔离、确认和取消状态、到期边界、计数与两组显示上限、令牌和执行载荷隔离。`TestP5AuthenticatedAgentAndAutoMemory` 通过认证 HTTP 和模型协议验证日程删除确认前后两个独立对话轮次实际收到 PENDING 与 CONFIRMED 快照。
+- 三个 `TestFoundationP2*` 集成用例在原 42 条 Flyway 迁移初始化的独立 TLS PostgreSQL 上重新通过。任务九条、确认三条路由逐条在 `progress.json` 记录为 `implemented`，并链接实现和测试。全量发布门禁由 P8 验收。
+- 本轮通过 `go test -timeout=2m ./...` 和 `go vet ./...`。定向集成使用 `python3 scripts/migration/run_go_postgres_tests.py --package confirmation --package app --tls --run '^(TestPostgresPromptConversationSnapshot|TestP5AuthenticatedAgentAndAutoMemory|TestFoundationP2.*)$'`。
