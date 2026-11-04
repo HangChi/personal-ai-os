@@ -13,44 +13,44 @@
       "http": {
         "/tasks": {
           "samples": 30,
-          "p50_ms": 8.934,
-          "p95_ms": 10.578
+          "p50_ms": 7.776,
+          "p95_ms": 18.263
         },
         "/chat/sessions": {
           "samples": 30,
-          "p50_ms": 7.094,
-          "p95_ms": 8.1
+          "p50_ms": 6.363,
+          "p95_ms": 7.597
         },
         "/knowledge/documents": {
           "samples": 30,
-          "p50_ms": 5.533,
-          "p95_ms": 8.511
+          "p50_ms": 4.762,
+          "p95_ms": 6.801
         }
       },
-      "rss_kib_after_warmup": 543232
+      "rss_kib_after_warmup": 571120
     },
     "scope": "One synthetic task/session/document, sequential authenticated loopback requests; five warmups then 30 samples; process RSS only, no production load or model quality claim.",
     "go": {
       "http": {
         "/tasks": {
           "samples": 30,
-          "p50_ms": 1.555,
-          "p95_ms": 2.399
+          "p50_ms": 1.506,
+          "p95_ms": 1.899
         },
         "/chat/sessions": {
           "samples": 30,
-          "p50_ms": 1.991,
-          "p95_ms": 2.586
+          "p50_ms": 1.936,
+          "p95_ms": 2.992
         },
         "/knowledge/documents": {
           "samples": 30,
-          "p50_ms": 0.825,
-          "p95_ms": 1.004
+          "p50_ms": 0.775,
+          "p95_ms": 0.93
         }
       },
       "rss_kib_after_warmup": 30144
     }
   },
-  "backup_sha256": "af47d5a7e65736bdbc4f5997b380ce175b7b5268ebc40a8bdb83deb104caafe9",
+  "backup_sha256": "9723ed2910d258bf0f59ee8e80b074af0508210a285f0a16a5b0fdbaea01a7fe",
   "limitation": "Only newly created synthetic Java data and local attachments; not a real user backup, real external side effects, production TLS or release approval."
 }

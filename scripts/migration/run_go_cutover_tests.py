@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Java-created synthetic backup -> isolated Go writes -> Java rollback; never a live target."""
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 import http.cookiejar
 from http.server import ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import subprocess
 import tempfile
@@ -78,7 +79,16 @@ def normalize(value):
         return [normalize(item) for item in value]
     if isinstance(value, str) and len(value) > 19 and value[10] == "T":
         try:
-            return datetime.fromisoformat(value.replace("Z", "+00:00")).isoformat(timespec="microseconds")
+            fraction = re.search(r"\.(\d+)(?:Z|[+-]\d{2}:\d{2})$", value)
+            parsed_value = value
+            if fraction:
+                start, end = fraction.span(1)
+                parsed_value = value[:start] + fraction[1][:6].ljust(6, "0") + value[end:]
+            instant = datetime.fromisoformat(parsed_value.replace("Z", "+00:00"))
+            # Match the fixed Java Instants helper and PostgreSQL storage precision.
+            if fraction and len(fraction[1]) > 6 and fraction[1][6] >= "5":
+                instant += timedelta(microseconds=1)
+            return instant.isoformat(timespec="microseconds")
         except ValueError:
             pass
     return value
