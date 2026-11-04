@@ -2,7 +2,7 @@ import copy
 import hashlib
 import unittest
 
-from run_go_real_eval_tests import check_answer, check_multistage, comparison, metrics
+from run_go_real_eval_tests import check_answer, check_multistage, check_no_evidence, comparison, metrics
 
 
 class RealEvaluationTest(unittest.TestCase):
@@ -90,6 +90,28 @@ class RealEvaluationTest(unittest.TestCase):
             elif field == "missing": altered["retrieval"]["stages"].pop()
             with self.subTest(field=field), self.assertRaises(AssertionError):
                 check_multistage(altered, 3 if field == "calls" else 4)
+
+    def test_no_evidence_requires_clean_stages_empty_sources_and_no_final_answer_call(self):
+        response = dict(answered=False, answer="知识库中没有找到相关内容。", citations=[],
+                        retrieval=dict(status="INSUFFICIENT", hits=[], warnings=[], stages=[
+                            dict(name=name, status="OK", durationMs=1)
+                            for name in ("recall", "rewrite", "rerank", "evidence")]))
+        result = check_no_evidence(response, 3)
+        self.assertFalse(result["final_answer_model_called"])
+        self.assertFalse(result["factual_quality_manually_approved"])
+        for field in ("answered", "answer", "citations", "status", "clarify", "hits", "warning", "stage", "missing", "calls"):
+            altered = copy.deepcopy(response)
+            if field == "answered": altered["answered"] = True
+            elif field == "answer": altered["answer"] = "unsupported answer"
+            elif field == "citations": altered["citations"] = [dict(index=1)]
+            elif field == "status": altered["retrieval"]["status"] = "UNVERIFIED"
+            elif field == "clarify": altered["retrieval"]["status"] = "CLARIFY"
+            elif field == "hits": altered["retrieval"]["hits"] = [dict(documentId="foreign")]
+            elif field == "warning": altered["retrieval"]["warnings"].append("timeout")
+            elif field == "stage": altered["retrieval"]["stages"][3]["status"] = "FALLBACK"
+            elif field == "missing": altered["retrieval"]["stages"].pop()
+            with self.subTest(field=field), self.assertRaises(AssertionError):
+                check_no_evidence(altered, 4 if field == "calls" else 3)
 
 
 if __name__ == "__main__":

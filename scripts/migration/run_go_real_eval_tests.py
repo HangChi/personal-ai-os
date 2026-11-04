@@ -28,6 +28,7 @@ from run_go_postgres_tests import IMAGE, ROOT, run_package
 
 SPEC = ROOT / "specs/033-go-rewrite"
 QA_QUERIES = ("BRIN 索引适合什么场景", "goroutine 为什么比操作系统线程轻量")
+NO_EVIDENCE_QUERY = "量子引力理论能否解释黑洞信息悖论的最终答案是什么？"
 
 
 def metrics(rows):
@@ -94,6 +95,24 @@ def check_multistage(response, actual_chat_calls):
                 factual_quality_manually_approved=False)
 
 
+def check_no_evidence(response, actual_chat_calls):
+    retrieval = response.get("retrieval", {})
+    stages = retrieval.get("stages", [])
+    if (response.get("answered") is not False or response.get("citations") != []
+            or response.get("answer") != "知识库中没有找到相关内容。"
+            or retrieval.get("status") != "INSUFFICIENT" or retrieval.get("hits") != []
+            or retrieval.get("warnings")
+            or [(row.get("name"), row.get("status")) for row in stages] !=
+               [(name, "OK") for name in ("recall", "rewrite", "rerank", "evidence")]
+            or actual_chat_calls != 3):
+        raise AssertionError("Real no-evidence control did not meet the strict INSUFFICIENT response contract")
+    return dict(status="INSUFFICIENT", answered=False, citation_count=0,
+                stages=[dict(name=row["name"], status=row["status"], duration_ms=row["durationMs"])
+                        for row in stages], warnings=0, actual_chat_calls=actual_chat_calls,
+                answer_sha256=hashlib.sha256(response["answer"].encode()).hexdigest(),
+                final_answer_model_called=False, factual_quality_manually_approved=False)
+
+
 def exercise(container, fixture, backend, binary, relay, relay_values, downloaded, artifact_dir, progress, mode="retrieval"):
     database = OwnedDatabase(container, fixture)
     database.require_empty()
@@ -101,13 +120,18 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
     documents, manifest = downloaded
     queries = query_subset(modules["queries.py"].QUERIES, documents)
     result = progress
-    multistage = mode == "multistage"
+    multistage = mode != "retrieval"
+    no_evidence = mode == "no-evidence"
+    executed_original = 0 if no_evidence else 1 if multistage else len(queries)
     result.update(backend=backend, result="IN_PROGRESS", documents=len(documents),
                   queries=1 if multistage else len(queries), eligible_original_queries=len(queries), mode=mode,
-                  unexecuted_eligible_queries=len(queries) - 1 if multistage else 0,
+                  executed_original_queries=executed_original,
+                  unexecuted_eligible_queries=len(queries) - executed_original,
                   background_ingestion_review_enabled=False,
                   excluded_queries=len(modules["queries.py"].QUERIES) - len(queries), sources_sha256=hashes,
                   stage="starting")
+    if no_evidence:
+        result["probe_question_origin"] = "supplemental-negative-control; not an original annotated query"
     with tempfile.TemporaryDirectory(prefix="personalos-p8-real-" + backend + "-") as temporary:
         directory = Path(temporary)
         values = {key: os.environ[key] for key in ("PATH", "HOME", "TMPDIR") if key in os.environ}
@@ -165,8 +189,8 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
             stored = {(row["id"], row["index"]): row["sha256"] for row in stored_rows}
             answers = []
             result["stage"] = "multistage_answer" if multistage else "knowledge_answers"
-            for question in (QA_QUERIES[:1] if multistage else QA_QUERIES):
-                acceptable = next(row["docs"] for row in queries if row["q"] == question)
+            questions = (NO_EVIDENCE_QUERY,) if no_evidence else QA_QUERIES[:1] if multistage else QA_QUERIES
+            for question in questions:
                 calls = relay.snapshot()["calls"].get("chat", 0)
                 response = client.request("/knowledge/ask", "POST", {"question": question, "topK": 5})
                 private_json(artifact_dir / (backend + "-answer-" + str(len(answers) + 1) + ".json"), response)
@@ -178,13 +202,26 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
                         warning_count=len(response.get("retrieval", {}).get("warnings", [])),
                         answered=response.get("answered"),
                         actual_chat_calls=relay.snapshot()["calls"].get("chat", 0) - calls)
-                    result["multistage"] = check_multistage(response, result["multistage_observation"]["actual_chat_calls"])
-                check = check_answer(response, acceptable, adapter.uploaded, stored)
+                    if no_evidence:
+                        result["no_evidence_observation"] = dict(
+                            citation_count=len(response.get("citations", [])),
+                            hit_count=len(response.get("retrieval", {}).get("hits", [])),
+                            answer_chars=len(response.get("answer", "")),
+                            answer_sha256=hashlib.sha256(response.get("answer", "").encode()).hexdigest(),
+                            clarification_chars=len(response.get("retrieval", {}).get("clarification", "")))
+                    result["multistage"] = (check_no_evidence if no_evidence else check_multistage)(
+                        response, result["multistage_observation"]["actual_chat_calls"])
+                if no_evidence:
+                    check = dict(result["multistage"])
+                else:
+                    acceptable = next(row["docs"] for row in queries if row["q"] == question)
+                    check = check_answer(response, acceptable, adapter.uploaded, stored)
                 check.update(question=question, actual_chat_calls=relay.snapshot()["calls"].get("chat", 0) - calls)
                 if not multistage and check["actual_chat_calls"] != 1:
                     raise AssertionError("Legacy knowledge answer did not use exactly one real chat request")
                 answers.append(check)
-                print(backend + ": real answer and persisted citations verified " + str(len(answers)), flush=True)
+                print(backend + ": real no-evidence rejection verified" if no_evidence else
+                      backend + ": real answer and persisted citations verified " + str(len(answers)), flush=True)
             result["knowledge_answers"] = answers
         if not multistage:
             values["AI_KNOWLEDGE_HYBRID_ENABLED"] = "false"
@@ -246,7 +283,7 @@ def main():
     parser.add_argument("--model-env-file", required=True, type=Path, help="Only explicitly authorized model keys are loaded")
     parser.add_argument("--downloaded-corpus-dir", required=True, type=Path)
     parser.add_argument("--backend", choices=("both", "go", "java"), default="both")
-    parser.add_argument("--mode", choices=("retrieval", "multistage"), default="retrieval")
+    parser.add_argument("--mode", choices=("retrieval", "multistage", "no-evidence"), default="retrieval")
     args = parser.parse_args()
     config = load_config(args.model_env_file)
     with pooled_transport(config) as opener:
@@ -269,6 +306,7 @@ def run(args, config, opener):
                   limits="16-document subset of fresh public pages, not authenticated historical 26-article corpus. "
                          "Independent live model calls can have noise. Retrieval mode uses legacy QA; "
                          "multistage mode probes one original question without replacing the full retrieval suite. "
+                         "No-evidence mode is one supplemental negative control, not an original annotated query. "
                          "Factual answer review and full production acceptance remain separate. No existing DB, "
                          "production mutation, automatic release approval or synthetic fallback.")
     code = 1
