@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import secrets
 import socket
 import subprocess
 import time
@@ -97,10 +98,39 @@ def health(port):
         return False
 
 
-def publish_targets(directory):
+def publish_targets(directory, discovery=None, host="127.0.0.1"):
+    if host not in ("127.0.0.1", "host.docker.internal"):
+        raise ValueError("Worker 发现地址只允许回环或显式 Docker Desktop 主机名")
     targets = [{"targets": ["127.0.0.1:" + str(state["managementPort"])], "labels": {"role": role}}
                for role in WORKERS if owned(state := current(directory, role))]
     private_json(directory / "worker-targets.json", targets)
+    if discovery is None:
+        return
+    # Public service discovery contains no process identity, binary path or log data.
+    if discovery.is_symlink():
+        raise ValueError("公开发现目录不能是符号链接")
+    discovery = discovery.resolve()
+    private = directory.resolve()
+    if discovery == private or private in discovery.parents or discovery in private.parents:
+        raise ValueError("公开发现目录必须与私有状态目录分离")
+    created = not discovery.exists()
+    discovery.mkdir(mode=0o755, parents=True, exist_ok=True)
+    if created:
+        discovery.chmod(0o755)
+    if discovery.stat().st_uid != os.getuid() or discovery.stat().st_mode & 0o777 != 0o755:
+        raise ValueError("公开发现目录必须归当前用户所有且权限为0755")
+    public = [{"targets": [host + ":" + entry["targets"][0].rsplit(":", 1)[1]], "labels": entry["labels"]}
+              for entry in targets]
+    temporary = discovery / (".targets-" + secrets.token_hex(8))
+    descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
+    try:
+        os.fchmod(descriptor, 0o644)
+        with os.fdopen(descriptor, "w") as output:
+            json.dump(public, output)
+            output.write("\n")
+        temporary.replace(discovery / "worker-targets.json")
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def stop(directory, role):
@@ -179,6 +209,8 @@ def main():
     parser.add_argument("--state-dir", type=Path, default=ROOT / ".cache/go-runtime")
     parser.add_argument("--port", type=int)
     parser.add_argument("--management-port", type=int)
+    parser.add_argument("--discovery-dir", type=Path)
+    parser.add_argument("--discovery-host", choices=("127.0.0.1", "host.docker.internal"), default="127.0.0.1")
     args = parser.parse_args()
     if args.role == "workers" and (args.port or args.management_port):
         parser.error("workers 使用各自端口；单角色才能覆盖端口")
@@ -186,6 +218,8 @@ def main():
         parser.error("start 需要 --binary")
     roles = WORKERS if args.role == "workers" else (args.role,)
     with locked(args.state_dir) as directory:
+        if args.discovery_dir:
+            publish_targets(directory, args.discovery_dir, args.discovery_host)
         started = []
         try:
             if args.command == "start":
@@ -204,7 +238,7 @@ def main():
                 print(json.dumps([{"role": role, "running": owned(state := current(directory, role)), "state": state}
                                   for role in roles], ensure_ascii=False))
         finally:
-            publish_targets(directory)
+            publish_targets(directory, args.discovery_dir, args.discovery_host)
         if args.command == "targets":
             print(directory / "worker-targets.json")
 

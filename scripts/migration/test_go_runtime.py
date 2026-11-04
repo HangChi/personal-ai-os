@@ -62,6 +62,33 @@ class GoRuntimeTest(unittest.TestCase):
                 with runtime.locked(directory):
                     self.fail("insecure directory accepted")
 
+    def test_public_discovery_is_separate_minimal_and_atomic(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with runtime.locked(root / "private") as directory:
+                runtime.private_json(directory / "index.json", {"formatVersion": 1, "role": "index", "pid": 100,
+                    "managementPort": 18093, "binary": "private-path", "log": "private-log"})
+                with patch.object(runtime, "owned", side_effect=lambda value: bool(value)):
+                    runtime.publish_targets(directory, root / "public", "host.docker.internal")
+                path = root / "public/worker-targets.json"
+                self.assertEqual(__import__("json").loads(path.read_text()),
+                    [{"targets": ["host.docker.internal:18093"], "labels": {"role": "index"}}])
+                self.assertEqual(path.stat().st_mode & 0o777, 0o644)
+                self.assertEqual(path.parent.stat().st_mode & 0o777, 0o755)
+                self.assertEqual(directory.stat().st_mode & 0o777, 0o700)
+                self.assertEqual((directory / "index.json").stat().st_mode & 0o777, 0o600)
+                with patch.object(runtime, "owned", return_value=False):
+                    runtime.publish_targets(directory, root / "public")
+                self.assertEqual(path.read_text().strip(), "[]")
+                for target in (directory, directory / "public", root):
+                    with self.assertRaises(ValueError):
+                        runtime.publish_targets(directory, target)
+                (root / "linked").symlink_to(root / "public")
+                with self.assertRaises(ValueError):
+                    runtime.publish_targets(directory, root / "linked")
+                with self.assertRaises(ValueError):
+                    runtime.publish_targets(directory, root / "public", "untrusted.example")
+
 
 if __name__ == "__main__":
     unittest.main()

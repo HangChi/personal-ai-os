@@ -171,6 +171,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [x] T801a 显式P8接入用量/操作记录独立保留期与本地cron/关闭；默认永久保留、真实TLS库严格截止/重复清理和未知TOOL占位保护通过。备份/恢复/监控仍由父项追踪。
 - [x] T801b 独立Go本地启停/身份核对/Worker发现、显式目标备份封装，五角色实际启停与发现更新、原归档格式备份/隔离恢复和Push密钥权限/防覆盖已通过；不读取Java.env或PID。
 - [x] T801c combined监控实际采集、20面板provisioning、六告警pending/firing/recovery规则测试；知识指标名字/标签/秒单位/桶与实际Java注册表对照通过，真实库积压/age/查询失败NaN通过。distributed/local发现及通知投递不含在本子项。
+- [x] T801d 独立0755/0644仅地址与role的公开Worker发现导出，私有PID/日志保持0700/0600；macOS Docker Desktop非root Prometheus实际读取file_sd并采集三个本地Worker，停止后清空，拒绝链接/重叠目录。
 - [ ] T802 跑全量前端 lint/format/type-check/logic/component/build，现有 E2E 接 Go 运行；页面/组件/通知/上传下载逐项验收。
 - [x] T802a 原前端真实Chrome登录/任务CRUD/聊天SSE附件/知识后台索引/JSON导出及10页面三宽度验证通过；legacy取消与Java真实差分一致，原E2E修复后80通过/1同基线失败/1跳过/2观察。父项仍追踪预算失败、工具跳过和通知。
 - [ ] T803 全部 Java 测试文件与测试声明映射到 Go/差分证据；检查全部清单的职责是否确实覆盖，不按数量勾选。

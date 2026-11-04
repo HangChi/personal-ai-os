@@ -100,3 +100,9 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 第二轮可读日志确认首轮实际缺陷：API共享会话模式明确拒绝Servlet专属Cookie覆盖；基础Compose冗余设置http-only/same-site使API退出。移除两项，保留共享/本地默认HttpOnly/Lax并在真实登录响应断言。没有绕过配置验证器。日志按服务单独有界保留，避免Grafana输出挤掉故障原因。首两轮失败记录保留。
 
 固定Grafana13.2.2镜像的defaults.ini确认默认preinstall/自动更新开启。候选显式设置GF_PLUGINS_PREINSTALL_DISABLED=true及GF_PLUGINS_PREINSTALL_AUTO_UPDATE=false，实际日志无Installing/Updating plugin；避免未固定的插件下载及只读bundled目录更新失败。只检查升级开关不足以禁用该行为。测试项目/卷全部清理，生产TLS/prod拒绝与readyz503边界保持。
+
+## T801d 本地Worker的容器监控发现
+
+新增显式公开发现导出：与私有状态目录分离，拒绝符号链接/祖先或后代重叠/非当前用户或错误权限，0755目录与0644原子JSON仅有地址/role。私有目录0700、PID/日志/原发现0600保持；每次启停/targets须传相同导出参数，异常退出后用targets刷新。默认原生监控走回环，Docker Desktop可显式使用host.docker.internal；不宣称Linux同样可达宿主回环。
+
+`python3 scripts/migration/run_go_local_tests.py --monitoring`实际通过：新TLS PostgreSQL下P8 race测试5.211s，五种本地角色启停与重复拒绝、三个并行Worker、UID65534只读Prometheus挂载公开file_sd并真实采集三个UP=1且role一致。停止后发现清空，原格式备份/隔离恢复/附件与Push密钥权限验证通过，仅清理本次资源。日志`/tmp/personalos-p8-local-monitor.log`。六项runtime脚本单测覆盖最小导出/权限/陈旧清空与危险路径拒绝。

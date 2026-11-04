@@ -32,6 +32,8 @@ docker compose --env-file /dev/null -f backend-go/deploy/compose.yml config --qu
 
 本地二进制用`python3 scripts/migration/go_runtime.py start --binary /absolute/personalos --role combined`；只读取显式系统环境，强制关闭dotenv，要求认证/CSRF和全部连接参数。`--role api`与`--role workers`支持独立角色；`status/stop/targets`只使用`.cache/go-runtime`中本工具创建的状态，不读Java PID或进程参数。状态目录0700、日志/状态0600；停止核对PID启动身份，超时保留状态且不强杀。默认端口18081/18091，三个Worker分别18083/18093、18084/18094、18085/18095。监控发现文件使用当前运行的Worker，不加入已停止进程。
 
+容器监控不要挂载私有状态目录。给每次start/stop/targets命令传相同的`--discovery-dir /absolute/separate-public-directory`，原子导出仅含地址/role的0644 JSON，独立目录0755；原PID/日志权限不变。原生Prometheus使用默认回环地址；macOS Docker Desktop另传`--discovery-host host.docker.internal`，挂载公开目录至`/etc/prometheus/discovery:ro`并使用`monitoring/prometheus.local.yml`。本地配置只采集Worker；API管理端口按实际部署单独配置。仅验证macOS Docker Desktop可达宿主回环，不假设Linux容器能够如此访问；Linux优先原生Prometheus/显式审核的网络方案。进程异常退出后执行targets刷新，不把静态文件视为健康探测。
+
 Push密钥继续使用`python3 scripts/dev/generate-push-keys.py /absolute/new-file`生成0600新文件，不能覆盖既有密钥；终端只显示路径。原数据库/附件备份格式和S3归属校验保留，备份必须暂停入口写入及全部Worker，数据库dump不能代替附件、S3对象或模型加密密钥。密钥应另行安全备份，不能混入公开验收产物。
 
 真实镜像五角色回归使用runner新建的TLS PostgreSQL/pgvector，不发布应用端口，不读取现有.env：

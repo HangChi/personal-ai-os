@@ -3,15 +3,47 @@
 import importlib.util
 import json
 import os
+import platform
 from pathlib import Path
 import secrets
 import socket
 import subprocess
 import tempfile
+import time
+import uuid
 
 import go_backup
 import go_runtime
 from run_go_postgres_tests import IMAGE, ROOT, run_package
+
+MONITORING = False
+
+
+def monitor_workers(discovery):
+    """Docker Desktop can reach host loopback; Linux host networking is not assumed."""
+    name = "personalos-p8-local-monitor-" + uuid.uuid4().hex[:12]
+    command = ["docker", "exec", name, "/bin/wget", "-q", "-O", "-",
+               "http://127.0.0.1:9090/api/v1/query?query=up"]
+    try:
+        subprocess.run(["docker", "run", "--detach", "--name", name, "--user", "65534:65534", "--read-only",
+            "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
+            "--tmpfs", "/prometheus:rw,noexec,nosuid,uid=65534,gid=65534,size=32m",
+            "--mount", "type=bind,src=" + str(discovery) + ",dst=/etc/prometheus/discovery,readonly",
+            "--mount", "type=bind,src=" + str(ROOT / "backend-go/deploy/monitoring/prometheus.local.yml") + ",dst=/etc/prometheus/prometheus.yml,readonly",
+            "prom/prometheus:v3.14.0"], check=True, capture_output=True, timeout=60)
+        deadline = time.monotonic() + 45
+        while True:
+            result = subprocess.run(command, capture_output=True, timeout=5)
+            if result.returncode == 0:
+                rows = json.loads(result.stdout)["data"]["result"]
+                if len(rows) == 3 and all(row["value"][1] == "1" for row in rows) and {row["metric"]["role"] for row in rows} == set(go_runtime.WORKERS):
+                    print("Non-root container read public file_sd and scraped three real local Workers", flush=True)
+                    return
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Local Docker Desktop Worker scrape failed")
+            time.sleep(.3)
+    finally:
+        subprocess.run(["docker", "rm", "--force", name], check=True, capture_output=True, timeout=30)
 
 
 def free_port():
@@ -64,13 +96,18 @@ def exercise(container, fixture):
                 targets = json.loads((runtime / "worker-targets.json").read_text())
                 if {entry["labels"]["role"] for entry in targets} != set(go_runtime.WORKERS):
                     raise AssertionError("Running Worker discovery incomplete")
+                if MONITORING:
+                    go_runtime.publish_targets(runtime, directory / "discovery", "host.docker.internal")
+                    monitor_workers(directory / "discovery")
             finally:
                 for state in reversed(states):
                     go_runtime.stop(runtime, state["role"])
                     reap(state["pid"])
-                go_runtime.publish_targets(runtime)
+                go_runtime.publish_targets(runtime, directory / "discovery" if MONITORING else None)
             if json.loads((runtime / "worker-targets.json").read_text()) != []:
                 raise AssertionError("Stopped Workers still discovered")
+            if MONITORING and json.loads((directory / "discovery/worker-targets.json").read_text()) != []:
+                raise AssertionError("Stopped Workers still publicly discovered")
         # No writer/Worker remains; keep the same baseline tar/custom-dump format.
         (uploads / "synthetic-attachment").write_bytes(b"P8 backup attachment")
         configuration = go_backup.configuration(dict(GO_BACKUP_DB_CONTAINER=container, GO_BACKUP_DB_USER=fixture["GO_TEST_POSTGRES_USER"],
@@ -95,4 +132,11 @@ def exercise(container, fixture):
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--monitoring", action="store_true")
+    args = parser.parse_args()
+    MONITORING = args.monitoring
+    if MONITORING and platform.system() != "Darwin":
+        parser.error("This Docker Desktop host-loopback drill is verified on macOS only; use native loopback monitoring elsewhere")
     run_package(IMAGE, "app", tls_mode=True, test_pattern="^TestP8", exercise=exercise)
