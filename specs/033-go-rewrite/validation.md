@@ -606,6 +606,10 @@ T801h新增独立显式Alertmanager配置与本地接收端演练；combined第2
 
 76项迁移Python测试通过（/tmp/personalos-p8-python-alerting-final.log），含新配置必填/非root私有部署、接收端重试/错误与错误身份拒绝/恢复时间/有界记录、拒绝额外通知目标及Prometheus采集规则不变。未连接真实收件渠道；其余五规则的真实持续故障与真实最终送达仍未验收，T801及五门禁不升级。
 
+distributed告警首轮完整退出0（/tmp/personalos-p8-alerting-distributed-1.log），报告 p8-alerting-distributed.json 在清理后生成。API及三Worker、四采集目标、PostgreSQL/Redis TLS与共享会话重启仍通过；真实API停机2m规则触发、503重试及匹配resolved通知、重新登录回读持久任务与四角色退出0通过。76项Python在台账更新后再次通过（/tmp/personalos-p8-python-alerting-post-audit.log）；真实外部通知与发布门禁仍开放。
+
+最终固定基线/78配置/两派生映射/diff检查通过；本次随机演练容器无残留。check-complete实际退出1，五门禁仍未verified，日志 /tmp/personalos-p8-check-complete-alerting.log。原失败记录、prod拒绝和readyz503保持。
+
 ## P8 首批运维运行时（2026-11-04）
 
 T801a完成，T800–T808父项仍开放。新增显式`--p8`（包含P7）接入用量/审计保留策略，默认永久保留，独立UTC截止时间、负值拒绝、同秒去重、每轮30秒限制与取消等待后关池。原附件cron解析提取共享schedule包，原附件定向race通过。安全差异R-053保护结果未明的TOOL IN_PROGRESS占位，防止保留清理解除幂等保护。

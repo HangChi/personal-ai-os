@@ -2,6 +2,19 @@
 
 2026-11-04：P8实施中，T800–T806及T808父项尚未收口，T807文档已完成。固定Java基线继续为`cb5d694d62fa93742b5789b97273e76d931ce335`。五个发布门禁未verified；frontend_e2e已开始并保留未通过记录，所有清单条目不自动升级verified。现有Java部署与SQL保留；没有自动推送、合并、生产部署或删除Java目录。
 
+## 当前未完成项与进入条件
+
+本机隔离验证只覆盖表中已经具备的条件；缺少真实输入、交付结果或人工审查的项目继续开放。不得用合成数据、原样哈希或与Java相同的失败将发布门禁改为verified。
+
+| 项目 | 当前证据与下一步所需条件 |
+| --- | --- |
+| T800 生产入口 | 私有CA/续期/重启已通过；还需受控公网域名、ACME/DNS挑战与实际续期证据，以及明确生产部署批准。prod拒绝/readyz503保留。 |
+| T801 告警通知 | 独立Alertmanager和本地HTTP接收端触发/重试/恢复已验证；真实渠道还需显式提供测试收件配置、发送授权与最终接收确认。六条规则单测不等于六种持续真实故障。 |
+| T801/T804 原评估 | 四工具/原129查询在合成材料可运行；还需原26篇全文的显式目录与来源核对、获准使用的模型及成本边界。FILES_PRESENT_NOT_AUTHENTICATED不能当真实语料验收。 |
+| T802 浏览器验收 | 原E2E仍80通过/1与固定Java同预算失败/1 saveMemory跳过/2观察，需明确预算失败和原跳过用例的验收处理结论；真实Push还需可完成订阅和最终送达的测试环境，保留原30秒/15秒期限，不推断失败根因。 |
+| T804/T805 存量与切换 | 合成Java备份→Go→Java回退已通过；还需明确授权的真实备份副本及密钥/附件/S3恢复材料、目标负载与容量标准、待办及外部副作用清单。只在新隔离目标恢复，不能直接操作当前服务或重放未知TOOL。 |
+| T803/T806/T808 证据与批准 | 全清单处置已记录；五release_gates仍需逐项人工核验和用户验收。Java归档须在验收后另作明确决定；不自动推送、合并、生产部署或删除原实现。 |
+
 ## 实施顺序
 
 1. 补齐默认关闭的数据保留策略及生命周期，避免部署遗漏实际运行钩子。
@@ -51,6 +64,10 @@
 实际combined第2轮完整通过：新随机TLS库及空卷、原42迁移/重复validate、原前端/认证/CSRF/上传下载、真实指标/Grafana20面板和六条规则单测仍通过；新服务UID65534/只读/零capability/无宿主端口通过。停止本次backend后实际观察pending，保持原for=2m，实际firing经Alertmanager送达本地接收端；故意首次503未算成功，后续重试200才通过。恢复backend后观察告警inactive，收到相同fingerprint/startsAt且结束晚于开始的resolved；重新登录回读任务持久化，优雅停止及本次项目/卷清理通过。报告[p8-alerting.json](p8-alerting.json)仅在清理后生成，日志 /tmp/personalos-p8-alerting-2.log。
 
 首轮在通知演练前因接收端挂载层级过浅、根路径定位失败而退出，日志 /tmp/personalos-p8-alerting-1.log 保留；已修正挂载并纳入断言，没有改变告警等待或HTTP断言。全部76项迁移Python测试通过（/tmp/personalos-p8-python-alerting-final.log），包括7项接收端/配置隔离单测、7项原生Compose测试及采集变体一致性。此处只验证真实target-down规则与本地协议；其余五条规则仍是时间序列单测，不冒充真实故障或外部通知最终送达。T801父项与五发布门禁保持开放。
+
+distributed首轮也完整退出0，报告[p8-alerting-distributed.json](p8-alerting-distributed.json)，日志 /tmp/personalos-p8-alerting-distributed-1.log。新随机PostgreSQL/Redis TLS、API与三个Worker、四采集目标和API重启后共享会话验证仍通过；实际API停机在原2m规则下pending/firing、本地503重试/匹配resolved、重新登录回读任务和四角色退出0通过，项目与新卷均清理。完整76项Python测试在台账更新后复验通过（/tmp/personalos-p8-python-alerting-post-audit.log）。未新增Go业务修改，不重复此前无关全量长回归；真实收件渠道及发布批准继续开放。
+
+最终1093文件固定基线、78配置处置、两份P8派生映射与diff检查通过；随机演练容器已无残留。check-complete仍实际退出1（/tmp/personalos-p8-check-complete-alerting.log），五门禁均未verified；台账只增加证据，没有自动升级验收状态。
 
 ## T801a 数据保留策略
 

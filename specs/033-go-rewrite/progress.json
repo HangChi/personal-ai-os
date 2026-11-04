@@ -23720,9 +23720,10 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/deploy/compose.alerting.yml",
         "scripts/migration/p8_alert_fixture.py",
-        "specs/033-go-rewrite/p8-alerting.json"
+        "specs/033-go-rewrite/p8-alerting.json",
+        "specs/033-go-rewrite/p8-alerting-distributed.json"
       ],
-      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
+      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined与distributed实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
     },
     "file:deploy/monitoring/prometheus.yml": {
       "status": "implemented",
@@ -23739,9 +23740,10 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/deploy/compose.alerting.yml",
         "scripts/migration/p8_alert_fixture.py",
-        "specs/033-go-rewrite/p8-alerting.json"
+        "specs/033-go-rewrite/p8-alerting.json",
+        "specs/033-go-rewrite/p8-alerting-distributed.json"
       ],
-      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
+      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined与distributed实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
     },
     "file:deploy/monitoring/grafana/dashboards/runtime.json": {
       "status": "implemented",
@@ -26376,9 +26378,10 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/deploy/compose.alerting.yml",
         "scripts/migration/p8_alert_fixture.py",
-        "specs/033-go-rewrite/p8-alerting.json"
+        "specs/033-go-rewrite/p8-alerting.json",
+        "specs/033-go-rewrite/p8-alerting-distributed.json"
       ],
-      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
+      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined与distributed实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
     },
     "file:compose.production.yml": {
       "status": "in_progress",
@@ -26441,9 +26444,10 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/deploy/compose.alerting.yml",
         "scripts/migration/p8_alert_fixture.py",
-        "specs/033-go-rewrite/p8-alerting.json"
+        "specs/033-go-rewrite/p8-alerting.json",
+        "specs/033-go-rewrite/p8-alerting-distributed.json"
       ],
-      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
+      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined与distributed实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
     },
     "file:deploy/monitoring/worker-targets/.gitkeep": {
       "status": "implemented",
@@ -26456,9 +26460,10 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/deploy/compose.alerting.yml",
         "scripts/migration/p8_alert_fixture.py",
-        "specs/033-go-rewrite/p8-alerting.json"
+        "specs/033-go-rewrite/p8-alerting.json",
+        "specs/033-go-rewrite/p8-alerting-distributed.json"
       ],
-      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
+      "note": "P8职责处置：独立Go指标/面板/六告警、distributed与local发现真实采集；combined与distributed实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"
     },
     "file:docs/agent-reliability.md": {
       "status": "implemented",
