@@ -30,6 +30,8 @@ services:
       GF_ANALYTICS_REPORTING_ENABLED: "false"
       GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
       GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_PLUGINS_PREINSTALL_DISABLED: "true"
+      GF_PLUGINS_PREINSTALL_AUTO_UPDATE: "false"
     ports: ["127.0.0.1:${GO_GRAFANA_PORT:-13000}:3000"]
     volumes:
       - go-grafana:/var/lib/grafana

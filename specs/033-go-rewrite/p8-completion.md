@@ -92,3 +92,11 @@ Go和原前端Web候选镜像均实际构建成功。第一次Go构建的Debian 
 此前P8真实TLS PostgreSQL全部包与命令进程smoke通过，日志`/tmp/personalos-p8-postgres-all.log`；MinIO实际S3生命周期通过，日志`/tmp/personalos-p8-s3.log`；P6四设施回归通过，日志`/tmp/personalos-p8-facilities-p6.log`。所有本次容器清理，仅合成数据。性能/生产召回质量/真实用户备份和完整切换仍未验收。
 
 Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专用Go测试通过（0.64s），但Chrome Service Worker未在15秒内回传收到通知。runner按预期失败，日志`/tmp/personalos-p8-browser-push.log`，不能把FCM接受当最终浏览器送达，也未延长期限凑绿。T802通知子项保持开放。
+
+## T800c 分布式Compose与四角色采集
+
+`python3 scripts/migration/run_go_compose_tests.py --monitoring --distributed`第三轮完整通过，日志`/tmp/personalos-p8-distributed-actual-3.log`。新建Redis TLS仅私有网络、无宿主端口，API共享会话在进程重启后保持有效；实际Cookie为SESSION、HttpOnly、SameSite=Lax。index/review/delivery真实业务端点404，四角色UID10001与管理health通过；Prometheus真实发现四个UP=1目标，六告警规则和20面板provisioning、原Caddy业务链及四角色SIGTERM退出0全部通过。
+
+第二轮可读日志确认首轮实际缺陷：API共享会话模式明确拒绝Servlet专属Cookie覆盖；基础Compose冗余设置http-only/same-site使API退出。移除两项，保留共享/本地默认HttpOnly/Lax并在真实登录响应断言。没有绕过配置验证器。日志按服务单独有界保留，避免Grafana输出挤掉故障原因。首两轮失败记录保留。
+
+固定Grafana13.2.2镜像的defaults.ini确认默认preinstall/自动更新开启。候选显式设置GF_PLUGINS_PREINSTALL_DISABLED=true及GF_PLUGINS_PREINSTALL_AUTO_UPDATE=false，实际日志无Installing/Updating plugin；避免未固定的插件下载及只读bundled目录更新失败。只检查升级开关不足以禁用该行为。测试项目/卷全部清理，生产TLS/prod拒绝与readyz503边界保持。

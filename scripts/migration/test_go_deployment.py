@@ -15,19 +15,22 @@ class GoDeploymentTest(unittest.TestCase):
         if not shutil.which("docker"):
             raise unittest.SkipTest("Docker Compose required for native configuration validation")
 
-    def model(self, distributed=False, values=True, production=False):
+    def model(self, distributed=False, values=True, production=False, monitoring=False):
         env = {key: value for key, value in os.environ.items() if key in {"PATH", "HOME", "DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_CONFIG"}}
         if values:
             env.update(GO_AUTH_USERNAME="fixture", GO_AUTH_PASSWORD="synthetic-password-p8",
                        GO_POSTGRES_DB="fixture", GO_POSTGRES_USER="fixture", GO_POSTGRES_PASSWORD="synthetic-db",
                        GO_POSTGRES_TLS_DIR="/tmp/personalos-p8-not-real-tls", GO_POSTGRES_CA="/tmp/personalos-p8-not-real-ca.crt",
                        GO_MODEL_KEY_ENCRYPTION_KEY="synthetic-key", GO_REDIS_SESSION_URI="rediss://fixture.invalid:6379",
-                       GO_REDIS_SESSION_NAMESPACE="p8-synthetic", GO_PUBLIC_HOST="p8-fixture.invalid")
+                       GO_REDIS_SESSION_NAMESPACE="p8-synthetic", GO_PUBLIC_HOST="p8-fixture.invalid",
+                       GO_GRAFANA_ADMIN_PASSWORD="synthetic-grafana-p8")
         command = ["docker", "compose", "--env-file", "/dev/null", "-f", "backend-go/deploy/compose.yml"]
         if distributed:
             command += ["-f", "backend-go/deploy/compose.distributed.yml"]
         if production:
             command += ["-f", "backend-go/deploy/compose.prod.yml"]
+        if monitoring:
+            command += ["-f", "backend-go/deploy/compose.monitoring.yml"]
         result = subprocess.run(command + ["config", "--format=json"], cwd=ROOT, env=env,
                                 capture_output=True, text=True, timeout=45)
         if not values:
@@ -76,6 +79,9 @@ class GoDeploymentTest(unittest.TestCase):
             if role != "api":
                 self.assertIn("worker-" + role, entry["environment"]["SPRING_PROFILES_ACTIVE"])
         self.assertEqual(services["backend"]["environment"]["APP_SHAREDSESSION_ENABLED"], "true")
+        # Shared CookieSerializer deliberately rejects Servlet-only overrides.
+        for suffix in ("HTTPONLY", "SAMESITE"):
+            self.assertNotIn("SERVER_SERVLET_SESSION_COOKIE_" + suffix, services["backend"]["environment"])
 
     def test_production_candidate_requires_secure_cookies_and_separate_tls_entry(self):
         services = self.model(production=True)["services"]
@@ -83,3 +89,11 @@ class GoDeploymentTest(unittest.TestCase):
         self.assertEqual(services["backend"]["environment"]["SERVER_SERVLET_SESSION_COOKIE_SECURE"], "true")
         self.assertEqual({str(port["target"]) for port in services["web"]["ports"]}, {"8080", "8443"})
         self.assertTrue(all(port["host_ip"] == "127.0.0.1" for port in services["web"]["ports"]))
+
+    def test_readonly_monitoring_never_preinstalls_or_updates_plugins(self):
+        services = self.model(monitoring=True)["services"]
+        grafana = services["grafana"]
+        self.assertTrue(grafana["read_only"])
+        self.assertEqual(grafana["environment"]["GF_PLUGINS_PREINSTALL_DISABLED"], "true")
+        self.assertEqual(grafana["environment"]["GF_PLUGINS_PREINSTALL_AUTO_UPDATE"], "false")
+        self.assertFalse(services["prometheus"].get("ports"))
