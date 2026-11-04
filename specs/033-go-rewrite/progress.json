@@ -16980,6 +16980,523 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "会话范围的实时确认提示已接 P4/P5 对话。原 Java 三个用例、TLS PostgreSQL 快照边界与确认前后实际模型请求通过。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/reader/DocumentReaderFactory.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/reader/DocxDocumentReader.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/reader/ImageDocumentReader.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/reader/KnowledgeDocumentReader.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/reader/PdfDocumentReader.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/reader/ReaderSupport.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/reader/VisionTextExtractor.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/service/DocumentFilenameSupport.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitter.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/reader/DocxDocumentReaderTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/reader/ImageDocumentReaderTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/reader/PdfDocumentReaderTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/reader/DocxDocumentReaderTest.java:43": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/reader/DocxDocumentReaderTest.java:60": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/reader/DocxDocumentReaderTest.java:75": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/reader/ImageDocumentReaderTest.java:26": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/reader/ImageDocumentReaderTest.java:44": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/reader/ImageDocumentReaderTest.java:54": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/reader/PdfDocumentReaderTest.java:55": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/reader/PdfDocumentReaderTest.java:67": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/reader/PdfDocumentReaderTest.java:77": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:103": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:111": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:18": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:26": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:35": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:46": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:55": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:70": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:80": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentFilenameSupportTest.java:90": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:119": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:130": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:142": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:153": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:160": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:190": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:227": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:25": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:256": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:280": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:299": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:50": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:76": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitterTest.java:91": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/reader.go",
+        "backend-go/internal/business/knowledge/reader_test.go",
+        "backend-go/internal/business/knowledge/splitter.go",
+        "backend-go/internal/business/knowledge/splitter_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
     }
   },
   "release_gates": {

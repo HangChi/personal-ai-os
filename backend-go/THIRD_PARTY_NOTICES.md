@@ -1,5 +1,9 @@
 # 第三方运行时依赖声明
 
+## P6：文档解析
+
+DOCX 使用 Go 标准库 `archive/zip`、`encoding/xml`，未引入第三方解析库。PDF 延用外部 Poppler，另调用同一发行版的 `pdfinfo` 做完整 500 页限制。验收使用 26.10.0；工具不嵌入或随 Go 二进制分发，部署方自行提供并遵守其 GPL 许可证。Go 模块依赖没有变化。
+
 ## Micrometer 1.17.1 直方图边界算法
 
 `internal/app/http_metrics.go`的默认Timer边界生成与Micrometer

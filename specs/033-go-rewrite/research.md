@@ -1,5 +1,11 @@
 # 技术决策记录
 
+## P6 文档读取决策（2026-11-04）
+
+Decision：PDF 延用已有 Poppler 外部进程，并以同版 pdfinfo 检查完整页数，避免附件专用 100 页截取造成知识正文丢失；10 秒取消和 64 MiB 输出边界保护 API。DOCX 使用 Go 标准库 ZIP/XML 顺序解析，包含正文段落与表格单元格，同时限制压缩比、总解压体积和 XML 深度。图片通过既有无工具多模态模型接口逐字转录。
+
+Alternatives considered：将 Java PDFBox/POI 嵌入 Go 进程会保留 JVM 运行依赖；直接复用附件 PDF 截取会静默丢掉正文；纯正则读 DOCX 会遗漏表格和实体；引入新的第三方 Word 解析库没有抵消标准库实现的具体收益。Go 依赖版本/许可证不变，外部 Poppler 的部署与 GPL 许可单独声明。
+
 ## R-001 同仓库独立 Go 模块
 
 Decision：分支名按用户要求使用 `go`，新增 `backend-go/`，保留 `backend/`、前端和规格。基线固定为 cb5d694。
