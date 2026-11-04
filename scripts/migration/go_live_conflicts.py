@@ -17,6 +17,7 @@ from go_runtime import private_json
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "scripts/eval/rag-live-conflicts.py"
+INGESTION_SOURCE = "scripts/eval/rag-live-ingestion.py"
 
 
 @contextmanager
@@ -64,31 +65,36 @@ def owned_search():
         subprocess.run(["docker", "rm", "--force", container], capture_output=True, check=True, timeout=30)
 
 
-def original_program():
+def original_program(source=SOURCE):
+    if source not in (SOURCE, INGESTION_SOURCE):
+        raise ValueError("Unknown original policy evaluation source")
     inventory = json.loads((ROOT / "specs/033-go-rewrite/inventory.json").read_text())
-    expected = next(row["sha256"] for row in inventory["files"] if row["path"] == SOURCE)
-    raw = (ROOT / SOURCE).read_bytes()
+    expected = next(row["sha256"] for row in inventory["files"] if row["path"] == source)
+    raw = (ROOT / source).read_bytes()
     if hashlib.sha256(raw).hexdigest() != expected:
         raise ValueError("Original conflict evaluation differs from fixed baseline")
-    nodes = ast.parse(raw, filename=SOURCE).body
+    nodes = ast.parse(raw, filename=source).body
     # Keep the exact scenario, finally cleanup, and original final assertion; exclude shared-runtime setup.
     selected = [node for node in nodes if isinstance(node, ast.Try)]
     if len(selected) != 1 or not isinstance(nodes[-1], ast.If):
         raise ValueError("Original conflict scenario structure changed")
-    return compile(ast.Module(body=selected + [nodes[-1]], type_ignores=[]), SOURCE, "exec"), expected
+    return compile(ast.Module(body=selected + [nodes[-1]], type_ignores=[]), source, "exec"), expected
 
 
 class OwnedConflictClient:
-    def __init__(self, client, space, model, private_directory, verify_answer=None):
+    def __init__(self, client, space, model, private_directory, verify_answer=None, ingestion=False):
         self.client, self.space, self.model = client, space, model
         self.directory = private_directory
         self.documents, self.calls = [], []
         self.verify_answer = verify_answer
+        self.ingestion, self.retry_refused = ingestion, False
 
     def upload(self, path, title):
-        if title not in ("合成差旅制度 A", "合成差旅制度 B") or len(self.documents) >= 2:
+        prefix = "录入审查合成政策 " if self.ingestion else "合成差旅制度 "
+        filename_prefix = "ingestion-" if self.ingestion else "policy-"
+        if title not in (prefix + "A", prefix + "B") or len(self.documents) >= 2:
             raise ValueError("Conflict upload escaped its frozen fixture")
-        if path.is_symlink() or not path.is_file() or not path.name.startswith("policy-") or path.stat().st_size > 12000:
+        if path.is_symlink() or not path.is_file() or not path.name.startswith(filename_prefix) or path.stat().st_size > 12000:
             raise ValueError("Conflict upload is not its bounded generated policy")
         data = path.read_bytes()
         if not 350 < len(data.decode()) < 3000:
@@ -100,6 +106,13 @@ class OwnedConflictClient:
         return document
 
     def request(self, path, method="GET", body=None):
+        if self.ingestion and method == "GET" and path in ("/knowledge/governance/sources", "/knowledge/governance/conflicts"):
+            result = self.client.request(path)
+            private_json(self.directory / (path.rsplit("/", 1)[-1] + ".json"), result)
+            return result
+        if self.ingestion and method == "POST" and path.endswith("/review"):
+            self.retry_refused = True
+            raise ValueError("Unavailable live ingestion review is retained; manual retries are disabled")
         if path == "/knowledge/search-index" and method == "GET":
             return self.client.request(path)
         if (method == "PUT" and path in {"/knowledge/governance/sources/" + identity for identity in self.documents}
@@ -147,3 +160,40 @@ def execute(client, space, model, private_directory, report, verify_answer=None)
     finally:
         report["sources_sha256"] = {SOURCE: digest}
         report["cases"] = public_cases(rows, adapter.calls)
+
+
+def execute_ingestion(client, space, model, private_directory, report, restart, candidate_path):
+    program, digest = original_program(INGESTION_SOURCE)
+    adapter = OwnedConflictClient(client, space, model, private_directory, ingestion=True)
+
+    def save(path, data):
+        if path.parent != private_directory:
+            raise ValueError("Original ingestion report escaped its private directory")
+        private_json(path, data)
+
+    def restart_enhanced(path, enabled):
+        if path != candidate_path or enabled is not True:
+            raise ValueError("Ingestion restart escaped its owned candidate")
+        adapter.client = restart()
+
+    def authenticated_client(base):
+        if base != "http://127.0.0.1:18082/api/v1":
+            raise ValueError("Unexpected original ingestion client alias")
+        # The restart callback has already authenticated this owned process with CSRF.
+        return SimpleNamespace(request=adapter.request, login=lambda: None)
+
+    namespace = dict(client=adapter, space=space, created=[], result={}, json=json, time=time,
+                     tempfile=tempfile, Path=Path,
+                     state=dict(jar=str(candidate_path), processes=[dict(name="enhanced", jar=str(candidate_path))]),
+                     m=SimpleNamespace(WORK=private_directory, private_json=save,
+                                       restart_enhanced=restart_enhanced, Client=authenticated_client))
+    try:
+        exec(program, namespace)
+        if namespace["result"].get("retriedSources") != 0 or adapter.retry_refused:
+            raise AssertionError("Live ingestion acceptance must not rely on review retries")
+    finally:
+        result = namespace["result"]
+        report["sources_sha256"] = {INGESTION_SOURCE: digest}
+        report["ingestion_review"] = {key: result[key] for key in
+            ("states", "openConflicts", "passed", "retriedSources") if key in result}
+        report["manual_review_retry_refused"] = adapter.retry_refused

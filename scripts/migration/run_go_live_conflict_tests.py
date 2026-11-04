@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Frozen three-case real-model conflict/clarification evaluation on a fresh TLS database."""
 import argparse
+from contextlib import ExitStack
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -10,7 +11,7 @@ import secrets
 import subprocess
 import tempfile
 
-from go_live_conflicts import execute, original_program, owned_search
+from go_live_conflicts import INGESTION_SOURCE, SOURCE, execute, execute_ingestion, original_program, owned_search
 from go_real_model import ModelFailure, RealModel, load_config, pooled_transport, serve
 from go_test_environment import cache_environment
 from run_go_cutover_tests import Client
@@ -22,7 +23,7 @@ from run_go_postgres_tests import IMAGE, ROOT, run_package
 SPEC = ROOT / "specs/033-go-rewrite"
 
 
-def exercise(container, fixture, backend, binary, model, relay_values, search_values, private_directory, report):
+def exercise(container, fixture, backend, binary, model, relay_values, search_values, private_directory, report, mode="conflicts"):
     database = OwnedDatabase(container, fixture)
     database.require_empty()
     with tempfile.TemporaryDirectory(prefix="personalos-p8-live-conflict-runtime-") as temporary:
@@ -44,9 +45,20 @@ def exercise(container, fixture, backend, binary, model, relay_values, search_va
         values.update(search_values)
         processes.BACKEND = backend
         try:
-            with processes.candidate(directory, binary, values) as state:
-                client = Client(state, timeout=180)
-                client.login(values)
+            with ExitStack() as candidates:
+                def owned_client(review):
+                    candidates.close()
+                    require_quiescent(database)
+                    values["APP_KNOWLEDGE_RAG_INGESTION_REVIEW_ENABLED"] = str(review).lower()
+                    state = candidates.enter_context(processes.candidate(directory, binary, values))
+                    fresh = Client(state, timeout=180)
+                    fresh.login(values)
+                    if review:
+                        report["review_restart_count"] = report.get("review_restart_count", 0) + 1
+                        report["review_restart_previous_connections"] = 0
+                    return fresh
+
+                client = owned_client(False)
                 space = client.request("/knowledge/governance/spaces", "POST", {"name": "P8 owned conflicts " + secrets.token_hex(8)})
 
                 def verify_answer(response, calls):
@@ -65,16 +77,23 @@ def exercise(container, fixture, backend, binary, model, relay_values, search_va
                         raise AssertionError("Real conflict stages degraded or did not use three foreground model calls")
 
                 try:
-                    execute(client, space, model, private_directory, report, verify_answer)
+                    if mode == "conflicts":
+                        execute(client, space, model, private_directory, report, verify_answer)
+                    else:
+                        execute_ingestion(client, space, model, private_directory, report,
+                                          lambda: owned_client(True), binary)
+                        if model.snapshot()["calls"].get("chat", 0) < 1:
+                            raise AssertionError("Live ingestion review did not actually call the configured chat model")
                 except SystemExit:
-                    raise AssertionError("Frozen conflict/clarification expectations were not met") from None
+                    raise AssertionError("Frozen policy evaluation expectations were not met") from None
                 remaining = json.loads(database.sql("SELECT json_build_object(" + ",".join(
                     "'" + table + "',(SELECT count(*) FROM " + table + ")" for table in
                     ("knowledge_document", "vector_store", "knowledge_source", "knowledge_review_job")) + ");"))
                 if any(remaining.values()):
                     raise AssertionError("Original conflict cleanup left owned documents or review jobs")
-                report.update(cleanup_counts=remaining, citation_chunks_match_database=True,
-                              background_ingestion_review_enabled=False)
+                report.update(cleanup_counts=remaining, background_ingestion_review_enabled=mode == "ingestion-review")
+                if mode == "conflicts":
+                    report["citation_chunks_match_database"] = True
         finally:
             require_quiescent(database)
             report.update(processes_stopped=True, database_connections_after_stop=0)
@@ -87,18 +106,22 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model-env-file", required=True, type=Path)
     parser.add_argument("--backend", required=True, choices=("go", "java"))
+    parser.add_argument("--mode", choices=("conflicts", "ingestion-review"), default="conflicts")
     args = parser.parse_args()
-    original_program()
+    original_program(SOURCE if args.mode == "conflicts" else INGESTION_SOURCE)
     config = load_config(args.model_env_file)
     private_directory = Path(tempfile.mkdtemp(prefix="personalos-p8-live-conflict-evidence-")).resolve()
-    report_path = SPEC / ("p8-live-conflicts-" + args.backend + "-" + datetime.now().strftime("%Y%m%d-%H%M%S") + ".json")
+    report_path = SPEC / ("p8-live-" + args.mode + "-" + args.backend + "-" + datetime.now().strftime("%Y%m%d-%H%M%S") + ".json")
     report = dict(result="IN_PROGRESS", backend=args.backend, started_at=datetime.now(timezone.utc).isoformat(),
                   model=config.metadata(), configured_real_model_used=True, synthetic_documents=True,
-                  private_answer_evidence=str(private_directory), expected_cases=3,
+                  private_answer_evidence=str(private_directory), mode=args.mode,
+                  expected_cases=3 if args.mode == "conflicts" else 1,
                   semantic_quality_manually_approved=False, release_gates_changed=False,
                   limits="Original frozen synthetic-policy conflict/clarification cases; owned TLS database only. "
                          "No production configuration, original runtime entry point, existing data or model fallback. "
-                         "Background ingestion review disabled only for the isolated foreground test; "
+                         "Background ingestion review disabled for conflicts; ingestion-review mode restarts only "
+                         "its owned candidate with review enabled and preserves the original 110-second deadline "
+                         "and CHECKED_CANDIDATES/open-conflict assertions, but refuses manual review retries. "
                          "this does not cover the 129 original retrieval queries, full Agent or production acceptance.")
     code, model = 1, None
     try:
@@ -113,7 +136,7 @@ def main():
                 report["owned_opensearch_image"] = search_image
                 run_package(IMAGE, "app", tls_mode=True, test_pattern="^TestP8ContainerListenerBoundary$",
                     exercise=lambda container, fixture: exercise(container, fixture, args.backend, binary, model,
-                                                               relay_values, search_values, private_directory, report))
+                                                               relay_values, search_values, private_directory, report, args.mode))
             report["owned_opensearch_removed"] = True
             if model.snapshot()["failures"]:
                 raise AssertionError("Real conflict upstream failures were observed")

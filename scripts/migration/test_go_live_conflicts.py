@@ -5,10 +5,35 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
-from go_live_conflicts import OwnedConflictClient, execute, owned_search, public_cases
+from go_live_conflicts import OwnedConflictClient, execute, execute_ingestion, owned_search, public_cases
 
 
 class LiveConflictTest(unittest.TestCase):
+    def test_original_ingestion_restarts_owned_candidate_checks_both_sources_and_keeps_deadline(self):
+        for unavailable in (False, True):
+            client, restarted, restart = Mock(), Mock(), Mock()
+            restart.return_value = restarted
+            ids = iter(("owned-a", "owned-b"))
+            client.upload.side_effect = lambda path, name, data, status: dict(
+                id=next(ids), title="录入审查合成政策 " + ("A" if name == "ingestion-A.md" else "B"))
+            restarted.request.side_effect = lambda path, method="GET": (
+                [dict(documentId=identity, source=dict(reviewState="UNAVAILABLE" if unavailable else "CHECKED_CANDIDATES"))
+                 for identity in ("owned-a", "owned-b")] if path.endswith("/sources") else
+                [dict(leftId="owned-a", rightId="owned-b", status="OPEN")])
+            report = {}
+            with tempfile.TemporaryDirectory() as temporary:
+                arguments = (client, {"id": "space"}, Mock(), Path(temporary), report, restart, Path("/owned/candidate"))
+                if unavailable:
+                    with self.assertRaisesRegex(ValueError, "manual retries are disabled"): execute_ingestion(*arguments)
+                else:
+                    execute_ingestion(*arguments)
+                    self.assertTrue(report["ingestion_review"]["passed"])
+                    self.assertEqual(report["ingestion_review"]["retriedSources"], 0)
+                self.assertEqual(report["manual_review_retry_refused"], unavailable)
+                restart.assert_called_once_with()
+            deleted = [call.args for call in restarted.request.call_args_list if len(call.args) > 1]
+            self.assertEqual(deleted, [("/knowledge/documents/owned-a", "DELETE"), ("/knowledge/documents/owned-b", "DELETE")])
+
     def test_owned_search_uses_pinned_image_bounded_ephemeral_loopback_and_always_cleans_up(self):
         info = dict(owned="true", bindings=[dict(HostIp="127.0.0.1", HostPort="12345")], mounts=[dict(Type="tmpfs")])
         with patch("go_live_conflicts.subprocess.check_output") as capture, patch("go_live_conflicts.subprocess.run") as run, \
