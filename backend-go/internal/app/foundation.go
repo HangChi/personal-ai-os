@@ -14,6 +14,7 @@ import (
 	"personal-ai-os/backend-go/internal/business/chat"
 	"personal-ai-os/backend-go/internal/business/confirmation"
 	"personal-ai-os/backend-go/internal/business/idempotency"
+	"personal-ai-os/backend-go/internal/business/memory"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/business/task"
 	"personal-ai-os/backend-go/internal/platform/auth"
@@ -43,6 +44,7 @@ type FoundationOptions struct {
 	EnableP2                bool
 	EnableP3                bool
 	EnableP4                bool
+	EnableP5                bool
 	EmbeddingRedis          *redisclient.Client
 	ModelTransport          http.RoundTripper
 }
@@ -329,6 +331,25 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			previous.ServeHTTP(w, r)
 		})
 	}
+	if options.EnableP5 {
+		if !options.EnableP4 {
+			return nil, errors.New("P5需要启用P4")
+		}
+		store, err := memory.NewStore(ctx, pool)
+		if err != nil {
+			return nil, err
+		}
+		memories := memory.NewHTTP(store, logger)
+		previous := options.Business
+		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if memory.OwnsPath(r.URL.Path) {
+				memories.ServeHTTP(w, r)
+				return
+			}
+			previous.ServeHTTP(w, r)
+		})
+	}
+
 	var actuator http.Handler
 	if !settings.Monitoring {
 		actuator = newActuatorHandler(actuatorProperties, snapshot, metrics, logger)
