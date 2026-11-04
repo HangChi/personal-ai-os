@@ -1,0 +1,98 @@
+{
+  "recorded_at": "2026-11-04T15:12:55.080123+00:00",
+  "result": "PARTIAL_ACQUISITION",
+  "requested_documents": 26,
+  "previous_documents": 16,
+  "new_documents": 6,
+  "available_documents": 22,
+  "previous_eligible_queries": 84,
+  "eligible_original_queries": 111,
+  "excluded_original_queries": 18,
+  "new_articles": [
+    {
+      "post_id": "7651932218912522280",
+      "label": "Python 并发选型：GIL、多线程、多进程与协程",
+      "fetched_at": "2026-11-04T15:11:06.010747+00:00",
+      "body_chars": 7271,
+      "bytes": 14142,
+      "sha256": "d299aaf881ac305351c1a77044005590934d9c5dcc17e31921f970948a4e2ca1"
+    },
+    {
+      "post_id": "7664457295027814451",
+      "label": "Python 异步陷阱：谁在帮你并发",
+      "fetched_at": "2026-11-04T15:11:09.343514+00:00",
+      "body_chars": 4793,
+      "bytes": 10003,
+      "sha256": "4f22e7a88f7d784dec98a2ce732780e08b44230e3c085f7c9de72b756f2d2c7f"
+    },
+    {
+      "post_id": "7681235828687175730",
+      "label": "TypeScript 泛型与条件类型",
+      "fetched_at": "2026-11-04T15:11:12.605753+00:00",
+      "body_chars": 3475,
+      "bytes": 5850,
+      "sha256": "39acfa3939d279f6f13836e6b38b57759b7d8f81764e2f41fe7cf03dfd1a8d49"
+    },
+    {
+      "post_id": "7650146543883239487",
+      "label": "TypeScript 类型体操技巧",
+      "fetched_at": "2026-11-04T15:11:15.869858+00:00",
+      "body_chars": 16394,
+      "bytes": 23264,
+      "sha256": "d87d24d4b60021d1adf03084c1b640bba36cd6dca7a1dcbc981035644776d2d2"
+    },
+    {
+      "post_id": "7694101953675460648",
+      "label": "分布式一致性：CAP、Raft 与脑裂",
+      "fetched_at": "2026-11-04T15:11:19.082610+00:00",
+      "body_chars": 4445,
+      "bytes": 10171,
+      "sha256": "8f5bef178a756581ef1e0251e2a8c622d04e02a373528d614c8bd789fad56d8c"
+    },
+    {
+      "post_id": "7607112994062630939",
+      "label": "系统性地理解分布式系统",
+      "fetched_at": "2026-11-04T15:11:22.311505+00:00",
+      "body_chars": 6672,
+      "bytes": 17952,
+      "sha256": "c726966ed6a11f8468378a9c085de17adb7c7ccf28de121ce441febc6bc4b6ac"
+    }
+  ],
+  "missing_articles": [
+    {
+      "post_id": "7591207451778875418",
+      "label": "动态规划五部曲实战",
+      "status": "ARTICLE_BODY_MISSING_OR_BLOCKED"
+    },
+    {
+      "post_id": "7472359618326052901",
+      "label": "动态规划基础与核心思想",
+      "status": "NOT_ATTEMPTED_AFTER_STOP"
+    },
+    {
+      "post_id": "7672711130193936424",
+      "label": "Nginx 完整配置参考手册",
+      "status": "NOT_ATTEMPTED_AFTER_STOP"
+    },
+    {
+      "post_id": "7677521340606300170",
+      "label": "Nginx 生产级配置优化",
+      "status": "NOT_ATTEMPTED_AFTER_STOP"
+    }
+  ],
+  "source_url_pattern": "https://juejin.cn/post/{post_id}",
+  "private_merged_corpus": "/private/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-juejin-merged-1c23_7zs",
+  "merged_manifest_sha256": "80473396047e908fb3f288360e3ba6ce87d44531fe80ab6abfdb09d87314e3ab",
+  "source_manifest_sha256": [
+    "5d0d40536c59a517081beb58ea5e12f922de2f74ae0ffd9dbf8490fe094c7d3b",
+    "b3521fd5368eeeb05cfa88db0f8531f211fbb661f4b2c166094485149f5b49b1"
+  ],
+  "acquisition_log": "/tmp/personalos-p8-juejin-missing-1.log",
+  "acquisition_exit_code": 2,
+  "merge_checks": "Both source manifests validated; disjoint IDs; unchanged source bytes and SHA; ordered original corpus labels; merged directory loaded again; original queries retained only with all acceptable documents present",
+  "article_fulltext_committed": false,
+  "historical_corpus_identity_verified": false,
+  "new_corpus_retrieval_executed": false,
+  "real_model_quality_verified": false,
+  "release_gates_changed": false
+}
