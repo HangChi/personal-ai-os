@@ -1,0 +1,1152 @@
+{
+  "result": "PASS",
+  "started_at": "2026-11-04T15:24:33.006054+00:00",
+  "configured_real_model_used": true,
+  "synthetic_model": false,
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "acquisition": {
+    "version": 1,
+    "result": "COMPLETE",
+    "requested": 26,
+    "articles": [
+      {
+        "post_id": "7632034549904310310",
+        "label": "PostgreSQL 索引：从 B-tree 到 BRIN",
+        "published_title": "PostgreSQL 存储与索引系列（二）：索引的艺术——从 B-tree 到 BRIN 的全景指南PostgreSQL - 掘金",
+        "url": "https://juejin.cn/post/7632034549904310310",
+        "filename": "juejin-7632034549904310310.md",
+        "fetched_at": "2026-11-04T13:16:03.446491+00:00",
+        "body_chars": 6622,
+        "page_sha256": "2b1bce635c4fd15d6647f3f0039792d61743956c3d76ba59df54db37c32e7191",
+        "body_sha256": "6fcf7db7d5a136b4c11e18587f23969c9c9e846af51ff70ee3adf01be286fc69",
+        "bytes": 12664,
+        "sha256": "2184d1de9959429a7d7e0252a36a5478cb12fb041e6d8e9ebcea220fbe135b6b"
+      },
+      {
+        "post_id": "7650134533660508187",
+        "label": "Vue3 响应式原理：从 Proxy 到 EffectScope",
+        "published_title": "Vue3 响应式原理深度剖析：从Proxy到EffectScope从源码层面完整拆解Vue3响应式系统：Proxy拦截、 - 掘金",
+        "url": "https://juejin.cn/post/7650134533660508187",
+        "filename": "juejin-7650134533660508187.md",
+        "fetched_at": "2026-11-04T13:16:11.894588+00:00",
+        "body_chars": 1093,
+        "page_sha256": "a346fe760bc08e2c9799b18b11682e45fa8ea2c3ca606046cb8923c55ad771f9",
+        "body_sha256": "61e24a1a0c44ffe5fd45069f796662418d96fcf2e342cbc1d5028c17b96f4814",
+        "bytes": 2452,
+        "sha256": "71c3875884be642fa6b0abe47c02664b0e4d230dc3cd2ab6668499e575d04b4f"
+      },
+      {
+        "post_id": "7616257286160646153",
+        "label": "Java 虚拟线程：让 Java 轻功水上漂",
+        "published_title": "虚拟线程：让Java轻功水上漂，告别“线程体重焦虑”虚拟线程是Java 21的“影分身”大招！它用极低开销创建海量轻量级 - 掘金",
+        "url": "https://juejin.cn/post/7616257286160646153",
+        "filename": "juejin-7616257286160646153.md",
+        "fetched_at": "2026-11-04T13:16:15.208994+00:00",
+        "body_chars": 3301,
+        "page_sha256": "4d0cf6c5fa49df36a23d37fcbbc262332a3f92575ae27525ec1e39dac183a3a1",
+        "body_sha256": "97fb07e52098476a77b55f3c1b3babd6998e6346809f6a12a902af6886a94c0e",
+        "bytes": 7872,
+        "sha256": "59bca09358f4c4c4617e72360f5d4cf8537f6b04f4a8ca7be7b46ef18d450502"
+      },
+      {
+        "post_id": "7271659132381216787",
+        "label": "Redis 缓存机制",
+        "published_title": "【864、Redis 缓存机制了解吗？】 Redis（Remote Dictionary Server）是一个开源的内存 - 掘金",
+        "url": "https://juejin.cn/post/7271659132381216787",
+        "filename": "juejin-7271659132381216787.md",
+        "fetched_at": "2026-11-04T13:16:18.449593+00:00",
+        "body_chars": 817,
+        "page_sha256": "8265800f5d33dbd6a00fbe34048b3d72c3cb2a79f49c91ff41ea688f6f3ee2ea",
+        "body_sha256": "fd8bf6f0c70e45713a4931dde5d62f7588b44fc42ed72640090eb640771bb9c9",
+        "bytes": 2354,
+        "sha256": "3782e9e64c102f58f5c065ac4dd4460014019e6f5642b10ab15a3ec81aab7ee0"
+      },
+      {
+        "post_id": "7569377216896057395",
+        "label": "HTTP 一篇说清楚",
+        "published_title": "HTTP一篇说清楚~拿走常常看，常常想，HTTP 不仅仅是发起一个 fetch 或 axios 请求。然后大多数情况下， - 掘金",
+        "url": "https://juejin.cn/post/7569377216896057395",
+        "filename": "juejin-7569377216896057395.md",
+        "fetched_at": "2026-11-04T13:16:21.773871+00:00",
+        "body_chars": 3055,
+        "page_sha256": "028bd3aaf62ffa0fa71ee49cd37fb178d6fe4a676f03c080942dd9e33636b427",
+        "body_sha256": "c06e9e7b6095a720b877cfb9f8a9ceaeb3e79b145831976707cd2bcd7766ccc7",
+        "bytes": 6030,
+        "sha256": "351c953dbec8daebaa7f8cee816a8a86cd4f853b6dfc30e3d6b2e9641f91adb4"
+      },
+      {
+        "post_id": "7692646947434643502",
+        "label": "MySQL 事务、索引与锁",
+        "published_title": "MySQL 事务、索引与锁：后端开发必须掌握的数据库基础本文以 InnoDB 为主要背景，从事务的 ACID 特性和隔离 - 掘金",
+        "url": "https://juejin.cn/post/7692646947434643502",
+        "filename": "juejin-7692646947434643502.md",
+        "fetched_at": "2026-11-04T13:16:26.126167+00:00",
+        "body_chars": 15382,
+        "page_sha256": "342a988543d8958f2bcedc4c69d4f9eec4f7adee4250e48d8f2ea0b24d9c0e6d",
+        "body_sha256": "8b1b5e151190ef82cc2713f26dd429b0c3858ebfe815f0206d30edc5baa04dd9",
+        "bytes": 29702,
+        "sha256": "4dc1ee3fc2f5ea45ca6a55ee2a37a7c12ddd110f51bad083c733e6501e184d6f"
+      },
+      {
+        "post_id": "7681202345805119488",
+        "label": "GMP 调度器：Go 并发的心脏",
+        "published_title": "GMP 调度器：Go 并发的心脏是如何跳动的GMP 调度器：Go 并发的心脏是如何跳动的 一个 go func() 就能 - 掘金",
+        "url": "https://juejin.cn/post/7681202345805119488",
+        "filename": "juejin-7681202345805119488.md",
+        "fetched_at": "2026-11-04T13:16:33.502934+00:00",
+        "body_chars": 3972,
+        "page_sha256": "694999147af8df28b2d2f65f06d597dec1df77f73af21e1c89745d0cc47cbbf4",
+        "body_sha256": "ec361fcb0e4b39adaa814570c8b3956c47b90054dc0df379da1bc0cd3b03f030",
+        "bytes": 6903,
+        "sha256": "aecf5ff33c150b8cbb89fd8c18e21e8f008cd66727b40fc5ada5524d83bf2abe"
+      },
+      {
+        "post_id": "7577229187897098275",
+        "label": "Go 并发模式选择指南",
+        "published_title": "Go并发模式选择指南：找到最适合你项目的并发方案｜Go语言进阶（19）从一次并发改造失败案例出发，总结生产环境验证的Go - 掘金",
+        "url": "https://juejin.cn/post/7577229187897098275",
+        "filename": "juejin-7577229187897098275.md",
+        "fetched_at": "2026-11-04T13:16:39.754666+00:00",
+        "body_chars": 13941,
+        "page_sha256": "9a21722f07e813f3343398711e01c0a514294b1a742b3379786462d98060ba41",
+        "body_sha256": "fc46d1b0b64d5423d6f95edf28f8476121811e3928d91288147fe7d8b48a8392",
+        "bytes": 22725,
+        "sha256": "c6faa54acc8d87572785dba162952c797a9d0e022abef4e23cf60c2a8011c646"
+      },
+      {
+        "post_id": "7687592289394704399",
+        "label": "HTTP 渐进：编码、缓存与断点续传",
+        "published_title": "HTTP 渐进：编码解码、基本认证、长短连接、代理、缓存、内容协商与断点续传HTTP 渐进：编码解码、基本认证、长短连 - 掘金",
+        "url": "https://juejin.cn/post/7687592289394704399",
+        "filename": "juejin-7687592289394704399.md",
+        "fetched_at": "2026-11-04T13:16:42.989318+00:00",
+        "body_chars": 13771,
+        "page_sha256": "bf70d5da81dc6a67cf1c7592d5e3702eb3a1c8c15086c68a6e64e5343ce5a137",
+        "body_sha256": "42aa291a2ee2016d95a4a42c0892a1b35433f19ebeebfbc8c129347a854f917b",
+        "bytes": 19517,
+        "sha256": "add19c24e0a35ff2d44af3470d0a1cbfa8ec2d172cb02c49b75f92d8adbb943e"
+      },
+      {
+        "post_id": "7696709714028281906",
+        "label": "MySQL 学习记：从增删改查到慢查询",
+        "published_title": "MySQL 学习记：从\"增删改查\"到\"为什么我的查询这么慢\"一篇从 30 秒慢查询出发的 MySQL 学习笔记，系统梳理 - 掘金",
+        "url": "https://juejin.cn/post/7696709714028281906",
+        "filename": "juejin-7696709714028281906.md",
+        "fetched_at": "2026-11-04T13:16:46.265396+00:00",
+        "body_chars": 4634,
+        "page_sha256": "06dddafb6dccb207155ed1375296e0c3b876312918f746a8e53cce273ed4aee3",
+        "body_sha256": "617b32bf614a8a2df1565d06a7d8b955230bc50eb6ef89efdfb4338233cac4b0",
+        "bytes": 8482,
+        "sha256": "e1441e505f00cc1fcb6e9d13151bac7a3c2bca0218b8b72939e20e8603360853"
+      },
+      {
+        "post_id": "7590681158717472808",
+        "label": "Docker 与虚拟机的区别：Namespace 和 Cgroup",
+        "published_title": "别再把Docker当虚拟机了：Namespace和Cgroup才是容器的灵魂你有没有遇到过这种情况： 别慌，三个月前的 - 掘金",
+        "url": "https://juejin.cn/post/7590681158717472808",
+        "filename": "juejin-7590681158717472808.md",
+        "fetched_at": "2026-11-04T13:16:51.507717+00:00",
+        "body_chars": 8278,
+        "page_sha256": "97837a06f597524709cad50c39333d152b40ebc4088dfae7670a0606f19d7ef4",
+        "body_sha256": "379befffb43d88e5cba444ff2a501bce7cc7d9ffb273941982493c4afd5e7824",
+        "bytes": 16578,
+        "sha256": "6630968b6e3624fc98b69d04c1377b3b7d899b72415672655a7399ee9538d24c"
+      },
+      {
+        "post_id": "7693201755920465939",
+        "label": "Docker 深度解析：UnionFS 与核心组件",
+        "published_title": "Docker 深度解析：从核心原理到生产级落地实践在现代后端开发、微服务架构与 DevOps 流程中，Docker 已经 - 掘金",
+        "url": "https://juejin.cn/post/7693201755920465939",
+        "filename": "juejin-7693201755920465939.md",
+        "fetched_at": "2026-11-04T13:16:54.750214+00:00",
+        "body_chars": 7238,
+        "page_sha256": "b36f450527f4d6ebc36f0807054df71dd05b413e75d88d0087aba0b0959beb8d",
+        "body_sha256": "0704622017166583646dbfadca3e112539b16493b44dba19c7ded0c694b42754",
+        "bytes": 15174,
+        "sha256": "6dcc582373cfbb9d5b830ac31ee7510a11153e29d168463dfad2f1ed878c7247"
+      },
+      {
+        "post_id": "7694832291801677878",
+        "label": "浏览器渲染管道：重排、重绘与合成层",
+        "published_title": "浏览器从 HTML 到像素：重排、重绘与合成层前端性能优化里，流传最广的一句话是「少碰会触发重排的属性」。但真去看浏览器 - 掘金",
+        "url": "https://juejin.cn/post/7694832291801677878",
+        "filename": "juejin-7694832291801677878.md",
+        "fetched_at": "2026-11-04T13:17:01.976659+00:00",
+        "body_chars": 3331,
+        "page_sha256": "7487b1c1d2a10ef502a7741a402414978d4fe333888089e7cfee79aadefc2151",
+        "body_sha256": "0b6cb008a4b6f2b0e8e6ff05bf0cc1503500f1694c1758f1003dbd147f46ac1c",
+        "bytes": 8317,
+        "sha256": "ee6ee4f0b85edbba7401c5e619d2533a523957d927cef4e259362df6bd848fbe"
+      },
+      {
+        "post_id": "7631430251667243023",
+        "label": "浏览器渲染原理：从输入到像素",
+        "published_title": "浏览器渲染原理，一篇就够了（从输入到像素））浏览器幕后 01：从输入到像素（全景图） 1. 为啥要学渲染原理？—— 治“ - 掘金",
+        "url": "https://juejin.cn/post/7631430251667243023",
+        "filename": "juejin-7631430251667243023.md",
+        "fetched_at": "2026-11-04T13:17:07.270267+00:00",
+        "body_chars": 3177,
+        "page_sha256": "0f4979f597788288fee7460163a0f111e0e05c2dec843295528c4fd6b277d120",
+        "body_sha256": "9305c07e66cfbf44a02484932f5997e49c90f27c54e5c09233771438d2ddf05a",
+        "bytes": 6524,
+        "sha256": "f83132444e6139a00b84e8174eef8818584ddda84c33a986a33126cbc53288c2"
+      },
+      {
+        "post_id": "7628488008481751083",
+        "label": "Kafka 实战总结：架构与吞吐优化",
+        "published_title": "Kafka消息队列：实战总结与深度解析一、Kafka基础介绍 1.1 什么是Kafka Kafka是一个分布式流式处理平 - 掘金",
+        "url": "https://juejin.cn/post/7628488008481751083",
+        "filename": "juejin-7628488008481751083.md",
+        "fetched_at": "2026-11-04T13:17:11.572976+00:00",
+        "body_chars": 26710,
+        "page_sha256": "48fa4362d19819ee15a8607a081076a9ce4ae6653e86d98c5adcb080a2f16814",
+        "body_sha256": "9d9eedf8649deec93fb71a6296393d3d99acb6e36943c6c181bfbe01b2c080ca",
+        "bytes": 37810,
+        "sha256": "1de49461cd78d779464b821b2b35832886221b66a269e826675d0e8f73f8c1b2"
+      },
+      {
+        "post_id": "7623271328049676330",
+        "label": "Kafka 为什么快：PageCache、零拷贝与 Segment",
+        "published_title": "Kafka为什么这么快？为什么会重复消费？这篇终于讲明白了很多人会用 Kafka，但并没有真正理解 Kafka。 会发消 - 掘金",
+        "url": "https://juejin.cn/post/7623271328049676330",
+        "filename": "juejin-7623271328049676330.md",
+        "fetched_at": "2026-11-04T13:17:14.913759+00:00",
+        "body_chars": 10839,
+        "page_sha256": "81d51f20c49c5025268096bc0af862f9b10c7968a63027845d33136757670976",
+        "body_sha256": "e875ec0414475c7a591b186026e0cf6ff291e1fb240e7629ce9b1ccdc2270d14",
+        "bytes": 22915,
+        "sha256": "7404198fa546eca88690a8d66370e636d4287b7530504208daf8ac9c9db72cc1"
+      },
+      {
+        "post_id": "7651932218912522280",
+        "label": "Python 并发选型：GIL、多线程、多进程与协程",
+        "published_title": "一文搞懂 Python 并发：GIL、多线程/多进程/协程怎么选这篇文章顺着一条因果链往下讲：从最底层的 GIL 这把锁 - 掘金",
+        "url": "https://juejin.cn/post/7651932218912522280",
+        "filename": "juejin-7651932218912522280.md",
+        "fetched_at": "2026-11-04T15:11:06.010747+00:00",
+        "body_chars": 7271,
+        "page_sha256": "0b575408d6f77b66c9d0904f3448d9a84abca92497f5ad3feafad19d94e48497",
+        "body_sha256": "bf7398be6fbe35a3d96fa0800338a68063cc1ea99b35aff4632bb5960e6ba6d3",
+        "bytes": 14142,
+        "sha256": "d299aaf881ac305351c1a77044005590934d9c5dcc17e31921f970948a4e2ca1"
+      },
+      {
+        "post_id": "7664457295027814451",
+        "label": "Python 异步陷阱：谁在帮你并发",
+        "published_title": "把 time.sleep 换成 await asyncio.sleep 之前，先想清楚谁在帮你并发上周 review  - 掘金",
+        "url": "https://juejin.cn/post/7664457295027814451",
+        "filename": "juejin-7664457295027814451.md",
+        "fetched_at": "2026-11-04T15:11:09.343514+00:00",
+        "body_chars": 4793,
+        "page_sha256": "d0528bc422b84d3c7cc6cc614fca780e1d944937637f558d70aa44d86df30522",
+        "body_sha256": "a345067dd2b80720d1fe5f292bd3819f66edb463dc7eaa5db365d4f3f0b8d3d7",
+        "bytes": 10003,
+        "sha256": "4f22e7a88f7d784dec98a2ce732780e08b44230e3c085f7c9de72b756f2d2c7f"
+      },
+      {
+        "post_id": "7681235828687175730",
+        "label": "TypeScript 泛型与条件类型",
+        "published_title": "泛型与条件类型：TypeScript 类型体操的核心1. 技术难点：类型系统为什么要\"编程\" TypeScript 的类 - 掘金",
+        "url": "https://juejin.cn/post/7681235828687175730",
+        "filename": "juejin-7681235828687175730.md",
+        "fetched_at": "2026-11-04T15:11:12.605753+00:00",
+        "body_chars": 3475,
+        "page_sha256": "442105191a2b37b8effd7a2abffe513d17fb4d2a287c4c6e82108c8f8c4db42e",
+        "body_sha256": "72373160345913fd2cc09d3381e49fc2e8ed3f3feec700f670f08eb7e28c8efd",
+        "bytes": 5850,
+        "sha256": "39acfa3939d279f6f13836e6b38b57759b7d8f81764e2f41fe7cf03dfd1a8d49"
+      },
+      {
+        "post_id": "7650146543883239487",
+        "label": "TypeScript 类型体操技巧",
+        "published_title": "TypeScript类型体操一、类型体操是什么 类型体操不是为了炫技，而是利用 TypeScript 的类型系统在编译期 - 掘金",
+        "url": "https://juejin.cn/post/7650146543883239487",
+        "filename": "juejin-7650146543883239487.md",
+        "fetched_at": "2026-11-04T15:11:15.869858+00:00",
+        "body_chars": 16394,
+        "page_sha256": "678747b18ea7152b694bbed82545b1d170f243c0806c5bc7f83360e56c8dc612",
+        "body_sha256": "ca6431e47e2820b73daa37c0c198dec6b78e667bc8b70ea1b124bb8699e01f6a",
+        "bytes": 23264,
+        "sha256": "d87d24d4b60021d1adf03084c1b640bba36cd6dca7a1dcbc981035644776d2d2"
+      },
+      {
+        "post_id": "7694101953675460648",
+        "label": "分布式一致性：CAP、Raft 与脑裂",
+        "published_title": "分布式一致性：CAP 理论、Raft 算法与脑裂处理分布式一致性与 CAP 理论 简介：分布式系统存在多份数据备份，CA - 掘金",
+        "url": "https://juejin.cn/post/7694101953675460648",
+        "filename": "juejin-7694101953675460648.md",
+        "fetched_at": "2026-11-04T15:11:19.082610+00:00",
+        "body_chars": 4445,
+        "page_sha256": "e14dce87dc53cd9539a488f0813761837976919df7cf5725ecae6aa6e78ab267",
+        "body_sha256": "1e1fee40fdc8a519e9dbfcbf61ef7f230c9af375cfc83bb116f1bd43ebdc649a",
+        "bytes": 10171,
+        "sha256": "8f5bef178a756581ef1e0251e2a8c622d04e02a373528d614c8bd789fad56d8c"
+      },
+      {
+        "post_id": "7607112994062630939",
+        "label": "系统性地理解分布式系统",
+        "published_title": "系统性的理解分布式系统引言 两星期前读了Manning出版的一本新书 —— 《Think Distributed Sys - 掘金",
+        "url": "https://juejin.cn/post/7607112994062630939",
+        "filename": "juejin-7607112994062630939.md",
+        "fetched_at": "2026-11-04T15:11:22.311505+00:00",
+        "body_chars": 6672,
+        "page_sha256": "3b445285446a3483f4e441b62ec2ce75d2d69875f1575ddfe7105ed60bda8983",
+        "body_sha256": "4b8da31ad8b5214a73b6a550a76992dada39e22e0a4ac333c2c925042c06d5e4",
+        "bytes": 17952,
+        "sha256": "c726966ed6a11f8468378a9c085de17adb7c7ccf28de121ce441febc6bc4b6ac"
+      },
+      {
+        "post_id": "7591207451778875418",
+        "label": "动态规划五部曲实战",
+        "published_title": "从经典问题入手，吃透动态规划核心（DP五部曲实战）从经典问题入手，吃透动态规划核心（DP五部曲实战） 动态规划（Dyna - 掘金",
+        "url": "https://juejin.cn/post/7591207451778875418",
+        "filename": "juejin-7591207451778875418.md",
+        "fetched_at": "2026-11-04T15:19:03.838000+00:00",
+        "body_chars": 18626,
+        "page_sha256": "19b4ca7f95e3ca86c3cedb26c24357092466ab27e65be3d5b61739694cc721ac",
+        "body_sha256": "9ab74593a7f764a0b46ce64f00f5894fd457cc40fa5c1c9af560633e98374f8b",
+        "bytes": 31571,
+        "sha256": "cd60bb3d04a480605d54d1b47786aa023e4d13e85a70f47848673d680736b42a",
+        "acquisition_method": "normal-browser-rendered-article-viewer",
+        "page_hash_scope": "rendered article-viewer HTML plus observed title and canonical; not raw HTTP",
+        "source_receipt_sha256": "26587616995369df2d20f57a8f0c64e69694e78e317b26cdfe35d158b2ec0f57"
+      },
+      {
+        "post_id": "7472359618326052901",
+        "label": "动态规划基础与核心思想",
+        "published_title": "算法精讲–动态规划（一）：基础与核心思想算法精讲--动态规划（一）：基础与核心思想 动态规划的本质 动态规划（DP）通过 - 掘金",
+        "url": "https://juejin.cn/post/7472359618326052901",
+        "filename": "juejin-7472359618326052901.md",
+        "fetched_at": "2026-11-04T15:19:24.937000+00:00",
+        "body_chars": 6101,
+        "page_sha256": "4b817ed909f15559f459294b50442f9f5524644f016939f06f6dd1c6b9694104",
+        "body_sha256": "88b3c2cae101cafc8c618f6218d55eda0afa05c599dd8db545649263f1c67ae6",
+        "bytes": 9841,
+        "sha256": "a28e53f2ddab9f68e59bec2371aadd4615a02e3a33b243c62004873b10cf4e3d",
+        "acquisition_method": "normal-browser-rendered-article-viewer",
+        "page_hash_scope": "rendered article-viewer HTML plus observed title and canonical; not raw HTTP",
+        "source_receipt_sha256": "4ecd5d72f34afb04e3b0c42301286890ef55e58346617bb20891a1f2764deb85"
+      },
+      {
+        "post_id": "7672711130193936424",
+        "label": "Nginx 完整配置参考手册",
+        "published_title": "Nginx 完整配置参考手册一、配置层级总览 指令以分号 ; 结尾，大括号 {} 成对；# 注释。 修改配置必须先执行 - 掘金",
+        "url": "https://juejin.cn/post/7672711130193936424",
+        "filename": "juejin-7672711130193936424.md",
+        "fetched_at": "2026-11-04T15:19:31.559000+00:00",
+        "body_chars": 7312,
+        "page_sha256": "b308fbf1472a30396164de470a448bcb6362a7b40d11f12e868bce7f0fc9296c",
+        "body_sha256": "4d8fdfc8e189d76d8b4f36e021d951cc2772c80d43e59eb945a5ea9824f8fdc3",
+        "bytes": 9668,
+        "sha256": "7a15c2b099b405926da0dae6a99df48fa60ce374295f84f556237c6e79d032c5",
+        "acquisition_method": "normal-browser-rendered-article-viewer",
+        "page_hash_scope": "rendered article-viewer HTML plus observed title and canonical; not raw HTTP",
+        "source_receipt_sha256": "848e053dc4cddd91513bd92a39f8e9e040d4c4d604cc12977e9f3dc79a2b0db9"
+      },
+      {
+        "post_id": "7677521340606300170",
+        "label": "Nginx 生产级配置优化",
+        "published_title": "Nginx生产级配置优化指南线上 Nginx 配置这事，看着简单——官方文档给的示例改改就能跑。但跑起来和跑得好是两码事 - 掘金",
+        "url": "https://juejin.cn/post/7677521340606300170",
+        "filename": "juejin-7677521340606300170.md",
+        "fetched_at": "2026-11-04T15:19:37.775000+00:00",
+        "body_chars": 9014,
+        "page_sha256": "918565aceeeac8b45d737fa8a421d1ac80efe994ba3d1df5c3c72cc599f810d6",
+        "body_sha256": "d7ce3c46dccc9d736cb805d56b7a960ae0ddfc0184db239b129305d771151236",
+        "bytes": 13596,
+        "sha256": "b4aa5f4d74c19cb1cbaa97e71a32ab5dce1fe4497e55b79cc180a66556831341",
+        "acquisition_method": "normal-browser-rendered-article-viewer",
+        "page_hash_scope": "rendered article-viewer HTML plus observed title and canonical; not raw HTTP",
+        "source_receipt_sha256": "ca5b25a0be002ffb1e275c975587ce5ddbe0b094b80b4874f34438f050c5c7c2"
+      }
+    ],
+    "failure": null,
+    "extractor_sha256": "6d75323dae96858fa178810dc8dc0a4b7fbe0cbc2374e3aab8d9b292bfb1e373",
+    "historical_corpus_identity_verified": false,
+    "real_model_quality_verified": false,
+    "scope": "Fresh public pages; local test use only",
+    "merged_from": [
+      {
+        "directory": "/private/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-juejin-merged-1c23_7zs",
+        "documents": 22,
+        "manifest_sha256": "80473396047e908fb3f288360e3ba6ce87d44531fe80ab6abfdb09d87314e3ab"
+      },
+      {
+        "directory": "/private/tmp/personalos-p8-rendered-QR4ALY/corpus",
+        "documents": 4,
+        "manifest_sha256": "504bfe3935a141970bf9e584f8bb2e7bef8abffa4d25fcb91d998d370e963a47"
+      }
+    ],
+    "missing_articles": []
+  },
+  "backends": {
+    "go": {
+      "backend": "go",
+      "result": "PASS",
+      "documents": 26,
+      "queries": 1,
+      "eligible_original_queries": 129,
+      "mode": "multistage",
+      "executed_original_queries": 1,
+      "unexecuted_eligible_queries": 128,
+      "background_ingestion_review_enabled": false,
+      "excluded_queries": 0,
+      "sources_sha256": {
+        "scripts/eval/queries.py": "b5aa3821c2ffab9003a212b15b39db091a7f8ac539ade9e1830d901be0e9098a",
+        "scripts/eval/rebuild-corpus.py": "4d28005af2436c426586492e9097587e9ab80ce2e287ee35ce0faddfccd0edae",
+        "scripts/eval/retrieval-eval.py": "ed7cbc6a7736b02311b2b8c48e7468a646ad761c949d5f1142489b31ad1b42ec",
+        "scripts/eval/noise-floor.py": "9d25cc07c58a1a1f5aac99fd5cffa4133b01eb8755e8ac4116df4cfc6219f9b3"
+      },
+      "stage": "complete",
+      "uploaded_documents": 26,
+      "embedding_format_oracle": {
+        "oracle_sha256": "42c1a4e716764441eefa4a2fc1e30efc22ba4c65c3cba1c4d5861c213b19f126",
+        "jars_sha256": {
+          "spring-ai-openai-2.0.1.jar": "2306930e09c05a579b7359656414c2d4d4404a679593318523a69bb7a0d4366d",
+          "spring-ai-commons-2.0.1.jar": "c99512b8b7d7dc5bcb3d271d2f3de6e2edb948be6b05d750cc55c59cf50df9bd"
+        }
+      },
+      "embedding_input_format": "Spring-AI-2.0.1-MetadataMode.EMBED",
+      "ingestion": {
+        "documents": 26,
+        "vectors": 241,
+        "dimensions": 1024,
+        "all_chunk_hashes_seen_by_embedding_model": false,
+        "all_expected_embedding_inputs_seen": true,
+        "per_document": [
+          {
+            "title": "Nginx 生产级配置优化",
+            "source_sha256": "b4aa5f4d74c19cb1cbaa97e71a32ab5dce1fe4497e55b79cc180a66556831341",
+            "size_bytes": 13596,
+            "utf16_chars": 9170,
+            "chunks": 11
+          },
+          {
+            "title": "Nginx 完整配置参考手册",
+            "source_sha256": "7a15c2b099b405926da0dae6a99df48fa60ce374295f84f556237c6e79d032c5",
+            "size_bytes": 9668,
+            "utf16_chars": 7468,
+            "chunks": 10
+          },
+          {
+            "title": "动态规划基础与核心思想",
+            "source_sha256": "a28e53f2ddab9f68e59bec2371aadd4615a02e3a33b243c62004873b10cf4e3d",
+            "size_bytes": 9841,
+            "utf16_chars": 6255,
+            "chunks": 7
+          },
+          {
+            "title": "动态规划五部曲实战",
+            "source_sha256": "cd60bb3d04a480605d54d1b47786aa023e4d13e85a70f47848673d680736b42a",
+            "size_bytes": 31571,
+            "utf16_chars": 18778,
+            "chunks": 23
+          },
+          {
+            "title": "系统性地理解分布式系统",
+            "source_sha256": "c726966ed6a11f8468378a9c085de17adb7c7ccf28de121ce441febc6bc4b6ac",
+            "size_bytes": 17952,
+            "utf16_chars": 6826,
+            "chunks": 8
+          },
+          {
+            "title": "分布式一致性：CAP、Raft 与脑裂",
+            "source_sha256": "8f5bef178a756581ef1e0251e2a8c622d04e02a373528d614c8bd789fad56d8c",
+            "size_bytes": 10171,
+            "utf16_chars": 4607,
+            "chunks": 6
+          },
+          {
+            "title": "TypeScript 类型体操技巧",
+            "source_sha256": "d87d24d4b60021d1adf03084c1b640bba36cd6dca7a1dcbc981035644776d2d2",
+            "size_bytes": 23264,
+            "utf16_chars": 16554,
+            "chunks": 10
+          },
+          {
+            "title": "TypeScript 泛型与条件类型",
+            "source_sha256": "39acfa3939d279f6f13836e6b38b57759b7d8f81764e2f41fe7cf03dfd1a8d49",
+            "size_bytes": 5850,
+            "utf16_chars": 3636,
+            "chunks": 8
+          },
+          {
+            "title": "Python 异步陷阱：谁在帮你并发",
+            "source_sha256": "4f22e7a88f7d784dec98a2ce732780e08b44230e3c085f7c9de72b756f2d2c7f",
+            "size_bytes": 10003,
+            "utf16_chars": 4953,
+            "chunks": 8
+          },
+          {
+            "title": "Python 并发选型：GIL、多线程、多进程与协程",
+            "source_sha256": "d299aaf881ac305351c1a77044005590934d9c5dcc17e31921f970948a4e2ca1",
+            "size_bytes": 14142,
+            "utf16_chars": 7440,
+            "chunks": 8
+          },
+          {
+            "title": "Kafka 为什么快：PageCache、零拷贝与 Segment",
+            "source_sha256": "7404198fa546eca88690a8d66370e636d4287b7530504208daf8ac9c9db72cc1",
+            "size_bytes": 22915,
+            "utf16_chars": 11015,
+            "chunks": 9
+          },
+          {
+            "title": "Kafka 实战总结：架构与吞吐优化",
+            "source_sha256": "1de49461cd78d779464b821b2b35832886221b66a269e826675d0e8f73f8c1b2",
+            "size_bytes": 37810,
+            "utf16_chars": 26871,
+            "chunks": 31
+          },
+          {
+            "title": "浏览器渲染原理：从输入到像素",
+            "source_sha256": "f83132444e6139a00b84e8174eef8818584ddda84c33a986a33126cbc53288c2",
+            "size_bytes": 6524,
+            "utf16_chars": 3334,
+            "chunks": 4
+          },
+          {
+            "title": "浏览器渲染管道：重排、重绘与合成层",
+            "source_sha256": "ee6ee4f0b85edbba7401c5e619d2533a523957d927cef4e259362df6bd848fbe",
+            "size_bytes": 8317,
+            "utf16_chars": 3491,
+            "chunks": 7
+          },
+          {
+            "title": "Docker 深度解析：UnionFS 与核心组件",
+            "source_sha256": "6dcc582373cfbb9d5b830ac31ee7510a11153e29d168463dfad2f1ed878c7247",
+            "size_bytes": 15174,
+            "utf16_chars": 7406,
+            "chunks": 8
+          },
+          {
+            "title": "Docker 与虚拟机的区别：Namespace 和 Cgroup",
+            "source_sha256": "6630968b6e3624fc98b69d04c1377b3b7d899b72415672655a7399ee9538d24c",
+            "size_bytes": 16578,
+            "utf16_chars": 8454,
+            "chunks": 11
+          },
+          {
+            "title": "MySQL 学习记：从增删改查到慢查询",
+            "source_sha256": "e1441e505f00cc1fcb6e9d13151bac7a3c2bca0218b8b72939e20e8603360853",
+            "size_bytes": 8482,
+            "utf16_chars": 4796,
+            "chunks": 5
+          },
+          {
+            "title": "HTTP 渐进：编码、缓存与断点续传",
+            "source_sha256": "add19c24e0a35ff2d44af3470d0a1cbfa8ec2d172cb02c49b75f92d8adbb943e",
+            "size_bytes": 19517,
+            "utf16_chars": 13931,
+            "chunks": 15
+          },
+          {
+            "title": "Go 并发模式选择指南",
+            "source_sha256": "c6faa54acc8d87572785dba162952c797a9d0e022abef4e23cf60c2a8011c646",
+            "size_bytes": 22725,
+            "utf16_chars": 14095,
+            "chunks": 15
+          },
+          {
+            "title": "GMP 调度器：Go 并发的心脏",
+            "source_sha256": "aecf5ff33c150b8cbb89fd8c18e21e8f008cd66727b40fc5ada5524d83bf2abe",
+            "size_bytes": 6903,
+            "utf16_chars": 4131,
+            "chunks": 5
+          },
+          {
+            "title": "MySQL 事务、索引与锁",
+            "source_sha256": "4dc1ee3fc2f5ea45ca6a55ee2a37a7c12ddd110f51bad083c733e6501e184d6f",
+            "size_bytes": 29702,
+            "utf16_chars": 15538,
+            "chunks": 15
+          },
+          {
+            "title": "HTTP 一篇说清楚",
+            "source_sha256": "351c953dbec8daebaa7f8cee816a8a86cd4f853b6dfc30e3d6b2e9641f91adb4",
+            "size_bytes": 6030,
+            "utf16_chars": 3211,
+            "chunks": 4
+          },
+          {
+            "title": "Redis 缓存机制",
+            "source_sha256": "3782e9e64c102f58f5c065ac4dd4460014019e6f5642b10ab15a3ec81aab7ee0",
+            "size_bytes": 2354,
+            "utf16_chars": 970,
+            "chunks": 1
+          },
+          {
+            "title": "Java 虚拟线程：让 Java 轻功水上漂",
+            "source_sha256": "59bca09358f4c4c4617e72360f5d4cf8537f6b04f4a8ca7be7b46ef18d450502",
+            "size_bytes": 7872,
+            "utf16_chars": 3478,
+            "chunks": 6
+          },
+          {
+            "title": "Vue3 响应式原理：从 Proxy 到 EffectScope",
+            "source_sha256": "71c3875884be642fa6b0abe47c02664b0e4d230dc3cd2ab6668499e575d04b4f",
+            "size_bytes": 2452,
+            "utf16_chars": 1268,
+            "chunks": 1
+          },
+          {
+            "title": "PostgreSQL 索引：从 B-tree 到 BRIN",
+            "source_sha256": "2184d1de9959429a7d7e0252a36a5478cb12fb041e6d8e9ebcea220fbe135b6b",
+            "size_bytes": 12664,
+            "utf16_chars": 6794,
+            "chunks": 5
+          }
+        ]
+      },
+      "multistage_observation": {
+        "status": "READY",
+        "stages": [
+          {
+            "name": "recall",
+            "status": "OK"
+          },
+          {
+            "name": "rewrite",
+            "status": "OK"
+          },
+          {
+            "name": "rerank",
+            "status": "OK"
+          },
+          {
+            "name": "evidence",
+            "status": "OK"
+          }
+        ],
+        "warning_count": 0,
+        "answered": true,
+        "actual_chat_calls": 4
+      },
+      "multistage": {
+        "status": "READY",
+        "stages": [
+          {
+            "name": "recall",
+            "status": "OK",
+            "duration_ms": 154
+          },
+          {
+            "name": "rewrite",
+            "status": "OK",
+            "duration_ms": 569
+          },
+          {
+            "name": "rerank",
+            "status": "OK",
+            "duration_ms": 2193
+          },
+          {
+            "name": "evidence",
+            "status": "OK",
+            "duration_ms": 3782
+          }
+        ],
+        "warnings": 0,
+        "actual_chat_calls": 4,
+        "factual_quality_manually_approved": false
+      },
+      "knowledge_answers": [
+        {
+          "answer_sha256": "ca75c18274e18212e3731321cfb560c71b6beb03a842c7594a715b90f9540cd3",
+          "answer_chars": 209,
+          "citation_count": 1,
+          "citation_titles": [
+            "PostgreSQL 索引：从 B-tree 到 BRIN"
+          ],
+          "explicit_marks_match": true,
+          "citation_chunks_match_database": true,
+          "acceptable_document_cited": true,
+          "factual_quality_manually_approved": false,
+          "question": "BRIN 索引适合什么场景",
+          "actual_chat_calls": 4
+        }
+      ],
+      "processes_stopped": true,
+      "database_connections_after_stop": 0,
+      "real_model_before": {
+        "calls": {
+          "embedding": 1,
+          "chat": 1
+        },
+        "failures": {},
+        "input_characters": 64,
+        "routes": {
+          "/v1/embeddings": 1,
+          "/v1/chat/completions": 1
+        },
+        "transport": "node-pooled-fetch",
+        "usage": {
+          "prompt_tokens": 57,
+          "total_tokens": 59,
+          "completion_tokens": 2
+        },
+        "successful_embedding_inputs": 1,
+        "last_upstream_rejection": null,
+        "last_transport_failure": null,
+        "last_rejected_embedding_shape": null,
+        "unique_embedding_inputs": 1,
+        "unique_embedding_vectors": 1,
+        "limits": {
+          "requests": 600,
+          "chat_requests": 12,
+          "input_characters": 1000000,
+          "chat_max_tokens": 1024,
+          "upstream_timeout_seconds": 90,
+          "retries": 0
+        }
+      },
+      "real_model_after": {
+        "calls": {
+          "embedding": 32,
+          "chat": 5
+        },
+        "failures": {},
+        "input_characters": 318472,
+        "routes": {
+          "/v1/embeddings": 32,
+          "/v1/chat/completions": 5
+        },
+        "transport": "node-pooled-fetch",
+        "usage": {
+          "prompt_tokens": 158460,
+          "total_tokens": 159150,
+          "completion_tokens": 690
+        },
+        "successful_embedding_inputs": 245,
+        "last_upstream_rejection": null,
+        "last_transport_failure": null,
+        "last_rejected_embedding_shape": null,
+        "unique_embedding_inputs": 245,
+        "unique_embedding_vectors": 245,
+        "limits": {
+          "requests": 600,
+          "chat_requests": 12,
+          "input_characters": 1000000,
+          "chat_max_tokens": 1024,
+          "upstream_timeout_seconds": 90,
+          "retries": 0
+        }
+      }
+    },
+    "java": {
+      "backend": "java",
+      "result": "PASS",
+      "documents": 26,
+      "queries": 1,
+      "eligible_original_queries": 129,
+      "mode": "multistage",
+      "executed_original_queries": 1,
+      "unexecuted_eligible_queries": 128,
+      "background_ingestion_review_enabled": false,
+      "excluded_queries": 0,
+      "sources_sha256": {
+        "scripts/eval/queries.py": "b5aa3821c2ffab9003a212b15b39db091a7f8ac539ade9e1830d901be0e9098a",
+        "scripts/eval/rebuild-corpus.py": "4d28005af2436c426586492e9097587e9ab80ce2e287ee35ce0faddfccd0edae",
+        "scripts/eval/retrieval-eval.py": "ed7cbc6a7736b02311b2b8c48e7468a646ad761c949d5f1142489b31ad1b42ec",
+        "scripts/eval/noise-floor.py": "9d25cc07c58a1a1f5aac99fd5cffa4133b01eb8755e8ac4116df4cfc6219f9b3"
+      },
+      "stage": "complete",
+      "uploaded_documents": 26,
+      "embedding_format_oracle": {
+        "oracle_sha256": "42c1a4e716764441eefa4a2fc1e30efc22ba4c65c3cba1c4d5861c213b19f126",
+        "jars_sha256": {
+          "spring-ai-openai-2.0.1.jar": "2306930e09c05a579b7359656414c2d4d4404a679593318523a69bb7a0d4366d",
+          "spring-ai-commons-2.0.1.jar": "c99512b8b7d7dc5bcb3d271d2f3de6e2edb948be6b05d750cc55c59cf50df9bd"
+        }
+      },
+      "embedding_input_format": "Spring-AI-2.0.1-MetadataMode.EMBED",
+      "ingestion": {
+        "documents": 26,
+        "vectors": 241,
+        "dimensions": 1024,
+        "all_chunk_hashes_seen_by_embedding_model": false,
+        "all_expected_embedding_inputs_seen": true,
+        "per_document": [
+          {
+            "title": "Nginx 生产级配置优化",
+            "source_sha256": "b4aa5f4d74c19cb1cbaa97e71a32ab5dce1fe4497e55b79cc180a66556831341",
+            "size_bytes": 13596,
+            "utf16_chars": 9170,
+            "chunks": 11
+          },
+          {
+            "title": "Nginx 完整配置参考手册",
+            "source_sha256": "7a15c2b099b405926da0dae6a99df48fa60ce374295f84f556237c6e79d032c5",
+            "size_bytes": 9668,
+            "utf16_chars": 7468,
+            "chunks": 10
+          },
+          {
+            "title": "动态规划基础与核心思想",
+            "source_sha256": "a28e53f2ddab9f68e59bec2371aadd4615a02e3a33b243c62004873b10cf4e3d",
+            "size_bytes": 9841,
+            "utf16_chars": 6255,
+            "chunks": 7
+          },
+          {
+            "title": "动态规划五部曲实战",
+            "source_sha256": "cd60bb3d04a480605d54d1b47786aa023e4d13e85a70f47848673d680736b42a",
+            "size_bytes": 31571,
+            "utf16_chars": 18778,
+            "chunks": 23
+          },
+          {
+            "title": "系统性地理解分布式系统",
+            "source_sha256": "c726966ed6a11f8468378a9c085de17adb7c7ccf28de121ce441febc6bc4b6ac",
+            "size_bytes": 17952,
+            "utf16_chars": 6826,
+            "chunks": 8
+          },
+          {
+            "title": "分布式一致性：CAP、Raft 与脑裂",
+            "source_sha256": "8f5bef178a756581ef1e0251e2a8c622d04e02a373528d614c8bd789fad56d8c",
+            "size_bytes": 10171,
+            "utf16_chars": 4607,
+            "chunks": 6
+          },
+          {
+            "title": "TypeScript 类型体操技巧",
+            "source_sha256": "d87d24d4b60021d1adf03084c1b640bba36cd6dca7a1dcbc981035644776d2d2",
+            "size_bytes": 23264,
+            "utf16_chars": 16554,
+            "chunks": 10
+          },
+          {
+            "title": "TypeScript 泛型与条件类型",
+            "source_sha256": "39acfa3939d279f6f13836e6b38b57759b7d8f81764e2f41fe7cf03dfd1a8d49",
+            "size_bytes": 5850,
+            "utf16_chars": 3636,
+            "chunks": 8
+          },
+          {
+            "title": "Python 异步陷阱：谁在帮你并发",
+            "source_sha256": "4f22e7a88f7d784dec98a2ce732780e08b44230e3c085f7c9de72b756f2d2c7f",
+            "size_bytes": 10003,
+            "utf16_chars": 4953,
+            "chunks": 8
+          },
+          {
+            "title": "Python 并发选型：GIL、多线程、多进程与协程",
+            "source_sha256": "d299aaf881ac305351c1a77044005590934d9c5dcc17e31921f970948a4e2ca1",
+            "size_bytes": 14142,
+            "utf16_chars": 7440,
+            "chunks": 8
+          },
+          {
+            "title": "Kafka 为什么快：PageCache、零拷贝与 Segment",
+            "source_sha256": "7404198fa546eca88690a8d66370e636d4287b7530504208daf8ac9c9db72cc1",
+            "size_bytes": 22915,
+            "utf16_chars": 11015,
+            "chunks": 9
+          },
+          {
+            "title": "Kafka 实战总结：架构与吞吐优化",
+            "source_sha256": "1de49461cd78d779464b821b2b35832886221b66a269e826675d0e8f73f8c1b2",
+            "size_bytes": 37810,
+            "utf16_chars": 26871,
+            "chunks": 31
+          },
+          {
+            "title": "浏览器渲染原理：从输入到像素",
+            "source_sha256": "f83132444e6139a00b84e8174eef8818584ddda84c33a986a33126cbc53288c2",
+            "size_bytes": 6524,
+            "utf16_chars": 3334,
+            "chunks": 4
+          },
+          {
+            "title": "浏览器渲染管道：重排、重绘与合成层",
+            "source_sha256": "ee6ee4f0b85edbba7401c5e619d2533a523957d927cef4e259362df6bd848fbe",
+            "size_bytes": 8317,
+            "utf16_chars": 3491,
+            "chunks": 7
+          },
+          {
+            "title": "Docker 深度解析：UnionFS 与核心组件",
+            "source_sha256": "6dcc582373cfbb9d5b830ac31ee7510a11153e29d168463dfad2f1ed878c7247",
+            "size_bytes": 15174,
+            "utf16_chars": 7406,
+            "chunks": 8
+          },
+          {
+            "title": "Docker 与虚拟机的区别：Namespace 和 Cgroup",
+            "source_sha256": "6630968b6e3624fc98b69d04c1377b3b7d899b72415672655a7399ee9538d24c",
+            "size_bytes": 16578,
+            "utf16_chars": 8454,
+            "chunks": 11
+          },
+          {
+            "title": "MySQL 学习记：从增删改查到慢查询",
+            "source_sha256": "e1441e505f00cc1fcb6e9d13151bac7a3c2bca0218b8b72939e20e8603360853",
+            "size_bytes": 8482,
+            "utf16_chars": 4796,
+            "chunks": 5
+          },
+          {
+            "title": "HTTP 渐进：编码、缓存与断点续传",
+            "source_sha256": "add19c24e0a35ff2d44af3470d0a1cbfa8ec2d172cb02c49b75f92d8adbb943e",
+            "size_bytes": 19517,
+            "utf16_chars": 13931,
+            "chunks": 15
+          },
+          {
+            "title": "Go 并发模式选择指南",
+            "source_sha256": "c6faa54acc8d87572785dba162952c797a9d0e022abef4e23cf60c2a8011c646",
+            "size_bytes": 22725,
+            "utf16_chars": 14095,
+            "chunks": 15
+          },
+          {
+            "title": "GMP 调度器：Go 并发的心脏",
+            "source_sha256": "aecf5ff33c150b8cbb89fd8c18e21e8f008cd66727b40fc5ada5524d83bf2abe",
+            "size_bytes": 6903,
+            "utf16_chars": 4131,
+            "chunks": 5
+          },
+          {
+            "title": "MySQL 事务、索引与锁",
+            "source_sha256": "4dc1ee3fc2f5ea45ca6a55ee2a37a7c12ddd110f51bad083c733e6501e184d6f",
+            "size_bytes": 29702,
+            "utf16_chars": 15538,
+            "chunks": 15
+          },
+          {
+            "title": "HTTP 一篇说清楚",
+            "source_sha256": "351c953dbec8daebaa7f8cee816a8a86cd4f853b6dfc30e3d6b2e9641f91adb4",
+            "size_bytes": 6030,
+            "utf16_chars": 3211,
+            "chunks": 4
+          },
+          {
+            "title": "Redis 缓存机制",
+            "source_sha256": "3782e9e64c102f58f5c065ac4dd4460014019e6f5642b10ab15a3ec81aab7ee0",
+            "size_bytes": 2354,
+            "utf16_chars": 970,
+            "chunks": 1
+          },
+          {
+            "title": "Java 虚拟线程：让 Java 轻功水上漂",
+            "source_sha256": "59bca09358f4c4c4617e72360f5d4cf8537f6b04f4a8ca7be7b46ef18d450502",
+            "size_bytes": 7872,
+            "utf16_chars": 3478,
+            "chunks": 6
+          },
+          {
+            "title": "Vue3 响应式原理：从 Proxy 到 EffectScope",
+            "source_sha256": "71c3875884be642fa6b0abe47c02664b0e4d230dc3cd2ab6668499e575d04b4f",
+            "size_bytes": 2452,
+            "utf16_chars": 1268,
+            "chunks": 1
+          },
+          {
+            "title": "PostgreSQL 索引：从 B-tree 到 BRIN",
+            "source_sha256": "2184d1de9959429a7d7e0252a36a5478cb12fb041e6d8e9ebcea220fbe135b6b",
+            "size_bytes": 12664,
+            "utf16_chars": 6794,
+            "chunks": 5
+          }
+        ]
+      },
+      "multistage_observation": {
+        "status": "READY",
+        "stages": [
+          {
+            "name": "recall",
+            "status": "OK"
+          },
+          {
+            "name": "rewrite",
+            "status": "OK"
+          },
+          {
+            "name": "rerank",
+            "status": "OK"
+          },
+          {
+            "name": "evidence",
+            "status": "OK"
+          }
+        ],
+        "warning_count": 0,
+        "answered": true,
+        "actual_chat_calls": 4
+      },
+      "multistage": {
+        "status": "READY",
+        "stages": [
+          {
+            "name": "recall",
+            "status": "OK",
+            "duration_ms": 160
+          },
+          {
+            "name": "rewrite",
+            "status": "OK",
+            "duration_ms": 931
+          },
+          {
+            "name": "rerank",
+            "status": "OK",
+            "duration_ms": 2359
+          },
+          {
+            "name": "evidence",
+            "status": "OK",
+            "duration_ms": 4275
+          }
+        ],
+        "warnings": 0,
+        "actual_chat_calls": 4,
+        "factual_quality_manually_approved": false
+      },
+      "knowledge_answers": [
+        {
+          "answer_sha256": "2584d3019974b82e791e285b0d849d08f54599bf83e9c57a459579f16a38f1a6",
+          "answer_chars": 138,
+          "citation_count": 1,
+          "citation_titles": [
+            "PostgreSQL 索引：从 B-tree 到 BRIN"
+          ],
+          "explicit_marks_match": true,
+          "citation_chunks_match_database": true,
+          "acceptable_document_cited": true,
+          "factual_quality_manually_approved": false,
+          "question": "BRIN 索引适合什么场景",
+          "actual_chat_calls": 4
+        }
+      ],
+      "processes_stopped": true,
+      "database_connections_after_stop": 0,
+      "real_model_before": {
+        "calls": {
+          "embedding": 32,
+          "chat": 5
+        },
+        "failures": {},
+        "input_characters": 318472,
+        "routes": {
+          "/v1/embeddings": 32,
+          "/v1/chat/completions": 5
+        },
+        "transport": "node-pooled-fetch",
+        "usage": {
+          "prompt_tokens": 158460,
+          "total_tokens": 159150,
+          "completion_tokens": 690
+        },
+        "successful_embedding_inputs": 245,
+        "last_upstream_rejection": null,
+        "last_transport_failure": null,
+        "last_rejected_embedding_shape": null,
+        "unique_embedding_inputs": 245,
+        "unique_embedding_vectors": 245,
+        "limits": {
+          "requests": 600,
+          "chat_requests": 12,
+          "input_characters": 1000000,
+          "chat_max_tokens": 1024,
+          "upstream_timeout_seconds": 90,
+          "retries": 0
+        }
+      },
+      "real_model_after": {
+        "calls": {
+          "embedding": 70,
+          "chat": 9
+        },
+        "failures": {},
+        "input_characters": 651850,
+        "routes": {
+          "/v1/embeddings": 32,
+          "/v1/chat/completions": 5,
+          "/embeddings": 38,
+          "/chat/completions": 4
+        },
+        "transport": "node-pooled-fetch",
+        "usage": {
+          "prompt_tokens": 325982,
+          "total_tokens": 327369,
+          "completion_tokens": 1387
+        },
+        "successful_embedding_inputs": 489,
+        "last_upstream_rejection": null,
+        "last_transport_failure": null,
+        "last_rejected_embedding_shape": null,
+        "unique_embedding_inputs": 488,
+        "unique_embedding_vectors": 489,
+        "limits": {
+          "requests": 600,
+          "chat_requests": 12,
+          "input_characters": 1000000,
+          "chat_max_tokens": 1024,
+          "upstream_timeout_seconds": 90,
+          "retries": 0
+        }
+      }
+    }
+  },
+  "selected_backend": "both",
+  "mode": "multistage",
+  "input_corpus_coverage": {
+    "documents": 26,
+    "expected_documents": 26,
+    "eligible_original_queries": 129,
+    "expected_original_queries": 129,
+    "excluded_original_queries": 0,
+    "historical_corpus_identity_verified": false
+  },
+  "private_answer_evidence": "/private/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-real-evidence-vj31z5pu",
+  "semantic_quality_verified": false,
+  "release_gates_changed": false,
+  "limits": "26 of 26 fresh public articles; current-page coverage is not authenticated historical corpus identity. Independent live model calls can have noise. Retrieval mode uses legacy QA; multistage mode probes one original question without replacing the full retrieval suite. No-evidence mode is one supplemental negative control, not an original annotated query. Factual answer review and full production acceptance remain separate. No existing DB, production mutation, automatic release approval or synthetic fallback.",
+  "preflight": {
+    "embedding_dimensions": 1024,
+    "chat_nonempty": true
+  },
+  "finished_at": "2026-11-04T15:25:40.563222+00:00",
+  "real_model_requests": {
+    "calls": {
+      "embedding": 70,
+      "chat": 9
+    },
+    "failures": {},
+    "input_characters": 651850,
+    "routes": {
+      "/v1/embeddings": 32,
+      "/v1/chat/completions": 5,
+      "/embeddings": 38,
+      "/chat/completions": 4
+    },
+    "transport": "node-pooled-fetch",
+    "usage": {
+      "prompt_tokens": 325982,
+      "total_tokens": 327369,
+      "completion_tokens": 1387
+    },
+    "successful_embedding_inputs": 489,
+    "last_upstream_rejection": null,
+    "last_transport_failure": null,
+    "last_rejected_embedding_shape": null,
+    "unique_embedding_inputs": 488,
+    "unique_embedding_vectors": 489,
+    "limits": {
+      "requests": 600,
+      "chat_requests": 12,
+      "input_characters": 1000000,
+      "chat_max_tokens": 1024,
+      "upstream_timeout_seconds": 90,
+      "retries": 0
+    }
+  }
+}

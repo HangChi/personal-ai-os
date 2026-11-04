@@ -104,6 +104,18 @@ class RealEvaluationTest(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(AssertionError):
                 check_multistage(altered, 3 if field == "calls" else 4)
 
+    def test_strict_parity_never_overwrites_tied_degradation(self):
+        java = [dict(query="a", docs=["acceptable"], rank=2, tied_rank=1),
+                dict(query="b", docs=["acceptable"], rank=1, tied_rank=1)]
+        go = [dict(query="a", docs=["acceptable"], rank=1, tied_rank=1),
+              dict(query="b", docs=["acceptable"], rank=2, tied_rank=2)]
+        result = comparison({"java": dict(query_results=java, metrics=metrics(java)),
+                             "go": dict(query_results=go, metrics=metrics(go))})
+        self.assertTrue(result["strict_quality_not_lower"])
+        self.assertFalse(result["original_tied_quality_not_lower"])
+        self.assertLess(result["original_tied_rank_go_minus_java"]["mrr"], 0)
+        self.assertFalse(result["release_gate_approved"])
+
     def test_no_evidence_requires_clean_stages_empty_sources_and_no_final_answer_call(self):
         response = dict(answered=False, answer="知识库中没有找到相关内容。", citations=[],
                         retrieval=dict(status="INSUFFICIENT", hits=[], warnings=[], stages=[
