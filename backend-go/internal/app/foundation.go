@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"personal-ai-os/backend-go/internal/business/calendar"
 	"personal-ai-os/backend-go/internal/business/chat"
 	"personal-ai-os/backend-go/internal/business/confirmation"
 	"personal-ai-os/backend-go/internal/business/idempotency"
@@ -323,6 +324,24 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		if !options.EnableP4 {
 			return nil, errors.New("P5需要启用P4")
 		}
+		calendarValues := map[string]string{}
+		for _, key := range []string{"app.calendar.scan-enabled", "app.calendar.scan-interval-ms",
+			"app.calendar.scan-initial-delay-ms", "app.calendar.scan-lookahead", "app.calendar.scan-lookback",
+			"app.calendar.default-reminder-lead", "app.calendar.max-range-days", "app.calendar.default-query-limit",
+			"app.calendar.max-query-limit"} {
+			value, found, err := properties.Get(key)
+			if err != nil {
+				return nil, err
+			}
+			if found {
+				calendarValues[key] = value
+			}
+		}
+		calendarSettings, err := config.BindCalendarProperties(calendarValues)
+		if err != nil {
+			return nil, err
+		}
+		events := calendar.NewEvents(pool, calendarSettings, time.Local).Handler(logger)
 		store, err := memory.NewStore(ctx, pool)
 		if err != nil {
 			return nil, err
@@ -371,6 +390,10 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		memories := memory.NewHTTP(store, logger)
 		previous := options.Business
 		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if calendar.OwnsEventPath(r.URL.Path) {
+				events.ServeHTTP(w, r)
+				return
+			}
 			if memory.OwnsPath(r.URL.Path) {
 				memories.ServeHTTP(w, r)
 				return

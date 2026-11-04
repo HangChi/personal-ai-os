@@ -84,7 +84,10 @@ func atWallTime(date, previous time.Time) time.Time {
 	wall := date.Add(time.Duration(previous.Hour())*time.Hour + time.Duration(previous.Minute())*time.Minute +
 		time.Duration(previous.Second())*time.Second + time.Duration(previous.Nanosecond()))
 	_, preferred := previous.Zone()
-	zone := previous.Location()
+	return resolveWallTime(wall, previous.Location(), preferred)
+}
+
+func resolveWallTime(wall time.Time, zone *time.Location, preferred int) time.Time {
 	// Preserve the previous offset during an overlap when possible. In a gap,
 	// advance by the offset change, matching ZonedDateTime.
 	var earliest, forward time.Time
