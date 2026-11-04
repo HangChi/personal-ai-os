@@ -29,6 +29,8 @@ class P8InventoryDispositionTest(unittest.TestCase):
             self.assertIn("specs/033-go-rewrite/p8-corpus-complete-20261104-231937.json", entry["evidence"])
             self.assertIn("specs/033-go-rewrite/p8-eval-real-20261104-232203.json", entry["evidence"])
             self.assertIn("specs/033-go-rewrite/p8-real-model-review-20261104-232203.json", entry["evidence"])
+            self.assertIn("specs/033-go-rewrite/p8-eval-paired-20261104-233557.json", entry["evidence"])
+            self.assertIn("该轮共同五miss", entry["note"])
             self.assertIn("specs/033-go-rewrite/p8-real-model-review.json", entry["evidence"])
         for group in ("java_test_cases", "tools"):
             for entry in self.inventory[group]:
