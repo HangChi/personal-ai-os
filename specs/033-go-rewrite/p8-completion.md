@@ -125,6 +125,14 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 
 `python3 scripts/migration/run_go_postgres_tests.py --package task --tls`全包race通过（2.556s），日志`/tmp/personalos-p8-task-contracts.log`，所有临时资源已清理。原Java断言未修改，发布门禁保持开放。
 
+## T803d 文本、附件与剩余列表契约
+
+共享Texts原六声明落到Java strip语义、nil/空白、只裁首尾、UTF-16恰好200和超限以及精确错误消息。修复日程service按未裁剪标题判断长度/吞掉NBSP的问题，任务标题和描述复用相同规则；HTTP DTO原始200/2000限制继续保留，service不额外增加Java没有的描述限制。标签错误消息恢复原超长标签/实际唯一数信息。
+
+附件补验text/plain、扩展名回退、空媒体JSON、zip/image不当文本、空白/空字节/坏PDF以及8000 UTF-16上下文截断；实际PDF层提取沿用原真实Poppler测试。新增25会话/25真实文档向量测试验证两页20+5不重漏、total、页码/size上下界和溢出、活跃会话两消息计数、完整列表端点、无命中及文档标题/文件名搜索。
+
+定向单测全部race通过，日志`/tmp/personalos-p8-text-extract-2.log`；真实TLS列表/任务四项通过2.833s/2.344s，日志`/tmp/personalos-p8-text-lists-db.log`。该轮calendar过滤无匹配，未把它当数据库通过；另跑calendar真实TLS全包通过3.043s，日志`/tmp/personalos-p8-calendar-final.log`。最终全包串行race退出0（app215.449s），日志`/tmp/personalos-p8-go-final-serial-2.log`；前一轮启动后才新增reflect依赖导致task编译失败，失败日志保留，未误报通过。所有本次数据库容器清理，发布门禁不升级。
+
 ## T805a 候选CI与T807文档
 
 独立`.github/workflows/go.yml`保留原ci.yml，Go分支/相关PR及手动触发，最小只读权限。执行全包串行race、integration vet、build、模块校验、44项Python测试/固定基线/78配置处置检查及新TLS库task/confirmation/P8回归，失败日志作为artifact。没有远端push或工作流运行，不声称GitHub已绿；它也不替代原Java/前端及浏览器/切换/人工门禁。

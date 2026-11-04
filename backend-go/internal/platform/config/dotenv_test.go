@@ -10,7 +10,7 @@ import (
 )
 
 // 基础用例来自固定 Java 基线 DotEnvParserTest 的字面量断言；
-// MCP relaxed binding 尚未实现，不能据此标记整个 Java 测试文件 verified。
+// MCP的.env绑定另由TestMCPDotEnvBindingOriginalScenario及P7运行时测试覆盖。
 func TestParseDotEnvJavaContract(t *testing.T) {
 	for _, test := range []struct {
 		name string

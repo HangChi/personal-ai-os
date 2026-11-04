@@ -1,6 +1,7 @@
 package task
 
 import (
+	"strconv"
 	"unicode/utf16"
 )
 
@@ -13,7 +14,7 @@ func NormalizeTags(raw []string) ([]string, error) {
 			continue
 		}
 		if len(utf16.Encode([]rune(tag))) > 20 {
-			return nil, invalid("单个标签不能超过 20 个字符")
+			return nil, invalid("单个标签不能超过 20 个字符：" + tag)
 		}
 		if !seen[tag] {
 			seen[tag] = true
@@ -21,7 +22,7 @@ func NormalizeTags(raw []string) ([]string, error) {
 		}
 	}
 	if len(out) > 5 {
-		return nil, invalid("最多 5 个标签")
+		return nil, invalid("最多 5 个标签，当前 " + strconv.Itoa(len(out)) + " 个")
 	}
 	return out, nil
 }

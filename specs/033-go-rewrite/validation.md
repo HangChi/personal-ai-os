@@ -615,3 +615,5 @@ P8真实Redis/TLS/备份全套重跑通过：修复合成备份种子污染主�
 P8逐声明审查补验：真实双池确认事务八声明已提交bed1108；发现并修复任务标签N+1，真实TLS task全包race通过1.970s。20条分页三查询、25条ID批取两查询及翻页/标签顺序/统计通过；T803b完成，证据见p8-completion.md。T803父项及发布门禁保持开放。
 
 P8隔离切换第10轮完整通过，日志`/tmp/personalos-p8-cutover-10.log`；Java原格式备份恢复Go、精确数据/附件/命名模型解密、幂等与未知TOOL保护、Go停机后原Java回退和42迁移历史通过，临时资源已清理。第9轮Python3.9五位小数秒比较失败保留；三项时间精度辅助单测通过，最新报告见`p8-cutover.json`。仅合成数据与本机轻载观测，不解除真实用户备份/外部副作用/生产验收门禁。
+
+T803d共享Java Texts/任务日程接线、附件六声明缺口及25会话/25文档列表契约补验完成。定向race、真实TLS列表与task、calendar完整包race通过；最终Go全包串行race退出0（app215.449s），日志`/tmp/personalos-p8-go-final-serial-2.log`。旧轮calendar无匹配不作为数据库证据，单独全包calendar3.043s通过；详情与失败历史见P8进度。未新增verified或解除门禁。

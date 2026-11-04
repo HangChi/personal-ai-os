@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 	"unicode/utf16"
+
+	textutil "personal-ai-os/backend-go/internal/platform/text"
 
 	"personal-ai-os/backend-go/internal/platform/api"
 	"personal-ai-os/backend-go/internal/platform/config"
@@ -97,7 +98,11 @@ func (s *Events) dayStart(t time.Time) time.Time {
 
 func (s *Events) apply(event *Event, request EventRequest, creating bool) error {
 	if request.Title != nil {
-		event.Title = strings.TrimSpace(*request.Title)
+		title, err := textutil.RequireNotBlank(request.Title, "标题", textutil.TitleMaxLength)
+		if err != nil {
+			return err
+		}
+		event.Title = title
 	}
 	if event.Title == "" {
 		return validation("标题不能为空")
@@ -107,7 +112,7 @@ func (s *Events) apply(event *Event, request EventRequest, creating bool) error 
 		label string
 		limit int
 	}{
-		{request.Title, "标题", 200}, {request.Description, "描述", 2000}, {request.Location, "地点", 200},
+		{request.Description, "描述", 2000}, {request.Location, "地点", 200},
 	} {
 		if field.value != nil && len(utf16.Encode([]rune(*field.value))) > field.limit {
 			return validation(fmt.Sprintf("%s长度不能超过 %d", field.label, field.limit))
@@ -169,11 +174,7 @@ func (s *Events) apply(event *Event, request EventRequest, creating bool) error 
 }
 
 func optionalText(value string) *string {
-	value = strings.TrimSpace(value)
-	if value == "" {
-		return nil
-	}
-	return &value
+	return textutil.TrimToNull(&value)
 }
 
 func (s *Events) Create(ctx context.Context, request EventRequest) (Event, error) {

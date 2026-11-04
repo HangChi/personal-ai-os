@@ -5,6 +5,8 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf16"
+
+	textutil "personal-ai-os/backend-go/internal/platform/text"
 )
 
 type Status string
@@ -141,22 +143,12 @@ func (q Query) Normalize() Query {
 	return q
 }
 func ValidateTitle(title string) (string, error) {
-	title = strip(title)
-	if title == "" || utf16Length(title) > 200 {
-		return "", invalid("任务标题不能为空且最多200字")
+	value, err := textutil.RequireNotBlank(&title, "标题", textutil.TitleMaxLength)
+	if err != nil {
+		return "", invalid(err.Error())
 	}
-	return title, nil
+	return value, nil
 }
 func NormalizeDescription(description *string) (*string, error) {
-	if description == nil {
-		return nil, nil
-	}
-	if utf16Length(*description) > 2000 {
-		return nil, invalid("任务描述最多2000字")
-	}
-	value := strip(*description)
-	if value == "" {
-		return nil, nil
-	}
-	return &value, nil
+	return textutil.TrimToNull(description), nil
 }
