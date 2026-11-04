@@ -1,5 +1,11 @@
 # 验证记录
 
+## 2026-11-04 P8 上下文预算边界对照
+
+`run_go_e2e_tests.py --mode context`与`--backend java --mode context`各新TLS空库/42迁移/认证CSRF下实际退出0。直接原G4函数得到同一首轮FAIL：1811字符当前输入41301、零上游调用，精确USER与原Java中断标记保存。六轮真实历史后下调预算，短输入均一次调用完成；Go/Java保留用户消息2/1条，明确非逐字相同，14条持久消息及旧记录均不变。恢复预算后原拒绝会话可继续，原记录不变，产物清理归零、本次进程及容器清理。
+
+报告`p8-e2e/go/context-boundary-20261104-225738.json`、`p8-e2e/java/context-boundary-20261104-225900.json`，日志`/tmp/personalos-p8-context-boundary-{go-2,java-1}.log`。首轮Go探针误假设失败不落中断标记而失败，按原finisher修正验证器后通过；失败日志`/tmp/personalos-p8-context-boundary-go-1.log`保留。119项完整Python测试通过（7.916s，`/tmp/personalos-p8-python-context.log`），三个新单测验证拒绝必须零上游、裁剪不能改持久历史及哈希观察器有界/不含正文。`e2a1766`提交脚本/测试/两端报告；T802f仅补验边界和恢复，原suite预算FAIL及五门禁不升级。
+
 ## 2026-11-04 P8 真实多阶段RAG双端单题
 
 `run_go_real_eval_tests.py --mode multistage --model-env-file /Volumes/WD770/Project/personal-ai-os/.env --downloaded-corpus-dir /private/tmp/personalos-p8-juejin.Lu4LAU/corpus`使用同一获准真实模型配置，两端各新随机TLS库/42迁移/认证CSRF/16篇142向量与固定Java格式输入SHA核验。只执行原BRIN问题，各READY、recall/rewrite/rerank/evidence全OK、无warning、恰好4次前台chat，显式标记和可接受文档引用与持久分块一致。1题已执行、83道材料齐备题未执行、45题缺材料均显式记录；无直接检索/噪声套件及质量比较。

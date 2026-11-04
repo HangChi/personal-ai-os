@@ -16,6 +16,12 @@
 
 模型夹具新增单测拒绝普通事实、记数字请求、引用中的指令、空白内容；有工具回执后不重复调用。原suite的SKIP不被改写或过滤；这条补验只证明受控协议和真实存储/审计行为，不证明真实模型总能正确选择工具。
 
+### 上下文拒绝、历史裁剪与恢复
+
+独立`--mode context`直接调用未改原G4函数，两端新会话1811字符首条输入均41301、无done/delta且零上游请求；精确USER与Java中断标记持久化，原case仍FAIL。正常预算先经六轮HTTP对话创建历史，再设小预算发短问题，两端均完成一次实际模型调用；Go/Java只送2/1条用户消息，均为完整当前输入和有序后缀。14条数据库消息及此前12条记录保持不变；恢复预算后原拒绝会话可继续，原两条记录未变。
+
+报告[Go](go/context-boundary-20261104-225738.json)、[Java](java/context-boundary-20261104-225900.json)独立PASS且清理归零，各8次合成模型请求。观察器只记有界32次的角色/数量/内容SHA，不写原始提示或工具参数。保留上游历史条数差异，不宣称逐字上下文等价；这项不能将原E2E FAIL改为PASS或替代预算契约审查。
+
 ### 失败隔离与真实计划工具
 
 原G4小预算case的32768恢复语句位于首轮断言之后，失败时无法执行。迁移runner仅包装该case，在finally调用相同认证API恢复32768；不改原函数/断言/结果。五项单测覆盖成功/原失败/恢复失败/双失败/目标不唯一；恢复错误会导致runner失败且不掩盖原异常。真实两端全suite复跑仍记录G4 FAIL。
@@ -48,6 +54,8 @@ python3 scripts/migration/run_go_e2e_tests.py --mode plan
 python3 scripts/migration/run_go_e2e_tests.py --backend java --mode plan
 python3 scripts/migration/run_go_e2e_tests.py --mode memory
 python3 scripts/migration/run_go_e2e_tests.py --backend java --mode memory
+python3 scripts/migration/run_go_e2e_tests.py --mode context
+python3 scripts/migration/run_go_e2e_tests.py --backend java --mode context
 ```
 
 原suite存在已记录失败时runner退出非零；不掩盖门禁结果。所有fixture只清理本次创建的进程/数据库。
