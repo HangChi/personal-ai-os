@@ -64,3 +64,15 @@ Go和原前端Web候选镜像均实际构建成功。第一次Go构建的Debian 
 第8轮完整链通过：原前端/安全头、管理与探针路径404、未登录401、错误登录/CSRF、登录后真实任务持久化、multipart上传与内容下载一致、SPA页面、42条迁移历史、官方Flyway再次零迁移/validate、SIGTERM退出0。日志：/tmp/personalos-p8-compose-actual-8.log；先前失败日志均保留。runner只删除自己新建项目/卷，未操作现有Compose资产。分布式完整栈与prod/TLS仍待验收，不解除prod拒绝和readyz503。
 
 第9轮在相同链上增加Go/Web实际exec id -u均为10001的断言，完整通过，日志/tmp/personalos-p8-compose-actual-9.log。38项迁移脚本单测通过，git diff --check通过。
+
+## T801c 实际监控与知识指标
+
+补齐原仪表盘依赖的知识指标：jobs.attempts使用outcome、rag.results使用status、rag.tokens使用kind；timer导出秒单位count/sum/窗口max，recall与rag.stage按原monitoring配置导出固定桶。召回真实接线query_embedding/opensearch_hybrid/candidate_hydration/postgres_vector_path。计时负值忽略、快照深拷贝，数据库查询在总指标锁之外，单次只读快照最多1秒；失败输出NaN而不是伪造零积压。
+
+`KnowledgeMetricsOracle.java`实际执行固定Java依赖的PrometheusMeterRegistry，记录源码与依赖SHA-256。Go逐项比较同输入的所有实际样本，包括标签、单位和桶；默认复验不重写fixture。定向race通过，日志`/tmp/personalos-p8-knowledge-metrics-2.log`；真实TLS PostgreSQL验证pending/future/running/failed/infinity谓词、最旧age、真实PG召回计时和取消查询NaN，日志`/tmp/personalos-p8-knowledge-metrics-db.log`。
+
+独立Go监控资产保留原20面板；Hikari/JVM改为明确标注的Go连接池使用率/已分配堆，使用新datasource/dashboard UID，不伪造JVM指标。combined与distributed配置分开。Prometheus/Grafana非root、只读根、私有网络、独立卷；Grafana随机回环端口和随机合成密码。
+
+`python3 scripts/migration/run_go_compose_tests.py --monitoring`两轮完整通过；第二轮同时执行promtool config/rules和六条告警的pending/firing/recovery单元测试。真实Prometheus采集UP=1及Go/知识库样本、Grafana健康与20面板provisioning、原Compose业务链全部通过，仅清理本次随机项目与卷。日志`/tmp/personalos-p8-monitoring-actual.log`、`/tmp/personalos-p8-monitoring-actual-2.log`。另独立promtool规则测试通过，39项Python测试通过。
+
+边界：规则测试用合成时间序列，不是实际故障持续五分钟的告警演练；尚无Alertmanager通知投递验收。distributed DNS采集与本地发现容器权限仍待后续验证，不据此勾选T801父项。P6四设施全回归通过且清理，日志`/tmp/personalos-p8-facilities-p6.log`。Redis限流前两轮并发失败保留记录，隔离定向重跑通过；未放宽150ms边界，其余Redis回归继续单独追踪。

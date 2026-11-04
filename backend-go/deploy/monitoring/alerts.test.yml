@@ -1,0 +1,90 @@
+rule_files:
+  - alerts.yml
+evaluation_interval: 1m
+tests:
+  - name: pending-firing-and-recovery
+    interval: 1m
+    input_series:
+      - series: 'up{job="personal-ai-os-go",instance="backend:9091"}'
+        values: '0x9 1x8'
+      - series: 'personalos_knowledge_jobs_oldest_ready_seconds{job="personal-ai-os-go",instance="backend:9091"}'
+        values: '600x9 0x8'
+      - series: 'personalos_knowledge_review_oldest_ready_seconds{job="personal-ai-os-go",instance="backend:9091"}'
+        values: '600x9 0x8'
+      - series: 'personalos_knowledge_review_failed{job="personal-ai-os-go",instance="backend:9091"}'
+        values: '1x9 0x8'
+      - series: 'personalos_go_database_connections{job="personal-ai-os-go",instance="backend:9091",state="active"}'
+        values: '10x9 1x8'
+      - series: 'personalos_go_database_connections{job="personal-ai-os-go",instance="backend:9091",state="max"}'
+        values: '10x18'
+      - series: 'http_server_requests_seconds_count{job="personal-ai-os-go",status="200"}'
+        values: '0+90x9 900+100x8'
+      - series: 'http_server_requests_seconds_count{job="personal-ai-os-go",status="500"}'
+        values: '0+10x9 90x8'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: PersonalOSGoTargetDown
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: PersonalOSGoIndexBacklog
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: PersonalOSGoReviewBacklog
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: PersonalOSGoFailedReviews
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: PersonalOSGoDatabaseSaturation
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: PersonalOSGoHTTPFailures
+        exp_alerts: []
+      - eval_time: 7m
+        alertname: PersonalOSGoTargetDown
+        exp_alerts:
+          - exp_labels: {job: personal-ai-os-go, instance: 'backend:9091', severity: critical}
+            exp_annotations: {summary: 'Go management scrape target is unavailable'}
+      - eval_time: 7m
+        alertname: PersonalOSGoIndexBacklog
+        exp_alerts:
+          - exp_labels: {job: personal-ai-os-go, instance: 'backend:9091', severity: warning}
+            exp_annotations: {summary: 'A ready knowledge index job has waited over five minutes'}
+      - eval_time: 7m
+        alertname: PersonalOSGoReviewBacklog
+        exp_alerts:
+          - exp_labels: {job: personal-ai-os-go, instance: 'backend:9091', severity: warning}
+            exp_annotations: {summary: 'A ready knowledge review job has waited over five minutes'}
+      - eval_time: 7m
+        alertname: PersonalOSGoFailedReviews
+        exp_alerts:
+          - exp_labels: {job: personal-ai-os-go, instance: 'backend:9091', severity: warning}
+            exp_annotations: {summary: 'Knowledge reviews require intervention'}
+      - eval_time: 7m
+        alertname: PersonalOSGoDatabaseSaturation
+        exp_alerts:
+          - exp_labels: {job: personal-ai-os-go, instance: 'backend:9091', severity: warning}
+            exp_annotations: {summary: 'Go database pool has used over ninety percent of its connections'}
+      - eval_time: 7m
+        alertname: PersonalOSGoHTTPFailures
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations: {summary: 'Go HTTP server error rate exceeds five percent'}
+      - eval_time: 16m
+        alertname: PersonalOSGoTargetDown
+        exp_alerts: []
+      - eval_time: 16m
+        alertname: PersonalOSGoIndexBacklog
+        exp_alerts: []
+      - eval_time: 16m
+        alertname: PersonalOSGoReviewBacklog
+        exp_alerts: []
+      - eval_time: 16m
+        alertname: PersonalOSGoFailedReviews
+        exp_alerts: []
+      - eval_time: 16m
+        alertname: PersonalOSGoDatabaseSaturation
+        exp_alerts: []
+      - eval_time: 16m
+        alertname: PersonalOSGoHTTPFailures
+        exp_alerts: []

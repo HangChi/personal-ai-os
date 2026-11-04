@@ -603,3 +603,7 @@ maintenance/config/chat定向race、P8 CLI/监听边界race与integration vet/bu
 容器网络只允许显式`--foundation --p8 --container`且认证和CSRF均开启，接受通配TCP监听；默认模式和前序模式继续回环，prod拒绝/readyz503暂不解除。部署资产/完整E2E仍在后续批次验证，不能据此宣布发布完成。详见[p8-completion.md](p8-completion.md)。
 
 首批提交前，Java全量离线verify（显式禁用dotenv、context cache=2）1137测试零失败/错误/跳过，原JaCoCo门禁及BUILD SUCCESS（27:49）。前端lint/format/type-check、1151逻辑测试通过；初次并行组件有两项超时，串行复验30文件/195测试全部通过，随后生产构建通过，无源码/期限改动。最终Go integration vet/build通过。日志`/tmp/personalos-p8-java-verify.log`、`/tmp/personalos-p8-frontend-components-serial.log`、`/tmp/personalos-p8-frontend-build.log`。
+
+## P8 combined监控补验（2026-11-04）
+
+T801c完成，父项与发布门禁保持开放。实际Java注册表全部知识样本对照、定向Go race、真实TLS库的积压/age/召回与查询失败NaN通过；两轮新随机Compose监控栈实际运行，Prometheus真实采集、Grafana20面板provisioning、promtool配置/规则及六条告警pending/firing/recovery通过。39项Python测试与diff检查通过。首次告警测试发现运算结果不含state标签，按PromQL语义修正预期；没有改告警触发条件。详见[p8-completion.md](p8-completion.md)。

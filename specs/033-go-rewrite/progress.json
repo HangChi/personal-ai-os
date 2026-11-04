@@ -23413,6 +23413,31 @@
         "specs/033-go-rewrite/p8-completion.md"
       ],
       "note": "P8/T801a：默认永久保留、独立UTC截止时间/严格小于、负值拒绝、本地cron/关闭；真实TLS库验证且保护TOOL IN_PROGRESS。原声明：rejectsNegativeDays"
+    },
+    "file:compose.monitoring.yml": {
+      "status": "in_progress",
+      "evidence": ["backend-go/deploy/compose.monitoring.yml", "scripts/migration/run_go_compose_tests.py", "specs/033-go-rewrite/p8-completion.md"],
+      "note": "P8/T801c：独立combined监控栈真实采集/健康/20面板通过；非root/只读根/独立卷/随机回环Grafana。distributed与通知投递仍待验收，不替换原Java资产。"
+    },
+    "file:deploy/monitoring/prometheus.yml": {
+      "status": "in_progress",
+      "evidence": ["backend-go/deploy/monitoring/prometheus.yml", "backend-go/deploy/monitoring/prometheus.combined.yml", "backend-go/deploy/monitoring/alerts.yml", "backend-go/deploy/monitoring/alerts.test.yml", "scripts/migration/run_go_compose_tests.py"],
+      "note": "P8/T801c：combined实际采集Go运行时/知识库样本；六告警pending/firing/recovery经真实promtool测试通过。distributed DNS和实际持续故障/通知尚待验证。"
+    },
+    "file:deploy/monitoring/grafana/dashboards/runtime.json": {
+      "status": "implemented",
+      "evidence": ["backend-go/deploy/monitoring/grafana/dashboards/runtime.json", "scripts/migration/go_monitoring_assets.py", "scripts/migration/test_go_monitoring.py", "scripts/migration/run_go_compose_tests.py"],
+      "note": "固定Java20面板保留；Hikari/JVM明确改为Go池使用率/堆内存，新UID。实际Grafana provisioning及查询通过；未声称逐面板浏览器视觉验收。"
+    },
+    "file:deploy/monitoring/grafana/provisioning/dashboards/default.yml": {
+      "status": "implemented",
+      "evidence": ["backend-go/deploy/monitoring/grafana/provisioning/dashboards/default.yml", "scripts/migration/run_go_compose_tests.py"],
+      "note": "独立Go dashboard目录和provider，实际Grafana20面板provisioning通过。"
+    },
+    "file:deploy/monitoring/grafana/provisioning/datasources/prometheus.yml": {
+      "status": "implemented",
+      "evidence": ["backend-go/deploy/monitoring/grafana/provisioning/datasources/prometheus.yml", "scripts/migration/run_go_compose_tests.py"],
+      "note": "独立Go Prometheus UID/私有服务地址，实际采集与Grafana datasource引用通过。"
     }
   },
   "release_gates": {

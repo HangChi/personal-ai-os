@@ -24,7 +24,7 @@ def capture(command, **kwargs):
     return subprocess.run(command, check=True, text=True, capture_output=True, timeout=180, **kwargs).stdout.strip()
 
 
-def run():
+def run(monitoring=False):
     project = "personalos-go-p8-drill-" + uuid.uuid4().hex[:12]
     with tempfile.TemporaryDirectory(prefix="personalos-p8-compose-") as temporary:
         server, _ = create_tls_fixture(temporary, dns_names=("postgres",))
@@ -40,13 +40,21 @@ def run():
             GO_POSTGRES_TLS_DIR=str(server), GO_POSTGRES_CA=str(Path(temporary) / "ca.crt"))
         command = ["docker", "compose", "--env-file", "/dev/null", "--project-name", project,
                    "-f", str(ROOT / "backend-go/deploy/compose.yml")]
+        grafana_port = None
+        if monitoring:
+            with socket.socket() as probe:
+                probe.bind(("127.0.0.1", 0))
+                grafana_port = probe.getsockname()[1]
+            environment.update(GO_GRAFANA_ADMIN_USER="p8-monitor", GO_GRAFANA_ADMIN_PASSWORD=secrets.token_urlsafe(24),
+                               GO_GRAFANA_PORT=str(grafana_port))
+            command += ["-f", str(ROOT / "backend-go/deploy/compose.monitoring.yml")]
         started = False
         containers = {}
         try:
             # This project name is randomly created here; no prior project is selected.
             started = True
             capture(command + ["up", "--detach", "--no-build"], cwd=ROOT, env=environment)
-            for service in ("postgres", "migrate", "backend", "web"):
+            for service in ("postgres", "migrate", "backend", "web", *(("prometheus", "grafana") if monitoring else ())):
                 identity = capture(command + ["ps", "--all", "--quiet", service], cwd=ROOT, env=environment)
                 if len(identity) != 64 or any(c not in "0123456789abcdef" for c in identity):
                     raise AssertionError("Missing disposable Compose service: " + service)
@@ -69,14 +77,14 @@ def run():
             jar = http.cookiejar.CookieJar()
             opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(jar))
 
-            def request(path, method="GET", body=None, token=None, expected=200, headers=None):
+            def request(path, method="GET", body=None, token=None, expected=200, headers=None, target_port=port):
                 values = dict(headers or {})
                 if body is not None and not isinstance(body, bytes):
                     body = json.dumps(body).encode()
                     values["Content-Type"] = "application/json"
                 if token:
                     values["X-CSRF-TOKEN"] = token
-                message = urllib.request.Request("http://127.0.0.1:" + str(port) + path, data=body, headers=values, method=method)
+                message = urllib.request.Request("http://127.0.0.1:" + str(target_port) + path, data=body, headers=values, method=method)
                 try:
                     response = opener.open(message, timeout=10)
                 except urllib.error.HTTPError as error:
@@ -123,13 +131,40 @@ def run():
                 raise AssertionError("Candidate Flyway did not apply exactly 42 original migrations")
             # Re-run the same external executor; Go never performs the migration itself.
             capture(command + ["run", "--rm", "--no-deps", "migrate"], cwd=ROOT, env=environment)
+            if monitoring:
+                capture(["docker", "exec", containers["prometheus"], "/bin/promtool", "check", "config", "/etc/prometheus/prometheus.yml"])
+                capture(["docker", "exec", containers["prometheus"], "/bin/promtool", "check", "rules", "/etc/prometheus/alerts.yml"])
+                capture(["docker", "exec", "--workdir", "/etc/prometheus", containers["prometheus"], "/bin/promtool", "test", "rules", "/etc/prometheus/alerts.test.yml"])
+                deadline = time.monotonic() + 90
+                while True:
+                    try:
+                        up = json.loads(capture(["docker", "exec", containers["backend"], "curl", "--fail", "--silent", "--max-time", "3",
+                                                "http://prometheus:9090/api/v1/query?query=up"]))
+                        health = json.loads(request("/api/health", target_port=grafana_port)[0])
+                        if up["status"] == "success" and len(up["data"]["result"]) == 1 and up["data"]["result"][0]["value"][1] == "1" and health["database"] == "ok":
+                            break
+                    except (OSError, ValueError, KeyError, subprocess.SubprocessError):
+                        pass
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError("Disposable Prometheus/Grafana did not become ready")
+                    time.sleep(.5)
+                credentials = base64.b64encode((environment["GO_GRAFANA_ADMIN_USER"] + ":" + environment["GO_GRAFANA_ADMIN_PASSWORD"]).encode()).decode()
+                dashboard = json.loads(request("/api/dashboards/uid/personalos-go-runtime", headers={"Authorization": "Basic " + credentials}, target_port=grafana_port)[0])
+                if len(dashboard["dashboard"]["panels"]) != 20:
+                    raise AssertionError("Go Grafana dashboard was not provisioned with all 20 panels")
+                for metric in ("go_memory_used_bytes", "personalos_go_database_connections", "personalos_knowledge_jobs_pending", "personalos_knowledge_review_failed", "personalos_knowledge_search_pending"):
+                    result = json.loads(capture(["docker", "exec", containers["backend"], "curl", "--fail", "--silent", "--max-time", "3",
+                                                 "http://prometheus:9090/api/v1/query?query=" + metric]))
+                    if result["status"] != "success" or not result["data"]["result"]:
+                        raise AssertionError("Prometheus did not ingest actual Go metric: " + metric)
+                print("P8 actual monitoring: promtool config/rules, live Go scrape/runtime/knowledge gauges, provisioned Grafana 20 panels passed", flush=True)
             capture(command + ["stop", "--timeout", "40", "backend", "web"], cwd=ROOT, env=environment)
             if capture(["docker", "inspect", "--format", "{{.State.ExitCode}}", containers["backend"]]) != "0":
                 raise AssertionError("Compose backend did not stop gracefully")
             print("P8 actual Compose: original Flyway42/revalidate, TLS DB, non-root Go/Web, auth/CSRF, SPA/Caddy, upload/download, graceful stop passed", flush=True)
         except Exception as error:
             detail = (error.stderr or "") if isinstance(error, subprocess.CalledProcessError) else ""
-            for service in ("backend", "web"):
+            for service in ("backend", "web", "prometheus", "grafana"):
                 if service not in containers:
                     continue
                 try:
@@ -138,8 +173,9 @@ def run():
                     detail += "\n" + service + ": " + logs.stdout + logs.stderr
                 except subprocess.SubprocessError:
                     pass
-            for key in ("GO_AUTH_PASSWORD", "GO_POSTGRES_PASSWORD", "GO_MODEL_KEY_ENCRYPTION_KEY"):
-                detail = detail.replace(environment[key], "[redacted]")
+            for key in ("GO_AUTH_PASSWORD", "GO_POSTGRES_PASSWORD", "GO_MODEL_KEY_ENCRYPTION_KEY", "GO_GRAFANA_ADMIN_PASSWORD"):
+                if key in environment:
+                    detail = detail.replace(environment[key], "[redacted]")
             print("Disposable Compose error: " + detail[-4000:], flush=True)
             raise
         finally:
@@ -149,5 +185,7 @@ def run():
 
 
 if __name__ == "__main__":
-    argparse.ArgumentParser(description=__doc__).parse_args()
-    run()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--monitoring", action="store_true")
+    arguments = parser.parse_args()
+    run(arguments.monitoring)

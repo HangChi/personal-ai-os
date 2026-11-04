@@ -1,0 +1,33 @@
+groups:
+  - name: personalos-go
+    rules:
+      - alert: PersonalOSGoTargetDown
+        expr: up{job=~"personal-ai-os-go.*"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: "Go management scrape target is unavailable"}
+      - alert: PersonalOSGoIndexBacklog
+        expr: personalos_knowledge_jobs_oldest_ready_seconds > 300
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "A ready knowledge index job has waited over five minutes"}
+      - alert: PersonalOSGoReviewBacklog
+        expr: personalos_knowledge_review_oldest_ready_seconds > 300
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "A ready knowledge review job has waited over five minutes"}
+      - alert: PersonalOSGoFailedReviews
+        expr: personalos_knowledge_review_failed > 0
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Knowledge reviews require intervention"}
+      - alert: PersonalOSGoDatabaseSaturation
+        expr: personalos_go_database_connections{state="active"} / ignoring(state) personalos_go_database_connections{state="max"} > 0.9
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Go database pool has used over ninety percent of its connections"}
+      - alert: PersonalOSGoHTTPFailures
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 0.001) > 0.05
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Go HTTP server error rate exceeds five percent"}

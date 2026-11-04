@@ -1,0 +1,41 @@
+# Add to the Go Compose project; no changes to Java monitoring or data volumes.
+services:
+  prometheus:
+    image: prom/prometheus:v3.14.0
+    restart: unless-stopped
+    user: "65534:65534"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=32m,mode=1777"]
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=15d", "--storage.tsdb.retention.size=2GB"]
+    volumes:
+      - ./monitoring/${GO_PROMETHEUS_CONFIG:-prometheus.combined.yml}:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - ./monitoring/alerts.test.yml:/etc/prometheus/alerts.test.yml:ro
+      - go-prometheus:/prometheus
+    networks: [private]
+  grafana:
+    image: grafana/grafana:13.2.2
+    restart: unless-stopped
+    user: "472:472"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=32m,mode=1777"]
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GO_GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GO_GRAFANA_ADMIN_PASSWORD:?set GO_GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+    ports: ["127.0.0.1:${GO_GRAFANA_PORT:-13000}:3000"]
+    volumes:
+      - go-grafana:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks: [private]
+volumes:
+  go-prometheus:
+  go-grafana:

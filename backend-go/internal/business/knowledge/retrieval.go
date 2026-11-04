@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -292,9 +293,13 @@ func (r *Retriever) Search(ctx context.Context, query string, topK *int) ([]Hit,
 func (r *Retriever) load(ctx context.Context, query string, limit int, external, han bool) ([]Hit, error) {
 	p := r.Store.Reader.Properties
 	if external {
+		started := time.Now()
 		vector, e := r.Store.queryVector(ctx, query)
+		r.measureRecall(han, "query_embedding", started)
 		if e == nil {
+			started = time.Now()
 			lexical, semantic, e := r.External.Search(ctx, query, vector, limit)
+			r.measureRecall(han, "opensearch_hybrid", started)
 			if e == nil {
 				scores := map[string]float64{}
 				lex, vec := map[string]bool{}, map[string]bool{}
@@ -312,7 +317,9 @@ func (r *Retriever) load(ctx context.Context, query string, limit int, external,
 						}
 					}
 				}
+				started = time.Now()
 				chunks, e := r.Store.ProjectionChunks(ctx, ids)
+				r.measureRecall(han, "candidate_hydration", started)
 				if e == nil {
 					sort.SliceStable(chunks, func(i, j int) bool { return scores[chunks[i].ID] > scores[chunks[j].ID] })
 					out := []Hit{}
@@ -331,7 +338,9 @@ func (r *Retriever) load(ctx context.Context, query string, limit int, external,
 			}
 		}
 	}
+	started := time.Now()
 	vectors, e := r.Store.vectorRecall(ctx, query, limit)
+	r.measureRecall(han, "postgres_vector_path", started)
 	if e != nil {
 		return nil, e
 	}
@@ -393,6 +402,12 @@ func (r *Retriever) load(ctx context.Context, query string, limit int, external,
 		hits = append(hits, fromChunk(c.chunk, c.score, by))
 	}
 	return hits, nil
+}
+
+func (r *Retriever) measureRecall(enabled bool, stage string, started time.Time) {
+	if enabled && r.Stats != nil {
+		r.Stats.Duration("recall."+stage, "", time.Since(started))
+	}
 }
 func (s *Store) ProjectionChunks(ctx context.Context, ids []string) ([]Chunk, error) {
 	out := []Chunk{}

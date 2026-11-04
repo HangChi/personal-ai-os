@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/url"
@@ -79,6 +80,9 @@ type actuatorMetric struct {
 }
 
 func (m *foundationMetrics) metricSnapshot(suffix string, query url.Values) (any, bool, error) {
+	if name := strings.TrimPrefix(suffix, "/"); strings.HasPrefix(name, "personalos.knowledge.") {
+		return m.knowledgeMetric(context.Background(), name, query)
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if suffix == "" {
@@ -96,6 +100,7 @@ func (m *foundationMetrics) metricSnapshot(suffix string, query url.Values) (any
 			names = append(names, rateErrorMetric)
 		}
 		names = append(names, m.chatMetricNames()...)
+		names = append(names, m.knowledgeMetricNames()...)
 		seen := map[string]bool{}
 		for _, metric := range m.reminderMetrics() {
 			if !seen[metric.name] {
@@ -111,7 +116,7 @@ func (m *foundationMetrics) metricSnapshot(suffix string, query url.Values) (any
 		}{names}, true, nil
 	}
 	name := strings.TrimPrefix(suffix, "/")
-	if strings.HasPrefix(name, "personalos.reminders.") || strings.HasPrefix(name, "personalos.knowledge.") {
+	if strings.HasPrefix(name, "personalos.reminders.") {
 		return m.reminderMetric(name, query)
 	}
 	if strings.HasPrefix(name, "personalos.chat.") {

@@ -48,23 +48,24 @@ func newManagementChain(actuator http.Handler, logger *slog.Logger) http.Handler
 // 标签固定为两个后端；不记录URI/请求/用户/异常。count/sum为无分位数summary，
 // 这是最小指标集，不代表完整Micrometer/Actuator运行时迁移。
 type foundationMetrics struct {
-	models                     *model.Module
-	chat                       *chat.Module
-	p5                         *foundationP5
-	p6                         *knowledge.Module
-	mu                         sync.Mutex
-	counts                     [2]uint64
-	seconds                    [2]float64
-	maxima                     [2]metricWindowMax
-	redisErrors                uint64
-	extra                      ratelimit.Observer
-	clock                      func() time.Time
-	started                    time.Time
-	httpEnabled, httpHistogram bool
-	embeddingHistogram         bool
-	httpActive                 int64
-	httpDropped                uint64
-	httpTimers                 map[httpMetricLabels]*httpMetricTimer
+	models                                          *model.Module
+	chat                                            *chat.Module
+	p5                                              *foundationP5
+	p6                                              *knowledge.Module
+	mu                                              sync.Mutex
+	counts                                          [2]uint64
+	seconds                                         [2]float64
+	maxima                                          [2]metricWindowMax
+	redisErrors                                     uint64
+	extra                                           ratelimit.Observer
+	clock                                           func() time.Time
+	started                                         time.Time
+	httpEnabled, httpHistogram                      bool
+	embeddingHistogram                              bool
+	knowledgeRecallHistogram, knowledgeRagHistogram bool
+	httpActive                                      int64
+	httpDropped                                     uint64
+	httpTimers                                      map[httpMetricLabels]*httpMetricTimer
 }
 
 func (m *foundationMetrics) RecordAcquisition(backend ratelimit.Backend, elapsed time.Duration, failed bool) {
@@ -114,6 +115,7 @@ func (m *foundationMetrics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	m.writeEmbeddingMetrics(w)
 	m.writeChatMetrics(w)
 	m.writeReminderMetrics(w)
+	m.writeKnowledgeMetrics(w, r.Context())
 }
 
 // ManagementHandler仅在monitoring有效profile下可用，必须挂到独立监听器。

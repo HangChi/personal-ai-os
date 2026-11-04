@@ -44,18 +44,6 @@ func (m *foundationMetrics) reminderMetrics() []reminderMeasurement {
 			counter("webhook.deliveries", counts[state], "result", state)
 		}
 	}
-	if m.p6 != nil {
-		counts, timers := m.p6.Stats.Snapshot()
-		for key, n := range counts {
-			name, result, _ := strings.Cut(key, "|")
-			measurements = append(measurements, reminderMeasurement{"personalos.knowledge." + name, n, false, "result", result})
-		}
-		for key, t := range timers {
-			name, result, _ := strings.Cut(key, "|")
-			measurements = append(measurements, reminderMeasurement{"personalos.knowledge." + name + ".count", t.Count, false, "result", result}, reminderMeasurement{"personalos.knowledge." + name + ".nanoseconds", uint64(t.Total), false, "result", result})
-		}
-		measurements = append(measurements, reminderMeasurement{name: "personalos.knowledge.active", value: uint64(m.p6.Stats.Active.Load()), gauge: true})
-	}
 	return measurements
 }
 
