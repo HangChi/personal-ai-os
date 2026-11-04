@@ -48,6 +48,21 @@ python3 scripts/migration/run_go_eval_tests.py --downloaded-corpus-dir /private/
 
 采集不完整时退出2/PARTIAL，已保存且通过哈希检查的正文仍可用于第二条命令；不得为凑数跳过错误页或绕过站点保护。独立模式只运行答案文档全部齐备的原查询，缺失查询明确计数，绝不缩减答案列表；使用真实TLS库/API及本地确定性词袋模型，不需要用户模型密钥。它验证正文进入嵌入请求及向量存储，不证明真实模型语义质量或历史语料身份。下载模式把安全元数据/结果写入新的`p8-eval-juejin-<时间>.json`，保留原合成报告。2026-11-04实际16篇/142向量/84查询与50次噪声请求的两轮结果见[P8记录](../../specs/033-go-rewrite/p8-completion.md)。
 
+正常浏览器可显示全文而直接HTTP无法取得正文时，可从实际已呈现的`article-viewer`只读导出HTML和来源收据；不得绕过验证码/登录/保护，不读取既有浏览器资料。导出文件`rendered-<post_id>.html`应保留观察到的title/canonical及正文容器，收据`receipt-<post_id>.json`记录post_id/url/canonical/title/captured_at/path/html_sha256，`acquisition_method`为`normal-browser-rendered-article-viewer`。这是渲染后DOM，不得冒称原始HTTP响应或历史快照。
+
+```bash
+python3 scripts/migration/prepare_go_juejin_corpus.py import-rendered \
+  --input-dir /absolute/private-browser-export \
+  --post-id 7591207451778875418 7472359618326052901 7672711130193936424 7677521340606300170 \
+  --output-dir /absolute/new-imported-corpus
+python3 scripts/migration/prepare_go_juejin_corpus.py merge \
+  --corpus-dir /absolute/previous-acquisition \
+  --corpus-dir /absolute/new-imported-corpus \
+  --output-dir /absolute/new-full-corpus
+```
+
+两命令均离线，只读显式来源、创建新0700目录/0600文件；校验原提取器SHA、URL/canonical、文件和收据哈希，拒绝重复/未知ID/链接路径/标题漂移。合并保留原字节和时间、按原清单排序，再经原loader回读；覆盖不足仍返回2/PARTIAL。2026-11-04最后四篇已取得，26篇/210264正文字符完整，129条原查询材料齐备、零排除；来源和哈希见`p8-corpus-complete-20261104-231937.json`。先前16篇/84题、22篇/111题都是保留的历史范围，不代表新全量模型验收自动通过。
+
 ## 获准真实模型的隔离验收
 
 只有用户明确授权后才运行此模式；指定模型配置文件，只读取聊天/嵌入provider、OpenAI兼容端点/密钥/模型名和thinking开关，系统中相同模型键优先，绝不加载文件内数据库、认证或通知配置。当前入口要求显式配置的两个provider均为openai、HTTPS且URL无凭据/查询；不猜模型名或回退模拟结果。
@@ -77,7 +92,7 @@ python3 scripts/migration/run_go_real_eval_tests.py \
 
 OpenAI知识文档输入现遵循固定Spring AI 2.0.1默认EMBED格式，包含标题/分块序号/文件名/文档ID；Ollama与普通查询字符串仍保持原行为。两端预期输入均由真实Java依赖oracle逐分块生成SHA，与各自本轮成功的真实嵌入回执比较，数据库原文/引用不变。不对已有库自动重建或重写向量。
 
-完整报告的`result=PASS`仅表示子集执行完成，质量需同时审阅严格与原判平指标。可运行`python3 scripts/migration/review_go_real_eval.py --report specs/033-go-rewrite/p8-eval-real-20261104-222729.json --write`生成独立`p8-real-model-review.json`；不请求模型、不改旧报告，拒绝失败/mock/multistage单题/no-evidence负例/指标漂移/原标注变更。2026-11-04实测两端R@5=100%，严格MRR Go0.937500/Java0.943452；原0.007判平后同0.946429。复核明确记录严格退化及未批准质量，不能用执行PASS解除门禁。
+完整报告的`result=PASS`仅表示该轮执行完成，质量需同时审阅严格与原判平指标。可运行`python3 scripts/migration/review_go_real_eval.py --report specs/033-go-rewrite/p8-eval-real-20261104-222729.json --write`生成同时间戳的新`p8-real-model-review-<时间>.json`；也可显式`--output-file`指定规格目录内新文件，已有文件拒绝覆盖。旧`p8-real-model-review.json`保留。不请求模型、不改旧报告，拒绝失败/mock/multistage单题/no-evidence负例/指标或覆盖数漂移/原标注变更。报告按实际文档/原查询数区分子集与完整当前语料，二者都不批准历史身份、事实质量或发布。旧16篇实测两端R@5=100%，严格MRR Go0.937500/Java0.943452；原0.007判平后同0.946429，原严格退化保留。
 
 真实密钥只在独立验收/传输进程内存中，通过标准输入交给支持`--use-env-proxy`的Node运行时，使用内置fetch复用HTTPS连接；不会放入进程参数、子应用环境或文件。子应用仅持随机回环代理令牌。默认上限600请求、12聊天请求、100万输入字符、每次聊天最多1024输出token、上游90秒；不自动重试、不跟随重定向，保留证书验证。此为请求/用量上限，不等于金额承诺，报告记录提供商实际返回的token用量。完整回答和引用仅保存于新0700本地证据目录；仓库报告仅含来源/哈希/统计/原查询排序。每次失败另存，不覆盖旧报告；受控子集通过仍不自动认证历史26篇语料、多阶段RAG、事实正确性或发布门禁。
 

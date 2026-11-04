@@ -1,0 +1,64 @@
+{
+  "result": "CURRENT_PUBLIC_CORPUS_COMPLETE",
+  "captured_through": "2026-11-04T15:19:37.775Z",
+  "documents": 26,
+  "expected_documents": 26,
+  "eligible_original_queries": 129,
+  "excluded_original_queries": 0,
+  "total_extracted_body_chars": 210264,
+  "previous_documents": 22,
+  "new_documents": 4,
+  "new_extracted_body_chars": 41053,
+  "private_corpus_directory": "/private/tmp/personalos-p8-rendered-QR4ALY/full-corpus",
+  "manifest_sha256": "a593f3e5ba8ef0393df58a623ed412886a1335e75e4027a606d1c6da4b90b607",
+  "new_articles": [
+    {
+      "post_id": "7591207451778875418",
+      "label": "动态规划五部曲实战",
+      "fetched_at": "2026-11-04T15:19:03.838000+00:00",
+      "body_chars": 18626,
+      "bytes": 31571,
+      "sha256": "cd60bb3d04a480605d54d1b47786aa023e4d13e85a70f47848673d680736b42a",
+      "page_sha256": "19b4ca7f95e3ca86c3cedb26c24357092466ab27e65be3d5b61739694cc721ac"
+    },
+    {
+      "post_id": "7472359618326052901",
+      "label": "动态规划基础与核心思想",
+      "fetched_at": "2026-11-04T15:19:24.937000+00:00",
+      "body_chars": 6101,
+      "bytes": 9841,
+      "sha256": "a28e53f2ddab9f68e59bec2371aadd4615a02e3a33b243c62004873b10cf4e3d",
+      "page_sha256": "4b817ed909f15559f459294b50442f9f5524644f016939f06f6dd1c6b9694104"
+    },
+    {
+      "post_id": "7672711130193936424",
+      "label": "Nginx 完整配置参考手册",
+      "fetched_at": "2026-11-04T15:19:31.559000+00:00",
+      "body_chars": 7312,
+      "bytes": 9668,
+      "sha256": "7a15c2b099b405926da0dae6a99df48fa60ce374295f84f556237c6e79d032c5",
+      "page_sha256": "b308fbf1472a30396164de470a448bcb6362a7b40d11f12e868bce7f0fc9296c"
+    },
+    {
+      "post_id": "7677521340606300170",
+      "label": "Nginx 生产级配置优化",
+      "fetched_at": "2026-11-04T15:19:37.775000+00:00",
+      "body_chars": 9014,
+      "bytes": 13596,
+      "sha256": "b4aa5f4d74c19cb1cbaa97e71a32ab5dce1fe4497e55b79cc180a66556831341",
+      "page_sha256": "918565aceeeac8b45d737fa8a421d1ac80efe994ba3d1df5c3c72cc599f810d6"
+    }
+  ],
+  "source_url_pattern": "https://juejin.cn/post/{post_id}",
+  "new_acquisition_method": "normal-browser-rendered-article-viewer",
+  "new_page_hash_scope": "rendered article-viewer HTML plus observed title and canonical; not raw HTTP",
+  "new_source_manifest_sha256": "504bfe3935a141970bf9e584f8bb2e7bef8abffa4d25fcb91d998d370e963a47",
+  "previous_manifest_sha256": "80473396047e908fb3f288360e3ba6ce87d44531fe80ab6abfdb09d87314e3ab",
+  "direct_fetch_failure_log": "/tmp/personalos-p8-juejin-final-four-1.log",
+  "checks": "Original extractor SHA unchanged; all source URLs and canonical IDs match; all source receipts, file bytes and SHA validated; original labels and query answer sets unchanged; fresh private directory loaded again after merging",
+  "article_fulltext_committed": false,
+  "historical_corpus_identity_verified": false,
+  "model_acceptance_included": false,
+  "real_model_quality_verified": false,
+  "release_gates_changed": false
+}
