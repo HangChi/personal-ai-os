@@ -7,6 +7,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = ROOT / 'specs/033-go-rewrite'
 GROUPS = {
+    'storage': {
+        'sources': ['KnowledgeDocumentService', 'KnowledgeDocumentEntity', 'KnowledgeDocumentRepository',
+                    'KnowledgeMetadata', 'KnowledgeDocumentDto', 'KnowledgeDocumentDeletedDto',
+                    'KnowledgeDocumentQuery', 'DocumentWriteLock', 'VectorStoreInspector',
+                    'VectorDimensionValidator', 'KnowledgeIndexJobs', 'KnowledgeJobRepository',
+                    'KnowledgeDocumentUpdateIntegrationTest', 'KnowledgeDocumentPageOverflowIntegrationTest',
+                    'KnowledgeIndexJobsIntegrationTest', 'KnowledgeMinLengthIntegrationTest',
+                    'EmbeddingDimensionMismatchIntegrationTest', 'VectorStoreIndexMigrationTest'],
+        'evidence': ['store.go', 'jobs.go', 'metrics.go', 'store_integration_test.go'],
+        'note': 'P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。',
+    },
     'readers': {
         'sources': ['DocumentFilenameSupport', 'KnowledgeDocumentReader', 'ReaderSupport',
                     'DocumentReaderFactory', 'PdfDocumentReader', 'DocxDocumentReader',

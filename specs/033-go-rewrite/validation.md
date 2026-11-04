@@ -1,5 +1,9 @@
 # 验证记录
 
+## 2026-11-04 P6 第二批：向量写入与索引任务
+
+`python3 scripts/migration/run_go_postgres_tests.py --package knowledge --tls` 实际通过。独立无持久卷PostgreSQL/pgvector，基线Java Flyway重放42迁移，自建CA/verify-full且拒绝明文。5个新集成测试覆盖文档原子替换与失败保留原代、新标题/文件名引用、删除与来源级联、LIKE字面量/总数和超大页码、维度/非法标识符、文档租约被夺后的最终写入拒绝、索引结果和向量同事务、16路SKIP LOCKED竞争、过期重领/旧token拒写、三次失效终止/清负载、24路提交仅20个入队、幂等冲突与7日清理。日志：`/private/tmp/personal-ai-os-p6-knowledge-first.log`。测试容器已清理。各父任务仍须后续HTTP/角色/模型装配及Java对照后关闭。
+
 ## 2026-11-04 P6 首批：文件解析与结构切分
 
 knowledge 的 6 个测试全部通过 race，现场生成 PDF 验证文本/空文本/损坏/501页拒绝，DOCX段落表格顺序/空文档/损坏/压缩炸弹/深XML、图片MIME/空白/无文本/上游错误、UTF-8与文件名/大小/短文、Markdown标题/围栏/前缀/重叠/无正文丢失均有断言。全量25个Go包race、1,093文件固定基线check、前端type-check与build通过。原Java最小环境禁dotenv离线verify通过（1137 tests、0失败/错误/跳过、覆盖率门禁通过、BUILD SUCCESS、4m44s）。此批只提交Reader和Splitter，数据库原子写入正在独立批次推进。P6各父任务仍保持开放。

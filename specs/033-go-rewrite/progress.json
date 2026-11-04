@@ -17497,6 +17497,534 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "P6 首批：文件名/UTF-8/大小/短文拒收、PDF 500页和超时/空文本/损坏、DOCX段落表格/ZIP/XML边界、图片MIME/空白/无文本与上游失败、Markdown围栏/标题栈/重叠/短块无丢失均经race测试；真实模型装配、向量与完整Java差分仍待后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/KnowledgeMetadata.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeDocumentDeletedDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeDocumentDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeDocumentQuery.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/entity/KnowledgeDocumentEntity.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeJobRepository.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/repository/KnowledgeDocumentRepository.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/service/DocumentWriteLock.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/main/java/com/personalos/knowledge/startup/VectorDimensionValidator.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/EmbeddingDimensionMismatchIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentPageOverflowIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/KnowledgeMinLengthIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/VectorStoreIndexMigrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "file:backend/src/test/java/com/personalos/knowledge/service/DocumentWriteLockTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "hook:backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java:164:Scheduled": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "hook:backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java:165:PreDestroy": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "hook:backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java:93:Scheduled": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/EmbeddingDimensionMismatchIntegrationTest.java:79": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentPageOverflowIntegrationTest.java:116": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentPageOverflowIntegrationTest.java:130": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentPageOverflowIntegrationTest.java:97": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java:116": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java:133": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java:153": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java:171": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java:195": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java:97": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java:103": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java:116": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java:127": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java:140": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java:52": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java:73": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java:88": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeMinLengthIntegrationTest.java:74": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/KnowledgeMinLengthIntegrationTest.java:91": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/VectorStoreIndexMigrationTest.java:67": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/VectorStoreIndexMigrationTest.java:78": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/VectorStoreIndexMigrationTest.java:90": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentWriteLockTest.java:23": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentWriteLockTest.java:37": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentWriteLockTest.java:50": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
+    },
+    "test:backend/src/test/java/com/personalos/knowledge/service/DocumentWriteLockTest.java:63": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/business/knowledge/metrics.go",
+        "backend-go/internal/business/knowledge/store_integration_test.go",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P6 第二批：真实TLS PostgreSQL/pgvector+42原迁移，文档原子替换/新引用元数据/删除/短文/维度/LIKE分页溢出、文档租约fencing、16路领取竞争、过期重领与旧token提交拒绝、24路队列容量/幂等/原子结果/负载与7日清理通过。HTTP/五角色/真实模型装配待P6后续批次。"
     }
   },
   "release_gates": {

@@ -4,8 +4,16 @@
 
 ## 第一批：文件解析与结构切分
 
+提交：`849c625`。
+
 新增 knowledge Reader 与 Markdown 切分器。UTF-8 严格校验、BOM、300 UTF-16 文件名/保扩展名、目录移除、大小/短文拒收、图片 MIME/无文本/上游错误均覆盖。DOCX 使用标准库 archive/zip 与 encoding/xml，读取正文段落和表格单元格，保留顺序；拒绝 ZIP bomb、超深 XML 与损坏输入。PDF 使用独立 Poppler pdfinfo/pdftotext，校验完整页数（最多 500 页），不截掉第 501 页；10 秒 context/进程退出和 64 MiB 输出上限，不构造 shell。无文本、加密和损坏错误保留分类。
 
 Markdown 沿用原标题栈、代码围栏、120 字符章节前缀、段落累积、70%自然断点、重叠和 1.5 倍短块合并界限；另保证硬切不会制造半个 Unicode 码点。
 
 实际执行：knowledge race 测试通过（6 个测试，含真实现场生成 PDF）；首批 25 个 Go 包全量 race 和固定基线 check 通过。模型调用装配、数据库写入、任务队列与真实 Java 差分待后续批次。
+
+## 第二批：向量原子写入与持久索引任务
+
+Store 使用既有Pool/Coordinator，保留原schema、vector(1024)、JSON元数据和数据库触发器。所有模型调用在事务外完成；替换/删除共用document租约，最终写事务检查数据库所有者。索引任务保留20个排队上限、摘要幂等、60秒租约/10秒续租、3次重试、payload清理、7日保留；结果与文档/向量在同一事务提交，并同时检查任务token与文档租约。
+
+实际执行：5个真实TLS PostgreSQL集成测试与6个单测全通过race，涵盖16路抢占、24路API提交、失效重领/最终fencing、失败不破坏旧代和完整删除。HTTP/角色装配及Java全部来源断言尚在后续批次推进。
