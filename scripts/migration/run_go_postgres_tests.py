@@ -29,7 +29,7 @@ BUSINESS_PACKAGES = {"idempotency", "confirmation", "task", "model", "chat", "ca
 PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", *sorted(BUSINESS_PACKAGES), "app", "command"]
 
 
-def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None, test_pattern=None, p8_image=None):
+def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None, test_pattern=None, p8_image=None, exercise=None):
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, POSTGRES_PASSWORD=password)
     container = None
@@ -88,6 +88,7 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
             "GO_TEST_POSTGRES_PASSWORD": password,
             "GO_TEST_POSTGRES_SSL_MODE": "verify-full" if tls_mode else "disable",
             "GO_TEST_POSTGRES_ROOT_CERT": root_cert,
+            "GOMAXPROCS": "4",
         })
         if redis_env is not None:
             if package not in {"app", "command", "knowledge"} or redis_env.get("GO_TEST_REDIS") != "disposable":
@@ -111,13 +112,18 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
         target = ("./cmd/personalos" if package == "command" else "./internal/app" if package == "app"
                   else "./internal/business/" + package if package in BUSINESS_PACKAGES else "./internal/platform/" + package)
         test_filter = ["-run", test_pattern] if test_pattern else []
-        subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration", *test_filter, target],
-                       cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
+        # The full app includes all fixed Servlet oracles and every phase's DB suite.
+        # Keep assertion deadlines intact; allow the complete package its own bounded budget.
+        package_timeout = "20m" if package == "app" else "2m"
+        subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=" + package_timeout, "-tags=integration", *test_filter, target],
+                       cwd=ROOT / "backend-go", env=go_env, check=True, timeout=1230 if package == "app" else 180)
         if p8_image:
             if package != "app" or not tls_mode:
                 raise ValueError("P8 image smoke requires the app package with TLS")
             from smoke_go_container import run as smoke_container
             smoke_container(p8_image, container, go_env)
+        if exercise:
+            exercise(container, go_env)
         if package == "command":
             from smoke_go_foundation import run as smoke_foundation
             with tempfile.TemporaryDirectory(prefix="personalos-go-foundation-build-") as directory:

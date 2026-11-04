@@ -167,6 +167,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 - [x] T800a 独立Go/Web镜像实际构建，Go镜像五角色在新建TLS库实际验证认证/CSRF/管理隔离/non-root/SIGTERM；Compose combined/distributed/prod候选4项原生配置检查通过。完整Compose/Web反代/生产TLS仍由父项追踪。
 - [ ] T801 适配本地启动/停止/Worker discovery、备份恢复/保留清理、Push key、监控/告警/仪表盘与评估脚本。
 - [x] T801a 显式P8接入用量/操作记录独立保留期与本地cron/关闭；默认永久保留、真实TLS库严格截止/重复清理和未知TOOL占位保护通过。备份/恢复/监控仍由父项追踪。
+- [x] T801b 独立Go本地启停/身份核对/Worker发现、显式目标备份封装，五角色实际启停与发现更新、原归档格式备份/隔离恢复和Push密钥权限/防覆盖已通过；不读取Java.env或PID。
 - [ ] T802 跑全量前端 lint/format/type-check/logic/component/build，现有 E2E 接 Go 运行；页面/组件/通知/上传下载逐项验收。
 - [ ] T803 全部 Java 测试文件与测试声明映射到 Go/差分证据；检查全部清单的职责是否确实覆盖，不按数量勾选。
 - [ ] T804 跑完整真实基础设施回归、故障恢复、存量备份升级与恢复、性能/资源/召回质量对照。
