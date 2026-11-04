@@ -9,10 +9,13 @@ def verify_backup_fixture(container):
         raise ValueError("备份测试只能使用调用方验证的新容器ID")
     prefix = ["docker", "exec", "--interactive", container]
     seed = Path(__file__).with_name("backup_seed.sql").read_bytes()
-    subprocess.run(prefix + ["psql", "--no-psqlrc", "--username=go_fixture", "--dbname=personalos_go_test",
+    # Keep synthetic backup rows out of the database used by the full business suite.
+    subprocess.run(prefix + ["createdb", "--username=go_fixture", "--template=personalos_go_test", "personalos_go_backup_source"],
+                   capture_output=True, check=True, timeout=30)
+    subprocess.run(prefix + ["psql", "--no-psqlrc", "--username=go_fixture", "--dbname=personalos_go_backup_source",
                              "--set=ON_ERROR_STOP=1"], input=seed, capture_output=True, check=True, timeout=30)
     dump = subprocess.run(prefix + ["pg_dump", "--format=custom", "--no-owner", "--no-acl",
-                                    "--username=go_fixture", "--dbname=personalos_go_test"],
+                                    "--username=go_fixture", "--dbname=personalos_go_backup_source"],
                           capture_output=True, check=True, timeout=60).stdout
     if not dump.startswith(b"PGDMP"):
         raise RuntimeError("未得到有效custom格式备份")

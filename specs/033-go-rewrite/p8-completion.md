@@ -82,3 +82,13 @@ Go和原前端Web候选镜像均实际构建成功。第一次Go构建的Debian 
 监控批次已提交`dfd1eaf`。原suite新一轮80通过/1失败/1跳过/2观察；唯一预算失败在固定Java同现。原E2E取消曾SKIP，实际差分定位并修复legacy客户端取消误存半截助手消息；明确HTTP关闭与上游断连两端均PASS，Go定向真实TLS库race覆盖双流心跳、Run读者断连与恢复（7.312s）。持久Run断连不取消后台任务的策略保持。
 
 真实Chrome验证登录/任务CRUD/聊天SSE/附件/知识后台索引/导出，10页三宽度共30截图无横向溢出或控制台错误，另3张工作流截图。抽看桌面对话、手机对话及知识页。fixture最初不足350字符的索引失败如实保留，修正测试文本后通过。详情与复验命令见[p8-e2e/README.md](p8-e2e/README.md)。T802父项仍开放，不把同基线预算失败或saveMemory跳过当通过。
+
+## T804a 真实设施与隔离备份回归
+
+原先`--backup`直接把合成备份种子写入personalos_go_test，导致P5全包读取到额外的恢复记忆/任务/提醒。现先从刚迁移的空库模板创建personalos_go_backup_source，仅在独立源库填种子/pg_dump，再恢复personalos_go_restore；主业务测试库保持干净。单测断言种子与dump绝不选择主测试库，实际全套重跑通过，未修改业务过滤或断言。
+
+`python3 scripts/migration/run_go_redis_tests.py --tls --backup --package app --package command --package model --package knowledge`：全部退出0，app273.588s、command1.746s、model1.967s、knowledge4.115s；五角色独立OS进程共享会话/预算、CSRF/注销、故障启动清理、SIGTERM与数据库连接归零通过。日志`/tmp/personalos-p8-redis-fixed-backup.log`；首轮备份污染失败保留`/tmp/personalos-p8-redis-remaining.log`。redis/auth早前真实TLS通过；ratelimit隔离重跑32/128并发通过（2.697s），150ms期限不变，增加仅输出deadline/cancel/network布尔值和原因类型的诊断，不输出凭据/原始网络错误。
+
+此前P8真实TLS PostgreSQL全部包与命令进程smoke通过，日志`/tmp/personalos-p8-postgres-all.log`；MinIO实际S3生命周期通过，日志`/tmp/personalos-p8-s3.log`；P6四设施回归通过，日志`/tmp/personalos-p8-facilities-p6.log`。所有本次容器清理，仅合成数据。性能/生产召回质量/真实用户备份和完整切换仍未验收。
+
+Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专用Go测试通过（0.64s），但Chrome Service Worker未在15秒内回传收到通知。runner按预期失败，日志`/tmp/personalos-p8-browser-push.log`，不能把FCM接受当最终浏览器送达，也未延长期限凑绿。T802通知子项保持开放。

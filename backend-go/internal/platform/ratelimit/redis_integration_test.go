@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"strconv"
@@ -66,7 +67,11 @@ func TestRedisRateIndependentCallersAndConcurrentInitialization(t *testing.T) {
 				}
 				allowed, err := bucket.Consume(context.Background(), "model-rate", capacity, time.Hour)
 				if err != nil {
-					t.Error(err)
+					var network net.Error
+					isNetwork := errors.As(err, &network)
+					t.Errorf("%v (deadline=%t canceled=%t network=%t timeout=%t cause=%T)", err,
+						errors.Is(err, context.DeadlineExceeded), errors.Is(err, context.Canceled),
+						isNetwork, isNetwork && network.Timeout(), errors.Unwrap(err))
 				}
 				if allowed {
 					admitted.Add(1)
