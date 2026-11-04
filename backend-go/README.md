@@ -1,6 +1,8 @@
-# Personal AI OS：Go 迁移起点
+# Personal AI OS：Go 候选后端
 
 本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1–P7 已完成，包含知识摄入、混合召回、RAG、来源治理、后台索引/审查，以及 MCP、五模块搜索和流式导出/空库导入。P8 及切换门禁仍开放。**
+
+P8已补充独立镜像/combined与distributed Compose、监控/告警、五角色本地生命周期、备份恢复和保留清理。开发/贡献见[开发指南](docs/development.md)，模块/角色/协议见[架构与接口](docs/architecture.md)，凭据与切换规则见[安全说明](docs/security.md)，实际运维见[部署说明](deploy/README.md)。当前失败和未验收项见[P8记录](../specs/033-go-rewrite/p8-completion.md)，不能替换Java实例。
 
 全量范围、逐文件来源、迁移状态与验收要求见 [迁移文档](../specs/033-go-rewrite/README.md)。现有 Java 源码、前端业务源码、SQL 与运行实例继续保留。
 
@@ -97,9 +99,9 @@ P7 固定Java契约：`python3 scripts/migration/java_p7_fixture.py`；真实TLS
 
 基础依赖、五角色生命周期及已启用的 P5/P6 Worker 已验收；生产切换归 P8，详见[验证记录](../specs/033-go-rewrite/validation.md)。
 
-## 接下来实施
+## 当前实施
 
-P7 见 [验收报告](../specs/033-go-rewrite/p7-completion.md) 和 [原测试映射](../specs/033-go-rewrite/p7-test-mapping.md)。下一阶段为 [P8 全量验证、运维与切换](../specs/033-go-rewrite/tasks.md#p8-全量验证运维与切换)。
+P7 见 [验收报告](../specs/033-go-rewrite/p7-completion.md) 和 [原测试映射](../specs/033-go-rewrite/p7-test-mapping.md)。当前执行 [P8 全量验证、运维与切换](../specs/033-go-rewrite/tasks.md#p8-全量验证运维与切换)，完成子项按证据逐项勾选；prod拒绝和readyz503在发布审查前保持。
 
 ## 显式 P1 基础模式（尚未验收发布）
 

@@ -124,3 +124,11 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 新增三个真实库用例，逐项补足原任务测试的遗漏：标签持久顺序、PATCH省略保持描述/截止/标签、替换与空数组、标签精确匹配/去重列表/删除级联；未完成优先/截止升序/null在后、批删51个拒绝及重复/缺失ID的实际影响数；TODO与DOING重复完成不覆盖previous_status，重开清完成时间并重新计算下一轮；Schedule/Priority确认前均无写入、确认后准确生效。单测另覆盖nil/空标签非nil列表、恰好20个UTF-16单位/5标签、先去重再限量。
 
 `python3 scripts/migration/run_go_postgres_tests.py --package task --tls`全包race通过（2.556s），日志`/tmp/personalos-p8-task-contracts.log`，所有临时资源已清理。原Java断言未修改，发布门禁保持开放。
+
+## T805a 候选CI与T807文档
+
+独立`.github/workflows/go.yml`保留原ci.yml，Go分支/相关PR及手动触发，最小只读权限。执行全包串行race、integration vet、build、模块校验、44项Python测试/固定基线/78配置处置检查及新TLS库task/confirmation/P8回归，失败日志作为artifact。没有远端push或工作流运行，不声称GitHub已绿；它也不替代原Java/前端及浏览器/切换/人工门禁。
+
+PostgreSQL/Redis/S3 runner支持GO_TEST_GOCACHE/GO_TEST_GOPATH绝对路径，不继承原应用配置；离线依赖策略保持。两项缓存参数单测、全部44项Python测试通过，Ruby原生YAML解析通过；显式覆盖缓存的真实TLS确认及P8六个顶层测试通过（1.667s/3.435s），日志`/tmp/personalos-p8-ci-tls.log`。未安装actionlint，未把YAML可解析当成远端执行证明。
+
+Go开发贡献、架构/角色/接口与安全说明新增于backend-go/docs，运维继续由deploy/README承载，迁移索引和候选README已消除“P7未开始”等陈旧描述。原根宪法/贡献/README及Java历史不在修改范围；plan.md继续作为技术迁移说明。文档明确prod拒绝/readyz503、真实Push失败、预算同基线失败、saveMemory跳过与真实备份/生产/用户验收限制。

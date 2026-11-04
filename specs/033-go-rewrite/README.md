@@ -15,7 +15,8 @@
 - P5已完成：记忆/向量回填、日历/重复规则、提醒/SSE、Web Push 与 Webhook 投递已接 `--p5`，见[P5验收](p5-completion.md)。
 - P6已完成：知识读入/切分/原子写入、异步索引、混合召回、RAG/引用与来源治理已接 `--p6`；四设施/五角色、索引子进程SIGKILL恢复、18组受控Java召回/引用契约通过。职责与评估边界见[P6验收](p6-completion.md)，24类115声明见[映射](p6-test-mapping.md)。P7/P8及五个发布门禁仍开放。
 - 全42原SQL、真实Flyway历史/锁竞争、七类DDL差分和合成pg_dump/restore数据/序列已验证；完整schema的P1最小权限及恢复库五角色Foundation实际启动/关闭通过。扩展schema/历史明确拒绝，支持边界见[P1契约](p1-foundation-contract.md)；合成恢复不等于真实用户备份验收。
-- **Go 尚不能替代 Java。104 个注解 HTTP 路由仍有后续业务模块待迁移。**
+- P7已完成：外部/个人MCP、五模块搜索和流式导出/空库导入，见[P7验收](p7-completion.md)。P8正在进行：独立部署/监控/本地运维、真实设施/浏览器及逐断言审查，见[P8进度](p8-completion.md)。
+- **Go尚不能替代Java。业务模块已接入显式开关，剩余的是全量证据审查、真实失败与发布/用户门禁。**
 - Go默认离线诊断不读现有`.env`、不连数据库、不迁移或启业务Worker，`/readyz`固定503。显式GO_DOTENV_ENABLED才允许加载配置；显式基础模式要求独立连接参数/迁移目录，允许已实现的认证/CSRF，生产继续拒绝。
 - 不修改现有 Java、前端业务源码、SQL、Compose 或本地运行实例。两个后端必须使用独立测试数据验证。
 
@@ -43,6 +44,10 @@
 [p6-test-mapping.md](p6-test-mapping.md) | 24类115个知识模块测试声明及跨模块职责归属
 [p1-foundation-contract.md](p1-foundation-contract.md) | P1实际支持、明确拒绝及后续业务/发布边界
 [config-disposition.md](config-disposition.md) | 78处直接配置调用方逐项装配或后续阶段归属
+[Go开发/贡献](../../backend-go/docs/development.md) | Go工具链、隔离回归、CI与提交/证据规则
+[Go架构/接口](../../backend-go/docs/architecture.md) | 模块、角色、HTTP/SSE/MCP与持久化恢复
+[Go安全](../../backend-go/docs/security.md) | 凭据、TLS/ACL、未知副作用、备份与切换门禁
+[Go运维](../../backend-go/deploy/README.md) | 独立镜像/Compose、本地启停、发现/监控/备份
 
 ## 防遗漏的执行规则
 
@@ -75,4 +80,4 @@ python3 scripts/migration/go_inventory.py generate \
 
 ## 继续实施的入口
 
-P6 已完成，验收与边界见 [P6 验收](p6-completion.md)。下一阶段为 [P7 MCP、搜索与数据交换](tasks.md#p7-mcp搜索与数据交换)。
+P1–P7已完成，当前继续[P8 全量验证、运维与切换](tasks.md#p8-全量验证运维与切换)。原项目宪法、根README/贡献/历史Java文档保留；Go新增说明由本页及backend-go文档承载，技术迁移依据见plan.md，禁止通过覆盖历史说明解除发布门禁。

@@ -8,6 +8,7 @@ import subprocess
 import time
 import urllib.request
 import uuid
+from go_test_environment import cache_environment
 ROOT=Path(__file__).resolve().parents[2]
 IMAGE='minio/minio@sha256:6d770d7f255cda1f18d841ffc4365cb7e0d237f6af6a15fcdb587480cd7c3b93'
 def capture(args,**kw):
@@ -31,7 +32,7 @@ def main():
             except (OSError,TimeoutError):pass
             if time.monotonic()>deadline:raise TimeoutError('临时 MinIO 未就绪')
             time.sleep(0.2)
-        env.update(GO_TEST_S3='disposable',GO_TEST_S3_ENDPOINT=endpoint,GO_TEST_S3_ACCESS=env['MINIO_ROOT_USER'],GO_TEST_S3_SECRET=secret,GOCACHE='/private/tmp/personal-ai-os-go-build',GOPATH='/private/tmp/personal-ai-os-go',GOPROXY='off',GOTOOLCHAIN='local')
+        env.update(GO_TEST_S3='disposable',GO_TEST_S3_ENDPOINT=endpoint,GO_TEST_S3_ACCESS=env['MINIO_ROOT_USER'],GO_TEST_S3_SECRET=secret,GOPROXY='off',GOTOOLCHAIN='local',**cache_environment())
         subprocess.run(['go','test','-race','-count=1','-tags=integration','-run','TestS3Disposable','-v','./internal/business/chat'],cwd=ROOT/'backend-go',env=env,check=True,timeout=120)
     finally:
         if container:

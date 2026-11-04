@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 import time
 import uuid
+from go_test_environment import cache_environment
 
 from disposable_tls import create_tls_fixture as tls_fixture
 
@@ -97,7 +98,7 @@ def run_package(image, package, tls_mode=False, backup=False, test_pattern=None)
             "GO_TEST_KNOWLEDGE_RABBIT_URI", "GO_TEST_KNOWLEDGE_SEARCH_URL",
         }}
         child_env.update({
-            "GOCACHE": "/private/tmp/personal-ai-os-go-build", "GOPATH": "/private/tmp/personal-ai-os-go",
+            **cache_environment(),
             "GOTOOLCHAIN": "local", "GOPROXY": "off", "GO_TEST_REDIS": "disposable",
             "GO_TEST_REDIS_URI": f"{'rediss' if tls_mode else 'redis'}://:{password}@127.0.0.1:{port}/0",
             "GO_TEST_REDIS_CA_PEM": root_pem,

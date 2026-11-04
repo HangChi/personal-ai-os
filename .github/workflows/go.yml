@@ -1,0 +1,83 @@
+name: Go Candidate
+
+on:
+  push:
+    branches: [go]
+    paths: ['backend-go/**', 'scripts/migration/**', 'specs/033-go-rewrite/**', '.github/workflows/go.yml']
+  pull_request:
+    paths: ['backend-go/**', 'scripts/migration/**', 'specs/033-go-rewrite/**', '.github/workflows/go.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GOTOOLCHAIN: local
+      GOMAXPROCS: '4'
+      APP_DOTENV_ENABLED: 'false'
+      GO_DOTENV_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend-go/go.mod
+          cache-dependency-path: backend-go/go.sum
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Prepare isolated test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+          docker info > /dev/null
+          mkdir -p "$RUNNER_TEMP/go-reports"
+          echo "GO_TEST_GOCACHE=$(go env GOCACHE)" >> "$GITHUB_ENV"
+          echo "GO_TEST_GOPATH=$(go env GOPATH)" >> "$GITHUB_ENV"
+      - name: Cache pinned dependencies
+        run: |
+          (cd backend-go && go mod download && go mod verify)
+          (cd backend && ./mvnw -B --no-transfer-progress -DskipTests -Dapp.dotenv.enabled=false package)
+      - name: Go race, vet and build
+        working-directory: backend-go
+        shell: bash
+        run: |
+          set -o pipefail
+          go test -race -p 1 -count=1 -timeout=20m ./... 2>&1 | tee "$RUNNER_TEMP/go-reports/race.log"
+          go vet -tags=integration ./...
+          go build ./...
+      - name: Migration scripts and immutable baseline
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 -m unittest discover -s scripts/migration -p 'test_*.py' 2>&1 | tee "$RUNNER_TEMP/go-reports/scripts.log"
+          python3 scripts/migration/go_inventory.py check
+          python3 scripts/migration/go_config_disposition.py
+          git diff --exit-code -- backend/src/main/resources/db/migration
+      - name: Disposable TLS PostgreSQL regressions
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 scripts/migration/run_go_postgres_tests.py --tls --package task --package confirmation 2>&1 | tee "$RUNNER_TEMP/go-reports/postgres-business.log"
+          python3 scripts/migration/run_go_postgres_tests.py --tls --package app --run '^TestP8' 2>&1 | tee "$RUNNER_TEMP/go-reports/postgres-p8.log"
+      - name: Upload candidate validation logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: go-candidate-validation
+          path: ${{ runner.temp }}/go-reports
+          if-no-files-found: ignore

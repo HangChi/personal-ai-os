@@ -16,6 +16,7 @@ import time
 import uuid
 
 from disposable_tls import create_tls_fixture
+from go_test_environment import cache_environment
 
 ROOT = Path(__file__).resolve().parents[2]
 IMAGE = "pgvector/pgvector@sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d"
@@ -30,6 +31,7 @@ PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "
 
 
 def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None, test_pattern=None, p8_image=None, exercise=None):
+    caches = cache_environment()
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, POSTGRES_PASSWORD=password)
     container = None
@@ -81,7 +83,7 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
             "GO_TEST_KNOWLEDGE_RABBIT_URI", "GO_TEST_KNOWLEDGE_SEARCH_URL",
         }}
         go_env.update({
-            "GOCACHE": "/private/tmp/personal-ai-os-go-build", "GOPATH": "/private/tmp/personal-ai-os-go",
+            **caches,
             "GOTOOLCHAIN": "local", "GOPROXY": "off", "GO_TEST_POSTGRES": "disposable",
             "GO_TEST_POSTGRES_HOST": "127.0.0.1", "GO_TEST_POSTGRES_PORT": port,
             "GO_TEST_POSTGRES_USER": "go_fixture", "GO_TEST_POSTGRES_DB": "personalos_go_test",
