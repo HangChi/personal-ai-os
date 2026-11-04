@@ -5,10 +5,17 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { once } from 'node:events'
+import { parseArgs } from 'node:util'
 import { setTimeout as timeout } from 'node:timers/promises'
 const dir = await mkdtemp(join(tmpdir(), 'personalos-p5-chrome-'))
+const {values: arguments_} = parseArgs({options: {report: {type: 'string'}}})
 let receive
 const received = new Promise(resolve => { receive = resolve })
+let controlReceive
+const controlled = new Promise(resolve => { controlReceive = resolve })
+const diagnostics = {controlReceived: false, pushEvents: 0, notificationErrors: 0, workerErrors: 0}
+let accepted = false
+let delivered = false
 const delay = (ms, ref = true) => timeout(ms, undefined, {ref})
 const server = createServer((req, res) => {
   if (req.url === '/received' && req.method === 'POST') {
@@ -17,8 +24,22 @@ const server = createServer((req, res) => {
     req.on('data', chunk => { data += chunk })
     req.on('end', () => {
       if (data === 'P5 browser delivery fixture') receive()
+      if (data === 'P8 local control fixture') {
+        diagnostics.controlReceived = true
+        controlReceive()
+      }
       res.writeHead(204).end()
     })
+    return
+  }
+  if (req.url === '/diagnostic/push' && req.method === 'POST') {
+    diagnostics.pushEvents++
+    res.writeHead(204).end()
+    return
+  }
+  if (req.url === '/diagnostic/notification-error' && req.method === 'POST') {
+    diagnostics.notificationErrors++
+    res.writeHead(204).end()
     return
   }
   if (req.url === '/sw.js') {
@@ -26,7 +47,8 @@ const server = createServer((req, res) => {
     res.end(`self.addEventListener('push', event => {
       const payload = event.data.json()
       event.waitUntil(Promise.all([
-        self.registration.showNotification(payload.title, {tag: payload.tag}),
+        fetch('/diagnostic/push', {method: 'POST'}),
+        self.registration.showNotification(payload.title, {tag: payload.tag}).catch(() => fetch('/diagnostic/notification-error', {method: 'POST'})),
         fetch('/received', {method: 'POST', body: payload.title})
       ]))
     })`)
@@ -42,6 +64,7 @@ const chrome = spawn(process.env.CHROME_PATH ?? '/Applications/Google Chrome.app
   ['--headless', '--disable-gpu', '--no-first-run', '--remote-debugging-port=0', `--user-data-dir=${profile}`, origin],
   {stdio:'ignore'})
 let ws
+let registrationId
 try {
   let port
   for (let i = 0; i < 100 && !port; i++) {
@@ -54,6 +77,10 @@ try {
   const pending = new Map()
   ws.onmessage = event => {
     const message=JSON.parse(event.data)
+    if (message.method === 'ServiceWorker.workerRegistrationUpdated') {
+      registrationId = message.params.registrations.find(registration => registration.scopeURL === origin + '/' && !registration.isDeleted)?.registrationId ?? registrationId
+    }
+    if (message.method === 'ServiceWorker.workerErrorReported') diagnostics.workerErrors++
     const reply=pending.get(message.id)
     if (reply) {
       pending.delete(message.id)
@@ -69,6 +96,7 @@ try {
     })
   }
   await call('Browser.grantPermissions',{origin,permissions:['notifications']})
+  await call('ServiceWorker.enable')
   const keys=createECDH('prime256v1')
   keys.generateKeys()
   const publicKey=keys.getPublicKey().toString('base64url')
@@ -86,6 +114,12 @@ try {
   ])
   if (evaluation.exceptionDetails) throw new Error(evaluation.result.description || evaluation.exceptionDetails.text)
   const subscription=evaluation.result.value
+  if (!registrationId) throw new Error('Disposable service worker registration was not observed')
+  // This bypasses FCM and encryption, isolating the worker/callback path from real delivery.
+  await call('ServiceWorker.deliverPushMessage', {origin, registrationId,
+    data: JSON.stringify({title: 'P8 local control fixture', tag: 'p8-control'})})
+  const controlPassed = await Promise.race([controlled.then(() => true), delay(3000, false).then(() => false)])
+  if (!controlPassed) throw new Error('Local CDP push control did not reach the disposable worker')
   const fixture = join(dir, 'subscription.json')
   console.log('Chrome subscription host:', new URL(subscription.endpoint).hostname)
   await writeFile(fixture, JSON.stringify({publicKey, privateKey, subscription}), {mode: 0o600})
@@ -96,10 +130,13 @@ try {
   })
   const [status] = await once(tests, 'exit')
   if (status !== 0) throw new Error('Chrome subscription/delivery integration failed')
+  accepted = true
   const gotPush = await Promise.race([received.then(() => true), delay(15000).then(() => false)])
   if (!gotPush) throw new Error('FCM accepted the notification, but Chrome did not receive it in time')
+  delivered = true
   console.log('Chrome service worker decrypted and received the reminder')
 } finally {
+  console.log('Push diagnostics (no endpoint or keys):', JSON.stringify(diagnostics))
   ws?.close()
   if (chrome.exitCode === null && chrome.signalCode === null) {
     chrome.kill()
@@ -107,4 +144,9 @@ try {
   }
   server.close()
   await rm(dir, {recursive: true, force: true})
+  if (arguments_.report) await writeFile(arguments_.report, JSON.stringify({
+    date: new Date().toISOString(), result: delivered ? 'PASS' : 'FAIL', platformAccepted: accepted,
+    realPushDelivered: delivered, realDeliveryDeadlineMs: 15000, ...diagnostics,
+    controlScope: 'CDP synthetic push bypasses FCM and encryption; it verifies only the disposable worker and callback.',
+  }, null, 2) + '\n')
 }

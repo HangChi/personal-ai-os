@@ -33,3 +33,9 @@ python3 scripts/migration/run_go_e2e_tests.py --mode browser
 ```
 
 原suite存在已记录失败时runner退出非零；不掩盖门禁结果。所有fixture只清理本次创建的进程/数据库。
+
+## Push 的控制测试与真实失败
+
+`node scripts/migration/chrome_p5_web_push.mjs --report specs/033-go-rewrite/p8-e2e/push-go.json`两轮诊断仍未通过；第二轮Go实际投递测试0.48s通过、FCM接受，但原15秒期限内无真实push事件。CDP合成push控制消息成功触发同一Worker、回传并显示通知，notificationErrors/workerErrors均0，唯一一次pushEvents来自控制消息。该控制明确绕过FCM/加密，只排查本地Worker与回传路径，不能替代真实送达证据，不能据此断言FCM通道或解密的具体故障原因。
+
+报告只记录布尔/计数，不包含订阅URL、浏览器密钥或VAPID私钥；临时profile/合成密钥/数据库已删除。日志`/tmp/personalos-p8-browser-push-diagnostic.log`与`/tmp/personalos-p8-browser-push-diagnostic-2.log`保留，T802/发布门禁继续开放。
