@@ -76,6 +76,7 @@ type Foundation struct {
 	models         *model.Module
 	chat           *chat.Module
 	modelTransport *http.Transport
+	stopReminders  func()
 }
 
 func (*Foundation) String() string     { return "Foundation{redacted}" }
@@ -317,6 +318,8 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 		})
 	}
+	var calendarEvents *calendar.Events
+	var scanSettings config.CalendarProperties
 	var memoryCapture func(context.Context, string, string, int) error
 	var backfillMemory func(context.Context) error
 	var memoryPrompt func(context.Context, string, string) (string, error)
@@ -341,7 +344,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		if err != nil {
 			return nil, err
 		}
-		events := calendar.NewEvents(pool, calendarSettings, time.Local).Handler(logger)
+		scanSettings = calendarSettings
+		calendarEvents = calendar.NewEvents(pool, calendarSettings, time.Local)
+		events := calendarEvents.Handler(logger)
 		store, err := memory.NewStore(ctx, pool)
 		if err != nil {
 			return nil, err
@@ -390,7 +395,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		memories := memory.NewHTTP(store, logger)
 		previous := options.Business
 		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if calendar.OwnsEventPath(r.URL.Path) {
+			if calendar.OwnsEventPath(r.URL.Path) || calendar.OwnsReminderPath(r.URL.Path) {
 				events.ServeHTTP(w, r)
 				return
 			}
@@ -424,6 +429,27 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	f.handler = f.track(metrics.observeHTTP(newFoundationHandler(settings.Role, security, limiter, f.gate, f.health, options.Business, actuator, logger)))
 	if settings.Monitoring {
 		f.attachManagement(metrics, actuatorProperties, snapshot, logger)
+	}
+	if calendarEvents != nil && scanSettings.ScanEnabled {
+		scanCtx, stop := context.WithCancel(f.ctx)
+		done := make(chan struct{})
+		f.stopReminders = func() { stop(); <-done }
+		go func() {
+			defer close(done)
+			timer := time.NewTimer(time.Duration(scanSettings.ScanInitialDelayMS) * time.Millisecond)
+			defer timer.Stop()
+			for {
+				select {
+				case <-scanCtx.Done():
+					return
+				case now := <-timer.C:
+					if _, err := calendarEvents.Scan(scanCtx, now); err != nil && scanCtx.Err() == nil {
+						logger.ErrorContext(scanCtx, "提醒扫描失败，将在下一轮重试", "error", err)
+					}
+					timer.Reset(time.Duration(scanSettings.ScanIntervalMS) * time.Millisecond)
+				}
+			}
+		}()
 	}
 	if backfillMemory != nil {
 		f.executor.Submit(f.ctx, backfillMemory)
@@ -476,6 +502,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 		f.closing = true
 		f.mu.Unlock()
 		go func() {
+			if f.stopReminders != nil {
+				f.stopReminders()
+			}
 			if f.chat != nil {
 				_ = f.chat.Close(context.Background())
 			}

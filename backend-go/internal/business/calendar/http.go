@@ -27,7 +27,14 @@ func (s *Events) Handler(logger *slog.Logger) http.Handler {
 		if !ok {
 			return web.NotAcceptable()
 		}
-		data, status, err := s.serve(w, r)
+		var data any
+		var status int
+		var err error
+		if OwnsReminderPath(r.URL.Path) {
+			data, status, err = s.serveReminders(r)
+		} else {
+			data, status, err = s.serve(w, r)
+		}
 		if err != nil {
 			return err
 		}
