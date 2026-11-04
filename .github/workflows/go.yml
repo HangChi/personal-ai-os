@@ -65,7 +65,7 @@ jobs:
         run: |
           set -o pipefail
           python3 -m unittest discover -s scripts/migration -p 'test_*.py' 2>&1 | tee "$RUNNER_TEMP/go-reports/scripts.log"
-          node --test scripts/migration/test_chrome_push_diagnostics.mjs
+          node --test scripts/migration/test_chrome_push_diagnostics.mjs scripts/migration/test_real_model_transport.mjs
           python3 scripts/migration/go_inventory.py check
           python3 scripts/migration/go_config_disposition.py
           python3 scripts/migration/go_p8_test_progress.py

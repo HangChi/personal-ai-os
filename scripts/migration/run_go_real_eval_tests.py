@@ -190,9 +190,17 @@ def comparison(backends):
         raise AssertionError("Java and Go did not evaluate identical original annotations")
     delta = {key: go["metrics"][key] - java["metrics"][key]
              for key in ("recall_at_1", "recall_at_3", "recall_at_5", "mrr")}
+    tied = {name: metrics([dict(row, rank=row["tied_rank"]) for row in value["query_results"]])
+            for name, value in backends.items()}
+    tied_delta = {key: tied["go"][key] - tied["java"][key] for key in delta}
     return dict(go_minus_java=delta,
                 go_recall_at_5_not_lower=delta["recall_at_5"] >= 0,
                 go_mrr_not_lower=delta["mrr"] >= 0,
+                strict_quality_not_lower=all(value >= 0 for value in delta.values()),
+                original_tied_rank_metrics=tied, original_tied_rank_go_minus_java=tied_delta,
+                original_tied_quality_not_lower=all(value >= 0 for value in tied_delta.values()),
+                strict_quality_status="NO_OBSERVED_DEGRADATION" if all(value >= 0 for value in delta.values())
+                                      else "DEGRADATION_OBSERVED",
                 strict_rank_changes=sum(left["rank"] != right["rank"] for left, right in
                                         zip(java["query_results"], go["query_results"])),
                 identical_source_files=True, live_upstream_calls_independent=True,

@@ -1,10 +1,19 @@
 import hashlib
+from pathlib import Path
+import tempfile
 import unittest
+from unittest.mock import patch
 
 from java_embedding_content import embedding_hashes
 
 
 class JavaEmbeddingContentTest(unittest.TestCase):
+    def test_packaged_baseline_fallback_without_maven_test_report(self):
+        with tempfile.TemporaryDirectory() as temporary, patch("java_embedding_content.CLASSPATH_REPORT",
+                                                               Path(temporary) / "absent.xml"):
+            formatted = embedding_hashes([], fixture=True)
+        self.assertEqual(formatted, "document_title: title\nchunk_index: 7\nfilename: real.md\ndocument_id: owned-id\n\nsynthetic content")
+
     def test_exact_four_field_spring_formatter_with_unicode_and_template_literals(self):
         rows, expected = [], []
         for content, title, filename in (("synthetic content", "title", "real.md"),

@@ -1,5 +1,15 @@
 # 验证记录
 
+## 2026-11-04 P8 获准真实模型子集与格式差分修复
+
+用户授权后显式读取根`.env`的模型白名单，实际`qwen3.8-flash`/`qwen3.7-text-embedding-flash`，DashScope HTTPS，非mock。每端新随机TLS库、42原迁移/validate、认证CSRF，16篇/142条1024维向量/84原查询/2传统知识问答及精确持久引用/50噪声请求完整执行。真实密钥只走内存/stdin，正文及回答不入Git；600请求/12聊天/100万输入字符/1024输出token/90秒上限，不重试、不跟随重定向。完整双端报告`p8-eval-real-20261104-222729.json`，日志`/tmp/personalos-p8-real-eval-10.log`，退出0且无上游失败、停机连接归零并清理本次容器。实际180966 total tokens，不表示固定金额。
+
+真实请求修复Go31块长文批量400（保守16/全批成功后才写）和OpenAI嵌入缺Java默认EMBED元数据。固定Java依赖oracle逐分块预期输入SHA核验两端；Ollama/原文引用/查询文本不改，不重建用户现有库。Java代理路径/base64兼容失败及全部旧轮报告保留，未修改冻结Java/前端/42 SQL/原评估脚本。
+
+两端R@5=100%、零miss，严格MRR Go0.937500/Java0.943452，一条Docker查询原判平后均第1，原0.007阈值下判平MRR同0.946429。`p8-real-model-review.json`明确严格退化及`SUBSET_EXECUTED_QUALITY_NOT_APPROVED`，不把执行PASS或相同判平结果当质量批准。缺10篇/45查询、历史标注、人工事实与多阶段RAG仍开放；T801j子项完成，T801/T804/五门禁不升级。
+
+Go全包`GOMAXPROCS=4 go test -p 1 -race -tags=integration ./...`退出0（app93.648s，`/tmp/personalos-p8-go-embedding-format-race.log`），knowledge/model定向race和真实TLS knowledge定向回归1.588s通过，integration vet退出0；原合成工具链129查询/50噪声按新格式再次退出0（`/tmp/personalos-p8-eval-tooling-embedding-format.log`）。最终115项Python回归通过（`/tmp/personalos-p8-python-real-model-final2.log`），包括实际打包JAR依赖后备、严格退化/判平并列与报告篡改拒绝；8项Node单测、1093文件固定基线、12record/67字段/70处Value配置索引、78配置处置与P8派生映射检查通过。`check-complete`实际退出1（`/tmp/personalos-p8-check-complete-real-model.log`），2438项未verified、五门禁开放；状态未批量升级。候选CI仅增加传输纯单测，未push或运行远端CI。提交`90c593a`/`6372dcc`/`537ab84`分批留存脚本/Java格式核验/Go元数据修复及实际报告。
+
 ## 2026-11-04 P8 掘金公开正文
 
 用户授权采集后，固定原URL清单取得16篇、提取正文126161字符，来源/时间/页面标题/三类SHA留存。第17篇无有效正文即停，结果PARTIAL；全文仅 `/private/tmp/personalos-p8-juejin.Lu4LAU/corpus/`，不入Git。六项抓取器单测通过；原提取器与四评估算法固定SHA未变。

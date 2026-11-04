@@ -24,6 +24,7 @@ class P8InventoryDispositionTest(unittest.TestCase):
             self.assertIn("specs/033-go-rewrite/p8-eval-juejin-20261104-212152.json", entry["evidence"])
             self.assertIn("16篇", entry["note"])
             self.assertIn("10篇", entry["note"])
+            self.assertIn("specs/033-go-rewrite/p8-real-model-review.json", entry["evidence"])
         for group in ("java_test_cases", "tools"):
             for entry in self.inventory[group]:
                 self.assertEqual(after["items"].get(entry["id"]), self.progress["items"].get(entry["id"]), entry["id"])

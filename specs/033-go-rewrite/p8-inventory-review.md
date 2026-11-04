@@ -46,4 +46,6 @@
 
 原四个检索工具的固定哈希/算法已通过独立Go适配器实测：26份明确合成材料、原129条查询（24 term/22 natural/83 cross）和50次独立pure-vector噪声请求，见[p8-eval-tooling.json](p8-eval-tooling.json)。未调用原重建main/delete_all；新随机TLS库的认证/CSRF、全部命中归属与去重校验、停机连接归零通过。预检未提供全文目录时明确BLOCKED；不扫描默认/tmp、不读取用户模型凭据。合成分数不能证明原文章/真实模型质量，因此四文件与其余在线集合继续in_progress。
 
+用户后续明确授权真实模型验收后，独立白名单读取根`.env`模型配置；实际`qwen3.8-flash`和`qwen3.7-text-embedding-flash`完成Java/Go各新TLS库16篇/142向量/84原查询/2传统知识问答引用及50噪声请求。最终双端报告`p8-eval-real-20261104-222729.json`、质量复核`p8-real-model-review.json`。已修复Go长文分批和OpenAI默认EMBED元数据遗漏，预期模型输入SHA由真实固定Java格式oracle生成；原文/引用/冻结Java保持。两端R@5=100%，严格MRR Go0.937500/Java0.943452，唯一严格名次差在原0.007判平内；判平MRR同0.946429，但严格退化仍独立记录。原工具/算法/阈值不改，缺10篇/45查询、历史认证、人工事实与Agent/多阶段RAG验收不由此替代，15个在线集合继续in_progress。
+
 真实用户备份、外部副作用核对、通知最终送达、生产容量/峰值与用户验收仍是独立门禁。五release_gates状态与证据保持原样，2438项均未自动升级verified；check-complete仍应失败。T803父项保留开放，不能把“审计已记录”误写为“未完成职责已通过”。

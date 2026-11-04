@@ -50,19 +50,32 @@ class RealEvaluationTest(unittest.TestCase):
             metrics([])
 
     def test_differential_requires_identical_annotations_and_does_not_hide_degradation(self):
-        rows = [dict(query="q", docs=["acceptable"], rank=1)]
+        rows = [dict(query="q", docs=["acceptable"], rank=1, tied_rank=1)]
         base = dict(query_results=rows, metrics=metrics(rows))
         result = comparison({"java": base, "go": copy.deepcopy(base)})
         self.assertTrue(result["go_mrr_not_lower"])
+        self.assertTrue(result["original_tied_quality_not_lower"])
         self.assertFalse(result["release_gate_approved"])
-        candidate = dict(query_results=[dict(rows[0], rank=None)], metrics=metrics([{"rank": None}]))
+        candidate = dict(query_results=[dict(rows[0], rank=None, tied_rank=None)], metrics=metrics([{"rank": None}]))
         result = comparison({"java": base, "go": candidate})
         self.assertFalse(result["go_recall_at_5_not_lower"])
         self.assertFalse(result["go_mrr_not_lower"])
+        self.assertFalse(result["original_tied_quality_not_lower"])
+        self.assertEqual(result["strict_quality_status"], "DEGRADATION_OBSERVED")
         self.assertEqual(result["strict_rank_changes"], 1)
         candidate["query_results"][0]["docs"] = ["weakened annotation"]
         with self.assertRaises(AssertionError):
             comparison({"java": base, "go": candidate})
+
+    def test_tied_parity_never_overwrites_strict_degradation(self):
+        java = [dict(query="q", docs=["acceptable"], rank=1, tied_rank=1)]
+        go = [dict(query="q", docs=["acceptable"], rank=2, tied_rank=1)]
+        result = comparison({"java": dict(query_results=java, metrics=metrics(java)),
+                             "go": dict(query_results=go, metrics=metrics(go))})
+        self.assertFalse(result["strict_quality_not_lower"])
+        self.assertTrue(result["original_tied_quality_not_lower"])
+        self.assertEqual(result["go_minus_java"]["mrr"], -.5)
+        self.assertFalse(result["release_gate_approved"])
 
 
 if __name__ == "__main__":

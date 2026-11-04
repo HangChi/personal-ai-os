@@ -1,0 +1,74 @@
+{
+  "result": "SUBSET_EXECUTED_QUALITY_NOT_APPROVED",
+  "source_report": "p8-eval-real-20261104-222729.json",
+  "source_sha256": "e9dd6eab940bd4e4931bc2953b3b6c743416a1496b84c553942fe3b827c9a2e5",
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "queries": 84,
+  "excluded_queries": 45,
+  "assessment": {
+    "go_minus_java": {
+      "recall_at_1": -0.011904761904761862,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "mrr": -0.005952380952380931
+    },
+    "go_recall_at_5_not_lower": true,
+    "go_mrr_not_lower": false,
+    "strict_quality_not_lower": false,
+    "original_tied_rank_metrics": {
+      "go": {
+        "queries": 84,
+        "recall_at_1": 0.9047619047619048,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 0.9464285714285714,
+        "misses": 0
+      },
+      "java": {
+        "queries": 84,
+        "recall_at_1": 0.9047619047619048,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 0.9464285714285714,
+        "misses": 0
+      }
+    },
+    "original_tied_rank_go_minus_java": {
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "mrr": 0.0
+    },
+    "original_tied_quality_not_lower": true,
+    "strict_quality_status": "DEGRADATION_OBSERVED",
+    "strict_rank_changes": 1,
+    "identical_source_files": true,
+    "live_upstream_calls_independent": true,
+    "embedding_input_formats": {
+      "go": "Spring-AI-2.0.1-MetadataMode.EMBED",
+      "java": "Spring-AI-2.0.1-MetadataMode.EMBED"
+    },
+    "noise_tolerance_unchanged": 0.007,
+    "default_similarity_threshold_unchanged": 0.3,
+    "release_gate_approved": false
+  },
+  "strict_rank_differences": [
+    {
+      "query": "容器删掉之后里面的数据去哪了",
+      "go_rank": 2,
+      "java_rank": 1,
+      "go_tied_rank": 1,
+      "java_tied_rank": 1
+    }
+  ],
+  "release_gate_approved": false,
+  "semantic_quality_verified": false,
+  "limits": "Fresh 16-document subset only. Original 0.007 tie threshold unchanged. Strict regression remains visible even when tied ranks match. Independent upstream noise, random document identities, full corpus, factual review, multistage RAG and production acceptance remain separate."
+}

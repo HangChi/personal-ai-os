@@ -162,12 +162,16 @@ def disposition(entry, old):
         public_evidence = ["scripts/migration/fetch_go_juejin_corpus.py",
                            "scripts/migration/test_go_juejin_corpus.py",
                            "scripts/migration/run_go_eval_tests.py",
-                           "specs/033-go-rewrite/p8-eval-juejin-20261104-212152.json"]
+                           "specs/033-go-rewrite/p8-eval-juejin-20261104-212152.json",
+                           "scripts/migration/run_go_real_eval_tests.py",
+                           "scripts/migration/java_embedding_content.py",
+                           "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
+                           "specs/033-go-rewrite/p8-real-model-review.json"]
         if path == "scripts/eval/fetch-corpus-juejin.py":
-            return "in_progress", "retained-live-evaluation-open", public_evidence, "原提取器固定SHA复用，用户授权后独立采集器按原清单取得16篇公开正文并记录来源/时间/哈希，第17篇无有效正文即停。全文仅本地，未操作原fetch/main；缺10篇、历史快照和真实模型质量仍开放。"
+            return "in_progress", "retained-live-evaluation-open", public_evidence, "原提取器固定SHA复用，用户授权后独立采集器按原清单取得16篇公开正文并记录来源/时间/哈希，第17篇无有效正文即停。全文仅本地，未操作原fetch/main；已用获准真实模型跑两端84查询子集，仍缺10篇、历史快照/标注认证及完整质量验收。"
         if path in {"scripts/eval/queries.py", "scripts/eval/rebuild-corpus.py", "scripts/eval/retrieval-eval.py", "scripts/eval/noise-floor.py"}:
-            return "in_progress", "retained-live-evaluation-open", ["scripts/migration/go_eval_adapter.py", "scripts/migration/test_go_eval_adapter.py", "specs/033-go-rewrite/p8-eval-tooling.json", "specs/033-go-rewrite/p8-upload-binding.json"] + public_evidence, "固定哈希的原26标题/129查询/evaluate/summarize/noise算法安全接新随机TLS库；合成材料129次hybrid与50次显式vector请求、Java/Go上传20个String/UUID参数场景一致。用户授权的16篇公开正文另跑两轮84条完整标注查询/50次噪声请求，142向量与实际嵌入输入哈希/元数据一致；缺答案的45条明确排除。仍缺10篇/历史认证和真实语义模型，不以词袋分数解除在线质量门禁。"
-        return "in_progress", "retained-live-evaluation-open", ["scripts/migration/compare_go_p6.py", "specs/033-go-rewrite/p6-eval-results.json"] + public_evidence, "原真实语料/在线模型评估工具保留；18组受控召回及16篇新抓公开正文的词袋模型测试均不等于真实语义质量。采集与84条原查询的证据另存，原工具未改，历史26篇认证/真实模型验收继续开放。"
+            return "in_progress", "retained-live-evaluation-open", ["scripts/migration/go_eval_adapter.py", "scripts/migration/test_go_eval_adapter.py", "specs/033-go-rewrite/p8-eval-tooling.json", "specs/033-go-rewrite/p8-upload-binding.json"] + public_evidence, "原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。仍缺10篇/45查询、历史认证/人工事实与多阶段RAG完整验收，严格退化不被PASS掩盖，五门禁保持。"
+        return "in_progress", "retained-live-evaluation-open", ["scripts/migration/compare_go_p6.py", "specs/033-go-rewrite/p6-eval-results.json"] + public_evidence, "原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录，不替代Agent/多阶段RAG/人工事实正确性验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
     if path.startswith("scripts/e2e/reports/"):
         return "implemented", "retained-historical-report", ["specs/033-go-rewrite/p8-e2e/README.md"], "原Java历史报告按哈希保留，只作历史资料，不冒充本次Go结果。"
     if category == "sql_migration":

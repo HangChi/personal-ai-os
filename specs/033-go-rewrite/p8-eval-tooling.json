@@ -2,6 +2,9 @@
   "tooling_result": "PASS",
   "synthetic_only": true,
   "original_articles_used": false,
+  "downloaded_public_articles_used": false,
+  "synthetic_model": true,
+  "historical_corpus_identity_verified": false,
   "semantic_quality_verified": false,
   "sources_sha256": {
     "scripts/eval/queries.py": "b5aa3821c2ffab9003a212b15b39db091a7f8ac539ade9e1830d901be0e9098a",
@@ -11,22 +14,223 @@
   },
   "documents": 26,
   "queries": 129,
+  "total_original_queries": 129,
+  "excluded_queries": 0,
   "query_levels": {
     "term": 24,
     "natural": 22,
     "cross": 83
   },
   "hybrid_search_calls": 129,
+  "ingestion": {
+    "documents": 26,
+    "vectors": 26,
+    "dimensions": 1024,
+    "all_chunk_hashes_seen_by_embedding_model": false,
+    "all_expected_embedding_inputs_seen": true,
+    "per_document": [
+      {
+        "title": "Nginx 生产级配置优化",
+        "source_sha256": "e8958544685ae4a87ae617470037e0f7b117ac0a3bebad72a4908ec1a6f4c6e9",
+        "size_bytes": 1025,
+        "utf16_chars": 513,
+        "chunks": 1
+      },
+      {
+        "title": "Nginx 完整配置参考手册",
+        "source_sha256": "8e94383f357856e90700576b8a06b0e175d82a1eb8913bcec97a86aad47d4417",
+        "size_bytes": 1121,
+        "utf16_chars": 545,
+        "chunks": 1
+      },
+      {
+        "title": "动态规划基础与核心思想",
+        "source_sha256": "43a39b254adf584e19e4c342b4cdf530e2d860727cd47fdb9c8a02a4aa325be9",
+        "size_bytes": 1217,
+        "utf16_chars": 449,
+        "chunks": 1
+      },
+      {
+        "title": "动态规划五部曲实战",
+        "source_sha256": "5bb95ff85625e318a741de26db0c1abc8b2fb33989e37b6a6b4905bc871a5cc4",
+        "size_bytes": 1025,
+        "utf16_chars": 385,
+        "chunks": 1
+      },
+      {
+        "title": "系统性地理解分布式系统",
+        "source_sha256": "e9218e653711ee08f831bba16e59d71a4d802e1c68cee5b2e34abbae34cddd37",
+        "size_bytes": 1217,
+        "utf16_chars": 449,
+        "chunks": 1
+      },
+      {
+        "title": "分布式一致性：CAP、Raft 与脑裂",
+        "source_sha256": "d2b9c8b413548f379b790e120967b064022446182a474eaec376bd77da65f0ef",
+        "size_bytes": 1473,
+        "utf16_chars": 705,
+        "chunks": 1
+      },
+      {
+        "title": "TypeScript 类型体操技巧",
+        "source_sha256": "f3ee04cc422a4f33b40edfdacb9c285eb0c5cd3758551648be2fb0d8b6b30e7b",
+        "size_bytes": 1089,
+        "utf16_chars": 641,
+        "chunks": 1
+      },
+      {
+        "title": "TypeScript 泛型与条件类型",
+        "source_sha256": "c7d4bc37305f8d29e7cd4f013792f3edd5aca7fdf60e8894ea3c299c4b62cd55",
+        "size_bytes": 1185,
+        "utf16_chars": 673,
+        "chunks": 1
+      },
+      {
+        "title": "Python 异步陷阱：谁在帮你并发",
+        "source_sha256": "44809e0424eebe5bff93d74433e6ed79fe04eadab00db6a02d6bbcd8486a252b",
+        "size_bytes": 1441,
+        "utf16_chars": 673,
+        "chunks": 1
+      },
+      {
+        "title": "Python 并发选型：GIL、多线程、多进程与协程",
+        "source_sha256": "60b3a21abb92a3a79138ae4a321cdb7f8eee535ddec48e138ee0d298375e7926",
+        "size_bytes": 2017,
+        "utf16_chars": 929,
+        "chunks": 1
+      },
+      {
+        "title": "Kafka 为什么快：PageCache、零拷贝与 Segment",
+        "source_sha256": "a70beaa2ce60451573189a15fe293612bb001e7bbb9f5844188565f76311fd6c",
+        "size_bytes": 1857,
+        "utf16_chars": 1153,
+        "chunks": 1
+      },
+      {
+        "title": "Kafka 实战总结：架构与吞吐优化",
+        "source_sha256": "5a5b94c080d621cc06e8943d6b381fd01c4317716cc77671e75c8a51e8e115b4",
+        "size_bytes": 1505,
+        "utf16_chars": 673,
+        "chunks": 1
+      },
+      {
+        "title": "浏览器渲染原理：从输入到像素",
+        "source_sha256": "0590480d65c418079e0275cb489ae053919050e13a0f1e5d8902bd37f1edc7cf",
+        "size_bytes": 1505,
+        "utf16_chars": 545,
+        "chunks": 1
+      },
+      {
+        "title": "浏览器渲染管道：重排、重绘与合成层",
+        "source_sha256": "a3c826120d26e8a27c33633aae827abe40cd80cd3d0c4ce726d5f82e00992bc1",
+        "size_bytes": 1793,
+        "utf16_chars": 641,
+        "chunks": 1
+      },
+      {
+        "title": "Docker 深度解析：UnionFS 与核心组件",
+        "source_sha256": "885e9d1cc31c8b6adb4d25a8379282fe447b6320b182c2d5f2ebe8a66aa5c2bd",
+        "size_bytes": 1601,
+        "utf16_chars": 897,
+        "chunks": 1
+      },
+      {
+        "title": "Docker 与虚拟机的区别：Namespace 和 Cgroup",
+        "source_sha256": "5c0261b58798bac8cc8cd08a8bdba79149b29ab0fc67a4e22beacf2c78019da4",
+        "size_bytes": 1793,
+        "utf16_chars": 1153,
+        "chunks": 1
+      },
+      {
+        "title": "MySQL 学习记：从增删改查到慢查询",
+        "source_sha256": "d86b0149e3cbfef156a4c95f1746733b4cd52413c8ee3b522d1b7aa1d88941ab",
+        "size_bytes": 1601,
+        "utf16_chars": 705,
+        "chunks": 1
+      },
+      {
+        "title": "HTTP 渐进：编码、缓存与断点续传",
+        "source_sha256": "6ee609a8d08552947123d63e3adc97c2a119a57a702665ccc7bee32574776a8c",
+        "size_bytes": 1569,
+        "utf16_chars": 673,
+        "chunks": 1
+      },
+      {
+        "title": "Go 并发模式选择指南",
+        "source_sha256": "54f250fc33e68d94aaedf2d85e4aadc664774f429b385589a36f16b57bee6089",
+        "size_bytes": 1025,
+        "utf16_chars": 449,
+        "chunks": 1
+      },
+      {
+        "title": "GMP 调度器：Go 并发的心脏",
+        "source_sha256": "2040cd3fd66b91bf40f2c6e7a185ad718b7613c8352b428f3bc3f02774af081c",
+        "size_bytes": 1249,
+        "utf16_chars": 609,
+        "chunks": 1
+      },
+      {
+        "title": "MySQL 事务、索引与锁",
+        "source_sha256": "6c6709e0206c2caea029c968611bab64d449ddedb5ac5c111904060484bb3b6c",
+        "size_bytes": 1025,
+        "utf16_chars": 513,
+        "chunks": 1
+      },
+      {
+        "title": "HTTP 一篇说清楚",
+        "source_sha256": "4d67c648db60555d4421d71e662315156c410accac28164a59853c893d6b4e41",
+        "size_bytes": 801,
+        "utf16_chars": 417,
+        "chunks": 1
+      },
+      {
+        "title": "Redis 缓存机制",
+        "source_sha256": "3effbd084d3b588e1e437bf170a423b0c94f13eb01020c3281ad24a524552d22",
+        "size_bytes": 737,
+        "utf16_chars": 417,
+        "chunks": 1
+      },
+      {
+        "title": "Java 虚拟线程：让 Java 轻功水上漂",
+        "source_sha256": "3b5ee13ebb882844cceaf254f73182400a6a3f475fcfce5361148943f8a5eea9",
+        "size_bytes": 1569,
+        "utf16_chars": 801,
+        "chunks": 1
+      },
+      {
+        "title": "Vue3 响应式原理：从 Proxy 到 EffectScope",
+        "source_sha256": "85a4d41289f18b2744d0015eb01d6c3016969493942ee507e4ebd64a2654449e",
+        "size_bytes": 1697,
+        "utf16_chars": 1121,
+        "chunks": 1
+      },
+      {
+        "title": "PostgreSQL 索引：从 B-tree 到 BRIN",
+        "source_sha256": "6d7f1debae5fd8a1e02107b203114f42b2f810d14f7e97af2a889d3c69ebd320",
+        "size_bytes": 1409,
+        "utf16_chars": 1025,
+        "chunks": 1
+      }
+    ],
+    "embedding_format_oracle": {
+      "oracle_sha256": "42c1a4e716764441eefa4a2fc1e30efc22ba4c65c3cba1c4d5861c213b19f126",
+      "jars_sha256": {
+        "spring-ai-openai-2.0.1.jar": "2306930e09c05a579b7359656414c2d4d4404a679593318523a69bb7a0d4366d",
+        "spring-ai-commons-2.0.1.jar": "c99512b8b7d7dc5bcb3d271d2f3de6e2edb948be6b05d750cc55c59cf50df9bd"
+      }
+    }
+  },
   "vector_noise_search_calls": 50,
-  "synthetic_summary": "SYNTHETIC  n=129  R@1= 24.8%  R@3= 29.5%  R@5= 29.5%  MRR=0.270  多样性= 11.5%  未中=91\n                  判平后 R@1= 24.8%  MRR=0.270",
+  "observed_summary": "SYNTHETIC  n=129  R@1= 24.8%  R@3= 29.5%  R@5= 29.5%  MRR=0.270  多样性= 11.5%  未中=91\n                  判平后 R@1= 24.8%  MRR=0.270",
   "synthetic_noise": "样本：3 个（文档×查询）组合，每组合 5 次\n标准差  中位数=0.00000  P90=0.00000  max=0.00000\n极差    中位数=0.00000  P90=0.00000  max=0.00000\n\n建议判平阈值：0.0000（P90 极差的 2 倍，留一倍余量）\n含义：两篇文档得分差小于该值时，谁排前面属于噪声，不应判为排序错误。",
   "checks": [
     "owned random TLS PostgreSQL/pgvector and original Flyway42; initially empty",
-    "unchanged original CORPUS titles/query labels/evaluate/summarize/noise algorithms",
+    "unchanged original labels/evaluate/summarize/noise algorithms; query selection only by complete document coverage",
     "only in-memory upload manifest and authenticated CSRF API; no original rebuild main/delete_all/fixed-target IO",
     "all hits belong to fixture, titles/IDs agree and documents are unique",
     "default hybrid evaluation; separate explicit pure-vector noise process",
     "Java and both Go processes stopped and application database connections released"
   ],
-  "limits": "Synthetic repeated-title documents and deterministic word-bag embeddings only. Scores are tooling observations, not original 26-article/model quality, regression targets or release approval. The 0.007 tie tolerance and default 0.3 similarity threshold were not changed."
+  "limits": "Synthetic repeated-title documents and deterministic word-bag embeddings only. Scores are tooling observations, not model quality, regression targets or release approval. The 0.007 tie tolerance and default 0.3 similarity threshold were not changed.",
+  "synthetic_summary": "SYNTHETIC  n=129  R@1= 24.8%  R@3= 29.5%  R@5= 29.5%  MRR=0.270  多样性= 11.5%  未中=91\n                  判平后 R@1= 24.8%  MRR=0.270"
 }
