@@ -1,5 +1,17 @@
 # 验证记录
 
+## 2026-11-04 P8 掘金公开正文
+
+用户授权采集后，固定原URL清单取得16篇、提取正文126161字符，来源/时间/页面标题/三类SHA留存。第17篇无有效正文即停，结果PARTIAL；全文仅 `/private/tmp/personalos-p8-juejin.Lu4LAU/corpus/`，不入Git。六项抓取器单测通过；原提取器与四评估算法固定SHA未变。
+
+`run_go_eval_tests.py --downloaded-corpus-dir /private/tmp/personalos-p8-juejin.Lu4LAU/corpus`两轮退出0并清理；新随机TLS PostgreSQL/pgvector/原Flyway42与认证API下16文档142向量，第二轮逐文档bytes/UTF16/分块序号/metadata/1024维验证，所有分块SHA均在实际嵌入请求出现。84条原查询（13term/19natural/52cross）完整执行，缺答案文档的45条明确排除且不缩减原标注；另50次纯向量噪声请求。两轮词袋模型观测R@5 76.2%、MRR0.655、20未中；不作真实语义模型质量或发布验收。
+
+报告 `p8-eval-juejin-20261104-211847.json`、`p8-eval-juejin-20261104-212152.json`；日志 `/tmp/personalos-p8-juejin-fetch.log`、`/tmp/personalos-p8-eval-juejin-{1,2}.log`。T801i子项完成；原26全文/历史标注、真实模型与五发布门禁仍开放。
+
+最终完整Python回归92项通过（`/tmp/personalos-p8-python-juejin-final.log`），包括六项采集器测试、八项评估适配测试和清单门禁保持测试。旧合成评估与上传绑定报告保留；本批不改Java/前端/42条SQL及原评估脚本。
+
+清单说明更新后再跑92项Python仍通过（`/tmp/personalos-p8-python-juejin-audit.log`），四项Node诊断测试通过；`go_inventory.py check`、78项配置处置、144声明映射、全1093文件SHA/职责处置及`git diff --check`通过。`check-complete`实际退出1（`/tmp/personalos-p8-check-complete-juejin.log`）：2438项尚未verified、五个发布门禁未验证；本批未提升任何清单状态或批准发布。
+
 ## 2026-11-04 P8 显式saveMemory补验
 
 T802e：Java/Go独立`--mode memory`真实TLS空库首轮均退出0；普通对话关闭自动记忆零写入，两轮明确工具保存各SSE done/TOOL SUCCESS审计，同内容仅一MANUAL行且ID不变、四消息与清理归零。报告`p8-e2e/{go,java}/explicit-memory.json`，日志`/tmp/personalos-p8-explicit-memory-{go,java}.log`。六项模型夹具测试及完整84项Python单测通过（`/tmp/personalos-p8-python-memory.log`）。

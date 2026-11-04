@@ -1,3 +1,6 @@
+from collections import Counter
+import hashlib
+import json
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -5,9 +8,41 @@ import unittest
 from unittest.mock import Mock, patch
 
 import go_eval_adapter as subject
+from run_go_eval_tests import query_subset, verify_ingestion
 
 
 class EvaluationAdapterTest(unittest.TestCase):
+    def test_real_text_ingestion_requires_exact_bytes_utf16_metadata_and_embedding_receipts(self):
+        text = "Actual article input with emoji 😀"
+        digest = hashlib.sha256(text.encode()).hexdigest()
+        actual = [dict(id="owned", title="title", filename="p8-eval.md", chunkCount=1,
+                       sizeBytes=len(text.encode()), charCount=len(text.encode("utf-16-le")) // 2)]
+        row = dict(document_id="owned", title="title", filename="p8-eval.md", index=0, sha256=digest, dimensions=1024)
+        database = Mock()
+        database.sql.return_value = json.dumps([row])
+        observed = Counter({digest: 1})
+        report = verify_ingestion(actual, {"post": ("title", text)}, {"owned": "title"}, database, observed)
+        self.assertEqual(report["vectors"], 1)
+        self.assertTrue(report["all_chunk_hashes_seen_by_embedding_model"])
+        with self.assertRaises(AssertionError):
+            verify_ingestion(actual, {"post": ("title", text)}, {"owned": "title"}, database, Counter())
+        for key, value in (("sizeBytes", 0), ("charCount", 0), ("chunkCount", 2)):
+            with self.subTest(key=key), self.assertRaises(AssertionError):
+                verify_ingestion([dict(actual[0], **{key: value})], {"post": ("title", text)}, {"owned": "title"}, database, observed)
+        for key, value in (("document_id", "foreign"), ("title", "wrong"), ("index", 1), ("dimensions", 1)):
+            database.sql.return_value = json.dumps([dict(row, **{key: value})])
+            with self.subTest(key=key), self.assertRaises(AssertionError):
+                verify_ingestion(actual, {"post": ("title", text)}, {"owned": "title"}, database, observed)
+
+    def test_downloaded_subset_never_weakens_multidocument_annotations(self):
+        queries = [{"q": "first", "docs": ["a"], "level": "term"},
+                   {"q": "both", "docs": ["a", "b"], "level": "cross"},
+                   {"q": "second", "docs": ["b"], "level": "natural"}]
+        self.assertEqual(query_subset(queries, {"id": ("a", "body")}), [queries[0]])
+        self.assertEqual(query_subset(queries, {"id": ("a", "body"), "id2": ("b", "body")}), queries)
+        with self.assertRaises(ValueError):
+            query_subset(queries, {"other": ("unknown", "body")})
+
     def test_no_implicit_corpus_scan_and_complete_fixed_annotations(self):
         modules, hashes = subject.original_modules()
         report = subject.corpus_preflight(modules)

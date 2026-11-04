@@ -16,8 +16,14 @@ class P8InventoryDispositionTest(unittest.TestCase):
         self.assertEqual(len(audit["files"]), 1093)
         self.assertEqual({row["id"] for row in audit["files"]}, {entry["id"] for entry in self.inventory["files"]})
         self.assertTrue(all(row["sha256"] and row["disposition"] for row in audit["files"]))
-        for path in subject.PRODUCTION | subject.PUSH | {"scripts/e2e/e2e_suite.py", "scripts/eval/retrieval-eval.py"}:
+        for path in subject.PRODUCTION | subject.PUSH | {"scripts/e2e/e2e_suite.py", "scripts/eval/retrieval-eval.py", "scripts/eval/fetch-corpus-juejin.py"}:
             self.assertEqual(after["items"]["file:" + path]["status"], "in_progress", path)
+        for path in ("scripts/eval/retrieval-eval.py", "scripts/eval/fetch-corpus-juejin.py"):
+            entry = after["items"]["file:" + path]
+            self.assertIn("scripts/migration/fetch_go_juejin_corpus.py", entry["evidence"])
+            self.assertIn("specs/033-go-rewrite/p8-eval-juejin-20261104-212152.json", entry["evidence"])
+            self.assertIn("16篇", entry["note"])
+            self.assertIn("10篇", entry["note"])
         for group in ("java_test_cases", "tools"):
             for entry in self.inventory[group]:
                 self.assertEqual(after["items"].get(entry["id"]), self.progress["items"].get(entry["id"]), entry["id"])

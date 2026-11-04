@@ -39,6 +39,15 @@ python3 scripts/migration/run_go_eval_tests.py --fixture
 
 `python3 scripts/migration/run_go_eval_tests.py --corpus-dir /absolute/provided-corpus`只读检查26个明确`juejin-<post_id>.md`文件的长度/UTF-8/链接与SHA；不提供目录时退出2/BLOCKED，不隐式搜索/tmp。即使文件齐全也只记FILES_PRESENT_NOT_AUTHENTICATED，不保证文章来源或真实模型质量，不自动运行采集/线上评估。真实验收应另外准备原全文、授权的模型环境和Java/Go质量对照，继续保留发布门禁。
 
+用户明确授权后可采集固定原清单的掘金公开正文，再用独立模式验证实际上传/切分/嵌入/落库/检索。采集器只创建新私有目录，不覆盖原语料；默认6篇，最多26篇，每篇间隔3秒，HTTPS验证/大小/时间均有界，遇无效正文立即停止。全文只保留在仓库外供本地测试，禁止提交或传播；来源、抓取时间、页面标题与哈希写入 manifest。命令中的目录必须是新的绝对路径且父目录真实存在：
+
+```bash
+python3 scripts/migration/fetch_go_juejin_corpus.py --limit 6 --output-dir /private/tmp/personalos-juejin-new-corpus
+python3 scripts/migration/run_go_eval_tests.py --downloaded-corpus-dir /private/tmp/personalos-juejin-new-corpus
+```
+
+采集不完整时退出2/PARTIAL，已保存且通过哈希检查的正文仍可用于第二条命令；不得为凑数跳过错误页或绕过站点保护。独立模式只运行答案文档全部齐备的原查询，缺失查询明确计数，绝不缩减答案列表；使用真实TLS库/API及本地确定性词袋模型，不需要用户模型密钥。它验证正文进入嵌入请求及向量存储，不证明真实模型语义质量或历史语料身份。下载模式把安全元数据/结果写入新的`p8-eval-juejin-<时间>.json`，保留原合成报告。2026-11-04实际16篇/142向量/84查询与50次噪声请求的两轮结果见[P8记录](../../specs/033-go-rewrite/p8-completion.md)。
+
 ## 变更规则
 
 从固定Java断言推导Go期望值，不能从Go实现生成自己的期望。原Java测试文件及1119个声明逐项记账；补充真实副作用、事务/查询数、失败/取消与并发证据。跳过、观察项和同Java基线失败都必须保留，不能当成PASS。

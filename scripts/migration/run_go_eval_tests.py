@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Original evaluation tooling on synthetic documents/new TLS resources, never real quality."""
+"""Original evaluation tooling on owned TLS resources with synthetic or freshly fetched text."""
 import argparse
 from collections import Counter
 import contextlib
+from datetime import datetime
 import hashlib
 from http.server import ThreadingHTTPServer
 import io
@@ -17,6 +18,7 @@ from urllib.parse import urlencode
 import uuid
 
 from go_eval_adapter import FixtureAdapter, arguments, corpus_preflight, original_modules
+from fetch_go_juejin_corpus import load_corpus
 from go_test_environment import cache_environment
 from p8_model_fixture import Handler
 from run_go_cutover_tests import Client
@@ -25,6 +27,52 @@ import run_go_e2e_tests as processes
 from run_go_postgres_tests import IMAGE, ROOT, run_package
 
 SPEC = ROOT / "specs/033-go-rewrite"
+
+
+class EvaluationModel(Handler):
+    embedding_inputs = Counter()
+    embedding_lock = threading.Lock()
+
+    def _handle_embeddings(self, request):
+        inputs = request.get("input")
+        inputs = [inputs] if isinstance(inputs, str) else inputs
+        if isinstance(inputs, list):
+            with self.embedding_lock:
+                self.embedding_inputs.update(hashlib.sha256(text.encode()).hexdigest()
+                                             for text in inputs if isinstance(text, str))
+        super()._handle_embeddings(request)
+
+
+def verify_ingestion(actual, documents, uploaded, database, embedding_inputs):
+    source = {title: content for title, content in documents.values()}
+    chunks = json.loads(database.sql(
+        "SELECT coalesce(json_agg(x),'[]'::json) FROM (SELECT "
+        "metadata->>'document_id' AS document_id,metadata->>'document_title' AS title,"
+        "metadata->>'filename' AS filename,(metadata->>'chunk_index')::int AS index,"
+        "encode(sha256(convert_to(content,'UTF8')),'hex') AS sha256,"
+        "vector_dims(embedding) AS dimensions FROM vector_store) x;"))
+    stored_hashes = Counter(row["sha256"] for row in chunks)
+    if stored_hashes - embedding_inputs:
+        raise AssertionError("Persisted chunks were not actually sent to the embedding fixture")
+    if {row["document_id"] for row in chunks} != set(uploaded):
+        raise AssertionError("Persisted vectors include missing or foreign documents")
+    if len(actual) != len(documents) or {row["id"]: row["title"] for row in actual} != uploaded:
+        raise AssertionError("Ingestion document manifest changed")
+    evidence = []
+    for document in actual:
+        text = source[document["title"]]
+        if document["sizeBytes"] != len(text.encode()) or document["charCount"] != len(text.encode("utf-16-le")) // 2:
+            raise AssertionError("Persisted document bytes/UTF-16 characters differ from downloaded input")
+        rows = [row for row in chunks if row["document_id"] == document["id"]]
+        count = document["chunkCount"]
+        if (count <= 0 or sorted(row["index"] for row in rows) != list(range(count))
+                or any(row["title"] != document["title"] or row["filename"] != document["filename"]
+                       or row["dimensions"] != 1024 for row in rows)):
+            raise AssertionError("Persisted vector count/order/metadata/dimensions differ from actual upload")
+        evidence.append(dict(title=document["title"], source_sha256=hashlib.sha256(text.encode()).hexdigest(),
+                             size_bytes=document["sizeBytes"], utf16_chars=document["charCount"], chunks=count))
+    return dict(documents=len(evidence), vectors=len(chunks), dimensions=1024,
+                all_chunk_hashes_seen_by_embedding_model=True, per_document=evidence)
 
 
 def upload_binding(client):
@@ -78,11 +126,22 @@ def upload_binding(client):
     return rows
 
 
-def exercise(container, fixture, binding_only=False):
+def query_subset(queries, documents):
+    titles = {title for title, _ in documents.values()}
+    # Require every acceptable answer document, without silently weakening annotations.
+    selected = [row for row in queries if set(row["docs"]) <= titles]
+    if not selected:
+        raise ValueError("Downloaded corpus covers no complete original query annotations")
+    return selected
+
+
+def exercise(container, fixture, binding_only=False, downloaded=None, report_path=None):
     database = OwnedDatabase(container, fixture)
     database.require_empty()
     modules, hashes = original_modules()
-    model = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    with EvaluationModel.embedding_lock:
+        EvaluationModel.embedding_inputs.clear()
+    model = ThreadingHTTPServer(("127.0.0.1", 0), EvaluationModel)
     thread = threading.Thread(target=model.serve_forever, daemon=True)
     thread.start()
     try:
@@ -112,7 +171,13 @@ def exercise(container, fixture, binding_only=False):
             print("Original Java upload binding: " + json.dumps(expected_binding, ensure_ascii=False), flush=True)
             corpus = modules["rebuild-corpus.py"].CORPUS
             # Synthetic title repetition tests IO, not semantic recall against the missing articles.
-            documents = {post: (title, "# P8 synthetic protocol fixture\n\n" + (title + "。\n") * 32) for post, title in corpus}
+            if downloaded is None:
+                documents = {post: (title, "# P8 synthetic protocol fixture\n\n" + (title + "。\n") * 32) for post, title in corpus}
+                manifest = None
+            else:
+                documents, manifest = downloaded
+                corpus = [(post, title) for post, title in corpus if post in documents]
+            queries = query_subset(modules["queries.py"].QUERIES, documents)
             processes.BACKEND = "go"
             with processes.candidate(directory, binary, values) as state:
                 client = Client(state)
@@ -137,14 +202,18 @@ def exercise(container, fixture, binding_only=False):
                     modules["rebuild-corpus.py"].upload(post, title)
                 actual = client.request("/knowledge/documents")
                 if {row["id"]: row["title"] for row in actual} != adapter.uploaded or len(actual) != len(corpus):
-                    raise AssertionError("Evaluation corpus differs from its owned synthetic manifest")
+                    raise AssertionError("Evaluation corpus differs from its owned document manifest")
+                with EvaluationModel.embedding_lock:
+                    observed_inputs = EvaluationModel.embedding_inputs.copy()
+                ingestion = verify_ingestion(actual, documents, adapter.uploaded, database, observed_inputs)
                 retrieval = modules["retrieval-eval.py"]
+                retrieval.QUERIES = queries
                 rows = retrieval.evaluate()
-                if len(rows) != len(modules["queries.py"].QUERIES) or adapter.search_calls != len(rows):
-                    raise AssertionError("Original evaluator did not run the complete query set")
+                if len(rows) != len(queries) or adapter.search_calls != len(rows):
+                    raise AssertionError("Original evaluator did not run the complete selected query set")
                 summary = io.StringIO()
                 with contextlib.redirect_stdout(summary):
-                    retrieval.summarize(rows, "SYNTHETIC")
+                    retrieval.summarize(rows, "PUBLIC_TEXT_MOCK_MODEL" if manifest else "SYNTHETIC")
                 hybrid_calls = adapter.search_calls
             # The original noise tool requires numeric cosine scores, not nullable hybrid scores.
             # Use a second explicit pure-vector fixture process; do not discard null samples.
@@ -160,21 +229,35 @@ def exercise(container, fixture, binding_only=False):
                     raise AssertionError("Original noise tool did not complete ten queries/five repetitions")
             if database.sql("SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid();") != "0":
                 raise AssertionError("Evaluation fixture retained application connections")
-            report = dict(tooling_result="PASS", synthetic_only=True, original_articles_used=False,
+            report = dict(tooling_result="PASS", synthetic_only=manifest is None, original_articles_used=False,
+                downloaded_public_articles_used=manifest is not None, synthetic_model=True,
+                historical_corpus_identity_verified=False,
                 semantic_quality_verified=False, sources_sha256=hashes, documents=len(corpus), queries=len(rows),
+                total_original_queries=len(modules["queries.py"].QUERIES),
+                excluded_queries=len(modules["queries.py"].QUERIES) - len(rows),
                 query_levels=dict(Counter(row["level"] for row in rows)), hybrid_search_calls=hybrid_calls,
+                ingestion=ingestion,
                 vector_noise_search_calls=adapter.search_calls - hybrid_calls,
-                synthetic_summary=summary.getvalue().strip(),
+                observed_summary=summary.getvalue().strip(),
                 synthetic_noise="\n".join(line for line in noise_output.getvalue().splitlines() if not line.startswith("[mock] ")).strip(),
                 checks=["owned random TLS PostgreSQL/pgvector and original Flyway42; initially empty",
-                        "unchanged original CORPUS titles/query labels/evaluate/summarize/noise algorithms",
+                        "unchanged original labels/evaluate/summarize/noise algorithms; query selection only by complete document coverage",
                         "only in-memory upload manifest and authenticated CSRF API; no original rebuild main/delete_all/fixed-target IO",
                         "all hits belong to fixture, titles/IDs agree and documents are unique",
                         "default hybrid evaluation; separate explicit pure-vector noise process",
                         "Java and both Go processes stopped and application database connections released"],
-                limits="Synthetic repeated-title documents and deterministic word-bag embeddings only. Scores are tooling observations, not original 26-article/model quality, regression targets or release approval. The 0.007 tie tolerance and default 0.3 similarity threshold were not changed.")
-            (SPEC / "p8-eval-tooling.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
-            print("P8 original evaluation tooling passed on synthetic owned fixture; real quality remains unverified", flush=True)
+                limits=("Fresh public text with deterministic word-bag embeddings, not a real semantic model or authenticated historical snapshot. "
+                        if manifest else "Synthetic repeated-title documents and deterministic word-bag embeddings only. ")
+                       + "Scores are tooling observations, not model quality, regression targets or release approval. The 0.007 tie tolerance and default 0.3 similarity threshold were not changed.")
+            if manifest:
+                report["acquisition"] = manifest
+                report["query_results"] = rows
+            else:
+                report["synthetic_summary"] = report["observed_summary"]
+            path = report_path or SPEC / "p8-eval-tooling.json"
+            with path.open("x" if manifest else "w") as output:
+                output.write(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+            print("P8 evaluation protocol passed; real model quality remains unverified. Report: " + str(path), flush=True)
     finally:
         model.shutdown()
         model.server_close()
@@ -186,12 +269,23 @@ def main():
     parser.add_argument("--fixture", action="store_true", help="Start only newly owned synthetic resources")
     parser.add_argument("--corpus-dir", type=Path, help="Read-only preflight of explicitly provided original Markdown files")
     parser.add_argument("--binding-only", action="store_true", help="Actual Java/Go isolated upload parameter differential only")
+    parser.add_argument("--downloaded-corpus-dir", type=Path, help="Explicit fresh acquisition manifest; real text with local mock embeddings")
     args = parser.parse_args()
-    if args.fixture or args.binding_only:
+    if args.fixture or args.binding_only or args.downloaded_corpus_dir:
         if args.corpus_dir:
             parser.error("Synthetic fixture never substitutes for a provided original corpus")
+        downloaded = None
+        report_path = None
+        if args.downloaded_corpus_dir:
+            if args.fixture or args.binding_only:
+                parser.error("Downloaded public text is a distinct mode from synthetic/binding-only fixtures")
+            modules, _ = original_modules()
+            downloaded = load_corpus(args.downloaded_corpus_dir, modules)
+            query_subset(modules["queries.py"].QUERIES, downloaded[0])
+            report_path = SPEC / ("p8-eval-juejin-" + datetime.now().strftime("%Y%m%d-%H%M%S") + ".json")
         run_package(IMAGE, "app", tls_mode=True, test_pattern="^TestP8ContainerListenerBoundary$",
-                    exercise=lambda container, fixture: exercise(container, fixture, binding_only=args.binding_only))
+                    exercise=lambda container, fixture: exercise(container, fixture, binding_only=args.binding_only,
+                                                                downloaded=downloaded, report_path=report_path))
         return 0
     modules, hashes = original_modules()
     report = corpus_preflight(modules, args.corpus_dir)
