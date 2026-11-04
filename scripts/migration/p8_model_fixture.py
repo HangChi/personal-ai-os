@@ -70,6 +70,9 @@ def choose(messages):
     last = next((index for index in range(len(messages) - 1, -1, -1) if messages[index].get("role") == "user"), -1)
     user = text_content(messages[last]) if last >= 0 else ""
     results = [message for message in messages[last + 1:] if message.get("role") == "tool"]
+    memory = re.fullmatch(r"请(?:长期)?记住[：:]\s*(.+)", user, re.S)
+    if memory and memory[1].strip() and not results:
+        return "saveMemory", {"content": memory[1].strip()}
     quoted = re.search("「([^」]+)」", user)
     if "createPlan" in user and not results:
         numbered = re.split(r"[0-9]+[)）.、]\s*", user)

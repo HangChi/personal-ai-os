@@ -15,6 +15,12 @@
 | T804/T805 存量与切换 | 合成Java备份→Go→Java回退已通过；还需明确授权的真实备份副本及密钥/附件/S3恢复材料、目标负载与容量标准、待办及外部副作用清单。只在新隔离目标恢复，不能直接操作当前服务或重放未知TOOL。 |
 | T803/T806/T808 证据与批准 | 全清单处置已记录；五release_gates仍需逐项人工核验和用户验收。Java归档须在验收后另作明确决定；不自动推送、合并、生产部署或删除原实现。 |
 
+## T802e 显式记忆工具补验
+
+新增独立`--mode memory`，Java/Go两端新TLS空库首轮均退出0。普通事实对话在关闭自动记忆时实际完成并等待原1秒观察窗口，零记忆写入；两轮明确saveMemory各有SSE done与TOOL/SUCCESS审计，仅一条精确内容/MANUAL来源/稳定ID的记忆、四消息，最后会话/消息/记忆清理归零。报告`p8-e2e/{go,java}/explicit-memory.json`，日志`/tmp/personalos-p8-explicit-memory-{go,java}.log`。夹具仅匹配完整显式前缀，普通事实/记数字/引用/空白内容无调用，有回执后不重复。
+
+全84项又在两端复跑，Go `e2e-20261104-202743.json`、Java `e2e-20261104-202748.json`同为81 PASS/1 FAIL/1 SKIP/1 NOTE，均实际退出1；原SKIP现在观察到一条MANUAL实际写入仍保留，G4失败和工具超限观察也未放宽。完整84项Python测试通过（`/tmp/personalos-p8-python-memory.log`）。未改业务源码或原断言；模型选择质量、真实Push、外部输入与五门禁继续开放。
+
 ## T802d Push有界面对照
 
 `chrome_p5_web_push.mjs --headed`只移除headless，仍使用本次随机profile和原期限；不接触已有浏览器资料。两轮实际订阅/CDP控制成功、Go在新TLS库发送/FCM接受，但15秒没有真实Push。报告`p8-e2e/push-go-headed.json`与`p8-e2e/push-go-headed-normalized.json`均DELIVERY/FAIL；只见控制消息1次push，零worker/notification错误、零GCM接收/解密失败记录，白名单归一化后连接仍OTHER，不足以定位根因。四项Node测试与语法检查通过；全部本次进程/库/profile已清理。T802及五门禁继续开放，不能把“有界面成功订阅”当完整送达。

@@ -4,6 +4,14 @@ from p8_model_fixture import answer, choose
 
 
 class P8ModelFixtureTest(unittest.TestCase):
+    def test_memory_requires_explicit_instruction_and_does_not_repeat_after_receipt(self):
+        for request in ("请记住：以后使用公制单位。", "请长期记住: 以后使用公制单位。"):
+            user = {"role": "user", "content": request}
+            self.assertEqual(choose([user]), ("saveMemory", {"content": "以后使用公制单位。"}))
+            self.assertIsNone(choose([user, {"role": "tool", "content": '{"status":"OK"}'}]))
+        for request in ("我常用的编程语言是 Rust", "请记住这个数字：8142", "请记住：", "请记住：  \n", "引用文字「请记住：以后使用公制单位」"):
+            self.assertIsNone(choose([{"role": "user", "content": request}]))
+
     def test_plan_advances_only_successful_receipts_and_counts_actual_tasks(self):
         user = {"role": "user", "content": "计划：1) 查看任务；2) 统计优先级；3) 给出建议。请先 createPlan。"}
         steps = [{"seq": seq, "title": title, "status": "PENDING"} for seq, title in enumerate(

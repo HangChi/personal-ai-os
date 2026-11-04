@@ -4,11 +4,17 @@
 
 ## 原 E2E
 
-最后Go运行：[go/e2e-20261104-201958.json](go/e2e-20261104-201958.json)，81 PASS / 1 FAIL / 1 SKIP / 1 NOTE / 0 ERROR，共84项。固定Java全84项：[java/e2e-20261104-202003.json](java/e2e-20261104-202003.json)，相同计数与结果。首轮及中间失败报告保留，不能按最新结果覆盖历史。
+最后Go运行：[go/e2e-20261104-202743.json](go/e2e-20261104-202743.json)，81 PASS / 1 FAIL / 1 SKIP / 1 NOTE / 0 ERROR，共84项。固定Java全84项：[java/e2e-20261104-202748.json](java/e2e-20261104-202748.json)，相同计数与结果。首轮及中间失败报告保留，不能按最新结果覆盖历史。
 
 唯一FAIL是G4的小预算2048抬下限后，首轮约1900字输入被安全预算拒绝（SSE业务码41301）。相同模型fixture在固定Java基线执行G0–G4，`java/e2e-20261104-164859.json`为39 PASS / 同一项1 FAIL。两端均在第0轮拒绝；没有降低安全估算、改原断言或把失败转PASS。这是原测试与当前基线安全预算的冲突，T802父项和frontend_e2e门禁仍开放，接受例外或更改预算契约须明确审查。
 
-剩余SKIP是saveMemory观察项：原case在没有写入或有工具写入的两个分支都会抛SkipCase，不能靠调整fixture把它变成PASS；本轮fixture没有调用该工具，未实际验证此条原E2E。P5的真实工具/自动记忆测试另有证据。剩余NOTE是工具超限项，两端都实际返回错误终帧，未改为正常done。fixture只根据实际收到的历史/资料/附件与工具返回选择响应，单测使用不同值并验证缺上下文不能回答；不读数据库或期望报告。词袋嵌入与模拟usage不是生产模型语义/tokenizer验收。RAG关闭只走legacy路径，多阶段RAG见P6四设施回归。
+剩余SKIP是saveMemory观察项：原case在没有写入或有工具写入的两个分支都会抛SkipCase，不能靠调整fixture把它变成PASS。最新fixture只对完整显式“请（长期）记住：内容”请求调用真实工具；原case两端均观察到一条MANUAL写入后仍SKIP。独立补验证据见下。剩余NOTE是工具超限项，两端都实际返回错误终帧，未改为正常done。fixture只根据实际收到的历史/资料/附件与工具返回选择响应，单测使用不同值并验证缺上下文不能回答；不读数据库或期望报告。词袋嵌入与模拟usage不是生产模型语义/tokenizer验收。RAG关闭只走legacy路径，多阶段RAG见P6四设施回归。
+
+### 显式记忆与关闭自动捕获
+
+独立`--mode memory`在Java/Go新TLS空库运行通过，报告[go/explicit-memory.json](go/explicit-memory.json)、[java/explicit-memory.json](java/explicit-memory.json)。普通事实对话完成且等待原观察窗口后零记忆写入；同一合成事实两轮显式saveMemory实际done、两条TOOL/SUCCESS审计、内容与MANUAL来源精确一致、仅一条记忆且ID不变、四消息持久化；本次会话/消息/记忆清理归零。日志`/tmp/personalos-p8-explicit-memory-{go,java}.log`。
+
+模型夹具新增单测拒绝普通事实、记数字请求、引用中的指令、空白内容；有工具回执后不重复调用。原suite的SKIP不被改写或过滤；这条补验只证明受控协议和真实存储/审计行为，不证明真实模型总能正确选择工具。
 
 ### 失败隔离与真实计划工具
 
@@ -40,6 +46,8 @@ python3 scripts/migration/run_go_e2e_tests.py --backend java --mode cancel
 python3 scripts/migration/run_go_e2e_tests.py --mode browser
 python3 scripts/migration/run_go_e2e_tests.py --mode plan
 python3 scripts/migration/run_go_e2e_tests.py --backend java --mode plan
+python3 scripts/migration/run_go_e2e_tests.py --mode memory
+python3 scripts/migration/run_go_e2e_tests.py --backend java --mode memory
 ```
 
 原suite存在已记录失败时runner退出非零；不掩盖门禁结果。所有fixture只清理本次创建的进程/数据库。

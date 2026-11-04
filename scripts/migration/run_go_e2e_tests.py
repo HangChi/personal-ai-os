@@ -190,6 +190,55 @@ def verify_plan_lifecycle(suite):
     print("P8 actual plan creation, ordered tool execution, priority counts and persistence passed", flush=True)
 
 
+def verify_explicit_memory(suite):
+    """Verify the real tool write and no automatic capture, independently of original SKIP."""
+    suite.CTX["started_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    try:
+        if suite.db_count("memory") != 0:
+            raise AssertionError("Memory probe requires its owned empty database")
+        ordinary = suite.new_session("P8 no implicit memory")
+        stream = suite.stream_chat(ordinary, "我常用的编程语言是 Rust；这里只讨论当前问题。")
+        if stream.first("done") is None or stream.first("error") is not None:
+            raise AssertionError("Ordinary memory-control stream failed")
+        time.sleep(1)
+        if suite.db_count("memory") != 0:
+            raise AssertionError("Ordinary conversation wrote memory while auto-memory was disabled")
+        session = suite.new_session("P8 explicit saveMemory")
+        content = "以后回复使用公制单位，测试标识 " + secrets.token_hex(8)
+        identity = None
+        for _ in range(2):
+            stream = suite.stream_chat(session, "请长期记住：" + content)
+            if stream.first("done") is None or stream.first("error") is not None:
+                raise AssertionError("Explicit saveMemory stream did not finish")
+            entries = suite.ok(suite.get("/memories"))
+            if len(entries) != 1 or entries[0].get("content") != content or entries[0].get("source") != "MANUAL":
+                raise AssertionError("Explicit memory write has wrong content/source or duplicated rows")
+            current = entries[0]["id"]
+            if identity is not None and current != identity:
+                raise AssertionError("Repeated explicit memory did not preserve its actual identity")
+            identity = current
+            suite.CTX["cleanup"]["memories"].append(current)
+        invocations = suite.ok(suite.get("/agent/tool-invocations?conversationId=" + session + "&page=0&size=20"))["items"]
+        if len(invocations) != 2 or any(item.get("operation") != "saveMemory" or item.get("source") != "TOOL"
+                                        or item.get("outcome") != "SUCCESS" for item in invocations):
+            raise AssertionError("Both explicit memory writes lack successful actual tool audits")
+        if len(suite.messages(session)) != 4:
+            raise AssertionError("Memory probe did not persist two complete turns")
+        report = {"backend": BACKEND, "result": "PASS", "scope": "synthetic model and owned database",
+                  "autoMemoryEnabled": False, "ordinaryConversationMemoryWrites": 0,
+                  "explicitSaveRequests": 2, "successfulToolAudits": len(invocations),
+                  "memoryRows": 1, "source": "MANUAL", "duplicatePreservedIdentity": True,
+                  "persistedMessages": 4, "originalCaseOutcome": "SKIP unchanged"}
+    finally:
+        suite.cleanup_artifacts()
+    if any(suite.db_count(table) != 0 for table in ("chat_session", "chat_message", "memory")):
+        raise AssertionError("Memory probe cleanup left owned data")
+    report["cleanupEmpty"] = True
+    suite.REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    (suite.REPORT_DIR / "explicit-memory.json").write_text(json.dumps(report, indent=2) + chr(10))
+    print("P8 explicit memory tool, real audit, content deduplication and no auto-capture passed", flush=True)
+
+
 def exercise(container, fixture):
     if fixture.get("GO_TEST_POSTGRES") != "disposable":
         raise ValueError("E2E refuses a non-disposable database")
@@ -256,6 +305,9 @@ def exercise(container, fixture):
                     if MODE == "plan":
                         verify_plan_lifecycle(suite)
                         return
+                    if MODE == "memory":
+                        verify_explicit_memory(suite)
+                        return
                     original_stream = suite.stream_chat
 
                     def stream_chat(*args, **kwargs):
@@ -280,7 +332,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("go", "java"), default="go")
     parser.add_argument("--groups", nargs="+")
-    parser.add_argument("--mode", choices=("e2e", "cancel", "browser", "plan"), default="e2e")
+    parser.add_argument("--mode", choices=("e2e", "cancel", "browser", "plan", "memory"), default="e2e")
     arguments = parser.parse_args()
     BACKEND, GROUPS = arguments.backend, set(arguments.groups) if arguments.groups else None
     MODE = arguments.mode

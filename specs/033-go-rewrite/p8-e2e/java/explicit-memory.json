@@ -1,0 +1,15 @@
+{
+  "backend": "java",
+  "result": "PASS",
+  "scope": "synthetic model and owned database",
+  "autoMemoryEnabled": false,
+  "ordinaryConversationMemoryWrites": 0,
+  "explicitSaveRequests": 2,
+  "successfulToolAudits": 2,
+  "memoryRows": 1,
+  "source": "MANUAL",
+  "duplicatePreservedIdentity": true,
+  "persistedMessages": 4,
+  "originalCaseOutcome": "SKIP unchanged",
+  "cleanupEmpty": true
+}

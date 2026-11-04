@@ -1,5 +1,11 @@
 # 验证记录
 
+## 2026-11-04 P8 显式saveMemory补验
+
+T802e：Java/Go独立`--mode memory`真实TLS空库首轮均退出0；普通对话关闭自动记忆零写入，两轮明确工具保存各SSE done/TOOL SUCCESS审计，同内容仅一MANUAL行且ID不变、四消息与清理归零。报告`p8-e2e/{go,java}/explicit-memory.json`，日志`/tmp/personalos-p8-explicit-memory-{go,java}.log`。六项模型夹具测试及完整84项Python单测通过（`/tmp/personalos-p8-python-memory.log`）。
+
+两端全原suite最新仍81通过/1预算失败/1原SKIP/1工具超限观察，实际退出1；报告Go `e2e-20261104-202743.json`、Java `e2e-20261104-202748.json`。原SKIP记录实际一条MANUAL工具写入，不改原case或把SKIP改PASS。真实模型语义质量与五发布门禁保持开放。
+
 ## 2026-11-04 P8 Push有界面对照
 
 T802d两轮headed新profile均订阅/CDP控制/Go新TLS库发送成功，但FCM接受后15秒无真实Push，实际runner均退出1。报告`p8-e2e/push-go-headed{,-normalized}.json`为DELIVERY/FAIL；第一轮Go发送测试0.82s，日志`/tmp/personalos-p8-browser-push-headed{,-normalized}.log`。未放宽期限，只有控制消息1次push；零GCM接收/解密记录及OTHER状态不足以定位原因。四项Node纯单测和JS语法检查通过；本次profile/进程/容器清理。T802/五门禁仍开放。
