@@ -789,12 +789,14 @@
       "expression": "${app.knowledge.rag.evidence-timeout-ms:12000}",
       "phase": "P6",
       "task": "T606",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "证据超时随review租约与业务调度迁移",
+      "note": "证据超时、增量review租约/角色调度已装配；真实库验证revision/token最终fencing",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/governance/IngestionReviewWorker.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/review.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -804,12 +806,14 @@
       "expression": "${app.knowledge.jobs.enabled:true}",
       "phase": "P6",
       "task": "T602",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "索引任务开关随持久队列迁移，不启动空Worker",
+      "note": "索引enabled已接调度与Rabbit唤醒；关闭仍接受持久任务，独立index可重新领取",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/jobs.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -819,12 +823,14 @@
       "expression": "${app.rabbitmq.uri}",
       "phase": "P6",
       "task": "T604",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "Rabbit连接与durable队列随Outbox/信号迁移",
+      "note": "显式URI/队列、durable/confirm与角色重连已接真实RabbitMQ；故障保留数据库轮询",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/signals.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -834,12 +840,14 @@
       "expression": "${app.rabbitmq.queue:personalos.knowledge.ready}",
       "phase": "P6",
       "task": "T604",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "Rabbit连接与durable队列随Outbox/信号迁移",
+      "note": "显式URI/队列、durable/confirm与角色重连已接真实RabbitMQ；故障保留数据库轮询",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/signals.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -849,12 +857,14 @@
       "expression": "${app.rabbitmq.queue:personalos.knowledge.ready}",
       "phase": "P6",
       "task": "T604",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "队列名随可靠信号重发迁移",
+      "note": "队列名已接数据库信号revision条件重发；双API及index/review/delivery联动已验收",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/jobs/messaging/WorkSignalRelay.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/signals.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -864,12 +874,14 @@
       "expression": "${app.knowledge.rag.reranker.endpoint:}",
       "phase": "P6",
       "task": "T605",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "reranker端点/凭据/模型/协议随真实协议适配迁移",
+      "note": "端点/凭据/模型/协议已接Cohere和DashScope有界客户端；关闭不解析可选凭据",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/rag.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -879,12 +891,14 @@
       "expression": "${app.knowledge.rag.reranker.api-key:}",
       "phase": "P6",
       "task": "T605",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "reranker端点/凭据/模型/协议随真实协议适配迁移",
+      "note": "端点/凭据/模型/协议已接Cohere和DashScope有界客户端；关闭不解析可选凭据",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/rag.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -894,12 +908,14 @@
       "expression": "${app.knowledge.rag.reranker.model:}",
       "phase": "P6",
       "task": "T605",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "reranker端点/凭据/模型/协议随真实协议适配迁移",
+      "note": "端点/凭据/模型/协议已接Cohere和DashScope有界客户端；关闭不解析可选凭据",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/rag.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -909,12 +925,14 @@
       "expression": "${app.knowledge.rag.reranker.protocol:cohere}",
       "phase": "P6",
       "task": "T605",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "reranker端点/凭据/模型/协议随真实协议适配迁移",
+      "note": "端点/凭据/模型/协议已接Cohere和DashScope有界客户端；关闭不解析可选凭据",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/rag.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -924,12 +942,14 @@
       "expression": "${app.knowledge.rag.enabled:true}",
       "phase": "P6",
       "task": "T605",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "RAG开关与总预算/证据预算随真实检索流水线迁移",
+      "note": "RAG开关、总预算与证据预算已接问答/聊天共用管线；不可用时保留证据且不确定作答",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/rag.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -939,12 +959,14 @@
       "expression": "${app.knowledge.rag.budget-ms:20000}",
       "phase": "P6",
       "task": "T605",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "RAG开关与总预算/证据预算随真实检索流水线迁移",
+      "note": "RAG开关、总预算与证据预算已接问答/聊天共用管线；不可用时保留证据且不确定作答",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/rag.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -954,12 +976,14 @@
       "expression": "${app.knowledge.rag.evidence-timeout-ms:12000}",
       "phase": "P6",
       "task": "T605",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "RAG开关与总预算/证据预算随真实检索流水线迁移",
+      "note": "RAG开关、总预算与证据预算已接问答/聊天共用管线；不可用时保留证据且不确定作答",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/rag.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -969,12 +993,14 @@
       "expression": "${app.knowledge.search.endpoint:http://localhost:9200}",
       "phase": "P6",
       "task": "T603",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "可选OpenSearch端点/index/凭据随真实检索迁移",
+      "note": "可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/search.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -984,12 +1010,14 @@
       "expression": "${app.knowledge.search.index:personalos-chunks-v1}",
       "phase": "P6",
       "task": "T603",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "可选OpenSearch端点/index/凭据随真实检索迁移",
+      "note": "可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/search.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -999,12 +1027,14 @@
       "expression": "${app.knowledge.search.username:}",
       "phase": "P6",
       "task": "T603",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "可选OpenSearch端点/index/凭据随真实检索迁移",
+      "note": "可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/search.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -1014,12 +1044,14 @@
       "expression": "${app.knowledge.search.password:}",
       "phase": "P6",
       "task": "T603",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "可选OpenSearch端点/index/凭据随真实检索迁移",
+      "note": "可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/search.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -1029,12 +1061,14 @@
       "expression": "${app.redis.namespace}",
       "phase": "P6",
       "task": "T607",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "候选缓存namespace与全部动态配置指纹键随generation失效迁移",
+      "note": "独立客户端/namespace/全部动态指纹已接20秒TTL与generation失效；真实TLS Redis隔离和故障回源通过",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/cache.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -1044,12 +1078,14 @@
       "expression": "${spring.ai.vectorstore.pgvector.table-name:vector_store}",
       "phase": "P6",
       "task": "T601",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "向量表/schema检查随向量仓储迁移；P1只验证原DDL",
+      "note": "schema/table已接标识符白名单、实际维度与权限检查；原42迁移/JSON/表达式索引/HNSW保留",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -1059,12 +1095,14 @@
       "expression": "${spring.ai.vectorstore.pgvector.schema-name:public}",
       "phase": "P6",
       "task": "T601",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "向量表/schema检查随向量仓储迁移；P1只验证原DDL",
+      "note": "schema/table已接标识符白名单、实际维度与权限检查；原42迁移/JSON/表达式索引/HNSW保留",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/store.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     },
     {
@@ -1332,7 +1370,7 @@
       "dynamic_key": true,
       "phase": "P6",
       "task": "T607",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [
         "spring.ai.model.embedding",
         "spring.ai.openai.base-url",
@@ -1343,10 +1381,12 @@
         "app.knowledge.search.endpoint",
         "app.knowledge.search.index"
       ],
-      "note": "候选缓存namespace与全部动态配置指纹键随generation失效迁移",
+      "note": "独立客户端/namespace/全部动态指纹已接20秒TTL与generation失效；真实TLS Redis隔离和故障回源通过",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java"
+        "backend-go/internal/business/knowledge/module.go",
+        "backend-go/internal/business/knowledge/cache.go",
+        "backend-go/internal/app/foundation_p6_integration_test.go",
+        "specs/033-go-rewrite/p6-completion.md"
       ]
     }
   ]

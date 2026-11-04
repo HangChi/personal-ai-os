@@ -31,15 +31,15 @@ RULES = {
     "DataRetentionService.java": ("P8", "T801", "用量/操作记录保留期与清理调度随运维生命周期验收"),
     "ModelConcurrencyGate.java": ("P1", "T107", "共享租约/角色API预留容量已装配，超100明确拒绝"),
     "RedisRateBucket.java": ("P1", "T107", "独立URI/namespace、Lua/TIME/150ms/错误指标已装配"),
-    "IngestionReviewWorker.java": ("P6", "T606", "证据超时随review租约与业务调度迁移"),
-    "KnowledgeIndexJobs.java": ("P6", "T602", "索引任务开关随持久队列迁移，不启动空Worker"),
-    "RabbitJobsConfig.java": ("P6", "T604", "Rabbit连接与durable队列随Outbox/信号迁移"),
-    "WorkSignalRelay.java": ("P6", "T604", "队列名随可靠信号重发迁移"),
-    "CrossEncoderReranker.java": ("P6", "T605", "reranker端点/凭据/模型/协议随真实协议适配迁移"),
-    "RagRetrievalPipeline.java": ("P6", "T605", "RAG开关与总预算/证据预算随真实检索流水线迁移"),
-    "SearchConfig.java": ("P6", "T603", "可选OpenSearch端点/index/凭据随真实检索迁移"),
-    "RedisCandidateCache.java": ("P6", "T607", "候选缓存namespace与全部动态配置指纹键随generation失效迁移"),
-    "VectorStoreInspector.java": ("P6", "T601", "向量表/schema检查随向量仓储迁移；P1只验证原DDL"),
+    "IngestionReviewWorker.java": ("P6", "T606", "证据超时、增量review租约/角色调度已装配；真实库验证revision/token最终fencing"),
+    "KnowledgeIndexJobs.java": ("P6", "T602", "索引enabled已接调度与Rabbit唤醒；关闭仍接受持久任务，独立index可重新领取"),
+    "RabbitJobsConfig.java": ("P6", "T604", "显式URI/队列、durable/confirm与角色重连已接真实RabbitMQ；故障保留数据库轮询"),
+    "WorkSignalRelay.java": ("P6", "T604", "队列名已接数据库信号revision条件重发；双API及index/review/delivery联动已验收"),
+    "CrossEncoderReranker.java": ("P6", "T605", "端点/凭据/模型/协议已接Cohere和DashScope有界客户端；关闭不解析可选凭据"),
+    "RagRetrievalPipeline.java": ("P6", "T605", "RAG开关、总预算与证据预算已接问答/聊天共用管线；不可用时保留证据且不确定作答"),
+    "SearchConfig.java": ("P6", "T603", "可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL"),
+    "RedisCandidateCache.java": ("P6", "T607", "独立客户端/namespace/全部动态指纹已接20秒TTL与generation失效；真实TLS Redis隔离和故障回源通过"),
+    "VectorStoreInspector.java": ("P6", "T601", "schema/table已接标识符白名单、实际维度与权限检查；原42迁移/JSON/表达式索引/HNSW保留"),
     "McpStatusService.java": ("P7", "T702", "对外MCP开关/名称/版本/端点随协议入口迁移"),
     "MemoryEmbeddingService.java": ("P5", "T501", "模型名已接记忆向量写入、同模型排序、近重复取代和回填"),
     "EmbeddingCacheConfig.java": ("P3", "T304", "默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器"),
@@ -79,6 +79,16 @@ P5_EVIDENCE = {
     "T506": ["backend-go/internal/app/foundation_p5.go", "backend-go/internal/business/calendar/webhook.go", "backend-go/internal/app/foundation_p5_integration_test.go"],
 }
 
+P6_EVIDENCE = {
+    task: ["backend-go/internal/business/knowledge/module.go",
+           "backend-go/internal/business/knowledge/" + source,
+           "backend-go/internal/app/foundation_p6_integration_test.go",
+           "specs/033-go-rewrite/p6-completion.md"]
+    for task, source in {"T601": "store.go", "T602": "jobs.go", "T603": "search.go",
+                         "T604": "signals.go", "T605": "rag.go", "T606": "review.go",
+                         "T607": "cache.go"}.items()
+}
+
 def source_dynamic_keys(filename, source):
     """只展开已审查的固定基线形态；必须逐项相等，不能仅验证子集。"""
     mask = masked_java(source)
@@ -116,7 +126,7 @@ def generate():
     inventory_path = SPEC / "config-inventory.json"
     inventory = json.loads(inventory_path.read_text())
     rows, used = [], set()
-    phase_evidence = {"P1": P1_EVIDENCE, "P3": P3_EVIDENCE, "P4": P4_EVIDENCE, "P5": P5_EVIDENCE}
+    phase_evidence = {"P1": P1_EVIDENCE, "P3": P3_EVIDENCE, "P4": P4_EVIDENCE, "P5": P5_EVIDENCE, "P6": P6_EVIDENCE}
     for kind in ("value_injections", "property_lookups"):
         for entry in inventory[kind]:
             filename = Path(entry["path"]).name
@@ -142,8 +152,8 @@ def generate():
 
 
 def render(data):
-    lines = ["# 配置调用方逐项处置（P1/P3/P4/P5收口）", "", "固定Java基线：`" + data["baseline_commit"] + "`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。", "",
-             "12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge属于P6，MCP属于P7；不创建业务空壳。", "",
+    lines = ["# 配置调用方逐项处置（P1/P3/P4/P5/P6收口）", "", "固定Java基线：`" + data["baseline_commit"] + "`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。", "",
+             "12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge已接P6，MCP属于P7；不创建业务空壳。", "",
              "| 来源与行号 | 原表达式/键 | 阶段/任务 | 状态与处置 |", "| --- | --- | --- | --- |"]
     for row in data["items"]:
         key = row.get("expression") or row.get("literal_key") or "动态：" + ", ".join(row["dynamic_keys"])

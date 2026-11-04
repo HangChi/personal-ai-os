@@ -1,6 +1,6 @@
 # Personal AI OS：Go 迁移起点
 
-本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1 基础设施、P2 任务、P3 模型协议、P4 对话执行和 P5 记忆、日历与提醒投递已完成。P6–P8 及切换门禁仍开放。**
+本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1–P6 已完成，包含知识摄入、混合召回、RAG、来源治理和后台索引/审查。P7、P8 及切换门禁仍开放。**
 
 全量范围、逐文件来源、迁移状态与验收要求见 [迁移文档](../specs/033-go-rewrite/README.md)。现有 Java 源码、前端业务源码、SQL 与运行实例继续保留。
 
@@ -25,13 +25,14 @@
 
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
-默认命令仍仅装配离线诊断；显式`--foundation`已接P1基础能力、P2任务/确认、P3模型与P4对话路由。844个基础HTTP场景、160个原观测标签场景和68个直方图边界通过真实框架对照。完整P1边界见[P1契约](../specs/033-go-rewrite/p1-foundation-contract.md)，78处配置调用方见[台账](../specs/033-go-rewrite/config-disposition.md)。加 `--p5` 启用记忆、日历、提醒扫描、SSE 与投递。知识库和 MCP 按 P6–P7 迁移。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
+默认命令仍仅装配离线诊断；显式`--foundation`已接P1基础能力、P2任务/确认、P3模型与P4对话路由。844个基础HTTP场景、160个原观测标签场景和68个直方图边界通过真实框架对照。完整P1边界见[P1契约](../specs/033-go-rewrite/p1-foundation-contract.md)，78处配置调用方见[台账](../specs/033-go-rewrite/config-disposition.md)。加 `--p5` 启用记忆、日历、提醒扫描、SSE 与投递；`--p6` 包含 P5 并启用知识模块。MCP 和跨模块数据交换归 P7。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
 
 - `internal/business/model`：配置/档案/密钥、运行时按名继承、OpenAI/Ollama协议、探测/音频、本地与Redis嵌入缓存，见[说明](internal/business/model/README.md)。
 
 - `internal/business/context`：原BPE离线词表、模型窗口与持久预算、输出/图片/思考/schema预留、历史副本裁剪和有界超限重试。
 - `internal/business/agent`：16工具定义/参数/幂等/审计、任务确认、计划状态/证据与调用预算。
 - `internal/business/chat`：会话/摘要、新旧SSE与持久Run、恢复/停止/问答/排队引导、附件及用量。显式Foundation只在API/单体角色启用执行；Worker不开放聊天路由。S3按原开关配置且关闭时不建客户端。PDF需外部Poppler `pdftotext`，缺失/损坏/超时返回不可读提示。
+- `internal/business/knowledge`：文本/PDF/DOCX/图片与结构切分、原子向量写入、持久索引任务、RRF/IDF 混合召回、保守 RAG 与引用、空间/来源/冲突审查。API 只接请求，index/review 各自领取任务，delivery 推进投影/唤醒，combined 执行全部；数据库为任务事实来源。PDF 需外部 Poppler `pdfinfo`/`pdftotext`，部署许可见[声明](THIRD_PARTY_NOTICES.md)。
 
 附件清理消费 `app.chat.attachment-janitor-enabled` 和 `app.chat.attachment-janitor-cron`，默认本地时区每天04:30；支持六字段数字/名称/范围/列表/步长/?、标准宏和`-`禁用。Spring扩展L/W/#在启动时明确拒绝。`app.chat.heartbeat-interval`驱动两种SSE，默认15s，必须至少1ms。S3真实验证用 `python3 scripts/migration/run_go_s3_tests.py` 创建一次性MinIO，不读取现有凭据。
 
@@ -90,19 +91,21 @@ python3 scripts/migration/smoke_go_process.py --binary /absolute/path/to/persona
 python3 scripts/migration/run_go_postgres_tests.py
 ```
 
-基础依赖与五角色进程生命周期已验收；业务Worker与生产切换在后续阶段，详见[验证记录](../specs/033-go-rewrite/validation.md)。
+P6 四设施及固定 Java 契约复验：`python3 scripts/migration/compare_go_p6.py`。需要 Docker、已有 Maven 编译输出与 classpath，以及 Go/镜像缓存；只创建临时测试资源。结果记录 18 组受控召回/引用、SQL 延迟和队列收敛；不代表真实模型语义质量或生产性能，见[P6 验收](../specs/033-go-rewrite/p6-completion.md)。
+
+基础依赖、五角色生命周期及已启用的 P5/P6 Worker 已验收；生产切换归 P8，详见[验证记录](../specs/033-go-rewrite/validation.md)。
 
 ## 接下来实施
 
-P5 见 [验收报告](../specs/033-go-rewrite/p5-completion.md)。下一阶段为 [P6 知识、RAG 与后台运行](../specs/033-go-rewrite/tasks.md#p6-知识rag-与后台运行)。
+P6 见 [验收报告](../specs/033-go-rewrite/p6-completion.md) 和 [原测试映射](../specs/033-go-rewrite/p6-test-mapping.md)。下一阶段为 [P7 MCP、搜索与数据交换](../specs/033-go-rewrite/tasks.md#p7-mcp搜索与数据交换)。
 
 ## 显式 P1 基础模式（尚未验收发布）
 
-使用 `personalos --foundation --migrations /absolute/backend/src/main/resources/db/migration` 启动。加 `--p5` 启用记忆、日历和提醒模块。
+使用 `personalos --foundation --migrations /absolute/backend/src/main/resources/db/migration` 启动。加 `--p5` 启用记忆、日历和提醒模块；加 `--p6` 同时启用 P5 与知识模块，候选 Redis 使用独立客户端和 `GO_REDIS_CANDIDATE_ROOT_CERT` CA。
 必须在专用环境显式设置 `SERVER_PORT`、`POSTGRES_HOST`、`POSTGRES_PORT`、`POSTGRES_DB`、`POSTGRES_USER`、`POSTGRES_PASSWORD`，不能使用 YAML 连接默认值。不自动执行、baseline 或 repair SQL；需要先由独立 Java Flyway 完成原迁移。已有真实默认 V1 基线历史时才加 `--allow-baseline-v1`。
 
 数据库实际读取解析后的 `spring.datasource.*`，支持单主机 JDBC TCP 地址和显式端口，不接受查询参数或多主机。默认 TLS `verify-full`；`GO_POSTGRES_ROOT_CERT` 指向测试 CA，回环明文测试需显式 `GO_POSTGRES_SSL_MODE=disable`。绝不为测试关闭非回环 TLS 校验。
 
 基线 Hikari 最大连接数/毫秒等待已接入；`worker-index`、`worker-review`、`worker-delivery` profile 上限4，其余默认10。仅设运行角色不会自动加载 profile 文件。`monitoring` profile 启动独立回环管理端口（默认9091，可设 `MANAGEMENT_SERVER_PORT`），限流和会话 Redis 仍由各自原开关/URI/namespace 配置；三份 CA 分别使用 `GO_REDIS_SESSION_ROOT_CERT`、`GO_REDIS_RATE_LIMIT_ROOT_CERT`、`GO_REDIS_EMBEDDING_ROOT_CERT` 的绝对路径。P3共享嵌入缓存使用独立的`REDIS_ENABLED/REDIS_URI/REDIS_NAMESPACE/REDIS_TIMEOUT_MS`，不能复用会话/限流客户端。
 
-基础模式允许已实现的认证/CSRF；`prod`继续拒绝。默认诊断规则不变。基础模式不执行业务Worker，`readyz`保持未就绪；P2任务/确认、P3模型及P4对话路由已接，其他未实现业务404。P1–P4验收通过不表示P8发布验收，禁止替换Java实例。
+基础模式允许已实现的认证/CSRF；`prod`继续拒绝。默认诊断规则不变。不加 `--p5`/`--p6` 时不启用相应业务 Worker；启用后按五角色隔离执行。`readyz`保持未就绪；P2–P6 路由按显式模块开关接入，未实现业务404。P1–P6 验收通过不表示P8发布验收，禁止替换Java实例。

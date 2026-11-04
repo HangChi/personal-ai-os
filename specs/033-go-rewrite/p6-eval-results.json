@@ -1,31 +1,31 @@
 {
   "date": "2026-11-04",
   "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
-  "elapsed_seconds": 55.387,
+  "elapsed_seconds": 28.999,
   "reports": [
     {
       "cases": 18,
       "controlled_citation_precision": 1,
       "controlled_source_recall_at_1": 1,
       "go_postgres_latency_micros": [
-        1892,
-        1036,
-        3178,
-        1016,
-        940,
-        1134,
-        1411,
-        1401,
-        793,
-        789,
-        1952,
-        1275,
-        886,
-        1381,
-        1312,
-        1269,
-        1916,
-        846
+        982,
+        623,
+        1523,
+        548,
+        563,
+        558,
+        937,
+        537,
+        525,
+        523,
+        1302,
+        873,
+        548,
+        910,
+        907,
+        897,
+        1272,
+        556
       ],
       "java_go_citations_equal": 18,
       "java_go_recall_equal": 18,
@@ -34,10 +34,10 @@
     },
     {
       "cache_outage_fallback": true,
-      "index_completion_ms": 983,
+      "index_completion_ms": 51,
       "pending_projection": 0,
       "redis_cache_hits": 1,
-      "review_projection_completion_ms": 1603,
+      "review_projection_completion_ms": 885,
       "roles": [
         "api",
         "api",
@@ -95,7 +95,7 @@
     "TestFoundationP6SecurityGovernanceAndGuardedChat"
   ],
   "inputs_sha256": {
-    "backend-go/internal/business/knowledge/testdata/java-p6.json": "14b9735bdf99dfaec5f49ef956368a0eecafc46bdbc74a5fe9a073b703709657",
+    "backend-go/internal/business/knowledge/testdata/java-p6.json": "006595358ab71cd32efe56a46e828dcf8a3314ca6775d9c8546c7719f64ab985",
     "scripts/eval/rag-live-cases.json": "87bb73e1f94f5537b851223f61a496c168696742df9d13b1c846e1c3d674e479",
     "scripts/eval/queries.py": "b5aa3821c2ffab9003a212b15b39db091a7f8ac539ade9e1830d901be0e9098a"
   },

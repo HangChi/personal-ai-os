@@ -565,3 +565,17 @@ python3 scripts/migration/go_inventory.py check
 - 原 Java `ConfirmationPromptContributorTest` 三例通过。TLS PostgreSQL 上的 `TestPostgresPromptConversationSnapshot` 验证会话隔离、确认和取消状态、到期边界、计数与两组显示上限、令牌和执行载荷隔离。`TestP5AuthenticatedAgentAndAutoMemory` 通过认证 HTTP 和模型协议验证日程删除确认前后两个独立对话轮次实际收到 PENDING 与 CONFIRMED 快照。
 - 三个 `TestFoundationP2*` 集成用例在原 42 条 Flyway 迁移初始化的独立 TLS PostgreSQL 上重新通过。任务九条、确认三条路由逐条在 `progress.json` 记录为 `implemented`，并链接实现和测试。全量发布门禁由 P8 验收。
 - 本轮通过 `go test -timeout=2m ./...` 和 `go vet ./...`。定向集成使用 `python3 scripts/migration/run_go_postgres_tests.py --package confirmation --package app --tls --run '^(TestPostgresPromptConversationSnapshot|TestP5AuthenticatedAgentAndAutoMemory|TestFoundationP2.*)$'`。
+
+## P6 最终验收（2026-11-04）
+
+T600–T609 全部完成，`--foundation --p6` 包含P5，启用知识摄入/原子索引、混合召回、共用RAG、来源治理和各后台角色。分批证据与兼容边界见 [p6-completion.md](p6-completion.md)，24类115个Java测试声明见 [p6-test-mapping.md](p6-test-mapping.md)。247个知识职责台账条目为implemented；跨模块搜索/导出两个贡献器归P7。20处P6配置调用已wired，总78项默认比较通过。
+
+- `go test -race -count=1 -timeout=10m ./...` 全包通过，`go vet -tags=integration ./...`、`go build ./...`、`go mod verify`通过。最终补充P6测试经完整设施race重跑。日志：`/tmp/personalos-p6-go-race.log`。
+- `python3 scripts/migration/compare_go_p6.py` 最终通过44个顶层Go测试；独立TLS PostgreSQL/pgvector、TLS Redis、RabbitMQ/OpenSearch使用临时容器，重放42原迁移、Flyway锁竞争/validate、双API/index/review/delivery及combined回归通过，全部清理。报告 [p6-eval-results.json](p6-eval-results.json) 输入哈希与文件相同；18组受控有序召回/引用与Java逐项相等，受控R@1和引用precision为1，另记录SQL延迟、队列收敛。日志：`/tmp/personalos-p6-evaluation-final.log`。
+- 真SIGKILL发生于索引子进程持有任务/文档租约且进行嵌入时；数据库无部分文档/向量，任务负载保留。测试前移60/120秒租约期限后，全新OS进程重领并完整提交一次。review/projection覆盖数据库租约/revision/token，不声称所有Worker强杀。Redis专用候选客户端关闭回源、Rabbit不可达轮询、可选设施关闭不解析凭据、索引调度enabled=false均通过。
+- 最终 `go test -race -count=1 ./internal/business/agent` 和定向vet通过；新增知识工具注册schema、五种RAG状态、空库不失败、重复只读调用独立审计、不产生确认/写入、非法输入和取消不检索、上游失败脱敏回归。
+- 固定Java生成器复验152查询/15切分/18受控召回。Map.of键顺序波动改为JSON内容比较，等价快照不重写；连续JVM复验通过。历史129查询的26篇全文不在仓库，仅复用查询契约；18组仓库原文与固定向量不代表真实模型语义质量，也不把Java mock与Go SQL延迟作生产性能比较。
+- Java首次全量1137测试有2个环境错误（OpenSearch启动超时、Redis共享缓存首次未命中），两类定向verify通过。随后 `./mvnw -o -B -Dspring.test.context.cache.maxSize=2 verify` 全量1137测试零失败/错误/跳过，原JaCoCo通过、BUILD SUCCESS；没有修改原Java测试或降低门禁。日志：`/tmp/personalos-p6-java-verify.log`、`/tmp/personalos-p6-java-retry.log`、`/tmp/personalos-p6-java-final.log`。
+- 前端 `npm run type-check`、`npm run build`通过，源码未改。19项Python迁移测试、78配置处置、固定基线check和`git diff --check`通过；工具ID无路径时依清单source path更新，覆盖247项并验证其他阶段/发布门禁状态不变。`check-complete`仍预期退出1：2438项未verified，五个发布门禁均not_started。P7/P8未勾选，prod拒绝/回环监听/readyz503守卫保持，未推送、合并或部署。
+
+实现按批提交：`849c625`解析切分、`375e964`原子索引/队列、`2b7f3b8`混合召回/缓存、`08fec91`投影/唤醒、`a90a702`RAG/治理、`2e2960b`角色/HTTP/聊天、`35bf3f7`Java契约、`3944d29`调度/崩溃回归、`6a1415d`稳定快照复验、`3433374`工具/台账回归；台账与文档另作收口提交。

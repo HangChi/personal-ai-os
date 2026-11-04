@@ -135,16 +135,18 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 
 ## P6 知识、RAG 与后台运行
 
-- [ ] T600 移植文件名/扩展名/大小/短文拒收、文本/PDF/DOCX/图像读入与视觉回退，固定解析依赖与许可证。
-- [ ] T601 移植 Markdown 结构切分/重叠/最小块，pgvector 维度/索引、批写、文档锁/原子替换/删除与引用元数据。
-- [ ] T602 移植异步索引任务/进度/负载/摘要、领取/续租/失效重试/清理和最终提交 fencing。
-- [ ] T603 移植向量+关键词召回/IDF/RRF、LIKE 转义、排序/阈值、KnowledgeSearchPort 与可选 OpenSearch。
-- [ ] T604 移植搜索投影 Outbox/重建/版本/租约、RabbitMQ durable signal/publisher confirm/多执行器唤醒及轮询兜底。
-- [ ] T605 移植多阶段 RAG/预算/证据/reranker/澄清/冲突/拒答/引用、问答与聊天共用装配。
-- [ ] T606 移植空间/来源/元数据/版本/异步审查/片段引用核验/人工冲突解决与版本失效、review 角色租约。
-- [ ] T607 移植 Redis candidate cache 的隔离/TTL/generation/失效和关闭/故障退路。
-- [ ] T608 真 PostgreSQL/pgvector、RabbitMQ、Redis、OpenSearch 下验证 API+index/review/delivery、双 API、重复/丢失/乱序/崩溃；可选设施关闭模式也通过。
-- [ ] T609 适配现有 RAG 评估语料/脚本，保存召回、引用、延迟/队列等对照结果与全部 Java 断言映射后提交。
+验收状态：2026-11-04 完成 T600–T609；分批提交、职责与实测边界见 [P6 验收](p6-completion.md)，24 类/115 个原测试声明见 [映射](p6-test-mapping.md)，受控召回/引用与真实设施结果见 [评估记录](p6-eval-results.json)。`--p6` 包含 P5；受控评估不表示真实模型语义质量或生产性能。P7/P8 和五个发布门禁保持开放。
+
+- [x] T600 移植文件名/扩展名/大小/短文拒收、文本/PDF/DOCX/图像读入与视觉回退，固定解析依赖与许可证。
+- [x] T601 移植 Markdown 结构切分/重叠/最小块，pgvector 维度/索引、批写、文档锁/原子替换/删除与引用元数据。
+- [x] T602 移植异步索引任务/进度/负载/摘要、领取/续租/失效重试/清理和最终提交 fencing。
+- [x] T603 移植向量+关键词召回/IDF/RRF、LIKE 转义、排序/阈值、KnowledgeSearchPort 与可选 OpenSearch。
+- [x] T604 移植搜索投影 Outbox/重建/版本/租约、RabbitMQ durable signal/publisher confirm/多执行器唤醒及轮询兜底。
+- [x] T605 移植多阶段 RAG/预算/证据/reranker/澄清/冲突/拒答/引用、问答与聊天共用装配。
+- [x] T606 移植空间/来源/元数据/版本/异步审查/片段引用核验/人工冲突解决与版本失效、review 角色租约。
+- [x] T607 移植 Redis candidate cache 的隔离/TTL/generation/失效和关闭/故障退路。
+- [x] T608 真 PostgreSQL/pgvector、RabbitMQ、Redis、OpenSearch 下验证 API+index/review/delivery、双 API、重复/丢失/乱序/崩溃；可选设施关闭模式也通过。
+- [x] T609 适配现有 RAG 评估语料/脚本，保存召回、引用、延迟/队列等对照结果与全部 Java 断言映射后提交。
 
 ## P7 MCP、搜索与数据交换
 

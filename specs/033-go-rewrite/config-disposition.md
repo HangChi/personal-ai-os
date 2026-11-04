@@ -1,8 +1,8 @@
-# 配置调用方逐项处置（P1/P3/P4/P5收口）
+# 配置调用方逐项处置（P1/P3/P4/P5/P6收口）
 
 固定Java基线：`cb5d694d62fa93742b5789b97273e76d931ce335`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。
 
-12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge属于P6，MCP属于P7；不创建业务空壳。
+12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge已接P6，MCP属于P7；不创建业务空壳。
 
 | 来源与行号 | 原表达式/键 | 阶段/任务 | 状态与处置 |
 | --- | --- | --- | --- |
@@ -51,25 +51,25 @@
 | `backend/src/main/java/com/personalos/common/web/ModelConcurrencyGate.java:15` | `${app.model-max-concurrent-requests:4}` | P1/T107 | wired：共享租约/角色API预留容量已装配，超100明确拒绝 |
 | `backend/src/main/java/com/personalos/common/web/RedisRateBucket.java:41` | `${app.rate-limit.redis.uri}` | P1/T107 | wired：独立URI/namespace、Lua/TIME/150ms/错误指标已装配 |
 | `backend/src/main/java/com/personalos/common/web/RedisRateBucket.java:42` | `${app.rate-limit.redis.namespace}` | P1/T107 | wired：独立URI/namespace、Lua/TIME/150ms/错误指标已装配 |
-| `backend/src/main/java/com/personalos/knowledge/governance/IngestionReviewWorker.java:26` | `${app.knowledge.rag.evidence-timeout-ms:12000}` | P6/T606 | deferred：证据超时随review租约与业务调度迁移 |
-| `backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java:53` | `${app.knowledge.jobs.enabled:true}` | P6/T602 | deferred：索引任务开关随持久队列迁移，不启动空Worker |
-| `backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java:16` | `${app.rabbitmq.uri}` | P6/T604 | deferred：Rabbit连接与durable队列随Outbox/信号迁移 |
-| `backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java:23` | `${app.rabbitmq.queue:personalos.knowledge.ready}` | P6/T604 | deferred：Rabbit连接与durable队列随Outbox/信号迁移 |
-| `backend/src/main/java/com/personalos/knowledge/jobs/messaging/WorkSignalRelay.java:32` | `${app.rabbitmq.queue:personalos.knowledge.ready}` | P6/T604 | deferred：队列名随可靠信号重发迁移 |
-| `backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java:23` | `${app.knowledge.rag.reranker.endpoint:}` | P6/T605 | deferred：reranker端点/凭据/模型/协议随真实协议适配迁移 |
-| `backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java:24` | `${app.knowledge.rag.reranker.api-key:}` | P6/T605 | deferred：reranker端点/凭据/模型/协议随真实协议适配迁移 |
-| `backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java:24` | `${app.knowledge.rag.reranker.model:}` | P6/T605 | deferred：reranker端点/凭据/模型/协议随真实协议适配迁移 |
-| `backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java:24` | `${app.knowledge.rag.reranker.protocol:cohere}` | P6/T605 | deferred：reranker端点/凭据/模型/协议随真实协议适配迁移 |
-| `backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java:29` | `${app.knowledge.rag.enabled:true}` | P6/T605 | deferred：RAG开关与总预算/证据预算随真实检索流水线迁移 |
-| `backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java:30` | `${app.knowledge.rag.budget-ms:20000}` | P6/T605 | deferred：RAG开关与总预算/证据预算随真实检索流水线迁移 |
-| `backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java:36` | `${app.knowledge.rag.evidence-timeout-ms:12000}` | P6/T605 | deferred：RAG开关与总预算/证据预算随真实检索流水线迁移 |
-| `backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java:15` | `${app.knowledge.search.endpoint:http://localhost:9200}` | P6/T603 | deferred：可选OpenSearch端点/index/凭据随真实检索迁移 |
-| `backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java:16` | `${app.knowledge.search.index:personalos-chunks-v1}` | P6/T603 | deferred：可选OpenSearch端点/index/凭据随真实检索迁移 |
-| `backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java:17` | `${app.knowledge.search.username:}` | P6/T603 | deferred：可选OpenSearch端点/index/凭据随真实检索迁移 |
-| `backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java:17` | `${app.knowledge.search.password:}` | P6/T603 | deferred：可选OpenSearch端点/index/凭据随真实检索迁移 |
-| `backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java:31` | `${app.redis.namespace}` | P6/T607 | deferred：候选缓存namespace与全部动态配置指纹键随generation失效迁移 |
-| `backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java:41` | `${spring.ai.vectorstore.pgvector.table-name:vector_store}` | P6/T601 | deferred：向量表/schema检查随向量仓储迁移；P1只验证原DDL |
-| `backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java:42` | `${spring.ai.vectorstore.pgvector.schema-name:public}` | P6/T601 | deferred：向量表/schema检查随向量仓储迁移；P1只验证原DDL |
+| `backend/src/main/java/com/personalos/knowledge/governance/IngestionReviewWorker.java:26` | `${app.knowledge.rag.evidence-timeout-ms:12000}` | P6/T606 | wired：证据超时、增量review租约/角色调度已装配；真实库验证revision/token最终fencing |
+| `backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java:53` | `${app.knowledge.jobs.enabled:true}` | P6/T602 | wired：索引enabled已接调度与Rabbit唤醒；关闭仍接受持久任务，独立index可重新领取 |
+| `backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java:16` | `${app.rabbitmq.uri}` | P6/T604 | wired：显式URI/队列、durable/confirm与角色重连已接真实RabbitMQ；故障保留数据库轮询 |
+| `backend/src/main/java/com/personalos/knowledge/jobs/messaging/RabbitJobsConfig.java:23` | `${app.rabbitmq.queue:personalos.knowledge.ready}` | P6/T604 | wired：显式URI/队列、durable/confirm与角色重连已接真实RabbitMQ；故障保留数据库轮询 |
+| `backend/src/main/java/com/personalos/knowledge/jobs/messaging/WorkSignalRelay.java:32` | `${app.rabbitmq.queue:personalos.knowledge.ready}` | P6/T604 | wired：队列名已接数据库信号revision条件重发；双API及index/review/delivery联动已验收 |
+| `backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java:23` | `${app.knowledge.rag.reranker.endpoint:}` | P6/T605 | wired：端点/凭据/模型/协议已接Cohere和DashScope有界客户端；关闭不解析可选凭据 |
+| `backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java:24` | `${app.knowledge.rag.reranker.api-key:}` | P6/T605 | wired：端点/凭据/模型/协议已接Cohere和DashScope有界客户端；关闭不解析可选凭据 |
+| `backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java:24` | `${app.knowledge.rag.reranker.model:}` | P6/T605 | wired：端点/凭据/模型/协议已接Cohere和DashScope有界客户端；关闭不解析可选凭据 |
+| `backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java:24` | `${app.knowledge.rag.reranker.protocol:cohere}` | P6/T605 | wired：端点/凭据/模型/协议已接Cohere和DashScope有界客户端；关闭不解析可选凭据 |
+| `backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java:29` | `${app.knowledge.rag.enabled:true}` | P6/T605 | wired：RAG开关、总预算与证据预算已接问答/聊天共用管线；不可用时保留证据且不确定作答 |
+| `backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java:30` | `${app.knowledge.rag.budget-ms:20000}` | P6/T605 | wired：RAG开关、总预算与证据预算已接问答/聊天共用管线；不可用时保留证据且不确定作答 |
+| `backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java:36` | `${app.knowledge.rag.evidence-timeout-ms:12000}` | P6/T605 | wired：RAG开关、总预算与证据预算已接问答/聊天共用管线；不可用时保留证据且不确定作答 |
+| `backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java:15` | `${app.knowledge.search.endpoint:http://localhost:9200}` | P6/T603 | wired：可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL |
+| `backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java:16` | `${app.knowledge.search.index:personalos-chunks-v1}` | P6/T603 | wired：可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL |
+| `backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java:17` | `${app.knowledge.search.username:}` | P6/T603 | wired：可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL |
+| `backend/src/main/java/com/personalos/knowledge/search/SearchConfig.java:17` | `${app.knowledge.search.password:}` | P6/T603 | wired：可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL |
+| `backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java:31` | `${app.redis.namespace}` | P6/T607 | wired：独立客户端/namespace/全部动态指纹已接20秒TTL与generation失效；真实TLS Redis隔离和故障回源通过 |
+| `backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java:41` | `${spring.ai.vectorstore.pgvector.table-name:vector_store}` | P6/T601 | wired：schema/table已接标识符白名单、实际维度与权限检查；原42迁移/JSON/表达式索引/HNSW保留 |
+| `backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java:42` | `${spring.ai.vectorstore.pgvector.schema-name:public}` | P6/T601 | wired：schema/table已接标识符白名单、实际维度与权限检查；原42迁移/JSON/表达式索引/HNSW保留 |
 | `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:40` | `${spring.ai.mcp.server.enabled:false}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
 | `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:41` | `${spring.ai.mcp.server.name:personal-ai-os}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
 | `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:42` | `${spring.ai.mcp.server.version:0.1.0}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
@@ -83,7 +83,7 @@
 | `backend/src/main/java/com/personalos/common/ai/config/ModelConfigService.java:532` | `动态：OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_CHAT_MODEL, OPENAI_EMBEDDING_MODEL` | P3/T300 | wired：配置逐字段回落/原始环境来源已接持久化、启动覆盖和运行时工厂 |
 | `backend/src/main/java/com/personalos/common/auth/MonitoringSecurityConfig.java:18` | `local.management.port` | P1/T108 | wired：local.management.port由独立监听器结构保证；不依据用户Host/转发头授予管理权限 |
 | `backend/src/main/java/com/personalos/common/config/DotEnvEnvironmentPostProcessor.java:73` | `app.dotenv.enabled` | P1/T104 | wired：默认禁读；显式开关/来源优先级/晚于ConfigData已验证 |
-| `backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java:39` | `动态：spring.ai.model.embedding, spring.ai.openai.base-url, spring.ai.openai.embedding.model, spring.ai.ollama.base-url, spring.ai.ollama.embedding.model, app.embedding-cache.revision, app.knowledge.search.endpoint, app.knowledge.search.index` | P6/T607 | deferred：候选缓存namespace与全部动态配置指纹键随generation失效迁移 |
+| `backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java:39` | `动态：spring.ai.model.embedding, spring.ai.openai.base-url, spring.ai.openai.embedding.model, spring.ai.ollama.base-url, spring.ai.ollama.embedding.model, app.embedding-cache.revision, app.knowledge.search.endpoint, app.knowledge.search.index` | P6/T607 | wired：独立客户端/namespace/全部动态指纹已接20秒TTL与generation失效；真实TLS Redis隔离和故障回源通过 |
 
 ## 附加边界
 

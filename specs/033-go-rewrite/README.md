@@ -12,6 +12,8 @@
 - P2已完成：任务9路由、标签、统计、幂等、确认和任务侧导出/搜索贡献能力已接Foundation；真实原迁移库、最小P2权限、跨连接竞争与Java相关测试通过。跨模块导出/全局搜索端点仍按后续阶段实施。
 - P3已完成：配置/档案CRUD、激活/排序与密钥三态、OpenAI/Ollama协议、窗口/音频探测、嵌入本地/专用Redis缓存及14条路由已接显式Foundation/CLI；224场景原Java差分、真实TLS存储/最小权限与五角色进程通过。边界与原测试映射见[P3收口报告](p3-completion.md)。
 - P4已完成：会话/历史/摘要、离线BPE预算保护、16个Agent工具与计划、新旧SSE、持久Run/恢复/问答/QUEUE/STEER、本地与S3附件、用量及流指标已接Foundation/CLI；真实TLS库/Redis/MinIO、五角色进程和原前端API22组联调通过。职责与限制见[P4收口报告](p4-completion.md)，45类379声明见[映射](p4-test-mapping.md)。
+- P5已完成：记忆/向量回填、日历/重复规则、提醒/SSE、Web Push 与 Webhook 投递已接 `--p5`，见[P5验收](p5-completion.md)。
+- P6已完成：知识读入/切分/原子写入、异步索引、混合召回、RAG/引用与来源治理已接 `--p6`；四设施/五角色、索引子进程SIGKILL恢复、18组受控Java召回/引用契约通过。职责与评估边界见[P6验收](p6-completion.md)，24类115声明见[映射](p6-test-mapping.md)。P7/P8及五个发布门禁仍开放。
 - 全42原SQL、真实Flyway历史/锁竞争、七类DDL差分和合成pg_dump/restore数据/序列已验证；完整schema的P1最小权限及恢复库五角色Foundation实际启动/关闭通过。扩展schema/历史明确拒绝，支持边界见[P1契约](p1-foundation-contract.md)；合成恢复不等于真实用户备份验收。
 - **Go 尚不能替代 Java。104 个注解 HTTP 路由仍有后续业务模块待迁移。**
 - Go默认离线诊断不读现有`.env`、不连数据库、不迁移或启业务Worker，`/readyz`固定503。显式GO_DOTENV_ENABLED才允许加载配置；显式基础模式要求独立连接参数/迁移目录，允许已实现的认证/CSRF，生产继续拒绝。
@@ -37,6 +39,8 @@
 [p3-completion.md](p3-completion.md) | P3职责、231个原测试声明映射、兼容差异及实际验收
 [p4-completion.md](p4-completion.md) | P4职责、新旧流/工具/恢复/附件装配与实际验收
 [p4-test-mapping.md](p4-test-mapping.md) | 45类379个测试声明的职责入口及后续阶段边界
+[p6-completion.md](p6-completion.md) | P6十项任务、四设施/角色/故障回归及受控评估边界
+[p6-test-mapping.md](p6-test-mapping.md) | 24类115个知识模块测试声明及跨模块职责归属
 [p1-foundation-contract.md](p1-foundation-contract.md) | P1实际支持、明确拒绝及后续业务/发布边界
 [config-disposition.md](config-disposition.md) | 78处直接配置调用方逐项装配或后续阶段归属
 
@@ -71,4 +75,4 @@ python3 scripts/migration/go_inventory.py generate \
 
 ## 继续实施的入口
 
-P5 已完成，验收与边界见 [P5 验收](p5-completion.md)。下一阶段为 [P6 知识、RAG 与后台运行](tasks.md#p6-知识rag-与后台运行)。
+P6 已完成，验收与边界见 [P6 验收](p6-completion.md)。下一阶段为 [P7 MCP、搜索与数据交换](tasks.md#p7-mcp搜索与数据交换)。
