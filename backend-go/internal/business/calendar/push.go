@@ -55,7 +55,13 @@ func publicKey(value []byte) *ecdh.PublicKey {
 }
 
 func decodeKey(value string) ([]byte, error) {
-	return base64.RawURLEncoding.DecodeString(strings.TrimRight(value, "="))
+	if strings.ContainsAny(value, "\r\n") {
+		return nil, errors.New("非法 Base64URL 字符")
+	}
+	if strings.Contains(value, "=") {
+		return base64.URLEncoding.DecodeString(value)
+	}
+	return base64.RawURLEncoding.DecodeString(value)
 }
 
 func (p *Push) Close() {

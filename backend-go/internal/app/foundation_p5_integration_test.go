@@ -130,33 +130,35 @@ func TestP5ReminderRabbitFanout(t *testing.T) {
 	if err != nil || parsed.Scheme != "amqp" || parsed.Hostname() != "127.0.0.1" || parsed.Port() == "5672" {
 		t.Fatal("RabbitMQ 测试仅接受随机回环端口")
 	}
-	first := fixtureFoundation(t, nil, nil)
-	second := fixtureFoundation(t, nil, nil)
+	open := func(role string) *Foundation {
+		return chatFixtureFoundation(t, map[string]string{
+			"app.runtime.role": role, "app.auth.enabled": "false", "app.security.csrf-enabled": "false",
+			"app.calendar.scan-enabled": "false", "app.calendar.stream-check-interval-ms": "3600000",
+			"app.rabbitmq.enabled": "true", "app.rabbitmq.uri": uri, "spring.ai.model.chat": "none",
+		}, nil, true)
+	}
+	first, second := open("combined"), open("api")
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	settings, _ := config.BindCalendarProperties(nil)
 	source := calendar.NewEvents(first.Pool(), settings, time.UTC)
 	reader := calendar.NewEvents(second.Pool(), settings, time.UTC)
-	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	var snapshots []*bufio.Reader
-	for _, events := range []*calendar.Events{source, reader} {
-		stream := calendar.NewStream(ctx, events, time.Hour)
-		defer stream.Close()
-		bus, err := calendar.StartBroadcast(ctx, uri, events, stream, first.coordinator, events == source, logger)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer bus.Close()
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_ = stream.Serve(w, r)
-		}))
+	var servers []*httptest.Server
+	for _, f := range []*Foundation{first, second} {
+		server := httptest.NewServer(f.Handler())
+		servers = append(servers, server)
 		defer server.Close()
-		req, _ := http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
+		req, _ := http.NewRequestWithContext(ctx, http.MethodGet, server.URL+"/api/v1/reminders/events", nil)
+		req.Header.Set("Accept", "text/event-stream")
 		response, err := server.Client().Do(req)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer response.Body.Close()
+		if response.StatusCode != 200 || response.Header.Get("X-Accel-Buffering") != "no" {
+			t.Fatalf("SSE status %d", response.StatusCode)
+		}
 		snapshots = append(snapshots, bufio.NewReader(response.Body))
 	}
 	expect := func(needle string) {
@@ -189,8 +191,8 @@ func TestP5ReminderRabbitFanout(t *testing.T) {
 	if err != nil || len(due) != 1 {
 		t.Fatalf("due = %+v, %v", due, err)
 	}
-	if _, err := reader.MarkRead(ctx, due[0].ID, now); err != nil {
-		t.Fatal(err)
+	if status, payload := appRequest(t, servers[1].Client(), "POST", servers[1].URL+"/api/v1/reminders/"+due[0].ID+"/read", "", ""); status != 200 {
+		t.Fatalf("mark read status %d, %v", status, payload)
 	}
 	expect("[]")
 }
@@ -262,7 +264,14 @@ func TestP5WebhookRecovery(t *testing.T) {
 		t.Fatal(err)
 	}
 	appExec(t, f, `UPDATE reminder_webhook_delivery SET state='SENDING',next_attempt_at=now()-interval '1 second' WHERE state='PENDING' AND attempts=1`)
-	if err := worker.Dispatch(ctx); err != nil {
+	worker.Close()
+	restarted := fixtureFoundation(t, nil, nil)
+	recovered, err := calendar.NewWebhook(calendar.NewEvents(restarted.Pool(), settings, time.UTC), server.URL, secret, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer recovered.Close()
+	if err := recovered.Dispatch(ctx); err != nil {
 		t.Fatal(err)
 	}
 	mu.Lock()
@@ -420,6 +429,37 @@ func TestP5AuthenticatedAgentAndAutoMemory(t *testing.T) {
 		}
 		return payload["data"]
 	}
+	pushStatus := request("GET", "/reminders/push", "", 200).(map[string]any)
+	if pushStatus["enabled"] != false || pushStatus["publicKey"] != nil || len(pushStatus) != 2 {
+		t.Fatalf("push status = %+v", pushStatus)
+	}
+	request("POST", "/reminders/push/subscriptions", `{"endpoint":"https://localhost/","keys":null}`, 400)
+	request("POST", "/reminders/push/subscriptions", `{"endpoint":"https://fcm.googleapis.com/test","keys":{"p256dh":"key","auth":"auth"}}`, 409)
+	request("DELETE", "/reminders/push/subscriptions", `{"endpoint":"https://fcm.googleapis.com/test"}`, 200)
+
+	if initial := request("GET", "/memories", "", 200).([]any); len(initial) != 0 {
+		t.Fatalf("unexpected memories = %+v", initial)
+	}
+	request("POST", "/memories", `{"content":" "}`, 400)
+	request("POST", "/memories", `null`, 400)
+	request("POST", "/memories", fmt.Sprintf(`{"content":%q}`, strings.Repeat("😀", 1001)), 400)
+	created := request("POST", "/memories", `{"content":"  P5 temporary entry  "}`, 200).(map[string]any)
+	if created["content"] != "P5 temporary entry" {
+		t.Fatalf("trimmed memory = %+v", created)
+	}
+	path := "/memories/" + created["id"].(string)
+	request("PATCH", path+"/pin", `null`, 400)
+	pinned := request("PATCH", path+"/pin", `{"pinned":"true"}`, 200).(map[string]any)
+	if pinned["pinned"] != true || pinned["updatedAt"] != created["updatedAt"] {
+		t.Fatalf("pinned memory = %+v", pinned)
+	}
+	updated := request("PATCH", path, `{"content":"P5 edited entry"}`, 200).(map[string]any)
+	if updated["createdAt"] != created["createdAt"] {
+		t.Fatal("edit changed createdAt")
+	}
+	request("DELETE", path, "", 200)
+	request("PATCH", path, `{"content":"missing"}`, 404)
+	request("PATCH", "/memories/bad_id", `{"content":"invalid"}`, 400)
 	session := request("POST", "/chat/sessions", `{"title":"P5 agent fixture"}`, 201).(map[string]any)
 	conversation := session["conversationId"].(string)
 	defer request("DELETE", "/chat/sessions/"+conversation, "", 200)
@@ -592,4 +632,70 @@ func TestP5TaskReminderLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	expect(0, "")
+}
+
+func TestP5CalendarPaginationAndReminderRebuild(t *testing.T) {
+	f := fixtureFoundation(t, nil, nil)
+	ctx := context.Background()
+	settings, _ := config.BindCalendarProperties(nil)
+	zone, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		t.Fatal(err)
+	}
+	events := calendar.NewEvents(f.Pool(), settings, zone)
+	now := time.Date(2026, 11, 4, 0, 0, 0, 0, time.UTC)
+	start := now.Add(time.Hour)
+	title := "P5 recurring fixture"
+	allDay := true
+	rule := calendar.Daily
+	event, err := events.Create(ctx, calendar.EventRequest{Title: &title, StartsAt: &start, EndsAt: &start, AllDay: &allDay, RecurrenceType: &rule})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer events.Delete(ctx, event.ID)
+	if event.StartsAt.In(zone).Hour() != 0 || event.EndsAt.Sub(event.StartsAt) != 24*time.Hour {
+		t.Fatalf("all day = %v .. %v", event.StartsAt, event.EndsAt)
+	}
+	upper := event.StartsAt.Add(3 * 24 * time.Hour)
+	page, err := events.Search(ctx, &event.StartsAt, &upper, 1, 2)
+	if err != nil || page.Total != 4 || len(page.Items) != 2 || !page.Items[0].StartsAt.Equal(event.StartsAt.Add(48*time.Hour)) {
+		t.Fatalf("page=%+v %v", page, err)
+	}
+	tooFar := now.Add(91 * 24 * time.Hour)
+	if _, err := events.Search(ctx, &now, &tooFar, 0, 1); err == nil {
+		t.Fatal("query exceeded max range")
+	}
+	if _, err := events.Update(ctx, event.ID, calendar.EventRequest{StartsAt: &start}); err == nil {
+		t.Fatal("partial update accepted")
+	}
+	if _, err := events.Scan(ctx, now); err != nil {
+		t.Fatal(err)
+	}
+	pending, err := events.Reminders(ctx, "PENDING", true, 10, now)
+	if err != nil || len(pending) != 1 {
+		t.Fatalf("due=%+v %v", pending, err)
+	}
+	if _, err := events.MarkRead(ctx, pending[0].ID, now); err != nil {
+		t.Fatal(err)
+	}
+	renamed := "P5 renamed recurring fixture"
+	if _, err := events.Update(ctx, event.ID, calendar.EventRequest{Title: &renamed}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := events.Scan(ctx, now); err != nil {
+		t.Fatal(err)
+	}
+	future, err := events.Reminders(ctx, "PENDING", false, 20, now)
+	if err != nil || len(future) == 0 {
+		t.Fatalf("future=%+v %v", future, err)
+	}
+	for _, reminder := range future {
+		if reminder.Title != renamed || reminder.OccurrenceAt.Equal(pending[0].OccurrenceAt) {
+			t.Fatalf("stale or resurrected reminder %+v", reminder)
+		}
+	}
+	history, err := events.Reminders(ctx, "READ", true, 20, now)
+	if err != nil || len(history) != 1 || history[0].ID != pending[0].ID || history[0].Title != title {
+		t.Fatalf("read history=%+v %v", history, err)
+	}
 }

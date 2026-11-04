@@ -91,7 +91,8 @@ func (s *Events) serve(w http.ResponseWriter, r *http.Request) (any, int, error)
 	if id == "" || strings.Contains(id, "/") {
 		return nil, 0, web.NotFound()
 	}
-	if !uuidPattern.MatchString(id) {
+	id, valid := api.ParseJavaUUID(strings.TrimSpace(id))
+	if !valid {
 		return nil, 0, web.InvalidParameter("id")
 	}
 	switch r.Method {
@@ -137,15 +138,29 @@ func eventBody(w http.ResponseWriter, r *http.Request) (EventRequest, error) {
 		key    string
 		target any
 	}{
-		{"allDay", &request.AllDay}, {"startsAt", &request.StartsAt}, {"endsAt", &request.EndsAt},
+		{"startsAt", &request.StartsAt}, {"endsAt", &request.EndsAt},
 		{"recurrenceType", &request.RecurrenceType}, {"recurrenceUntil", &request.RecurrenceUntil},
-		{"clearRecurrenceUntil", &request.ClearRecurrenceUntil}, {"reminderLeadMinutes", &request.Lead},
 	} {
 		if raw, ok := object[field.key]; ok {
 			if err := json.Unmarshal(raw, field.target); err != nil {
 				return request, web.InvalidBody(err)
 			}
 		}
+	}
+	request.AllDay, err = web.JSONBoolField(object, "allDay")
+	if err != nil {
+		return request, err
+	}
+	if r.Method == http.MethodPatch {
+		clear, err := web.JSONBoolField(object, "clearRecurrenceUntil")
+		if err != nil {
+			return request, err
+		}
+		request.ClearRecurrenceUntil = clear != nil && *clear
+	}
+	request.Lead, err = web.JSONIntField(object, "reminderLeadMinutes")
+	if err != nil {
+		return request, err
 	}
 	if request.RecurrenceType != nil {
 		switch *request.RecurrenceType {

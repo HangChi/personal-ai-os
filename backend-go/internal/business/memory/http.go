@@ -1,7 +1,6 @@
 package memory
 
 import (
-	"encoding/json"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -59,20 +58,18 @@ func serve(store *Store, w http.ResponseWriter, r *http.Request) (any, error) {
 		if r.Method != http.MethodPatch {
 			return nil, web.MethodNotSupported(r.Method, []string{"PATCH"})
 		}
-		if r.ContentLength == 0 {
-			return nil, api.NewBusinessError(api.ValidationFailed, "pinned 不能为空")
-		}
-		object, err := web.DecodeJSONObject(w, r, 10<<20)
+		object, err := web.DecodeOptionalJSONObject(w, r, 10<<20)
 		if err != nil {
 			return nil, err
 		}
-		var pinned bool
-		if raw, exists := object["pinned"]; exists {
-			if err := json.Unmarshal(raw, &pinned); err != nil {
-				return nil, web.InvalidBody(err)
-			}
+		if object == nil {
+			return nil, api.NewBusinessError(api.ValidationFailed, "pinned 不能为空")
 		}
-		return store.Pin(ctx, id, pinned)
+		pinned, err := web.JSONBoolField(object, "pinned")
+		if err != nil {
+			return nil, err
+		}
+		return store.Pin(ctx, id, pinned != nil && *pinned)
 	}
 	switch r.Method {
 	case http.MethodPatch:
@@ -89,10 +86,7 @@ func serve(store *Store, w http.ResponseWriter, r *http.Request) (any, error) {
 }
 
 func readContent(w http.ResponseWriter, r *http.Request) (string, error) {
-	if r.ContentLength == 0 {
-		return "", nil
-	}
-	object, err := web.DecodeJSONObject(w, r, 10<<20)
+	object, err := web.DecodeOptionalJSONObject(w, r, 10<<20)
 	if err != nil {
 		return "", err
 	}

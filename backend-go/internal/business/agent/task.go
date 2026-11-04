@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -285,22 +284,11 @@ func ParseTaskID(raw, label string) (string, error) {
 	if text == "" {
 		return "", Invalid(label + " 不能为空")
 	}
-	parts := strings.Split(text, "-")
-	bad := func() (string, error) { return "", Invalid(label + " 不是合法的任务标识：" + raw) }
-	if len(text) > 36 || len(parts) != 5 {
-		return bad()
+	id, ok := api.ParseJavaUUID(text)
+	if !ok {
+		return "", Invalid(label + " 不是合法的任务标识：" + raw)
 	}
-	widths := []int{8, 4, 4, 4, 12}
-	out := make([]string, 5)
-	for i, part := range parts {
-		n, e := strconv.ParseInt(part, 16, 64)
-		if e != nil || n < 0 {
-			return bad()
-		}
-		mask := uint64(1)<<(widths[i]*4) - 1
-		out[i] = fmt.Sprintf("%0*x", widths[i], uint64(n)&mask)
-	}
-	return strings.Join(out, "-"), nil
+	return id, nil
 }
 
 var uuidPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)

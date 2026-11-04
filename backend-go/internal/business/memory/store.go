@@ -154,13 +154,14 @@ func (s *Store) create(ctx context.Context, content, source string) (Entry, erro
 	return entry, err
 }
 
-var uuidPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+var idPattern = regexp.MustCompile(`^[A-Za-z0-9-]{1,64}$`)
 
 func parseID(raw string) (string, error) {
-	if !uuidPattern.MatchString(raw) {
+	id, ok := api.ParseJavaUUID(raw)
+	if !ok || !idPattern.MatchString(raw) {
 		return "", api.NewBusinessError(api.ValidationFailed, "记忆标识格式非法")
 	}
-	return raw, nil
+	return id, nil
 }
 
 func missing(raw string, err error) error {

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"math/big"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -105,7 +104,7 @@ func (h *ModuleHTTP) serve(w http.ResponseWriter, r *http.Request) error {
 		if e != nil {
 			return e
 		}
-		tokens, e := integerField(obj, "tokens")
+		tokens, e := web.JSONIntField(obj, "tokens")
 		if e != nil {
 			return e
 		}
@@ -203,87 +202,16 @@ func (h *ModuleHTTP) context(w http.ResponseWriter, r *http.Request, id string) 
 	}
 	return respond(w, r, 200, v)
 }
-func integerField(obj map[string]json.RawMessage, key string) (*int, error) {
-	raw := bytes.TrimSpace(obj[key])
-	if len(raw) == 0 || bytes.Equal(raw, []byte("null")) {
-		return nil, nil
-	}
-	var n int64
-	if raw[0] == '"' {
-		var s string
-		if json.Unmarshal(raw, &s) != nil {
-			return nil, web.InvalidBody(nil)
-		}
-		s = strip(s)
-		if s == "" || s == "null" {
-			return nil, nil
-		}
-		var e error
-		n, e = strconv.ParseInt(s, 10, 32)
-		if e != nil {
-			return nil, web.InvalidBody(e)
-		}
-	} else {
-		r, ok := new(big.Rat).SetString(string(raw))
-		if !ok {
-			return nil, web.InvalidBody(nil)
-		}
-		i := new(big.Int).Quo(r.Num(), r.Denom())
-		if !i.IsInt64() {
-			return nil, web.InvalidBody(nil)
-		}
-		n = i.Int64()
-		if n < -2147483648 || n > 2147483647 {
-			return nil, web.InvalidBody(nil)
-		}
-	}
-	v := int(n)
-	return &v, nil
-}
-func boolField(obj map[string]json.RawMessage, key string) (*bool, error) {
-	raw := bytes.TrimSpace(obj[key])
-	if len(raw) == 0 || bytes.Equal(raw, []byte("null")) {
-		return nil, nil
-	}
-	var v bool
-	if raw[0] == '"' {
-		var s string
-		if json.Unmarshal(raw, &s) != nil {
-			return nil, web.InvalidBody(nil)
-		}
-		s = strip(s)
-		if s == "" || s == "null" {
-			return nil, nil
-		}
-		switch s {
-		case "true", "True", "TRUE":
-			v = true
-		case "false", "False", "FALSE":
-		default:
-			return nil, web.InvalidBody(nil)
-		}
-	} else if bytes.Equal(raw, []byte("true")) {
-		v = true
-	} else if bytes.Equal(raw, []byte("false")) {
-	} else {
-		n, e := strconv.ParseInt(string(raw), 10, 64)
-		if e != nil {
-			return nil, web.InvalidBody(e)
-		}
-		v = n != 0
-	}
-	return &v, nil
-}
 func decodeStream(obj map[string]json.RawMessage) (v StreamRequest, e error) {
 	content, e := web.JSONStringField(obj, "content")
 	if e != nil {
 		return v, e
 	}
 	v.Content = value(content)
-	if v.UseKnowledge, e = boolField(obj, "useKnowledge"); e != nil {
+	if v.UseKnowledge, e = web.JSONBoolField(obj, "useKnowledge"); e != nil {
 		return
 	}
-	if v.TopK, e = integerField(obj, "topK"); e != nil {
+	if v.TopK, e = web.JSONIntField(obj, "topK"); e != nil {
 		return
 	}
 	if v.ThinkingLevel, e = web.JSONStringField(obj, "thinkingLevel"); e != nil {

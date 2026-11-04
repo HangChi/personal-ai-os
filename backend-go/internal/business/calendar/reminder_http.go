@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"personal-ai-os/backend-go/internal/platform/api"
 	web "personal-ai-os/backend-go/internal/platform/http"
 )
 
@@ -62,7 +63,8 @@ func (s *Events) serveReminders(r *http.Request) (any, int, error) {
 	if r.Method != http.MethodPost {
 		return nil, 0, web.MethodNotSupported(r.Method, []string{"POST"})
 	}
-	if !uuidPattern.MatchString(id) {
+	id, valid := api.ParseJavaUUID(strings.TrimSpace(id))
+	if !valid {
 		return nil, 0, web.InvalidParameter("id")
 	}
 	result, err := s.MarkRead(ctx, id, now)
