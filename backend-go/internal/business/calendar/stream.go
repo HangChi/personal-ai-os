@@ -19,21 +19,29 @@ const streamPath = reminderPath + "/events"
 func OwnsStreamPath(path string) bool { return path == streamPath }
 
 type Stream struct {
-	events        *Events
-	ctx           context.Context
-	mu            sync.Mutex
-	clients       map[chan []byte]struct{}
-	wakeup        chan struct{}
-	done          chan struct{}
-	cancel        context.CancelFunc
-	snapshots     atomic.Uint64
-	readFailures  atomic.Uint64
-	writeFailures atomic.Uint64
+	read           func(context.Context) ([]Reminder, error)
+	heartbeatEvery time.Duration
+	ctx            context.Context
+	mu             sync.Mutex
+	clients        map[chan []byte]struct{}
+	wakeup         chan struct{}
+	done           chan struct{}
+	cancel         context.CancelFunc
+	snapshots      atomic.Uint64
+	readFailures   atomic.Uint64
+	writeFailures  atomic.Uint64
 }
 
 func NewStream(ctx context.Context, events *Events, interval time.Duration) *Stream {
+	return newStream(ctx, interval, func(ctx context.Context) ([]Reminder, error) {
+		return events.Reminders(ctx, "PENDING", true, 500, time.Now())
+	})
+}
+
+func newStream(ctx context.Context, interval time.Duration, read func(context.Context) ([]Reminder, error)) *Stream {
 	ctx, cancel := context.WithCancel(ctx)
-	stream := &Stream{events: events, ctx: ctx, cancel: cancel, clients: make(map[chan []byte]struct{}), wakeup: make(chan struct{}, 1), done: make(chan struct{})}
+	stream := &Stream{read: read, heartbeatEvery: 15 * time.Second, ctx: ctx, cancel: cancel,
+		clients: make(map[chan []byte]struct{}), wakeup: make(chan struct{}, 1), done: make(chan struct{})}
 	go stream.poll(interval)
 	return stream
 }
@@ -67,7 +75,7 @@ func (s *Stream) poll(interval time.Duration) {
 		if active == 0 {
 			continue
 		}
-		items, err := s.events.Reminders(s.ctx, "PENDING", true, 500, time.Now())
+		items, err := s.read(s.ctx)
 		if err != nil {
 			s.readFailures.Add(1)
 			continue
@@ -122,7 +130,7 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) error {
 	s.Notify()
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Minute)
 	defer cancel()
-	heartbeat := time.NewTimer(15 * time.Second)
+	heartbeat := time.NewTimer(s.heartbeatEvery)
 	defer heartbeat.Stop()
 	var previous []byte
 	for {
@@ -156,7 +164,7 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) error {
 			s.snapshots.Add(1)
 		}
 		_ = response.SetWriteDeadline(time.Time{})
-		heartbeat.Reset(15 * time.Second)
+		heartbeat.Reset(s.heartbeatEvery)
 	}
 }
 
