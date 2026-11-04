@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"personal-ai-os/backend-go/internal/business/chat"
+	"personal-ai-os/backend-go/internal/business/knowledge"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/platform/config"
 	httpmiddleware "personal-ai-os/backend-go/internal/platform/http"
@@ -50,6 +51,7 @@ type foundationMetrics struct {
 	models                     *model.Module
 	chat                       *chat.Module
 	p5                         *foundationP5
+	p6                         *knowledge.Module
 	mu                         sync.Mutex
 	counts                     [2]uint64
 	seconds                    [2]float64

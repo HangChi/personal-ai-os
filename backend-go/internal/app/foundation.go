@@ -11,9 +11,11 @@ import (
 	"sync"
 	"time"
 
+	"personal-ai-os/backend-go/internal/business/agent"
 	"personal-ai-os/backend-go/internal/business/chat"
 	"personal-ai-os/backend-go/internal/business/confirmation"
 	"personal-ai-os/backend-go/internal/business/idempotency"
+	"personal-ai-os/backend-go/internal/business/knowledge"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/business/task"
 	"personal-ai-os/backend-go/internal/platform/auth"
@@ -44,6 +46,8 @@ type FoundationOptions struct {
 	EnableP3                bool
 	EnableP4                bool
 	EnableP5                bool
+	EnableP6                bool
+	CandidateRedis          *redisclient.Client
 	EmbeddingRedis          *redisclient.Client
 	ModelTransport          http.RoundTripper
 }
@@ -75,6 +79,7 @@ type Foundation struct {
 	chat           *chat.Module
 	modelTransport *http.Transport
 	p5             *foundationP5
+	p6             *knowledge.Module
 }
 
 func (*Foundation) String() string     { return "Foundation{redacted}" }
@@ -94,6 +99,14 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 	if options.EnableP5 && !options.EnableP4 {
 		return nil, errors.New("P5需要启用P4")
+	}
+	if options.EnableP6 && !options.EnableP5 {
+		return nil, errors.New("P6需要启用P5")
+	}
+	if options.CandidateRedis != nil {
+		if !options.EnableP6 || options.CandidateRedis == options.SessionRedis || options.CandidateRedis == options.RateRedis || options.CandidateRedis == options.EmbeddingRedis {
+			return nil, errors.New("P6候选缓存必须使用独立专用Redis客户端")
+		}
 	}
 	if err := properties.ValidateFoundationExtensions(); err != nil {
 		return nil, err
@@ -185,6 +198,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			f.cancel()
 			if f.chat != nil {
 				_ = f.chat.Close(context.Background())
+			}
+			if f.p6 != nil {
+				f.p6.Close()
 			}
 			if f.modelTransport != nil {
 				f.modelTransport.CloseIdleConnections()
@@ -338,12 +354,71 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		}
 		options.Business = p5.route(options.Business)
 	}
+	if options.EnableP6 {
+		background, e := modelgate.NewShared(settings.ModelConcurrency, config.Index, f.coordinator)
+		if e != nil {
+			return nil, e
+		}
+		acquire := func(ctx context.Context) (func(), error) {
+			lease, e := background.TryAcquire(ctx)
+			if e != nil || lease == nil {
+				return nil, e
+			}
+			release := func() {
+				cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				_ = lease.Release(cleanup)
+			}
+			ok, e := limiter.TryAcquire(ctx)
+			if e != nil || !ok {
+				release()
+				return nil, e
+			}
+			return release, nil
+		}
+		var cache knowledge.RedisCacheClient
+		if options.CandidateRedis != nil {
+			cache = options.CandidateRedis
+		}
+		transport := options.ModelTransport
+		if transport == nil {
+			transport = f.modelTransport
+		}
+		f.p6, err = knowledge.OpenModule(f.ctx, knowledge.ModuleOptions{Pool: pool, Properties: properties, Models: f.models, Coordinator: f.coordinator, Role: settings.Role, Acquire: acquire, CandidateRedis: cache, Transport: transport, Logger: logger})
+		if err != nil {
+			return nil, err
+		}
+		metrics.p6 = f.p6
+		previous := options.Business
+		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if knowledge.OwnsPath(r.URL.Path) {
+				f.p6.Handler.ServeHTTP(w, r)
+				return
+			}
+			previous.ServeHTTP(w, r)
+		})
+	}
 	if options.EnableP4 {
 		chatOptions := chat.ModuleOptions{Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem,
 			Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor,
 			Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()}
 		if p5 != nil {
 			p5.addChatOptions(&chatOptions)
+		}
+		if f.p6 != nil {
+			chatOptions.ExtraTools = append(chatOptions.ExtraTools, agent.KnowledgeTool(f.p6.Pipeline))
+			chatOptions.RetrieveEvidence = func(ctx context.Context, q string, limit int) (chat.RetrievedEvidence, error) {
+				r, e := f.p6.Pipeline.Retrieve(ctx, q, &limit)
+				if e != nil {
+					return chat.RetrievedEvidence{}, e
+				}
+				citations := []chat.Citation{}
+				for i, h := range r.Hits {
+					title, file := h.DocumentTitle, h.Filename
+					citations = append(citations, chat.Citation{Index: i + 1, DocumentID: h.DocumentID, DocumentTitle: &title, Filename: &file, ChunkIndex: h.ChunkIndex, Content: h.Content})
+				}
+				return chat.RetrievedEvidence{Citations: citations, Retrieval: r, Emit: len(r.Stages) > 0 || r.Guarded(), Guarded: r.Guarded(), Answer: r.GuardedAnswer()}, nil
+			}
 		}
 		f.chat, err = chat.OpenModule(f.ctx, chatOptions)
 		if err != nil {
@@ -393,6 +468,7 @@ func (f *Foundation) Executor() *taskexec.Executor     { return f.executor }
 func (f *Foundation) History() migration.HistoryStatus { return f.history }
 func (f *Foundation) Models() *model.Module            { return f.models }
 func (f *Foundation) Chat() *chat.Module               { return f.chat }
+func (f *Foundation) Knowledge() *knowledge.Module     { return f.p6 }
 
 func (f *Foundation) track(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -432,6 +508,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 				_ = f.chat.Close(context.Background())
 			}
 			f.active.Wait()
+			if f.p6 != nil {
+				f.p6.Close()
+			}
 			if f.modelTransport != nil {
 				f.modelTransport.CloseIdleConnections()
 			}

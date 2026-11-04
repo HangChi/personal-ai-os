@@ -37,3 +37,11 @@ OpenSearch 使用有界 REST、CJK/HNSW 映射和现有维度验证，external_g
 来源治理保留空间、元数据、生效期、revision、人工冲突处理与审计。冲突保存再次回数据库核对 revision 与连续摘录；已保存分歧不因模型漏报消失。增量 review 角色逐片段领取，60秒租约、revision/token/源锁最终 fencing，失败三次暂停、人工重排和来源变更恢复。
 
 实际执行知识包单测与独立 TLS PostgreSQL race 全通过，新增覆盖 READY/CONFLICT/CLARIFY/UNVERIFIED、不同有效期澄清、编号引用、两种重排协议非法排序拒收、元数据/决策/audit/stale、伪造摘录拒收、16路review竞争/过期重领/旧revision拒提交、PARTIAL→CHECKED_CANDIDATES和失败上限。HTTP、聊天与五角色装配仍待下一批；不把当前管线单测冒充真实外部模型质量评测。
+
+## 第六批：显式模块装配、HTTP 与聊天
+
+`--foundation --p6` 显式启用 P2–P6。知识模块保留五角色边界，索引/审查使用共享模型预算与 API 预留；Rabbit 消息只唤醒，各角色独立轮询 PostgreSQL。候选缓存必须独立客户端，资源由调用方拥有；可选设施关闭时不连接。退出取消后台任务、排空辅助模型调用并等待任务退出，再关闭数据库。
+
+文档、任务、检索、问答、空间、来源、冲突与可选搜索管理均进入既有认证/CSRF/限流/媒体链。聊天和只读 searchKnowledge 工具共用 KnowledgeSearchPort；保守状态发送 citations/rag/delta/done、保存消息与引用，并跳过确定回答和自动记忆。
+
+实际执行 `python3 scripts/migration/run_go_postgres_tests.py --package app --tls --run '^TestFoundationP6'`，两项真实 TLS PostgreSQL/race 装配测试通过，覆盖 API 不抢索引工作、独立 index 无 Rabbit 轮询、双 API、worker 关闭业务入口、CRUD/分页/参数校验、认证/CSRF/治理与保守聊天引用。完整四设施角色联动与 Java 差分仍在最后验收批次。

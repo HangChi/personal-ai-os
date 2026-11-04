@@ -111,7 +111,7 @@ func (m *foundationMetrics) metricSnapshot(suffix string, query url.Values) (any
 		}{names}, true, nil
 	}
 	name := strings.TrimPrefix(suffix, "/")
-	if strings.HasPrefix(name, "personalos.reminders.") {
+	if strings.HasPrefix(name, "personalos.reminders.") || strings.HasPrefix(name, "personalos.knowledge.") {
 		return m.reminderMetric(name, query)
 	}
 	if strings.HasPrefix(name, "personalos.chat.") {

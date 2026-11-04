@@ -29,23 +29,31 @@ type PreparedTurn struct {
 	Session Session
 	Request StreamRequest
 }
+type RetrievedEvidence struct {
+	Citations []Citation
+	Retrieval any
+	Emit      bool
+	Guarded   bool
+	Answer    string
+}
 type Engine struct {
-	Service     *Service
-	Runtime     *model.Runtime
-	Budget      *chatcontext.Budget
-	History     *History
-	Assembler   *Assembler
-	Registry    *agent.Registry
-	Plans       *agent.Plans
-	Attachments *Attachments
-	Usage       *UsageService
-	Executor    *taskexec.Executor
-	Agent       config.AgentExecutionProperties
-	Timeout     time.Duration
-	Retrieve    func(context.Context, string, int) ([]Citation, error)
-	PostTurn    []func(context.Context, string, string, string) error
-	Metrics     StreamMetrics
-	Logger      *slog.Logger
+	Service          *Service
+	Runtime          *model.Runtime
+	Budget           *chatcontext.Budget
+	History          *History
+	Assembler        *Assembler
+	Registry         *agent.Registry
+	Plans            *agent.Plans
+	Attachments      *Attachments
+	Usage            *UsageService
+	Executor         *taskexec.Executor
+	Agent            config.AgentExecutionProperties
+	Timeout          time.Duration
+	Retrieve         func(context.Context, string, int) ([]Citation, error)
+	RetrieveEvidence func(context.Context, string, int) (RetrievedEvidence, error)
+	PostTurn         []func(context.Context, string, string, string) error
+	Metrics          StreamMetrics
+	Logger           *slog.Logger
 }
 type StreamMetrics struct {
 	Measurements                       StreamMeasurements
@@ -184,7 +192,11 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 	}
 	if request.Knowledge() {
 		var err error
-		if e.Retrieve != nil {
+		var evidence RetrievedEvidence
+		if e.RetrieveEvidence != nil {
+			evidence, err = e.RetrieveEvidence(ctx, request.Content, request.Limit())
+			hits = evidence.Citations
+		} else if e.Retrieve != nil {
 			hits, err = e.Retrieve(ctx, request.Content, request.Limit())
 		}
 		if err != nil {
@@ -195,12 +207,45 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 				e.Logger.WarnContext(ctx, "知识检索失败，本轮退回普通对话")
 			}
 			hits = nil
+			evidence = RetrievedEvidence{}
 		}
 		if hits == nil {
 			hits = []Citation{}
 		}
 		if err = send("citations", map[string]any{"count": len(hits), "citations": hits}); err != nil {
 			return err
+		}
+		if evidence.Emit {
+			if err = send("rag", evidence.Retrieval); err != nil {
+				return err
+			}
+		}
+		if evidence.Guarded {
+			attachments, err := e.Attachments.Build(ctx, request.Attachments)
+			if err != nil {
+				return err
+			}
+			if checkpoint != nil {
+				if err = checkpoint(ctx); err != nil {
+					return err
+				}
+			}
+			if err = e.Service.Append(ctx, p.Session.ConversationID, []NewMessage{{Role: "USER", Content: request.Content, Attachments: attachments.Verified}}); err != nil {
+				return err
+			}
+			userSaved = true
+			full.WriteString(evidence.Answer)
+			if err = e.Service.Complete(ctx, p.Session.ConversationID, evidence.Answer, nil); err != nil {
+				return err
+			}
+			userSaved = false
+			if err = e.Service.AttachCitations(ctx, p.Session.ConversationID, hits); err != nil && e.Logger != nil {
+				e.Logger.WarnContext(ctx, "引用挂载失败，不影响本轮回答")
+			}
+			if err = send("delta", map[string]string{"content": evidence.Answer}); err != nil {
+				return err
+			}
+			return send("done", map[string]any{"conversationId": p.Session.ConversationID, "content": evidence.Answer, "promptTokens": 0})
 		}
 	}
 	attachments, err := e.Attachments.Build(ctx, request.Attachments)
