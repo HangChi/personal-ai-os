@@ -13,6 +13,7 @@ from pathlib import Path
 import re
 import secrets
 import select
+import struct
 import subprocess
 import threading
 import time
@@ -216,9 +217,11 @@ class RealModel:
         self.inputs = Counter()
         self.vectors = Counter()
         self.failures = Counter()
+        self.routes = Counter()
         self.usage = Counter()
         self.last_upstream_rejection = None
         self.last_transport_failure = None
+        self.last_rejected_embedding_shape = None
         self.characters = 0
         self.max_calls, self.max_chat_calls, self.max_characters = 600, 12, 1_000_000
 
@@ -228,10 +231,12 @@ class RealModel:
     def snapshot(self):
         with self.lock:
             return dict(calls=dict(self.calls), failures=dict(self.failures), input_characters=self.characters,
+                        routes=dict(self.routes),
                         transport="node-pooled-fetch" if isinstance(self.opener, PooledOpener) else "curl-or-test-injection",
                         usage=dict(self.usage), successful_embedding_inputs=sum(self.inputs.values()),
                         last_upstream_rejection=self.last_upstream_rejection,
                         last_transport_failure=self.last_transport_failure,
+                        last_rejected_embedding_shape=self.last_rejected_embedding_shape,
                         unique_embedding_inputs=len(self.inputs), unique_embedding_vectors=len(self.vectors),
                         limits=dict(requests=self.max_calls, chat_requests=self.max_chat_calls,
                                     input_characters=self.max_characters, chat_max_tokens=1024,
@@ -242,6 +247,11 @@ class RealModel:
             return self.inputs.copy()
 
     def forward(self, path, payload):
+        # Java SDK appends /embeddings directly; Go uses the /v1 route.
+        aliases = {"/embeddings": "/v1/embeddings", "/chat/completions": "/v1/chat/completions"}
+        with self.lock:
+            self.routes[path if path in (*aliases, *aliases.values()) else "REJECTED"] += 1
+        path = aliases.get(path, path)
         try:
             return self._forward(path, payload)
         except ModelFailure as error:
@@ -258,8 +268,17 @@ class RealModel:
             if (not isinstance(inputs, list) or not 1 <= len(inputs) <= 64
                     or any(not isinstance(text, str) or not text.strip() for text in inputs)
                     or not set(payload) <= {"model", "input", "encoding_format", "dimensions"}
-                    or payload.get("encoding_format", "float") != "float"
+                    or payload.get("encoding_format", "float") not in ("float", "base64")
                     or payload.get("dimensions", 1024) != 1024):
+                with self.lock:
+                    encoding = payload.get("encoding_format", "MISSING")
+                    self.last_rejected_embedding_shape = dict(
+                        input_count=len(inputs) if isinstance(inputs, list) else None,
+                        encoding=encoding if encoding in ("float", "base64", "MISSING", None) else "OTHER",
+                        dimensions_present="dimensions" in payload,
+                        dimensions_null=payload.get("dimensions") is None,
+                        dimensions_1024=payload.get("dimensions") == 1024,
+                        unknown_fields=len(set(payload) - {"model", "input", "encoding_format", "dimensions"}))
                 raise ModelFailure("EMBEDDING_REQUEST_INVALID")
             characters = sum(len(text) for text in inputs)
         elif path == "/v1/chat/completions":
@@ -356,6 +375,16 @@ class RealModel:
                 raise ModelFailure("UPSTREAM_EMBEDDING_COUNT_OR_INDEX")
             for row in rows:
                 vector = row.get("embedding")
+                if payload.get("encoding_format") == "base64":
+                    try:
+                        if not isinstance(vector, str):
+                            raise ValueError()
+                        decoded = base64.b64decode(vector, validate=True)
+                        if len(decoded) != 1024 * 4:
+                            raise ValueError()
+                        vector = list(struct.unpack("<1024f", decoded))
+                    except (ValueError, TypeError):
+                        raise ModelFailure("UPSTREAM_EMBEDDING_BASE64_INVALID") from None
                 if (not isinstance(vector, list) or len(vector) != 1024
                         or any(type(value) not in (int, float) or not math.isfinite(value) for value in vector)
                         or not any(value != 0 for value in vector)):

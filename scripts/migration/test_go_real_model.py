@@ -1,7 +1,9 @@
+import base64
 import io
 import json
 from pathlib import Path
 import tempfile
+import struct
 import unittest
 from unittest.mock import Mock, patch
 import urllib.error
@@ -110,6 +112,40 @@ class RealModelTest(unittest.TestCase):
             with self.subTest(result_kind=list(result)), self.assertRaises(ModelFailure):
                 model.forward("/v1/embeddings", {"model": "embed-test", "input": ["actual-text"]})
             self.assertEqual(sum(model.embedding_receipts().values()), 0)
+
+    def test_java_and_go_routes_share_only_exact_allowlisted_endpoints(self):
+        opener = Mock()
+        opener.open.return_value = self.response(self.embeddings())
+        model = RealModel(self.config(), opener)
+        for path in ("/embeddings", "/v1/embeddings"):
+            model.forward(path, {"model": "embed-test", "input": ["actual-text"]})
+            self.assertEqual(opener.open.call_args.args[0].full_url,
+                             "https://models.example.invalid/v1/embeddings")
+        for path in ("/arbitrary/embeddings", "/embeddings?key=test-only-secret",
+                     "https://other.invalid/embeddings", "//embeddings", "/v1/../embeddings"):
+            with self.assertRaisesRegex(ModelFailure, "MODEL_ROUTE_REJECTED"):
+                model.forward(path, {})
+        self.assertEqual(opener.open.call_count, 2)
+        self.assertEqual(model.snapshot()["routes"]["REJECTED"], 5)
+        self.assertNotIn("test-only-secret", json.dumps(model.snapshot()))
+
+    def test_java_base64_encoding_is_forwarded_and_validated_without_wire_rewriting(self):
+        encoded = base64.b64encode(struct.pack("<1024f", *([0.5] * 1024))).decode()
+        opener = Mock()
+        response = self.embeddings(vector=encoded)
+        opener.open.return_value = self.response(response)
+        model = RealModel(self.config(), opener)
+        payload = dict(model="embed-test", input=["actual-text"], encoding_format="base64")
+        self.assertEqual(model.forward("/embeddings", payload), response)
+        self.assertEqual(json.loads(opener.open.call_args.args[0].data), payload)
+        self.assertEqual(sum(model.embedding_receipts().values()), 1)
+        for vector in ("not base64!", base64.b64encode(b"short").decode(),
+                       base64.b64encode(struct.pack("<1024f", *([float("inf")] * 1024))).decode(),
+                       base64.b64encode(bytes(4096)).decode(), [0.5] * 1024):
+            opener.open.return_value = self.response(self.embeddings(vector=vector))
+            with self.assertRaises(ModelFailure):
+                model.forward("/embeddings", payload)
+        self.assertEqual(sum(model.embedding_receipts().values()), 1)
 
     def test_upstream_failure_is_not_retried_and_response_secrets_are_not_reported(self):
         opener = Mock()

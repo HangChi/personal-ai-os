@@ -43,6 +43,25 @@ class EvaluationAdapterTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             query_subset(queries, {"other": ("unknown", "body")})
 
+    def test_formatted_embedding_receipts_require_exact_oracle_hashes_and_count(self):
+        text = "synthetic content"
+        raw = hashlib.sha256(text.encode()).hexdigest()
+        formatted = hashlib.sha256(b"title: fixture\n\nsynthetic content").hexdigest()
+        actual = [dict(id="owned", title="title", filename="fixture.md", chunkCount=1,
+                       sizeBytes=len(text), charCount=len(text))]
+        row = dict(document_id="owned", title="title", filename="fixture.md", index=0, sha256=raw, dimensions=1024)
+        database = Mock()
+        database.sql.return_value = json.dumps([row])
+        arguments = (actual, {"post": ("title", text)}, {"owned": "title"}, database)
+        report = verify_ingestion(*arguments, Counter({formatted: 1}), [formatted])
+        self.assertTrue(report["all_expected_embedding_inputs_seen"])
+        self.assertFalse(report["all_chunk_hashes_seen_by_embedding_model"])
+        for hashes in ([], [raw], [formatted, formatted]):
+            with self.assertRaises(AssertionError):
+                verify_ingestion(*arguments, Counter({formatted: 1}), hashes)
+        with self.assertRaises(AssertionError):
+            verify_ingestion(*arguments, Counter({formatted: 1}))
+
     def test_no_implicit_corpus_scan_and_complete_fixed_annotations(self):
         modules, hashes = subject.original_modules()
         report = subject.corpus_preflight(modules)

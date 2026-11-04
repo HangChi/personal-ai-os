@@ -43,7 +43,7 @@ class EvaluationModel(Handler):
         super()._handle_embeddings(request)
 
 
-def verify_ingestion(actual, documents, uploaded, database, embedding_inputs):
+def verify_ingestion(actual, documents, uploaded, database, embedding_inputs, expected_embedding_hashes=None):
     source = {title: content for title, content in documents.values()}
     chunks = json.loads(database.sql(
         "SELECT coalesce(json_agg(x),'[]'::json) FROM (SELECT "
@@ -52,7 +52,8 @@ def verify_ingestion(actual, documents, uploaded, database, embedding_inputs):
         "encode(sha256(convert_to(content,'UTF8')),'hex') AS sha256,"
         "vector_dims(embedding) AS dimensions FROM vector_store) x;"))
     stored_hashes = Counter(row["sha256"] for row in chunks)
-    if stored_hashes - embedding_inputs:
+    expected = stored_hashes if expected_embedding_hashes is None else Counter(expected_embedding_hashes)
+    if sum(expected.values()) != len(chunks) or expected - embedding_inputs:
         raise AssertionError("Persisted chunks were not actually sent to the embedding fixture")
     if {row["document_id"] for row in chunks} != set(uploaded):
         raise AssertionError("Persisted vectors include missing or foreign documents")
@@ -72,7 +73,8 @@ def verify_ingestion(actual, documents, uploaded, database, embedding_inputs):
         evidence.append(dict(title=document["title"], source_sha256=hashlib.sha256(text.encode()).hexdigest(),
                              size_bytes=document["sizeBytes"], utf16_chars=document["charCount"], chunks=count))
     return dict(documents=len(evidence), vectors=len(chunks), dimensions=1024,
-                all_chunk_hashes_seen_by_embedding_model=True, per_document=evidence)
+                all_chunk_hashes_seen_by_embedding_model=expected_embedding_hashes is None,
+                all_expected_embedding_inputs_seen=True, per_document=evidence)
 
 
 def upload_binding(client):

@@ -19,6 +19,7 @@ from go_eval_adapter import FixtureAdapter, arguments, original_modules
 from go_real_model import ModelFailure, RealModel, load_config, pooled_transport, serve
 from go_runtime import private_json
 from go_test_environment import cache_environment
+from java_embedding_content import embedding_hashes
 from run_go_cutover_tests import Client
 from run_go_demo_seed_tests import OwnedDatabase
 from run_go_eval_tests import query_subset, verify_ingestion
@@ -117,9 +118,15 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
                 modules["rebuild-corpus.py"].upload(post, title)
                 result["uploaded_documents"] = position
                 print(backend + ": uploaded real article " + str(position) + "/" + str(len(documents)), flush=True)
+            expected_hashes = None
+            result["embedding_input_format"] = "raw-persisted-chunk"
+            if backend == "java":
+                rows = json.loads(database.sql("SELECT json_agg(x) FROM (SELECT content,metadata FROM vector_store) x;"))
+                expected_hashes, result["embedding_format_oracle"] = embedding_hashes(rows)
+                result["embedding_input_format"] = "Spring-AI-2.0.1-MetadataMode.EMBED"
             result["ingestion"] = verify_ingestion(client.request("/knowledge/documents"), documents,
                                                    adapter.uploaded, database,
-                                                   relay.embedding_receipts() - receipts_before)
+                                                   relay.embedding_receipts() - receipts_before, expected_hashes)
             result["stage"] = "hybrid"
             retrieval = modules["retrieval-eval.py"]
             retrieval.QUERIES = queries
@@ -191,6 +198,8 @@ def comparison(backends):
                 strict_rank_changes=sum(left["rank"] != right["rank"] for left, right in
                                         zip(java["query_results"], go["query_results"])),
                 identical_source_files=True, live_upstream_calls_independent=True,
+                embedding_input_formats={key: value.get("embedding_input_format", "UNRECORDED")
+                                         for key, value in backends.items()},
                 noise_tolerance_unchanged=0.007, default_similarity_threshold_unchanged=0.3,
                 release_gate_approved=False)
 
@@ -199,6 +208,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model-env-file", required=True, type=Path, help="Only explicitly authorized model keys are loaded")
     parser.add_argument("--downloaded-corpus-dir", required=True, type=Path)
+    parser.add_argument("--backend", choices=("both", "go", "java"), default="both")
     args = parser.parse_args()
     config = load_config(args.model_env_file)
     with pooled_transport(config) as opener:
@@ -215,7 +225,8 @@ def run(args, config, opener):
     report_path = SPEC / ("p8-eval-real-" + stamp + ".json")
     report = dict(result="IN_PROGRESS", started_at=datetime.now(timezone.utc).isoformat(),
                   configured_real_model_used=True, synthetic_model=False, model=model.config.metadata(),
-                  acquisition=downloaded[1], backends={}, private_answer_evidence=str(artifact_dir),
+                  acquisition=downloaded[1], backends={}, selected_backend=args.backend,
+                  private_answer_evidence=str(artifact_dir),
                   semantic_quality_verified=False, release_gates_changed=False,
                   limits="16-document subset of fresh public pages, not authenticated historical 26-article corpus. "
                          "Independent live model calls can have noise. Legacy knowledge QA only; multistage RAG, "
@@ -236,7 +247,7 @@ def run(args, config, opener):
             build.update(cache_environment(), GOPROXY="off", GOTOOLCHAIN="local", GOMAXPROCS="4")
             subprocess.run(["go", "build", "-o", str(binary), "./cmd/personalos"],
                            cwd=ROOT / "backend-go", env=build, check=True, timeout=120)
-            for backend in ("go", "java"):
+            for backend in (("go", "java") if args.backend == "both" else (args.backend,)):
                 def run_backend(container, fixture):
                     progress = report["backends"].setdefault(backend, {})
                     report["backends"][backend] = exercise(container, fixture, backend, binary, model,
@@ -244,12 +255,16 @@ def run(args, config, opener):
                 run_package(IMAGE, "app", tls_mode=True, test_pattern="^TestP8ContainerListenerBoundary$",
                             exercise=run_backend)
                 print("Real model " + backend + " subset completed", flush=True)
-            report["comparison"] = comparison(report["backends"])
+            if args.backend == "both":
+                report["comparison"] = comparison(report["backends"])
         if model.snapshot()["failures"]:
             raise AssertionError("Real model upstream failures were observed")
         report["result"], code = "PASS", 0
     except Exception as error:
         report["result"] = "FAIL"
+        for progress in report["backends"].values():
+            if progress.get("result") == "IN_PROGRESS":
+                progress["result"] = "FAIL"
         report["failure"] = str(error) if isinstance(error, (ModelFailure, AssertionError)) else type(error).__name__
         print("Real evaluation failed: " + report["failure"] + "; no synthetic fallback or raw error output", flush=True)
     finally:
