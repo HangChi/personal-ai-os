@@ -133,6 +133,12 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 
 定向单测全部race通过，日志`/tmp/personalos-p8-text-extract-2.log`；真实TLS列表/任务四项通过2.833s/2.344s，日志`/tmp/personalos-p8-text-lists-db.log`。该轮calendar过滤无匹配，未把它当数据库通过；另跑calendar真实TLS全包通过3.043s，日志`/tmp/personalos-p8-calendar-final.log`。最终全包串行race退出0（app215.449s），日志`/tmp/personalos-p8-go-final-serial-2.log`；前一轮启动后才新增reflect依赖导致task编译失败，失败日志保留，未误报通过。所有本次数据库容器清理，发布门禁不升级。
 
+## T803e 冲突对话双来源持久化
+
+原ChatKnowledgeIntegrationTest.conflictingEvidenceBypassesAnswerModelAndPersistsBothSources不能由单引用的旧P6测试替代。新增TestP8ConflictingEvidenceBypassesAnswerAndPersistsBothSources，与原Java一样仅替换检索边界；两篇实际摄入文档、真实HTTP/SSE与PostgreSQL保持原链。断言rag/citations/delta/done、不同说法/适用日期、一次检索、回答模型零调用、USER/ASSISTANT两消息及两条完整有序引用快照相等。既有知识pipeline/governance测试继续承担冲突判断职责，不把本用例当真实模型语义评估。
+
+`python3 scripts/migration/run_go_postgres_tests.py --package app --tls --run '^TestP8(ConflictingEvidence|SessionAndDocument)'`两项race通过2.735s，日志`/tmp/personalos-p8-conflict-final.log`，原42迁移及临时容器清理通过。未更改生产实现或原Java断言，逐声明台账另行记录。
+
 ## T805a 候选CI与T807文档
 
 独立`.github/workflows/go.yml`保留原ci.yml，Go分支/相关PR及手动触发，最小只读权限。执行全包串行race、integration vet、build、模块校验、44项Python测试/固定基线/78配置处置检查及新TLS库task/confirmation/P8回归，失败日志作为artifact。没有远端push或工作流运行，不声称GitHub已绿；它也不替代原Java/前端及浏览器/切换/人工门禁。
