@@ -2,10 +2,23 @@ import copy
 import hashlib
 import unittest
 
-from run_go_real_eval_tests import check_answer, check_multistage, check_no_evidence, comparison, metrics
+from go_eval_adapter import original_modules
+from run_go_real_eval_tests import check_answer, check_multistage, check_no_evidence, comparison, corpus_coverage, metrics
 
 
 class RealEvaluationTest(unittest.TestCase):
+    def test_corpus_coverage_is_measured_without_claiming_historical_identity(self):
+        modules, _ = original_modules()
+        corpus = modules["rebuild-corpus.py"].CORPUS
+        full = corpus_coverage({post: (title, "fixture") for post, title in corpus}, modules)
+        self.assertEqual(full["documents"], 26)
+        self.assertEqual(full["eligible_original_queries"], 129)
+        self.assertEqual(full["excluded_original_queries"], 0)
+        self.assertFalse(full["historical_corpus_identity_verified"])
+        partial = corpus_coverage({post: (title, "fixture") for post, title in corpus[:22]}, modules)
+        self.assertEqual(partial["eligible_original_queries"], 111)
+        self.assertEqual(partial["excluded_original_queries"], 18)
+
     def answer(self):
         return dict(answered=True, answer="概述[1]", citations=[
             dict(index=1, documentId="owned", documentTitle="acceptable", chunkIndex=0, content="stored chunk")])

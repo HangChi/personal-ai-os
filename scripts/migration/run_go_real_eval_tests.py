@@ -31,6 +31,14 @@ QA_QUERIES = ("BRIN 索引适合什么场景", "goroutine 为什么比操作系�
 NO_EVIDENCE_QUERY = "量子引力理论能否解释黑洞信息悖论的最终答案是什么？"
 
 
+def corpus_coverage(documents, modules):
+    eligible = query_subset(modules["queries.py"].QUERIES, documents)
+    return dict(documents=len(documents), expected_documents=len(modules["rebuild-corpus.py"].CORPUS),
+                eligible_original_queries=len(eligible), expected_original_queries=len(modules["queries.py"].QUERIES),
+                excluded_original_queries=len(modules["queries.py"].QUERIES) - len(eligible),
+                historical_corpus_identity_verified=False)
+
+
 def metrics(rows):
     if not rows:
         raise ValueError("Real evaluation requires nonempty original query results")
@@ -294,16 +302,18 @@ def run(args, config, opener):
     model = RealModel(config, opener)
     modules, _ = original_modules()
     downloaded = load_corpus(args.downloaded_corpus_dir, modules)
-    query_subset(modules["queries.py"].QUERIES, downloaded[0])
+    coverage = corpus_coverage(downloaded[0], modules)
     artifact_dir = Path(tempfile.mkdtemp(prefix="personalos-p8-real-evidence-")).resolve()
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     report_path = SPEC / ("p8-eval-real-" + stamp + ".json")
     report = dict(result="IN_PROGRESS", started_at=datetime.now(timezone.utc).isoformat(),
                   configured_real_model_used=True, synthetic_model=False, model=model.config.metadata(),
                   acquisition=downloaded[1], backends={}, selected_backend=args.backend, mode=args.mode,
+                  input_corpus_coverage=coverage,
                   private_answer_evidence=str(artifact_dir),
                   semantic_quality_verified=False, release_gates_changed=False,
-                  limits="16-document subset of fresh public pages, not authenticated historical 26-article corpus. "
+                  limits=str(coverage["documents"]) + " of " + str(coverage["expected_documents"]) +
+                         " fresh public articles; current-page coverage is not authenticated historical corpus identity. "
                          "Independent live model calls can have noise. Retrieval mode uses legacy QA; "
                          "multistage mode probes one original question without replacing the full retrieval suite. "
                          "No-evidence mode is one supplemental negative control, not an original annotated query. "
