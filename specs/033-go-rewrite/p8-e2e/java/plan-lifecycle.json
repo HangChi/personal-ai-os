@@ -1,0 +1,19 @@
+{
+  "backend": "java",
+  "result": "PASS",
+  "scope": "synthetic model and owned database",
+  "planStatus": "COMPLETED",
+  "stepStatuses": [
+    "DONE",
+    "DONE",
+    "DONE"
+  ],
+  "actualTaskPriorityCounts": {
+    "HIGH": 2,
+    "MEDIUM": 0,
+    "LOW": 1
+  },
+  "persistedMessages": 2,
+  "queryReceipt": "findTasks",
+  "cleanupEmpty": true
+}

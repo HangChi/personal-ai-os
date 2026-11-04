@@ -1,5 +1,11 @@
 # 验证记录
 
+## 2026-11-04 P8 E2E失败隔离与真实计划
+
+T802c：五项预算隔离和五项模型夹具测试通过，完整83项迁移Python测试通过（`/tmp/personalos-p8-python-plan.log`）。原84项Java/Go全suite最终同为81通过/1预算失败/1原跳过/1工具上限观察，均实际退出1，报告`p8-e2e/go/e2e-20261104-201958.json`与`p8-e2e/java/e2e-20261104-202003.json`。G4失败后finally恢复原32768，未改原函数或断言。
+
+独立真实计划探针两端第二轮退出0；三步完成/实际任务查询回执/2HIGH与1LOW准确统计/两消息/清理归零见`p8-e2e/{go,java}/plan-lifecycle.json`，日志`/tmp/personalos-p8-plan-lifecycle-{go,java}-2.log`。首轮清理阶段started_at缺失的失败保留，修复仅初始化probe上下文。模型不读期望报告或数据库；合成执行不证明真实语义质量。父项和五门禁保持开放。
+
 ## 2026-11-04 P6 第二批：向量写入与索引任务
 
 `python3 scripts/migration/run_go_postgres_tests.py --package knowledge --tls` 实际通过。独立无持久卷PostgreSQL/pgvector，基线Java Flyway重放42迁移，自建CA/verify-full且拒绝明文。5个新集成测试覆盖文档原子替换与失败保留原代、新标题/文件名引用、删除与来源级联、LIKE字面量/总数和超大页码、维度/非法标识符、文档租约被夺后的最终写入拒绝、索引结果和向量同事务、16路SKIP LOCKED竞争、过期重领/旧token拒写、三次失效终止/清负载、24路提交仅20个入队、幂等冲突与7日清理。日志：`/private/tmp/personal-ai-os-p6-knowledge-first.log`。测试容器已清理。各父任务仍须后续HTTP/角色/模型装配及Java对照后关闭。

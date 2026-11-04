@@ -19,11 +19,65 @@ def text_content(message):
     return str(content)
 
 
+def task_plan_next(messages):
+    """Advance only the supported read/count/advise plan, from successful receipts."""
+    calls = {}
+    receipts = []
+    for message in messages:
+        for call in message.get("tool_calls", []):
+            calls[call["id"]] = call.get("function", {}).get("name")
+        if message.get("role") != "tool":
+            continue
+        try:
+            result = json.loads(text_content(message))
+        except ValueError:
+            return None
+        if not isinstance(result, dict) or result.get("status") != "OK":
+            return None
+        receipts.append((message.get("name") or calls.get(message.get("tool_call_id")), result.get("data")))
+    plans = [data for name, data in receipts if name in ("createPlan", "startPlanStep", "completePlanStep")]
+    if not plans or not isinstance(plans[-1], dict):
+        return None
+    plan = plans[-1]
+    steps = plan.get("steps", [])
+    if (len(steps) != 3 or not all(isinstance(step, dict) for step in steps)
+            or not all(word in step.get("title", "") for word, step in zip(("任务", "优先级", "建议"), steps))):
+        return None
+    step = next((step for step in steps if step.get("status") not in ("DONE", "SKIPPED")), None)
+    if step is None or plan.get("status") != "ACTIVE":
+        return None
+    seq = step.get("seq")
+    if step.get("status") == "PENDING":
+        return "startPlanStep", {"seq": seq}
+    if step.get("status") != "RUNNING":
+        return None
+    queries = [data for name, data in receipts if name == "findTasks"]
+    if not queries:
+        return ("findTasks", {"limit": 100}) if seq == 1 else None
+    tasks = queries[-1]
+    if not isinstance(tasks, list) or not all(isinstance(task, dict) for task in tasks):
+        return None
+    counts = {priority: sum(task.get("priority") == priority for task in tasks) for priority in ("HIGH", "MEDIUM", "LOW")}
+    summaries = {
+        1: "本次查询返回 %d 个任务（最多100个），后续统计仅限本次结果。" % len(tasks),
+        2: "本次返回任务的优先级数量：" + json.dumps(counts, ensure_ascii=False),
+        3: "建议先核对本次返回的 %d 个HIGH任务的截止时间，再安排其他任务；未修改任务。" % counts["HIGH"],
+    }
+    return ("completePlanStep", {"seq": seq, "summary": summaries[seq]}) if seq in summaries else None
+
+
 def choose(messages):
     last = next((index for index in range(len(messages) - 1, -1, -1) if messages[index].get("role") == "user"), -1)
     user = text_content(messages[last]) if last >= 0 else ""
     results = [message for message in messages[last + 1:] if message.get("role") == "tool"]
     quoted = re.search("「([^」]+)」", user)
+    if "createPlan" in user and not results:
+        numbered = re.split(r"[0-9]+[)）.、]\s*", user)
+        steps = [step.split("。", 1)[0].strip(" ；;\n") for step in numbered[1:]]
+        if 2 <= len(steps) <= 12 and all(steps):
+            return "createPlan", {"goal": numbered[0].rstrip(" ：:"), "steps": steps}
+    if "createPlan" in user and results:
+        return task_plan_next(messages[last + 1:])
     if "重复执行 30 次" in user:
         return ("findTasks", {}) if len(results) < 30 else None
     if "创建" in user and "任务" in user and quoted and not results:

@@ -127,7 +127,7 @@ ASSETS = {
     "fixture": ("implemented", ["scripts/migration/p8_model_fixture.py", "scripts/migration/run_go_e2e_tests.py", "scripts/migration/run_go_cutover_tests.py"], "原模拟上游保留，Go隔离runner明确合成输入/模型；未连接用户模型。"),
     "manualSeed": ("implemented", ["scripts/migration/run_go_demo_seed_tests.py", "scripts/migration/test_go_demo_seed.py", "specs/033-go-rewrite/p8-demo-seed.json", "backend-go/docs/development.md"], "复用原七组配方，仅新随机TLS容器/空库/独立Go；认证CSRF、实际API/SQL回读、向量/状态/31天用量/审计及退出连接归零通过。禁止原main/reset，不操作现有库。"),
     "browser": ("implemented", ["specs/033-go-rewrite/p8-e2e/browser-go.json", "specs/033-go-rewrite/p8-e2e/README.md"], "保留原辅助工具；原前端全检查/真实Chrome10页三宽度与流程报告，不改前端源码。"),
-    "e2e": ("in_progress", ["scripts/migration/run_go_e2e_tests.py", "specs/033-go-rewrite/p8-e2e/README.md"], "原断言保留：80通过/1与固定Java同失败/1原case跳过/2观察；不能标全绿。"),
+    "e2e": ("in_progress", ["scripts/migration/run_go_e2e_tests.py", "scripts/migration/test_go_e2e_isolation.py", "specs/033-go-rewrite/p8-e2e/README.md"], "原断言保留：两端完整84项同为81通过/1预算失败/1原case跳过/1工具超限观察；失败预算finally恢复，计划依真实回执推进，不能标全绿。"),
     "ci": ("implemented", [".github/workflows/go.yml", "backend-go/docs/development.md"], "原CI冻结，独立Go候选工作流及本地命令验证；未push/运行远端CI。"),
 }
 

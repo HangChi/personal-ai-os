@@ -2,6 +2,7 @@
 """Run the unchanged original E2E cases against an isolated authenticated P8 process."""
 import argparse
 from contextlib import contextmanager
+from functools import wraps
 import http.client
 import http.cookiejar
 from http.server import ThreadingHTTPServer
@@ -24,6 +25,35 @@ from run_go_postgres_tests import IMAGE, ROOT, run_package
 BACKEND = "go"
 GROUPS = None
 MODE = "e2e"
+
+
+def isolate_budget_case(suite):
+    """Preserve the frozen case outcome while always performing its intended reset."""
+    failures = []
+    matches = [case for case in suite.CASES if case["fn"] is suite.g4_trim_under_small_budget]
+    if len(matches) != 1:
+        raise ValueError("Expected exactly one original small-budget case")
+    original = matches[0]["fn"]
+
+    @wraps(original)
+    def isolated(context):
+        failed = False
+        try:
+            return original(context)
+        except BaseException:
+            failed = True
+            raise
+        finally:
+            try:
+                suite.ok(suite.put("/chat/context-budget", {"tokens": 32768}), "P8 restore budget after case")
+            except Exception:
+                failures.append("Original small-budget case restoration failed")
+                if not failed:
+                    raise
+                print(failures[-1], flush=True)
+
+    matches[0]["fn"] = isolated
+    return failures
 
 
 @contextmanager
@@ -114,6 +144,52 @@ def verify_cancellation(suite, jar, csrf):
     print("P8 explicit HTTP cancellation, upstream stop and no partial assistant passed", flush=True)
 
 
+def verify_plan_lifecycle(suite):
+    """Supplement the frozen existence check with persisted completion and real counts."""
+    suite.CTX["started_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    try:
+        if suite.db_count("task") != 0:
+            raise AssertionError("Plan probe requires its new disposable database to have no tasks")
+        expected = {"HIGH": 2, "MEDIUM": 0, "LOW": 1}
+        for index, priority in enumerate(("HIGH", "HIGH", "LOW")):
+            task = suite.ok(suite.post("/tasks", {"title": "P8 plan fixture " + str(index), "priority": priority}))
+            suite.CTX["cleanup"]["tasks"].append(task["id"])
+        session = suite.new_session("P8 explicit plan lifecycle")
+        stream = suite.stream_chat(session, "请执行计划：1) 查看我有哪些任务；2) 统计各优先级数量；3) 给出建议。请先 createPlan。")
+        if stream.first("done") is None or stream.first("error") is not None or stream.first("yield") is not None:
+            raise AssertionError("Plan probe did not complete its actual SSE execution")
+        plan = suite.ok(suite.get("/conversations/" + session + "/plan"))
+        steps = plan.get("steps", [])
+        if plan.get("status") != "COMPLETED" or len(steps) != 3:
+            raise AssertionError("Plan probe did not persist a completed three-step plan")
+        if any(step.get("seq") != index or step.get("status") != "DONE"
+               or not step.get("startedAt") or not step.get("finishedAt")
+               for index, step in enumerate(steps, 1)):
+            raise AssertionError("Plan steps lack ordered completion timestamps")
+        if steps[0].get("toolName") != "findTasks":
+            raise AssertionError("Plan query step lacks its actual task-tool receipt")
+        summary = steps[1].get("toolResult") or ""
+        if not all('"%s": %d' % item in summary for item in expected.items()):
+            raise AssertionError("Plan priority summary differs from actual seeded tasks")
+        messages = suite.messages(session)
+        if len(messages) != 2 or messages[-1]["role"] != "ASSISTANT":
+            raise AssertionError("Completed plan response was not persisted exactly once")
+        if suite.db_count("task") != 3:
+            raise AssertionError("Read-only plan unexpectedly changed the task count")
+        report = {"backend": BACKEND, "result": "PASS", "scope": "synthetic model and owned database",
+                  "planStatus": plan["status"], "stepStatuses": [step["status"] for step in steps],
+                  "actualTaskPriorityCounts": expected, "persistedMessages": len(messages),
+                  "queryReceipt": steps[0]["toolName"]}
+    finally:
+        suite.cleanup_artifacts()
+    if any(suite.db_count(table) != 0 for table in ("chat_session", "chat_message", "agent_plan", "agent_plan_step", "task")):
+        raise AssertionError("Plan probe cleanup left owned business data")
+    report["cleanupEmpty"] = True
+    suite.REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    (suite.REPORT_DIR / "plan-lifecycle.json").write_text(json.dumps(report, indent=2) + chr(10))
+    print("P8 actual plan creation, ordered tool execution, priority counts and persistence passed", flush=True)
+
+
 def exercise(container, fixture):
     if fixture.get("GO_TEST_POSTGRES") != "disposable":
         raise ValueError("E2E refuses a non-disposable database")
@@ -177,6 +253,9 @@ def exercise(container, fixture):
                     if MODE == "cancel":
                         verify_cancellation(suite, jar, csrf)
                         return
+                    if MODE == "plan":
+                        verify_plan_lifecycle(suite)
+                        return
                     original_stream = suite.stream_chat
 
                     def stream_chat(*args, **kwargs):
@@ -185,7 +264,11 @@ def exercise(container, fixture):
                             print("Synthetic E2E stream error: " + json.dumps(result.first("error"), ensure_ascii=False), flush=True)
                         return result
                     suite.stream_chat = stream_chat
-                    if suite.run(GROUPS) != 0:
+                    restoration_failures = isolate_budget_case(suite)
+                    result = suite.run(GROUPS)
+                    if restoration_failures:
+                        raise AssertionError("Original E2E budget restoration failed")
+                    if result != 0:
                         raise AssertionError("Original E2E failures recorded in specs/033-go-rewrite/p8-e2e")
     finally:
         model.shutdown()
@@ -197,7 +280,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("go", "java"), default="go")
     parser.add_argument("--groups", nargs="+")
-    parser.add_argument("--mode", choices=("e2e", "cancel", "browser"), default="e2e")
+    parser.add_argument("--mode", choices=("e2e", "cancel", "browser", "plan"), default="e2e")
     arguments = parser.parse_args()
     BACKEND, GROUPS = arguments.backend, set(arguments.groups) if arguments.groups else None
     MODE = arguments.mode
