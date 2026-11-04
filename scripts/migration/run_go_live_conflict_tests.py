@@ -10,7 +10,7 @@ import secrets
 import subprocess
 import tempfile
 
-from go_live_conflicts import execute, original_program
+from go_live_conflicts import execute, original_program, owned_search
 from go_real_model import ModelFailure, RealModel, load_config, pooled_transport, serve
 from go_test_environment import cache_environment
 from run_go_cutover_tests import Client
@@ -22,7 +22,7 @@ from run_go_postgres_tests import IMAGE, ROOT, run_package
 SPEC = ROOT / "specs/033-go-rewrite"
 
 
-def exercise(container, fixture, backend, binary, model, relay_values, private_directory, report):
+def exercise(container, fixture, backend, binary, model, relay_values, search_values, private_directory, report):
     database = OwnedDatabase(container, fixture)
     database.require_empty()
     with tempfile.TemporaryDirectory(prefix="personalos-p8-live-conflict-runtime-") as temporary:
@@ -41,6 +41,7 @@ def exercise(container, fixture, backend, binary, model, relay_values, private_d
                       EMBEDDING_CACHE_ENABLED="false", RAG_CANDIDATE_CACHE_ENABLED="false",
                       AI_KNOWLEDGE_HYBRID_ENABLED="true")
         values.update(relay_values)
+        values.update(search_values)
         processes.BACKEND = backend
         try:
             with processes.candidate(directory, binary, values) as state:
@@ -108,10 +109,12 @@ def main():
             build.update(cache_environment(), GOPROXY="off", GOTOOLCHAIN="local", GOMAXPROCS="4")
             subprocess.run(["go", "build", "-o", str(binary), "./cmd/personalos"],
                            cwd=ROOT / "backend-go", env=build, check=True, timeout=120)
-            with serve(model) as relay_values:
+            with serve(model) as relay_values, owned_search() as (search_values, search_image):
+                report["owned_opensearch_image"] = search_image
                 run_package(IMAGE, "app", tls_mode=True, test_pattern="^TestP8ContainerListenerBoundary$",
                     exercise=lambda container, fixture: exercise(container, fixture, args.backend, binary, model,
-                                                               relay_values, private_directory, report))
+                                                               relay_values, search_values, private_directory, report))
+            report["owned_opensearch_removed"] = True
             if model.snapshot()["failures"]:
                 raise AssertionError("Real conflict upstream failures were observed")
         report["result"], code = "PASS", 0

@@ -1,17 +1,64 @@
 """Run the frozen conflict scenario body with IO bound to owned test resources."""
 import ast
+from contextlib import contextmanager
 import hashlib
 import json
 from pathlib import Path
+import re
+import secrets
+import subprocess
 import tempfile
 import time
 from types import SimpleNamespace
+import urllib.request
 from urllib.parse import quote
 
 from go_runtime import private_json
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "scripts/eval/rag-live-conflicts.py"
+
+
+@contextmanager
+def owned_search():
+    image = subprocess.check_output(["docker", "image", "inspect", "opensearchproject/opensearch:3.9.0",
+        "--format", "{{index .RepoDigests 0}}"], text=True, timeout=10).strip()
+    if not re.fullmatch(r"opensearchproject/opensearch@sha256:[0-9a-f]{64}", image):
+        raise ValueError("Live conflict search fixture requires the locally pinned image")
+    container = subprocess.check_output(["docker", "run", "--detach", "--rm", "--name",
+        "personalos-p8-live-search-" + secrets.token_hex(6), "--label", "personalos.go-p8-live-search=true",
+        "--memory", "1536m", "--tmpfs", "/usr/share/opensearch/data:rw,nosuid,uid=1000,gid=1000,size=512m",
+        "--publish", "127.0.0.1::9200", "--env", "discovery.type=single-node", "--env",
+        "DISABLE_SECURITY_PLUGIN=true", "--env", "DISABLE_INSTALL_DEMO_CONFIG=true", "--env",
+        "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m", image], text=True, timeout=120).strip()
+    if not re.fullmatch(r"[0-9a-f]{64}", container):
+        raise ValueError("Invalid owned search container identity")
+    try:
+        template = ('{"owned":{{json (index .Config.Labels "personalos.go-p8-live-search")}},'
+                    '"bindings":{{json (index .NetworkSettings.Ports "9200/tcp")}},'
+                    '"mounts":{{json .Mounts}}}')
+        info = json.loads(subprocess.check_output(["docker", "inspect", "--format", template, container], text=True, timeout=10))
+        bindings = info.get("bindings", [])
+        if (info.get("owned") != "true" or len(bindings) != 1 or bindings[0]["HostIp"] != "127.0.0.1"
+                or any(mount["Type"] != "tmpfs" for mount in info.get("mounts", []))):
+            raise ValueError("Live conflict search fixture isolation violated")
+        endpoint = "http://127.0.0.1:" + bindings[0]["HostPort"]
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        deadline = time.monotonic() + 120
+        while True:
+            try:
+                with opener.open(endpoint + "/_cluster/health", timeout=3) as response:
+                    if json.load(response).get("status") in ("yellow", "green"):
+                        break
+            except (OSError, ValueError):
+                pass
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Owned conflict search startup exceeded 120 seconds")
+            time.sleep(1)
+        yield dict(OPENSEARCH_ENABLED="true", OPENSEARCH_ENDPOINT=endpoint,
+                   OPENSEARCH_INDEX="p8-live-conflicts-" + secrets.token_hex(8)), image
+    finally:
+        subprocess.run(["docker", "rm", "--force", container], capture_output=True, check=True, timeout=30)
 
 
 def original_program():
