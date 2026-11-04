@@ -160,7 +160,7 @@ def disposition(entry, old):
         return status, "explicit-asset-adaptation", evidence, note
     if path.startswith("scripts/eval/"):
         if path in {"scripts/eval/queries.py", "scripts/eval/rebuild-corpus.py", "scripts/eval/retrieval-eval.py", "scripts/eval/noise-floor.py"}:
-            return "in_progress", "retained-live-evaluation-open", ["scripts/migration/go_eval_adapter.py", "scripts/migration/run_go_eval_tests.py", "scripts/migration/test_go_eval_adapter.py", "specs/033-go-rewrite/p8-eval-tooling.json", "specs/033-go-rewrite/p8-upload-binding.json"], "固定哈希的原26标题/129查询/evaluate/summarize/noise算法安全接新随机TLS库；合成材料129次hybrid与50次显式vector请求、Java/Go上传参数差分通过。原26全文未提供、真实模型未评，不以工具链/合成分数解除在线质量门禁。"
+            return "in_progress", "retained-live-evaluation-open", ["scripts/migration/go_eval_adapter.py", "scripts/migration/run_go_eval_tests.py", "scripts/migration/test_go_eval_adapter.py", "specs/033-go-rewrite/p8-eval-tooling.json", "specs/033-go-rewrite/p8-upload-binding.json"], "固定哈希的原26标题/129查询/evaluate/summarize/noise算法安全接新随机TLS库；合成材料129次hybrid与50次显式vector请求、Java/Go上传20个String/UUID参数场景一致，拒绝目标零索引任务。原26全文未提供、真实模型未评，不以工具链/合成分数解除在线质量门禁。"
         return "in_progress", "retained-live-evaluation-open", ["scripts/migration/compare_go_p6.py", "specs/033-go-rewrite/p6-eval-results.json"], "原真实语料/在线模型评估工具保留；18组受控召回不是原外部语料/模型语义质量，未执行有外部副作用的采集。"
     if path.startswith("scripts/e2e/reports/"):
         return "implemented", "retained-historical-report", ["specs/033-go-rewrite/p8-e2e/README.md"], "原Java历史报告按哈希保留，只作历史资料，不冒充本次Go结果。"

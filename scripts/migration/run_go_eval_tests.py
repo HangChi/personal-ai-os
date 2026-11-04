@@ -52,6 +52,29 @@ def upload_binding(client):
             rows.append(dict(name=name, query=query, form=fields, title=document["title"]))
         finally:
             client.request("/knowledge/documents/" + document["id"], "DELETE")
+    # Unknown UUIDs fail in requireDocument before any job can be enqueued.
+    target = "00000000-0000-4000-8000-000000000001"
+    for name, query, fields, status in [
+        ("target-query", [("documentId", target)], [], 404),
+        ("target-query-invalid", [("documentId", "invalid")], [], 400),
+        ("target-query-spaces", [("documentId", " " + target + " ")], [], 404),
+        ("target-form-spaces", [], [" " + target + " "], 404),
+        ("target-unicode-surrounding-space", [("documentId", "\u2003" + target + "\u2003")], [], 400),
+        ("target-nbsp", [("documentId", "\u00a0")], [], 400),
+        ("target-nul", [("documentId", "\x00")], [], 400),
+        ("target-query-repeat", [("documentId", target), ("documentId", "invalid")], [], 404),
+        ("target-form-first", [("documentId", "invalid")], [target], 404),
+        ("target-invalid-form-first", [("documentId", target)], ["invalid"], 400),
+    ]:
+        boundary = "p8-target-" + uuid.uuid4().hex
+        body = "".join("--" + boundary + '\r\nContent-Disposition: form-data; name="documentId"\r\n\r\n'
+                       + value + "\r\n" for value in fields)
+        body += ("--" + boundary + '\r\nContent-Disposition: form-data; name="file"; filename="binding.md"\r\n'
+                 'Content-Type: text/markdown\r\n\r\n' + "upload parameter fixture " * 30
+                 + "\r\n--" + boundary + "--\r\n")
+        client.request("/knowledge/jobs?" + urlencode(query), "POST", body.encode(), status=status,
+                       headers={"Content-Type": "multipart/form-data; boundary=" + boundary})
+        rows.append(dict(name=name, query=query, form=fields, status=status))
     return rows
 
 
@@ -84,6 +107,8 @@ def exercise(container, fixture, binding_only=False):
                 client = Client(state)
                 client.login(values)
                 expected_binding = upload_binding(client)
+                if database.sql("SELECT count(*) FROM knowledge_index_job;") != "0":
+                    raise AssertionError("Java parameter rejection unexpectedly enqueued an index job")
             print("Original Java upload binding: " + json.dumps(expected_binding, ensure_ascii=False), flush=True)
             corpus = modules["rebuild-corpus.py"].CORPUS
             # Synthetic title repetition tests IO, not semantic recall against the missing articles.
@@ -93,13 +118,17 @@ def exercise(container, fixture, binding_only=False):
                 client = Client(state)
                 client.login(values)
                 actual_binding = upload_binding(client)
+                if database.sql("SELECT count(*) FROM knowledge_index_job;") != "0":
+                    raise AssertionError("Go parameter rejection unexpectedly enqueued an index job")
                 if actual_binding != expected_binding:
                     print("Go upload binding: " + json.dumps(actual_binding, ensure_ascii=False), flush=True)
                     raise AssertionError("Go upload parameter binding differs from original Java")
                 (SPEC / "p8-upload-binding.json").write_text(json.dumps(dict(result="PASS",
                     baseline_commit=json.loads((SPEC / "inventory.json").read_text())["baseline_commit"],
                     source_sha256=hashlib.sha256((ROOT / "backend/src/main/java/com/personalos/knowledge/controller/KnowledgeController.java").read_bytes()).hexdigest(),
-                    cases=actual_binding, synthetic_only=True, real_servlet_and_database=True), ensure_ascii=False, indent=2) + "\n")
+                    job_controller_sha256=hashlib.sha256((ROOT / "backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeJobController.java").read_bytes()).hexdigest(),
+                    cases=actual_binding, synthetic_only=True, real_servlet_and_database=True,
+                    rejected_targets_enqueued_zero_jobs=True), ensure_ascii=False, indent=2) + "\n")
                 if binding_only:
                     return
                 adapter = FixtureAdapter(client, database, documents)

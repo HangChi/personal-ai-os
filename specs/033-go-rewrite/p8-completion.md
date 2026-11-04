@@ -34,6 +34,16 @@
 
 最终66项Python单测、完整knowledge真实TLS库race6.403s、Go integration vet/build、固定基线/78配置/派生映射/diff检查通过；`check-complete`实际退出1，五门禁与23个in_progress保持。最终复验日志见validation.md；本批不重复此前无关全包长回归。
 
+## T801g 上传UUID转换边界
+
+固定Java实际Servlet与Go的下一轮差分发现，带ASCII首尾空白的documentId在Java得到目标不存在404，Go错误返回参数400。首轮失败保留 /tmp/personalos-p8-target-binding-1.log 与 /tmp/personalos-p8-target-params-red.log。共享读取器现先按Java hasText判断空白，再只去除ASCII控制/空白以匹配String.trim；不把UUID两侧Unicode空白、NBSP或NUL错误当作合法输入，保留form优先与首个UUID参数的语义。
+
+20个Go子场景与实际Java/Go的10标题加10UUID场景通过；UUID探针只访问本次新TLS空库中的固定不存在目标，在400/404返回后分别检查knowledge_index_job为0。报告[p8-upload-binding.json](p8-upload-binding.json)记录两个原控制器SHA与零任务断言；实际通过日志 /tmp/personalos-p8-target-binding-2.log，完整原评估工具链第4轮也通过并清理（/tmp/personalos-p8-eval-tooling-4.log）。这仍只验证合成工具与参数绑定。
+
+定向knowledge/http两包race通过（1.746s/1.523s，/tmp/personalos-p8-target-params-green.log），66项Python单测通过（/tmp/personalos-p8-python-final-targets.log），integration vet与固定基线/派生检查通过。当前源码镜像重建成功（/tmp/personalos-p8-image-after-params.log），HTTPS第6轮完整通过并清理（/tmp/personalos-p8-https-6.log），保留私有CA与测试profile边界。
+
+上传修复后的原E2E实际退出1，结果仍80 PASS/1 FAIL/1 SKIP/2 NOTE、无ERROR。唯一FAIL仍为固定Java同现的G4预算用例，saveMemory仍跳过，未放宽断言；业务产物归零并清理独立容器。日志 /tmp/personalos-p8-e2e-after-params.log，完整报告[p8-e2e/go/e2e-20261104-194702.md](p8-e2e/go/e2e-20261104-194702.md)。T801/T802与五发布门禁继续开放，不以回归无新增失败替代通过。
+
 ## T801a 数据保留策略
 
 `--foundation --p8` 包含P7及全部前序业务，新增用量/操作记录清理；默认保持回环监听，不解除prod拒绝或readyz503。`app.retention.token-usage-days`与`app.retention.operation-record-days`默认0（永久保留），负值/超过Java int的值启动拒绝。两类截止时间独立，按UTC瞬时减整天，严格早于截止时间才删除；不能用Go time.Duration乘天数导致大整数溢出。

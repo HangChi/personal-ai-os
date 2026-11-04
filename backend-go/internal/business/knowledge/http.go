@@ -333,9 +333,11 @@ func readUpload(w http.ResponseWriter, r *http.Request) (string, *string, string
 		title = &value
 	}
 	target := ""
-	if values := parameters("documentId"); len(values) > 0 && values[0] != "" {
+	if values := parameters("documentId"); len(values) > 0 && strip(values[0]) != "" {
 		var ok bool
-		target, ok = api.ParseJavaUUID(values[0])
+		// StringToUUIDConverter checks hasText, then uses String.trim (ASCII).
+		raw := strings.TrimFunc(values[0], func(r rune) bool { return r <= 0x20 })
+		target, ok = api.ParseJavaUUID(raw)
 		if !ok {
 			return "", nil, "", nil, web.InvalidParameter("documentId")
 		}

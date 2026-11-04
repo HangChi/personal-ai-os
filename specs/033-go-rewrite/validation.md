@@ -594,6 +594,12 @@ T700–T705全部完成，最终Go全量串行race通过。职责/安全边界�
 
 已分批提交：`eb0fc87`、`39ed122`、`aa52bb7`、`5df00b0`、`a51612f`、`d95d34f`；任务/配置/逐声明证据台账为`267801e`，最终任务勾选与回归记录单独收口提交。最后重新生成P7台账/映射未产生差异，22项Python测试、78项配置台账和固定基线check再次通过。默认诊断、prod拒绝、回环监听和readyz503继续保留。P8未开始。
 
+## P8 上传UUID边界复验（2026-11-04）
+
+T801g补齐上传UUID转换：首轮实际Java404/Go400的ASCII空白差异保留，匹配Spring hasText后ASCII trim；20个真实String/UUID差分场景通过且拒绝目标未排入任何索引任务（/tmp/personalos-p8-target-binding-2.log）。20个Go子场景、knowledge/http两包race1.746s/1.523s、66项Python单测、integration vet通过。完整原评估工具链第4轮通过（/tmp/personalos-p8-eval-tooling-4.log），仍为合成材料。失败证据 /tmp/personalos-p8-target-binding-1.log 与 /tmp/personalos-p8-target-params-red.log 保留。
+
+当前镜像重建成功并完成HTTPS第6轮可信链/拒绝/安全头/认证/续期/重启保留验证，临时资源清理，日志 /tmp/personalos-p8-image-after-params.log、/tmp/personalos-p8-https-6.log。原E2E修复后复验实际退出1：80通过/1同基线预算失败/1工具跳过/2观察/零ERROR，日志 /tmp/personalos-p8-e2e-after-params.log；完整报告 p8-e2e/go/e2e-20261104-194702.md，清理后业务数据归零、独立容器已删除。保留真实失败与全部发布门禁。
+
 ## P8 首批运维运行时（2026-11-04）
 
 T801a完成，T800–T808父项仍开放。新增显式`--p8`（包含P7）接入用量/审计保留策略，默认永久保留，独立UTC截止时间、负值拒绝、同秒去重、每轮30秒限制与取消等待后关池。原附件cron解析提取共享schedule包，原附件定向race通过。安全差异R-053保护结果未明的TOOL IN_PROGRESS占位，防止保留清理解除幂等保护。

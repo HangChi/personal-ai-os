@@ -2,6 +2,7 @@
   "result": "PASS",
   "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
   "source_sha256": "10843600a0ad34c2789a00031eebb53bd213535eade1716dbcb42af1e4cfccd7",
+  "job_controller_sha256": "170c8eac10870abcbfcd49a4268244b085ce64511c02f8a5608ec2b5ea4736bd",
   "cases": [
     {
       "name": "missing",
@@ -109,8 +110,124 @@
         "third"
       ],
       "title": "third,first,second"
+    },
+    {
+      "name": "target-query",
+      "query": [
+        [
+          "documentId",
+          "00000000-0000-4000-8000-000000000001"
+        ]
+      ],
+      "form": [],
+      "status": 404
+    },
+    {
+      "name": "target-query-invalid",
+      "query": [
+        [
+          "documentId",
+          "invalid"
+        ]
+      ],
+      "form": [],
+      "status": 400
+    },
+    {
+      "name": "target-query-spaces",
+      "query": [
+        [
+          "documentId",
+          " 00000000-0000-4000-8000-000000000001 "
+        ]
+      ],
+      "form": [],
+      "status": 404
+    },
+    {
+      "name": "target-form-spaces",
+      "query": [],
+      "form": [
+        " 00000000-0000-4000-8000-000000000001 "
+      ],
+      "status": 404
+    },
+    {
+      "name": "target-unicode-surrounding-space",
+      "query": [
+        [
+          "documentId",
+          " 00000000-0000-4000-8000-000000000001 "
+        ]
+      ],
+      "form": [],
+      "status": 400
+    },
+    {
+      "name": "target-nbsp",
+      "query": [
+        [
+          "documentId",
+          " "
+        ]
+      ],
+      "form": [],
+      "status": 400
+    },
+    {
+      "name": "target-nul",
+      "query": [
+        [
+          "documentId",
+          "\u0000"
+        ]
+      ],
+      "form": [],
+      "status": 400
+    },
+    {
+      "name": "target-query-repeat",
+      "query": [
+        [
+          "documentId",
+          "00000000-0000-4000-8000-000000000001"
+        ],
+        [
+          "documentId",
+          "invalid"
+        ]
+      ],
+      "form": [],
+      "status": 404
+    },
+    {
+      "name": "target-form-first",
+      "query": [
+        [
+          "documentId",
+          "invalid"
+        ]
+      ],
+      "form": [
+        "00000000-0000-4000-8000-000000000001"
+      ],
+      "status": 404
+    },
+    {
+      "name": "target-invalid-form-first",
+      "query": [
+        [
+          "documentId",
+          "00000000-0000-4000-8000-000000000001"
+        ]
+      ],
+      "form": [
+        "invalid"
+      ],
+      "status": 400
     }
   ],
   "synthetic_only": true,
-  "real_servlet_and_database": true
+  "real_servlet_and_database": true,
+  "rejected_targets_enqueued_zero_jobs": true
 }
