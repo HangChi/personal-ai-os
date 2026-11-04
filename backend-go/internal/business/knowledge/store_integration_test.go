@@ -83,7 +83,7 @@ func fixtureEmbedding(_ context.Context, r model.EmbeddingRequest) (model.Embedd
 func fixtureStore(t *testing.T) *Store {
 	t.Helper()
 	pool := fixturePool(t)
-	execSQL(t, pool, "DELETE FROM knowledge_index_job; DELETE FROM knowledge_document; DELETE FROM vector_store; DELETE FROM runtime_lease WHERE resource LIKE 'document:%'")
+	execSQL(t, pool, "DELETE FROM knowledge_index_job; DELETE FROM knowledge_document; DELETE FROM vector_store; DELETE FROM knowledge_search_outbox; DELETE FROM work_signal_outbox; DELETE FROM runtime_lease WHERE resource LIKE 'document:%'")
 	locks, e := coordination.New(pool)
 	if e != nil {
 		t.Fatal(e)

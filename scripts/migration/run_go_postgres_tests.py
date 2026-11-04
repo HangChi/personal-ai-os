@@ -78,6 +78,7 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
         go_env = {key: value for key, value in os.environ.items() if key in {
             "PATH", "HOME", "TMPDIR", "CC", "CXX", "CGO_ENABLED", "SSL_CERT_FILE", "SSL_CERT_DIR",
             "GO_TEST_REMINDER_RABBIT_URI", "GO_TEST_REMINDER_BROWSER_SUBSCRIPTION",
+            "GO_TEST_KNOWLEDGE_RABBIT_URI", "GO_TEST_KNOWLEDGE_SEARCH_URL",
         }}
         go_env.update({
             "GOCACHE": "/private/tmp/personal-ai-os-go-build", "GOPATH": "/private/tmp/personal-ai-os-go",

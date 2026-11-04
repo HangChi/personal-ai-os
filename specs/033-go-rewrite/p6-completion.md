@@ -23,3 +23,9 @@ Store 使用既有Pool/Coordinator，保留原schema、vector(1024)、JSON元数
 新增向量阈值、英文标识符与中文候选补召回、按全量命中数计算 IDF、加权 RRF、文档去重和 LIKE 字面量转义。可选外部搜索仅返回候选 ID，正文重新查询 PostgreSQL；投影积压或外部失败退回本地召回。Redis 候选缓存使用专用客户端、namespace/config/query 哈希、20 秒 TTL、256 KiB 限制与数据库 generation；事务/关闭时绕过，故障直接执行召回。
 
 实际执行：独立 TLS PostgreSQL/pgvector + TLS Redis，重放42原迁移后17项知识包测试全部通过 race。覆盖中文低相似度补召回、八文档窗口统计先于截断、失效外部ID、缓存隔离/TTL/来源变更/并发失效/关闭和Redis故障。发现并修复真实 PostgreSQL 的 ESCAPE 字面量错误。完整模块装配与端到端验收仍待后续批次。
+
+## 第四批：搜索投影与持久唤醒
+
+OpenSearch 使用有界 REST、CJK/HNSW 映射和现有维度验证，external_gte 版本写入、删除及冲突幂等。投影沿用原数据库 Outbox，短事务领取、60秒失效恢复、revision/token 条件确认及指数退避；重建只入队。RabbitMQ 队列持久化、消息 TTL/上限、persistent 发布与 publisher confirm；通知只唤醒执行器，数据库任务仍独立领取和轮询，信号按 revision 条件延迟重发。
+
+实际执行 `python3 scripts/migration/run_go_p6_tests.py`：四个独立 tmpfs 容器，PostgreSQL/Redis 使用 TLS，RabbitMQ/OpenSearch 使用随机回环端口且固定本地镜像摘要。真实 OpenSearch 验证权威回表/旧版本拒覆盖/删除；真实 RabbitMQ 验证确认发布、重复/非法通知不消费业务任务、消费者重连。投影新 revision 不被旧确认删除、失败退避、重建、信号旧确认不推迟新 revision 也通过 race。首次测试容器启动配置已修复，成功后全部临时容器清理；API/五角色装配仍在下一批。
