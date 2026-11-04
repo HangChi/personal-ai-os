@@ -3,7 +3,14 @@
 package app
 
 import (
+	"bufio"
 	"context"
+	"io"
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -100,4 +107,76 @@ func TestP5ReminderPostgres(t *testing.T) {
 	if removed, err := events.Delete(ctx, event.ID); err != nil || removed != 1 {
 		t.Fatalf("delete removed %d reminders, %v", removed, err)
 	}
+}
+
+func TestP5ReminderRabbitFanout(t *testing.T) {
+	uri := os.Getenv("GO_TEST_REMINDER_RABBIT_URI")
+	if uri == "" {
+		t.Skip("需要本次测试专用的 RabbitMQ")
+	}
+	parsed, err := url.Parse(uri)
+	if err != nil || parsed.Scheme != "amqp" || parsed.Hostname() != "127.0.0.1" || parsed.Port() == "5672" {
+		t.Fatal("RabbitMQ 测试仅接受随机回环端口")
+	}
+	first := fixtureFoundation(t, nil, nil)
+	second := fixtureFoundation(t, nil, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	settings, _ := config.BindCalendarProperties(nil)
+	source := calendar.NewEvents(first.Pool(), settings, time.UTC)
+	reader := calendar.NewEvents(second.Pool(), settings, time.UTC)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	var snapshots []*bufio.Reader
+	for _, events := range []*calendar.Events{source, reader} {
+		stream := calendar.NewStream(ctx, events, time.Hour)
+		defer stream.Close()
+		bus, err := calendar.StartBroadcast(ctx, uri, events, stream, first.coordinator, events == source, logger)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer bus.Close()
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_ = stream.Serve(w, r)
+		}))
+		defer server.Close()
+		req, _ := http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
+		response, err := server.Client().Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer response.Body.Close()
+		snapshots = append(snapshots, bufio.NewReader(response.Body))
+	}
+	expect := func(needle string) {
+		t.Helper()
+		for _, stream := range snapshots {
+			for {
+				line, err := stream.ReadString('\n')
+				if err != nil {
+					t.Fatalf("waiting for %s: %v", needle, err)
+				}
+				if strings.HasPrefix(line, "data:") && strings.Contains(line, needle) {
+					break
+				}
+			}
+		}
+	}
+	expect("[]")
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	title := "rabbit-fanout-fixture"
+	if _, err := source.Create(ctx, calendar.EventRequest{Title: &title, StartsAt: &now, EndsAt: &now}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := source.Scan(ctx, now); err != nil {
+		t.Fatal(err)
+	}
+	expect(title)
+	due, err := reader.Reminders(ctx, "", true, 10, now)
+	if err != nil || len(due) != 1 {
+		t.Fatalf("due = %+v, %v", due, err)
+	}
+	if _, err := reader.MarkRead(ctx, due[0].ID, now); err != nil {
+		t.Fatal(err)
+	}
+	expect("[]")
 }

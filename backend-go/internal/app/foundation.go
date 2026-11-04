@@ -58,28 +58,29 @@ func (FoundationOptions) MarshalJSON() ([]byte, error) { return []byte(`{"redact
 
 // Foundation是尚未发布的P1组合入口，不启动业务Worker，也不宣告迁移就绪。
 type Foundation struct {
-	pool           *database.Pool
-	coordinator    *coordination.Coordinator
-	gate           *modelgate.Gate
-	executor       *taskexec.Executor
-	health         *health.Service
-	history        migration.HistoryStatus
-	handler        http.Handler
-	management     http.Handler
-	ctx            context.Context
-	cancel         context.CancelFunc
-	mu             sync.Mutex
-	closing        bool
-	served         bool
-	active         sync.WaitGroup
-	closeOnce      sync.Once
-	done           chan struct{}
-	closeErr       error
-	models         *model.Module
-	chat           *chat.Module
-	modelTransport *http.Transport
-	stopReminders  func()
-	reminderStream *calendar.Stream
+	pool              *database.Pool
+	coordinator       *coordination.Coordinator
+	gate              *modelgate.Gate
+	executor          *taskexec.Executor
+	health            *health.Service
+	history           migration.HistoryStatus
+	handler           http.Handler
+	management        http.Handler
+	ctx               context.Context
+	cancel            context.CancelFunc
+	mu                sync.Mutex
+	closing           bool
+	served            bool
+	active            sync.WaitGroup
+	closeOnce         sync.Once
+	done              chan struct{}
+	closeErr          error
+	models            *model.Module
+	chat              *chat.Module
+	modelTransport    *http.Transport
+	stopReminders     func()
+	reminderStream    *calendar.Stream
+	reminderBroadcast *calendar.Broadcast
 }
 
 func (*Foundation) String() string     { return "Foundation{redacted}" }
@@ -353,6 +354,11 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 		})
 	}
+	var push *calendar.Push
+	var pushInterval = 30 * time.Second
+	var webhook *calendar.Webhook
+	var webhookInterval = 5 * time.Second
+	var rabbitURI string
 	var streamInterval time.Duration
 	var streamHandler http.Handler
 
@@ -371,6 +377,73 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			return nil, errors.New("提醒流轮询间隔必须为正整数")
 		}
 		streamInterval = time.Duration(interval) * time.Millisecond
+		rabbitEnabled, _, err := properties.Get("app.rabbitmq.enabled")
+		if err != nil {
+			return nil, err
+		}
+		if strings.EqualFold(rabbitEnabled, "true") && (settings.Role.Allows("api") || settings.Role.Allows("delivery")) {
+			rabbitURI, _, err = properties.Get("app.rabbitmq.uri")
+			if err != nil {
+				return nil, err
+			}
+		}
+		webhookEnabled, _, err := properties.Get("app.reminders.webhook.enabled")
+		if err != nil {
+			return nil, err
+		}
+		if strings.EqualFold(webhookEnabled, "true") {
+			address, _, err := properties.Get("app.reminders.webhook.url")
+			if err != nil {
+				return nil, err
+			}
+			secret, _, err := properties.Get("app.reminders.webhook.secret")
+			if err != nil {
+				return nil, err
+			}
+			local, _, err := properties.Get("app.reminders.webhook.allow-local-http")
+			if err != nil {
+				return nil, err
+			}
+			webhook, err = calendar.NewWebhook(calendarEvents, address, secret, strings.EqualFold(local, "true"))
+			if err != nil {
+				return nil, err
+			}
+			if value, found, err := properties.Get("app.reminders.webhook.poll-ms"); err != nil {
+				return nil, err
+			} else if found {
+				interval, err := strconv.ParseInt(value, 10, 32)
+				if err != nil || interval <= 0 {
+					return nil, errors.New("提醒 Webhook 轮询间隔必须为正整数")
+				}
+				webhookInterval = time.Duration(interval) * time.Millisecond
+			}
+		}
+		pushEnabled, _, err := properties.Get("app.web-push.enabled")
+		if err != nil {
+			return nil, err
+		}
+		pushConfig := make(map[string]string)
+		if strings.EqualFold(pushEnabled, "true") {
+			for _, key := range []string{"public-key", "private-key", "subject", "interval-ms"} {
+				value, _, err := properties.Get("app.web-push." + key)
+				if err != nil {
+					return nil, err
+				}
+				pushConfig[key] = value
+			}
+			if value := pushConfig["interval-ms"]; value != "" {
+				interval, err := strconv.ParseInt(value, 10, 32)
+				if err != nil || interval <= 0 {
+					return nil, errors.New("Web Push 调度间隔必须为正整数")
+				}
+				pushInterval = time.Duration(interval) * time.Millisecond
+			}
+		}
+		push, err = calendar.NewPush(calendarEvents, strings.EqualFold(pushEnabled, "true"), pushConfig["public-key"], pushConfig["private-key"], pushConfig["subject"])
+		if err != nil {
+			return nil, err
+		}
+		pushHandler := push.Handler(logger)
 		store, err := memory.NewStore(ctx, pool)
 		if err != nil {
 			return nil, err
@@ -424,6 +497,10 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 				streamHandler.ServeHTTP(w, r)
 				return
 			}
+			if calendar.OwnsPushPath(r.URL.Path) {
+				pushHandler.ServeHTTP(w, r)
+				return
+			}
 			if calendar.OwnsEventPath(r.URL.Path) || calendar.OwnsReminderPath(r.URL.Path) {
 				events.ServeHTTP(w, r)
 				return
@@ -463,26 +540,60 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		f.reminderStream = calendar.NewStream(f.ctx, calendarEvents, streamInterval)
 		streamHandler = httpmiddleware.HandleErrors(f.reminderStream.Serve, logger)
 	}
-	if calendarEvents != nil && scanSettings.ScanEnabled {
-		scanCtx, stop := context.WithCancel(f.ctx)
-		done := make(chan struct{})
-		f.stopReminders = func() { stop(); <-done }
-		go func() {
-			defer close(done)
-			timer := time.NewTimer(time.Duration(scanSettings.ScanInitialDelayMS) * time.Millisecond)
-			defer timer.Stop()
-			for {
-				select {
-				case <-scanCtx.Done():
-					return
-				case now := <-timer.C:
-					if _, err := calendarEvents.Scan(scanCtx, now); err != nil && scanCtx.Err() == nil {
-						logger.ErrorContext(scanCtx, "提醒扫描失败，将在下一轮重试", "error", err)
-					}
-					timer.Reset(time.Duration(scanSettings.ScanIntervalMS) * time.Millisecond)
-				}
+	if rabbitURI != "" {
+		f.reminderBroadcast, err = calendar.StartBroadcast(f.ctx, rabbitURI, calendarEvents, f.reminderStream, f.coordinator, settings.Role.Allows("delivery"), logger)
+		if err != nil {
+			if f.reminderBroadcast != nil {
+				f.reminderBroadcast.Close()
 			}
-		}()
+			if f.reminderStream != nil {
+				f.reminderStream.Close()
+			}
+			if f.chat != nil {
+				_ = f.chat.Close(context.Background())
+			}
+			return nil, err
+		}
+	}
+	if calendarEvents != nil {
+		scanCtx, stop := context.WithCancel(f.ctx)
+		var workers sync.WaitGroup
+		f.stopReminders = func() {
+			stop()
+			workers.Wait()
+			push.Close()
+			if webhook != nil {
+				webhook.Close()
+			}
+		}
+		if scanSettings.ScanEnabled {
+			workers.Go(func() {
+				calendar.RunFixedDelay(scanCtx, time.Duration(scanSettings.ScanInitialDelayMS)*time.Millisecond,
+					time.Duration(scanSettings.ScanIntervalMS)*time.Millisecond, func(ctx context.Context, now time.Time) {
+						if _, err := calendarEvents.Scan(ctx, now); err != nil && ctx.Err() == nil {
+							logger.ErrorContext(ctx, "提醒扫描失败，将在下一轮重试", "error", err)
+						}
+					})
+			})
+		}
+		if settings.Role.Allows("delivery") {
+			workers.Go(func() {
+				calendar.RunFixedDelay(scanCtx, 15*time.Second, pushInterval, func(ctx context.Context, now time.Time) {
+					if err := push.Dispatch(ctx, now); err != nil && ctx.Err() == nil {
+						logger.ErrorContext(ctx, "Web Push 调度失败，将在下一轮重试")
+					}
+				})
+			})
+		}
+		if webhook != nil && settings.Role.Allows("delivery") {
+			workers.Go(func() {
+				calendar.RunFixedDelay(scanCtx, 0, webhookInterval, func(ctx context.Context, _ time.Time) {
+					if err := webhook.Dispatch(ctx); err != nil && ctx.Err() == nil {
+						logger.ErrorContext(ctx, "提醒 Webhook 调度失败，将在下一轮重试")
+					}
+				})
+			})
+		}
 	}
 	if backfillMemory != nil {
 		f.executor.Submit(f.ctx, backfillMemory)
@@ -535,6 +646,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 		f.closing = true
 		f.mu.Unlock()
 		go func() {
+			if f.reminderBroadcast != nil {
+				f.reminderBroadcast.Close()
+			}
 			if f.reminderStream != nil {
 				f.reminderStream.Close()
 			}
