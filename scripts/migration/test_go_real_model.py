@@ -3,14 +3,38 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import urllib.error
 import urllib.request
 
-from go_real_model import ModelConfig, ModelFailure, NoRedirect, RealModel, load_config, serve
+from go_real_model import CurlOpener, ModelConfig, ModelFailure, RealModel, load_config, serve
 
 
 class RealModelTest(unittest.TestCase):
+    def test_curl_transport_uses_stdin_not_arguments_and_never_retries_or_follows_redirects(self):
+        request = urllib.request.Request("https://models.example.invalid/v1/embeddings",
+            b'{"input":["actual-text"],"model":"embed-test"}',
+            {"Authorization": "Bearer test-only-secret"}, method="POST")
+        with patch("go_real_model.subprocess.run") as run:
+            run.return_value = Mock(returncode=0, stdout=b'{"data":[]}\n200')
+            with CurlOpener().open(request, 90) as response:
+                self.assertEqual(response.status, 200)
+            arguments = run.call_args.args[0]
+            self.assertNotIn("test-only-secret", str(arguments))
+            self.assertNotIn("actual-text", str(arguments))
+            self.assertNotIn("--location", arguments)
+            self.assertEqual(arguments[arguments.index("--retry") + 1], "0")
+            self.assertIn(b"test-only-secret", run.call_args.kwargs["input"])
+            self.assertEqual(run.call_args.kwargs["timeout"], 95)
+            run.return_value = Mock(returncode=0, stdout=b'{"error":"test-only-secret"}\n302')
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                CurlOpener().open(request, 90)
+            self.assertEqual(error.exception.code, 302)
+            error.exception.close()
+            run.return_value = Mock(returncode=56, stdout=b"", stderr=b"test-only-secret")
+            with self.assertRaisesRegex(ModelFailure, "^UPSTREAM_CURL_EXIT_56$"):
+                CurlOpener().open(request, 90)
+
     def config(self):
         return ModelConfig("https://models.example.invalid/v1", "test-only-secret", "chat-test", "embed-test", False)
 
@@ -71,7 +95,7 @@ class RealModelTest(unittest.TestCase):
         request = opener.open.call_args.args[0]
         self.assertEqual(request.full_url, "https://models.example.invalid/v1/embeddings")
         self.assertEqual(request.headers["Authorization"], "Bearer test-only-secret")
-        self.assertEqual(opener.open.call_args.kwargs["timeout"], 25)
+        self.assertEqual(opener.open.call_args.kwargs["timeout"], 90)
         self.assertEqual(sum(model.embedding_receipts().values()), 1)
         self.assertEqual(model.snapshot()["usage"]["total_tokens"], 3)
         self.assertNotIn("actual-public-text", json.dumps(model.snapshot()))
@@ -168,7 +192,6 @@ class RealModelTest(unittest.TestCase):
             with local.open(request, timeout=2) as response:
                 self.assertEqual(len(json.load(response)["data"][0]["embedding"]), 1024)
             self.assertEqual(opener.open.call_count, 1)
-        self.assertIsNone(NoRedirect().redirect_request(None, None, 302, "", {}, "https://other.invalid"))
 
 
 if __name__ == "__main__":

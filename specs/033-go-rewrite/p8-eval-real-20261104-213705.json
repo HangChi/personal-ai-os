@@ -1,0 +1,274 @@
+{
+  "result": "FAIL",
+  "started_at": "2026-11-04T13:37:05.441725+00:00",
+  "configured_real_model_used": true,
+  "synthetic_model": false,
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "acquisition": {
+    "version": 1,
+    "result": "PARTIAL",
+    "requested": 26,
+    "articles": [
+      {
+        "post_id": "7632034549904310310",
+        "label": "PostgreSQL 索引：从 B-tree 到 BRIN",
+        "published_title": "PostgreSQL 存储与索引系列（二）：索引的艺术——从 B-tree 到 BRIN 的全景指南PostgreSQL - 掘金",
+        "url": "https://juejin.cn/post/7632034549904310310",
+        "filename": "juejin-7632034549904310310.md",
+        "fetched_at": "2026-11-04T13:16:03.446491+00:00",
+        "body_chars": 6622,
+        "page_sha256": "2b1bce635c4fd15d6647f3f0039792d61743956c3d76ba59df54db37c32e7191",
+        "body_sha256": "6fcf7db7d5a136b4c11e18587f23969c9c9e846af51ff70ee3adf01be286fc69",
+        "bytes": 12664,
+        "sha256": "2184d1de9959429a7d7e0252a36a5478cb12fb041e6d8e9ebcea220fbe135b6b"
+      },
+      {
+        "post_id": "7650134533660508187",
+        "label": "Vue3 响应式原理：从 Proxy 到 EffectScope",
+        "published_title": "Vue3 响应式原理深度剖析：从Proxy到EffectScope从源码层面完整拆解Vue3响应式系统：Proxy拦截、 - 掘金",
+        "url": "https://juejin.cn/post/7650134533660508187",
+        "filename": "juejin-7650134533660508187.md",
+        "fetched_at": "2026-11-04T13:16:11.894588+00:00",
+        "body_chars": 1093,
+        "page_sha256": "a346fe760bc08e2c9799b18b11682e45fa8ea2c3ca606046cb8923c55ad771f9",
+        "body_sha256": "61e24a1a0c44ffe5fd45069f796662418d96fcf2e342cbc1d5028c17b96f4814",
+        "bytes": 2452,
+        "sha256": "71c3875884be642fa6b0abe47c02664b0e4d230dc3cd2ab6668499e575d04b4f"
+      },
+      {
+        "post_id": "7616257286160646153",
+        "label": "Java 虚拟线程：让 Java 轻功水上漂",
+        "published_title": "虚拟线程：让Java轻功水上漂，告别“线程体重焦虑”虚拟线程是Java 21的“影分身”大招！它用极低开销创建海量轻量级 - 掘金",
+        "url": "https://juejin.cn/post/7616257286160646153",
+        "filename": "juejin-7616257286160646153.md",
+        "fetched_at": "2026-11-04T13:16:15.208994+00:00",
+        "body_chars": 3301,
+        "page_sha256": "4d0cf6c5fa49df36a23d37fcbbc262332a3f92575ae27525ec1e39dac183a3a1",
+        "body_sha256": "97fb07e52098476a77b55f3c1b3babd6998e6346809f6a12a902af6886a94c0e",
+        "bytes": 7872,
+        "sha256": "59bca09358f4c4c4617e72360f5d4cf8537f6b04f4a8ca7be7b46ef18d450502"
+      },
+      {
+        "post_id": "7271659132381216787",
+        "label": "Redis 缓存机制",
+        "published_title": "【864、Redis 缓存机制了解吗？】 Redis（Remote Dictionary Server）是一个开源的内存 - 掘金",
+        "url": "https://juejin.cn/post/7271659132381216787",
+        "filename": "juejin-7271659132381216787.md",
+        "fetched_at": "2026-11-04T13:16:18.449593+00:00",
+        "body_chars": 817,
+        "page_sha256": "8265800f5d33dbd6a00fbe34048b3d72c3cb2a79f49c91ff41ea688f6f3ee2ea",
+        "body_sha256": "fd8bf6f0c70e45713a4931dde5d62f7588b44fc42ed72640090eb640771bb9c9",
+        "bytes": 2354,
+        "sha256": "3782e9e64c102f58f5c065ac4dd4460014019e6f5642b10ab15a3ec81aab7ee0"
+      },
+      {
+        "post_id": "7569377216896057395",
+        "label": "HTTP 一篇说清楚",
+        "published_title": "HTTP一篇说清楚~拿走常常看，常常想，HTTP 不仅仅是发起一个 fetch 或 axios 请求。然后大多数情况下， - 掘金",
+        "url": "https://juejin.cn/post/7569377216896057395",
+        "filename": "juejin-7569377216896057395.md",
+        "fetched_at": "2026-11-04T13:16:21.773871+00:00",
+        "body_chars": 3055,
+        "page_sha256": "028bd3aaf62ffa0fa71ee49cd37fb178d6fe4a676f03c080942dd9e33636b427",
+        "body_sha256": "c06e9e7b6095a720b877cfb9f8a9ceaeb3e79b145831976707cd2bcd7766ccc7",
+        "bytes": 6030,
+        "sha256": "351c953dbec8daebaa7f8cee816a8a86cd4f853b6dfc30e3d6b2e9641f91adb4"
+      },
+      {
+        "post_id": "7692646947434643502",
+        "label": "MySQL 事务、索引与锁",
+        "published_title": "MySQL 事务、索引与锁：后端开发必须掌握的数据库基础本文以 InnoDB 为主要背景，从事务的 ACID 特性和隔离 - 掘金",
+        "url": "https://juejin.cn/post/7692646947434643502",
+        "filename": "juejin-7692646947434643502.md",
+        "fetched_at": "2026-11-04T13:16:26.126167+00:00",
+        "body_chars": 15382,
+        "page_sha256": "342a988543d8958f2bcedc4c69d4f9eec4f7adee4250e48d8f2ea0b24d9c0e6d",
+        "body_sha256": "8b1b5e151190ef82cc2713f26dd429b0c3858ebfe815f0206d30edc5baa04dd9",
+        "bytes": 29702,
+        "sha256": "4dc1ee3fc2f5ea45ca6a55ee2a37a7c12ddd110f51bad083c733e6501e184d6f"
+      },
+      {
+        "post_id": "7681202345805119488",
+        "label": "GMP 调度器：Go 并发的心脏",
+        "published_title": "GMP 调度器：Go 并发的心脏是如何跳动的GMP 调度器：Go 并发的心脏是如何跳动的 一个 go func() 就能 - 掘金",
+        "url": "https://juejin.cn/post/7681202345805119488",
+        "filename": "juejin-7681202345805119488.md",
+        "fetched_at": "2026-11-04T13:16:33.502934+00:00",
+        "body_chars": 3972,
+        "page_sha256": "694999147af8df28b2d2f65f06d597dec1df77f73af21e1c89745d0cc47cbbf4",
+        "body_sha256": "ec361fcb0e4b39adaa814570c8b3956c47b90054dc0df379da1bc0cd3b03f030",
+        "bytes": 6903,
+        "sha256": "aecf5ff33c150b8cbb89fd8c18e21e8f008cd66727b40fc5ada5524d83bf2abe"
+      },
+      {
+        "post_id": "7577229187897098275",
+        "label": "Go 并发模式选择指南",
+        "published_title": "Go并发模式选择指南：找到最适合你项目的并发方案｜Go语言进阶（19）从一次并发改造失败案例出发，总结生产环境验证的Go - 掘金",
+        "url": "https://juejin.cn/post/7577229187897098275",
+        "filename": "juejin-7577229187897098275.md",
+        "fetched_at": "2026-11-04T13:16:39.754666+00:00",
+        "body_chars": 13941,
+        "page_sha256": "9a21722f07e813f3343398711e01c0a514294b1a742b3379786462d98060ba41",
+        "body_sha256": "fc46d1b0b64d5423d6f95edf28f8476121811e3928d91288147fe7d8b48a8392",
+        "bytes": 22725,
+        "sha256": "c6faa54acc8d87572785dba162952c797a9d0e022abef4e23cf60c2a8011c646"
+      },
+      {
+        "post_id": "7687592289394704399",
+        "label": "HTTP 渐进：编码、缓存与断点续传",
+        "published_title": "HTTP 渐进：编码解码、基本认证、长短连接、代理、缓存、内容协商与断点续传HTTP 渐进：编码解码、基本认证、长短连 - 掘金",
+        "url": "https://juejin.cn/post/7687592289394704399",
+        "filename": "juejin-7687592289394704399.md",
+        "fetched_at": "2026-11-04T13:16:42.989318+00:00",
+        "body_chars": 13771,
+        "page_sha256": "bf70d5da81dc6a67cf1c7592d5e3702eb3a1c8c15086c68a6e64e5343ce5a137",
+        "body_sha256": "42aa291a2ee2016d95a4a42c0892a1b35433f19ebeebfbc8c129347a854f917b",
+        "bytes": 19517,
+        "sha256": "add19c24e0a35ff2d44af3470d0a1cbfa8ec2d172cb02c49b75f92d8adbb943e"
+      },
+      {
+        "post_id": "7696709714028281906",
+        "label": "MySQL 学习记：从增删改查到慢查询",
+        "published_title": "MySQL 学习记：从\"增删改查\"到\"为什么我的查询这么慢\"一篇从 30 秒慢查询出发的 MySQL 学习笔记，系统梳理 - 掘金",
+        "url": "https://juejin.cn/post/7696709714028281906",
+        "filename": "juejin-7696709714028281906.md",
+        "fetched_at": "2026-11-04T13:16:46.265396+00:00",
+        "body_chars": 4634,
+        "page_sha256": "06dddafb6dccb207155ed1375296e0c3b876312918f746a8e53cce273ed4aee3",
+        "body_sha256": "617b32bf614a8a2df1565d06a7d8b955230bc50eb6ef89efdfb4338233cac4b0",
+        "bytes": 8482,
+        "sha256": "e1441e505f00cc1fcb6e9d13151bac7a3c2bca0218b8b72939e20e8603360853"
+      },
+      {
+        "post_id": "7590681158717472808",
+        "label": "Docker 与虚拟机的区别：Namespace 和 Cgroup",
+        "published_title": "别再把Docker当虚拟机了：Namespace和Cgroup才是容器的灵魂你有没有遇到过这种情况： 别慌，三个月前的 - 掘金",
+        "url": "https://juejin.cn/post/7590681158717472808",
+        "filename": "juejin-7590681158717472808.md",
+        "fetched_at": "2026-11-04T13:16:51.507717+00:00",
+        "body_chars": 8278,
+        "page_sha256": "97837a06f597524709cad50c39333d152b40ebc4088dfae7670a0606f19d7ef4",
+        "body_sha256": "379befffb43d88e5cba444ff2a501bce7cc7d9ffb273941982493c4afd5e7824",
+        "bytes": 16578,
+        "sha256": "6630968b6e3624fc98b69d04c1377b3b7d899b72415672655a7399ee9538d24c"
+      },
+      {
+        "post_id": "7693201755920465939",
+        "label": "Docker 深度解析：UnionFS 与核心组件",
+        "published_title": "Docker 深度解析：从核心原理到生产级落地实践在现代后端开发、微服务架构与 DevOps 流程中，Docker 已经 - 掘金",
+        "url": "https://juejin.cn/post/7693201755920465939",
+        "filename": "juejin-7693201755920465939.md",
+        "fetched_at": "2026-11-04T13:16:54.750214+00:00",
+        "body_chars": 7238,
+        "page_sha256": "b36f450527f4d6ebc36f0807054df71dd05b413e75d88d0087aba0b0959beb8d",
+        "body_sha256": "0704622017166583646dbfadca3e112539b16493b44dba19c7ded0c694b42754",
+        "bytes": 15174,
+        "sha256": "6dcc582373cfbb9d5b830ac31ee7510a11153e29d168463dfad2f1ed878c7247"
+      },
+      {
+        "post_id": "7694832291801677878",
+        "label": "浏览器渲染管道：重排、重绘与合成层",
+        "published_title": "浏览器从 HTML 到像素：重排、重绘与合成层前端性能优化里，流传最广的一句话是「少碰会触发重排的属性」。但真去看浏览器 - 掘金",
+        "url": "https://juejin.cn/post/7694832291801677878",
+        "filename": "juejin-7694832291801677878.md",
+        "fetched_at": "2026-11-04T13:17:01.976659+00:00",
+        "body_chars": 3331,
+        "page_sha256": "7487b1c1d2a10ef502a7741a402414978d4fe333888089e7cfee79aadefc2151",
+        "body_sha256": "0b6cb008a4b6f2b0e8e6ff05bf0cc1503500f1694c1758f1003dbd147f46ac1c",
+        "bytes": 8317,
+        "sha256": "ee6ee4f0b85edbba7401c5e619d2533a523957d927cef4e259362df6bd848fbe"
+      },
+      {
+        "post_id": "7631430251667243023",
+        "label": "浏览器渲染原理：从输入到像素",
+        "published_title": "浏览器渲染原理，一篇就够了（从输入到像素））浏览器幕后 01：从输入到像素（全景图） 1. 为啥要学渲染原理？—— 治“ - 掘金",
+        "url": "https://juejin.cn/post/7631430251667243023",
+        "filename": "juejin-7631430251667243023.md",
+        "fetched_at": "2026-11-04T13:17:07.270267+00:00",
+        "body_chars": 3177,
+        "page_sha256": "0f4979f597788288fee7460163a0f111e0e05c2dec843295528c4fd6b277d120",
+        "body_sha256": "9305c07e66cfbf44a02484932f5997e49c90f27c54e5c09233771438d2ddf05a",
+        "bytes": 6524,
+        "sha256": "f83132444e6139a00b84e8174eef8818584ddda84c33a986a33126cbc53288c2"
+      },
+      {
+        "post_id": "7628488008481751083",
+        "label": "Kafka 实战总结：架构与吞吐优化",
+        "published_title": "Kafka消息队列：实战总结与深度解析一、Kafka基础介绍 1.1 什么是Kafka Kafka是一个分布式流式处理平 - 掘金",
+        "url": "https://juejin.cn/post/7628488008481751083",
+        "filename": "juejin-7628488008481751083.md",
+        "fetched_at": "2026-11-04T13:17:11.572976+00:00",
+        "body_chars": 26710,
+        "page_sha256": "48fa4362d19819ee15a8607a081076a9ce4ae6653e86d98c5adcb080a2f16814",
+        "body_sha256": "9d9eedf8649deec93fb71a6296393d3d99acb6e36943c6c181bfbe01b2c080ca",
+        "bytes": 37810,
+        "sha256": "1de49461cd78d779464b821b2b35832886221b66a269e826675d0e8f73f8c1b2"
+      },
+      {
+        "post_id": "7623271328049676330",
+        "label": "Kafka 为什么快：PageCache、零拷贝与 Segment",
+        "published_title": "Kafka为什么这么快？为什么会重复消费？这篇终于讲明白了很多人会用 Kafka，但并没有真正理解 Kafka。 会发消 - 掘金",
+        "url": "https://juejin.cn/post/7623271328049676330",
+        "filename": "juejin-7623271328049676330.md",
+        "fetched_at": "2026-11-04T13:17:14.913759+00:00",
+        "body_chars": 10839,
+        "page_sha256": "81d51f20c49c5025268096bc0af862f9b10c7968a63027845d33136757670976",
+        "body_sha256": "e875ec0414475c7a591b186026e0cf6ff291e1fb240e7629ce9b1ccdc2270d14",
+        "bytes": 22915,
+        "sha256": "7404198fa546eca88690a8d66370e636d4287b7530504208daf8ac9c9db72cc1"
+      }
+    ],
+    "failure": {
+      "post_id": "7651932218912522280",
+      "reason": "ARTICLE_BODY_MISSING_OR_BLOCKED"
+    },
+    "extractor_sha256": "6d75323dae96858fa178810dc8dc0a4b7fbe0cbc2374e3aab8d9b292bfb1e373",
+    "historical_corpus_identity_verified": false,
+    "real_model_quality_verified": false,
+    "scope": "Fresh public pages; local test use only"
+  },
+  "backends": {},
+  "private_answer_evidence": "/private/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-real-evidence-eqx5d8v_",
+  "semantic_quality_verified": false,
+  "release_gates_changed": false,
+  "limits": "16-document subset of fresh public pages, not authenticated historical 26-article corpus. Independent live model calls can have noise. Legacy knowledge QA only; multistage RAG, factual answer review and full production acceptance remain separate. No existing DB, production mutation, automatic release approval or synthetic fallback.",
+  "preflight": {
+    "embedding_dimensions": 1024,
+    "chat_nonempty": true
+  },
+  "failure": "Isolated cutover HTTP POST /knowledge/documents?title=Kafka%20%E5%AE%9E%E6%88%98%E6%80%BB%E7%BB%93%EF%BC%9A%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%90%9E%E5%90%90%E4%BC%98%E5%8C%96 returned 502",
+  "finished_at": "2026-11-04T13:38:15.317663+00:00",
+  "real_model_requests": {
+    "calls": {
+      "embedding": 16,
+      "chat": 1
+    },
+    "failures": {
+      "UPSTREAM_HTTP_400": 1
+    },
+    "input_characters": 130743,
+    "usage": {
+      "prompt_tokens": 50876,
+      "total_tokens": 50878,
+      "completion_tokens": 2
+    },
+    "successful_embedding_inputs": 103,
+    "unique_embedding_inputs": 103,
+    "unique_embedding_vectors": 103,
+    "limits": {
+      "requests": 600,
+      "chat_requests": 12,
+      "input_characters": 1000000,
+      "chat_max_tokens": 1024,
+      "upstream_timeout_seconds": 25,
+      "retries": 0
+    }
+  }
+}

@@ -1,0 +1,69 @@
+import copy
+import hashlib
+import unittest
+
+from run_go_real_eval_tests import check_answer, comparison, metrics
+
+
+class RealEvaluationTest(unittest.TestCase):
+    def answer(self):
+        return dict(answered=True, answer="概述[1]", citations=[
+            dict(index=1, documentId="owned", documentTitle="acceptable", chunkIndex=0, content="stored chunk")])
+
+    def check(self, response):
+        return check_answer(response, ["acceptable"], {"owned": "acceptable"},
+                            {("owned", 0): hashlib.sha256(b"stored chunk").hexdigest()})
+
+    def test_answer_must_cite_an_acceptable_persisted_chunk_without_approving_factual_quality(self):
+        result = self.check(self.answer())
+        self.assertTrue(result["explicit_marks_match"])
+        self.assertTrue(result["citation_chunks_match_database"])
+        self.assertFalse(result["factual_quality_manually_approved"])
+        self.assertNotIn("stored chunk", str(result))
+        self.assertNotIn("概述", str(result))
+
+    def test_answer_rejects_missing_marks_foreign_document_wrong_chunk_and_unsupported_citation(self):
+        for key, value in (("answered", False), ("answer", "没有编号"), ("answer", "错误编号[2]"),
+                           ("citations", [])):
+            response = self.answer()
+            response[key] = value
+            with self.subTest(key=key), self.assertRaises(AssertionError):
+                self.check(response)
+        for key, value in (("documentId", "foreign"), ("documentTitle", "other"),
+                           ("chunkIndex", 1), ("content", "invented source")):
+            response = self.answer()
+            response["citations"][0][key] = value
+            with self.subTest(key=key), self.assertRaises(AssertionError):
+                self.check(response)
+        with self.assertRaises(AssertionError):
+            check_answer(self.answer(), ["different acceptable"], {"owned": "acceptable"},
+                         {("owned", 0): hashlib.sha256(b"stored chunk").hexdigest()})
+
+    def test_metrics_preserve_actual_misses_and_ranks(self):
+        result = metrics([{"rank": rank} for rank in (1, 3, 5, None)])
+        self.assertEqual(result["recall_at_1"], .25)
+        self.assertEqual(result["recall_at_3"], .5)
+        self.assertEqual(result["recall_at_5"], .75)
+        self.assertAlmostEqual(result["mrr"], (1 + 1 / 3 + 1 / 5) / 4)
+        self.assertEqual(result["misses"], 1)
+        with self.assertRaises(ValueError):
+            metrics([])
+
+    def test_differential_requires_identical_annotations_and_does_not_hide_degradation(self):
+        rows = [dict(query="q", docs=["acceptable"], rank=1)]
+        base = dict(query_results=rows, metrics=metrics(rows))
+        result = comparison({"java": base, "go": copy.deepcopy(base)})
+        self.assertTrue(result["go_mrr_not_lower"])
+        self.assertFalse(result["release_gate_approved"])
+        candidate = dict(query_results=[dict(rows[0], rank=None)], metrics=metrics([{"rank": None}]))
+        result = comparison({"java": base, "go": candidate})
+        self.assertFalse(result["go_recall_at_5_not_lower"])
+        self.assertFalse(result["go_mrr_not_lower"])
+        self.assertEqual(result["strict_rank_changes"], 1)
+        candidate["query_results"][0]["docs"] = ["weakened annotation"]
+        with self.assertRaises(AssertionError):
+            comparison({"java": base, "go": candidate})
+
+
+if __name__ == "__main__":
+    unittest.main()

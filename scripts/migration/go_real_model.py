@@ -2,15 +2,20 @@
 from collections import Counter
 from contextlib import contextmanager
 from dataclasses import dataclass
+import base64
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import io
 import json
 import math
 import os
 from pathlib import Path
 import re
 import secrets
+import select
+import subprocess
 import threading
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -96,15 +101,116 @@ def load_config(path, system=None):
     return ModelConfig(base, key, names[0], names[1], thinking == "true")
 
 
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, request, response, code, message, headers, new_url):
-        return None
+class CurlOpener:
+    """沿用采集器已验证的curl网络通路；配置/密钥/正文只经stdin传递。"""
+    def open(self, request, timeout):
+        config = "\n".join((
+            "url = " + json.dumps(request.full_url),
+            'request = "POST"',
+            "header = " + json.dumps("Content-Type: application/json"),
+            "header = " + json.dumps("Authorization: " + request.get_header("Authorization")),
+            "data-binary = " + json.dumps(request.data.decode("utf-8")),
+        )) + "\n"
+        try:
+            result = subprocess.run([
+                "curl", "--silent", "--show-error", "--compressed", "--proto", "=https",
+                "--max-redirs", "0", "--connect-timeout", "10", "--max-time", str(timeout),
+                "--max-filesize", str(MAX_RESPONSE), "--retry", "0", "--config", "-",
+                "--write-out", "\n%{http_code}",
+            ], input=config.encode(), capture_output=True, timeout=timeout + 5)
+        except (OSError, subprocess.TimeoutExpired):
+            raise ModelFailure("UPSTREAM_CURL_LOCAL_OR_TIMEOUT") from None
+        if result.returncode:
+            raise ModelFailure("UPSTREAM_CURL_EXIT_" + str(result.returncode))
+        raw, separator, status = result.stdout.rpartition(b"\n")
+        if not separator or len(raw) > MAX_RESPONSE or not re.fullmatch(rb"[0-9]{3}", status):
+            raise ModelFailure("UPSTREAM_CURL_RESPONSE_INVALID")
+        response = io.BytesIO(raw)
+        response.status = int(status)
+        if response.status != 200:
+            raise urllib.error.HTTPError("redacted", response.status, "upstream rejected", {}, response)
+        return response
+
+
+class PooledOpener:
+    name = "node-pooled-fetch"
+
+    def __init__(self, process):
+        self.process = process
+        self.lock = threading.Lock()
+
+    def exchange(self, value):
+        with self.lock:
+            try:
+                self.process.stdin.write(json.dumps(value).encode() + b"\n")
+                self.process.stdin.flush()
+                data = bytearray()
+                deadline = time.monotonic() + 95
+                while not data.endswith(b"\n"):
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0 or not select.select([self.process.stdout], [], [], remaining)[0]:
+                        raise ModelFailure("POOLED_TRANSPORT_TIMEOUT")
+                    block = os.read(self.process.stdout.fileno(), 65536)
+                    if not block or len(data) + len(block) > 48 * 1024 * 1024:
+                        raise ModelFailure("POOLED_TRANSPORT_CLOSED_OR_SIZE")
+                    data.extend(block)
+                return json.loads(data)
+            except (OSError, ValueError):
+                raise ModelFailure("POOLED_TRANSPORT_PROTOCOL") from None
+
+    def open(self, request, timeout):
+        result = self.exchange(dict(url=request.full_url, body=request.data.decode()))
+        if result.get("error"):
+            code = result["error"]
+            if code not in ("REQUEST_REJECTED", "RESPONSE_TOO_LARGE", "ECONNRESET", "ECONNREFUSED",
+                            "ETIMEDOUT", "ENOTFOUND", "UND_ERR_CONNECT_TIMEOUT", "UND_ERR_SOCKET",
+                            "CERT_HAS_EXPIRED", "ERR_TLS_CERT_ALTNAME_INVALID",
+                            "UNABLE_TO_VERIFY_LEAF_SIGNATURE", "NETWORK_OR_TIMEOUT"):
+                code = "PROTOCOL"
+            raise ModelFailure("UPSTREAM_POOLED_" + code)
+        if type(result.get("status")) is not int:
+            raise ModelFailure("POOLED_TRANSPORT_STATUS")
+        try:
+            raw = base64.b64decode(result.get("body", ""), validate=True)
+        except (ValueError, TypeError):
+            raise ModelFailure("POOLED_TRANSPORT_BODY") from None
+        if len(raw) > MAX_RESPONSE:
+            raise ModelFailure("POOLED_TRANSPORT_SIZE")
+        response = io.BytesIO(raw)
+        response.status = result["status"]
+        if response.status != 200:
+            raise urllib.error.HTTPError("redacted", response.status, "upstream rejected", {}, response)
+        return response
+
+
+@contextmanager
+def pooled_transport(config):
+    names = ("PATH", "HOME", "TMPDIR", "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY",
+             "http_proxy", "https_proxy", "no_proxy")
+    environment = {key: os.environ[key] for key in names if key in os.environ}
+    script = Path(__file__).with_name("real_model_transport.mjs")
+    process = subprocess.Popen(["node", "--use-env-proxy", str(script)], stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment, bufsize=0)
+    try:
+        opener = PooledOpener(process)
+        if opener.exchange(dict(base_url=config.base_url, api_key=config.api_key)) != {"ready": True}:
+            raise ModelFailure("POOLED_TRANSPORT_INIT")
+        yield opener
+    finally:
+        process.stdin.close()
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
+        process.stdout.close()
 
 
 class RealModel:
     def __init__(self, config, opener=None):
         self.config = config
-        self.opener = opener or urllib.request.build_opener(NoRedirect())
+        self.opener = opener or CurlOpener()
         self.lock = threading.Lock()
         self.calls = Counter()
         self.inputs = Counter()
@@ -112,6 +218,7 @@ class RealModel:
         self.failures = Counter()
         self.usage = Counter()
         self.last_upstream_rejection = None
+        self.last_transport_failure = None
         self.characters = 0
         self.max_calls, self.max_chat_calls, self.max_characters = 600, 12, 1_000_000
 
@@ -121,12 +228,14 @@ class RealModel:
     def snapshot(self):
         with self.lock:
             return dict(calls=dict(self.calls), failures=dict(self.failures), input_characters=self.characters,
+                        transport="node-pooled-fetch" if isinstance(self.opener, PooledOpener) else "curl-or-test-injection",
                         usage=dict(self.usage), successful_embedding_inputs=sum(self.inputs.values()),
                         last_upstream_rejection=self.last_upstream_rejection,
+                        last_transport_failure=self.last_transport_failure,
                         unique_embedding_inputs=len(self.inputs), unique_embedding_vectors=len(self.vectors),
                         limits=dict(requests=self.max_calls, chat_requests=self.max_chat_calls,
                                     input_characters=self.max_characters, chat_max_tokens=1024,
-                                    upstream_timeout_seconds=25, retries=0))
+                                    upstream_timeout_seconds=90, retries=0))
 
     def embedding_receipts(self):
         with self.lock:
@@ -186,7 +295,7 @@ class RealModel:
         request = urllib.request.Request(base + path[3:], json.dumps(payload).encode(),
             {"Content-Type": "application/json", "Authorization": "Bearer " + self.config.api_key}, method="POST")
         try:
-            with self.opener.open(request, timeout=25) as response:
+            with self.opener.open(request, timeout=90) as response:
                 if response.status != 200:
                     raise ModelFailure("UPSTREAM_STATUS_" + str(response.status))
                 raw = response.read(MAX_RESPONSE + 1)
@@ -197,7 +306,7 @@ class RealModel:
             status = error.code
             try:
                 detail = json.loads(error.read(65536))
-                detail = detail.get("error", detail)
+                detail = detail.get("error", detail) if isinstance(detail, dict) else {}
                 message = detail.get("message", "") if isinstance(detail, dict) else ""
                 code = detail.get("code", "") if isinstance(detail, dict) else ""
                 if not isinstance(message, str):
@@ -227,6 +336,15 @@ class RealModel:
         except (OSError, ValueError) as error:
             if isinstance(error, ModelFailure):
                 raise
+            cause = getattr(error, "reason", error)
+            name = type(cause).__name__
+            if name not in ("TimeoutError", "SSLError", "SSLCertVerificationError", "ConnectionResetError",
+                            "ConnectionRefusedError", "RemoteDisconnected", "JSONDecodeError", "URLError"):
+                tunnel = re.search(r"Tunnel connection failed:\s*([0-9]{3})", str(cause))
+                name = "PROXY_TUNNEL_HTTP_" + tunnel[1] if tunnel else "OTHER_NETWORK_OR_JSON"
+            with self.lock:
+                self.last_transport_failure = dict(category=name, input_count=len(inputs),
+                                                   input_characters=characters)
             raise ModelFailure("UPSTREAM_NETWORK_OR_JSON") from None
         if not isinstance(result, dict):
             raise ModelFailure("UPSTREAM_RESPONSE_INVALID")

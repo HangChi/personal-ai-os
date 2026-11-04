@@ -34,11 +34,12 @@ class Model(Handler):
 
 
 class Client:
-    def __init__(self, state, cookies=None):
+    def __init__(self, state, cookies=None, timeout=30):
         self.base = "http://127.0.0.1:" + str(state["port"]) + "/api/v1"
         self.jar = cookies if cookies is not None else http.cookiejar.CookieJar()
         self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(self.jar))
         self.csrf = ""
+        self.timeout = timeout
 
     def request(self, path, method="GET", value=None, status=200, headers=None):
         headers = dict(headers or {})
@@ -49,7 +50,7 @@ class Client:
             headers["X-CSRF-TOKEN"] = self.csrf
         request = urllib.request.Request(self.base + path, value, headers, method=method)
         try:
-            response = self.opener.open(request, timeout=30)
+            response = self.opener.open(request, timeout=self.timeout)
         except urllib.error.HTTPError as error:
             response = error
         with response:
