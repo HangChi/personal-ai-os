@@ -59,6 +59,9 @@ def main():
     data=dict(baseline_commit=baseline,sources_sha256=hashes,inputs=cases,expected=expected)
     artifacts={TARGET:data,ROOT/'backend-go/internal/business/agent/tool-definitions-p6.json':expected['tools']}
     for path,artifact in artifacts.items():
+        # Java Map.of iteration order varies between JVMs; compare JSON contracts.
+        if path.is_file() and json.loads(path.read_text()) == artifact:
+            continue
         content=json.dumps(artifact,ensure_ascii=False,indent=2)+'\n'
         if args.write: path.parent.mkdir(parents=True,exist_ok=True);path.write_text(content)
         elif path.read_text()!=content: raise SystemExit('P6 Java oracle drift: '+str(path))
