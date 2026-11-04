@@ -1,6 +1,6 @@
 # Personal AI OS：Go 迁移起点
 
-本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1–P6 已完成，包含知识摄入、混合召回、RAG、来源治理和后台索引/审查。P7、P8 及切换门禁仍开放。**
+本目录位于 `go` 分支，是 Java 后端的增量迁移实现。**P1–P7 已完成，包含知识摄入、混合召回、RAG、来源治理、后台索引/审查，以及 MCP、五模块搜索和流式导出/空库导入。P8 及切换门禁仍开放。**
 
 全量范围、逐文件来源、迁移状态与验收要求见 [迁移文档](../specs/033-go-rewrite/README.md)。现有 Java 源码、前端业务源码、SQL 与运行实例继续保留。
 
@@ -99,7 +99,7 @@ P7 固定Java契约：`python3 scripts/migration/java_p7_fixture.py`；真实TLS
 
 ## 接下来实施
 
-P6 见 [验收报告](../specs/033-go-rewrite/p6-completion.md) 和 [原测试映射](../specs/033-go-rewrite/p6-test-mapping.md)。下一阶段为 [P7 MCP、搜索与数据交换](../specs/033-go-rewrite/tasks.md#p7-mcp搜索与数据交换)。
+P7 见 [验收报告](../specs/033-go-rewrite/p7-completion.md) 和 [原测试映射](../specs/033-go-rewrite/p7-test-mapping.md)。下一阶段为 [P8 全量验证、运维与切换](../specs/033-go-rewrite/tasks.md#p8-全量验证运维与切换)。
 
 ## 显式 P1 基础模式（尚未验收发布）
 
@@ -112,4 +112,4 @@ P6 见 [验收报告](../specs/033-go-rewrite/p6-completion.md) 和 [原测试�
 
 基线 Hikari 最大连接数/毫秒等待已接入；`worker-index`、`worker-review`、`worker-delivery` profile 上限4，其余默认10。仅设运行角色不会自动加载 profile 文件。`monitoring` profile 启动独立回环管理端口（默认9091，可设 `MANAGEMENT_SERVER_PORT`），限流和会话 Redis 仍由各自原开关/URI/namespace 配置；三份 CA 分别使用 `GO_REDIS_SESSION_ROOT_CERT`、`GO_REDIS_RATE_LIMIT_ROOT_CERT`、`GO_REDIS_EMBEDDING_ROOT_CERT` 的绝对路径。P3共享嵌入缓存使用独立的`REDIS_ENABLED/REDIS_URI/REDIS_NAMESPACE/REDIS_TIMEOUT_MS`，不能复用会话/限流客户端。
 
-基础模式允许已实现的认证/CSRF；`prod`继续拒绝。默认诊断规则不变。不加 `--p5`/`--p6` 时不启用相应业务 Worker；启用后按五角色隔离执行。`readyz`保持未就绪；P2–P6 路由按显式模块开关接入，未实现业务404。P1–P6 验收通过不表示P8发布验收，禁止替换Java实例。
+基础模式允许已实现的认证/CSRF；`prod`继续拒绝。默认诊断规则不变。不加 `--p5`/`--p6`/`--p7` 时不启用相应业务 Worker；后续开关包含前序模块，启用后按五角色隔离执行。`readyz`保持未就绪；P2–P7 路由按显式模块开关接入，未实现业务404。P1–P7 验收通过不表示P8发布验收，禁止替换Java实例。

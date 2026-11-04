@@ -1,6 +1,6 @@
 # P7 MCP、全局搜索与数据交换验收
 
-2026-11-04：T700–T705 的实现和定向验证已交付；全量回归与最终台账正在收口。固定 Java 对照提交为 `cb5d694d62fa93742b5789b97273e76d931ce335`。P8 和五个发布门禁保持开放。
+2026-11-04：T700–T705 全部完成，Go 全量串行 race、P7 真实协议/数据库和固定 Java 差分通过，逐项台账与测试映射已提交。固定 Java 对照提交为 `cb5d694d62fa93742b5789b97273e76d931ce335`。Java 首轮全量有 3 项 MCP 启动失败，随后独立复验全部通过；不将首轮全量记为全绿。P8 和五个发布门禁保持开放。
 
 ## 任务与证据
 
@@ -21,8 +21,9 @@
 4. `5df00b0`：流式快照导出、空库原子导入、实际数据库往返/失败回滚/并发快照。
 5. `a51612f`：固定Java源码差分、Jackson严格UUID绑定及外部工具预算拒绝回归。
 6. `d95d34f`：真实HTTP对话/MCP/持久确认链与完整记忆、任务、来源恢复边界。
+7. `267801e`：150项实现台账、78项配置处置与15类/72声明逐项映射及验收边界。
 
-后续 Java 差分/边界回归及最终台账单独提交，不将所有工作攒成一次提交。
+最终任务勾选与回归记录另作收口提交；各批实现与测试已及时独立提交。
 
 ## 协议与配置
 
@@ -48,10 +49,35 @@
 
 - P7真实库初次三组通过，补充快照/约束冲突后四组再次通过；最终六组全部通过race。数据规模405任务/标签、2会话/406消息、206块与向量、日程和记忆替代链/置顶/17次命中/最后使用时间、任务DONE/previousStatus；原42迁移真实Flyway竞争及validate通过。
 - 最终真实HTTP对话链验证模型请求里出现MCP工具，AUTO结果与CONFIRM状态回到下一轮上下文；外部写确认前零调用，重连后12个并发HTTP确认只远程执行一次，真实数据库保留两条对应工具审计。
-- Java定向77测试零失败/错误/跳过，JaCoCo通过。
+- Java定向77测试零失败/错误/跳过，JaCoCo通过。原Java全量执行1137测试，其中3个MCP降级启动用例未在期限内连接子进程工具目录，其余1134项通过；停止并发全量负载后，该类3项单独verify全部通过，JaCoCo/BUILD SUCCESS。未修改Java源码或降低门禁，未把组合结果描述为首轮全量成功。
 - 固定源码14个文件重新编译，Java夹具包含9个命名、5策略、4冲突、6摘要、8LIKE模式、7搜索、4个人工具元数据、35导入场景；Go逐项相等。
 - 原测试映射15类/72声明，其中71属于MCP/搜索/交换，1个为P6移交的治理备份恢复声明。其余5个治理声明继续保留P6映射。
 - P7台账150项：61个源/测试文件、6条HTTP路由、4个工具、7个运行钩子、72个测试声明。全部记implemented，未新增verified；四处独立个人MCP配置调用处置为wired，78处总配置台账通过。迁移脚本22项单测验证非P7条目及五个发布门禁保持不变。
-- 并行全量回归曾遇临时数据库启动超时与Java MCP子进程目录连接超时；最终串行复验结果在下文补充，不将超时当作业务成功。
+- 首轮并行Go全量race的app基础Servlet对照出现固定5秒登录超时，其余包通过。最终以GOMAXPROCS=4和`-p 1`串行全包复验，全部通过，app为244.716s；没有修改基础测试期限或生产行为。较早临时数据库启动超时发生在业务测试前，最终六组真实库测试另行全部通过。
 
-最终命令、实际结果和台账统计待全量运行结束后补齐。
+### 最终命令与结果
+
+以下命令从仓库根目录执行；Java命令在`backend/`，前端命令在`frontend/`。Go串行选项用于避免并发重型认证/Java测试争用资源，不跳过测试。
+
+| 命令 | 实际结果 |
+| --- | --- |
+| `GOMAXPROCS=4 go -C backend-go test -race -p 1 -count=1 -timeout=20m ./...` | 全包通过，退出0 |
+| `go -C backend-go vet -tags=integration ./...` | 通过 |
+| `go -C backend-go build -tags=integration ./...` | 通过 |
+| `go -C backend-go mod verify` | all modules verified |
+| `python3 scripts/migration/run_go_postgres_tests.py --package app --tls --run '^TestP7'` | 6个顶层测试全部通过race，31.965s，临时容器清理 |
+| `python3 scripts/migration/java_p7_fixture.py` | 固定14个Java源码重新编译、夹具比较通过 |
+| P7 Java定向 `verify` | 77测试，0失败/错误/跳过，JaCoCo通过 |
+| `./mvnw -o -B -Dspring.test.context.cache.maxSize=2 verify` | 1137测试，3失败/0错误/0跳过；首轮全量失败如实保留 |
+| `./mvnw -o -B -Dspring.test.context.cache.maxSize=2 -Dtest=McpDegradedStartupIntegrationTest verify` | 3测试全部通过，JaCoCo/BUILD SUCCESS |
+| `npm run type-check`、`npm run build` | 通过，前端源码未改 |
+| `python3 scripts/migration/go_p7_progress.py --write` | 150项implemented、15类/72声明映射，其他阶段/发布门禁不变 |
+| `python3 scripts/migration/go_config_disposition.py` | 78项通过，无遗漏/未知动态键 |
+| `python3 -m unittest discover -s scripts/migration -p 'test_*.py'` | 22项通过 |
+| `python3 scripts/migration/go_inventory.py check` | 固定1093文件/104路由/27工具/95钩子/1119原测试声明通过 |
+| `python3 scripts/migration/go_inventory.py check-complete` | 预期退出1：2438项未verified，五个release_gates均not_started |
+| `git diff --check` | 通过 |
+
+最终日志：`/tmp/personalos-p7-go-serial.log`、`/tmp/personalos-p7-postgres-final.log`、`/tmp/personalos-p7-oracle-recheck.log`、`/tmp/personalos-p7-contracts-final.log`、`/tmp/personalos-p7-java-targeted.log`、`/tmp/personalos-p7-java-all.log`、`/tmp/personalos-p7-java-retry.log`、`/tmp/personalos-p7-frontend-types.log`、`/tmp/personalos-p7-frontend-build.log`、`/tmp/personalos-p7-complete-gate.log`。首轮Go失败日志为`/tmp/personalos-p7-go-final.log`；临时日志不替代入库的断言、夹具与逐声明映射。
+
+本阶段只操作专用模拟器和runner创建的临时数据库，不读取既有凭据或连接用户外部MCP/模型。Java、前端业务源码、SQL和部署基线保持不变。未推送、合并、部署或开始P8；prod拒绝、回环监听及readyz503继续保留。
