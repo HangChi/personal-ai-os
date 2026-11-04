@@ -1,0 +1,91 @@
+{
+  "result": "FULL_CURRENT_CORPUS_EXECUTED_QUALITY_NOT_APPROVED",
+  "documents": 26,
+  "full_current_corpus_executed": true,
+  "historical_corpus_identity_verified": false,
+  "source_report": "p8-eval-real-20261104-232203.json",
+  "source_sha256": "1d8a0d79d9c9d758006c2a70942f278bd5f984ddf03bb91c409cb13d96fe293e",
+  "model": {
+    "provider": "openai-compatible",
+    "endpoint_host": "dashscope.aliyuncs.com",
+    "chat_model": "qwen3.8-flash",
+    "embedding_model": "qwen3.7-text-embedding-flash",
+    "enable_thinking": false,
+    "api_key_configured": true
+  },
+  "queries": 129,
+  "excluded_queries": 0,
+  "assessment": {
+    "go_minus_java": {
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.007751937984496138,
+      "recall_at_5": 0.0,
+      "mrr": 0.0006459948320414188
+    },
+    "go_recall_at_5_not_lower": true,
+    "go_mrr_not_lower": true,
+    "strict_quality_not_lower": true,
+    "original_tied_rank_metrics": {
+      "go": {
+        "queries": 129,
+        "recall_at_1": 0.8604651162790697,
+        "recall_at_3": 0.9612403100775194,
+        "recall_at_5": 0.9689922480620154,
+        "mrr": 0.9076227390180878,
+        "misses": 4
+      },
+      "java": {
+        "queries": 129,
+        "recall_at_1": 0.8604651162790697,
+        "recall_at_3": 0.9612403100775194,
+        "recall_at_5": 0.9689922480620154,
+        "mrr": 0.9089147286821705,
+        "misses": 4
+      }
+    },
+    "original_tied_rank_go_minus_java": {
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "mrr": -0.0012919896640827266
+    },
+    "original_tied_quality_not_lower": false,
+    "strict_quality_status": "NO_OBSERVED_DEGRADATION",
+    "strict_rank_changes": 3,
+    "identical_source_files": true,
+    "live_upstream_calls_independent": true,
+    "embedding_input_formats": {
+      "go": "Spring-AI-2.0.1-MetadataMode.EMBED",
+      "java": "Spring-AI-2.0.1-MetadataMode.EMBED"
+    },
+    "noise_tolerance_unchanged": 0.007,
+    "default_similarity_threshold_unchanged": 0.3,
+    "release_gate_approved": false
+  },
+  "strict_rank_differences": [
+    {
+      "query": "ref 和 reactive 该用哪个",
+      "go_rank": 1,
+      "java_rank": 2,
+      "go_tied_rank": 1,
+      "java_tied_rank": 2
+    },
+    {
+      "query": "OR 条件会让索引失效吗",
+      "go_rank": 3,
+      "java_rank": 4,
+      "go_tied_rank": 3,
+      "java_tied_rank": 3
+    },
+    {
+      "query": "容器删掉之后里面的数据去哪了",
+      "go_rank": 2,
+      "java_rank": 1,
+      "go_tied_rank": 2,
+      "java_tied_rank": 1
+    }
+  ],
+  "release_gate_approved": false,
+  "semantic_quality_verified": false,
+  "limits": "Fresh 26-document current-page corpus. Original 0.007 tie threshold unchanged. Strict regression remains visible even when tied ranks match. Independent upstream noise, random document identities, historical corpus identity, factual review, multistage RAG and production acceptance remain separate."
+}
