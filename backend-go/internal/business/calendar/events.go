@@ -285,7 +285,7 @@ func (s *Events) Search(ctx context.Context, from, to *time.Time, page, size int
 			}
 			for _, at := range Occurrences(event.RecurrenceType, event.StartsAt, event.RecurrenceUntil, start, end, s.zone) {
 				occurrences = append(occurrences, Occurrence{event.ID, event.Title, event.Location, event.AllDay, at,
-					at.Add(event.EndsAt.Sub(event.StartsAt).Truncate(time.Millisecond)), event.RecurrenceType, event.RecurrenceType != None, event.Lead})
+					occurrenceEnd(event, at), event.RecurrenceType, event.RecurrenceType != None, event.Lead})
 			}
 		}
 		return rows.Err()
@@ -293,6 +293,18 @@ func (s *Events) Search(ctx context.Context, from, to *time.Time, page, size int
 	sort.SliceStable(occurrences, func(i, j int) bool { return occurrences[i].StartsAt.Before(occurrences[j].StartsAt) })
 	if size <= 0 {
 		size = s.settings.DefaultQueryLimit
+	} else {
+		size = min(size, s.settings.MaxQueryLimit)
 	}
-	return api.PageOf(occurrences, page, min(size, s.settings.MaxQueryLimit)), err
+	return api.PageOf(occurrences, page, size), err
+}
+
+func occurrenceEnd(event Event, at time.Time) time.Time {
+	seconds := event.EndsAt.Unix() - event.StartsAt.Unix()
+	nanos := event.EndsAt.Nanosecond() - event.StartsAt.Nanosecond()
+	if nanos < 0 {
+		seconds--
+		nanos += int(time.Second)
+	}
+	return time.Unix(at.Unix()+seconds, int64(at.Nanosecond())+int64(nanos/int(time.Millisecond))*int64(time.Millisecond)).UTC()
 }

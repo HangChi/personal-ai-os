@@ -96,6 +96,13 @@ func (m *foundationMetrics) metricSnapshot(suffix string, query url.Values) (any
 			names = append(names, rateErrorMetric)
 		}
 		names = append(names, m.chatMetricNames()...)
+		seen := map[string]bool{}
+		for _, metric := range m.reminderMetrics() {
+			if !seen[metric.name] {
+				names = append(names, metric.name)
+				seen[metric.name] = true
+			}
+		}
 		for _, name := range m.embeddingMetricNames() {
 			names = append(names, name)
 		}
@@ -104,6 +111,9 @@ func (m *foundationMetrics) metricSnapshot(suffix string, query url.Values) (any
 		}{names}, true, nil
 	}
 	name := strings.TrimPrefix(suffix, "/")
+	if strings.HasPrefix(name, "personalos.reminders.") {
+		return m.reminderMetric(name, query)
+	}
 	if strings.HasPrefix(name, "personalos.chat.") {
 		return m.chatMetric(name, query)
 	}

@@ -66,7 +66,7 @@ func (p *Push) Close() {
 
 func pushEndpoint(raw string) bool {
 	parsed, err := url.Parse(raw)
-	if err != nil || parsed.Scheme != "https" || parsed.User != nil || parsed.Fragment != "" ||
+	if err != nil || parsed.Scheme != "https" || parsed.User != nil || strings.Contains(raw, "#") ||
 		(parsed.Port() != "" && parsed.Port() != "443") {
 		return false
 	}

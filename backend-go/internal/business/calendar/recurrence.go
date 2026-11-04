@@ -38,11 +38,17 @@ func Occurrences(rule Recurrence, starts time.Time, until *time.Time, from, to t
 	}
 
 	offset := 0
+	fromDate := wallDate(localFrom)
+	startDate := wallDate(start)
+	if fromDate.After(startDate) && clockTime(localFrom) < clockTime(start) {
+		fromDate = fromDate.AddDate(0, 0, -1)
+	}
 	if rule == Monthly {
-		offset = max(0, (localFrom.Year()-start.Year())*12+int(localFrom.Month()-start.Month())-2)
+		months := (fromDate.Year()-start.Year())*12 + int(fromDate.Month()-start.Month())
+		offset = max(0, (months*32+fromDate.Day()-start.Day())/32-1)
 	} else {
-		days := (wallDate(localFrom).Unix() - wallDate(start).Unix()) / 86400
-		jump := max(0, int(days)/step-2) * step
+		days := (fromDate.Unix() - startDate.Unix()) / 86400
+		jump := max(0, int(days)/step-1) * step
 		if jump > 0 {
 			cursor = addDays(start, jump)
 		}
@@ -80,9 +86,13 @@ func addMonths(t time.Time, months int) time.Time {
 	return atWallTime(first.AddDate(0, 0, min(t.Day(), lastDay)-1), t)
 }
 
+func clockTime(t time.Time) time.Duration {
+	return time.Duration(t.Hour())*time.Hour + time.Duration(t.Minute())*time.Minute +
+		time.Duration(t.Second())*time.Second + time.Duration(t.Nanosecond())
+}
+
 func atWallTime(date, previous time.Time) time.Time {
-	wall := date.Add(time.Duration(previous.Hour())*time.Hour + time.Duration(previous.Minute())*time.Minute +
-		time.Duration(previous.Second())*time.Second + time.Duration(previous.Nanosecond()))
+	wall := date.Add(clockTime(previous))
 	_, preferred := previous.Zone()
 	return resolveWallTime(wall, previous.Location(), preferred)
 }

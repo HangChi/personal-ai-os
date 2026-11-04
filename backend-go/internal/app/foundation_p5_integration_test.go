@@ -28,6 +28,7 @@ import (
 	"personal-ai-os/backend-go/internal/business/calendar"
 	"personal-ai-os/backend-go/internal/business/memory"
 	"personal-ai-os/backend-go/internal/business/model"
+	"personal-ai-os/backend-go/internal/business/task"
 	"personal-ai-os/backend-go/internal/platform/config"
 )
 
@@ -175,9 +176,11 @@ func TestP5ReminderRabbitFanout(t *testing.T) {
 	expect("[]")
 	now := time.Now().UTC().Truncate(time.Microsecond)
 	title := "rabbit-fanout-fixture"
-	if _, err := source.Create(ctx, calendar.EventRequest{Title: &title, StartsAt: &now, EndsAt: &now}); err != nil {
+	event, err := source.Create(ctx, calendar.EventRequest{Title: &title, StartsAt: &now, EndsAt: &now})
+	if err != nil {
 		t.Fatal(err)
 	}
+	defer source.Delete(context.Background(), event.ID)
 	if _, err := source.Scan(ctx, now); err != nil {
 		t.Fatal(err)
 	}
@@ -474,4 +477,119 @@ func TestP5AuthenticatedAgentAndAutoMemory(t *testing.T) {
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
+}
+
+func TestP5MemoryConcurrentCreateAndBackfill(t *testing.T) {
+	f := fixtureFoundation(t, nil, nil)
+	ctx := context.Background()
+	store, err := memory.NewStore(ctx, f.Pool())
+	if err != nil {
+		t.Fatal(err)
+	}
+	var workers sync.WaitGroup
+	ids := make(chan string, 12)
+	for range 12 {
+		workers.Go(func() {
+			entry, err := store.Create(ctx, "P5 concurrent memory")
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			ids <- entry.ID
+		})
+	}
+	workers.Wait()
+	close(ids)
+	var winner string
+	var count int
+	for id := range ids {
+		count++
+		if winner != "" && id != winner {
+			t.Fatal("concurrent create wrote duplicate")
+		}
+		winner = id
+	}
+	if count != 12 {
+		t.Fatalf("create successes = %d", count)
+	}
+	defer store.Delete(ctx, winner)
+	second, err := store.Create(ctx, "P5 backfill beyond first batch")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Delete(ctx, second.ID)
+	store.UseEmbedding(memoryEmbedding{}, "fixture-backfill", 0.92)
+	if err := store.Backfill(ctx, 1); err != nil {
+		t.Fatal(err)
+	}
+	err = f.Pool().WithConn(ctx, func(conn *sql.Conn) error {
+		var count int
+		err := conn.QueryRowContext(ctx, `SELECT count(*) FROM memory WHERE id=ANY($1::uuid[]) AND embedding_model='fixture-backfill' AND embedded_at IS NOT NULL`, []string{winner, second.ID}).Scan(&count)
+		if err != nil || count != 2 {
+			t.Fatalf("backfilled = %d, %v", count, err)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestP5TaskReminderLifecycle(t *testing.T) {
+	f := fixtureFoundation(t, nil, nil)
+	ctx := context.Background()
+	settings, _ := config.BindCalendarProperties(nil)
+	events := calendar.NewEvents(f.Pool(), settings, time.UTC)
+	storage, err := task.NewPostgresStore(f.Pool())
+	if err != nil {
+		t.Fatal(err)
+	}
+	tasks, err := task.NewService(storage)
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	due := now.Add(-time.Hour)
+	entry, err := tasks.Create(ctx, task.CreateRequest{Title: "P5 initial task", DueAt: &due})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tasks.Delete(ctx, entry.ID)
+	expect := func(count int, title string) {
+		t.Helper()
+		items, err := events.Reminders(ctx, "PENDING", true, 10, now)
+		if err != nil || len(items) != count || count == 1 && (items[0].Title != title || items[0].SourceType != "TASK" || items[0].SourceID != entry.ID) {
+			t.Fatalf("due reminders = %+v, %v", items, err)
+		}
+	}
+	if result, err := events.Scan(ctx, now); err != nil || result.Created != 1 {
+		t.Fatalf("scan = %+v %v", result, err)
+	}
+	expect(1, entry.Title)
+	appExec(t, f, `UPDATE task SET title='P5 renamed task' WHERE id='`+entry.ID+`'`)
+	if _, err := events.Scan(ctx, now.Add(48*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	expect(1, "P5 renamed task")
+	if _, err := tasks.SetCompleted(ctx, entry.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	if result, err := events.Scan(ctx, now); err != nil || result.Created != 0 {
+		t.Fatalf("completed scan = %+v %v", result, err)
+	}
+	expect(0, "")
+	if _, err := tasks.SetCompleted(ctx, entry.ID, false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := events.Scan(ctx, now); err != nil {
+		t.Fatal(err)
+	}
+	expect(1, "P5 renamed task")
+	if err := tasks.Delete(ctx, entry.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := events.Scan(ctx, now); err != nil {
+		t.Fatal(err)
+	}
+	expect(0, "")
 }

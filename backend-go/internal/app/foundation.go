@@ -375,6 +375,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			return nil, err
 		}
 		f.p5 = p5
+		metrics.p5 = p5
 	}
 	return f, nil
 }

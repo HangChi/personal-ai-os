@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"personal-ai-os/backend-go/internal/platform/api"
@@ -18,13 +19,16 @@ const streamPath = reminderPath + "/events"
 func OwnsStreamPath(path string) bool { return path == streamPath }
 
 type Stream struct {
-	events  *Events
-	ctx     context.Context
-	mu      sync.Mutex
-	clients map[chan []byte]struct{}
-	wakeup  chan struct{}
-	done    chan struct{}
-	cancel  context.CancelFunc
+	events        *Events
+	ctx           context.Context
+	mu            sync.Mutex
+	clients       map[chan []byte]struct{}
+	wakeup        chan struct{}
+	done          chan struct{}
+	cancel        context.CancelFunc
+	snapshots     atomic.Uint64
+	readFailures  atomic.Uint64
+	writeFailures atomic.Uint64
 }
 
 func NewStream(ctx context.Context, events *Events, interval time.Duration) *Stream {
@@ -65,6 +69,7 @@ func (s *Stream) poll(interval time.Duration) {
 		}
 		items, err := s.events.Reminders(s.ctx, "PENDING", true, 500, time.Now())
 		if err != nil {
+			s.readFailures.Add(1)
 			continue
 		}
 		snapshot, err := json.Marshal(items)
@@ -122,6 +127,7 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) error {
 	var previous []byte
 	for {
 		var event string
+		var changed bool
 		select {
 		case <-ctx.Done():
 			return nil
@@ -132,18 +138,37 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) error {
 				continue
 			}
 			previous = snapshot
+			changed = true
 			event = "event:reminders\ndata:" + string(snapshot) + "\n\n"
 		case <-heartbeat.C:
 			event = ":ping\n\n"
 		}
 		_ = response.SetWriteDeadline(time.Now().Add(5 * time.Second))
 		if _, err := fmt.Fprint(w, event); err != nil {
+			s.writeFailures.Add(1)
 			return nil
 		}
 		if err := response.Flush(); err != nil {
+			s.writeFailures.Add(1)
 			return nil
+		}
+		if changed {
+			s.snapshots.Add(1)
 		}
 		_ = response.SetWriteDeadline(time.Time{})
 		heartbeat.Reset(15 * time.Second)
 	}
+}
+
+type StreamStats struct {
+	Connections   int
+	Snapshots     uint64
+	ReadFailures  uint64
+	WriteFailures uint64
+}
+
+func (s *Stream) Stats() StreamStats {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return StreamStats{len(s.clients), s.snapshots.Load(), s.readFailures.Load(), s.writeFailures.Load()}
 }

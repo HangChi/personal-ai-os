@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
+	"sync/atomic"
 	"time"
 	"unicode/utf16"
 )
@@ -23,11 +25,14 @@ type Webhook struct {
 	target   string
 	secret   []byte
 	client   *http.Client
+	sent     atomic.Uint64
+	pending  atomic.Uint64
+	failed   atomic.Uint64
 }
 
 func NewWebhook(events *Events, address, secret string, allowLocalHTTP bool) (*Webhook, error) {
 	endpoint, err := url.Parse(address)
-	if err != nil || endpoint.Hostname() == "" || endpoint.User != nil || endpoint.Fragment != "" || endpoint.Opaque != "" ||
+	if err != nil || endpoint.Hostname() == "" || endpoint.User != nil || strings.Contains(address, "#") || endpoint.Opaque != "" ||
 		(endpoint.Scheme != "https" && !(allowLocalHTTP && endpoint.Scheme == "http" && endpoint.Hostname() == "127.0.0.1")) ||
 		len(utf16.Encode([]rune(secret))) < 32 {
 		return nil, errors.New("提醒 Webhook 配置非法")
@@ -145,11 +150,22 @@ func (h *Webhook) deliver(ctx context.Context, job webhookJob) error {
 	if job.Attempts >= 5 && state == "PENDING" {
 		state = "FAILED"
 	}
-	return h.events.pool.WithConn(ctx, func(conn *sql.Conn) error {
+	err = h.events.pool.WithConn(ctx, func(conn *sql.Conn) error {
 		_, err := conn.ExecContext(ctx, `UPDATE reminder_webhook_delivery SET state=$1,next_attempt_at=now()+$2*interval '1 second'
 			WHERE id=$3 AND attempts=$4 AND state='SENDING'`, state, 30<<job.Attempts, job.ID, job.Attempts)
 		return err
 	})
+	if err == nil {
+		switch state {
+		case "SENT":
+			h.sent.Add(1)
+		case "PENDING":
+			h.pending.Add(1)
+		case "FAILED":
+			h.failed.Add(1)
+		}
+	}
+	return err
 }
 
 func webhookTime(at time.Time) string {
@@ -166,4 +182,8 @@ func webhookSignature(timestamp string, body, secret []byte) string {
 	_, _ = mac.Write([]byte(timestamp + "."))
 	_, _ = mac.Write(body)
 	return hex.EncodeToString(mac.Sum(nil))
+}
+
+func (h *Webhook) DeliveryCounts() map[string]uint64 {
+	return map[string]uint64{"sent": h.sent.Load(), "pending": h.pending.Load(), "failed": h.failed.Load()}
 }

@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -20,8 +21,11 @@ import (
 const broadcastExchange = "personalos.reminders.changed"
 
 type Broadcast struct {
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
+	cancel   context.CancelFunc
+	wg       sync.WaitGroup
+	sent     atomic.Uint64
+	received atomic.Uint64
+	retry    atomic.Uint64
 }
 
 func StartBroadcast(parent context.Context, address string, events *Events, stream *Stream, coordinator *coordination.Coordinator, publish bool, logger *slog.Logger) (*Broadcast, error) {
@@ -67,6 +71,7 @@ func StartBroadcast(parent context.Context, address string, events *Events, stre
 			}
 			stream.Notify()
 			for delivery := range deliveries {
+				b.received.Add(1)
 				stream.Notify()
 				if err := delivery.Ack(false); err != nil {
 					return err
@@ -88,7 +93,8 @@ func StartBroadcast(parent context.Context, address string, events *Events, stre
 				case <-ctx.Done():
 					return ctx.Err()
 				case <-ticker.C:
-					if err := events.publishChange(ctx, channel, returns, coordinator); err != nil {
+					if err := events.publishChange(ctx, channel, returns, coordinator, &b.sent); err != nil {
+						b.retry.Add(1)
 						return err
 					}
 				}
@@ -137,7 +143,7 @@ func withRabbit(ctx context.Context, address string, run func(context.Context, *
 	return run(ctx, channel)
 }
 
-func (s *Events) publishChange(ctx context.Context, channel *amqp.Channel, returns <-chan amqp.Return, coordinator *coordination.Coordinator) error {
+func (s *Events) publishChange(ctx context.Context, channel *amqp.Channel, returns <-chan amqp.Return, coordinator *coordination.Coordinator, sent *atomic.Uint64) error {
 	lease, err := coordinator.Acquire(ctx, "reminder-broadcast", 1)
 	if err != nil || lease == nil {
 		return err
@@ -179,9 +185,17 @@ func (s *Events) publishChange(ctx context.Context, channel *amqp.Channel, retur
 		return errors.New("提醒广播无法路由")
 	default:
 	}
-	return s.pool.WithTx(database.WithWriteGuard(ctx, lease.Fence), sql.TxOptions{}, func(tx *sql.Tx) error {
+	err = s.pool.WithTx(database.WithWriteGuard(ctx, lease.Fence), sql.TxOptions{}, func(tx *sql.Tx) error {
 		_, err := tx.ExecContext(ctx, `INSERT INTO reminder_broadcast_state(id,digest) VALUES(1,$1)
 			ON CONFLICT(id) DO UPDATE SET digest=excluded.digest`, digest)
 		return err
 	})
+	if err == nil {
+		sent.Add(1)
+	}
+	return err
+}
+
+func (b *Broadcast) Counts() (sent, received, retry uint64) {
+	return b.sent.Load(), b.received.Load(), b.retry.Load()
 }

@@ -49,8 +49,9 @@ func (s *Events) Reminders(ctx context.Context, status string, dueOnly bool, lim
 	}
 	if limit <= 0 {
 		limit = s.settings.DefaultQueryLimit
+	} else {
+		limit = min(limit, s.settings.MaxQueryLimit)
 	}
-	limit = min(limit, s.settings.MaxQueryLimit)
 	result := []Reminder{}
 	err := s.pool.WithConn(ctx, func(conn *sql.Conn) error {
 		rows, err := conn.QueryContext(ctx, "SELECT "+reminderColumns+` FROM reminder

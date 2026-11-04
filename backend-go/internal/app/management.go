@@ -49,6 +49,7 @@ func newManagementChain(actuator http.Handler, logger *slog.Logger) http.Handler
 type foundationMetrics struct {
 	models                     *model.Module
 	chat                       *chat.Module
+	p5                         *foundationP5
 	mu                         sync.Mutex
 	counts                     [2]uint64
 	seconds                    [2]float64
@@ -110,6 +111,7 @@ func (m *foundationMetrics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	m.writeHTTPMetrics(w)
 	m.writeEmbeddingMetrics(w)
 	m.writeChatMetrics(w)
+	m.writeReminderMetrics(w)
 }
 
 // ManagementHandler仅在monitoring有效profile下可用，必须挂到独立监听器。
