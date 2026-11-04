@@ -44,6 +44,14 @@
 
 上传修复后的原E2E实际退出1，结果仍80 PASS/1 FAIL/1 SKIP/2 NOTE、无ERROR。唯一FAIL仍为固定Java同现的G4预算用例，saveMemory仍跳过，未放宽断言；业务产物归零并清理独立容器。日志 /tmp/personalos-p8-e2e-after-params.log，完整报告[p8-e2e/go/e2e-20261104-194702.md](p8-e2e/go/e2e-20261104-194702.md)。T801/T802与五发布门禁继续开放，不以回归无新增失败替代通过。
 
+## T801h 本地Alertmanager完整通知链
+
+新增显式 compose.alerting.yml，不改变默认监控或原Java部署。操作者必须提供独立配置路径；Alertmanager非root/只读、无宿主端口、独立持久卷。combined/distributed两份Prometheus变体只增加 alertmanager:9093，采集目标/规则/15秒时钟逐字一致检查通过。示例仅含不可投递的.invalid HTTPS目标，TLS验证与禁止跟随重定向保留；runner只替换为本次私有HTTP接收端，拒绝附加通知目标、子路由或HTTP代理。
+
+实际combined第2轮完整通过：新随机TLS库及空卷、原42迁移/重复validate、原前端/认证/CSRF/上传下载、真实指标/Grafana20面板和六条规则单测仍通过；新服务UID65534/只读/零capability/无宿主端口通过。停止本次backend后实际观察pending，保持原for=2m，实际firing经Alertmanager送达本地接收端；故意首次503未算成功，后续重试200才通过。恢复backend后观察告警inactive，收到相同fingerprint/startsAt且结束晚于开始的resolved；重新登录回读任务持久化，优雅停止及本次项目/卷清理通过。报告[p8-alerting.json](p8-alerting.json)仅在清理后生成，日志 /tmp/personalos-p8-alerting-2.log。
+
+首轮在通知演练前因接收端挂载层级过浅、根路径定位失败而退出，日志 /tmp/personalos-p8-alerting-1.log 保留；已修正挂载并纳入断言，没有改变告警等待或HTTP断言。全部76项迁移Python测试通过（/tmp/personalos-p8-python-alerting-final.log），包括7项接收端/配置隔离单测、7项原生Compose测试及采集变体一致性。此处只验证真实target-down规则与本地协议；其余五条规则仍是时间序列单测，不冒充真实故障或外部通知最终送达。T801父项与五发布门禁保持开放。
+
 ## T801a 数据保留策略
 
 `--foundation --p8` 包含P7及全部前序业务，新增用量/操作记录清理；默认保持回环监听，不解除prod拒绝或readyz503。`app.retention.token-usage-days`与`app.retention.operation-record-days`默认0（永久保留），负值/超过Java int的值启动拒绝。两类截止时间独立，按UTC瞬时减整天，严格早于截止时间才删除；不能用Go time.Duration乘天数导致大整数溢出。

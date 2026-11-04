@@ -26,7 +26,9 @@ def capture(command, **kwargs):
     return subprocess.run(command, check=True, text=True, capture_output=True, timeout=180, **kwargs).stdout.strip()
 
 
-def run(monitoring=False, distributed=False, https=False):
+def run(monitoring=False, distributed=False, https=False, alerting=False):
+    if alerting:
+        monitoring = True
     if https and (monitoring or distributed):
         raise ValueError("HTTPS fixture currently exercises the combined candidate only")
     project = "personalos-go-p8-drill-" + uuid.uuid4().hex[:12]
@@ -74,6 +76,11 @@ def run(monitoring=False, distributed=False, https=False):
             environment.update(GO_GRAFANA_ADMIN_USER="p8-monitor", GO_GRAFANA_ADMIN_PASSWORD=secrets.token_urlsafe(24),
                                GO_GRAFANA_PORT=str(grafana_port), GO_PROMETHEUS_CONFIG="prometheus.yml" if distributed else "prometheus.combined.yml")
             command += ["-f", str(ROOT / "backend-go/deploy/compose.monitoring.yml")]
+        alert_report = None
+        if alerting:
+            from p8_alert_fixture import write_overlay
+            command += ["-f", str(ROOT / "backend-go/deploy/compose.alerting.yml"),
+                        "-f", str(write_overlay(temporary, environment, distributed))]
         http_port = None
         if https:
             from p8_https_fixture import write_overlay
@@ -89,7 +96,9 @@ def run(monitoring=False, distributed=False, https=False):
             # This project name is randomly created here; no prior project is selected.
             started = True
             capture(command + ["up", "--detach", "--no-build"], cwd=ROOT, env=environment)
-            for service in ("postgres", "migrate", *roles, "web", *(("session-redis",) if distributed else ()), *(("prometheus", "grafana") if monitoring else ())):
+            for service in ("postgres", "migrate", *roles, "web", *(("session-redis",) if distributed else ()),
+                            *(("prometheus", "grafana") if monitoring else ()),
+                            *(("alertmanager", "alert-receiver") if alerting else ())):
                 identity = capture(command + ["ps", "--all", "--quiet", service], cwd=ROOT, env=environment)
                 if len(identity) != 64 or any(c not in "0123456789abcdef" for c in identity):
                     raise AssertionError("Missing disposable Compose service: " + service)
@@ -253,6 +262,20 @@ def run(monitoring=False, distributed=False, https=False):
                 if "Installing plugin" in grafana_logs or "Updating plugin" in grafana_logs:
                     raise AssertionError("Grafana unexpectedly downloads/updates unpinned plugins")
                 print("P8 actual monitoring: promtool config/rules, live Go scrape/runtime/knowledge gauges, provisioned Grafana 20 panels passed", flush=True)
+            if alerting:
+                from p8_alert_fixture import drill
+                capture(["docker", "exec", containers["alertmanager"], "/bin/amtool", "check-config", "/etc/alertmanager/alertmanager.json"])
+                for service in ("alertmanager", "alert-receiver"):
+                    flags = json.loads(capture(["docker", "inspect", "--format", "{{json .HostConfig}}", containers[service]]))
+                    if flags.get("PortBindings") or not flags["ReadonlyRootfs"] or flags["CapDrop"] != ["ALL"] or "no-new-privileges:true" not in flags["SecurityOpt"]:
+                        raise AssertionError("Local alert service lost private/read-only/capability restrictions")
+                    if capture(["docker", "exec", containers[service], "id", "-u"]) != "65534":
+                        raise AssertionError("Local alert service is not running as UID65534")
+                alert_report = drill(capture, command, environment, containers, ready, distributed)
+                # Combined sessions are process-local; explicitly re-login after the drill.
+                csrf = json.loads(request("/api/v1/auth/csrf")[0])["data"]["token"]
+                request("/api/v1/auth/login", "POST", {"username": "p8-fixture", "password": environment["GO_AUTH_PASSWORD"]}, token=csrf)
+                request("/api/v1/tasks/" + task["id"])
             capture(command + ["stop", "--timeout", "40", *roles, "web"], cwd=ROOT, env=environment)
             for service in roles:
                 if capture(["docker", "inspect", "--format", "{{.State.ExitCode}}", containers[service]]) != "0":
@@ -262,7 +285,7 @@ def run(monitoring=False, distributed=False, https=False):
             print("P8 actual Compose: original Flyway42/revalidate, TLS DB, non-root Go/Web, auth/CSRF, SPA/Caddy, upload/download, graceful stop passed", flush=True)
         except Exception as error:
             details = [(error.stderr or "") if isinstance(error, subprocess.CalledProcessError) else str(error)]
-            for service in (*roles, "web", "prometheus", "grafana"):
+            for service in (*roles, "web", "prometheus", "grafana", "alertmanager", "alert-receiver"):
                 if service not in containers:
                     continue
                 try:
@@ -283,6 +306,16 @@ def run(monitoring=False, distributed=False, https=False):
             if started:
                 capture(command + ["down", "--volumes", "--remove-orphans", "--timeout", "40"], cwd=ROOT, env=environment)
                 print("Removed only this runner's random Compose project/volumes", flush=True)
+        if alerting:
+            paths = ("backend-go/deploy/compose.alerting.yml", "backend-go/deploy/monitoring/alerts.yml",
+                     "backend-go/deploy/monitoring/alertmanager.example.json",
+                     "backend-go/deploy/monitoring/" + environment["GO_PROMETHEUS_ALERTING_CONFIG"])
+            report = dict(result="PASS", local_receiver_only=True, external_notification_verified=False,
+                          distributed=distributed, checks=alert_report, cleaned_own_resources=True,
+                          source_sha256={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in paths},
+                          limits="New random isolated stack and HTTP test receiver only. No user channels, credentials or external recipients. Six rule unit tests remain distinct from this real target-down drill. Release gates remain open.")
+            name = "p8-alerting-distributed.json" if distributed else "p8-alerting.json"
+            (ROOT / "specs/033-go-rewrite" / name).write_text(json.dumps(report, ensure_ascii=False, indent=2) + chr(10))
         if https:
             report = dict(result="PASS", private_ca_only=True, public_acme_verified=False,
                 source_sha256={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in (
@@ -305,5 +338,6 @@ if __name__ == "__main__":
     parser.add_argument("--monitoring", action="store_true")
     parser.add_argument("--distributed", action="store_true")
     parser.add_argument("--https", action="store_true", help="Fresh private-CA HTTPS drill; never production/public ACME")
+    parser.add_argument("--alerting", action="store_true", help="Actual two-minute target-down and local webhook recovery drill; implies monitoring")
     arguments = parser.parse_args()
-    run(arguments.monitoring, arguments.distributed, arguments.https)
+    run(arguments.monitoring, arguments.distributed, arguments.https, arguments.alerting)

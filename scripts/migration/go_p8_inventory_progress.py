@@ -121,7 +121,7 @@ OPERATIONS = {
 ASSETS = {
     "compose": ("implemented", ["backend-go/deploy/compose.yml", "backend-go/deploy/compose.distributed.yml", "scripts/migration/run_go_compose_tests.py"], "保留原Java资产，独立Go combined/distributed/Flyway/Caddy新项目实测，不替换现用配置。"),
     "local": ("implemented", ["scripts/migration/go_runtime.py", "scripts/migration/run_go_local_tests.py"], "独立Go私有状态/五角色/身份核对/停止/discovery实测；不读取原PID或.env。"),
-    "monitor": ("implemented", ["scripts/migration/go_monitoring_assets.py", "scripts/migration/run_go_compose_tests.py", "scripts/migration/run_go_local_tests.py"], "独立Go指标/面板/六告警、distributed与local发现真实采集；Alertmanager外部通知非此证明。"),
+    "monitor": ("implemented", ["scripts/migration/go_monitoring_assets.py", "scripts/migration/run_go_compose_tests.py", "scripts/migration/run_go_local_tests.py", "backend-go/deploy/compose.alerting.yml", "scripts/migration/p8_alert_fixture.py", "specs/033-go-rewrite/p8-alerting.json"], "独立Go指标/面板/六告警、distributed与local发现真实采集；combined实际2m停机触发Alertmanager、本地503重试与同fingerprint恢复通知通过，真实外部渠道最终送达非此证明。"),
     "backup": ("implemented", ["scripts/migration/go_backup.py", "scripts/migration/run_go_cutover_tests.py", "specs/033-go-rewrite/p8-cutover.json"], "复用原tar/SHA/custom dump，合成Java→Go→Java隔离演练；真实用户备份门禁另列。"),
     "pushKeys": ("implemented", ["scripts/migration/run_go_local_tests.py"], "复用原生成器，仅临时目录0600/拒绝覆盖实测；不等于真实浏览器送达。"),
     "fixture": ("implemented", ["scripts/migration/p8_model_fixture.py", "scripts/migration/run_go_e2e_tests.py", "scripts/migration/run_go_cutover_tests.py"], "原模拟上游保留，Go隔离runner明确合成输入/模型；未连接用户模型。"),

@@ -15,7 +15,7 @@ class GoDeploymentTest(unittest.TestCase):
         if not shutil.which("docker"):
             raise unittest.SkipTest("Docker Compose required for native configuration validation")
 
-    def model(self, distributed=False, values=True, production=False, monitoring=False):
+    def model(self, distributed=False, values=True, production=False, monitoring=False, alerting=False, alert_config=True):
         env = {key: value for key, value in os.environ.items() if key in {"PATH", "HOME", "DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_CONFIG"}}
         if values:
             env.update(GO_AUTH_USERNAME="fixture", GO_AUTH_PASSWORD="synthetic-password-p8",
@@ -25,15 +25,21 @@ class GoDeploymentTest(unittest.TestCase):
                        GO_REDIS_SESSION_NAMESPACE="p8-synthetic", GO_PUBLIC_HOST="p8-fixture.invalid",
                        GO_GRAFANA_ADMIN_PASSWORD="synthetic-grafana-p8")
         command = ["docker", "compose", "--env-file", "/dev/null", "-f", "backend-go/deploy/compose.yml"]
+        if alerting and alert_config:
+            env["GO_ALERTMANAGER_CONFIG"] = "/tmp/personalos-p8-not-real-alertmanager.json"
+            if distributed:
+                env["GO_PROMETHEUS_ALERTING_CONFIG"] = "prometheus.alerting.yml"
         if distributed:
             command += ["-f", "backend-go/deploy/compose.distributed.yml"]
         if production:
             command += ["-f", "backend-go/deploy/compose.prod.yml"]
-        if monitoring:
+        if monitoring or alerting:
             command += ["-f", "backend-go/deploy/compose.monitoring.yml"]
+        if alerting:
+            command += ["-f", "backend-go/deploy/compose.alerting.yml"]
         result = subprocess.run(command + ["config", "--format=json"], cwd=ROOT, env=env,
                                 capture_output=True, text=True, timeout=45)
-        if not values:
+        if not values or (alerting and not alert_config):
             self.assertNotEqual(result.returncode, 0)
             return
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -98,3 +104,22 @@ class GoDeploymentTest(unittest.TestCase):
         self.assertEqual(grafana["environment"]["GF_PLUGINS_PREINSTALL_DISABLED"], "true")
         self.assertEqual(grafana["environment"]["GF_PLUGINS_PREINSTALL_AUTO_UPDATE"], "false")
         self.assertFalse(services["prometheus"].get("ports"))
+
+    def test_alerting_requires_explicit_receiver_configuration(self):
+        self.model(alerting=True, alert_config=False)
+
+    def test_alerting_opt_in_is_private_nonroot_and_uses_matching_scrapes(self):
+        for distributed in (False, True):
+            with self.subTest(distributed=distributed):
+                services = self.model(distributed=distributed, alerting=True)["services"]
+                alertmanager = services["alertmanager"]
+                self.assertFalse(alertmanager.get("ports"))
+                self.assertEqual(alertmanager["user"], "65534:65534")
+                self.assertTrue(alertmanager["read_only"])
+                self.assertEqual(alertmanager["cap_drop"], ["ALL"])
+                self.assertIn("no-new-privileges:true", alertmanager["security_opt"])
+                mounts = [v for v in services["prometheus"]["volumes"] if v["target"] == "/etc/prometheus/prometheus.yml"]
+                self.assertEqual(len(mounts), 1)
+                name = "prometheus.alerting.yml" if distributed else "prometheus.alerting.combined.yml"
+                self.assertEqual(Path(mounts[0]["source"]).name, name)
+                self.assertTrue(mounts[0]["read_only"])

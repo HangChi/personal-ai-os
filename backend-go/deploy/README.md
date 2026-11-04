@@ -30,6 +30,16 @@ docker compose --env-file /dev/null -f backend-go/deploy/compose.yml config --qu
 
 `python3 scripts/migration/run_go_compose_tests.py --https`仅创建随机项目/端口/新卷。它原生转换候选Caddyfile，保留HTTP配置，只将签发器/续期时钟替换为90秒测试私有证书；后端明确使用monitoring测试profile，未绕过prod守卫。CA只加载到本次Python客户端，不安装系统信任。实际验证未知CA/错误域名拒绝、外部端口跳转、安全头/Secure Cookie/认证CSRF、SPA与上传下载、非root/只读、自动续期及重启后证书/会话保留，最后清理本次资源。该演练不能代表公网ACME或生产批准，报告见[p8-https.json](../../specs/033-go-rewrite/p8-https.json)。
 
+## 显式告警通知
+
+监控默认只采集和评估规则，不配置通知渠道。需要通知时，在 compose.monitoring.yml 之后显式叠加 compose.alerting.yml；Alertmanager 使用独立卷、UID65534、只读根和私有网络，不发布管理端口。原Java监控配置保持原样。
+
+由操作者在仓库外创建自己的 Alertmanager 配置，参考 monitoring/alertmanager.example.json（JSON也是合法YAML）；示例中的 .invalid HTTPS地址不能投递。用绝对路径设置 GO_ALERTMANAGER_CONFIG，文件须可被UID65534读取；含凭据的配置保持私有，不提交或输出渲染后的Compose。webhook默认不跟随重定向，保留TLS证书校验，按通知服务要求配置认证与受信CA。
+
+combined默认使用 prometheus.alerting.combined.yml；distributed须另设 GO_PROMETHEUS_ALERTING_CONFIG=prometheus.alerting.yml。这两份配置与原Go监控候选保持相同采集、规则和15秒时钟，仅增加私有 alertmanager:9093。叠加顺序为 compose.yml、可选 compose.distributed.yml、compose.monitoring.yml、compose.alerting.yml；仍需基础部署的显式认证/数据库参数，不加载现有.env。
+
+本地隔离验证使用 python3 scripts/migration/run_go_compose_tests.py --alerting，可另加 --distributed。runner只创建新随机项目、TLS库及无宿主端口的HTTP测试接收端，将示例中唯一通知目标替换为本次服务；拒绝附加收件人、子路由或HTTP代理，不读取操作者通知配置。实际停止本次backend、保留原两分钟for，观察pending/firing；接收端先503再接受重试，恢复backend后核对相同fingerprint的resolved通知，再重新登录确认任务仍存在。结果在清理后写入P8报告；失败日志保留。这是本地协议验证，不能替代真实通知渠道、收件权限与最终送达验收，也不会解除prod拒绝或readyz503。
+
 ## 运维与复验
 
 本地二进制用`python3 scripts/migration/go_runtime.py start --binary /absolute/personalos --role combined`；只读取显式系统环境，强制关闭dotenv，要求认证/CSRF和全部连接参数。`--role api`与`--role workers`支持独立角色；`status/stop/targets`只使用`.cache/go-runtime`中本工具创建的状态，不读Java PID或进程参数。状态目录0700、日志/状态0600；停止核对PID启动身份，超时保留状态且不强杀。默认端口18081/18091，三个Worker分别18083/18093、18084/18094、18085/18095。监控发现文件使用当前运行的Worker，不加入已停止进程。

@@ -1,0 +1,23 @@
+{
+  "result": "PASS",
+  "local_receiver_only": true,
+  "external_notification_verified": false,
+  "distributed": false,
+  "checks": {
+    "rule_for_seconds": 120,
+    "pending_observed": true,
+    "firing_received": true,
+    "retryable_503_count": 1,
+    "resolved_received": true,
+    "same_fingerprint": true,
+    "elapsed_seconds": 180.1
+  },
+  "cleaned_own_resources": true,
+  "source_sha256": {
+    "backend-go/deploy/compose.alerting.yml": "2cf7a1d1d446c49a2e8910499f17be87b9bbcf6d6e73f2e2356a6797111ff293",
+    "backend-go/deploy/monitoring/alerts.yml": "13edda7f176455b9575f08e1300b8b39d22a00734bd150a08b2cc40002427181",
+    "backend-go/deploy/monitoring/alertmanager.example.json": "a6e64910863c5d38adcd0f24e2109516c1a658f148ea9887ee5a84ce155e3b37",
+    "backend-go/deploy/monitoring/prometheus.alerting.combined.yml": "6767bdb47c4ccfe662a45ea25ca4639f6bb1d5b13645a453d7963fb114f4a4a2"
+  },
+  "limits": "New random isolated stack and HTTP test receiver only. No user channels, credentials or external recipients. Six rule unit tests remain distinct from this real target-down drill. Release gates remain open."
+}
