@@ -5,6 +5,7 @@ import (
 	"errors"
 	"personal-ai-os/backend-go/internal/business/knowledge"
 	"personal-ai-os/backend-go/internal/platform/api"
+	"strings"
 	"time"
 )
 
@@ -15,12 +16,19 @@ func (u *UUID) UnmarshalJSON(raw []byte) error {
 	if e := json.Unmarshal(raw, &s); e != nil {
 		return e
 	}
-	id, ok := api.ParseJavaUUID(s)
+	id, ok := parseUUID(s)
 	if !ok {
 		return errors.New("UUID格式非法")
 	}
 	*u = UUID(id)
 	return nil
+}
+
+func parseUUID(s string) (string, bool) {
+	s = strings.TrimFunc(s, func(r rune) bool { return r <= 0x20 })
+	id, ok := api.ParseJavaUUID(s)
+	// Jackson's UUID binding is stricter than UUID.fromString used by URL parameters.
+	return id, ok && len(s) == 36 && strings.EqualFold(id, s)
 }
 
 type Payload struct {

@@ -113,4 +113,14 @@ func TestP7MCPAuditBudgetConfirmationAndReconnect(t *testing.T) {
 	if len(audit.records) != 2 {
 		t.Fatal("missing durable audit", len(audit.records))
 	}
+	tools.TotalLimit = 1
+	turn := testTurn()
+	if _, e := tools.Execute(context.Background(), turn, call); e != nil {
+		t.Fatal(e)
+	}
+	call.Function.Name = "mcp_remote_write"
+	call.Function.Arguments = `{"path":"/budget-blocked"}`
+	if _, e := tools.Execute(context.Background(), turn, call); e == nil || calls.Load() != 3 || len(store.rows) != 1 || len(audit.records) != 3 {
+		t.Fatal("external tools bypassed the common tool budget", e, calls.Load(), len(store.rows), len(audit.records))
+	}
 }

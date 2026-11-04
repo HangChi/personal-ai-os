@@ -1,0 +1,776 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/mcp/tool/McpToolNaming.java": "b7588c11b58cf765a785308423fae262118a96f9a2628df0dc9d428fd87a644c",
+    "backend/src/main/java/com/personalos/mcp/tool/McpToolPolicy.java": "b4ba16b622740c0b89647f3e9cf374eeeb8d6580cc742075b41db40b03355f6c",
+    "backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationSummary.java": "aee75a269adbc6a5466025b2edbeb072294c7a8b25c61307e61eaf6bdfa1cac9",
+    "backend/src/main/java/com/personalos/mcp/confirmation/McpToolCall.java": "134409888419d3f8359fe38ea9ba8875d0ba62a714e486a2168de020c1a21640",
+    "backend/src/main/java/com/personalos/mcp/server/PersonalMcpTools.java": "ec565e44ebef062f156f640396f8a69456e31e77a2b61206a40d7d7d478bb346",
+    "backend/src/main/java/com/personalos/export/ImportPayload.java": "9bd7e140359d9395fd137955508dcb1a5c0ba5ece9d008617971a23343f41bd8",
+    "backend/src/main/java/com/personalos/knowledge/governance/SourceInfo.java": "c07216d5a3b7a43e188b62715baf9f87dc7ed007ed658fc12c0409d9bbb76c0e",
+    "backend/src/main/java/com/personalos/common/search/SearchPatterns.java": "5bedb5bd7938550f40b56e8ad341eecd658619e929b75e413d09799dc5bb1a4c",
+    "backend/src/main/java/com/personalos/common/search/SearchContributor.java": "f6d3498eedc4bd70b0ee12d817acf9807d7402b3e6317d4af5d307f0add3ec35",
+    "backend/src/main/java/com/personalos/common/search/SearchHit.java": "d732f9d270530945b10defcc22716ab03b849e74c03d59db8efdae765146f14e",
+    "backend/src/main/java/com/personalos/common/search/SearchGroup.java": "7a84a67ee27f420ff817870f7b31523f48949883c5d04375c3fde1ca96647b31",
+    "backend/src/main/java/com/personalos/common/search/GlobalSearchResult.java": "c46f89562028013697f758bb1287583e8a206aa7dac01d26e44ca24595d3598d",
+    "backend/src/main/java/com/personalos/common/search/GlobalSearchService.java": "f7a9dde41a12c62805524c4633089b34702c37e76447006533f715198431a02a",
+    "backend/src/main/java/com/personalos/common/search/SearchController.java": "60d183006565a3dc5f0b884e985b953d48f6e089f8f97d01fd07a9e993c3a710"
+  },
+  "inputs": {
+    "names": [
+      [
+        "My-Server.v2",
+        "Read-File"
+      ],
+      [
+        "",
+        " "
+      ],
+      [
+        "中文",
+        "工具"
+      ],
+      [
+        "a___b",
+        "c"
+      ],
+      [
+        "İ",
+        "Iİ"
+      ],
+      [
+        "ΟΣ",
+        "ς"
+      ],
+      [
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "read"
+      ],
+      [
+        "___",
+        "---"
+      ],
+      [
+        "Mixed",
+        "read.file"
+      ]
+    ],
+    "policies": [
+      {
+        "name": "read",
+        "automatic": [
+          "read"
+        ]
+      },
+      {
+        "name": "write",
+        "automatic": [
+          "read"
+        ]
+      },
+      {
+        "name": "Read",
+        "automatic": [
+          "read"
+        ]
+      },
+      {
+        "name": "mcp_x_read",
+        "automatic": [
+          "read"
+        ]
+      },
+      {
+        "name": "write",
+        "automatic": []
+      }
+    ],
+    "summaries": [
+      {
+        "server": "files",
+        "tool": "write",
+        "arguments": null
+      },
+      {
+        "server": "files",
+        "tool": "write",
+        "arguments": {}
+      },
+      {
+        "server": "files",
+        "tool": "write",
+        "arguments": {
+          "path": "/tmp/synthetic"
+        }
+      },
+      {
+        "server": "files",
+        "tool": "write",
+        "arguments": {
+          "z": 1,
+          "b": "line\nline\rnext",
+          "a": "长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长",
+          "c": null
+        }
+      },
+      {
+        "server": "files",
+        "tool": "write",
+        "arguments": {
+          "array": [
+            "x",
+            2,
+            true
+          ],
+          "object": {
+            "one": "value"
+          }
+        }
+      },
+      {
+        "server": "files",
+        "tool": "write",
+        "arguments": {
+          "a": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        }
+      }
+    ],
+    "patterns": [
+      " 100%_\\ ",
+      "Vue API",
+      "İ ΟΣ",
+      "中文",
+      "　x　",
+      " x ",
+      "a\\b%_c",
+      ""
+    ],
+    "searches": [
+      {
+        "keyword": " 词 ",
+        "limit": 5
+      },
+      {
+        "keyword": "x",
+        "limit": -3
+      },
+      {
+        "keyword": "x",
+        "limit": 100
+      },
+      {
+        "keyword": " ",
+        "limit": 5
+      },
+      {
+        "keyword": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "limit": 20
+      },
+      {
+        "keyword": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "limit": 5
+      },
+      {
+        "keyword": " ",
+        "limit": 1
+      }
+    ],
+    "imports": [
+      "",
+      "null",
+      "[]",
+      "{}",
+      "{broken",
+      "{\"formatVersion\":\"2\"}",
+      "{\"FormatVersion\":\"1\"}",
+      "{\"formatVersion\":true}",
+      "{\"formatVersion\":\"1\",\"tasks\":[{\"id\":\"invalid\"}]}",
+      "{\"formatVersion\":\"1\",\"tasks\":[{\"title\":{}}]}",
+      "{\"formatVersion\":\"1\",\"tasks\":[{\"tags\":{}}]}",
+      "{\"formatVersion\":\"1\",\"memories\":[{\"hitCount\":2147483648}]}",
+      "{\"formatVersion\":\"1\",\"knowledgeDocuments\":[{\"document\":{\"id\":\"invalid\"}}]}",
+      "{\"formatVersion\":\"1\",\"knowledgeDocuments\":[{\"source\":{\"spaceId\":\"invalid\"}}]}",
+      "{\"formatVersion\":\"1\",\"tasks\":[{\"createdAt\":\"yesterday\"}]}",
+      "{\"formatVersion\": \"1\"}",
+      "{\"formatVersion\": \" 1 \"}",
+      "{\"formatVersion\": 1}",
+      "{\"formatVersion\": \"1\", \"tasks\": [{\"id\": \"1-2-3-4-5\", \"title\": \"restored\", \"tags\": [\"one\", \"two\"]}]}",
+      "{\"formatVersion\": 1, \"FormatVersion\": \"2\", \"tasks\": [{\"ID\": \"invalid\", \"title\": 42, \"description\": true, \"priority\": \"HIGH\", \"tags\": [\"a\", 3, null]}], \"memories\": [{\"pinned\": \"TRUE\", \"hitCount\": 2.9}], \"calendarEvents\": [{\"allDay\": 1, \"reminderLeadMinutes\": \"20\"}], \"knowledgeDocuments\": [{\"document\": {\"sizeBytes\": \"4294967296\"}}]}",
+      "{\"formatVersion\": \"1\", \"tasks\": [null, {\"Title\": \"ignored\", \"unknown\": {\"x\": 1}}]}",
+      "{\"formatVersion\": \"1\", \"memories\": [{\"hitCount\": null}]}",
+      "{\"formatVersion\": \"1\", \"memories\": [{\"hitCount\": -1}]}",
+      "{\"formatVersion\": \"1\", \"memories\": [{\"hitCount\": 0}]}",
+      "{\"formatVersion\": \"1\", \"memories\": [{\"hitCount\": 2147483647}]}",
+      "{\"formatVersion\": \"1\", \"memories\": [{\"hitCount\": \"2\"}]}",
+      "{\"formatVersion\": \"1\", \"memories\": [{\"hitCount\": \"\"}]}",
+      "{\"formatVersion\": \"1\", \"memories\": [{\"hitCount\": \"null\"}]}",
+      "{\"formatVersion\": \"1\", \"calendarEvents\": [{\"allDay\": null}]}",
+      "{\"formatVersion\": \"1\", \"calendarEvents\": [{\"allDay\": true}]}",
+      "{\"formatVersion\": \"1\", \"calendarEvents\": [{\"allDay\": false}]}",
+      "{\"formatVersion\": \"1\", \"calendarEvents\": [{\"allDay\": 0}]}",
+      "{\"formatVersion\": \"1\", \"calendarEvents\": [{\"allDay\": -1}]}",
+      "{\"formatVersion\": \"1\", \"calendarEvents\": [{\"allDay\": \"false\"}]}",
+      "{\"formatVersion\": \"1\", \"calendarEvents\": [{\"allDay\": \"True\"}]}"
+    ]
+  },
+  "expected": {
+    "names": [
+      "mcp_my_server_v2_read_file",
+      "mcp_unknown_unknown",
+      "mcp_unknown_unknown",
+      "mcp_a_b_c",
+      "mcp_i_ii",
+      "mcp_unknown_unknown",
+      "mcp_ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+      "mcp_unknown_unknown",
+      "mcp_mixed_read_file"
+    ],
+    "policies": [
+      "AUTO",
+      "CONFIRM",
+      "CONFIRM",
+      "CONFIRM",
+      "CONFIRM"
+    ],
+    "conflicts": [
+      "mcp_a_t（与内置工具同名）",
+      "mcp_a_t（与内置工具同名）",
+      "mcp_a_t（多个 MCP server 产生同名工具）",
+      "mcp_b_t（多个 MCP server 产生同名工具）"
+    ],
+    "summaries": [
+      "MCP 工具调用确认：server=files，工具=write",
+      "MCP 工具调用确认：server=files，工具=write",
+      "MCP 工具调用确认：server=files，工具=write，path=/tmp/synthetic",
+      "MCP 工具调用确认：server=files，工具=write，a=长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长长…，b=line line next，c=null，…等 4 个参数",
+      "MCP 工具调用确认：server=files，工具=write，array=[x, 2, true]，object={one=value}",
+      "MCP 工具调用确认：server=files，工具=write，a=😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀…"
+    ],
+    "patterns": [
+      "%100\\%\\_\\\\%",
+      "%vue api%",
+      "%i̇ ος%",
+      "%中文%",
+      "%x%",
+      "% x %",
+      "%a\\\\b\\%\\_c%",
+      "%%"
+    ],
+    "searches": [
+      {
+        "accepted": true,
+        "result": {
+          "keyword": "词",
+          "totalHits": 3,
+          "groups": [
+            {
+              "module": "任务",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "词",
+                  "title": "limit:5",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "对话",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "词",
+                  "title": "limit:5",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "记忆",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "词",
+                  "title": "limit:5",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "accepted": true,
+        "result": {
+          "keyword": "x",
+          "totalHits": 3,
+          "groups": [
+            {
+              "module": "任务",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "x",
+                  "title": "limit:1",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "对话",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "x",
+                  "title": "limit:1",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "记忆",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "x",
+                  "title": "limit:1",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "accepted": true,
+        "result": {
+          "keyword": "x",
+          "totalHits": 3,
+          "groups": [
+            {
+              "module": "任务",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "x",
+                  "title": "limit:20",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "对话",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "x",
+                  "title": "limit:20",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "记忆",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "x",
+                  "title": "limit:20",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "accepted": false,
+        "message": "搜索词不能为空"
+      },
+      {
+        "accepted": true,
+        "result": {
+          "keyword": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "totalHits": 3,
+          "groups": [
+            {
+              "module": "任务",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                  "title": "limit:20",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "对话",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                  "title": "limit:20",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "记忆",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                  "title": "limit:20",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "accepted": false,
+        "message": "搜索词长度不能超过 100 个字符"
+      },
+      {
+        "accepted": true,
+        "result": {
+          "keyword": " ",
+          "totalHits": 3,
+          "groups": [
+            {
+              "module": "任务",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": " ",
+                  "title": "limit:1",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "对话",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": " ",
+                  "title": "limit:1",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            },
+            {
+              "module": "记忆",
+              "kind": "fixture",
+              "hits": [
+                {
+                  "kind": "fixture",
+                  "id": " ",
+                  "title": "limit:1",
+                  "subtitle": "",
+                  "matchedField": ""
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "personalTools": [
+      {
+        "name": "personal_list_calendar",
+        "readOnly": true,
+        "description": "查询个人日程发生实例，时间使用 ISO-8601 格式。"
+      },
+      {
+        "name": "personal_list_memories",
+        "readOnly": true,
+        "description": "读取个人长期记忆，包括内容、来源、置顶状态和更新时间。"
+      },
+      {
+        "name": "personal_list_tasks",
+        "readOnly": true,
+        "description": "查询个人任务，可按状态和关键词筛选，并返回分页结果。"
+      },
+      {
+        "name": "personal_search_knowledge",
+        "readOnly": true,
+        "description": "在个人知识库中进行混合检索，返回相关文档片段及来源。"
+      }
+    ],
+    "imports": [
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": false
+      },
+      {
+        "accepted": true,
+        "tasks": [
+          {
+            "id": null,
+            "title": "42",
+            "description": "true",
+            "status": "",
+            "priority": "HIGH",
+            "tags": [
+              "a",
+              "3",
+              ""
+            ]
+          }
+        ],
+        "allDay": true,
+        "lead": 20,
+        "pinned": true,
+        "hits": 2,
+        "size": 4294967296
+      },
+      {
+        "accepted": true,
+        "tasks": [
+          null,
+          {
+            "id": null,
+            "title": "",
+            "description": null,
+            "status": "",
+            "priority": "",
+            "tags": []
+          }
+        ],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": -1,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 2147483647,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 2,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": true,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": true,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": false,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      },
+      {
+        "accepted": true,
+        "tasks": [],
+        "allDay": true,
+        "lead": null,
+        "pinned": false,
+        "hits": 0,
+        "size": 0
+      }
+    ]
+  }
+}

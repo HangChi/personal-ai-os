@@ -69,14 +69,14 @@ func Parse(raw []byte) (Payload, error) {
 			continue
 		}
 		if entry.Document != nil && entry.Document.ID != nil {
-			id, ok := api.ParseJavaUUID(*entry.Document.ID)
+			id, ok := parseUUID(*entry.Document.ID)
 			if !ok {
 				return p, invalid("文件不是合法的导出 JSON")
 			}
 			entry.Document.ID = &id
 		}
 		if entry.Source != nil && entry.Source.SpaceID != "" {
-			id, ok := api.ParseJavaUUID(entry.Source.SpaceID)
+			id, ok := parseUUID(entry.Source.SpaceID)
 			if !ok {
 				return p, invalid("文件不是合法的导出 JSON")
 			}
