@@ -230,20 +230,26 @@ func (s *Events) Update(ctx context.Context, id string, request EventRequest) (E
 func (s *Events) Delete(ctx context.Context, id string) (int64, error) {
 	var removed int64
 	err := s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
-		if err := tx.QueryRowContext(ctx, "SELECT id::text FROM calendar_event WHERE id=$1 FOR UPDATE", id).Scan(&id); err != nil {
-			return notFound(id, err)
-		}
-		result, err := tx.ExecContext(ctx, "DELETE FROM reminder WHERE source_type='CALENDAR_EVENT' AND source_id=$1", id)
-		if err != nil {
-			return err
-		}
-		removed, err = result.RowsAffected()
-		if err != nil {
-			return err
-		}
-		_, err = tx.ExecContext(ctx, "DELETE FROM calendar_event WHERE id=$1", id)
-		return err
+		var err error
+		removed, err = deleteEvent(ctx, tx, id)
+		return notFound(id, err)
 	})
+	return removed, err
+}
+
+func deleteEvent(ctx context.Context, tx *sql.Tx, id string) (int64, error) {
+	if err := tx.QueryRowContext(ctx, "SELECT id::text FROM calendar_event WHERE id=$1 FOR UPDATE", id).Scan(&id); err != nil {
+		return 0, err
+	}
+	result, err := tx.ExecContext(ctx, "DELETE FROM reminder WHERE source_type='CALENDAR_EVENT' AND source_id=$1", id)
+	if err != nil {
+		return 0, err
+	}
+	removed, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	_, err = tx.ExecContext(ctx, "DELETE FROM calendar_event WHERE id=$1", id)
 	return removed, err
 }
 

@@ -232,7 +232,7 @@ func taskError(e error) error {
 	return e
 }
 func confirmationResult(v confirmation.DTO, name string) Result {
-	prefix := map[string]string{"deleteTask": "删除操作", "scheduleTask": "修改截止时间", "setTaskPriority": "修改优先级"}[name]
+	prefix := map[string]string{"deleteTask": "删除操作", "deleteCalendarEvent": "删除日程", "scheduleTask": "修改截止时间", "setTaskPriority": "修改优先级"}[name]
 	return Result{Status: "REQUIRES_CONFIRMATION", Message: prefix + "需要你确认。已生成待确认事项：" + v.Summary + "。请用户在界面上确认后再执行。", ConfirmationID: &v.ID}
 }
 func nullableText(m map[string]any, k string) *string {

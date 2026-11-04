@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"personal-ai-os/backend-go/internal/business/agent"
 	"personal-ai-os/backend-go/internal/business/calendar"
 	"personal-ai-os/backend-go/internal/business/chat"
 	"personal-ai-os/backend-go/internal/business/confirmation"
@@ -244,6 +245,32 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 	clients := []*redisclient.Client{options.SessionRedis, options.RateRedis}
 	snapshot := f.actuatorSnapshot(actuatorProperties, clients)
+	var calendarEvents *calendar.Events
+	var scanSettings config.CalendarProperties
+	if options.EnableP5 {
+		if !options.EnableP4 {
+			return nil, errors.New("P5需要启用P4")
+		}
+		calendarValues := map[string]string{}
+		for _, key := range []string{"app.calendar.scan-enabled", "app.calendar.scan-interval-ms",
+			"app.calendar.scan-initial-delay-ms", "app.calendar.scan-lookahead", "app.calendar.scan-lookback",
+			"app.calendar.default-reminder-lead", "app.calendar.max-range-days", "app.calendar.default-query-limit",
+			"app.calendar.max-query-limit"} {
+			value, found, err := properties.Get(key)
+			if err != nil {
+				return nil, err
+			}
+			if found {
+				calendarValues[key] = value
+			}
+		}
+		calendarSettings, err := config.BindCalendarProperties(calendarValues)
+		if err != nil {
+			return nil, err
+		}
+		scanSettings = calendarSettings
+		calendarEvents = calendar.NewEvents(pool, calendarSettings, time.Local)
+	}
 	var tasks *task.Service
 	var idem *idempotency.Service
 	var confirms *confirmation.Service
@@ -278,7 +305,13 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		if taskErr != nil {
 			return nil, taskErr
 		}
-		registry, taskErr := confirmation.NewRegistryFor([]confirmation.Action{confirmation.DeleteTask, confirmation.ScheduleTask, confirmation.SetPriority}, handler)
+		actions := handler.Actions()
+		handlers := []confirmation.Handler{handler}
+		if calendarEvents != nil {
+			actions = append(actions, calendarEvents.Actions()...)
+			handlers = append(handlers, calendarEvents)
+		}
+		registry, taskErr := confirmation.NewRegistryFor(actions, handlers...)
 		if taskErr != nil {
 			return nil, taskErr
 		}
@@ -318,34 +351,11 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 		})
 	}
-	var calendarEvents *calendar.Events
-	var scanSettings config.CalendarProperties
+	var extraTools []agent.Definition
 	var memoryCapture func(context.Context, string, string, int) error
 	var backfillMemory func(context.Context) error
 	var memoryPrompt func(context.Context, string, string) (string, error)
 	if options.EnableP5 {
-		if !options.EnableP4 {
-			return nil, errors.New("P5需要启用P4")
-		}
-		calendarValues := map[string]string{}
-		for _, key := range []string{"app.calendar.scan-enabled", "app.calendar.scan-interval-ms",
-			"app.calendar.scan-initial-delay-ms", "app.calendar.scan-lookahead", "app.calendar.scan-lookback",
-			"app.calendar.default-reminder-lead", "app.calendar.max-range-days", "app.calendar.default-query-limit",
-			"app.calendar.max-query-limit"} {
-			value, found, err := properties.Get(key)
-			if err != nil {
-				return nil, err
-			}
-			if found {
-				calendarValues[key] = value
-			}
-		}
-		calendarSettings, err := config.BindCalendarProperties(calendarValues)
-		if err != nil {
-			return nil, err
-		}
-		scanSettings = calendarSettings
-		calendarEvents = calendar.NewEvents(pool, calendarSettings, time.Local)
 		events := calendarEvents.Handler(logger)
 		store, err := memory.NewStore(ctx, pool)
 		if err != nil {
@@ -392,6 +402,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		memoryCapture = func(ctx context.Context, user, reply string, limit int) error {
 			return store.Capture(ctx, f.models.Runtime, user, reply, limit)
 		}
+		extraTools = append(agent.CalendarTools(calendarEvents, confirms), agent.MemoryTool(store))
 		memories := memory.NewHTTP(store, logger)
 		previous := options.Business
 		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -407,7 +418,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		})
 	}
 	if options.EnableP4 {
-		f.chat, err = chat.OpenModule(f.ctx, chat.ModuleOptions{MemoryCapture: memoryCapture, MemoryPrompt: memoryPrompt, Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem, Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor, Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()})
+		f.chat, err = chat.OpenModule(f.ctx, chat.ModuleOptions{ExtraTools: extraTools, MemoryCapture: memoryCapture, MemoryPrompt: memoryPrompt, Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem, Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor, Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()})
 		if err != nil {
 			return nil, err
 		}

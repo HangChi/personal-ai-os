@@ -26,6 +26,7 @@ import (
 )
 
 type ModuleOptions struct {
+	ExtraTools    []agent.Definition
 	MemoryCapture func(context.Context, string, string, int) error
 	MemoryPrompt  func(context.Context, string, string) (string, error)
 	Pool          *database.Pool
@@ -184,6 +185,7 @@ func OpenModule(parent context.Context, o ModuleOptions) (m *Module, err error) 
 	definitions := agent.TaskTools(o.Tasks, requests)
 	definitions = append(definitions, plans.Tools()...)
 	definitions = append(definitions, interactions.Tool())
+	definitions = append(definitions, o.ExtraTools...)
 	registry, e := agent.NewRegistry(o.Idempotency, plans, definitions)
 	if e != nil {
 		return nil, e
