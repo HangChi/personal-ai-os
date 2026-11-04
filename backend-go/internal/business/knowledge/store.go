@@ -183,9 +183,10 @@ func (s *Store) prepareTextChunks(ctx context.Context, blocks []string, id, titl
 	for i, text := range blocks {
 		chunks[i] = Chunk{ID: newID(), Content: text, Metadata: map[string]any{"document_id": id, "document_title": title, "filename": filename, "chunk_index": i}}
 	}
-	// 限制单次模型批量；全部嵌入准备完成之后才进入最终写事务。
-	for start := 0; start < len(blocks); start += 100 {
-		end := min(start+100, len(blocks))
+	// 真实兼容端点可能拒绝较大批量；保守分批且完整成功后才进入写事务。
+	const embeddingBatchSize = 16
+	for start := 0; start < len(blocks); start += embeddingBatchSize {
+		end := min(start+embeddingBatchSize, len(blocks))
 		output, e := s.Embedding.Embed(ctx, model.EmbeddingRequest{Input: blocks[start:end]})
 		if e != nil {
 			return nil, api.NewBusinessError(api.AIUpstreamError, "无法连接嵌入模型服务，请确认模型服务已启动")

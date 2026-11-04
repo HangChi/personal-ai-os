@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 import io
 import json
 from pathlib import Path
@@ -6,8 +5,9 @@ import tempfile
 import unittest
 from unittest.mock import Mock
 import urllib.error
+import urllib.request
 
-from go_real_model import ModelConfig, ModelFailure, RealModel, load_config
+from go_real_model import ModelConfig, ModelFailure, NoRedirect, RealModel, load_config, serve
 
 
 class RealModelTest(unittest.TestCase):
@@ -109,6 +109,24 @@ class RealModelTest(unittest.TestCase):
                 model.forward(path, payload)
             opener.open.assert_not_called()
 
+    def test_provider_rejection_keeps_only_allowed_codes_counts_and_numeric_limits(self):
+        for code in ("InvalidParameter", "test-only-secret"):
+            body = json.dumps({"error": {"code": code, "message":
+                "batch size must not be larger than 25; test-only-secret actual-text"}}).encode()
+            opener = Mock()
+            opener.open.side_effect = urllib.error.HTTPError("https://example.invalid", 400, "raw", {},
+                                                            io.BytesIO(body))
+            model = RealModel(self.config(), opener)
+            with self.assertRaises(ModelFailure):
+                model.forward("/v1/embeddings", {"model": "embed-test", "input": ["actual-text"] * 31})
+            report = model.snapshot()
+            self.assertEqual(report["last_upstream_rejection"]["input_count"], 31)
+            self.assertEqual(report["last_upstream_rejection"]["batch_limits"], [25])
+            self.assertEqual(report["last_upstream_rejection"]["code"],
+                             "InvalidParameter" if code == "InvalidParameter" else "UNSPECIFIED")
+            self.assertNotIn("test-only-secret", json.dumps(report))
+            self.assertNotIn("actual-text", json.dumps(report))
+
     def test_rejects_routes_wrong_model_tools_streams_and_remote_images(self):
         model = RealModel(self.config(), Mock())
         for path, payload in (("/v1/other", {}), ("/v1/embeddings", {"model": "wrong", "input": ["x"]}),
@@ -131,6 +149,26 @@ class RealModelTest(unittest.TestCase):
         opener.open.return_value = self.response({"choices": [{"message": {"content": ""}}]})
         with self.assertRaises(ModelFailure):
             model.forward("/v1/chat/completions", {"model": "chat-test", "messages": [{"role": "user", "content": "x"}]})
+
+    def test_loopback_proxy_requires_its_own_token_and_never_redirects_real_credentials(self):
+        opener = Mock()
+        opener.open.return_value = self.response(self.embeddings())
+        model = RealModel(self.config(), opener)
+        local = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with serve(model) as values:
+            self.assertNotEqual(values["OPENAI_API_KEY"], model.config.api_key)
+            url = values["OPENAI_BASE_URL"] + "/v1/embeddings"
+            body = json.dumps({"model": "embed-test", "input": ["actual-text"]}).encode()
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                local.open(urllib.request.Request(url, body), timeout=2)
+            self.assertEqual(error.exception.code, 502)
+            error.exception.close()
+            opener.open.assert_not_called()
+            request = urllib.request.Request(url, body, {"Authorization": "Bearer " + values["OPENAI_API_KEY"]})
+            with local.open(request, timeout=2) as response:
+                self.assertEqual(len(json.load(response)["data"][0]["embedding"]), 1024)
+            self.assertEqual(opener.open.call_count, 1)
+        self.assertIsNone(NoRedirect().redirect_request(None, None, 302, "", {}, "https://other.invalid"))
 
 
 if __name__ == "__main__":

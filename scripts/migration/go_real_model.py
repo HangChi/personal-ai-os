@@ -111,6 +111,7 @@ class RealModel:
         self.vectors = Counter()
         self.failures = Counter()
         self.usage = Counter()
+        self.last_upstream_rejection = None
         self.characters = 0
         self.max_calls, self.max_chat_calls, self.max_characters = 600, 12, 1_000_000
 
@@ -121,6 +122,7 @@ class RealModel:
         with self.lock:
             return dict(calls=dict(self.calls), failures=dict(self.failures), input_characters=self.characters,
                         usage=dict(self.usage), successful_embedding_inputs=sum(self.inputs.values()),
+                        last_upstream_rejection=self.last_upstream_rejection,
                         unique_embedding_inputs=len(self.inputs), unique_embedding_vectors=len(self.vectors),
                         limits=dict(requests=self.max_calls, chat_requests=self.max_chat_calls,
                                     input_characters=self.max_characters, chat_max_tokens=1024,
@@ -193,6 +195,33 @@ class RealModel:
             result = json.loads(raw)
         except urllib.error.HTTPError as error:
             status = error.code
+            try:
+                detail = json.loads(error.read(65536))
+                detail = detail.get("error", detail)
+                message = detail.get("message", "") if isinstance(detail, dict) else ""
+                code = detail.get("code", "") if isinstance(detail, dict) else ""
+                if not isinstance(message, str):
+                    message = ""
+                if code not in ("InvalidParameter", "InvalidApiKey", "AccessDenied", "Throttling",
+                                "Throttling.RateQuota", "insufficient_quota", "invalid_api_key",
+                                "rate_limit_exceeded", "BadRequest"):
+                    code = "UNSPECIFIED"
+                with self.lock:
+                    self.last_upstream_rejection = dict(
+                        status=status, code=code, input_count=len(inputs),
+                        maximum_input_characters=max((len(text) for text in inputs), default=0),
+                        input_characters=characters,
+                        mentions_token="token" in message.lower(),
+                        mentions_batch="batch" in message.lower(),
+                        mentions_length="length" in message.lower(),
+                        batch_limits=[int(value) for value in re.findall(
+                            r"(?:maximum|max|at most|larger than|less than|up to|exceed)\s*:?\s*(\d{1,4})",
+                            message.lower())] if "batch" in message.lower() else [],
+                        numeric_range=[int(value) for value in re.findall(
+                            r"\[\s*(\d{1,7})\s*,\s*(\d{1,7})\s*\]", message)[0]]
+                            if re.search(r"\[\s*\d{1,7}\s*,\s*\d{1,7}\s*\]", message) else None)
+            except (OSError, ValueError, TypeError):
+                pass
             error.close()
             raise ModelFailure("UPSTREAM_HTTP_" + str(status)) from None
         except (OSError, ValueError) as error:
