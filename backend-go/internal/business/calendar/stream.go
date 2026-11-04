@@ -15,6 +15,8 @@ import (
 
 const streamPath = reminderPath + "/events"
 
+func OwnsStreamPath(path string) bool { return path == streamPath }
+
 type Stream struct {
 	events  *Events
 	ctx     context.Context

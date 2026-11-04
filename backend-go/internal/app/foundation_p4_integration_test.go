@@ -31,6 +31,11 @@ import (
 
 func p4Foundation(t *testing.T, values map[string]string, upstream *httptest.Server) *Foundation {
 	t.Helper()
+	return chatFixtureFoundation(t, values, upstream, false)
+}
+
+func chatFixtureFoundation(t *testing.T, values map[string]string, upstream *httptest.Server, p5 bool) *Foundation {
+	t.Helper()
 	defaults := map[string]string{"app.rate-limit.enabled": "false", "app.context.summary.enabled": "false", "app.chat.upload-dir": t.TempDir(), "spring.ai.model.chat": "openai", "spring.ai.model.embedding": "none", "spring.ai.openai.api-key": "synthetic-p4-foundation", "spring.ai.openai.chat.model": "fixture-p4"}
 	if upstream != nil {
 		defaults["spring.ai.openai.base-url"] = upstream.URL
@@ -46,7 +51,7 @@ func p4Foundation(t *testing.T, values map[string]string, upstream *httptest.Ser
 	if upstream != nil {
 		transport = upstream.Client().Transport
 	}
-	f, e := OpenFoundation(context.Background(), p, FoundationOptions{Connector: fixtureAppConnector(t, "go-p4-foundation"), Migrations: os.DirFS("../../../backend/src/main/resources/db/migration"), Schema: "public", EnableP2: true, EnableP3: true, EnableP4: true, ModelTransport: transport}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	f, e := OpenFoundation(context.Background(), p, FoundationOptions{Connector: fixtureAppConnector(t, "go-p4-foundation"), Migrations: os.DirFS("../../../backend/src/main/resources/db/migration"), Schema: "public", EnableP2: true, EnableP3: true, EnableP4: true, EnableP5: p5, ModelTransport: transport}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	if e != nil {
 		t.Fatal(e)
 	}

@@ -7,17 +7,13 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"personal-ai-os/backend-go/internal/business/agent"
-	"personal-ai-os/backend-go/internal/business/calendar"
 	"personal-ai-os/backend-go/internal/business/chat"
 	"personal-ai-os/backend-go/internal/business/confirmation"
 	"personal-ai-os/backend-go/internal/business/idempotency"
-	"personal-ai-os/backend-go/internal/business/memory"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/business/task"
 	"personal-ai-os/backend-go/internal/platform/auth"
@@ -58,29 +54,27 @@ func (FoundationOptions) MarshalJSON() ([]byte, error) { return []byte(`{"redact
 
 // Foundation是尚未发布的P1组合入口，不启动业务Worker，也不宣告迁移就绪。
 type Foundation struct {
-	pool              *database.Pool
-	coordinator       *coordination.Coordinator
-	gate              *modelgate.Gate
-	executor          *taskexec.Executor
-	health            *health.Service
-	history           migration.HistoryStatus
-	handler           http.Handler
-	management        http.Handler
-	ctx               context.Context
-	cancel            context.CancelFunc
-	mu                sync.Mutex
-	closing           bool
-	served            bool
-	active            sync.WaitGroup
-	closeOnce         sync.Once
-	done              chan struct{}
-	closeErr          error
-	models            *model.Module
-	chat              *chat.Module
-	modelTransport    *http.Transport
-	stopReminders     func()
-	reminderStream    *calendar.Stream
-	reminderBroadcast *calendar.Broadcast
+	pool           *database.Pool
+	coordinator    *coordination.Coordinator
+	gate           *modelgate.Gate
+	executor       *taskexec.Executor
+	health         *health.Service
+	history        migration.HistoryStatus
+	handler        http.Handler
+	management     http.Handler
+	ctx            context.Context
+	cancel         context.CancelFunc
+	mu             sync.Mutex
+	closing        bool
+	served         bool
+	active         sync.WaitGroup
+	closeOnce      sync.Once
+	done           chan struct{}
+	closeErr       error
+	models         *model.Module
+	chat           *chat.Module
+	modelTransport *http.Transport
+	p5             *foundationP5
 }
 
 func (*Foundation) String() string     { return "Foundation{redacted}" }
@@ -97,6 +91,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 	if options.EnableP4 && (!options.EnableP2 || !options.EnableP3) {
 		return nil, errors.New("P4装配必须显式启用P2与P3依赖")
+	}
+	if options.EnableP5 && !options.EnableP4 {
+		return nil, errors.New("P5需要启用P4")
 	}
 	if err := properties.ValidateFoundationExtensions(); err != nil {
 		return nil, err
@@ -248,31 +245,12 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 	clients := []*redisclient.Client{options.SessionRedis, options.RateRedis}
 	snapshot := f.actuatorSnapshot(actuatorProperties, clients)
-	var calendarEvents *calendar.Events
-	var scanSettings config.CalendarProperties
+	var p5 *foundationP5
 	if options.EnableP5 {
-		if !options.EnableP4 {
-			return nil, errors.New("P5需要启用P4")
-		}
-		calendarValues := map[string]string{}
-		for _, key := range []string{"app.calendar.scan-enabled", "app.calendar.scan-interval-ms",
-			"app.calendar.scan-initial-delay-ms", "app.calendar.scan-lookahead", "app.calendar.scan-lookback",
-			"app.calendar.default-reminder-lead", "app.calendar.max-range-days", "app.calendar.default-query-limit",
-			"app.calendar.max-query-limit"} {
-			value, found, err := properties.Get(key)
-			if err != nil {
-				return nil, err
-			}
-			if found {
-				calendarValues[key] = value
-			}
-		}
-		calendarSettings, err := config.BindCalendarProperties(calendarValues)
+		p5, err = newFoundationP5(properties, pool, settings.Role)
 		if err != nil {
 			return nil, err
 		}
-		scanSettings = calendarSettings
-		calendarEvents = calendar.NewEvents(pool, calendarSettings, time.Local)
 	}
 	var tasks *task.Service
 	var idem *idempotency.Service
@@ -310,9 +288,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		}
 		actions := handler.Actions()
 		handlers := []confirmation.Handler{handler}
-		if calendarEvents != nil {
-			actions = append(actions, calendarEvents.Actions()...)
-			handlers = append(handlers, calendarEvents)
+		if p5 != nil {
+			actions = append(actions, p5.events.Actions()...)
+			handlers = append(handlers, p5.events)
 		}
 		registry, taskErr := confirmation.NewRegistryFor(actions, handlers...)
 		if taskErr != nil {
@@ -354,166 +332,20 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 		})
 	}
-	var push *calendar.Push
-	var pushInterval = 30 * time.Second
-	var webhook *calendar.Webhook
-	var webhookInterval = 5 * time.Second
-	var rabbitURI string
-	var streamInterval time.Duration
-	var streamHandler http.Handler
-
-	var extraTools []agent.Definition
-	var memoryCapture func(context.Context, string, string, int) error
-	var backfillMemory func(context.Context) error
-	var memoryPrompt func(context.Context, string, string) (string, error)
-	if options.EnableP5 {
-		events := calendarEvents.Handler(logger)
-		value, _, err := properties.Get("app.calendar.stream-check-interval-ms")
-		if err != nil {
+	if p5 != nil {
+		if err := p5.configure(ctx, f, properties, logger); err != nil {
 			return nil, err
 		}
-		interval, err := strconv.ParseInt(value, 10, 32)
-		if err != nil || interval <= 0 {
-			return nil, errors.New("提醒流轮询间隔必须为正整数")
-		}
-		streamInterval = time.Duration(interval) * time.Millisecond
-		rabbitEnabled, _, err := properties.Get("app.rabbitmq.enabled")
-		if err != nil {
-			return nil, err
-		}
-		if strings.EqualFold(rabbitEnabled, "true") && (settings.Role.Allows("api") || settings.Role.Allows("delivery")) {
-			rabbitURI, _, err = properties.Get("app.rabbitmq.uri")
-			if err != nil {
-				return nil, err
-			}
-		}
-		webhookEnabled, _, err := properties.Get("app.reminders.webhook.enabled")
-		if err != nil {
-			return nil, err
-		}
-		if strings.EqualFold(webhookEnabled, "true") {
-			address, _, err := properties.Get("app.reminders.webhook.url")
-			if err != nil {
-				return nil, err
-			}
-			secret, _, err := properties.Get("app.reminders.webhook.secret")
-			if err != nil {
-				return nil, err
-			}
-			local, _, err := properties.Get("app.reminders.webhook.allow-local-http")
-			if err != nil {
-				return nil, err
-			}
-			webhook, err = calendar.NewWebhook(calendarEvents, address, secret, strings.EqualFold(local, "true"))
-			if err != nil {
-				return nil, err
-			}
-			if value, found, err := properties.Get("app.reminders.webhook.poll-ms"); err != nil {
-				return nil, err
-			} else if found {
-				interval, err := strconv.ParseInt(value, 10, 32)
-				if err != nil || interval <= 0 {
-					return nil, errors.New("提醒 Webhook 轮询间隔必须为正整数")
-				}
-				webhookInterval = time.Duration(interval) * time.Millisecond
-			}
-		}
-		pushEnabled, _, err := properties.Get("app.web-push.enabled")
-		if err != nil {
-			return nil, err
-		}
-		pushConfig := make(map[string]string)
-		if strings.EqualFold(pushEnabled, "true") {
-			for _, key := range []string{"public-key", "private-key", "subject", "interval-ms"} {
-				value, _, err := properties.Get("app.web-push." + key)
-				if err != nil {
-					return nil, err
-				}
-				pushConfig[key] = value
-			}
-			if value := pushConfig["interval-ms"]; value != "" {
-				interval, err := strconv.ParseInt(value, 10, 32)
-				if err != nil || interval <= 0 {
-					return nil, errors.New("Web Push 调度间隔必须为正整数")
-				}
-				pushInterval = time.Duration(interval) * time.Millisecond
-			}
-		}
-		push, err = calendar.NewPush(calendarEvents, strings.EqualFold(pushEnabled, "true"), pushConfig["public-key"], pushConfig["private-key"], pushConfig["subject"])
-		if err != nil {
-			return nil, err
-		}
-		pushHandler := push.Handler(logger)
-		store, err := memory.NewStore(ctx, pool)
-		if err != nil {
-			return nil, err
-		}
-		values := map[string]string{}
-		for _, key := range []string{"app.memory.pinned-max-count", "app.memory.similar-threshold",
-			"app.memory.ranking.enabled", "app.memory.ranking.timeout", "app.memory.ranking.half-life-days",
-			"app.memory.backfill.enabled", "app.memory.backfill.batch-size"} {
-			value, found, err := properties.Get(key)
-			if err != nil {
-				return nil, err
-			}
-			if found {
-				values[key] = value
-			}
-		}
-		settings, err := config.BindMemoryProperties(values)
-		if err != nil {
-			return nil, err
-		}
-		if f.models.Embedding != nil {
-			tag := "unknown"
-			for _, key := range []string{"spring.ai.openai.embedding.model", "spring.ai.ollama.embedding.model"} {
-				value, _, err := properties.Get(key)
-				if err != nil {
-					return nil, err
-				}
-				if strings.TrimSpace(value) != "" {
-					tag = strings.TrimSpace(value)
-					break
-				}
-			}
-			store.UseEmbedding(f.models.Embedding, tag, settings.SimilarThreshold)
-			if settings.Backfill.Enabled {
-				backfillMemory = func(ctx context.Context) error {
-					return store.Backfill(ctx, settings.Backfill.BatchSize)
-				}
-			}
-		}
-		memoryPrompt = func(ctx context.Context, user, _ string) (string, error) {
-			return store.Prompt(ctx, user, settings)
-		}
-		memoryCapture = func(ctx context.Context, user, reply string, limit int) error {
-			return store.Capture(ctx, f.models.Runtime, user, reply, limit)
-		}
-		extraTools = append(agent.CalendarTools(calendarEvents, confirms), agent.MemoryTool(store))
-		memories := memory.NewHTTP(store, logger)
-		previous := options.Business
-		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == "/api/v1/reminders/events" && streamHandler != nil {
-				streamHandler.ServeHTTP(w, r)
-				return
-			}
-			if calendar.OwnsPushPath(r.URL.Path) {
-				pushHandler.ServeHTTP(w, r)
-				return
-			}
-			if calendar.OwnsEventPath(r.URL.Path) || calendar.OwnsReminderPath(r.URL.Path) {
-				events.ServeHTTP(w, r)
-				return
-			}
-			if memory.OwnsPath(r.URL.Path) {
-				memories.ServeHTTP(w, r)
-				return
-			}
-			previous.ServeHTTP(w, r)
-		})
+		options.Business = p5.route(options.Business)
 	}
 	if options.EnableP4 {
-		f.chat, err = chat.OpenModule(f.ctx, chat.ModuleOptions{ExtraTools: extraTools, MemoryCapture: memoryCapture, MemoryPrompt: memoryPrompt, Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem, Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor, Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()})
+		chatOptions := chat.ModuleOptions{Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem,
+			Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor,
+			Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()}
+		if p5 != nil {
+			p5.addChatOptions(&chatOptions)
+		}
+		f.chat, err = chat.OpenModule(f.ctx, chatOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -536,67 +368,13 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if settings.Monitoring {
 		f.attachManagement(metrics, actuatorProperties, snapshot, logger)
 	}
-	if calendarEvents != nil && !settings.Role.Worker() {
-		f.reminderStream = calendar.NewStream(f.ctx, calendarEvents, streamInterval)
-		streamHandler = httpmiddleware.HandleErrors(f.reminderStream.Serve, logger)
-	}
-	if rabbitURI != "" {
-		f.reminderBroadcast, err = calendar.StartBroadcast(f.ctx, rabbitURI, calendarEvents, f.reminderStream, f.coordinator, settings.Role.Allows("delivery"), logger)
-		if err != nil {
-			if f.reminderBroadcast != nil {
-				f.reminderBroadcast.Close()
-			}
-			if f.reminderStream != nil {
-				f.reminderStream.Close()
-			}
-			if f.chat != nil {
-				_ = f.chat.Close(context.Background())
-			}
+	if p5 != nil {
+		if err := p5.start(f, logger); err != nil {
+			p5.close()
+			_ = f.chat.Close(context.Background())
 			return nil, err
 		}
-	}
-	if calendarEvents != nil {
-		scanCtx, stop := context.WithCancel(f.ctx)
-		var workers sync.WaitGroup
-		f.stopReminders = func() {
-			stop()
-			workers.Wait()
-			push.Close()
-			if webhook != nil {
-				webhook.Close()
-			}
-		}
-		if scanSettings.ScanEnabled {
-			workers.Go(func() {
-				calendar.RunFixedDelay(scanCtx, time.Duration(scanSettings.ScanInitialDelayMS)*time.Millisecond,
-					time.Duration(scanSettings.ScanIntervalMS)*time.Millisecond, func(ctx context.Context, now time.Time) {
-						if _, err := calendarEvents.Scan(ctx, now); err != nil && ctx.Err() == nil {
-							logger.ErrorContext(ctx, "提醒扫描失败，将在下一轮重试", "error", err)
-						}
-					})
-			})
-		}
-		if settings.Role.Allows("delivery") {
-			workers.Go(func() {
-				calendar.RunFixedDelay(scanCtx, 15*time.Second, pushInterval, func(ctx context.Context, now time.Time) {
-					if err := push.Dispatch(ctx, now); err != nil && ctx.Err() == nil {
-						logger.ErrorContext(ctx, "Web Push 调度失败，将在下一轮重试")
-					}
-				})
-			})
-		}
-		if webhook != nil && settings.Role.Allows("delivery") {
-			workers.Go(func() {
-				calendar.RunFixedDelay(scanCtx, 0, webhookInterval, func(ctx context.Context, _ time.Time) {
-					if err := webhook.Dispatch(ctx); err != nil && ctx.Err() == nil {
-						logger.ErrorContext(ctx, "提醒 Webhook 调度失败，将在下一轮重试")
-					}
-				})
-			})
-		}
-	}
-	if backfillMemory != nil {
-		f.executor.Submit(f.ctx, backfillMemory)
+		f.p5 = p5
 	}
 	return f, nil
 }
@@ -646,14 +424,8 @@ func (f *Foundation) Close(ctx context.Context) error {
 		f.closing = true
 		f.mu.Unlock()
 		go func() {
-			if f.reminderBroadcast != nil {
-				f.reminderBroadcast.Close()
-			}
-			if f.reminderStream != nil {
-				f.reminderStream.Close()
-			}
-			if f.stopReminders != nil {
-				f.stopReminders()
+			if f.p5 != nil {
+				f.p5.close()
 			}
 			if f.chat != nil {
 				_ = f.chat.Close(context.Background())

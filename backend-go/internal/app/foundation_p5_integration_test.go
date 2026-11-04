@@ -11,14 +11,17 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -48,6 +51,7 @@ func TestP5MemoryPostgres(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer store.Delete(ctx, first.ID)
 	if _, err := store.Pin(ctx, first.ID, true); err != nil {
 		t.Fatal(err)
 	}
@@ -326,5 +330,148 @@ func TestP5BrowserWebPush(t *testing.T) {
 	})
 	if err != nil || state != "SENT" {
 		t.Fatalf("browser delivery state = %s, %v", state, err)
+	}
+}
+
+func TestP5AuthenticatedAgentAndAutoMemory(t *testing.T) {
+	var modelSawMemory atomic.Bool
+	var modelSawSchema atomic.Bool
+	var captures atomic.Int32
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var request struct {
+			Stream   bool
+			Messages []struct{ Role, Content string }
+			Tools    []struct{ Function struct{ Name string } }
+		}
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Error(err)
+			w.WriteHeader(400)
+			return
+		}
+		if !request.Stream {
+			captures.Add(1)
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = io.WriteString(w, `{"choices":[{"message":{"role":"assistant","content":"[\"以后始终采用公制单位\"]"}}]}`)
+			return
+		}
+		var prompt, user string
+		var toolReply bool
+		for _, message := range request.Messages {
+			switch message.Role {
+			case "system":
+				prompt = message.Content
+			case "user":
+				user = message.Content
+			case "tool":
+				toolReply = true
+			}
+		}
+		if strings.Contains(prompt, "每周五提交工作报告") {
+			modelSawMemory.Store(true)
+		}
+		for _, tool := range request.Tools {
+			if tool.Function.Name == "saveMemory" {
+				modelSawSchema.Store(true)
+			}
+		}
+		switch {
+		case toolReply:
+			p4Text(w, "已处理请求")
+		case strings.HasPrefix(user, "请记住"):
+			p4Tool(w, "saveMemory", `{"content":"每周五提交工作报告"}`)
+		case strings.HasPrefix(user, "请创建日程"):
+			p4Tool(w, "createCalendarEvent", `{"title":"P5 agent calendar","startsAt":"2026-11-04T01:00:00Z","endsAt":"2026-11-04T01:30:00Z"}`)
+		case strings.HasPrefix(user, "请删除日程 "):
+			p4Tool(w, "deleteCalendarEvent", fmt.Sprintf(`{"eventIds":[%q]}`, strings.TrimPrefix(user, "请删除日程 ")))
+		default:
+			p4Text(w, "已处理请求")
+		}
+	}))
+	defer upstream.Close()
+	f := chatFixtureFoundation(t, map[string]string{"app.auth.enabled": "true", "app.auth.password": "fixture-password",
+		"app.security.csrf-enabled": "true", "app.calendar.scan-enabled": "false", "app.context.auto-memory.enabled": "true"}, upstream, true)
+	server := httptest.NewServer(f.Handler())
+	defer server.Close()
+	client := server.Client()
+	client.Timeout = 10 * time.Second
+	for _, path := range []string{"/memories", "/calendar/events", "/reminders", "/reminders/push"} {
+		if status, _ := appRequest(t, client, "GET", server.URL+"/api/v1"+path, "", ""); status != 401 {
+			t.Fatalf("%s anonymous status = %d", path, status)
+		}
+	}
+	jar, _ := cookiejar.New(nil)
+	client.Jar = jar
+	csrf := func() string {
+		_, envelope := appRequest(t, client, "GET", server.URL+"/api/v1/auth/csrf", "", "")
+		return envelope["data"].(map[string]any)["token"].(string)
+	}
+	if status, _ := appRequest(t, client, "POST", server.URL+"/api/v1/auth/login", csrf(), `{"username":"admin","password":"fixture-password"}`); status != 200 {
+		t.Fatal("login status", status)
+	}
+	token := csrf()
+	request := func(method, path, body string, status int) any {
+		t.Helper()
+		got, payload := appRequest(t, client, method, server.URL+"/api/v1"+path, token, body)
+		if got != status {
+			t.Fatalf("%s %s = %d, want %d, payload=%v", method, path, got, status, payload)
+		}
+		return payload["data"]
+	}
+	session := request("POST", "/chat/sessions", `{"title":"P5 agent fixture"}`, 201).(map[string]any)
+	conversation := session["conversationId"].(string)
+	defer request("DELETE", "/chat/sessions/"+conversation, "", 200)
+	send := func(content string) {
+		t.Helper()
+		req, err := http.NewRequest(http.MethodPost, server.URL+"/api/v1/chat/sessions/"+conversation+"/stream",
+			strings.NewReader(fmt.Sprintf(`{"content":%q,"useKnowledge":false}`, content)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-CSRF-TOKEN", token)
+		response, err := client.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer response.Body.Close()
+		body, err := io.ReadAll(response.Body)
+		if err != nil || response.StatusCode != 200 || !strings.Contains(string(body), "event:done") && !strings.Contains(string(body), "event: done") {
+			t.Fatalf("turn %q: %d %s %v", content, response.StatusCode, body, err)
+		}
+	}
+	send("请记住我的周报习惯")
+	send("请创建日程")
+	list := request("GET", "/calendar/events?from=2026-11-04T00:00:00Z&to=2026-11-05T00:00:00Z", "", 200).(map[string]any)
+	items := list["items"].([]any)
+	if len(items) != 1 || !modelSawMemory.Load() || !modelSawSchema.Load() {
+		t.Fatalf("event count=%d, memory=%v, schema=%v", len(items), modelSawMemory.Load(), modelSawSchema.Load())
+	}
+	event := items[0].(map[string]any)["eventId"].(string)
+	send("请删除日程 " + event)
+	request("GET", "/calendar/events/"+event, "", 200)
+	pending := request("GET", "/agent/confirmations?conversationId="+conversation, "", 200).([]any)
+	if len(pending) != 1 {
+		t.Fatalf("confirmations = %+v", pending)
+	}
+	entry := pending[0].(map[string]any)
+	request("POST", "/agent/confirmations/"+entry["id"].(string)+"/confirm",
+		fmt.Sprintf(`{"token":%q}`, entry["token"]), 200)
+	request("GET", "/calendar/events/"+event, "", 404)
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		memories := request("GET", "/memories", "", 200).([]any)
+		var manual, auto bool
+		for _, raw := range memories {
+			entry := raw.(map[string]any)
+			manual = manual || entry["source"] == "MANUAL" && entry["content"] == "每周五提交工作报告"
+			auto = auto || entry["source"] == "AUTO" && entry["content"] == "以后始终采用公制单位"
+		}
+		if manual && auto && captures.Load() > 0 {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("manual=%v, auto=%v, captures=%d", manual, auto, captures.Load())
+		}
+		time.Sleep(20 * time.Millisecond)
 	}
 }
