@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/rand"
 	"database/sql"
+	"database/sql/driver"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -16,6 +17,10 @@ import (
 )
 
 func fixturePool(t *testing.T) *database.Pool {
+	return fixturePoolWith(t, nil)
+}
+
+func fixturePoolWith(t *testing.T, wrap func(driver.Connector) driver.Connector) *database.Pool {
 	t.Helper()
 	if os.Getenv("GO_TEST_POSTGRES") != "disposable" || os.Getenv("GO_TEST_FLYWAY") != "disposable" {
 		t.Skip("需独立Flyway测试库")
@@ -38,7 +43,11 @@ func fixturePool(t *testing.T) *database.Pool {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	pool, err := database.Open(ctx, connector, database.DefaultPoolOptions(false))
+	var source driver.Connector = connector
+	if wrap != nil {
+		source = wrap(source)
+	}
+	pool, err := database.Open(ctx, source, database.DefaultPoolOptions(false))
 	if err != nil {
 		t.Fatal(err)
 	}

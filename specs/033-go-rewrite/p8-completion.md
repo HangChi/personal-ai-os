@@ -112,3 +112,9 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 审读固定Java ConfirmationTransactionTest八声明后发现，已有Go内存失败状态断言与真实库并发成功不足以证明失败标记独立提交。新增TestPostgresP8ConfirmationTransactionOutcomes：处理器运行中通过第二个池读取已提交CONFIRMED及resolved_at；业务错误/普通错误最终FAILED、缺失目标CANCELLED且无执行、成功影响3行、重复终态令牌均不再调用处理器；独立过期SQL压到过去后抛错仍保留EXPIRED与解决时间。只用本轮合成ID，没有全表清理。
 
 `python3 scripts/migration/run_go_postgres_tests.py --package confirmation --tls --run '^TestPostgresP8'`真实TLS库race通过（1.269s），日志`/tmp/personalos-p8-confirmation-transaction.log`。原八声明分别由同名success/business/runtime/missing子用例及末尾expiry断言覆盖；原Java和生产确认算法未修改。其余声明/来源职责继续核查，T803父项未完成。
+
+## T803b 任务标签批量读取
+
+核查原ListSearchIntegrationTest.taskTagsAreBatchLoaded发现Go列表与搜索逐任务读取标签，违反原最多三次查询的断言。改为按最多1000个UUID分批读取标签，保留任务顺序、tag_index顺序及非nil空标签；单任务读取不变。真实pgx驱动装饰器计数，不以SQL字符串或内存mock证明查询数。
+
+`python3 scripts/migration/run_go_postgres_tests.py --package task --tls`全部race通过（1.970s），日志`/tmp/personalos-p8-task-batch.log`。新增TestPostgresP8TaskBatchTagsPaginationAndStats验证25条合成任务：20条页恰好三查询、ID批取恰好两查询、每四条翻页无重漏且顺序一致、标签顺序、溢出页只计总数、全局待办统计随完成减一。仅删除本测试创建的ID，临时TLS容器已清理；不据此把原任务全部声明标为verified。

@@ -126,12 +126,7 @@ func (s *PostgresStore) Search(ctx context.Context, q Query) (Page, error) {
 		if err := rows.Close(); err != nil {
 			return err
 		}
-		for i := range p.Items {
-			if err := readTags(ctx, c, &p.Items[i]); err != nil {
-				return err
-			}
-		}
-		return nil
+		return readTagsBatch(ctx, c, p.Items)
 	})
 	return p, err
 }
@@ -155,6 +150,46 @@ func readTags(ctx context.Context, q tagReader, r *Task) error {
 		r.Tags = append(r.Tags, tag)
 	}
 	return rows.Err()
+}
+
+func readTagsBatch(ctx context.Context, q tagReader, tasks []Task) error {
+	// Bound parameter counts for full-list/export callers while keeping a page to one query.
+	const batchSize = 1000
+	for offset := 0; offset < len(tasks); offset += batchSize {
+		batch := tasks[offset:min(offset+batchSize, len(tasks))]
+		indexes := make(map[string]int, len(batch))
+		args := make([]any, len(batch))
+		parameters := make([]string, len(batch))
+		for i := range batch {
+			batch[i].Tags = []string{}
+			indexes[batch[i].ID] = i
+			args[i] = batch[i].ID
+			parameters[i] = "$" + strconv.Itoa(i+1) + "::uuid"
+		}
+		rows, err := q.QueryContext(ctx, `SELECT task_id::text,tag FROM task_tag WHERE task_id IN (`+strings.Join(parameters, ",")+`) ORDER BY task_id,tag_index`, args...)
+		if err != nil {
+			return err
+		}
+		for rows.Next() {
+			var id, tag string
+			if err := rows.Scan(&id, &tag); err != nil {
+				rows.Close()
+				return err
+			}
+			if index, ok := indexes[id]; ok {
+				batch[index].Tags = append(batch[index].Tags, tag)
+			}
+		}
+		err = rows.Err()
+		closeErr := rows.Close()
+		if err != nil {
+			return err
+		}
+		if closeErr != nil {
+			return closeErr
+		}
+	}
+	return nil
 }
 func writeTags(ctx context.Context, tx *sql.Tx, id string, tags []string) error {
 	if _, err := tx.ExecContext(ctx, `DELETE FROM task_tag WHERE task_id=$1::uuid`, id); err != nil {
@@ -250,12 +285,7 @@ func (s *PostgresStore) queryTasks(ctx context.Context, query string, args ...an
 		if e = rows.Close(); e != nil {
 			return e
 		}
-		for i := range items {
-			if e = readTags(ctx, c, &items[i]); e != nil {
-				return e
-			}
-		}
-		return nil
+		return readTagsBatch(ctx, c, items)
 	})
 	return
 }

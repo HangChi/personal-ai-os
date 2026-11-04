@@ -611,3 +611,5 @@ T801c完成，父项与发布门禁保持开放。实际Java注册表全部知�
 P8原suite接Go最后80 PASS/1 FAIL/1 SKIP/2 NOTE；同一预算FAIL在固定Java同现。真实浏览器5组工作流、10页三宽度通过；legacy明确断连Java/Go均1 USER/0 ASSISTANT且上游实际停止。Go取消差分回归7.312s通过race。报告和局限见[p8-e2e/README.md](p8-e2e/README.md)，frontend_e2e仅in_progress，未verified。40项Python迁移测试通过。
 
 P8真实Redis/TLS/备份全套重跑通过：修复合成备份种子污染主测试库，独立源库→dump→恢复库；app273.588s与command/model/knowledge全部退出0、五角色OS进程/故障恢复/清理通过。定向Redis限流32/128并发通过，150ms边界不变，早前失败保留。PostgreSQL全包、S3生命周期和四设施回归实际通过；详情见P8验收。Chrome Push应用加密投递FCM接受，但15秒内未收到SW确认，真实送达仍FAIL，未放宽期限或标记通过。
+
+P8逐声明审查补验：真实双池确认事务八声明已提交bed1108；发现并修复任务标签N+1，真实TLS task全包race通过1.970s。20条分页三查询、25条ID批取两查询及翻页/标签顺序/统计通过；T803b完成，证据见p8-completion.md。T803父项及发布门禁保持开放。
