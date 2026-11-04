@@ -1,6 +1,6 @@
 # P8 全量验收与运维进度
 
-2026-11-04：P8实施中，T800–T808父项尚未收口。固定Java基线继续为`cb5d694d62fa93742b5789b97273e76d931ce335`。五个发布门禁保持not_started，所有清单条目不自动升级verified。现有Java部署与SQL保留；没有自动推送、合并、生产部署或删除Java目录。
+2026-11-04：P8实施中，T800–T808父项尚未收口。固定Java基线继续为`cb5d694d62fa93742b5789b97273e76d931ce335`。五个发布门禁未verified；frontend_e2e已开始并保留未通过记录，所有清单条目不自动升级verified。现有Java部署与SQL保留；没有自动推送、合并、生产部署或删除Java目录。
 
 ## 实施顺序
 
@@ -76,3 +76,9 @@ Go和原前端Web候选镜像均实际构建成功。第一次Go构建的Debian 
 `python3 scripts/migration/run_go_compose_tests.py --monitoring`两轮完整通过；第二轮同时执行promtool config/rules和六条告警的pending/firing/recovery单元测试。真实Prometheus采集UP=1及Go/知识库样本、Grafana健康与20面板provisioning、原Compose业务链全部通过，仅清理本次随机项目与卷。日志`/tmp/personalos-p8-monitoring-actual.log`、`/tmp/personalos-p8-monitoring-actual-2.log`。另独立promtool规则测试通过，39项Python测试通过。
 
 边界：规则测试用合成时间序列，不是实际故障持续五分钟的告警演练；尚无Alertmanager通知投递验收。distributed DNS采集与本地发现容器权限仍待后续验证，不据此勾选T801父项。P6四设施全回归通过且清理，日志`/tmp/personalos-p8-facilities-p6.log`。Redis限流前两轮并发失败保留记录，隔离定向重跑通过；未放宽150ms边界，其余Redis回归继续单独追踪。
+
+## T802a 原前端浏览器与取消差分
+
+监控批次已提交`dfd1eaf`。原suite新一轮80通过/1失败/1跳过/2观察；唯一预算失败在固定Java同现。原E2E取消曾SKIP，实际差分定位并修复legacy客户端取消误存半截助手消息；明确HTTP关闭与上游断连两端均PASS，Go定向真实TLS库race覆盖双流心跳、Run读者断连与恢复（7.312s）。持久Run断连不取消后台任务的策略保持。
+
+真实Chrome验证登录/任务CRUD/聊天SSE/附件/知识后台索引/导出，10页三宽度共30截图无横向溢出或控制台错误，另3张工作流截图。抽看桌面对话、手机对话及知识页。fixture最初不足350字符的索引失败如实保留，修正测试文本后通过。详情与复验命令见[p8-e2e/README.md](p8-e2e/README.md)。T802父项仍开放，不把同基线预算失败或saveMemory跳过当通过。

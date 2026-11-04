@@ -314,6 +314,7 @@ func (h *ModuleHTTP) legacy(w http.ResponseWriter, r *http.Request, id string) e
 			}
 		}
 	}()
+	p.clientContext = ctx
 	_ = m.Engine.Run(ctx, p, turnKey(r.Header.Get("Idempotency-Key")), "", func(ctx context.Context) error {
 		if !lease.Valid() {
 			return coordination.ErrLeaseLost

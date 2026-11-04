@@ -24,10 +24,11 @@ import (
 
 type Publish func(string, any) error
 type PreparedTurn struct {
-	Client  *model.ChatClient
-	Epoch   uint64
-	Session Session
-	Request StreamRequest
+	Client        *model.ChatClient
+	Epoch         uint64
+	Session       Session
+	Request       StreamRequest
+	clientContext context.Context
 }
 type RetrievedEvidence struct {
 	Citations []Citation
@@ -147,6 +148,11 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 			runErr = errors.New("对话执行异常")
 		}
 		if runErr == nil {
+			return
+		}
+		// The legacy Java HTTP stream cancels without appending an assistant message.
+		// Durable runs have no clientContext and retain their interrupted checkpoint.
+		if p.clientContext != nil && p.clientContext.Err() != nil {
 			return
 		}
 		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)

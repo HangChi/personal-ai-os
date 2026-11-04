@@ -607,3 +607,5 @@ maintenance/config/chat定向race、P8 CLI/监听边界race与integration vet/bu
 ## P8 combined监控补验（2026-11-04）
 
 T801c完成，父项与发布门禁保持开放。实际Java注册表全部知识样本对照、定向Go race、真实TLS库的积压/age/召回与查询失败NaN通过；两轮新随机Compose监控栈实际运行，Prometheus真实采集、Grafana20面板provisioning、promtool配置/规则及六条告警pending/firing/recovery通过。39项Python测试与diff检查通过。首次告警测试发现运算结果不含state标签，按PromQL语义修正预期；没有改告警触发条件。详见[p8-completion.md](p8-completion.md)。
+
+P8原suite接Go最后80 PASS/1 FAIL/1 SKIP/2 NOTE；同一预算FAIL在固定Java同现。真实浏览器5组工作流、10页三宽度通过；legacy明确断连Java/Go均1 USER/0 ASSISTANT且上游实际停止。Go取消差分回归7.312s通过race。报告和局限见[p8-e2e/README.md](p8-e2e/README.md)，frontend_e2e仅in_progress，未verified。40项Python迁移测试通过。

@@ -23442,8 +23442,8 @@
   },
   "release_gates": {
     "frontend_e2e": {
-      "status": "not_started",
-      "evidence": []
+      "status": "in_progress",
+      "evidence": ["specs/033-go-rewrite/p8-e2e/README.md", "specs/033-go-rewrite/p8-e2e/browser-go.json", "specs/033-go-rewrite/p8-e2e/go/e2e-20261104-171712.json", "specs/033-go-rewrite/p8-e2e/go/cancellation.json", "specs/033-go-rewrite/p8-e2e/java/cancellation.json"]
     },
     "java_go_differential": {
       "status": "not_started",

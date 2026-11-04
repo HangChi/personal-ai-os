@@ -1,0 +1,195 @@
+{
+  "backend": "go",
+  "result": "PASS",
+  "workflows": [
+    "authenticated UI login and CSRF",
+    "task create, edit, complete, explicit delete",
+    "persisted chat SSE, UI attachment upload, answer context and exact content download",
+    "UI knowledge upload, durable background index and document listing",
+    "UI export downloads parseable JSON containing indexed knowledge"
+  ],
+  "pages": [
+    {
+      "name": "home",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 417
+    },
+    {
+      "name": "chat",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 264
+    },
+    {
+      "name": "tasks",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 206
+    },
+    {
+      "name": "calendar",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 172
+    },
+    {
+      "name": "knowledge",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 369
+    },
+    {
+      "name": "memory",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 109
+    },
+    {
+      "name": "activity",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 128
+    },
+    {
+      "name": "usage",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 927
+    },
+    {
+      "name": "settings",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 759
+    },
+    {
+      "name": "search",
+      "width": 1280,
+      "overflow": 0,
+      "textLength": 108
+    },
+    {
+      "name": "home",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 417
+    },
+    {
+      "name": "chat",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 264
+    },
+    {
+      "name": "tasks",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 206
+    },
+    {
+      "name": "calendar",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 172
+    },
+    {
+      "name": "knowledge",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 369
+    },
+    {
+      "name": "memory",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 109
+    },
+    {
+      "name": "activity",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 128
+    },
+    {
+      "name": "usage",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 927
+    },
+    {
+      "name": "settings",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 759
+    },
+    {
+      "name": "search",
+      "width": 768,
+      "overflow": 0,
+      "textLength": 108
+    },
+    {
+      "name": "home",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 417
+    },
+    {
+      "name": "chat",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 264
+    },
+    {
+      "name": "tasks",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 206
+    },
+    {
+      "name": "calendar",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 172
+    },
+    {
+      "name": "knowledge",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 369
+    },
+    {
+      "name": "memory",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 109
+    },
+    {
+      "name": "activity",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 128
+    },
+    {
+      "name": "usage",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 927
+    },
+    {
+      "name": "settings",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 759
+    },
+    {
+      "name": "search",
+      "width": 375,
+      "overflow": 0,
+      "textLength": 108
+    }
+  ],
+  "errors": [],
+  "screenshots": "/var/folders/l9/n04rjfm95zdfj4w0v8jsjz480000gn/T/personalos-p8-browser-WjOU90"
+}

@@ -1,0 +1,11 @@
+{
+  "backend": "go",
+  "result": "PASS",
+  "events_before_close": [
+    "start",
+    "delta"
+  ],
+  "user_messages": 1,
+  "assistant_messages": 0,
+  "upstream_canceled": true
+}

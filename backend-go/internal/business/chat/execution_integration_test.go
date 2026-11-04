@@ -833,6 +833,51 @@ func TestPostgresP4ConfiguredHeartbeatBothStreams(t *testing.T) {
 	}
 }
 
+func TestPostgresP8LegacyCancellationStopsUpstreamWithoutPartialMessage(t *testing.T) {
+	upstreamStopped := make(chan struct{})
+	f := newExecutionFixture(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		fmt.Fprint(w, "data: {\"choices\":[{\"delta\":{\"content\":\"partial answer\"}}]}\n\n")
+		w.(http.Flusher).Flush()
+		<-r.Context().Done()
+		close(upstreamStopped)
+	})
+	c := fixtureSession(t, f.module.Service, "legacy cancellation").ConversationID
+	server := httptest.NewServer(f.module.Handler)
+	defer server.Close()
+	client := server.Client()
+	client.Timeout = 5 * time.Second
+	response, err := client.Post(server.URL+"/api/v1/chat/sessions/"+c+"/stream", "application/json", strings.NewReader(`{"content":"begin","useKnowledge":false}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	scanner := bufio.NewScanner(response.Body)
+	found := false
+	for scanner.Scan() {
+		if scanner.Text() == "event: delta" {
+			found = true
+			break
+		}
+	}
+	_ = response.Body.Close()
+	if !found {
+		t.Fatal("no partial delta before cancellation", scanner.Err())
+	}
+	select {
+	case <-upstreamStopped:
+	case <-time.After(3 * time.Second):
+		t.Fatal("client disconnect did not cancel upstream")
+	}
+	deadline := time.Now().Add(3 * time.Second)
+	for f.module.Engine.Metrics.Active.Load() != 0 && time.Now().Before(deadline) {
+		time.Sleep(time.Millisecond)
+	}
+	messages, err := f.module.Service.Messages(context.Background(), c, nil, nil)
+	if err != nil || len(messages) != 1 || messages[0].Role != "USER" || f.module.Engine.Metrics.Active.Load() != 0 {
+		t.Fatal("canceled legacy stream persisted a partial assistant or leaked execution", messages, err)
+	}
+}
+
 func TestPostgresP4LegacyAndReaderDisconnect(t *testing.T) {
 	ready, release := make(chan struct{}), make(chan struct{})
 	var calls atomic.Int32
