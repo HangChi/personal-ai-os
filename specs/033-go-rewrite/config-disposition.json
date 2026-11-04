@@ -708,12 +708,15 @@
       "expression": "${app.retention.token-usage-days:0}",
       "phase": "P8",
       "task": "T801",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "用量/操作记录保留期与清理调度随运维生命周期验收",
+      "note": "显式--p8接入用量/操作记录独立保留期、默认永久保留及本地cron/停止；真实库边界验证，结果未明TOOL占位受保护",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java"
+        "backend-go/internal/platform/maintenance/retention.go",
+        "backend-go/internal/platform/maintenance/retention_test.go",
+        "backend-go/internal/platform/config/retention.go",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-completion.md"
       ]
     },
     {
@@ -723,12 +726,15 @@
       "expression": "${app.retention.operation-record-days:0}",
       "phase": "P8",
       "task": "T801",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "用量/操作记录保留期与清理调度随运维生命周期验收",
+      "note": "显式--p8接入用量/操作记录独立保留期、默认永久保留及本地cron/停止；真实库边界验证，结果未明TOOL占位受保护",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java"
+        "backend-go/internal/platform/maintenance/retention.go",
+        "backend-go/internal/platform/maintenance/retention_test.go",
+        "backend-go/internal/platform/config/retention.go",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-completion.md"
       ]
     },
     {

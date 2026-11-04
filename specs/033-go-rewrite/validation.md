@@ -593,3 +593,13 @@ T700–T705全部完成，最终Go全量串行race通过。职责/安全边界�
 - 前端type-check/build通过，源码未改。22项Python迁移测试、78项配置默认比较、固定1093文件/104路由/27工具/95钩子/1119测试声明基线检查及diff检查通过；check-complete预期退出1，2438项尚未verified，五门禁均not_started。没有推送、合并、部署或启动P8。
 
 已分批提交：`eb0fc87`、`39ed122`、`aa52bb7`、`5df00b0`、`a51612f`、`d95d34f`；任务/配置/逐声明证据台账为`267801e`，最终任务勾选与回归记录单独收口提交。最后重新生成P7台账/映射未产生差异，22项Python测试、78项配置台账和固定基线check再次通过。默认诊断、prod拒绝、回环监听和readyz503继续保留。P8未开始。
+
+## P8 首批运维运行时（2026-11-04）
+
+T801a完成，T800–T808父项仍开放。新增显式`--p8`（包含P7）接入用量/审计保留策略，默认永久保留，独立UTC截止时间、负值拒绝、同秒去重、每轮30秒限制与取消等待后关池。原附件cron解析提取共享schedule包，原附件定向race通过。安全差异R-053保护结果未明的TOOL IN_PROGRESS占位，防止保留清理解除幂等保护。
+
+maintenance/config/chat定向race、P8 CLI/监听边界race与integration vet/build通过。真实TLS PostgreSQL/pgvector的2个P8用例通过race（10.743s），含42原迁移真实Flyway竞争、validate/二次零执行、严格截止/永久保留/未知TOOL/每秒实际清理/关闭；临时容器已清理。24项Python迁移测试、78项配置台账和固定基线check通过。保留期两配置wired，7项来源/调度/原声明implemented，不新增verified。
+
+容器网络只允许显式`--foundation --p8 --container`且认证和CSRF均开启，接受通配TCP监听；默认模式和前序模式继续回环，prod拒绝/readyz503暂不解除。部署资产/完整E2E仍在后续批次验证，不能据此宣布发布完成。详见[p8-completion.md](p8-completion.md)。
+
+首批提交前，Java全量离线verify（显式禁用dotenv、context cache=2）1137测试零失败/错误/跳过，原JaCoCo门禁及BUILD SUCCESS（27:49）。前端lint/format/type-check、1151逻辑测试通过；初次并行组件有两项超时，串行复验30文件/195测试全部通过，随后生产构建通过，无源码/期限改动。最终Go integration vet/build通过。日志`/tmp/personalos-p8-java-verify.log`、`/tmp/personalos-p8-frontend-components-serial.log`、`/tmp/personalos-p8-frontend-build.log`。

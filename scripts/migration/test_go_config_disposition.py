@@ -11,7 +11,7 @@ class ConfigDispositionTest(unittest.TestCase):
         self.assertEqual(len(data["items"]), 78)
         self.assertEqual(sum(row["kind"] == "value_injections" for row in data["items"]), 70)
         self.assertEqual(sum(row["kind"] == "property_lookups" for row in data["items"]), 8)
-        self.assertTrue(all(row["phase"] in {"P1", "P3", "P4", "P5", "P6", "P7"} or row["status"] == "deferred" for row in data["items"]))
+        self.assertTrue(all(row["phase"] in {"P1", "P3", "P4", "P5", "P6", "P7", "P8"} or row["status"] == "deferred" for row in data["items"]))
 
     def test_unknown_or_unused_source_rule_fails(self):
         for rules in [dict(subject.RULES, **{"Unreviewed.java": ("P1", "T104", "invalid")}),
@@ -66,4 +66,11 @@ class ConfigDispositionTest(unittest.TestCase):
         self.assertEqual({row["task"] for row in rows}, {"T702"})
         self.assertTrue(all(row["status"] == "wired" for row in rows))
         with patch.object(subject, "P7_EVIDENCE", {"T702": ["backend-go/missing-p7-evidence"]}), self.assertRaises(ValueError):
+            subject.generate()
+
+    def test_p8_retention_wired_and_missing_evidence_fails(self):
+        rows = [row for row in subject.generate()["items"] if row["phase"] == "P8"]
+        self.assertEqual(len(rows), 2)
+        self.assertTrue(all(row["status"] == "wired" and row["task"] == "T801" for row in rows))
+        with patch.object(subject, "P8_EVIDENCE", {"T801": ["backend-go/missing-p8-evidence"]}), self.assertRaises(ValueError):
             subject.generate()

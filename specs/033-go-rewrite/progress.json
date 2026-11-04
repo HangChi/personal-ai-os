@@ -23336,6 +23336,83 @@
         "specs/033-go-rewrite/validation.md"
       ],
       "note": "原声明 matchesOriginalNameNotAssembled；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。仅原始名称精确命中只读清单为AUTO，其余CONFIRM"
+    },
+    "file:backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/maintenance/retention.go",
+        "backend-go/internal/platform/maintenance/retention_test.go",
+        "backend-go/internal/platform/config/retention.go",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-completion.md"
+      ],
+      "note": "P8/T801a：默认永久保留、独立UTC截止时间/严格小于、负值拒绝、本地cron/关闭；真实TLS库验证且保护TOOL IN_PROGRESS。原声明：DataRetentionService"
+    },
+    "file:backend/src/test/java/com/personalos/common/maintenance/DataRetentionServiceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/maintenance/retention.go",
+        "backend-go/internal/platform/maintenance/retention_test.go",
+        "backend-go/internal/platform/config/retention.go",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-completion.md"
+      ],
+      "note": "P8/T801a：默认永久保留、独立UTC截止时间/严格小于、负值拒绝、本地cron/关闭；真实TLS库验证且保护TOOL IN_PROGRESS。原声明：DataRetentionService"
+    },
+    "hook:backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java:36:Scheduled": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/maintenance/retention.go",
+        "backend-go/internal/platform/maintenance/retention_test.go",
+        "backend-go/internal/platform/config/retention.go",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-completion.md"
+      ],
+      "note": "P8/T801a：默认永久保留、独立UTC截止时间/严格小于、负值拒绝、本地cron/关闭；真实TLS库验证且保护TOOL IN_PROGRESS。原声明：DataRetentionService"
+    },
+    "test:backend/src/test/java/com/personalos/common/maintenance/DataRetentionServiceTest.java:15": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/maintenance/retention.go",
+        "backend-go/internal/platform/maintenance/retention_test.go",
+        "backend-go/internal/platform/config/retention.go",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-completion.md"
+      ],
+      "note": "P8/T801a：默认永久保留、独立UTC截止时间/严格小于、负值拒绝、本地cron/关闭；真实TLS库验证且保护TOOL IN_PROGRESS。原声明：permanentRetentionNeverDeletes"
+    },
+    "test:backend/src/test/java/com/personalos/common/maintenance/DataRetentionServiceTest.java:19": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/maintenance/retention.go",
+        "backend-go/internal/platform/maintenance/retention_test.go",
+        "backend-go/internal/platform/config/retention.go",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-completion.md"
+      ],
+      "note": "P8/T801a：默认永久保留、独立UTC截止时间/严格小于、负值拒绝、本地cron/关闭；真实TLS库验证且保护TOOL IN_PROGRESS。原声明：enabledPoliciesUseIndependentCutoffs"
+    },
+    "test:backend/src/test/java/com/personalos/common/maintenance/DataRetentionServiceTest.java:24": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/maintenance/retention.go",
+        "backend-go/internal/platform/maintenance/retention_test.go",
+        "backend-go/internal/platform/config/retention.go",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-completion.md"
+      ],
+      "note": "P8/T801a：默认永久保留、独立UTC截止时间/严格小于、负值拒绝、本地cron/关闭；真实TLS库验证且保护TOOL IN_PROGRESS。原声明：eachPolicyCanBeEnabledIndependently"
+    },
+    "test:backend/src/test/java/com/personalos/common/maintenance/DataRetentionServiceTest.java:30": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/maintenance/retention.go",
+        "backend-go/internal/platform/maintenance/retention_test.go",
+        "backend-go/internal/platform/config/retention.go",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-completion.md"
+      ],
+      "note": "P8/T801a：默认永久保留、独立UTC截止时间/严格小于、负值拒绝、本地cron/关闭；真实TLS库验证且保护TOOL IN_PROGRESS。原声明：rejectsNegativeDays"
     }
   },
   "release_gates": {

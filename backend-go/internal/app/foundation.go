@@ -25,6 +25,7 @@ import (
 	"personal-ai-os/backend-go/internal/platform/database"
 	"personal-ai-os/backend-go/internal/platform/health"
 	httpmiddleware "personal-ai-os/backend-go/internal/platform/http"
+	"personal-ai-os/backend-go/internal/platform/maintenance"
 	"personal-ai-os/backend-go/internal/platform/migration"
 	"personal-ai-os/backend-go/internal/platform/modelgate"
 	"personal-ai-os/backend-go/internal/platform/ratelimit"
@@ -49,6 +50,8 @@ type FoundationOptions struct {
 	EnableP5                bool
 	EnableP6                bool
 	EnableP7                bool
+	EnableP8                bool
+	ContainerNetwork        bool
 	CandidateRedis          *redisclient.Client
 	EmbeddingRedis          *redisclient.Client
 	ModelTransport          http.RoundTripper
@@ -60,29 +63,31 @@ func (FoundationOptions) MarshalJSON() ([]byte, error) { return []byte(`{"redact
 
 // Foundation是尚未发布的P1组合入口，不启动业务Worker，也不宣告迁移就绪。
 type Foundation struct {
-	pool           *database.Pool
-	coordinator    *coordination.Coordinator
-	gate           *modelgate.Gate
-	executor       *taskexec.Executor
-	health         *health.Service
-	history        migration.HistoryStatus
-	handler        http.Handler
-	management     http.Handler
-	ctx            context.Context
-	cancel         context.CancelFunc
-	mu             sync.Mutex
-	closing        bool
-	served         bool
-	active         sync.WaitGroup
-	closeOnce      sync.Once
-	done           chan struct{}
-	closeErr       error
-	models         *model.Module
-	chat           *chat.Module
-	modelTransport *http.Transport
-	p5             *foundationP5
-	p6             *knowledge.Module
-	mcp            *mcp.Registry
+	pool             *database.Pool
+	coordinator      *coordination.Coordinator
+	gate             *modelgate.Gate
+	executor         *taskexec.Executor
+	health           *health.Service
+	history          migration.HistoryStatus
+	handler          http.Handler
+	management       http.Handler
+	ctx              context.Context
+	cancel           context.CancelFunc
+	mu               sync.Mutex
+	closing          bool
+	served           bool
+	active           sync.WaitGroup
+	closeOnce        sync.Once
+	done             chan struct{}
+	closeErr         error
+	models           *model.Module
+	chat             *chat.Module
+	modelTransport   *http.Transport
+	p5               *foundationP5
+	p6               *knowledge.Module
+	mcp              *mcp.Registry
+	retention        *maintenance.Worker
+	containerNetwork bool
 }
 
 func (*Foundation) String() string     { return "Foundation{redacted}" }
@@ -109,6 +114,19 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if options.EnableP7 && !options.EnableP6 {
 		return nil, errors.New("P7需要启用P6")
 	}
+	if options.EnableP8 && !options.EnableP7 {
+		return nil, errors.New("P8需要启用P7")
+	}
+	var retention config.RetentionProperties
+	if options.EnableP8 {
+		retention, err = properties.Retention()
+		if err != nil {
+			return nil, err
+		}
+		if _, err = maintenance.ParseCron(retention.Cron); err != nil {
+			return nil, err
+		}
+	}
 	var personalMCP mcp.PersonalOptions
 	if options.EnableP7 {
 		personalMCP, err = mcp.PersonalOptionsFrom(properties)
@@ -130,6 +148,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	settings, err := properties.Foundation()
 	if err != nil {
 		return nil, err
+	}
+	if options.ContainerNetwork && (!options.EnableP8 || !settings.Auth.Enabled || !settings.Security.CSRFEnabled) {
+		return nil, errors.New("P8容器网络必须启用全部模块、认证与CSRF")
 	}
 	actuatorProperties, err := properties.Actuator()
 	if err != nil {
@@ -204,11 +225,14 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if err != nil {
 		return nil, err
 	}
-	f := &Foundation{pool: pool, done: make(chan struct{})}
+	f := &Foundation{pool: pool, done: make(chan struct{}), containerNetwork: options.ContainerNetwork}
 	f.ctx, f.cancel = context.WithCancel(context.Background())
 	defer func() {
 		if err != nil {
 			f.cancel()
+			if f.retention != nil {
+				f.retention.Close()
+			}
 			if f.mcp != nil {
 				f.mcp.Close()
 			}
@@ -492,6 +516,12 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		f.p5 = p5
 		metrics.p5 = p5
 	}
+	if options.EnableP8 {
+		f.retention, err = maintenance.Start(f.ctx, retention, maintenance.NewPostgresStore(f.pool), logger)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return f, nil
 }
 
@@ -541,6 +571,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 		f.closing = true
 		f.mu.Unlock()
 		go func() {
+			if f.retention != nil {
+				f.retention.Close()
+			}
 			if f.p5 != nil {
 				f.p5.close()
 			}

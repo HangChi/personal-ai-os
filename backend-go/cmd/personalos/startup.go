@@ -22,8 +22,8 @@ import (
 )
 
 type commandOptions struct {
-	foundation, allowBaselineV1, p5, p6, p7 bool
-	migrations                              string
+	foundation, allowBaselineV1, p5, p6, p7, p8, container bool
+	migrations                                             string
 }
 
 func parseCommand(args []string) (commandOptions, error) {
@@ -34,6 +34,8 @@ func parseCommand(args []string) (commandOptions, error) {
 	flags.BoolVar(&options.p5, "p5", false, "启用 P5 记忆、日程及提醒")
 	flags.BoolVar(&options.p6, "p6", false, "启用 P6 知识、RAG 与后台角色（包含P5）")
 	flags.BoolVar(&options.p7, "p7", false, "启用 P7 MCP、搜索与数据交换（包含P6）")
+	flags.BoolVar(&options.p8, "p8", false, "启用 P8 运维候选运行时（包含P7，尚未验收发布）")
+	flags.BoolVar(&options.container, "container", false, "显式P8容器网络监听，要求认证与CSRF，不解除发布门禁")
 	flags.StringVar(&options.migrations, "migrations", "", "原 Java 迁移目录的绝对路径，只读校验")
 	flags.BoolVar(&options.allowBaselineV1, "allow-baseline-v1", false, "允许真实 Flyway 默认 V1 基线标记")
 	if err := flags.Parse(args); err != nil {
@@ -42,11 +44,17 @@ func parseCommand(args []string) (commandOptions, error) {
 		}
 		return commandOptions{}, errors.New("启动参数无效，请使用 --help 查看支持参数")
 	}
-	if flags.NArg() != 0 || (!options.foundation && (options.migrations != "" || options.allowBaselineV1 || options.p5 || options.p6 || options.p7)) {
-		return commandOptions{}, errors.New("迁移参数和 --p5/--p6/--p7 必须与 --foundation 一起显式设置，且不接受位置参数")
+	if flags.NArg() != 0 || (!options.foundation && (options.migrations != "" || options.allowBaselineV1 || options.p5 || options.p6 || options.p7 || options.p8 || options.container)) {
+		return commandOptions{}, errors.New("迁移参数和 --p5/--p6/--p7/--p8 必须与 --foundation 一起显式设置，且不接受位置参数")
+	}
+	if options.container && !options.p8 {
+		return commandOptions{}, errors.New("--container 必须与显式 --foundation --p8 一起使用")
 	}
 	if options.foundation && (!filepath.IsAbs(options.migrations) || options.migrations == string(filepath.Separator)) {
 		return commandOptions{}, errors.New("基础模式必须显式提供原 Java 迁移目录的绝对路径")
+	}
+	if options.p8 {
+		options.p7 = true
 	}
 	if options.p7 {
 		options.p6 = true
@@ -60,7 +68,7 @@ func parseCommand(args []string) (commandOptions, error) {
 func runCommand(ctx context.Context, args []string, logger *slog.Logger) error {
 	options, err := parseCommand(args)
 	if errors.Is(err, flag.ErrHelp) {
-		_, err = io.WriteString(os.Stdout, "用法: personalos [--foundation --migrations /absolute/java/db/migration [--allow-baseline-v1] [--p5 | --p6 | --p7]]\n默认仅离线诊断；基础模式要求显式 SERVER_PORT 和 POSTGRES_HOST/PORT/DB/USER/PASSWORD。\n")
+		_, err = io.WriteString(os.Stdout, "用法: personalos [--foundation --migrations /absolute/java/db/migration [--allow-baseline-v1] [--p5 | --p6 | --p7 | --p8]]\n默认仅离线诊断；基础模式要求显式 SERVER_PORT 和 POSTGRES_HOST/PORT/DB/USER/PASSWORD。\n")
 		return err
 	}
 	if err != nil {
@@ -154,6 +162,9 @@ func runFoundation(ctx context.Context, options commandOptions, system map[strin
 	if err != nil {
 		return err
 	}
+	if options.container && (!options.p8 || !settings.Auth.Enabled || !settings.Security.CSRFEnabled) {
+		return errors.New("P8容器网络必须启用全部模块、认证与CSRF")
+	}
 	logging, err := properties.Logging()
 	if err != nil {
 		return err
@@ -240,21 +251,25 @@ func runFoundation(ctx context.Context, options commandOptions, system map[strin
 	pool.MaxOpen, pool.MaxIdle, pool.ConnectionTimeout = runtime.PoolMaximum, runtime.PoolMaximum, runtime.PoolConnectionTimeout
 	foundation, err = app.OpenFoundation(ctx, properties, app.FoundationOptions{
 		Connector: connector, Migrations: os.DirFS(options.migrations), Schema: "public", AllowBaselineV1: options.allowBaselineV1,
-		Pool: &pool, SessionRedis: session, RateRedis: rate, EmbeddingRedis: embedding, CandidateRedis: candidate, EnableP2: true, EnableP3: true, EnableP4: true, EnableP5: options.p5, EnableP6: options.p6, EnableP7: options.p7,
+		Pool: &pool, SessionRedis: session, RateRedis: rate, EmbeddingRedis: embedding, CandidateRedis: candidate, EnableP2: true, EnableP3: true, EnableP4: true, EnableP5: options.p5, EnableP6: options.p6, EnableP7: options.p7, EnableP8: options.p8, ContainerNetwork: options.container,
 	}, logger)
 	if err != nil {
 		return err
 	}
-	business, err := net.Listen("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(runtime.Port)))
+	bindHost := "127.0.0.1"
+	if options.container {
+		bindHost = "0.0.0.0"
+	}
+	business, err := net.Listen("tcp", net.JoinHostPort(bindHost, strconv.Itoa(runtime.Port)))
 	if err != nil {
-		return errors.New("基础业务回环端口监听失败")
+		return errors.New("基础业务端口监听失败")
 	}
 	defer business.Close()
 	var management net.Listener
 	if settings.Monitoring {
-		management, err = net.Listen("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(runtime.ManagementPort)))
+		management, err = net.Listen("tcp", net.JoinHostPort(bindHost, strconv.Itoa(runtime.ManagementPort)))
 		if err != nil {
-			return errors.New("基础管理回环端口监听失败")
+			return errors.New("基础管理端口监听失败")
 		}
 		defer management.Close()
 	}

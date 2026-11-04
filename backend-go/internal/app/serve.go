@@ -24,12 +24,12 @@ func (f *Foundation) Serve(ctx context.Context, business, management net.Listene
 	if ctx == nil || business == nil || shutdownTimeout <= 0 || (f.management != nil) != (management != nil) {
 		return errors.New("基础HTTP启动参数或独立管理监听器无效")
 	}
-	port, ok := loopbackListener(business)
+	port, ok := permittedListener(business, f.containerNetwork)
 	if !ok {
 		return errors.New("基础HTTP监听器必须显式绑定回环TCP地址")
 	}
 	if management != nil {
-		managementPort, ok := loopbackListener(management)
+		managementPort, ok := permittedListener(management, f.containerNetwork)
 		if !ok || managementPort == port {
 			return errors.New("管理监听器必须绑定独立回环TCP端口")
 		}
@@ -99,9 +99,14 @@ func (f *Foundation) Serve(ctx context.Context, business, management net.Listene
 }
 
 func loopbackListener(listener net.Listener) (int, bool) {
+	return permittedListener(listener, false)
+}
+
+// 非回环只接受已验证的P8容器组合显式绑定通配地址；不会信任Host或转发头。
+func permittedListener(listener net.Listener, container bool) (int, bool) {
 	address, ok := listener.Addr().(*net.TCPAddr)
 	if !ok || address == nil {
 		return 0, false
 	}
-	return address.Port, address.IP.IsLoopback() && address.Port > 0
+	return address.Port, address.Port > 0 && (address.IP.IsLoopback() || container && address.IP.IsUnspecified())
 }

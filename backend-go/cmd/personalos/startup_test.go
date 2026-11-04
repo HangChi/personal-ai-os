@@ -16,7 +16,7 @@ func fixtureProcessSystem() map[string]string {
 }
 
 func TestCommandOptionsAreExplicitAndRedacted(t *testing.T) {
-	for _, args := range [][]string{{"--foundation"}, {"--foundation", "--migrations", "relative"}, {"--migrations", "/fixture"}, {"--allow-baseline-v1"}, {"--p5"}, {"--unknown=fixture-secret"}, {"fixture-secret"}} {
+	for _, args := range [][]string{{"--foundation"}, {"--foundation", "--migrations", "relative"}, {"--migrations", "/fixture"}, {"--allow-baseline-v1"}, {"--p5"}, {"--p8"}, {"--unknown=fixture-secret"}, {"fixture-secret"}} {
 		_, err := parseCommand(args)
 		if err == nil || strings.Contains(err.Error(), "fixture-secret") {
 			t.Fatalf("参数边界/脱敏错误: %v", err)
@@ -29,6 +29,35 @@ func TestCommandOptionsAreExplicitAndRedacted(t *testing.T) {
 	options, err = parseCommand(nil)
 	if err != nil || options.foundation {
 		t.Fatal("默认不能启用连接模式")
+	}
+}
+
+func TestP8CommandIncludesAllPreviousModules(t *testing.T) {
+	o, err := parseCommand([]string{"--foundation", "--migrations", "/fixture/sql", "--p8"})
+	if err != nil || !o.p8 || !o.p7 || !o.p6 || !o.p5 {
+		t.Fatal(o, err)
+	}
+}
+
+func TestP8ContainerNetworkIsExplicitAndAuthenticated(t *testing.T) {
+	for _, args := range [][]string{{"--container"}, {"--foundation", "--migrations", "/fixture/sql", "--p7", "--container"}} {
+		if _, err := parseCommand(args); err == nil {
+			t.Fatal("implicit container accepted")
+		}
+	}
+	o, err := parseCommand([]string{"--foundation", "--migrations", "/fixture/sql", "--p8", "--container"})
+	if err != nil || !o.container || !o.p8 {
+		t.Fatal(o, err)
+	}
+	for _, override := range []map[string]string{{}, {"AUTH_ENABLED": "true", "AUTH_PASSWORD": "synthetic-password-p8"}, {"APP_SECURITY_CSRF_ENABLED": "true"}} {
+		system := fixtureProcessSystem()
+		for k, v := range override {
+			system[k] = v
+		}
+		err := runFoundation(context.Background(), o, system, slog.New(slog.NewTextHandler(io.Discard, nil)))
+		if err == nil || !strings.Contains(err.Error(), "容器网络必须") {
+			t.Fatal("container must reject before connection", err)
+		}
 	}
 }
 

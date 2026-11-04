@@ -28,7 +28,7 @@ RULES = {
     "SharedSessionConfig.java": ("P1", "T105", "独立Redis URI与Secure已装配；SESSION/Lax/HttpOnly/30分钟保持固定策略"),
     "ProductionSecurityValidator.java": ("P1", "T104", "原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动"),
     "RuntimeRole.java": ("P1", "T108", "五角色与profile/双端口/池上限已装配，业务Worker按所属阶段实现"),
-    "DataRetentionService.java": ("P8", "T801", "用量/操作记录保留期与清理调度随运维生命周期验收"),
+    "DataRetentionService.java": ("P8", "T801", "显式--p8接入用量/操作记录独立保留期、默认永久保留及本地cron/停止；真实库边界验证，结果未明TOOL占位受保护"),
     "ModelConcurrencyGate.java": ("P1", "T107", "共享租约/角色API预留容量已装配，超100明确拒绝"),
     "RedisRateBucket.java": ("P1", "T107", "独立URI/namespace、Lua/TIME/150ms/错误指标已装配"),
     "IngestionReviewWorker.java": ("P6", "T606", "证据超时、增量review租约/角色调度已装配；真实库验证revision/token最终fencing"),
@@ -95,6 +95,12 @@ P7_EVIDENCE = {
              "backend-go/internal/app/foundation_p7.go", "specs/033-go-rewrite/p7-completion.md"],
 }
 
+P8_EVIDENCE = {
+    "T801": ["backend-go/internal/platform/maintenance/retention.go", "backend-go/internal/platform/maintenance/retention_test.go",
+             "backend-go/internal/platform/config/retention.go", "backend-go/internal/app/foundation_p8_integration_test.go",
+             "specs/033-go-rewrite/p8-completion.md"],
+}
+
 def source_dynamic_keys(filename, source):
     """只展开已审查的固定基线形态；必须逐项相等，不能仅验证子集。"""
     mask = masked_java(source)
@@ -132,7 +138,7 @@ def generate():
     inventory_path = SPEC / "config-inventory.json"
     inventory = json.loads(inventory_path.read_text())
     rows, used = [], set()
-    phase_evidence = {"P1": P1_EVIDENCE, "P3": P3_EVIDENCE, "P4": P4_EVIDENCE, "P5": P5_EVIDENCE, "P6": P6_EVIDENCE, "P7": P7_EVIDENCE}
+    phase_evidence = {"P1": P1_EVIDENCE, "P3": P3_EVIDENCE, "P4": P4_EVIDENCE, "P5": P5_EVIDENCE, "P6": P6_EVIDENCE, "P7": P7_EVIDENCE, "P8": P8_EVIDENCE}
     for kind in ("value_injections", "property_lookups"):
         for entry in inventory[kind]:
             filename = Path(entry["path"]).name
@@ -158,7 +164,7 @@ def generate():
 
 
 def render(data):
-    lines = ["# 配置调用方逐项处置（P1/P3/P4/P5/P6/P7收口）", "", "固定Java基线：`" + data["baseline_commit"] + "`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。", "",
+    lines = ["# 配置调用方逐项处置（P1–P8调用方接线）", "", "固定Java基线：`" + data["baseline_commit"] + "`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，不表示P8发布门禁完成。", "",
              "12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge已接P6，MCP已接P7。外部客户端关闭时不展开未使用的server占位符；对外服务使用独立spring.ai.mcp.server.*配置。", "",
              "| 来源与行号 | 原表达式/键 | 阶段/任务 | 状态与处置 |", "| --- | --- | --- | --- |"]
     for row in data["items"]:

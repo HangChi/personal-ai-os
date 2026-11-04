@@ -472,3 +472,11 @@ Decision：五模块贡献器共享一个只读REPEATABLE READ事务，顶层和
 固定Java源码差分发现Jackson UUID绑定比UUID.fromString更严格；导入使用规范UUID，URL参数继续既有宽松行为。精确字段名与String/Integer/Boolean标量转换复用既有绑定辅助，避免Go JSON大小写宽松匹配导致版本校验旁路。Locale.ROOT小写用x/text处理İ/希腊词尾等展开；不把strings.ToLower假定成Java字符串规则。14个原源码的哈希、35个导入场景及MCP/搜索契约均保存在P7夹具。
 
 Alternatives considered：将全部导出聚成内存对象（长会话/大文档峰值无界）；每页独立快照（并发不一致）；持有写事务等待模型（占锁）；只检查一次空库（嵌入期间可混入普通写入）；把导入拆成各模块独立事务（部分恢复）。均未采用。
+
+## R-053 P8 保留策略与未明副作用
+
+Decision：用量与操作审计默认永久保留，显式正天数才清理，按同一时钟瞬时的两个独立UTC截止时间、严格小于删除，两个仓储调用仍为独立短事务。复用原P4六字段cron解析器为共享schedule包，避免附件清理与保留清理规则漂移；L/W/#仍明确拒绝。仅显式P8装配，串行调度/30秒轮次期限，关闭取消等待后才关池。不新增运行时依赖。
+
+安全差异：原DataRetentionService的仓储删除没有区分TOOL/HTTP，会删除过期IN_PROGRESS工具记录。FR-006与R-043禁止自动清理结果未明TOOL后盲重试，因此Go删除SQL额外保护`source='TOOL' AND outcome='IN_PROGRESS'`。该差异与实际数据库反证测试公开记录，不把更激进删除冒充兼容要求；其他完成记录按显式保留策略处理。
+
+Alternatives considered：直接搬运全部DELETE（解除未明副作用的幂等所有权）；用Duration乘Java int天数（约106751天即溢出）；复制第二份cron实现；在后台SQL未退出前关池。均未采用。

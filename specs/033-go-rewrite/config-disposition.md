@@ -1,6 +1,6 @@
-# 配置调用方逐项处置（P1/P3/P4/P5/P6/P7收口）
+# 配置调用方逐项处置（P1–P8调用方接线）
 
-固定Java基线：`cb5d694d62fa93742b5789b97273e76d931ce335`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。
+固定Java基线：`cb5d694d62fa93742b5789b97273e76d931ce335`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，不表示P8发布门禁完成。
 
 12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge已接P6，MCP已接P7。外部客户端关闭时不展开未使用的server占位符；对外服务使用独立spring.ai.mcp.server.*配置。
 
@@ -46,8 +46,8 @@
 | `backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java:15` | `${app.auth.password:}` | P1/T104 | wired：原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动 |
 | `backend/src/main/java/com/personalos/common/config/ProductionSecurityValidator.java:16` | `${spring.datasource.password:}` | P1/T104 | wired：原安全守卫已逐项对照；P8切换门禁另阻止所有prod启动 |
 | `backend/src/main/java/com/personalos/common/config/RuntimeRole.java:11` | `${app.runtime.role:combined}` | P1/T108 | wired：五角色与profile/双端口/池上限已装配，业务Worker按所属阶段实现 |
-| `backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java:24` | `${app.retention.token-usage-days:0}` | P8/T801 | deferred：用量/操作记录保留期与清理调度随运维生命周期验收 |
-| `backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java:25` | `${app.retention.operation-record-days:0}` | P8/T801 | deferred：用量/操作记录保留期与清理调度随运维生命周期验收 |
+| `backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java:24` | `${app.retention.token-usage-days:0}` | P8/T801 | wired：显式--p8接入用量/操作记录独立保留期、默认永久保留及本地cron/停止；真实库边界验证，结果未明TOOL占位受保护 |
+| `backend/src/main/java/com/personalos/common/maintenance/DataRetentionService.java:25` | `${app.retention.operation-record-days:0}` | P8/T801 | wired：显式--p8接入用量/操作记录独立保留期、默认永久保留及本地cron/停止；真实库边界验证，结果未明TOOL占位受保护 |
 | `backend/src/main/java/com/personalos/common/web/ModelConcurrencyGate.java:15` | `${app.model-max-concurrent-requests:4}` | P1/T107 | wired：共享租约/角色API预留容量已装配，超100明确拒绝 |
 | `backend/src/main/java/com/personalos/common/web/RedisRateBucket.java:41` | `${app.rate-limit.redis.uri}` | P1/T107 | wired：独立URI/namespace、Lua/TIME/150ms/错误指标已装配 |
 | `backend/src/main/java/com/personalos/common/web/RedisRateBucket.java:42` | `${app.rate-limit.redis.namespace}` | P1/T107 | wired：独立URI/namespace、Lua/TIME/150ms/错误指标已装配 |
