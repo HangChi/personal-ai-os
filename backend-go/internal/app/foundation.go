@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -78,6 +79,7 @@ type Foundation struct {
 	chat           *chat.Module
 	modelTransport *http.Transport
 	stopReminders  func()
+	reminderStream *calendar.Stream
 }
 
 func (*Foundation) String() string     { return "Foundation{redacted}" }
@@ -351,12 +353,24 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 		})
 	}
+	var streamInterval time.Duration
+	var streamHandler http.Handler
+
 	var extraTools []agent.Definition
 	var memoryCapture func(context.Context, string, string, int) error
 	var backfillMemory func(context.Context) error
 	var memoryPrompt func(context.Context, string, string) (string, error)
 	if options.EnableP5 {
 		events := calendarEvents.Handler(logger)
+		value, _, err := properties.Get("app.calendar.stream-check-interval-ms")
+		if err != nil {
+			return nil, err
+		}
+		interval, err := strconv.ParseInt(value, 10, 32)
+		if err != nil || interval <= 0 {
+			return nil, errors.New("提醒流轮询间隔必须为正整数")
+		}
+		streamInterval = time.Duration(interval) * time.Millisecond
 		store, err := memory.NewStore(ctx, pool)
 		if err != nil {
 			return nil, err
@@ -406,6 +420,10 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		memories := memory.NewHTTP(store, logger)
 		previous := options.Business
 		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/api/v1/reminders/events" && streamHandler != nil {
+				streamHandler.ServeHTTP(w, r)
+				return
+			}
 			if calendar.OwnsEventPath(r.URL.Path) || calendar.OwnsReminderPath(r.URL.Path) {
 				events.ServeHTTP(w, r)
 				return
@@ -440,6 +458,10 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	f.handler = f.track(metrics.observeHTTP(newFoundationHandler(settings.Role, security, limiter, f.gate, f.health, options.Business, actuator, logger)))
 	if settings.Monitoring {
 		f.attachManagement(metrics, actuatorProperties, snapshot, logger)
+	}
+	if calendarEvents != nil && !settings.Role.Worker() {
+		f.reminderStream = calendar.NewStream(f.ctx, calendarEvents, streamInterval)
+		streamHandler = httpmiddleware.HandleErrors(f.reminderStream.Serve, logger)
 	}
 	if calendarEvents != nil && scanSettings.ScanEnabled {
 		scanCtx, stop := context.WithCancel(f.ctx)
@@ -513,6 +535,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 		f.closing = true
 		f.mu.Unlock()
 		go func() {
+			if f.reminderStream != nil {
+				f.reminderStream.Close()
+			}
 			if f.stopReminders != nil {
 				f.stopReminders()
 			}
