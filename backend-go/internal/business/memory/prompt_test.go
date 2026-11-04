@@ -18,7 +18,7 @@ func TestRenderPinnedRelevanceAndBudget(t *testing.T) {
 		{ID: "relevant", Content: "周报每周五提交", UpdatedAt: now.Add(-30 * 24 * time.Hour)},
 		{ID: "extra-pin", Content: "使用公制单位", Pinned: true, UpdatedAt: now.Add(-60 * 24 * time.Hour)},
 	}
-	_, ids := render(candidates, "周报", settings, now)
+	_, ids := render(candidates, "周报", settings, now, nil)
 	if want := []string{"pin", "relevant", "recent", "extra-pin"}; !slices.Equal(ids, want) {
 		t.Fatalf("order = %v, want %v", ids, want)
 	}
@@ -27,7 +27,7 @@ func TestRenderPinnedRelevanceAndBudget(t *testing.T) {
 	for i := range candidates {
 		candidates[i].Content = large
 	}
-	block, ids := render(candidates, "", settings, now)
+	block, ids := render(candidates, "", settings, now, nil)
 	if len(ids) != 3 || strings.Count(block, "😀") != 3000 {
 		t.Fatalf("expected three intact entries, got %v", ids)
 	}

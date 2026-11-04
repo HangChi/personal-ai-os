@@ -36,7 +36,13 @@ func (s *Store) Prompt(ctx context.Context, user string, settings config.MemoryP
 		return "", err
 	}
 	now := time.Now().UTC()
-	block, used := render(candidates, user, settings, now)
+	var similarities map[string]float64
+	if settings.Ranking.Enabled && len(candidates) != 0 {
+		units := utf16.Encode([]rune(user))
+		query := string(utf16.Decode(units[:min(len(units), 200)]))
+		similarities = s.similarities(ctx, s.vector(ctx, query, settings.Ranking.Timeout), len(candidates))
+	}
+	block, used := render(candidates, user, settings, now, similarities)
 	if len(used) != 0 {
 		// Refresh by ID with a database-side cutoff so parallel requests cannot double count
 		// or overwrite a concurrent edit.
@@ -49,7 +55,7 @@ func (s *Store) Prompt(ctx context.Context, user string, settings config.MemoryP
 	return block, nil
 }
 
-func render(candidates []Entry, user string, settings config.MemoryProperties, now time.Time) (string, []string) {
+func render(candidates []Entry, user string, settings config.MemoryProperties, now time.Time, similarities map[string]float64) (string, []string) {
 	var pinned, rest []Entry
 	for _, entry := range candidates {
 		if entry.Pinned && len(pinned) < settings.PinnedMaxCount {
@@ -67,7 +73,9 @@ func render(candidates []Entry, user string, settings config.MemoryProperties, n
 			recency = math.Pow(0.5, days/float64(settings.Ranking.HalfLifeDays))
 		}
 		var relevance float64
-		if len(query) > 0 {
+		if similarity, ok := similarities[entry.ID]; ok {
+			relevance = max(0, min(1, similarity))
+		} else if len(query) > 0 {
 			memory := grams(entry.Content)
 			var hits int
 			for pair := range query {

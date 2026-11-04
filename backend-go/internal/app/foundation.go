@@ -316,6 +316,8 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			httpmiddleware.HandleErrors(func(http.ResponseWriter, *http.Request) error { return httpmiddleware.NotFound() }, logger).ServeHTTP(w, r)
 		})
 	}
+	var memoryCapture func(context.Context, string, string, int) error
+	var backfillMemory func(context.Context) error
 	var memoryPrompt func(context.Context, string, string) (string, error)
 	if options.EnableP5 {
 		if !options.EnableP4 {
@@ -341,8 +343,30 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		if err != nil {
 			return nil, err
 		}
+		if f.models.Embedding != nil {
+			tag := "unknown"
+			for _, key := range []string{"spring.ai.openai.embedding.model", "spring.ai.ollama.embedding.model"} {
+				value, _, err := properties.Get(key)
+				if err != nil {
+					return nil, err
+				}
+				if strings.TrimSpace(value) != "" {
+					tag = strings.TrimSpace(value)
+					break
+				}
+			}
+			store.UseEmbedding(f.models.Embedding, tag, settings.SimilarThreshold)
+			if settings.Backfill.Enabled {
+				backfillMemory = func(ctx context.Context) error {
+					return store.Backfill(ctx, settings.Backfill.BatchSize)
+				}
+			}
+		}
 		memoryPrompt = func(ctx context.Context, user, _ string) (string, error) {
 			return store.Prompt(ctx, user, settings)
+		}
+		memoryCapture = func(ctx context.Context, user, reply string, limit int) error {
+			return store.Capture(ctx, f.models.Runtime, user, reply, limit)
 		}
 		memories := memory.NewHTTP(store, logger)
 		previous := options.Business
@@ -355,7 +379,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		})
 	}
 	if options.EnableP4 {
-		f.chat, err = chat.OpenModule(f.ctx, chat.ModuleOptions{MemoryPrompt: memoryPrompt, Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem, Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor, Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()})
+		f.chat, err = chat.OpenModule(f.ctx, chat.ModuleOptions{MemoryCapture: memoryCapture, MemoryPrompt: memoryPrompt, Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem, Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor, Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()})
 		if err != nil {
 			return nil, err
 		}
@@ -377,6 +401,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	f.handler = f.track(metrics.observeHTTP(newFoundationHandler(settings.Role, security, limiter, f.gate, f.health, options.Business, actuator, logger)))
 	if settings.Monitoring {
 		f.attachManagement(metrics, actuatorProperties, snapshot, logger)
+	}
+	if backfillMemory != nil {
+		f.executor.Submit(f.ctx, backfillMemory)
 	}
 	return f, nil
 }

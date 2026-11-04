@@ -12,6 +12,7 @@ import (
 	"unicode"
 	"unicode/utf16"
 
+	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/platform/api"
 	"personal-ai-os/backend-go/internal/platform/database"
 	"regexp"
@@ -29,7 +30,12 @@ type Entry struct {
 	LastUsedAt   *time.Time `json:"lastUsedAt"`
 }
 
-type Store struct{ pool *database.Pool }
+type Store struct {
+	pool      *database.Pool
+	embedding model.EmbeddingModel
+	modelTag  string
+	threshold float64
+}
 
 func NewStore(ctx context.Context, pool *database.Pool) (*Store, error) {
 	err := pool.WithConn(ctx, func(conn *sql.Conn) error {
@@ -84,10 +90,14 @@ func (s *Store) List(ctx context.Context) ([]Entry, error) {
 	return entries, err
 }
 
-func normalize(content string) (string, error) {
-	content = strings.TrimFunc(content, func(r rune) bool {
+func strip(value string) string {
+	return strings.TrimFunc(value, func(r rune) bool {
 		return unicode.IsSpace(r) && r != '\u0085' && r != '\u00a0' && r != '\u2007' && r != '\u202f' || r >= '\x1c' && r <= '\x1f'
 	})
+}
+
+func normalize(content string) (string, error) {
+	content = strip(content)
 	if content == "" {
 		return "", api.NewBusinessError(api.ValidationFailed, "记忆内容不能为空")
 	}
@@ -117,7 +127,17 @@ func (s *Store) create(ctx context.Context, content, source string) (Entry, erro
 	}
 	hash := contentHash(content)
 	var entry Entry
+	err = s.pool.WithConn(ctx, func(conn *sql.Conn) error {
+		return scan(conn.QueryRowContext(ctx, "SELECT "+columns+" FROM memory WHERE content_hash=$1", hash), &entry)
+	})
+	if !errors.Is(err, sql.ErrNoRows) {
+		return entry, err
+	}
+	vector := s.vector(ctx, content, 10*time.Second)
 	err = s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
+		if err := lockVectors(ctx, tx, vector); err != nil {
+			return err
+		}
 		now := time.Now().UTC()
 		err := scan(tx.QueryRowContext(ctx, `INSERT INTO memory(id,content,content_hash,source,created_at,updated_at)
 			VALUES(gen_random_uuid(),$1,$2,$3,$4,$4) ON CONFLICT(content_hash) DO NOTHING RETURNING `+columns,
@@ -126,7 +146,10 @@ func (s *Store) create(ctx context.Context, content, source string) (Entry, erro
 			// A separate statement sees the winning transaction under READ COMMITTED.
 			return scan(tx.QueryRowContext(ctx, "SELECT "+columns+" FROM memory WHERE content_hash=$1", hash), &entry)
 		}
-		return err
+		if err != nil {
+			return err
+		}
+		return s.applyVector(ctx, tx, &entry, vector)
 	})
 	return entry, err
 }
@@ -156,9 +179,20 @@ func (s *Store) Update(ctx context.Context, raw, content string) (Entry, error) 
 	if err != nil {
 		return Entry{}, err
 	}
-	entry, err := s.change(ctx, raw, `UPDATE memory SET content=$2,content_hash=$3,updated_at=$4,
-		embedding=NULL,embedding_model=NULL,embedded_at=NULL WHERE id=$1 RETURNING `+columns,
-		id, content, contentHash(content), time.Now().UTC())
+	vector := s.vector(ctx, content, 10*time.Second)
+	var entry Entry
+	err = s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
+		if err := lockVectors(ctx, tx, vector); err != nil {
+			return err
+		}
+		err := scan(tx.QueryRowContext(ctx, `UPDATE memory SET content=$2,content_hash=$3,updated_at=$4,
+			embedding=NULL,embedding_model=NULL,embedded_at=NULL WHERE id=$1 RETURNING `+columns,
+			id, content, contentHash(content), time.Now().UTC()), &entry)
+		if err != nil {
+			return missing(raw, err)
+		}
+		return s.applyVector(ctx, tx, &entry, vector)
+	})
 	var dbError interface{ SQLState() string }
 	if errors.As(err, &dbError) && dbError.SQLState() == "23505" {
 		return Entry{}, api.NewBusinessError(api.BusinessConflict, "已存在内容相同的记忆，请直接修改那条或取消本次编辑")
