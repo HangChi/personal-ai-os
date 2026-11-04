@@ -2423,7 +2423,7 @@
       "note": " 已提供canonical字符串map的类型化绑定，真实Spring Binder241项对照/凭据副本与脱敏、BCrypt锁定与本地桶接线验证；4个Java时长超Go范围明确拒绝。来源/profile/其余配置/应用装配未完成，不能verified；Agent仅配置不代表P4执行。"
     },
     "file:backend/src/main/java/com/personalos/mcp/config/McpProperties.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/config/mcp_binding.go",
         "backend-go/internal/platform/config/mcp_binding_test.go",
@@ -2431,12 +2431,25 @@
         "backend-go/internal/platform/config/testdata/java-binding.json",
         "scripts/migration/ConfigBindingOracle.java",
         "scripts/migration/java_config_binding_fixture.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md"
       ],
-      "note": " 已完成MCP动态server/map/list/set与显式多来源配置绑定，真实Binder157项/全部398项、原.env场景及副本/脱敏/并发对照。保留ENV_API_KEY实际变成api.key的基线行为；未启动协议/命令或完成完整来源/应用装配，不能verified。"
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
     },
     "hook:backend/src/main/java/com/personalos/mcp/config/McpProperties.java:34:ConfigurationProperties": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/config/mcp_binding.go",
         "backend-go/internal/platform/config/mcp_binding_test.go",
@@ -2444,9 +2457,22 @@
         "backend-go/internal/platform/config/testdata/java-binding.json",
         "scripts/migration/ConfigBindingOracle.java",
         "scripts/migration/java_config_binding_fixture.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md"
       ],
-      "note": " 已完成MCP动态server/map/list/set与显式多来源配置绑定，真实Binder157项/全部398项、原.env场景及副本/脱敏/并发对照。保留ENV_API_KEY实际变成api.key的基线行为；未启动协议/命令或完成完整来源/应用装配，不能verified。"
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
     },
     "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:22": {
       "status": "in_progress",
@@ -2697,21 +2723,39 @@
       "note": "控制器的所有基线路由已接 Foundation，真实 TLS PostgreSQL 回归通过。"
     },
     "file:backend/src/main/java/com/personalos/task/TaskExportContributor.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/task/contributors.go",
-        "backend-go/internal/business/task/postgres_integration_test.go"
+        "backend-go/internal/business/task/postgres_integration_test.go",
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/task/export.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "T204任务导出键与有界分批读取已实现；跨模块ExportWriter与导出端点属后续阶段。"
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
     },
     "file:backend/src/main/java/com/personalos/task/TaskSearchContributor.java": {
       "status": "implemented",
       "evidence": [
         "backend-go/internal/business/task/contributors.go",
         "backend-go/internal/business/task/postgres.go",
-        "backend-go/internal/business/task/postgres_integration_test.go"
+        "backend-go/internal/business/task/postgres_integration_test.go",
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "T204任务标题/描述搜索、更新时间排序及命中字段/副标题已验证；全局搜索聚合端点属后续阶段。"
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
     },
     "file:backend/src/main/java/com/personalos/task/confirmation/TaskConfirmationHandler.java": {
       "status": "implemented",
@@ -7208,7 +7252,7 @@
       "note": "P4已装配：参数/16工具定义、预算/审计/幂等与真实任务副作用。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
     },
     "file:backend/src/main/java/com/personalos/chat/ChatExportContributor.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/chat/service.go",
         "backend-go/internal/business/chat/postgres.go",
@@ -7218,12 +7262,22 @@
         "backend-go/internal/business/chat/java_oracle_test.go",
         "backend-go/internal/business/chat/model_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/chat/export.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已实现会话搜索/exportBatch/Markdown，跨模块贡献注册和全局聚合端点待P7，不能视为该跨模块职责已完成。"
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
     },
     "file:backend/src/main/java/com/personalos/chat/ChatSearchContributor.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/chat/service.go",
         "backend-go/internal/business/chat/postgres.go",
@@ -7233,9 +7287,17 @@
         "backend-go/internal/business/chat/java_oracle_test.go",
         "backend-go/internal/business/chat/model_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已实现会话搜索/exportBatch/Markdown，跨模块贡献注册和全局聚合端点待P7，不能视为该跨模块职责已完成。"
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
     },
     "file:backend/src/main/java/com/personalos/chat/controller/ChatAttachmentController.java": {
       "status": "implemented",
@@ -13538,18 +13600,36 @@
       "note": "P4已装配：预算偏好/窗口、历史副本/工具配对与有界保护重试。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
     },
     "file:backend/src/main/java/com/personalos/calendar/CalendarExportContributor.java": {
-      "status": "not_started",
+      "status": "implemented",
       "evidence": [
-        "specs/033-go-rewrite/p5-completion.md"
+        "specs/033-go-rewrite/p5-completion.md",
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/calendar/export.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P5业务数据已迁移，跨模块搜索和导出聚合接线归 P7。"
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
     },
     "file:backend/src/main/java/com/personalos/calendar/CalendarSearchContributor.java": {
-      "status": "not_started",
+      "status": "implemented",
       "evidence": [
-        "specs/033-go-rewrite/p5-completion.md"
+        "specs/033-go-rewrite/p5-completion.md",
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P5业务数据已迁移，跨模块搜索和导出聚合接线归 P7。"
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
     },
     "file:backend/src/main/java/com/personalos/calendar/config/CalendarConfig.java": {
       "status": "implemented",
@@ -14003,11 +14083,21 @@
       "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
     },
     "file:backend/src/main/java/com/personalos/memory/MemoryExportContributor.java": {
-      "status": "not_started",
+      "status": "implemented",
       "evidence": [
-        "specs/033-go-rewrite/p5-completion.md"
+        "specs/033-go-rewrite/p5-completion.md",
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/memory/export.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P5业务数据已迁移，跨模块搜索和导出聚合接线归 P7。"
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
     },
     "file:backend/src/main/java/com/personalos/memory/MemoryPromptContributor.java": {
       "status": "implemented",
@@ -14021,11 +14111,19 @@
       "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
     },
     "file:backend/src/main/java/com/personalos/memory/MemorySearchContributor.java": {
-      "status": "not_started",
+      "status": "implemented",
       "evidence": [
-        "specs/033-go-rewrite/p5-completion.md"
+        "specs/033-go-rewrite/p5-completion.md",
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P5业务数据已迁移，跨模块搜索和导出聚合接线归 P7。"
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
     },
     "file:backend/src/main/java/com/personalos/memory/controller/MemoryController.java": {
       "status": "implemented",
@@ -20601,9 +20699,12 @@
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
         "specs/033-go-rewrite/p6-test-mapping.md",
-        "backend-go/internal/business/knowledge/search_integration_test.go"
+        "backend-go/internal/business/knowledge/search_integration_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md"
       ],
-      "note": "原断言 backupRestoresKnowledgeSpaceAndEffectiveScope；Go: TestP6GovernanceSourceMetadataConflictAuditAndInvalidation, TestP6GovernanceRejectsForgedQuotesAndKeepBoth, TestP6ReviewIncrementalFailureRetryAndSourceRevision, TestP6ProjectionRevisionRecoveryDeleteAndReindex。范围/日期/审计、两方原文/人工决议/失效、已存冲突补齐、增量review与投影失败；其中backupRestores的跨模块导入导出职责明确归P7/T704，完整备份恢复归P8/T804。逐方法清单见p6-test-mapping.md。"
+      "note": "原声明 backupRestoresKnowledgeSpaceAndEffectiveScope；TestP7StreamingExportImportRoundTripPostgres。本阶段只补backupRestoresKnowledgeSpaceAndEffectiveScope；来源按spaceName恢复、scope/version/有效期跟随事务，其他五声明保留P6证据"
     },
     "file:backend/src/main/java/com/personalos/knowledge/controller/KnowledgeController.java": {
       "status": "implemented",
@@ -21256,14 +21357,34 @@
       "note": "原断言 unsupportedExtensionIsRejected；Go: TestPDFTextEmptyBrokenAndPageLimit, TestDOCXParagraphsTablesAndSafety, TestP6DocumentAtomicReplaceMetadataDeleteAndPagination。PDF文本/扫描拒收、DOCX表格及不支持格式零写入；标准库解析替换PDFBox/POI。逐方法清单见p6-test-mapping.md。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/KnowledgeExportContributor.java": {
-      "status": "not_started",
-      "evidence": [],
-      "note": "跨模块贡献器归P7/T704，P6未实现也未验收该职责。"
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/knowledge/export.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/KnowledgeSearchContributor.java": {
-      "status": "not_started",
-      "evidence": [],
-      "note": "跨模块贡献器归P7/T703，P6未实现也未验收该职责。"
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
     },
     "tool:Tool:searchKnowledge": {
       "status": "implemented",
@@ -21283,6 +21404,1938 @@
         "backend-go/internal/business/agent/knowledge_test.go"
       ],
       "note": "T600–T608：--foundation --p6显式装配全部知识HTTP/认证/CSRF/限流、只读工具、聊天共享端口与保守引用落库，独立候选Redis；五角色隔离/退出、索引enabled开关、可选设施关闭和消息代理失联轮询已验证。"
+    },
+    "file:backend/src/main/java/com/personalos/common/search/GlobalSearchResult.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
+    },
+    "file:backend/src/main/java/com/personalos/common/search/GlobalSearchService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
+    },
+    "file:backend/src/main/java/com/personalos/common/search/SearchContributor.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
+    },
+    "file:backend/src/main/java/com/personalos/common/search/SearchController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
+    },
+    "file:backend/src/main/java/com/personalos/common/search/SearchGroup.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
+    },
+    "file:backend/src/main/java/com/personalos/common/search/SearchHit.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
+    },
+    "file:backend/src/main/java/com/personalos/common/search/SearchPatterns.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
+    },
+    "file:backend/src/main/java/com/personalos/export/DataExportController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+    },
+    "file:backend/src/main/java/com/personalos/export/DataExportService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+    },
+    "file:backend/src/main/java/com/personalos/export/DataImportController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+    },
+    "file:backend/src/main/java/com/personalos/export/DataImportService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+    },
+    "file:backend/src/main/java/com/personalos/export/ExportContributor.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+    },
+    "file:backend/src/main/java/com/personalos/export/ExportWriter.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+    },
+    "file:backend/src/main/java/com/personalos/export/ImportPayload.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/client/McpClientRegistry.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/client/McpServerStatus.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/config/McpConfigValidator.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/config/McpToolConfig.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/config/McpToolConflictValidator.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationHandler.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationSummary.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/confirmation/McpToolCall.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/package-info.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/server/PersonalMcpTools.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/status/McpServerStatusDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/status/McpStatusController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/status/McpStatusDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/status/McpStatusService.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/status/PersonalMcpStatusDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/status/PersonalMcpToolDto.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/tool/McpToolCallback.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/tool/McpToolCallbackProvider.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/tool/McpToolNaming.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/main/java/com/personalos/mcp/tool/McpToolPolicy.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "file:backend/src/test/java/com/personalos/common/search/SearchPatternsTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。strip/Locale.ROOT小写/反斜线及%_字面量，不把单独通配符当全库搜索"
+    },
+    "file:backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataexport/export_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7StreamingExportImportRoundTripPostgres, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ExportHEADAndNegotiation, TestP7BoundedStreamingArrayAndWriterFailures。空数组/同源counts/附件头/无信封与embedding；200条批次含405消息/205块长文，单快照并发写入隔离及写失败传播"
+    },
+    "file:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/McpChatToolCallingIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "TestP7MCPChatHTTPAndPersistentConfirmation, TestP7MCPAuditBudgetConfirmationAndReconnect。真实HTTP对话流与MCP协议：工具实际出现在模型请求，AUTO结果与CONFIRM状态回到下一轮模型上下文；确认前零写入、真实库并发CAS/审计；预算耗尽不调用/不申请"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7RealStdioLifecycleAndFailureIsolation, TestP7StdioHandshakeTimeoutReapsChild, TestP7HTTPTimeoutBusinessErrorAndReconnect, TestP7ConfigurationFailureAndDisabledNoSideEffects。真实子进程和Streamable HTTP；initialize/list/call、超时回收、关闭/重连/旧会话fencing、单服务器故障降级与配置拒绝"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "TestP7MCPAuditBudgetConfirmationAndReconnect, TestP7MCPChatHTTPAndPersistentConfirmation, TestP7SummaryAndDisabledConfirmation, TestP7NamesPolicyAndSchema。真实MCP协议接入共同Agent预算/审计/幂等；重复申请去重，真实数据库12路HTTP确认只调用一次，旧callback重连后解析新客户端"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/McpDegradedStartupIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7RealStdioLifecycleAndFailureIsolation, TestP7ConfigurationFailureAndDisabledNoSideEffects, TestP7MCPAndFiveModuleSearchPostgres。外部失败不阻止注册表建立；外部MCP开关与个人只读服务/模型独立，非法配置仍拒绝"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/TestMcpServerMain.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/confirmation/McpConfirmationSummaryTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7SummaryAndDisabledConfirmation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。服务端依据payload生成，键排序前三个、换行/80 UTF16/省略统计"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/server/PersonalMcpExposureTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/platform/auth/mcp_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7PersonalProtocolReadOnlyCatalogAndIndependentSwitch, TestP7CustomMCPExemptionKeepsAuthenticationAndOtherCSRF, TestP7MCPAndFiveModuleSearchPostgres。真实HTTP协商与四个工具调用；独立开关、只读注解、禁递归/写工具、认证不豁免"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/status/McpStatusServiceTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7HTTPHeadersAndRedactedFailureStatus, TestP7PersonalProtocolReadOnlyCatalogAndIndependentSwitch。状态/禁用/故障只显示受控文案，不泄露环境/命令/请求头/端点凭据"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/tool/McpToolCallbackProviderTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。运行时对齐Spring adapter归一化后的object/properties；原hasUsableSchema是对归一化结果的防御检查，不把其原始JSON输入与SDK转换前输入混为同一层"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/tool/McpToolNamingTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。前缀/清洗/空名/100字符/两种冲突，包含Locale.ROOT Unicode差分"
+    },
+    "file:backend/src/test/java/com/personalos/mcp/tool/McpToolPolicyTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。仅原始名称精确命中只读清单为AUTO，其余CONFIRM"
+    },
+    "route:GET:/api/v1/search:backend/src/main/java/com/personalos/common/search/SearchController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search.go",
+        "backend-go/internal/business/search/contributors.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 search；T703：五模块真实SQL、LIKE字面量/标题优先/补充去重、独立事务故障隔离、分组排序/UTF16/限额，固定Java契约对照。"
+    },
+    "route:GET:/api/v1/export:backend/src/main/java/com/personalos/export/DataExportController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 export；T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+    },
+    "route:POST:/api/v1/import:backend/src/main/java/com/personalos/export/DataImportController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/dataexport/export.go",
+        "backend-go/internal/business/dataimport/import.go",
+        "backend-go/internal/business/dataimport/binding.go",
+        "backend-go/internal/business/knowledge/import.go",
+        "backend-go/internal/business/exchange/http.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 importData；T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+    },
+    "route:GET:/api/v1/mcp/servers:backend/src/main/java/com/personalos/mcp/status/McpStatusController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 servers；T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "route:GET:/api/v1/mcp/server:backend/src/main/java/com/personalos/mcp/status/McpStatusController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 server；T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "route:POST:/api/v1/mcp/servers/{name}/reconnect:backend/src/main/java/com/personalos/mcp/status/McpStatusController.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 reconnect；T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "tool:McpTool:personal_list_tasks": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 listTasks；T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "tool:McpTool:personal_search_knowledge": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 searchKnowledge；T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "tool:McpTool:personal_list_calendar": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 listCalendar；T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "tool:McpTool:personal_list_memories": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 listMemories；T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "hook:backend/src/main/java/com/personalos/mcp/client/McpClientRegistry.java:43:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "hook:backend/src/main/java/com/personalos/mcp/client/McpClientRegistry.java:80:PostConstruct": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "hook:backend/src/main/java/com/personalos/mcp/config/McpToolConfig.java:20:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "hook:backend/src/main/java/com/personalos/mcp/config/McpToolConfig.java:23:Bean": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "hook:backend/src/main/java/com/personalos/mcp/config/McpToolConflictValidator.java:31:ConditionalOnProperty": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "hook:backend/src/main/java/com/personalos/mcp/config/McpToolConflictValidator.java:50:PostConstruct": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry.go",
+        "backend-go/internal/business/mcp/naming.go",
+        "backend-go/internal/business/mcp/confirmation.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/http.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "backend-go/internal/business/agent/mcp.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/platform/config/mcp_runtime.go",
+        "backend-go/internal/app/foundation.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:162": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldSearchAcrossAllModules；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:178": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldReportMatchedField；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:194": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldReturnSessionForMessageHit；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:213": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldPreferTitleOverContent；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:233": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldIgnoreKeywordCase；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:245": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldRejectBadKeyword；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:256": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldClampLimit；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:267": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldReturnEmptyWhenNoHit；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:278": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldEscapeLikeWildcards；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:294": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldEscapeWildcardsInMessageContent；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java:318": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldIsolateModuleFailures；TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/SearchPatternsTest.java:17": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldWrapAndLowerCase；TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。strip/Locale.ROOT小写/反斜线及%_字面量，不把单独通配符当全库搜索"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/SearchPatternsTest.java:25": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldStripSurroundingWhitespace；TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。strip/Locale.ROOT小写/反斜线及%_字面量，不把单独通配符当全库搜索"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/SearchPatternsTest.java:31": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldEscapeWildcards；TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。strip/Locale.ROOT小写/反斜线及%_字面量，不把单独通配符当全库搜索"
+    },
+    "test:backend/src/test/java/com/personalos/common/search/SearchPatternsTest.java:40": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/search/search_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldNotTurnLoneWildcardIntoMatchAll；TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。strip/Locale.ROOT小写/反斜线及%_字面量，不把单独通配符当全库搜索"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java:113": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataexport/export_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldExportEmptyDatabase；TestP7StreamingExportImportRoundTripPostgres, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ExportHEADAndNegotiation, TestP7BoundedStreamingArrayAndWriterFailures。空数组/同源counts/附件头/无信封与embedding；200条批次含405消息/205块长文，单快照并发写入隔离及写失败传播"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java:130": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataexport/export_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldKeepCountsConsistentWithArrays；TestP7StreamingExportImportRoundTripPostgres, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ExportHEADAndNegotiation, TestP7BoundedStreamingArrayAndWriterFailures。空数组/同源counts/附件头/无信封与embedding；200条批次含405消息/205块长文，单快照并发写入隔离及写失败传播"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java:164": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataexport/export_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldExportKnowledgeChunks；TestP7StreamingExportImportRoundTripPostgres, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ExportHEADAndNegotiation, TestP7BoundedStreamingArrayAndWriterFailures。空数组/同源counts/附件头/无信封与embedding；200条批次含405消息/205块长文，单快照并发写入隔离及写失败传播"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java:187": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataexport/export_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldSetAttachmentHeader；TestP7StreamingExportImportRoundTripPostgres, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ExportHEADAndNegotiation, TestP7BoundedStreamingArrayAndWriterFailures。空数组/同源counts/附件头/无信封与embedding；200条批次含405消息/205块长文，单快照并发写入隔离及写失败传播"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java:206": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataexport/export_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldNotExportEmbeddings；TestP7StreamingExportImportRoundTripPostgres, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ExportHEADAndNegotiation, TestP7BoundedStreamingArrayAndWriterFailures。空数组/同源counts/附件头/无信封与embedding；200条批次含405消息/205块长文，单快照并发写入隔离及写失败传播"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java:219": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataexport/export_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 streamsMultipleBatchesIncludingOneLongConversation；TestP7StreamingExportImportRoundTripPostgres, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ExportHEADAndNegotiation, TestP7BoundedStreamingArrayAndWriterFailures。空数组/同源counts/附件头/无信封与embedding；200条批次含405消息/205块长文，单快照并发写入隔离及写失败传播"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:160": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 importsAllModules；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:208": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 roundTripsMemoryState；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:239": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 embedsOutsideTransaction；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:253": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 embeddingFailureLeavesDatabaseEmpty；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:266": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 databaseFailureRollsBackVectorsAndBusinessRows；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:282": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 rechecksDatabaseAfterEmbedding；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:299": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 rejectsNonEmptyDatabase；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:314": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 rejectsDatabaseWithPendingIndexJobs；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:325": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 rejectsUnknownFormatVersion；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java:335": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "backend-go/internal/business/exchange/http_test.go",
+        "backend-go/internal/business/dataimport/import_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 sanitizesBadRows；TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpChatToolCallingIntegrationTest.java:104": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "原声明 autoToolExecutesThroughChat；TestP7MCPChatHTTPAndPersistentConfirmation, TestP7MCPAuditBudgetConfirmationAndReconnect。真实HTTP对话流与MCP协议：工具实际出现在模型请求，AUTO结果与CONFIRM状态回到下一轮模型上下文；确认前零写入、真实库并发CAS/审计；预算耗尽不调用/不申请"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpChatToolCallingIntegrationTest.java:120": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "原声明 confirmToolThroughChatRequiresConfirmation；TestP7MCPChatHTTPAndPersistentConfirmation, TestP7MCPAuditBudgetConfirmationAndReconnect。真实HTTP对话流与MCP协议：工具实际出现在模型请求，AUTO结果与CONFIRM状态回到下一轮模型上下文；确认前零写入、真实库并发CAS/审计；预算耗尽不调用/不申请"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java:59": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 connectsListsToolsAndCalls；TestP7RealStdioLifecycleAndFailureIsolation, TestP7StdioHandshakeTimeoutReapsChild, TestP7HTTPTimeoutBusinessErrorAndReconnect, TestP7ConfigurationFailureAndDisabledNoSideEffects。真实子进程和Streamable HTTP；initialize/list/call、超时回收、关闭/重连/旧会话fencing、单服务器故障降级与配置拒绝"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java:90": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 destroyTerminatesServerProcess；TestP7RealStdioLifecycleAndFailureIsolation, TestP7StdioHandshakeTimeoutReapsChild, TestP7HTTPTimeoutBusinessErrorAndReconnect, TestP7ConfigurationFailureAndDisabledNoSideEffects。真实子进程和Streamable HTTP；initialize/list/call、超时回收、关闭/重连/旧会话fencing、单服务器故障降级与配置拒绝"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java:110": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 brokenCommandMarksUnavailable；TestP7RealStdioLifecycleAndFailureIsolation, TestP7StdioHandshakeTimeoutReapsChild, TestP7HTTPTimeoutBusinessErrorAndReconnect, TestP7ConfigurationFailureAndDisabledNoSideEffects。真实子进程和Streamable HTTP；initialize/list/call、超时回收、关闭/重连/旧会话fencing、单服务器故障降级与配置拒绝"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java:124": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 hangingServerTimesOut；TestP7RealStdioLifecycleAndFailureIsolation, TestP7StdioHandshakeTimeoutReapsChild, TestP7HTTPTimeoutBusinessErrorAndReconnect, TestP7ConfigurationFailureAndDisabledNoSideEffects。真实子进程和Streamable HTTP；initialize/list/call、超时回收、关闭/重连/旧会话fencing、单服务器故障降级与配置拒绝"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java:137": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 oneServerFailureDoesNotAffectOthers；TestP7RealStdioLifecycleAndFailureIsolation, TestP7StdioHandshakeTimeoutReapsChild, TestP7HTTPTimeoutBusinessErrorAndReconnect, TestP7ConfigurationFailureAndDisabledNoSideEffects。真实子进程和Streamable HTTP；initialize/list/call、超时回收、关闭/重连/旧会话fencing、单服务器故障降级与配置拒绝"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java:156": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 missingCommandFailsValidation；TestP7RealStdioLifecycleAndFailureIsolation, TestP7StdioHandshakeTimeoutReapsChild, TestP7HTTPTimeoutBusinessErrorAndReconnect, TestP7ConfigurationFailureAndDisabledNoSideEffects。真实子进程和Streamable HTTP；initialize/list/call、超时回收、关闭/重连/旧会话fencing、单服务器故障降级与配置拒绝"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java:127": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "原声明 existingCallbackRecoversAfterReconnect；TestP7MCPAuditBudgetConfirmationAndReconnect, TestP7MCPChatHTTPAndPersistentConfirmation, TestP7SummaryAndDisabledConfirmation, TestP7NamesPolicyAndSchema。真实MCP协议接入共同Agent预算/审计/幂等；重复申请去重，真实数据库12路HTTP确认只调用一次，旧callback重连后解析新客户端"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java:148": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "原声明 confirmToolCallRunsFullChain；TestP7MCPAuditBudgetConfirmationAndReconnect, TestP7MCPChatHTTPAndPersistentConfirmation, TestP7SummaryAndDisabledConfirmation, TestP7NamesPolicyAndSchema。真实MCP协议接入共同Agent预算/审计/幂等；重复申请去重，真实数据库12路HTTP确认只调用一次，旧callback重连后解析新客户端"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java:196": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "原声明 autoToolExecutesDirectly；TestP7MCPAuditBudgetConfirmationAndReconnect, TestP7MCPChatHTTPAndPersistentConfirmation, TestP7SummaryAndDisabledConfirmation, TestP7NamesPolicyAndSchema。真实MCP协议接入共同Agent预算/审计/幂等；重复申请去重，真实数据库12路HTTP确认只调用一次，旧callback重连后解析新客户端"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java:207": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "原声明 serverErrorSurfacesReadableMessage；TestP7MCPAuditBudgetConfirmationAndReconnect, TestP7MCPChatHTTPAndPersistentConfirmation, TestP7SummaryAndDisabledConfirmation, TestP7NamesPolicyAndSchema。真实MCP协议接入共同Agent预算/审计/幂等；重复申请去重，真实数据库12路HTTP确认只调用一次，旧callback重连后解析新客户端"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java:218": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "原声明 toolNamesAndPoliciesAssembled；TestP7MCPAuditBudgetConfirmationAndReconnect, TestP7MCPChatHTTPAndPersistentConfirmation, TestP7SummaryAndDisabledConfirmation, TestP7NamesPolicyAndSchema。真实MCP协议接入共同Agent预算/审计/幂等；重复申请去重，真实数据库12路HTTP确认只调用一次，旧callback重连后解析新客户端"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java:234": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p7_integration_test.go"
+      ],
+      "note": "原声明 conflictWithBuiltinToolBlocksStartup；TestP7MCPAuditBudgetConfirmationAndReconnect, TestP7MCPChatHTTPAndPersistentConfirmation, TestP7SummaryAndDisabledConfirmation, TestP7NamesPolicyAndSchema。真实MCP协议接入共同Agent预算/审计/幂等；重复申请去重，真实数据库12路HTTP确认只调用一次，旧callback重连后解析新客户端"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpDegradedStartupIntegrationTest.java:70": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 brokenServerDoesNotPreventStartup；TestP7RealStdioLifecycleAndFailureIsolation, TestP7ConfigurationFailureAndDisabledNoSideEffects, TestP7MCPAndFiveModuleSearchPostgres。外部失败不阻止注册表建立；外部MCP开关与个人只读服务/模型独立，非法配置仍拒绝"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpDegradedStartupIntegrationTest.java:85": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 mcpWorksWithoutChatModel；TestP7RealStdioLifecycleAndFailureIsolation, TestP7ConfigurationFailureAndDisabledNoSideEffects, TestP7MCPAndFiveModuleSearchPostgres。外部失败不阻止注册表建立；外部MCP开关与个人只读服务/模型独立，非法配置仍拒绝"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/McpDegradedStartupIntegrationTest.java:96": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 conflictValidatorReportsCleanState；TestP7RealStdioLifecycleAndFailureIsolation, TestP7ConfigurationFailureAndDisabledNoSideEffects, TestP7MCPAndFiveModuleSearchPostgres。外部失败不阻止注册表建立；外部MCP开关与个人只读服务/模型独立，非法配置仍拒绝"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/confirmation/McpConfirmationSummaryTest.java:15": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 summaryIsDeterministic；TestP7SummaryAndDisabledConfirmation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。服务端依据payload生成，键排序前三个、换行/80 UTF16/省略统计"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/confirmation/McpConfirmationSummaryTest.java:34": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 atMostThreeArguments；TestP7SummaryAndDisabledConfirmation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。服务端依据payload生成，键排序前三个、换行/80 UTF16/省略统计"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/confirmation/McpConfirmationSummaryTest.java:49": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 longValuesAreTruncated；TestP7SummaryAndDisabledConfirmation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。服务端依据payload生成，键排序前三个、换行/80 UTF16/省略统计"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/confirmation/McpConfirmationSummaryTest.java:64": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 noArgumentsMeansNoArgsSection；TestP7SummaryAndDisabledConfirmation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。服务端依据payload生成，键排序前三个、换行/80 UTF16/省略统计"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/server/PersonalMcpExposureTest.java:21": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/platform/auth/mcp_test.go",
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 exposesOnlyPersonalReadOnlyTools；TestP7PersonalProtocolReadOnlyCatalogAndIndependentSwitch, TestP7CustomMCPExemptionKeepsAuthenticationAndOtherCSRF, TestP7MCPAndFiveModuleSearchPostgres。真实HTTP协商与四个工具调用；独立开关、只读注解、禁递归/写工具、认证不豁免"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/status/McpStatusServiceTest.java:28": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldWireStatusServiceWithConfiguredPersonalServer；TestP7HTTPHeadersAndRedactedFailureStatus, TestP7PersonalProtocolReadOnlyCatalogAndIndependentSwitch。状态/禁用/故障只显示受控文案，不泄露环境/命令/请求头/端点凭据"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/status/McpStatusServiceTest.java:63": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldReportDisabledWithoutRegistry；TestP7HTTPHeadersAndRedactedFailureStatus, TestP7PersonalProtocolReadOnlyCatalogAndIndependentSwitch。状态/禁用/故障只显示受控文案，不泄露环境/命令/请求头/端点凭据"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/status/McpStatusServiceTest.java:74": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldReportServerStatus；TestP7HTTPHeadersAndRedactedFailureStatus, TestP7PersonalProtocolReadOnlyCatalogAndIndependentSwitch。状态/禁用/故障只显示受控文案，不泄露环境/命令/请求头/端点凭据"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/status/McpStatusServiceTest.java:100": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldReportUnknownWhenRegistryMissing；TestP7HTTPHeadersAndRedactedFailureStatus, TestP7PersonalProtocolReadOnlyCatalogAndIndependentSwitch。状态/禁用/故障只显示受控文案，不泄露环境/命令/请求头/端点凭据"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/status/McpStatusServiceTest.java:112": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 shouldNotLeakSecrets；TestP7HTTPHeadersAndRedactedFailureStatus, TestP7PersonalProtocolReadOnlyCatalogAndIndependentSwitch。状态/禁用/故障只显示受控文案，不泄露环境/命令/请求头/端点凭据"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolCallbackProviderTest.java:47": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 validSchemaIsUsable；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。运行时对齐Spring adapter归一化后的object/properties；原hasUsableSchema是对归一化结果的防御检查，不把其原始JSON输入与SDK转换前输入混为同一层"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolCallbackProviderTest.java:57": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 nonObjectTypeIsRejected；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。运行时对齐Spring adapter归一化后的object/properties；原hasUsableSchema是对归一化结果的防御检查，不把其原始JSON输入与SDK转换前输入混为同一层"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolCallbackProviderTest.java:64": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 missingPropertiesIsRejected；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。运行时对齐Spring adapter归一化后的object/properties；原hasUsableSchema是对归一化结果的防御检查，不把其原始JSON输入与SDK转换前输入混为同一层"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolCallbackProviderTest.java:73": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 blankOrBrokenJsonIsRejected；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。运行时对齐Spring adapter归一化后的object/properties；原hasUsableSchema是对归一化结果的防御检查，不把其原始JSON输入与SDK转换前输入混为同一层"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolNamingTest.java:15": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 prefixedNameJoinsServerAndTool；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。前缀/清洗/空名/100字符/两种冲突，包含Locale.ROOT Unicode差分"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolNamingTest.java:21": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 sanitizeReplacesInvalidChars；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。前缀/清洗/空名/100字符/两种冲突，包含Locale.ROOT Unicode差分"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolNamingTest.java:29": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 blankNamesFallBackToUnknown；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。前缀/清洗/空名/100字符/两种冲突，包含Locale.ROOT Unicode差分"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolNamingTest.java:36": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 longNamesAreTruncated；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。前缀/清洗/空名/100字符/两种冲突，包含Locale.ROOT Unicode差分"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolNamingTest.java:45": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 conflictsDetectsBothKinds；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。前缀/清洗/空名/100字符/两种冲突，包含Locale.ROOT Unicode差分"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolPolicyTest.java:14": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 listedToolIsAuto；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。仅原始名称精确命中只读清单为AUTO，其余CONFIRM"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolPolicyTest.java:21": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 unlistedToolIsConfirm；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。仅原始名称精确命中只读清单为AUTO，其余CONFIRM"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolPolicyTest.java:28": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 emptyOrNullListMeansAllConfirm；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。仅原始名称精确命中只读清单为AUTO，其余CONFIRM"
+    },
+    "test:backend/src/test/java/com/personalos/mcp/tool/McpToolPolicyTest.java:35": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/oracle_test.go",
+        "specs/033-go-rewrite/p7-completion.md",
+        "specs/033-go-rewrite/p7-test-mapping.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "原声明 matchesOriginalNameNotAssembled；TestP7NamesPolicyAndSchema, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。仅原始名称精确命中只读清单为AUTO，其余CONFIRM"
     }
   },
   "release_gates": {

@@ -462,3 +462,13 @@ Alternatives considered：仅解析配置不实际接线；忽略清理开关；
 Decision：采用官方 `github.com/modelcontextprotocol/go-sdk` v1.8.0，固定go.mod/go.sum；用SDK的CommandTransport管理stdio子进程、StreamableClientTransport管理HTTP客户端、StreamableHTTPHandler提供独立只读入口。应用保留命名/冲突、默认CONFIRM、显式AUTO名单、持久确认/审计、调用预算、失联降级和代际安全重连；不把SDK客户端直接交给模型。连接和调用都有期限，HTTP无自动业务重试，退出关闭全部连接。原MCP配置的stdio语义不变；HTTP通过显式附加端点配置启用，不推测命令为URL。原四个对外工具通过独立清单注册，不能递归转售Agent或外部工具。依赖许可证随固定模块保存于backend-go/licenses。
 
 Alternatives considered：自行实现JSON-RPC/SSE/stdio帧及取消（协议与生命周期维护风险）；复用Java代理（引入双运行时）；将全部外部工具标成AUTO（破坏确认边界）。均未采用。只在显式P7模式装配，后续P8发布守卫保留。
+
+## R-052 P7 快照导出与原子空库恢复
+
+Decision：五模块贡献器共享一个只读REPEATABLE READ事务，顶层和嵌套列表200条分页直接写JSON；counts从实际写出条数累计。不能给每页单独事务，否则并发新增/修改会令备份混入不同数据库时刻。真实库在第一批flush后并发修改全部任务并新增记录，剩余批次仍输出原快照。
+
+导入先以原10表判断空库，在事务外生成并校验嵌入，再以SHARE ROW EXCLUSIVE锁及第二次空库校验保护完整写事务；业务行、向量、来源和空间共享提交/回滚。真实并发写入/两次导入、嵌入失败、来源校验失败及重复ID约束均有反证；约束仅按SQLSTATE 23映射409。20MiB限制覆盖声明长度及分块正文。导入恢复的是原导出职责，消息引用、附件文件、摘要和派生提醒按Java边界留空，不代替生产备份切换。
+
+固定Java源码差分发现Jackson UUID绑定比UUID.fromString更严格；导入使用规范UUID，URL参数继续既有宽松行为。精确字段名与String/Integer/Boolean标量转换复用既有绑定辅助，避免Go JSON大小写宽松匹配导致版本校验旁路。Locale.ROOT小写用x/text处理İ/希腊词尾等展开；不把strings.ToLower假定成Java字符串规则。14个原源码的哈希、35个导入场景及MCP/搜索契约均保存在P7夹具。
+
+Alternatives considered：将全部导出聚成内存对象（长会话/大文档峰值无界）；每页独立快照（并发不一致）；持有写事务等待模型（占锁）；只检查一次空库（嵌入期间可混入普通写入）；把导入拆成各模块独立事务（部分恢复）。均未采用。

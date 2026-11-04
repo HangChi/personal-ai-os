@@ -25,7 +25,7 @@
 
 错误码测试使用从固定 Java 提交提取的 [快照](internal/platform/api/testdata/java-error-codes.json)，不从 Go 实现生成期望值。模型路径另有实际运行 Java 得到的 216 项对照快照；其他测试覆盖分页边界、角色矩阵、请求 ID 并发隔离、限流边界以及诊断的未就绪行为。
 
-默认命令仍仅装配离线诊断；显式`--foundation`已接P1基础能力、P2任务/确认、P3模型与P4对话路由。844个基础HTTP场景、160个原观测标签场景和68个直方图边界通过真实框架对照。完整P1边界见[P1契约](../specs/033-go-rewrite/p1-foundation-contract.md)，78处配置调用方见[台账](../specs/033-go-rewrite/config-disposition.md)。加 `--p5` 启用记忆、日历、提醒扫描、SSE 与投递；`--p6` 包含 P5 并启用知识模块。MCP 和跨模块数据交换归 P7。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
+默认命令仍仅装配离线诊断；显式`--foundation`已接P1基础能力、P2任务/确认、P3模型与P4对话路由。844个基础HTTP场景、160个原观测标签场景和68个直方图边界通过真实框架对照。完整P1边界见[P1契约](../specs/033-go-rewrite/p1-foundation-contract.md)，78处配置调用方见[台账](../specs/033-go-rewrite/config-disposition.md)。加 `--p5` 启用记忆、日历、提醒扫描、SSE 与投递；`--p6` 包含 P5 并启用知识模块；`--p7` 包含 P6 并接入MCP、五模块搜索和流式导出/空库导入。固定依赖及许可证见[声明](THIRD_PARTY_NOTICES.md)；首次构建需`go mod download`，完整缓存后可离线验证。
 
 - `internal/business/model`：配置/档案/密钥、运行时按名继承、OpenAI/Ollama协议、探测/音频、本地与Redis嵌入缓存，见[说明](internal/business/model/README.md)。
 
@@ -93,6 +93,8 @@ python3 scripts/migration/run_go_postgres_tests.py
 
 P6 四设施及固定 Java 契约复验：`python3 scripts/migration/compare_go_p6.py`。需要 Docker、已有 Maven 编译输出与 classpath，以及 Go/镜像缓存；只创建临时测试资源。结果记录 18 组受控召回/引用、SQL 延迟和队列收敛；不代表真实模型语义质量或生产性能，见[P6 验收](../specs/033-go-rewrite/p6-completion.md)。
 
+P7 固定Java契约：`python3 scripts/migration/java_p7_fixture.py`；真实TLS数据库往返/并发确认/快照导出：`python3 scripts/migration/run_go_postgres_tests.py --package app --tls --run '^TestP7'`。MCP协议模拟器使用真实stdio子进程和Streamable HTTP，见[P7验收](../specs/033-go-rewrite/p7-completion.md)。
+
 基础依赖、五角色生命周期及已启用的 P5/P6 Worker 已验收；生产切换归 P8，详见[验证记录](../specs/033-go-rewrite/validation.md)。
 
 ## 接下来实施
@@ -101,7 +103,9 @@ P6 见 [验收报告](../specs/033-go-rewrite/p6-completion.md) 和 [原测试�
 
 ## 显式 P1 基础模式（尚未验收发布）
 
-使用 `personalos --foundation --migrations /absolute/backend/src/main/resources/db/migration` 启动。加 `--p5` 启用记忆、日历和提醒模块；加 `--p6` 同时启用 P5 与知识模块，候选 Redis 使用独立客户端和 `GO_REDIS_CANDIDATE_ROOT_CERT` CA。
+使用 `personalos --foundation --migrations /absolute/backend/src/main/resources/db/migration` 启动。加 `--p5` 启用记忆、日历和提醒模块；加 `--p6` 同时启用 P5 与知识模块，候选 Redis 使用独立客户端和 `GO_REDIS_CANDIDATE_ROOT_CERT` CA；加 `--p7` 同时启用P6与MCP/全局搜索/数据交换。
+
+外部MCP默认关闭；stdio沿用`mcp.servers.<name>`，HTTP使用`mcp.http-servers.<name>.endpoint/headers/auto-tools/connect-timeout`。只有明确列入原名`auto-tools`的只读工具自动调用，其他工具先申请确认。个人只读协议入口由独立的`spring.ai.mcp.server.enabled`开启；认证仍生效，只对精确协议端点豁免CSRF。导入上限20MiB，仅支持空库；知识按原分块重新嵌入，引用快照/附件二进制等恢复边界见验收报告。
 必须在专用环境显式设置 `SERVER_PORT`、`POSTGRES_HOST`、`POSTGRES_PORT`、`POSTGRES_DB`、`POSTGRES_USER`、`POSTGRES_PASSWORD`，不能使用 YAML 连接默认值。不自动执行、baseline 或 repair SQL；需要先由独立 Java Flyway 完成原迁移。已有真实默认 V1 基线历史时才加 `--allow-baseline-v1`。
 
 数据库实际读取解析后的 `spring.datasource.*`，支持单主机 JDBC TCP 地址和显式端口，不接受查询参数或多主机。默认 TLS `verify-full`；`GO_POSTGRES_ROOT_CERT` 指向测试 CA，回环明文测试需显式 `GO_POSTGRES_SSL_MODE=disable`。绝不为测试关闭非回环 TLS 校验。

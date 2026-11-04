@@ -1,8 +1,8 @@
-# 配置调用方逐项处置（P1/P3/P4/P5/P6收口）
+# 配置调用方逐项处置（P1/P3/P4/P5/P6/P7收口）
 
 固定Java基线：`cb5d694d62fa93742b5789b97273e76d931ce335`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。
 
-12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge已接P6，MCP属于P7；不创建业务空壳。
+12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge已接P6，MCP已接P7。外部客户端关闭时不展开未使用的server占位符；对外服务使用独立spring.ai.mcp.server.*配置。
 
 | 来源与行号 | 原表达式/键 | 阶段/任务 | 状态与处置 |
 | --- | --- | --- | --- |
@@ -70,10 +70,10 @@
 | `backend/src/main/java/com/personalos/knowledge/service/RedisCandidateCache.java:31` | `${app.redis.namespace}` | P6/T607 | wired：独立客户端/namespace/全部动态指纹已接20秒TTL与generation失效；真实TLS Redis隔离和故障回源通过 |
 | `backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java:41` | `${spring.ai.vectorstore.pgvector.table-name:vector_store}` | P6/T601 | wired：schema/table已接标识符白名单、实际维度与权限检查；原42迁移/JSON/表达式索引/HNSW保留 |
 | `backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java:42` | `${spring.ai.vectorstore.pgvector.schema-name:public}` | P6/T601 | wired：schema/table已接标识符白名单、实际维度与权限检查；原42迁移/JSON/表达式索引/HNSW保留 |
-| `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:40` | `${spring.ai.mcp.server.enabled:false}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
-| `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:41` | `${spring.ai.mcp.server.name:personal-ai-os}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
-| `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:42` | `${spring.ai.mcp.server.version:0.1.0}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
-| `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:43` | `${spring.ai.mcp.server.streamable-http.mcp-endpoint:/mcp}` | P7/T702 | deferred：对外MCP开关/名称/版本/端点随协议入口迁移 |
+| `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:40` | `${spring.ai.mcp.server.enabled:false}` | P7/T702 | wired：独立对外MCP开关/名称/版本/精确端点已接Foundation/认证CSRF与真实四工具HTTP协议；外部客户端开关互不影响 |
+| `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:41` | `${spring.ai.mcp.server.name:personal-ai-os}` | P7/T702 | wired：独立对外MCP开关/名称/版本/精确端点已接Foundation/认证CSRF与真实四工具HTTP协议；外部客户端开关互不影响 |
+| `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:42` | `${spring.ai.mcp.server.version:0.1.0}` | P7/T702 | wired：独立对外MCP开关/名称/版本/精确端点已接Foundation/认证CSRF与真实四工具HTTP协议；外部客户端开关互不影响 |
+| `backend/src/main/java/com/personalos/mcp/status/McpStatusService.java:43` | `${spring.ai.mcp.server.streamable-http.mcp-endpoint:/mcp}` | P7/T702 | wired：独立对外MCP开关/名称/版本/精确端点已接Foundation/认证CSRF与真实四工具HTTP协议；外部客户端开关互不影响 |
 | `backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java:51` | `${spring.ai.openai.embedding.model:}` | P5/T501 | wired：模型名已接记忆向量写入、同模型排序、近重复取代和回填 |
 | `backend/src/main/java/com/personalos/memory/service/MemoryEmbeddingService.java:52` | `${spring.ai.ollama.embedding.model:}` | P5/T501 | wired：模型名已接记忆向量写入、同模型排序、近重复取代和回填 |
 | `backend/src/main/java/com/personalos/common/ai/cache/EmbeddingCacheConfig.java:21` | `app.embedding-cache.enabled` | P3/T304 | wired：默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器 |

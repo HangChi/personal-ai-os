@@ -579,3 +579,17 @@ T600–T609 全部完成，`--foundation --p6` 包含P5，启用知识摄入/原
 - 前端 `npm run type-check`、`npm run build`通过，源码未改。19项Python迁移测试、78配置处置、固定基线check和`git diff --check`通过；工具ID无路径时依清单source path更新，覆盖247项并验证其他阶段/发布门禁状态不变。`check-complete`仍预期退出1：2438项未verified，五个发布门禁均not_started。P7/P8未勾选，prod拒绝/回环监听/readyz503守卫保持，未推送、合并或部署。
 
 实现按批提交：`849c625`解析切分、`375e964`原子索引/队列、`2b7f3b8`混合召回/缓存、`08fec91`投影/唤醒、`a90a702`RAG/治理、`2e2960b`角色/HTTP/聊天、`35bf3f7`Java契约、`3944d29`调度/崩溃回归、`6a1415d`稳定快照复验、`3433374`工具/台账回归；台账与文档另作收口提交。
+
+## P7 MCP、搜索与数据交换（2026-11-04）
+
+T700–T704已完成；T705的定向P7验收通过，全量基础回归正在最后复验。职责/安全边界见 [p7-completion.md](p7-completion.md)，原Java15类72声明见 [p7-test-mapping.md](p7-test-mapping.md)。150个源/测试文件、路由、工具、钩子及测试声明条目记录为implemented，未新增verified；四处个人MCP配置调用为wired，总78项台账通过，其他阶段及五门禁状态不变。
+
+- 官方SDK v1.8.0固定协议2025-06-18，真实stdio/Streamable HTTP握手、发现、调用、超时进程回收、状态脱敏、重连旧会话隔离/关闭不可复活；默认CONFIRM、显式原名只读名单AUTO、共同Agent预算/审计/幂等。个人协议入口独立开关、四个只读工具、精确CSRF例外但认证仍生效，禁止递归导出Agent/外部工具。
+- `python3 scripts/migration/run_go_postgres_tests.py --package app --tls --run '^TestP7'` 最终六个顶层测试全部通过race；原42迁移真实Flyway双执行器竞争、validate和再次零执行通过，独立TLS PostgreSQL/pgvector容器已清理。405任务/标签、2会话/406消息、206块与向量的导出→空库恢复→搜索通过；保存任务previousStatus、记忆置顶/17次命中/最后使用与替代链、来源空间/版本/范围/有效期。嵌入无业务锁、失败整笔回滚、并发写入二次空库校验、双导入只成功一次、分页导出单快照、空库/待索引拒绝与脏行回落均通过。日志：`/tmp/personalos-p7-postgres-final.log`。
+- 真实HTTP对话/模型协议实际包含MCP工具；AUTO工具结果和CONFIRM状态进入模型下一轮上下文。外部写确认前零调用，重连后12个并发HTTP确认只执行一次，数据库两条相应工具审计。坏MCP参数回退空对象后仍经过预算/审计；预算耗尽不调用、不创建确认。
+- `python3 scripts/migration/java_p7_fixture.py` 连续生成/比较通过，固定14个Java源码SHA-256。Go逐项对照9命名/5策略/4冲突/6摘要/8LIKE模式/7聚合搜索/4个人工具元数据/35导入场景。发现并修复导入UUID必须符合Jackson规范格式、精确字段名/标量转换，以及Locale.ROOT小写展开边界；URL原有宽松UUID参数不改。日志：`/tmp/personalos-p7-oracle-recheck.log`、`/tmp/personalos-p7-contracts-final.log`。
+- Java定向77测试零失败/错误/跳过、JaCoCo通过。全量 `./mvnw -o -B -Dspring.test.context.cache.maxSize=2 verify` 执行1137测试，3失败集中在McpDegradedStartupIntegrationTest的子进程工具目录未连接；其余1134项通过。随后停止并发Go全量负载，单独 `-Dtest=McpDegradedStartupIntegrationTest verify` 3测试全部通过、JaCoCo/BUILD SUCCESS。没有改Java源码、跳测试或降低门禁，不将首轮全量描述为一次全绿。日志：`/tmp/personalos-p7-java-targeted.log`、`/tmp/personalos-p7-java-all.log`、`/tmp/personalos-p7-java-retry.log`。
+- 首轮Go全量race除app外全部包通过；app三组原基础Servlet对照的若干登录超过固定5秒客户端期限。最终改为GOMAXPROCS=4、`-p 1`串行全包复验，结果另补。定向P7 race、integration编译/vet、build/mod verify通过。20MiB输入/不读超限正文、chunked兜底、写出失败及HEAD/协商已覆盖。
+- 前端type-check/build通过，源码未改。22项Python迁移测试、78项配置默认比较、固定1093文件/104路由/27工具/95钩子/1119测试声明基线检查及diff检查通过；check-complete预期退出1，2438项尚未verified，五门禁均not_started。没有推送、合并、部署或启动P8。
+
+已分批提交：`eb0fc87`、`39ed122`、`aa52bb7`、`5df00b0`、`a51612f`、`d95d34f`；任务/配置/逐声明证据台账另作提交。默认诊断、prod拒绝、回环监听和readyz503继续保留。

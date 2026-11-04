@@ -1112,12 +1112,16 @@
       "expression": "${spring.ai.mcp.server.enabled:false}",
       "phase": "P7",
       "task": "T702",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "对外MCP开关/名称/版本/端点随协议入口迁移",
+      "note": "独立对外MCP开关/名称/版本/精确端点已接Foundation/认证CSRF与真实四工具HTTP协议；外部客户端开关互不影响",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java"
+        "backend-go/internal/business/mcp/config.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/platform/auth/mcp_test.go",
+        "backend-go/internal/app/foundation_p7.go",
+        "specs/033-go-rewrite/p7-completion.md"
       ]
     },
     {
@@ -1127,12 +1131,16 @@
       "expression": "${spring.ai.mcp.server.name:personal-ai-os}",
       "phase": "P7",
       "task": "T702",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "对外MCP开关/名称/版本/端点随协议入口迁移",
+      "note": "独立对外MCP开关/名称/版本/精确端点已接Foundation/认证CSRF与真实四工具HTTP协议；外部客户端开关互不影响",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java"
+        "backend-go/internal/business/mcp/config.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/platform/auth/mcp_test.go",
+        "backend-go/internal/app/foundation_p7.go",
+        "specs/033-go-rewrite/p7-completion.md"
       ]
     },
     {
@@ -1142,12 +1150,16 @@
       "expression": "${spring.ai.mcp.server.version:0.1.0}",
       "phase": "P7",
       "task": "T702",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "对外MCP开关/名称/版本/端点随协议入口迁移",
+      "note": "独立对外MCP开关/名称/版本/精确端点已接Foundation/认证CSRF与真实四工具HTTP协议；外部客户端开关互不影响",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java"
+        "backend-go/internal/business/mcp/config.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/platform/auth/mcp_test.go",
+        "backend-go/internal/app/foundation_p7.go",
+        "specs/033-go-rewrite/p7-completion.md"
       ]
     },
     {
@@ -1157,12 +1169,16 @@
       "expression": "${spring.ai.mcp.server.streamable-http.mcp-endpoint:/mcp}",
       "phase": "P7",
       "task": "T702",
-      "status": "deferred",
+      "status": "wired",
       "dynamic_keys": [],
-      "note": "对外MCP开关/名称/版本/端点随协议入口迁移",
+      "note": "独立对外MCP开关/名称/版本/精确端点已接Foundation/认证CSRF与真实四工具HTTP协议；外部客户端开关互不影响",
       "evidence": [
-        "specs/033-go-rewrite/tasks.md",
-        "backend/src/main/java/com/personalos/mcp/status/McpStatusService.java"
+        "backend-go/internal/business/mcp/config.go",
+        "backend-go/internal/business/mcp/personal.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/platform/auth/mcp_test.go",
+        "backend-go/internal/app/foundation_p7.go",
+        "specs/033-go-rewrite/p7-completion.md"
       ]
     },
     {

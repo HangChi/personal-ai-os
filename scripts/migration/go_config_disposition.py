@@ -40,7 +40,7 @@ RULES = {
     "SearchConfig.java": ("P6", "T603", "可选OpenSearch端点/index/认证已接真实召回/版本投影；积压和故障回退PostgreSQL"),
     "RedisCandidateCache.java": ("P6", "T607", "独立客户端/namespace/全部动态指纹已接20秒TTL与generation失效；真实TLS Redis隔离和故障回源通过"),
     "VectorStoreInspector.java": ("P6", "T601", "schema/table已接标识符白名单、实际维度与权限检查；原42迁移/JSON/表达式索引/HNSW保留"),
-    "McpStatusService.java": ("P7", "T702", "对外MCP开关/名称/版本/端点随协议入口迁移"),
+    "McpStatusService.java": ("P7", "T702", "独立对外MCP开关/名称/版本/精确端点已接Foundation/认证CSRF与真实四工具HTTP协议；外部客户端开关互不影响"),
     "MemoryEmbeddingService.java": ("P5", "T501", "模型名已接记忆向量写入、同模型排序、近重复取代和回填"),
     "EmbeddingCacheConfig.java": ("P3", "T304", "默认观测/显式缓存、容量/TTL/模型选项指纹及Redis共享已接真实嵌入适配器"),
     "MonitoringSecurityConfig.java": ("P1", "T108", "local.management.port由独立监听器结构保证；不依据用户Host/转发头授予管理权限"),
@@ -89,6 +89,12 @@ P6_EVIDENCE = {
                          "T607": "cache.go"}.items()
 }
 
+P7_EVIDENCE = {
+    "T702": ["backend-go/internal/business/mcp/config.go", "backend-go/internal/business/mcp/personal.go",
+             "backend-go/internal/business/mcp/personal_test.go", "backend-go/internal/platform/auth/mcp_test.go",
+             "backend-go/internal/app/foundation_p7.go", "specs/033-go-rewrite/p7-completion.md"],
+}
+
 def source_dynamic_keys(filename, source):
     """只展开已审查的固定基线形态；必须逐项相等，不能仅验证子集。"""
     mask = masked_java(source)
@@ -126,7 +132,7 @@ def generate():
     inventory_path = SPEC / "config-inventory.json"
     inventory = json.loads(inventory_path.read_text())
     rows, used = [], set()
-    phase_evidence = {"P1": P1_EVIDENCE, "P3": P3_EVIDENCE, "P4": P4_EVIDENCE, "P5": P5_EVIDENCE, "P6": P6_EVIDENCE}
+    phase_evidence = {"P1": P1_EVIDENCE, "P3": P3_EVIDENCE, "P4": P4_EVIDENCE, "P5": P5_EVIDENCE, "P6": P6_EVIDENCE, "P7": P7_EVIDENCE}
     for kind in ("value_injections", "property_lookups"):
         for entry in inventory[kind]:
             filename = Path(entry["path"]).name
@@ -152,8 +158,8 @@ def generate():
 
 
 def render(data):
-    lines = ["# 配置调用方逐项处置（P1/P3/P4/P5/P6收口）", "", "固定Java基线：`" + data["baseline_commit"] + "`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。", "",
-             "12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge已接P6，MCP属于P7；不创建业务空壳。", "",
+    lines = ["# 配置调用方逐项处置（P1/P3/P4/P5/P6/P7收口）", "", "固定Java基线：`" + data["baseline_commit"] + "`。70处@Value与8处getProperty全部列出；wired只表示所列阶段的该调用方已装配，deferred是明确的后续业务任务，不表示已实现。", "",
+             "12类record的全部67字段已有真实Binder对照。Auth/RateLimit/App进入P1组合；Agent/Plan/Context/Protection及AI提示/预算已接P4，AI模型配置/协议已接P3，Calendar/Memory已接P5，Knowledge已接P6，MCP已接P7。外部客户端关闭时不展开未使用的server占位符；对外服务使用独立spring.ai.mcp.server.*配置。", "",
              "| 来源与行号 | 原表达式/键 | 阶段/任务 | 状态与处置 |", "| --- | --- | --- | --- |"]
     for row in data["items"]:
         key = row.get("expression") or row.get("literal_key") or "动态：" + ", ".join(row["dynamic_keys"])

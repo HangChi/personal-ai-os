@@ -11,7 +11,7 @@ class ConfigDispositionTest(unittest.TestCase):
         self.assertEqual(len(data["items"]), 78)
         self.assertEqual(sum(row["kind"] == "value_injections" for row in data["items"]), 70)
         self.assertEqual(sum(row["kind"] == "property_lookups" for row in data["items"]), 8)
-        self.assertTrue(all(row["phase"] in {"P1", "P3", "P4", "P5", "P6"} or row["status"] == "deferred" for row in data["items"]))
+        self.assertTrue(all(row["phase"] in {"P1", "P3", "P4", "P5", "P6", "P7"} or row["status"] == "deferred" for row in data["items"]))
 
     def test_unknown_or_unused_source_rule_fails(self):
         for rules in [dict(subject.RULES, **{"Unreviewed.java": ("P1", "T104", "invalid")}),
@@ -58,4 +58,12 @@ class ConfigDispositionTest(unittest.TestCase):
         self.assertEqual({row["task"] for row in rows}, {"T601", "T602", "T603", "T604", "T605", "T606", "T607"})
         self.assertTrue(all(row["status"] == "wired" for row in rows))
         with patch.object(subject, "P6_EVIDENCE", dict(subject.P6_EVIDENCE, T607=["backend-go/missing-p6-evidence"])), self.assertRaises(ValueError):
+            subject.generate()
+
+    def test_p7_independent_server_settings_and_missing_evidence(self):
+        rows = [row for row in subject.generate()["items"] if row["phase"] == "P7"]
+        self.assertEqual(len(rows), 4)
+        self.assertEqual({row["task"] for row in rows}, {"T702"})
+        self.assertTrue(all(row["status"] == "wired" for row in rows))
+        with patch.object(subject, "P7_EVIDENCE", {"T702": ["backend-go/missing-p7-evidence"]}), self.assertRaises(ValueError):
             subject.generate()
