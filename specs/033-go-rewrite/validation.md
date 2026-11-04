@@ -1,5 +1,15 @@
 # 验证记录
 
+## 2026-11-04 P8 完整语料真实模型检索与多阶段单题
+
+最终台账复验曾因迁移审计测试仍要求说明包含“16篇/10篇”而失败（127项中1项，`/tmp/personalos-p8-python-full-corpus-audit.log`）。已将该迁移测试改为核对完整26篇/129题、零缺材料、质量未批准、128题多阶段未执行及完整来源/报告证据；原Java、原评估题目/标注/算法断言均未修改。重新完整运行127项通过（4.637s，`/tmp/personalos-p8-python-full-corpus-audit-final.log`），旧失败日志保留。固定基线/78配置/144声明映射/全文件派生台账及diff检查通过，条目状态和五门禁与前次提交逐项相同；`check-complete`仍实际退出1，2438项未verified。无Go生产实现变更，无本次测试容器残留。
+
+`run_go_real_eval_tests.py --model-env-file /Volumes/WD770/Project/personal-ai-os/.env --downloaded-corpus-dir /private/tmp/personalos-p8-rendered-QR4ALY/full-corpus`实际退出0：报告`p8-eval-real-20261104-232203.json`，日志`/tmp/personalos-p8-real-full-corpus-1.log`。每端新随机TLS库/原42迁移/认证CSRF、26篇241向量及真实Java格式模型输入SHA核验；原129题零排除、两次传统问答/精确持久引用及50次pure-vector噪声请求完整完成。426 embedding/5 chat，296584 total tokens，无上游失败/重试；停机连接归零、本次容器清理。
+
+两端R@5同0.968992/各四条miss，严格MRR Go0.901421/Java0.900775，原0.007判平MRR Go0.907623/Java0.908915。复核`p8-real-model-review-20261104-232203.json`明确`FULL_CURRENT_CORPUS_EXECUTED_QUALITY_NOT_APPROVED`；不能用严格Go略高掩盖判平Go略低，三条严格名次差和共同四miss原样保留，不改标注/阈值或重试挑选结果。来源全文已齐，历史快照身份和人工事实/完整RAG/Agent质量未批准。`ccd2619`及时提交本轮报告/独立复核。
+
+同一完整语料另以`--mode multistage`实际退出0，`p8-eval-real-20261104-232433.json`、`/tmp/personalos-p8-real-full-multistage-1.log`：每端BRIN单题READY/四阶段OK/零warning/四次前台chat/一条持久引用，明确另128道材料齐备题未执行、零排除；后台审查仅在隔离进程关闭。70 embedding/9 chat、327369 total tokens、无上游失败/重试且本次资源清理；不能代替完整多阶段或129题检索。`44b8a2a`及时提交报告与严格/判平双向退化保护回归；完整127项Python测试通过（4.000s，`/tmp/personalos-p8-python-full-corpus-final.log`）。本批无生产Go变更，不重复未变的长Go回归，五发布门禁不升级。
+
 ## 2026-11-04 P8 完整26篇原清单材料
 
 直接抓取最后四篇仍在首项无正文后停止（`/tmp/personalos-p8-juejin-final-four-1.log`，退出2），正常浏览器观察到四个原URL/canonical及完整正文容器后只读导出，没有验证码/登录/保护绕过。新离线准备工具使用固定原提取器校验来源收据/HTML哈希/标题/时间和显式路径；合并22+4时拒绝重叠ID，保留原字节/时间/哈希并回读。最终26篇210264字符，原129查询完整材料、零排除；四篇新增41053字符。正文私有，来源证据`p8-corpus-complete-20261104-231937.json`，新目录`/private/tmp/personalos-p8-rendered-QR4ALY/full-corpus`。

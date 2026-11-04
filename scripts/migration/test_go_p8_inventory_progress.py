@@ -22,8 +22,13 @@ class P8InventoryDispositionTest(unittest.TestCase):
             entry = after["items"]["file:" + path]
             self.assertIn("scripts/migration/fetch_go_juejin_corpus.py", entry["evidence"])
             self.assertIn("specs/033-go-rewrite/p8-eval-juejin-20261104-212152.json", entry["evidence"])
-            self.assertIn("16篇", entry["note"])
-            self.assertIn("10篇", entry["note"])
+            self.assertIn("完整当前26篇/129原查询", entry["note"])
+            self.assertIn("零缺材料", entry["note"])
+            self.assertIn("质量未批准", entry["note"])
+            self.assertIn("另128题未执行", entry["note"])
+            self.assertIn("specs/033-go-rewrite/p8-corpus-complete-20261104-231937.json", entry["evidence"])
+            self.assertIn("specs/033-go-rewrite/p8-eval-real-20261104-232203.json", entry["evidence"])
+            self.assertIn("specs/033-go-rewrite/p8-real-model-review-20261104-232203.json", entry["evidence"])
             self.assertIn("specs/033-go-rewrite/p8-real-model-review.json", entry["evidence"])
         for group in ("java_test_cases", "tools"):
             for entry in self.inventory[group]:

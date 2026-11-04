@@ -161,6 +161,9 @@ def disposition(entry, old):
     if path.startswith("scripts/eval/"):
         public_evidence = ["scripts/migration/fetch_go_juejin_corpus.py",
                            "scripts/migration/test_go_juejin_corpus.py",
+                           "scripts/migration/prepare_go_juejin_corpus.py",
+                           "scripts/migration/test_prepare_go_juejin_corpus.py",
+                           "specs/033-go-rewrite/p8-corpus-complete-20261104-231937.json",
                            "scripts/migration/run_go_eval_tests.py",
                            "specs/033-go-rewrite/p8-eval-juejin-20261104-212152.json",
                            "scripts/migration/run_go_real_eval_tests.py",
@@ -169,13 +172,17 @@ def disposition(entry, old):
                            "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
                            "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
                            "specs/033-go-rewrite/p8-eval-real-20261104-230340.json",
+                           "specs/033-go-rewrite/p8-eval-real-20261104-232203.json",
+                           "specs/033-go-rewrite/p8-real-model-review-20261104-232203.json",
+                           "specs/033-go-rewrite/p8-eval-real-20261104-232433.json",
                            "specs/033-go-rewrite/p8-real-model-review.json"]
         negative_note = "补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
+        full_note = "完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。完整库BRIN多阶段四次调用/引用通过，另128题未执行、零缺材料；历史快照身份/人工事实/完整RAG与Agent/后台审查仍开放，五门禁保持。"
         if path == "scripts/eval/fetch-corpus-juejin.py":
-            return "in_progress", "retained-live-evaluation-open", public_evidence, "原提取器固定SHA复用，用户授权后独立采集器按原清单取得16篇公开正文并记录来源/时间/哈希，第17篇无有效正文即停。全文仅本地，未操作原fetch/main；已用获准真实模型跑两端84查询子集，仍缺10篇、历史快照/标注认证及完整质量验收。"
+            return "in_progress", "retained-live-evaluation-open", public_evidence, "原提取器固定SHA复用；16篇直接抓取、6篇补取及4篇正常浏览器呈现DOM经来源收据/哈希校验后完整26篇已齐，全文仅私有目录，不冒充原始HTTP或历史快照。原fetch/main未操作；原查询/标注本来在仓库，不再缺10篇或45题材料。" + full_note
         if path in {"scripts/eval/queries.py", "scripts/eval/rebuild-corpus.py", "scripts/eval/retrieval-eval.py", "scripts/eval/noise-floor.py"}:
-            return "in_progress", "retained-live-evaluation-open", ["scripts/migration/go_eval_adapter.py", "scripts/migration/test_go_eval_adapter.py", "specs/033-go-rewrite/p8-eval-tooling.json", "specs/033-go-rewrite/p8-upload-binding.json"] + public_evidence, "原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。另双端BRIN单题多阶段流程/四次前台调用/引用通过，其余83道齐备题未跑。仍缺10篇/45查询、历史认证/人工事实与完整多阶段RAG验收，严格退化不被PASS掩盖，五门禁保持。" + negative_note
-        return "in_progress", "retained-live-evaluation-open", ["scripts/migration/compare_go_p6.py", "specs/033-go-rewrite/p6-eval-results.json"] + public_evidence, "原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。" + negative_note
+            return "in_progress", "retained-live-evaluation-open", ["scripts/migration/go_eval_adapter.py", "scripts/migration/test_go_eval_adapter.py", "specs/033-go-rewrite/p8-eval-tooling.json", "specs/033-go-rewrite/p8-upload-binding.json"] + public_evidence, "原26标题/129查询及评估算法固定SHA不改，Go长文分批/Java默认EMBED元数据格式已修复。旧子集严格退化/原判平一致及全部失败报告保留，不与新全量混成一次通过。" + full_note + negative_note
+        return "in_progress", "retained-live-evaluation-open", ["scripts/migration/compare_go_p6.py", "specs/033-go-rewrite/p6-eval-results.json"] + public_evidence, "原在线评估工具保留；全检索执行不替代Agent/完整多阶段RAG/后台审查及人工事实验收。" + full_note + negative_note
     if path.startswith("scripts/e2e/reports/"):
         return "implemented", "retained-historical-report", ["specs/033-go-rewrite/p8-e2e/README.md"], "原Java历史报告按哈希保留，只作历史资料，不冒充本次Go结果。"
     if category == "sql_migration":
