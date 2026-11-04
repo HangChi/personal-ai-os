@@ -1,6 +1,6 @@
 # P8 全量验收与运维进度
 
-2026-11-04：P8实施中，T800–T808父项尚未收口。固定Java基线继续为`cb5d694d62fa93742b5789b97273e76d931ce335`。五个发布门禁未verified；frontend_e2e已开始并保留未通过记录，所有清单条目不自动升级verified。现有Java部署与SQL保留；没有自动推送、合并、生产部署或删除Java目录。
+2026-11-04：P8实施中，T800–T806及T808父项尚未收口，T807文档已完成。固定Java基线继续为`cb5d694d62fa93742b5789b97273e76d931ce335`。五个发布门禁未verified；frontend_e2e已开始并保留未通过记录，所有清单条目不自动升级verified。现有Java部署与SQL保留；没有自动推送、合并、生产部署或删除Java目录。
 
 ## 实施顺序
 
@@ -82,6 +82,14 @@ Go和原前端Web候选镜像均实际构建成功。第一次Go构建的Debian 
 监控批次已提交`dfd1eaf`。原suite新一轮80通过/1失败/1跳过/2观察；唯一预算失败在固定Java同现。原E2E取消曾SKIP，实际差分定位并修复legacy客户端取消误存半截助手消息；明确HTTP关闭与上游断连两端均PASS，Go定向真实TLS库race覆盖双流心跳、Run读者断连与恢复（7.312s）。持久Run断连不取消后台任务的策略保持。
 
 真实Chrome验证登录/任务CRUD/聊天SSE/附件/知识后台索引/导出，10页三宽度共30截图无横向溢出或控制台错误，另3张工作流截图。抽看桌面对话、手机对话及知识页。fixture最初不足350字符的索引失败如实保留，修正测试文本后通过。详情与复验命令见[p8-e2e/README.md](p8-e2e/README.md)。T802父项仍开放，不把同基线预算失败或saveMemory跳过当通过。
+
+## T802b Push失败阶段与隐私诊断
+
+Push runner补充明确stage、35秒CDP命令上限、仅白名单连接状态与日志行数的GCM诊断；两项Node纯单测验证不输出设备/订阅标识/密钥/日志正文以及未知状态脱敏，CI只加入纯单测。订阅30秒/控制3秒/真实送达15秒期限均不变；诊断移到订阅/本地控制之后，Go投递分支改用新TLS库，但最新复验未到该分支，不宣称TLS投递已通过。
+
+新增两轮冷profile都在订阅30秒期限失败，未启动Go数据库或投递FCM。首轮订阅前的GCM记录只得到空连接状态，不能定位原因；调整诊断次序后仍在相同订阅阶段失败。两报告及日志见[p8-e2e/README.md](p8-e2e/README.md)，旧FCM接受/真实送达失败报告保留，所有本次Chrome/profile已清理。不能据此推断防火墙/平台/解密根因，T802与五发布门禁不升级；原saveMemory case两分支均SkipCase的事实也已在E2E说明澄清。
+
+提交前57项Python单测（`/tmp/personalos-p8-python-final-gcm.log`）和2项Node脱敏单测、JS语法、固定基线/两派生映射/workflow YAML/diff检查通过。最终`check-complete`仍实际退出1（`/tmp/personalos-p8-check-complete-with-demo-gcm.log`），2438项均未verified、五发布门禁未验证；当前2415implemented、23in_progress，没有把失败或缺材料的职责自动升级。
 
 ## T804a 真实设施与隔离备份回归
 

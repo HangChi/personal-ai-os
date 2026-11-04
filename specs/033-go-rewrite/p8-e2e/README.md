@@ -8,7 +8,7 @@
 
 唯一FAIL是G4的小预算2048抬下限后，首轮约1900字输入被安全预算拒绝（SSE业务码41301）。相同模型fixture在固定Java基线执行G0–G4，`java/e2e-20261104-164859.json`为39 PASS / 同一项1 FAIL。两端均在第0轮拒绝；没有降低安全估算、改原断言或把失败转PASS。这是原测试与当前基线安全预算的冲突，T802父项和frontend_e2e门禁仍开放，接受例外或更改预算契约须明确审查。
 
-剩余SKIP是saveMemory：fixture没有调用该工具，未实际验证此条原E2E；P5的真实工具/自动记忆测试另有证据。两个NOTE为原suite的观察项。fixture只根据实际收到的历史/资料/附件与工具返回选择响应，单测使用不同值并验证缺上下文不能回答；不读数据库或期望报告。词袋嵌入与模拟usage不是生产模型语义/tokenizer验收。RAG关闭只走legacy路径，多阶段RAG见P6四设施回归。
+剩余SKIP是saveMemory观察项：原case在没有写入或有工具写入的两个分支都会抛SkipCase，不能靠调整fixture把它变成PASS；本轮fixture没有调用该工具，未实际验证此条原E2E。P5的真实工具/自动记忆测试另有证据。两个NOTE为原suite的观察项。fixture只根据实际收到的历史/资料/附件与工具返回选择响应，单测使用不同值并验证缺上下文不能回答；不读数据库或期望报告。词袋嵌入与模拟usage不是生产模型语义/tokenizer验收。RAG关闭只走legacy路径，多阶段RAG见P6四设施回归。
 
 ## 客户端取消差分
 
@@ -39,3 +39,7 @@ python3 scripts/migration/run_go_e2e_tests.py --mode browser
 `node scripts/migration/chrome_p5_web_push.mjs --report specs/033-go-rewrite/p8-e2e/push-go.json`两轮诊断仍未通过；第二轮Go实际投递测试0.48s通过、FCM接受，但原15秒期限内无真实push事件。CDP合成push控制消息成功触发同一Worker、回传并显示通知，notificationErrors/workerErrors均0，唯一一次pushEvents来自控制消息。该控制明确绕过FCM/加密，只排查本地Worker与回传路径，不能替代真实送达证据，不能据此断言FCM通道或解密的具体故障原因。
 
 报告只记录布尔/计数，不包含订阅URL、浏览器密钥或VAPID私钥；临时profile/合成密钥/数据库已删除。日志`/tmp/personalos-p8-browser-push-diagnostic.log`与`/tmp/personalos-p8-browser-push-diagnostic-2.log`保留，T802/发布门禁继续开放。
+
+新增`chrome_push_diagnostics.mjs`只采集临时profile的GCM连接状态白名单/记录开关/接收与解密失败行数，不返回设备ID、注册ID、地址、密钥或日志正文。两项Node单测覆盖脱敏和不可用状态，候选CI执行纯单测。runner记录失败阶段、限制CDP命令35秒；原订阅30秒、本地控制3秒和真实送达15秒期限不变。新诊断只在订阅/控制之后开启，避免改变订阅前置条件；Go投递分支改用新TLS数据库，但最新两轮没有执行到该分支，不能记为TLS投递通过。
+
+2026-11-04新增两轮冷profile复验均在PushManager.subscribe的30秒期限失败，尚未创建Go测试数据库或向FCM投递。第一轮曾在订阅前开启GCM记录，取得的连接状态为空、计数为0，不足以定位原因，报告保留为`push-go-gcm-subscription-timeout.json`；调整诊断顺序后仍在订阅阶段超时，`push-go-gcm.json`明确stage=SUBSCRIPTION、platformAccepted=false、realPushDelivered=false。日志`/tmp/personalos-p8-browser-push-gcm-1.log`与`/tmp/personalos-p8-browser-push-gcm-2.log`保留，临时Chrome/profile已清理；不将此轮混同早先“平台接受但未送达”的结果，也不能据此断言防火墙、FCM或解密的具体故障。

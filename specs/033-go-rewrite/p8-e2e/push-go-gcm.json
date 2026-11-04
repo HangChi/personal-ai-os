@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-04T10:37:19.811Z",
+  "result": "FAIL",
+  "stage": "SUBSCRIPTION",
+  "platformAccepted": false,
+  "realPushDelivered": false,
+  "realDeliveryDeadlineMs": 15000,
+  "controlReceived": false,
+  "pushEvents": 0,
+  "notificationErrors": 0,
+  "workerErrors": 0,
+  "controlScope": "CDP synthetic push bypasses FCM and encryption; it verifies only the disposable worker and callback."
+}

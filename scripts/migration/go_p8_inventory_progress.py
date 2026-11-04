@@ -154,7 +154,7 @@ def disposition(entry, old):
     if path in PRODUCTION:
         return "in_progress", "production-gate-open", ["backend-go/deploy/compose.prod.yml", "backend-go/deploy/Caddyfile.prod"], "候选配置/原安全校验已有；无生产TLS/续期/人工批准，prod拒绝与readyz503保持。"
     if path in PUSH:
-        return "in_progress", "real-push-unreceived", ["specs/033-go-rewrite/p8-e2e/push-go.json", "specs/033-go-rewrite/p8-e2e/README.md"], "原源码/单测保持；FCM接受但15秒内无真实push事件，synthetic控制通过不能替代真实送达。"
+        return "in_progress", "real-push-unreceived", ["specs/033-go-rewrite/p8-e2e/push-go.json", "specs/033-go-rewrite/p8-e2e/push-go-gcm.json", "specs/033-go-rewrite/p8-e2e/README.md"], "原源码/单测保持；早先FCM接受但15秒内无真实push，最新冷profile在30秒订阅阶段超时、未到Go投递。无充分连接/解密诊断，不推断根因；synthetic控制不替代真实送达。"
     if path in OPERATIONS:
         status, evidence, note = ASSETS[OPERATIONS[path]]
         return status, "explicit-asset-adaptation", evidence, note

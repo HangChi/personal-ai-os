@@ -629,3 +629,7 @@ T803g全清单职责审计已记录1093原文件哈希/处置，57个基础/测�
 T801e原演示七组配方隔离适配完成：四安全单测通过；第二轮新随机TLS库/Flyway/app监听race及认证Go回读任务8/标签16/日程6/文档向量4/记忆5置顶2/会话5消息10/31天用量161/审计9全部通过，停机连接归零并清理本次资源。日志`/tmp/personalos-p8-demo-seed-2.log`，首轮验证器读取列表形状错误的失败保留；未改原API/配方。当前2415implemented、23in_progress、零verified与五门禁不变；原main/reset禁止，详情见P8进度与`p8-demo-seed.json`。
 
 演示适配提交前全部57项迁移Python单测通过（`/tmp/personalos-p8-python-with-demo.log`）；固定基线/78配置/派生审计、workflow YAML解析和diff检查通过，无Go生产源码变更。
+
+T802b新增Push阶段/有界CDP/GCM脱敏诊断，两项Node纯单测与语法检查通过；两轮冷profile复验均在订阅30秒期限失败，最新报告stage=SUBSCRIPTION、未到Go投递。首轮空连接诊断不推断根因，原FCM接受但15秒未送达的失败保留；没有放宽期限或把控制测试当送达。证据/日志与原saveMemory case恒为观察跳过的说明见`p8-e2e/README.md`，T802及五门禁继续开放。
+
+最终57项Python单测（`/tmp/personalos-p8-python-final-gcm.log`）、2项Node脱敏单测、JS语法/固定基线/两派生映射/workflow YAML/diff检查通过；`check-complete`实际退出1（`/tmp/personalos-p8-check-complete-with-demo-gcm.log`）。2415implemented、23in_progress、零verified，五发布门禁未验证，未据失败或缺材料自动升级。

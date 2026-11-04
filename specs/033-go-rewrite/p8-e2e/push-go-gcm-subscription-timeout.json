@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-04T10:36:05.377Z",
+  "result": "FAIL",
+  "platformAccepted": false,
+  "realPushDelivered": false,
+  "realDeliveryDeadlineMs": 15000,
+  "controlReceived": false,
+  "pushEvents": 0,
+  "notificationErrors": 0,
+  "workerErrors": 0,
+  "gcmRecordingStarted": true,
+  "gcm": {
+    "available": false,
+    "connectionState": null,
+    "recording": true,
+    "connectionLogRows": 0,
+    "receivedLogRows": 0,
+    "decryptionFailureRows": 0
+  },
+  "controlScope": "CDP synthetic push bypasses FCM and encryption; it verifies only the disposable worker and callback."
+}

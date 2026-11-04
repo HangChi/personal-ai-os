@@ -26743,9 +26743,10 @@
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-e2e/push-go-gcm.json"
       ],
-      "note": "P8职责处置：原源码/单测保持；FCM接受但15秒内无真实push事件，synthetic控制通过不能替代真实送达。"
+      "note": "P8职责处置：原源码/单测保持；早先FCM接受但15秒内无真实push，最新冷profile在30秒订阅阶段超时、未到Go投递。无充分连接/解密诊断，不推断根因；synthetic控制不替代真实送达。"
     },
     "file:frontend/src/App.vue": {
       "status": "implemented",
@@ -27810,9 +27811,10 @@
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-e2e/push-go-gcm.json"
       ],
-      "note": "P8职责处置：原源码/单测保持；FCM接受但15秒内无真实push事件，synthetic控制通过不能替代真实送达。"
+      "note": "P8职责处置：原源码/单测保持；早先FCM接受但15秒内无真实push，最新冷profile在30秒订阅阶段超时、未到Go投递。无充分连接/解密诊断，不推断根因；synthetic控制不替代真实送达。"
     },
     "file:frontend/src/router/index.ts": {
       "status": "implemented",
@@ -28679,9 +28681,10 @@
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-e2e/push-go-gcm.json"
       ],
-      "note": "P8职责处置：原源码/单测保持；FCM接受但15秒内无真实push事件，synthetic控制通过不能替代真实送达。"
+      "note": "P8职责处置：原源码/单测保持；早先FCM接受但15秒内无真实push，最新冷profile在30秒订阅阶段超时、未到Go投递。无充分连接/解密诊断，不推断根因；synthetic控制不替代真实送达。"
     },
     "file:frontend/test/confirm.test.mjs": {
       "status": "implemented",
@@ -28888,9 +28891,10 @@
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-e2e/push-go-gcm.json"
       ],
-      "note": "P8职责处置：原源码/单测保持；FCM接受但15秒内无真实push事件，synthetic控制通过不能替代真实送达。"
+      "note": "P8职责处置：原源码/单测保持；早先FCM接受但15秒内无真实push，最新冷profile在30秒订阅阶段超时、未到Go投递。无充分连接/解密诊断，不推断根因；synthetic控制不替代真实送达。"
     },
     "file:frontend/test/session-group.test.mjs": {
       "status": "implemented",
