@@ -14,6 +14,7 @@ def review(path):
     raw = path.read_bytes()
     report = json.loads(raw)
     if (report.get("result") != "PASS" or report.get("synthetic_model") is not False
+            or report.get("mode", "retrieval") != "retrieval"
             or report.get("configured_real_model_used") is not True
             or set(report.get("backends", {})) != {"go", "java"}
             or report.get("real_model_requests", {}).get("failures")):

@@ -20,10 +20,11 @@ class RealEvaluationReviewTest(unittest.TestCase):
         source = json.loads((SPEC / "p8-eval-real-20261104-222729.json").read_text())
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "report.json"
-            for field in ("result", "synthetic", "failure", "metrics", "annotations"):
+            for field in ("result", "synthetic", "mode", "failure", "metrics", "annotations"):
                 report = json.loads(json.dumps(source))
                 if field == "result": report["result"] = "FAIL"
                 elif field == "synthetic": report["synthetic_model"] = True
+                elif field == "mode": report["mode"] = "multistage"
                 elif field == "failure": report["real_model_requests"]["failures"] = {"UPSTREAM_HTTP_400": 1}
                 elif field == "metrics": report["backends"]["go"]["metrics"]["mrr"] = 1
                 else: report["backends"]["go"]["query_results"][0]["docs"] = ["weakened"]

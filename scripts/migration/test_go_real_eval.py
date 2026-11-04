@@ -2,7 +2,7 @@ import copy
 import hashlib
 import unittest
 
-from run_go_real_eval_tests import check_answer, comparison, metrics
+from run_go_real_eval_tests import check_answer, check_multistage, comparison, metrics
 
 
 class RealEvaluationTest(unittest.TestCase):
@@ -76,6 +76,20 @@ class RealEvaluationTest(unittest.TestCase):
         self.assertTrue(result["original_tied_quality_not_lower"])
         self.assertEqual(result["go_minus_java"]["mrr"], -.5)
         self.assertFalse(result["release_gate_approved"])
+
+    def test_multistage_requires_all_real_stages_no_warnings_and_four_calls(self):
+        response = dict(retrieval=dict(status="READY", warnings=[], stages=[
+            dict(name=name, status="OK", durationMs=1) for name in ("recall", "rewrite", "rerank", "evidence")]))
+        self.assertEqual(check_multistage(response, 4)["status"], "READY")
+        self.assertFalse(check_multistage(response, 4)["factual_quality_manually_approved"])
+        for field in ("status", "warning", "stage", "missing", "calls"):
+            altered = copy.deepcopy(response)
+            if field == "status": altered["retrieval"]["status"] = "UNVERIFIED"
+            elif field == "warning": altered["retrieval"]["warnings"].append("fallback")
+            elif field == "stage": altered["retrieval"]["stages"][1]["status"] = "FALLBACK"
+            elif field == "missing": altered["retrieval"]["stages"].pop()
+            with self.subTest(field=field), self.assertRaises(AssertionError):
+                check_multistage(altered, 3 if field == "calls" else 4)
 
 
 if __name__ == "__main__":

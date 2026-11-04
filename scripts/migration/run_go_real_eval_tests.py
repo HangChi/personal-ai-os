@@ -80,14 +80,32 @@ def check_answer(response, expected, uploaded, stored):
                 acceptable_document_cited=True, factual_quality_manually_approved=False)
 
 
-def exercise(container, fixture, backend, binary, relay, relay_values, downloaded, artifact_dir, progress):
+def check_multistage(response, actual_chat_calls):
+    retrieval = response.get("retrieval", {})
+    stages = retrieval.get("stages", [])
+    if (retrieval.get("status") != "READY" or retrieval.get("warnings")
+            or [(row.get("name"), row.get("status")) for row in stages] !=
+               [(name, "OK") for name in ("recall", "rewrite", "rerank", "evidence")]
+            or actual_chat_calls != 4):
+        raise AssertionError("Real multistage RAG was guarded, degraded or lacked four actual model calls")
+    return dict(status="READY", stages=[dict(name=row["name"], status=row["status"],
+                                              duration_ms=row["durationMs"]) for row in stages],
+                warnings=0, actual_chat_calls=actual_chat_calls,
+                factual_quality_manually_approved=False)
+
+
+def exercise(container, fixture, backend, binary, relay, relay_values, downloaded, artifact_dir, progress, mode="retrieval"):
     database = OwnedDatabase(container, fixture)
     database.require_empty()
     modules, hashes = original_modules()
     documents, manifest = downloaded
     queries = query_subset(modules["queries.py"].QUERIES, documents)
     result = progress
-    result.update(backend=backend, result="IN_PROGRESS", documents=len(documents), queries=len(queries),
+    multistage = mode == "multistage"
+    result.update(backend=backend, result="IN_PROGRESS", documents=len(documents),
+                  queries=1 if multistage else len(queries), eligible_original_queries=len(queries), mode=mode,
+                  unexecuted_eligible_queries=len(queries) - 1 if multistage else 0,
+                  background_ingestion_review_enabled=False,
                   excluded_queries=len(modules["queries.py"].QUERIES) - len(queries), sources_sha256=hashes,
                   stage="starting")
     with tempfile.TemporaryDirectory(prefix="personalos-p8-real-" + backend + "-") as temporary:
@@ -101,7 +119,8 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
                       AI_CHAT_UPLOAD_DIR=str(directory / "uploads"), APP_CONTEXT_SUMMARY_ENABLED="false",
                       APP_CONTEXT_AUTOMEMORY_ENABLED="false", APP_MEMORY_BACKFILL_ENABLED="false",
                       AI_CALENDAR_SCAN_ENABLED="false", MCP_ENABLED="false", SPRING_AI_MCP_SERVER_ENABLED="false",
-                      AI_CHAT_PROVIDER="openai", AI_EMBEDDING_PROVIDER="openai", RAG_ENABLED="false",
+                      AI_CHAT_PROVIDER="openai", AI_EMBEDDING_PROVIDER="openai", RAG_ENABLED=str(multistage).lower(),
+                      APP_KNOWLEDGE_RAG_INGESTION_REVIEW_ENABLED="false",
                       EMBEDDING_CACHE_ENABLED="false", RAG_CANDIDATE_CACHE_ENABLED="false",
                       AI_KNOWLEDGE_HYBRID_ENABLED="true")
         values.update(relay_values)
@@ -118,57 +137,68 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
                 modules["rebuild-corpus.py"].upload(post, title)
                 result["uploaded_documents"] = position
                 print(backend + ": uploaded real article " + str(position) + "/" + str(len(documents)), flush=True)
-            expected_hashes = None
+            result["stage"] = "ingestion_verification"
             rows = json.loads(database.sql("SELECT json_agg(x) FROM (SELECT content,metadata FROM vector_store) x;"))
             expected_hashes, result["embedding_format_oracle"] = embedding_hashes(rows)
             result["embedding_input_format"] = "Spring-AI-2.0.1-MetadataMode.EMBED"
             result["ingestion"] = verify_ingestion(client.request("/knowledge/documents"), documents,
                                                    adapter.uploaded, database,
                                                    relay.embedding_receipts() - receipts_before, expected_hashes)
-            result["stage"] = "hybrid"
-            retrieval = modules["retrieval-eval.py"]
-            retrieval.QUERIES = queries
-            rows = retrieval.evaluate()
-            if len(rows) != len(queries) or adapter.search_calls != len(queries):
-                raise AssertionError("Real model evaluation query coverage changed")
-            summary = io.StringIO()
-            with contextlib.redirect_stdout(summary):
-                retrieval.summarize(rows, "REAL_" + backend.upper())
-            result.update(metrics=metrics(rows), query_results=rows, summary=summary.getvalue().strip(),
-                          by_level={level: metrics([row for row in rows if row["level"] == level])
-                                    for level in sorted({row["level"] for row in rows})},
-                          hybrid_search_calls=adapter.search_calls)
+            if not multistage:
+                result["stage"] = "hybrid"
+                retrieval = modules["retrieval-eval.py"]
+                retrieval.QUERIES = queries
+                rows = retrieval.evaluate()
+                if len(rows) != len(queries) or adapter.search_calls != len(queries):
+                    raise AssertionError("Real model evaluation query coverage changed")
+                summary = io.StringIO()
+                with contextlib.redirect_stdout(summary):
+                    retrieval.summarize(rows, "REAL_" + backend.upper())
+                result.update(metrics=metrics(rows), query_results=rows, summary=summary.getvalue().strip(),
+                              by_level={level: metrics([row for row in rows if row["level"] == level])
+                                        for level in sorted({row["level"] for row in rows})},
+                              hybrid_search_calls=adapter.search_calls)
             stored_rows = json.loads(database.sql(
                 "SELECT json_agg(x) FROM (SELECT metadata->>'document_id' AS id,"
                 "(metadata->>'chunk_index')::int AS index,"
                 "encode(sha256(convert_to(content,'UTF8')),'hex') AS sha256 FROM vector_store) x;"))
             stored = {(row["id"], row["index"]): row["sha256"] for row in stored_rows}
             answers = []
-            result["stage"] = "knowledge_answers"
-            for question in QA_QUERIES:
+            result["stage"] = "multistage_answer" if multistage else "knowledge_answers"
+            for question in (QA_QUERIES[:1] if multistage else QA_QUERIES):
                 acceptable = next(row["docs"] for row in queries if row["q"] == question)
                 calls = relay.snapshot()["calls"].get("chat", 0)
                 response = client.request("/knowledge/ask", "POST", {"question": question, "topK": 5})
                 private_json(artifact_dir / (backend + "-answer-" + str(len(answers) + 1) + ".json"), response)
+                if multistage:
+                    result["multistage_observation"] = dict(
+                        status=response.get("retrieval", {}).get("status"),
+                        stages=[dict(name=row.get("name"), status=row.get("status"))
+                                for row in response.get("retrieval", {}).get("stages", [])],
+                        warning_count=len(response.get("retrieval", {}).get("warnings", [])),
+                        answered=response.get("answered"),
+                        actual_chat_calls=relay.snapshot()["calls"].get("chat", 0) - calls)
+                    result["multistage"] = check_multistage(response, result["multistage_observation"]["actual_chat_calls"])
                 check = check_answer(response, acceptable, adapter.uploaded, stored)
                 check.update(question=question, actual_chat_calls=relay.snapshot()["calls"].get("chat", 0) - calls)
-                if check["actual_chat_calls"] != 1:
+                if not multistage and check["actual_chat_calls"] != 1:
                     raise AssertionError("Legacy knowledge answer did not use exactly one real chat request")
                 answers.append(check)
                 print(backend + ": real answer and persisted citations verified " + str(len(answers)), flush=True)
             result["knowledge_answers"] = answers
-        values["AI_KNOWLEDGE_HYBRID_ENABLED"] = "false"
-        result["stage"] = "vector_noise"
-        with processes.candidate(directory, binary, values) as state:
-            client = Client(state, timeout=180)
-            client.login(values)
-            adapter.client = client
-            noise = io.StringIO()
-            with arguments(["noise-floor.py", "10", "5"]), contextlib.redirect_stdout(noise):
-                noise_result = modules["noise-floor.py"].main()
-            if noise_result != 0 or adapter.search_calls - len(queries) != 50:
-                raise AssertionError("Real model pure-vector noise sampling did not finish")
-            result.update(vector_noise_search_calls=50, observed_noise=noise.getvalue().strip())
+        if not multistage:
+            values["AI_KNOWLEDGE_HYBRID_ENABLED"] = "false"
+            result["stage"] = "vector_noise"
+            with processes.candidate(directory, binary, values) as state:
+                client = Client(state, timeout=180)
+                client.login(values)
+                adapter.client = client
+                noise = io.StringIO()
+                with arguments(["noise-floor.py", "10", "5"]), contextlib.redirect_stdout(noise):
+                    noise_result = modules["noise-floor.py"].main()
+                if noise_result != 0 or adapter.search_calls - len(queries) != 50:
+                    raise AssertionError("Real model pure-vector noise sampling did not finish")
+                result.update(vector_noise_search_calls=50, observed_noise=noise.getvalue().strip())
         if database.sql("SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid();") != "0":
             raise AssertionError("Real evaluation retained application database connections")
         for path in directory.rglob("*.log"):
@@ -177,9 +207,10 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
         latencies = sorted(adapter.latencies)
         result.update(result="PASS", processes_stopped=True, database_connections_after_stop=0,
                       stage="complete",
-                      real_model_before=before, real_model_after=relay.snapshot(),
-                      search_latency_ms=dict(samples=len(latencies), p50=latencies[len(latencies) // 2],
-                                             p95=latencies[min(len(latencies) - 1, int(len(latencies) * .95))]))
+                      real_model_before=before, real_model_after=relay.snapshot())
+        if latencies:
+            result["search_latency_ms"] = dict(samples=len(latencies), p50=latencies[len(latencies) // 2],
+                                                p95=latencies[min(len(latencies) - 1, int(len(latencies) * .95))])
     return result
 
 
@@ -215,6 +246,7 @@ def main():
     parser.add_argument("--model-env-file", required=True, type=Path, help="Only explicitly authorized model keys are loaded")
     parser.add_argument("--downloaded-corpus-dir", required=True, type=Path)
     parser.add_argument("--backend", choices=("both", "go", "java"), default="both")
+    parser.add_argument("--mode", choices=("retrieval", "multistage"), default="retrieval")
     args = parser.parse_args()
     config = load_config(args.model_env_file)
     with pooled_transport(config) as opener:
@@ -231,12 +263,13 @@ def run(args, config, opener):
     report_path = SPEC / ("p8-eval-real-" + stamp + ".json")
     report = dict(result="IN_PROGRESS", started_at=datetime.now(timezone.utc).isoformat(),
                   configured_real_model_used=True, synthetic_model=False, model=model.config.metadata(),
-                  acquisition=downloaded[1], backends={}, selected_backend=args.backend,
+                  acquisition=downloaded[1], backends={}, selected_backend=args.backend, mode=args.mode,
                   private_answer_evidence=str(artifact_dir),
                   semantic_quality_verified=False, release_gates_changed=False,
                   limits="16-document subset of fresh public pages, not authenticated historical 26-article corpus. "
-                         "Independent live model calls can have noise. Legacy knowledge QA only; multistage RAG, "
-                         "factual answer review and full production acceptance remain separate. No existing DB, "
+                         "Independent live model calls can have noise. Retrieval mode uses legacy QA; "
+                         "multistage mode probes one original question without replacing the full retrieval suite. "
+                         "Factual answer review and full production acceptance remain separate. No existing DB, "
                          "production mutation, automatic release approval or synthetic fallback.")
     code = 1
     try:
@@ -257,11 +290,11 @@ def run(args, config, opener):
                 def run_backend(container, fixture):
                     progress = report["backends"].setdefault(backend, {})
                     report["backends"][backend] = exercise(container, fixture, backend, binary, model,
-                                                          relay_values, downloaded, artifact_dir, progress)
+                                                          relay_values, downloaded, artifact_dir, progress, args.mode)
                 run_package(IMAGE, "app", tls_mode=True, test_pattern="^TestP8ContainerListenerBoundary$",
                             exercise=run_backend)
                 print("Real model " + backend + " subset completed", flush=True)
-            if args.backend == "both":
+            if args.backend == "both" and args.mode == "retrieval":
                 report["comparison"] = comparison(report["backends"])
         if model.snapshot()["failures"]:
             raise AssertionError("Real model upstream failures were observed")
