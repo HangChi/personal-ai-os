@@ -11,6 +11,7 @@ import (
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 	"io"
 	"log/slog"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"personal-ai-os/backend-go/internal/business/dataexport"
@@ -95,6 +96,8 @@ func p7Seed(t *testing.T, f *Foundation) {
  INSERT INTO calendar_event(id,title,all_day,starts_at,ends_at,recurrence_type,reminder_lead_minutes,created_at,updated_at) VALUES('00000000-0000-0000-0000-000000000700','P7token event',false,'2026-11-04T09:00Z','2026-11-04T10:00Z','NONE',15,'2026-01-01Z','2026-01-01Z');
  INSERT INTO memory(id,content,content_hash,source,created_at,updated_at) VALUES('00000000-0000-0000-0000-000000000701','P7token old',repeat('a',64),'MANUAL','2026-01-01Z','2026-01-01Z'),('00000000-0000-0000-0000-000000000702','P7token current',repeat('b',64),'MANUAL','2026-01-01Z','2026-01-01Z');
  UPDATE memory SET superseded_by='00000000-0000-0000-0000-000000000702' WHERE id='00000000-0000-0000-0000-000000000701';
+ UPDATE memory SET pinned=true,hit_count=17,last_used_at='2026-10-03T10:00Z',updated_at='2026-10-03T10:00Z' WHERE id='00000000-0000-0000-0000-000000000702';
+ UPDATE task SET status='DONE',previous_status='DOING',priority='HIGH',completed_at='2026-10-01T10:00Z',due_at='2026-10-01T09:00Z',description='P7token restored state' WHERE title='P7token task 1';
  INSERT INTO knowledge_document(id,title,filename,content_type,size_bytes,char_count,chunk_count) VALUES('00000000-0000-0000-0000-000000000701','P7token doc','p7.md','text/markdown',10,100,205),('00000000-0000-0000-0000-000000000702','opaque','body.md','text/markdown',10,100,1);
  INSERT INTO vector_store(id,content,metadata,embedding) SELECT gen_random_uuid(),'P7token chunk '||i,json_build_object('document_id','00000000-0000-0000-0000-000000000701','document_title','P7token doc','filename','p7.md','chunk_index',i-1),('[1,'||repeat('0,',1022)||'0]')::vector FROM generate_series(1,205) i;
  INSERT INTO vector_store(id,content,metadata,embedding) VALUES(gen_random_uuid(),'P7token body',json_build_object('document_id','00000000-0000-0000-0000-000000000702','document_title','opaque','filename','body.md','chunk_index',0),('[1,'||repeat('0,',1022)||'0]')::vector);
@@ -176,6 +179,9 @@ func TestP7StreamingExportImportRoundTripPostgres(t *testing.T) {
 		t.Fatal(w.Code, w.Body.String())
 	}
 	raw := append([]byte{}, w.Body.Bytes()...)
+	if bytes.Contains(raw, []byte(`"embedding":`)) {
+		t.Fatal("export contains vector embeddings")
+	}
 	original := p7JSON(t, w)
 	if original["formatVersion"] != "1" || original["code"] != nil {
 		t.Fatal("export envelope", original)
@@ -216,16 +222,16 @@ func TestP7StreamingExportImportRoundTripPostgres(t *testing.T) {
 	if p7Count(t, f, "chat_message_citation") != 0 {
 		t.Fatal("derived citations unexpectedly restored")
 	}
-	var name, version string
+	var name, version, scope, effectiveFrom string
 	var pointers int
 	e := f.pool.WithConn(context.Background(), func(c *sql.Conn) error {
-		if e := c.QueryRowContext(context.Background(), `SELECT k.name,s.version FROM knowledge_source s JOIN knowledge_space k ON s.space_id=k.id WHERE document_id='00000000-0000-0000-0000-000000000701'`).Scan(&name, &version); e != nil {
+		if e := c.QueryRowContext(context.Background(), `SELECT k.name,s.version,s.scope,s.effective_from::text FROM knowledge_source s JOIN knowledge_space k ON s.space_id=k.id WHERE document_id='00000000-0000-0000-0000-000000000701'`).Scan(&name, &version, &scope, &effectiveFrom); e != nil {
 			return e
 		}
 		return c.QueryRowContext(context.Background(), `SELECT count(*) FROM memory WHERE superseded_by='00000000-0000-0000-0000-000000000702'`).Scan(&pointers)
 	})
-	if e != nil || name != "P7space" || version != "v7" || pointers != 1 {
-		t.Fatal(name, version, pointers, e)
+	if e != nil || name != "P7space" || version != "v7" || scope != "local" || effectiveFrom != "2026-01-01" || pointers != 1 {
+		t.Fatal(name, version, scope, effectiveFrom, pointers, e)
 	}
 	w = p7Request(t, f, "GET", "/api/v1/search?keyword=P7token", nil)
 	if w.Code != 200 || len(p7JSON(t, w)["data"].(map[string]any)["groups"].([]any)) != 5 {
@@ -324,5 +330,136 @@ func TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback(t *testing.T) 
 	w := p7Request(t, f, "POST", "/api/v1/import", raw)
 	if w.Code != 409 || p7Count(t, f, "task") != 0 {
 		t.Fatal("constraint failure did not roll back or map to 409", w.Code, w.Body.String())
+	}
+}
+
+func TestP7EmptyExportPendingJobsAndSanitizedImport(t *testing.T) {
+	f := p7Foundation(t, nil)
+	w := p7Request(t, f, "GET", "/api/v1/export", nil)
+	empty := p7JSON(t, w)
+	for _, key := range []string{"tasks", "sessions", "calendarEvents", "memories", "knowledgeDocuments"} {
+		if len(empty[key].([]any)) != 0 || empty["counts"].(map[string]any)[key] != float64(0) {
+			t.Fatal("empty export contract", empty)
+		}
+	}
+	appExec(t, f, `INSERT INTO knowledge_index_job(id,document_id,replacing,filename,digest) VALUES(gen_random_uuid(),gen_random_uuid(),false,'pending.md',repeat('a',64))`)
+	w = p7Request(t, f, "POST", "/api/v1/import", []byte(`{"formatVersion":"1"}`))
+	if w.Code != 409 || !strings.Contains(w.Body.String(), "knowledge_index_job=1") {
+		t.Fatal("pending index input ignored", w.Code, w.Body.String())
+	}
+	p7Clean(t, f)
+	raw := []byte(`{"formatVersion":"1","sessions":[{"session":{"conversationId":"p7-dirty","title":"","createdAt":"2026-01-01T00:00:00Z"},"messages":[{"role":"SYSTEM","content":"skip"},{"role":"USER","content":"keep","sequenceNo":2},{"role":" user ","content":"skip"}]}],"tasks":[{"id":"00000000-0000-0000-0000-000000000721","title":"fallback","status":"WHATEVER","priority":null},{"id":"00000000-0000-0000-0000-000000000722","title":" "}],"calendarEvents":[{"id":"00000000-0000-0000-0000-000000000723","title":"event","startsAt":"2026-01-01T00:00:00Z","recurrenceType":"INVALID"}]}`)
+	w = p7Request(t, f, "POST", "/api/v1/import", raw)
+	if w.Code != 200 {
+		t.Fatal(w.Code, w.Body.String())
+	}
+	data := p7JSON(t, w)["data"].(map[string]any)
+	if data["messages"] != float64(1) || data["tasks"] != float64(1) || data["calendarEvents"] != float64(1) {
+		t.Fatal(data)
+	}
+	exported := p7JSON(t, p7Request(t, f, "GET", "/api/v1/export", nil))
+	task := exported["tasks"].([]any)[0].(map[string]any)
+	session := exported["sessions"].([]any)[0].(map[string]any)["session"].(map[string]any)
+	event := exported["calendarEvents"].([]any)[0].(map[string]any)
+	if task["status"] != "TODO" || task["priority"] != "MEDIUM" || session["title"] != "导入的会话" || event["recurrenceType"] != "NONE" || event["reminderLeadMinutes"] != float64(15) {
+		t.Fatal(task, session, event)
+	}
+}
+
+func TestP7MCPChatHTTPAndPersistentConfirmation(t *testing.T) {
+	var reads, writes, returned atomic.Int32
+	remote := sdk.NewServer(&sdk.Implementation{Name: "p7-remote", Version: "1"}, nil)
+	for _, name := range []string{"read", "write"} {
+		remote.AddTool(&sdk.Tool{Name: name, InputSchema: map[string]any{"type": "object", "properties": map[string]any{}}}, func(context.Context, *sdk.CallToolRequest) (*sdk.CallToolResult, error) {
+			if name == "read" {
+				reads.Add(1)
+			} else {
+				writes.Add(1)
+			}
+			return &sdk.CallToolResult{Content: []sdk.Content{&sdk.TextContent{Text: "p7-" + name + "-result"}}}, nil
+		})
+	}
+	protocol := httptest.NewServer(sdk.NewStreamableHTTPHandler(func(*http.Request) *sdk.Server { return remote }, &sdk.StreamableHTTPOptions{Stateless: true, JSONResponse: true}))
+	defer protocol.Close()
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var request struct {
+			Messages []struct {
+				Role    string `json:"role"`
+				Content string `json:"content"`
+			} `json:"messages"`
+			Tools json.RawMessage `json:"tools"`
+		}
+		if e := json.NewDecoder(r.Body).Decode(&request); e != nil || len(request.Messages) == 0 {
+			t.Error("invalid model request", e)
+			http.Error(w, "fixture request", 400)
+			return
+		}
+		last := request.Messages[len(request.Messages)-1]
+		if last.Role == "tool" {
+			if !strings.Contains(last.Content, "p7-read-result") && !strings.Contains(last.Content, "REQUIRES_CONFIRMATION") {
+				t.Error("MCP result did not return to model context", last.Content)
+			}
+			returned.Add(1)
+			p4Text(w, "P7 MCP completed")
+			return
+		}
+		if !bytes.Contains(request.Tools, []byte("mcp_remote_read")) || !bytes.Contains(request.Tools, []byte("mcp_remote_write")) {
+			t.Error("MCP tools absent from actual model request")
+		}
+		name := "read"
+		if strings.Contains(last.Content, "write") {
+			name = "write"
+		}
+		p4Tool(w, "mcp_remote_"+name, `{}`)
+	}))
+	defer upstream.Close()
+	f := p7Foundation(t, map[string]string{"mcp.enabled": "true", "mcp.http-servers.remote.endpoint": protocol.URL, "mcp.http-servers.remote.auto-tools": "read", "mcp.http-servers.remote.connect-timeout": "5s", "spring.ai.openai.base-url": upstream.URL})
+	var writeConversation string
+	for _, name := range []string{"read", "write"} {
+		w := p7Request(t, f, "POST", "/api/v1/chat/sessions", []byte(`{"title":"P7 MCP"}`))
+		if w.Code != 201 {
+			t.Fatal(w.Code, w.Body.String())
+		}
+		id := p7JSON(t, w)["data"].(map[string]any)["conversationId"].(string)
+		if name == "write" {
+			writeConversation = id
+		}
+		body, _ := json.Marshal(map[string]any{"content": name, "useKnowledge": false})
+		w = p7Request(t, f, "POST", "/api/v1/chat/sessions/"+id+"/stream", body)
+		if w.Code != 200 || !strings.Contains(w.Body.String(), "event: done") || !strings.Contains(w.Body.String(), "P7 MCP completed") {
+			t.Fatal("actual MCP chat stream", w.Code, w.Body.String())
+		}
+	}
+	if reads.Load() != 1 || writes.Load() != 0 || returned.Load() != 2 || p7Count(t, f, "confirmation") != 1 {
+		t.Fatal("chat bypassed confirmation", reads.Load(), writes.Load(), returned.Load())
+	}
+	w := p7Request(t, f, "GET", "/api/v1/agent/confirmations?status=PENDING&conversationId="+writeConversation, nil)
+	items := p7JSON(t, w)["data"].([]any)
+	if len(items) != 1 {
+		t.Fatal(items)
+	}
+	item := items[0].(map[string]any)
+	if item["action"] != "MCP_TOOL_CALL" || !strings.Contains(item["summary"].(string), "server=remote") {
+		t.Fatal(item)
+	}
+	// The callback created before reconnect must resolve the replacement session.
+	w = p7Request(t, f, "POST", "/api/v1/mcp/servers/remote/reconnect", nil)
+	if w.Code != 200 {
+		t.Fatal(w.Code, w.Body.String())
+	}
+	var success atomic.Int32
+	var wg sync.WaitGroup
+	for range 12 {
+		wg.Go(func() {
+			body, _ := json.Marshal(map[string]any{"token": item["token"]})
+			response := p7Request(t, f, "POST", "/api/v1/agent/confirmations/"+item["id"].(string)+"/confirm", body)
+			if response.Code == 200 && p7JSON(t, response)["data"].(map[string]any)["executed"] == true {
+				success.Add(1)
+			}
+		})
+	}
+	wg.Wait()
+	if success.Load() != 1 || writes.Load() != 1 || p7Count(t, f, "operation_record") != 2 {
+		t.Fatal("persistent confirmation/audit repeated or missing", success.Load(), writes.Load(), p7Count(t, f, "operation_record"))
 	}
 }
