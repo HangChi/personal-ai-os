@@ -29148,14 +29148,17 @@
       "note": "P8职责处置：原模拟上游保留，Go隔离runner明确合成输入/模型；未连接用户模型。"
     },
     "file:scripts/dev/seed-demo-data.py": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/docs/development.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "scripts/migration/run_go_demo_seed_tests.py",
+        "scripts/migration/test_go_demo_seed.py",
+        "specs/033-go-rewrite/p8-demo-seed.json"
       ],
-      "note": "P8职责处置：原样保留人工演示种子脚本；未对现有库执行，合成回归不等于验收该工具对用户库的行为。"
+      "note": "P8职责处置：复用原七组配方，仅新随机TLS容器/空库/独立Go；认证CSRF、实际API/SQL回读、向量/状态/31天用量/审计及退出连接归零通过。禁止原main/reset，不操作现有库。"
     },
     "file:scripts/dev/test_backup.py": {
       "status": "implemented",

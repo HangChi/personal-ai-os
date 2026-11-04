@@ -107,6 +107,16 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 
 `python3 scripts/migration/run_go_local_tests.py --monitoring`实际通过：新TLS PostgreSQL下P8 race测试5.211s，五种本地角色启停与重复拒绝、三个并行Worker、UID65534只读Prometheus挂载公开file_sd并真实采集三个UP=1且role一致。停止后发现清空，原格式备份/隔离恢复/附件与Push密钥权限验证通过，仅清理本次资源。日志`/tmp/personalos-p8-local-monitor.log`。六项runtime脚本单测覆盖最小导出/权限/陈旧清空与危险路径拒绝。
 
+## T801e 原演示配方隔离适配
+
+新增`run_go_demo_seed_tests.py`，校验原脚本固定SHA后只调用原七个seed函数，不调用main/reset；HTTP通过本次随机Go的登录Cookie/CSRF，SQL通过本次随机TLS容器的stdin。写入前核对disposable标记、verify-full、固定fixture库/用户、容器标签/随机名称/回环端口和全部业务表为空；没有接受既有目标的CLI参数。四项单测覆盖危险目标在执行前拒绝、容器归属/绑定/非空拒绝、七函数且不能reset/越界HTTP，以及SQL目标/错误脱敏。
+
+`python3 scripts/migration/run_go_demo_seed_tests.py`第二轮完整通过（`/tmp/personalos-p8-demo-seed-2.log`）；原42迁移/Flyway复验与app监听边界race1.626s通过。真实Go回读8任务的状态/描述/优先级/16标签、6全天/重复日程、4同步摄入Markdown文档与4向量、5记忆/2置顶、5会话/10条精确有序消息、31天161条合成ACTUAL用量及9审计的5成功/2待确认/1拒绝/1失败。停止combined后连接归零，临时数据库/文件/进程已清理，脱敏报告见[p8-demo-seed.json](p8-demo-seed.json)。
+
+首轮种子写入已成功，但验证器把知识全量列表误当分页对象而失败；保留`/tmp/personalos-p8-demo-seed-1.log`，按原API修正验证器，并核对导出键calendarEvents，不改生产实现或原配方。候选CI加入同一隔离验证，未执行远端CI。全清单当前2415implemented、23in_progress、零verified，五门禁保持原状；本项不是用户库清空授权、真实token/模型质量或浏览器验收。
+
+本批提交前全部57项迁移Python单测通过（`/tmp/personalos-p8-python-with-demo.log`），固定基线/78配置/派生审计、workflow YAML解析及diff检查通过；没有Go生产源码变更，既有全包race证据保持，未重复无关长回归。
+
 ## T803a 确认事务补验
 
 审读固定Java ConfirmationTransactionTest八声明后发现，已有Go内存失败状态断言与真实库并发成功不足以证明失败标记独立提交。新增TestPostgresP8ConfirmationTransactionOutcomes：处理器运行中通过第二个池读取已提交CONFIRMED及resolved_at；业务错误/普通错误最终FAILED、缺失目标CANCELLED且无执行、成功影响3行、重复终态令牌均不再调用处理器；独立过期SQL压到过去后抛错仍保留EXPIRED与解决时间。只用本轮合成ID，没有全表清理。

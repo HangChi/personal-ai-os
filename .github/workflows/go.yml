@@ -76,6 +76,11 @@ jobs:
           set -o pipefail
           python3 scripts/migration/run_go_postgres_tests.py --tls --package task --package confirmation 2>&1 | tee "$RUNNER_TEMP/go-reports/postgres-business.log"
           python3 scripts/migration/run_go_postgres_tests.py --tls --package app --run '^TestP8' 2>&1 | tee "$RUNNER_TEMP/go-reports/postgres-p8.log"
+      - name: Unchanged demo recipe on a disposable Go fixture
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 scripts/migration/run_go_demo_seed_tests.py 2>&1 | tee "$RUNNER_TEMP/go-reports/demo-seed.log"
       - name: Upload candidate validation logs
         if: always()
         uses: actions/upload-artifact@v7

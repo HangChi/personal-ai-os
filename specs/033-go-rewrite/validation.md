@@ -625,3 +625,7 @@ T803f补齐剩余144声明逐项映射及25个来源测试文件证据，完整1
 T803g全清单职责审计已记录1093原文件哈希/处置，57个基础/测试辅助文件显式映射并补记两路由/14钩子；2414implemented、24in_progress，零新增verified/五门禁不变。三项审计单测通过，未映射Java/哈希漂移拒绝。原Agent评估器3纯单测通过，不冒充真实语料/模型评估；演示脚本默认清空现有库，未运行。未完成职责及逐文件处置见`p8-inventory-review.md`，T803父项仍开放。
 
 审计提交前最终53项迁移Python单测通过（`/tmp/personalos-p8-python-final.log`）；Go integration vet/build/mod verify、固定基线/78配置处置/两个P8派生映射检查、workflow YAML解析与diff检查通过。`go_inventory.py check-complete`实际退出1（`/tmp/personalos-p8-check-complete-final.log`），2438项未verified、五门禁未验证；未批量升级状态，T806/T808开放。此前全包串行race及真实TLS结果见上，本批无生产实现变更。
+
+T801e原演示七组配方隔离适配完成：四安全单测通过；第二轮新随机TLS库/Flyway/app监听race及认证Go回读任务8/标签16/日程6/文档向量4/记忆5置顶2/会话5消息10/31天用量161/审计9全部通过，停机连接归零并清理本次资源。日志`/tmp/personalos-p8-demo-seed-2.log`，首轮验证器读取列表形状错误的失败保留；未改原API/配方。当前2415implemented、23in_progress、零verified与五门禁不变；原main/reset禁止，详情见P8进度与`p8-demo-seed.json`。
+
+演示适配提交前全部57项迁移Python单测通过（`/tmp/personalos-p8-python-with-demo.log`）；固定基线/78配置/派生审计、workflow YAML解析和diff检查通过，无Go生产源码变更。

@@ -25,11 +25,14 @@ python3 scripts/migration/run_go_postgres_tests.py --tls
 python3 scripts/migration/run_go_redis_tests.py --tls --backup
 python3 scripts/migration/run_go_s3_tests.py
 python3 scripts/migration/compare_go_p6.py
+python3 scripts/migration/run_go_demo_seed_tests.py
 ```
 
 设施runner默认复用本机既有离线缓存。Linux/CI必须显式设置绝对路径`GO_TEST_GOCACHE`与`GO_TEST_GOPATH`，先用对应`GOCACHE`/`GOPATH`运行`go mod download`；子进程固定`GOPROXY=off`、`GOTOOLCHAIN=local`。Java Flyway oracle需要JDK21及原Maven依赖缓存，先在backend执行`./mvnw -B -DskipTests -Dapp.dotenv.enabled=false package`。不打印环境、Compose展开结果或带凭据的进程参数。
 
 独立[Go CI](../../.github/workflows/go.yml)执行全包race、integration vet、build、Python脚本/不可变基线检查和真实TLS task/confirmation/P8回归，保留失败日志。它不替代原Java/前端CI、真实浏览器、四设施故障、切换演练和人工发布审查；尚未经远端GitHub运行的配置不能声称远端通过。
+
+演示种子验证复用固定基线`scripts/dev/seed-demo-data.py`的七组数据配方，只替换HTTP/SQL边界。runner自行创建随机TLS库和认证Go进程，校验容器标签/名称/回环端口及业务表为空，禁止原main/reset，没有现有目标参数；用完自动停止并清理。真实回读任务状态/标签、全天/重复日程、记忆置顶、Markdown文档/向量、会话消息、31天合成用量和审计结果。原脚本默认清空现有业务表，不能直接用来验证Go，也不能把本测试当用户库/生产模型/浏览器验收。
 
 ## 变更规则
 

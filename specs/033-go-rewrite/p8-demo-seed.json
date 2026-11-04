@@ -1,0 +1,32 @@
+{
+  "result": "PASS",
+  "synthetic_only": true,
+  "source": "scripts/dev/seed-demo-data.py",
+  "source_sha256": "d3e69ac2241803acfb138f16af190881d34d21f0498c036dd6388f0f92d19497",
+  "counts": {
+    "task": 8,
+    "task_tag": 16,
+    "calendar_event": 6,
+    "reminder": 0,
+    "knowledge_document": 4,
+    "vector_store": 4,
+    "memory": 5,
+    "chat_session": 5,
+    "chat_message": 10,
+    "chat_message_citation": 0,
+    "agent_plan": 0,
+    "agent_plan_step": 0,
+    "confirmation": 0,
+    "operation_record": 9,
+    "token_usage": 161
+  },
+  "checks": [
+    "owned disposable TLS container; empty tables; no original main/reset",
+    "unchanged seven-function demo recipe; authenticated CSRF API and owned SQL",
+    "eight task states/tags; six recurrence/all-day events; five memories/two pins",
+    "four synchronously ingested Markdown documents with persisted pgvector chunks",
+    "five exact ordered conversations; 31-day actual usage; nine audit outcomes",
+    "combined stopped and all application connections released"
+  ],
+  "limits": "Disposable synthetic demo only; no existing user database, real model quality, browser rendering or release approval."
+}

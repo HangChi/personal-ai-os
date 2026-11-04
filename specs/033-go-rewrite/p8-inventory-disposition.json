@@ -6308,7 +6308,7 @@
       "path": "scripts/dev/seed-demo-data.py",
       "sha256": "d3e69ac2241803acfb138f16af190881d34d21f0498c036dd6388f0f92d19497",
       "disposition": "explicit-asset-adaptation",
-      "status": "in_progress"
+      "status": "implemented"
     },
     {
       "id": "file:scripts/dev/test_backup.py",
