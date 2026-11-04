@@ -130,7 +130,9 @@ type Definition struct {
 	Write     bool
 	Limit     int
 	Normalize func(map[string]any) (map[string]any, error)
-	Action    func(context.Context, *Turn, map[string]any) (Result, error)
+	// BindArguments supports protocol-owned argument binding; execution still passes every budget/audit gate.
+	BindArguments func(string) (map[string]any, error)
+	Action        func(context.Context, *Turn, map[string]any) (Result, error)
 }
 type Recorder interface {
 	Success(context.Context, string, string, string) error
@@ -191,19 +193,23 @@ func (r *Registry) Execute(ctx context.Context, t *Turn, call model.ToolCall) (r
 		binding = Invalid("工具未注册")
 	}
 	args := map[string]any{}
-	decoder := json.NewDecoder(bytes.NewBufferString(call.Function.Arguments))
-	decoder.UseNumber()
-	if e := decoder.Decode(&args); e != nil || args == nil {
-		binding = Invalid("工具参数必须是JSON对象")
-		args = map[string]any{"invalidArguments": call.Function.Arguments}
+	if d.BindArguments != nil {
+		args, binding = d.BindArguments(call.Function.Arguments)
 	} else {
-		var extra any
-		if decoder.Decode(&extra) != io.EOF {
-			binding = Invalid("工具参数包含多余内容")
+		decoder := json.NewDecoder(bytes.NewBufferString(call.Function.Arguments))
+		decoder.UseNumber()
+		if e := decoder.Decode(&args); e != nil || args == nil {
+			binding = Invalid("工具参数必须是JSON对象")
+			args = map[string]any{"invalidArguments": call.Function.Arguments}
+		} else {
+			var extra any
+			if decoder.Decode(&extra) != io.EOF {
+				binding = Invalid("工具参数包含多余内容")
+			}
 		}
-	}
-	if binding == nil {
-		binding = validateTypes(args, d.Model.Parameters)
+		if binding == nil {
+			binding = validateTypes(args, d.Model.Parameters)
+		}
 	}
 	if binding == nil && d.Normalize != nil {
 		normalized, e := d.Normalize(args)

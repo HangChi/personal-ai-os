@@ -102,6 +102,10 @@ type propertyToken struct {
 // BindMCPProperties覆盖原record的动态server/map/list/set与构造器归一化。
 // 来源只来自参数；不展开占位符或加载YAML/profile。未知字段与原默认Binder一样忽略。
 func BindMCPProperties(sources ...BindingSource) (MCPProperties, error) {
+	return bindMCPResolved(func(s string) (string, error) { return s, nil }, sources...)
+}
+
+func bindMCPResolved(resolve func(string) (string, error), sources ...BindingSource) (MCPProperties, error) {
 	parsed := make([]mcpSourceInput, 0, len(sources))
 	names := make(map[string]struct{})
 	for _, source := range sources {
@@ -120,7 +124,11 @@ func BindMCPProperties(sources ...BindingSource) (MCPProperties, error) {
 		if source.enabled == nil {
 			continue
 		}
-		value, err := bindBoolean(map[string]string{"mcp.enabled": *source.enabled}, "mcp.enabled", false)
+		text, err := resolve(*source.enabled)
+		if err != nil {
+			return MCPProperties{}, err
+		}
+		value, err := bindBoolean(map[string]string{"mcp.enabled": text}, "mcp.enabled", false)
 		if err != nil {
 			return MCPProperties{}, err
 		}
@@ -135,7 +143,7 @@ func BindMCPProperties(sources ...BindingSource) (MCPProperties, error) {
 				inputs = append(inputs, input)
 			}
 		}
-		server, bound, err := bindMCPServer(inputs)
+		server, bound, err := bindMCPServer(inputs, resolve)
 		if err != nil {
 			return MCPProperties{}, err
 		}
@@ -170,7 +178,7 @@ func BindMCPProperties(sources ...BindingSource) (MCPProperties, error) {
 	return result, nil
 }
 
-func bindMCPServer(inputs []*mcpServerInput) (MCPServerConfig, bool, error) {
+func bindMCPServer(inputs []*mcpServerInput, resolve func(string) (string, error)) (MCPServerConfig, bool, error) {
 	server := MCPServerConfig{args: []string{}, environment: make(map[string]string), autoTools: []string{}, connectTimeout: 10 * time.Second}
 	var timeout *string
 	var direct, envDirect *string
@@ -202,6 +210,20 @@ func bindMCPServer(inputs []*mcpServerInput) (MCPServerConfig, bool, error) {
 		}
 	}
 	bound := server.command != nil || args != nil || tools != nil || len(server.environment) > 0
+	if server.command != nil {
+		v, e := resolve(*server.command)
+		if e != nil {
+			return MCPServerConfig{}, false, e
+		}
+		server.command = &v
+	}
+	for k, v := range server.environment {
+		v, e := resolve(v)
+		if e != nil {
+			return MCPServerConfig{}, false, e
+		}
+		server.environment[k] = v
+	}
 	if len(server.environment) == 0 && envDirect != nil {
 		if *envDirect != "" {
 			return MCPServerConfig{}, false, &propertyError{"mcp.servers.env", ErrInvalidProperty}
@@ -209,7 +231,11 @@ func bindMCPServer(inputs []*mcpServerInput) (MCPServerConfig, bool, error) {
 		bound = true
 	}
 	if timeout != nil {
-		value, err := durationNanos(*timeout)
+		text, e := resolve(*timeout)
+		if e != nil {
+			return MCPServerConfig{}, false, e
+		}
+		value, err := durationNanos(text)
 		if err != nil {
 			return MCPServerConfig{}, false, &propertyError{"mcp.servers.connect-timeout", ErrInvalidProperty}
 		}
@@ -224,14 +250,22 @@ func bindMCPServer(inputs []*mcpServerInput) (MCPServerConfig, bool, error) {
 		}
 	}
 	if args != nil {
-		value, err := bindMCPList(*args)
+		input, err := resolveMCPList(*args, resolve)
+		if err != nil {
+			return MCPServerConfig{}, false, err
+		}
+		value, err := bindMCPList(input)
 		if err != nil {
 			return MCPServerConfig{}, false, err
 		}
 		server.args = value
 	}
 	if tools != nil {
-		value, err := bindMCPList(*tools)
+		input, err := resolveMCPList(*tools, resolve)
+		if err != nil {
+			return MCPServerConfig{}, false, err
+		}
+		value, err := bindMCPList(input)
 		if err != nil {
 			return MCPServerConfig{}, false, err
 		}
@@ -245,6 +279,26 @@ func bindMCPServer(inputs []*mcpServerInput) (MCPServerConfig, bool, error) {
 		bound = true
 	}
 	return server, bound, nil
+}
+
+func resolveMCPList(input mcpListInput, resolve func(string) (string, error)) (mcpListInput, error) {
+	if input.scalar != nil {
+		v, e := resolve(*input.scalar)
+		if e != nil {
+			return input, e
+		}
+		input.scalar = &v
+		return input, nil
+	}
+	input.indexed = maps.Clone(input.indexed)
+	for k, v := range input.indexed {
+		v, e := resolve(v)
+		if e != nil {
+			return input, e
+		}
+		input.indexed[k] = v
+	}
+	return input, nil
 }
 
 func bindMCPList(input mcpListInput) ([]string, error) {

@@ -16,6 +16,7 @@ import (
 	"personal-ai-os/backend-go/internal/business/confirmation"
 	"personal-ai-os/backend-go/internal/business/idempotency"
 	"personal-ai-os/backend-go/internal/business/knowledge"
+	"personal-ai-os/backend-go/internal/business/mcp"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/business/task"
 	"personal-ai-os/backend-go/internal/platform/auth"
@@ -47,6 +48,7 @@ type FoundationOptions struct {
 	EnableP4                bool
 	EnableP5                bool
 	EnableP6                bool
+	EnableP7                bool
 	CandidateRedis          *redisclient.Client
 	EmbeddingRedis          *redisclient.Client
 	ModelTransport          http.RoundTripper
@@ -80,6 +82,7 @@ type Foundation struct {
 	modelTransport *http.Transport
 	p5             *foundationP5
 	p6             *knowledge.Module
+	mcp            *mcp.Registry
 }
 
 func (*Foundation) String() string     { return "Foundation{redacted}" }
@@ -102,6 +105,16 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	}
 	if options.EnableP6 && !options.EnableP5 {
 		return nil, errors.New("P6需要启用P5")
+	}
+	if options.EnableP7 && !options.EnableP6 {
+		return nil, errors.New("P7需要启用P6")
+	}
+	var personalMCP mcp.PersonalOptions
+	if options.EnableP7 {
+		personalMCP, err = mcp.PersonalOptionsFrom(properties)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if options.CandidateRedis != nil {
 		if !options.EnableP6 || options.CandidateRedis == options.SessionRedis || options.CandidateRedis == options.RateRedis || options.CandidateRedis == options.EmbeddingRedis {
@@ -172,7 +185,7 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			return nil, err
 		}
 	}
-	security, err := auth.NewHTTP(service, sessions, auth.HTTPOptions{CSRFEnabled: settings.Security.CSRFEnabled, CookieSecure: settings.Security.CookieSecure, Cookie: &sessionProperties.Cookie, Multipart: httpmiddleware.MultipartLimits{MaxFileBytes: multipart.MaxFileBytes, MaxRequestBytes: multipart.MaxRequestBytes, TempDirectory: multipart.Location}}, logger)
+	security, err := auth.NewHTTP(service, sessions, auth.HTTPOptions{CSRFEnabled: settings.Security.CSRFEnabled, CookieSecure: settings.Security.CookieSecure, Cookie: &sessionProperties.Cookie, MCPPath: personalMCP.Endpoint, Multipart: httpmiddleware.MultipartLimits{MaxFileBytes: multipart.MaxFileBytes, MaxRequestBytes: multipart.MaxRequestBytes, TempDirectory: multipart.Location}}, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -196,6 +209,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	defer func() {
 		if err != nil {
 			f.cancel()
+			if f.mcp != nil {
+				f.mcp.Close()
+			}
 			if f.chat != nil {
 				_ = f.chat.Close(context.Background())
 			}
@@ -269,6 +285,16 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		}
 	}
 	var tasks *task.Service
+	if options.EnableP7 {
+		mcpOptions, e := mcp.OptionsFrom(properties)
+		if e != nil {
+			return nil, e
+		}
+		f.mcp, err = mcp.OpenRegistry(f.ctx, mcpOptions, logger)
+		if err != nil {
+			return nil, err
+		}
+	}
 	var idem *idempotency.Service
 	var confirms *confirmation.Service
 	if options.EnableP2 {
@@ -308,7 +334,15 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			actions = append(actions, p5.events.Actions()...)
 			handlers = append(handlers, p5.events)
 		}
+		if options.EnableP7 {
+			h := &mcp.ConfirmationHandler{Registry: f.mcp}
+			actions = append(actions, h.Actions()...)
+			handlers = append(handlers, h)
+		}
 		registry, taskErr := confirmation.NewRegistryFor(actions, handlers...)
+		if options.EnableP7 {
+			registry, taskErr = confirmation.NewRegistry(handlers...)
+		}
 		if taskErr != nil {
 			return nil, taskErr
 		}
@@ -405,6 +439,9 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		if p5 != nil {
 			p5.addChatOptions(&chatOptions)
 		}
+		if f.mcp != nil {
+			chatOptions.ExtraTools = append(chatOptions.ExtraTools, agent.MCPBindings(f.mcp, confirms)...)
+		}
 		if f.p6 != nil {
 			chatOptions.ExtraTools = append(chatOptions.ExtraTools, agent.KnowledgeTool(f.p6.Pipeline))
 			chatOptions.RetrieveEvidence = func(ctx context.Context, q string, limit int) (chat.RetrievedEvidence, error) {
@@ -435,6 +472,19 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		})
 	}
 
+	if options.EnableP7 {
+		protocol := mcp.NewPersonalServer(personalMCP, mcp.PersonalServices{Tasks: tasks, Knowledge: f.p6.Retriever, Calendar: p5.events, Memories: p5.store})
+		h := &mcp.HTTP{Registry: f.mcp, Personal: personalMCP, Protocol: protocol}
+		handler := h.Handler(logger)
+		previous := options.Business
+		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if h.OwnsPath(r.URL.Path) {
+				handler.ServeHTTP(w, r)
+				return
+			}
+			previous.ServeHTTP(w, r)
+		})
+	}
 	var actuator http.Handler
 	if !settings.Monitoring {
 		actuator = newActuatorHandler(actuatorProperties, snapshot, metrics, logger)
@@ -508,6 +558,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 				_ = f.chat.Close(context.Background())
 			}
 			f.active.Wait()
+			if f.mcp != nil {
+				f.mcp.Close()
+			}
 			if f.p6 != nil {
 				f.p6.Close()
 			}

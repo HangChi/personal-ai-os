@@ -24,6 +24,7 @@ type HTTPOptions struct {
 	CookieName string
 	Cookie     *http.Cookie
 	Multipart  httpmiddleware.MultipartLimits
+	MCPPath    string
 }
 
 type HTTP struct {
@@ -96,7 +97,8 @@ func (layer *HTTP) Handler(next http.Handler) http.Handler {
 			layer.storageError(w)
 			return
 		}
-		if layer.options.CSRFEnabled && !safeMethod(r.Method) && !mcpPath(r.URL.Path) {
+		mcpExempt := mcpPath(r.URL.Path) || layer.options.MCPPath != "" && r.URL.Path == layer.options.MCPPath
+		if layer.options.CSRFEnabled && !safeMethod(r.Method) && !mcpExempt {
 			if err := layer.ensureCSRF(w, r, &session); err != nil {
 				layer.storageError(w)
 				return
