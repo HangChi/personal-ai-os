@@ -1,5 +1,15 @@
 # 验证记录
 
+## 2026-11-04 P8 真实多阶段RAG双端单题
+
+`run_go_real_eval_tests.py --mode multistage --model-env-file /Volumes/WD770/Project/personal-ai-os/.env --downloaded-corpus-dir /private/tmp/personalos-p8-juejin.Lu4LAU/corpus`使用同一获准真实模型配置，两端各新随机TLS库/42迁移/认证CSRF/16篇142向量与固定Java格式输入SHA核验。只执行原BRIN问题，各READY、recall/rewrite/rerank/evidence全OK、无warning、恰好4次前台chat，显式标记和可接受文档引用与持久分块一致。1题已执行、83道材料齐备题未执行、45题缺材料均显式记录；无直接检索/噪声套件及质量比较。
+
+首轮`p8-eval-real-20261104-224257.json`退出1：Go前台四阶段OK但5次chat，默认后台入库审查干扰计数。隔离子进程显式关闭后台审查后第二轮`p8-eval-real-20261104-224539.json`退出0，日志`/tmp/personalos-p8-real-rag-2.log`；不修改应用默认配置、不回填旧报告。实际46 embedding/9 chat、214312 total tokens、无上游失败，应用停止/连接归零/本次容器清理。回答正文只存私有本地目录。
+
+`33ce74a`已提交脚本、测试与两轮报告。116项Python回归通过（`/tmp/personalos-p8-python-real-rag.log`）；质量复核入口补充拒绝multistage报告后8项相关测试再次通过。不把单题流程等同全部RAG或人工事实审查通过，T801/T804/P8/五门禁仍开放。
+
+清单更新后完整116项Python回归再次通过（7.525s），8项Node纯单测、1093文件固定基线/104路由/27工具/95钩子/1119声明检查、78项配置处置、144声明映射及全文件职责派生检查通过。逐项比较提交前后状态确认2415 implemented/23 in_progress与五门禁均未改变；`check-complete`实际退出1，日志`/tmp/personalos-p8-check-complete-real-rag.log`。此批只有验收脚本/记录变化，不重复先前已通过且未变更的全Go长回归。
+
 ## 2026-11-04 P8 获准真实模型子集与格式差分修复
 
 用户授权后显式读取根`.env`的模型白名单，实际`qwen3.8-flash`/`qwen3.7-text-embedding-flash`，DashScope HTTPS，非mock。每端新随机TLS库、42原迁移/validate、认证CSRF，16篇/142条1024维向量/84原查询/2传统知识问答及精确持久引用/50噪声请求完整执行。真实密钥只走内存/stdin，正文及回答不入Git；600请求/12聊天/100万输入字符/1024输出token/90秒上限，不重试、不跟随重定向。完整双端报告`p8-eval-real-20261104-222729.json`，日志`/tmp/personalos-p8-real-eval-10.log`，退出0且无上游失败、停机连接归零并清理本次容器。实际180966 total tokens，不表示固定金额。
