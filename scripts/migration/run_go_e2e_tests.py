@@ -64,7 +64,7 @@ def candidate(directory, binary, values):
                 if time.monotonic() >= deadline:
                     raise TimeoutError("Isolated Java baseline startup exceeded 90 seconds")
                 time.sleep(.2)
-            yield {"port": port}
+            yield {"port": port, "pid": process.pid}
         finally:
             process.terminate()
             process.wait(timeout=45)

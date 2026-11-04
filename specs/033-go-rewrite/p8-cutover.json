@@ -1,0 +1,56 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "date": "2026-11-04",
+  "result": "PASS",
+  "synthetic_only": true,
+  "checks": [
+    "Java stopped including combined Workers; connections zero; original tar/SHA/custom dump restored to new DB with attachments",
+    "Go requires new login; exact normalized five-module export; attachment bytes; vectors; Java encrypted model key; one idempotent write; unknown TOOL preserved",
+    "Go stopped including Workers/connections zero; Java new login, Go data/read/replay and attachment bytes unchanged; 42 migrations"
+  ],
+  "local_comparison": {
+    "java": {
+      "http": {
+        "/tasks": {
+          "samples": 30,
+          "p50_ms": 8.934,
+          "p95_ms": 10.578
+        },
+        "/chat/sessions": {
+          "samples": 30,
+          "p50_ms": 7.094,
+          "p95_ms": 8.1
+        },
+        "/knowledge/documents": {
+          "samples": 30,
+          "p50_ms": 5.533,
+          "p95_ms": 8.511
+        }
+      },
+      "rss_kib_after_warmup": 543232
+    },
+    "scope": "One synthetic task/session/document, sequential authenticated loopback requests; five warmups then 30 samples; process RSS only, no production load or model quality claim.",
+    "go": {
+      "http": {
+        "/tasks": {
+          "samples": 30,
+          "p50_ms": 1.555,
+          "p95_ms": 2.399
+        },
+        "/chat/sessions": {
+          "samples": 30,
+          "p50_ms": 1.991,
+          "p95_ms": 2.586
+        },
+        "/knowledge/documents": {
+          "samples": 30,
+          "p50_ms": 0.825,
+          "p95_ms": 1.004
+        }
+      },
+      "rss_kib_after_warmup": 30144
+    }
+  },
+  "backup_sha256": "af47d5a7e65736bdbc4f5997b380ce175b7b5268ebc40a8bdb83deb104caafe9",
+  "limitation": "Only newly created synthetic Java data and local attachments; not a real user backup, real external side effects, production TLS or release approval."
+}
