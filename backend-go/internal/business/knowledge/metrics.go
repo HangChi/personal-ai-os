@@ -21,9 +21,12 @@ func NewStats() *Stats {
 	return &Stats{Counters: map[string]uint64{}, Timers: map[string]Measurement{}}
 }
 func (s *Stats) Count(name, result string) {
+	s.Add(name, result, 1)
+}
+func (s *Stats) Add(name, result string, n uint64) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.Counters[name+"|"+result]++
+	s.Counters[name+"|"+result] += n
 }
 func (s *Stats) Duration(name, result string, d time.Duration) {
 	s.mu.Lock()

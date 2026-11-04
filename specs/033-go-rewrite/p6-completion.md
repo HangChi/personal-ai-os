@@ -29,3 +29,11 @@ Store 使用既有Pool/Coordinator，保留原schema、vector(1024)、JSON元数
 OpenSearch 使用有界 REST、CJK/HNSW 映射和现有维度验证，external_gte 版本写入、删除及冲突幂等。投影沿用原数据库 Outbox，短事务领取、60秒失效恢复、revision/token 条件确认及指数退避；重建只入队。RabbitMQ 队列持久化、消息 TTL/上限、persistent 发布与 publisher confirm；通知只唤醒执行器，数据库任务仍独立领取和轮询，信号按 revision 条件延迟重发。
 
 实际执行 `python3 scripts/migration/run_go_p6_tests.py`：四个独立 tmpfs 容器，PostgreSQL/Redis 使用 TLS，RabbitMQ/OpenSearch 使用随机回环端口且固定本地镜像摘要。真实 OpenSearch 验证权威回表/旧版本拒覆盖/删除；真实 RabbitMQ 验证确认发布、重复/非法通知不消费业务任务、消费者重连。投影新 revision 不被旧确认删除、失败退避、重建、信号旧确认不推迟新 revision 也通过 race。首次测试容器启动配置已修复，成功后全部临时容器清理；API/五角色装配仍在下一批。
+
+## 第五批：RAG、来源治理与增量审查
+
+共用 KnowledgeSearchPort 与多阶段管线加入查询改写、候选 RRF、来源多样性、结构化/可选 Cohere 和 DashScope 重排、逐条证据核验及总预算。CONFLICT/CLARIFY/UNVERIFIED 均保留证据并阻止确定作答；topK=1 不能丢掉冲突一方。问答引用由服务端按实际编号生成，过滤越界/重复，未标注时返回实际上下文来源。
+
+来源治理保留空间、元数据、生效期、revision、人工冲突处理与审计。冲突保存再次回数据库核对 revision 与连续摘录；已保存分歧不因模型漏报消失。增量 review 角色逐片段领取，60秒租约、revision/token/源锁最终 fencing，失败三次暂停、人工重排和来源变更恢复。
+
+实际执行知识包单测与独立 TLS PostgreSQL race 全通过，新增覆盖 READY/CONFLICT/CLARIFY/UNVERIFIED、不同有效期澄清、编号引用、两种重排协议非法排序拒收、元数据/决策/audit/stale、伪造摘录拒收、16路review竞争/过期重领/旧revision拒提交、PARTIAL→CHECKED_CANDIDATES和失败上限。HTTP、聊天与五角色装配仍待下一批；不把当前管线单测冒充真实外部模型质量评测。
