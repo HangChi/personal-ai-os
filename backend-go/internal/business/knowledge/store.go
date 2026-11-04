@@ -180,14 +180,21 @@ func (s *Store) prepareTextChunks(ctx context.Context, blocks []string, id, titl
 		return nil, api.NewBusinessError(api.AINotConfigured, api.AINotConfigured.Message())
 	}
 	chunks := make([]Chunk, len(blocks))
+	inputs := make([]string, len(blocks))
+	formatter, formatsMetadata := s.Embedding.(interface{ EmbedsDocumentMetadata() bool })
+	formatsMetadata = formatsMetadata && formatter.EmbedsDocumentMetadata()
 	for i, text := range blocks {
 		chunks[i] = Chunk{ID: newID(), Content: text, Metadata: map[string]any{"document_id": id, "document_title": title, "filename": filename, "chunk_index": i}}
+		inputs[i] = text
+		if formatsMetadata {
+			inputs[i] = knowledgeEmbeddingInput(text, id, title, filename, i)
+		}
 	}
 	// 真实兼容端点可能拒绝较大批量；保守分批且完整成功后才进入写事务。
 	const embeddingBatchSize = 16
 	for start := 0; start < len(blocks); start += embeddingBatchSize {
 		end := min(start+embeddingBatchSize, len(blocks))
-		output, e := s.Embedding.Embed(ctx, model.EmbeddingRequest{Input: blocks[start:end]})
+		output, e := s.Embedding.Embed(ctx, model.EmbeddingRequest{Input: inputs[start:end]})
 		if e != nil {
 			return nil, api.NewBusinessError(api.AIUpstreamError, "无法连接嵌入模型服务，请确认模型服务已启动")
 		}
@@ -210,6 +217,12 @@ func (s *Store) prepareTextChunks(ctx context.Context, blocks []string, id, titl
 		}
 	}
 	return chunks, nil
+}
+
+func knowledgeEmbeddingInput(content, id, title, filename string, index int) string {
+	// Spring AI 2.0.1 EMBED格式及这四个固定键的HashMap遍历顺序，见Java oracle。
+	prefix := fmt.Sprintf("document_title: %s\nchunk_index: %d\nfilename: %s\ndocument_id: %s\n\n{content}", title, index, filename, id)
+	return strings.ReplaceAll(prefix, "{content}", content)
 }
 func (s *Store) insertChunks(ctx context.Context, tx *sql.Tx, chunks []Chunk) error {
 	stmt, e := tx.PrepareContext(ctx, "INSERT INTO "+s.table+"(id,content,metadata,embedding) VALUES($1,$2,$3::json,$4::vector)")

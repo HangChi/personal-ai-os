@@ -8,11 +8,43 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"personal-ai-os/backend-go/internal/business/model"
 )
 
 type p8BatchEmbedding func(context.Context, model.EmbeddingRequest) (model.EmbeddingResponse, error)
+
+type p8FormattedEmbedding struct{ p8BatchEmbedding }
+
+func (p8FormattedEmbedding) EmbedsDocumentMetadata() bool { return true }
+
+func TestP8OpenAIEmbeddingMetadataMatchesJavaWithoutChangingStoredChunks(t *testing.T) {
+	for _, content := range []string{"synthetic content", "two\nlines"} {
+		store := &Store{Reader: Reader{Properties: testProperties(t)}}
+		delegate := p8FormattedEmbedding{func(_ context.Context, request model.EmbeddingRequest) (model.EmbeddingResponse, error) {
+			expected := "document_title: title " + content + "\nchunk_index: 0\nfilename: real.md\ndocument_id: owned-id\n\n" + content
+			if len(request.Input) != 1 || request.Input[0] != expected {
+				t.Fatalf("Java EMBED format differs: %q", request.Input)
+			}
+			vector := make([]float32, 1024)
+			vector[0] = 1
+			return model.EmbeddingResponse{Results: []model.EmbeddingResult{{Index: 0, Vector: vector}}}, nil
+		}}
+		var err error
+		store.Embedding, err = model.NewCachedEmbedding(delegate, "format-test", true, 10, time.Minute, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		chunks, err := store.prepareTextChunks(context.Background(), []string{content}, "owned-id", "title {content}", "real.md")
+		if err != nil || len(chunks) != 1 {
+			t.Fatal(err, len(chunks))
+		}
+		if chunks[0].Content != content || chunks[0].Metadata["document_title"] != "title {content}" {
+			t.Fatal("embedding formatter modified persisted source")
+		}
+	}
+}
 
 func (f p8BatchEmbedding) Embed(ctx context.Context, request model.EmbeddingRequest) (model.EmbeddingResponse, error) {
 	return f(ctx, request)

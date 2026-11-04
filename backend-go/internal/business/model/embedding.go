@@ -50,8 +50,9 @@ func NewEmbeddingClient(v Resolved, p Protocol, transport http.RoundTripper) (*E
 	}
 	return &EmbeddingClient{v, p, httpClient(transport), 120 * time.Second}, nil
 }
-func (*EmbeddingClient) String() string     { return "EmbeddingClient{redacted}" }
-func (c *EmbeddingClient) GoString() string { return c.String() }
+func (*EmbeddingClient) String() string                 { return "EmbeddingClient{redacted}" }
+func (c *EmbeddingClient) GoString() string             { return c.String() }
+func (c *EmbeddingClient) EmbedsDocumentMetadata() bool { return c.protocol == OpenAI }
 func (c *EmbeddingClient) Embed(ctx context.Context, r EmbeddingRequest) (EmbeddingResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
@@ -303,7 +304,11 @@ func NewCachedEmbedding(delegate EmbeddingModel, identity string, enabled bool, 
 }
 func (*CachedEmbedding) String() string     { return "CachedEmbedding{redacted}" }
 func (c *CachedEmbedding) GoString() string { return c.String() }
-func digest(s string) string                { sum := sha256.Sum256([]byte(s)); return hex.EncodeToString(sum[:]) }
+func (c *CachedEmbedding) EmbedsDocumentMetadata() bool {
+	formatter, ok := c.delegate.(interface{ EmbedsDocumentMetadata() bool })
+	return ok && formatter.EmbedsDocumentMetadata()
+}
+func digest(s string) string { sum := sha256.Sum256([]byte(s)); return hex.EncodeToString(sum[:]) }
 func (c *CachedEmbedding) invoke(ctx context.Context, r EmbeddingRequest) (EmbeddingResponse, error) {
 	start := time.Now()
 	defer func() { c.Stats.record(time.Since(start)) }()

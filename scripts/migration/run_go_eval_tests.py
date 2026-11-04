@@ -20,6 +20,7 @@ import uuid
 from go_eval_adapter import FixtureAdapter, arguments, corpus_preflight, original_modules
 from fetch_go_juejin_corpus import load_corpus
 from go_test_environment import cache_environment
+from java_embedding_content import embedding_hashes
 from p8_model_fixture import Handler
 from run_go_cutover_tests import Client
 from run_go_demo_seed_tests import OwnedDatabase
@@ -207,7 +208,10 @@ def exercise(container, fixture, binding_only=False, downloaded=None, report_pat
                     raise AssertionError("Evaluation corpus differs from its owned document manifest")
                 with EvaluationModel.embedding_lock:
                     observed_inputs = EvaluationModel.embedding_inputs.copy()
-                ingestion = verify_ingestion(actual, documents, adapter.uploaded, database, observed_inputs)
+                stored = json.loads(database.sql("SELECT json_agg(x) FROM (SELECT content,metadata FROM vector_store) x;"))
+                expected, format_oracle = embedding_hashes(stored)
+                ingestion = verify_ingestion(actual, documents, adapter.uploaded, database, observed_inputs, expected)
+                ingestion["embedding_format_oracle"] = format_oracle
                 retrieval = modules["retrieval-eval.py"]
                 retrieval.QUERIES = queries
                 rows = retrieval.evaluate()

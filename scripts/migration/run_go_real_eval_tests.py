@@ -119,11 +119,9 @@ def exercise(container, fixture, backend, binary, relay, relay_values, downloade
                 result["uploaded_documents"] = position
                 print(backend + ": uploaded real article " + str(position) + "/" + str(len(documents)), flush=True)
             expected_hashes = None
-            result["embedding_input_format"] = "raw-persisted-chunk"
-            if backend == "java":
-                rows = json.loads(database.sql("SELECT json_agg(x) FROM (SELECT content,metadata FROM vector_store) x;"))
-                expected_hashes, result["embedding_format_oracle"] = embedding_hashes(rows)
-                result["embedding_input_format"] = "Spring-AI-2.0.1-MetadataMode.EMBED"
+            rows = json.loads(database.sql("SELECT json_agg(x) FROM (SELECT content,metadata FROM vector_store) x;"))
+            expected_hashes, result["embedding_format_oracle"] = embedding_hashes(rows)
+            result["embedding_input_format"] = "Spring-AI-2.0.1-MetadataMode.EMBED"
             result["ingestion"] = verify_ingestion(client.request("/knowledge/documents"), documents,
                                                    adapter.uploaded, database,
                                                    relay.embedding_receipts() - receipts_before, expected_hashes)
