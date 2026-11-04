@@ -349,6 +349,7 @@ func TestP5AuthenticatedAgentAndAutoMemory(t *testing.T) {
 	var modelSawMemory atomic.Bool
 	var modelSawSchema atomic.Bool
 	var captures atomic.Int32
+	var pendingPrompt, confirmedPrompt atomic.Pointer[string]
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var request struct {
 			Stream   bool
@@ -387,6 +388,12 @@ func TestP5AuthenticatedAgentAndAutoMemory(t *testing.T) {
 			}
 		}
 		switch {
+		case user == "查询确认前的状态":
+			pendingPrompt.Store(&prompt)
+			p4Text(w, "已查询")
+		case user == "查询确认后的状态":
+			confirmedPrompt.Store(&prompt)
+			p4Text(w, "已查询")
 		case toolReply:
 			p4Text(w, "已处理请求")
 		case strings.HasPrefix(user, "请记住"):
@@ -497,9 +504,22 @@ func TestP5AuthenticatedAgentAndAutoMemory(t *testing.T) {
 		t.Fatalf("confirmations = %+v", pending)
 	}
 	entry := pending[0].(map[string]any)
+	checkPrompt := func(snapshot *string, count int, status string) {
+		t.Helper()
+		if snapshot == nil || !strings.Contains(*snapshot, fmt.Sprintf("尚待人工确认：%d 项", count)) ||
+			!strings.Contains(*snapshot, fmt.Sprintf(`"id":%q`, entry["id"])) ||
+			!strings.Contains(*snapshot, fmt.Sprintf(`"status":%q`, status)) ||
+			strings.Contains(*snapshot, entry["token"].(string)) {
+			t.Fatalf("model prompt did not contain the safe %s snapshot", status)
+		}
+	}
+	send("查询确认前的状态")
+	checkPrompt(pendingPrompt.Load(), 1, "PENDING")
 	request("POST", "/agent/confirmations/"+entry["id"].(string)+"/confirm",
 		fmt.Sprintf(`{"token":%q}`, entry["token"]), 200)
 	request("GET", "/calendar/events/"+event, "", 404)
+	send("查询确认后的状态")
+	checkPrompt(confirmedPrompt.Load(), 0, "CONFIRMED")
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		memories := request("GET", "/memories", "", 200).([]any)

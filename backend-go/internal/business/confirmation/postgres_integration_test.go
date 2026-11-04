@@ -4,8 +4,11 @@ package confirmation
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -83,5 +86,81 @@ func TestPostgresCASAcrossConnections(t *testing.T) {
 	stored, ok, err := two.Get(ctx, dto.ID)
 	if err != nil || !ok || stored.Status != Confirmed || stored.ResolvedAt == nil {
 		t.Fatalf("record=%+v found=%v err=%v", stored, ok, err)
+	}
+}
+
+func TestPostgresPromptConversationSnapshot(t *testing.T) {
+	ctx := context.Background()
+	store, _ := NewPostgresStore(fixturePool(t))
+	now := time.Date(2026, 11, 4, 0, 0, 0, 0, time.UTC)
+	seeded := 0
+	seed := func(conversation, summary string, status Status, created, expires time.Time) Record {
+		t.Helper()
+		seeded++
+		r, err := store.Create(ctx, Record{
+			Token: fmt.Sprintf("private-token-%d", seeded), ConversationID: conversation,
+			Action: DeleteCalendarEvent, Summary: summary, Payload: `{"private":"private-payload"}`,
+			CreatedAt: created, ExpiresAt: expires, Status: Pending,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if status != Pending {
+			if ok, err := store.CompareAndSet(ctx, r.ID, Pending, status, now); err != nil || !ok {
+				t.Fatalf("set %s: %v, %v", status, ok, err)
+			}
+		}
+		return r
+	}
+	const conversation = "confirmation-prompt-fixture"
+	for i := range 13 {
+		seed(conversation, fmt.Sprintf("pending-%02d", i), Pending,
+			now.Add(-time.Duration(i+1)*time.Second), now.Add(time.Minute))
+	}
+	seed(conversation, "same-instant-expiry", Pending, now, now)
+	seed(conversation, "already-cancelled", Cancelled, now.Add(time.Second), now.Add(time.Minute))
+	seed(conversation, strings.Repeat("字", 179)+"😀truncated", Confirmed, now.Add(2*time.Second), now.Add(time.Minute))
+	seed("other-conversation", "isolated-summary", Pending, now, now.Add(time.Minute))
+
+	check := func(at time.Time, count int) string {
+		t.Helper()
+		prompt, err := store.Prompt(ctx, conversation, at)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(prompt, fmt.Sprintf("尚待人工确认：%d 项", count)) {
+			t.Fatalf("missing pending count: %s", prompt)
+		}
+		for _, forbidden := range []string{"private-token", "private-payload", "isolated-summary", "truncated", "😀"} {
+			if strings.Contains(prompt, forbidden) {
+				t.Fatalf("unexpected prompt text %q", forbidden)
+			}
+		}
+		for _, expected := range []string{`"status":"CANCELLED"`, `"status":"CONFIRMED"`, `"status":"EXPIRED","summary":"same-instant-expiry"`} {
+			if !strings.Contains(prompt, expected) {
+				t.Fatalf("missing status record: %s", expected)
+			}
+		}
+		return prompt
+	}
+	prompt := check(now, 13)
+	lines := strings.Split(prompt, "\n")
+	if len(lines) != 7 {
+		t.Fatalf("unexpected prompt layout: %q", prompt)
+	}
+	for _, sample := range []struct{ index, size int }{{4, 10}, {6, 12}} {
+		var records []promptRecord
+		if err := json.Unmarshal([]byte(lines[sample.index]), &records); err != nil || len(records) != sample.size {
+			t.Fatalf("line %d: got %d records, err=%v", sample.index, len(records), err)
+		}
+	}
+	prompt = check(now.Add(time.Minute), 0)
+	if strings.Contains(prompt, "当前待确认记录") {
+		t.Fatal("expired records appeared in pending section")
+	}
+	for _, id := range []string{"", " \t"} {
+		if got, err := store.Prompt(ctx, id, now); err != nil || got != "" {
+			t.Fatalf("blank conversation returned %q, %v", got, err)
+		}
 	}
 }

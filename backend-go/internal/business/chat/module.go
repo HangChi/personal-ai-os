@@ -190,7 +190,22 @@ func OpenModule(parent context.Context, o ModuleOptions) (m *Module, err error) 
 	if e != nil {
 		return nil, e
 	}
-	assembler := &Assembler{Service: service, Tools: registry.Definitions, Contributors: []PromptContributor{CurrentTimeContributor(o.Zone, time.Now), {Order: 10, Contribute: func(ctx context.Context, _ string, id string) (string, error) { return plans.Prompt(ctx, id) }}, {Order: 2147483647, Contribute: func(context.Context, string, string) (string, error) { return toolResultConstraint, nil }}}}
+	confirmationRead, e := confirmation.NewPostgresStore(o.Pool)
+	if e != nil {
+		return nil, e
+	}
+	assembler := &Assembler{Service: service, Tools: registry.Definitions, Contributors: []PromptContributor{
+		CurrentTimeContributor(o.Zone, time.Now),
+		{Order: 10, Contribute: func(ctx context.Context, _ string, id string) (string, error) {
+			return plans.Prompt(ctx, id)
+		}},
+		{Order: 20, Contribute: func(ctx context.Context, _ string, id string) (string, error) {
+			return confirmationRead.Prompt(ctx, id, time.Now())
+		}},
+		{Order: 2147483647, Contribute: func(context.Context, string, string) (string, error) {
+			return toolResultConstraint, nil
+		}},
+	}}
 	if o.MemoryPrompt != nil {
 		assembler.Contributors = append(assembler.Contributors, PromptContributor{Contribute: o.MemoryPrompt})
 	}
