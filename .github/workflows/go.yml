@@ -67,6 +67,7 @@ jobs:
           python3 -m unittest discover -s scripts/migration -p 'test_*.py' 2>&1 | tee "$RUNNER_TEMP/go-reports/scripts.log"
           python3 scripts/migration/go_inventory.py check
           python3 scripts/migration/go_config_disposition.py
+          python3 scripts/migration/go_p8_test_progress.py
           git diff --exit-code -- backend/src/main/resources/db/migration
       - name: Disposable TLS PostgreSQL regressions
         shell: bash

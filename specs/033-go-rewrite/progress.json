@@ -138,7 +138,7 @@
       "note": "原生产开关/密码与isBlank/UTF-8校验、真实Spring来源及canonical Secure路径差异已有对照；Foundation认证/CSRF已装配。Go仍额外拒绝全部prod/生产模式、非回环与readyz=503，P8前不解除；不宣称生产部署验收。"
     },
     "file:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/config/dotenv_test.go",
         "specs/033-go-rewrite/validation.md",
@@ -147,9 +147,11 @@
         "backend-go/internal/platform/config/binding_test.go",
         "backend-go/internal/platform/config/testdata/java-binding.json",
         "scripts/migration/ConfigBindingOracle.java",
-        "scripts/migration/java_config_binding_fixture.py"
+        "scripts/migration/java_config_binding_fixture.py",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "已迁移解析/重复键顺序/空值/父目录/优先级断言；MCP 绑定场景未迁移，尚无 Java/Go 全链路差分。 已完成MCP动态server/map/list/set与显式多来源配置绑定，真实Binder157项/全部398项、原.env场景及副本/脱敏/并发对照。保留ENV_API_KEY实际变成api.key的基线行为；未启动协议/命令或完成完整来源/应用装配，不能verified。"
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/main/resources/application.yml": {
       "status": "in_progress",
@@ -345,9 +347,21 @@
         "backend-go/internal/platform/modelgate/postgres_integration_test.go",
         "backend-go/internal/platform/http/concurrency.go",
         "backend-go/internal/platform/http/concurrency_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "backend-go/internal/platform/http/model_paths.go",
+        "backend-go/internal/platform/http/model_paths_test.go",
+        "backend-go/internal/platform/http/rate_limit.go",
+        "backend-go/internal/platform/http/rate_limit_test.go",
+        "backend-go/internal/platform/ratelimit/shared.go",
+        "backend-go/internal/platform/ratelimit/shared_test.go",
+        "backend-go/internal/platform/ratelimit/README.md",
+        "scripts/migration/java_model_paths_fixture.py",
+        "scripts/migration/ModelRequestPathsOracle.java",
+        "backend-go/internal/platform/http/testdata/java-model-request-paths.json"
       ],
-      "note": "流许可持有/结束释放、失败/同步清理和模型路径断言已移植为 Go 生命周期测试；不是 Servlet ASYNC 容器或完整业务差分，不能 verified。"
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "hook:backend/src/main/java/com/personalos/common/config/RateLimitProperties.java:22:ConfigurationProperties": {
       "status": "in_progress",
@@ -499,20 +513,24 @@
         "backend-go/internal/platform/modelgate/gate_test.go",
         "backend-go/internal/platform/modelgate/postgres_integration_test.go",
         "backend-go/internal/platform/http/concurrency.go",
-        "backend-go/internal/platform/http/concurrency_test.go"
+        "backend-go/internal/platform/http/concurrency_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "consume、租约/续租/fencing/事务后释放、API 预留对应场景已实现并在一次性 PostgreSQL 验证；应用/Worker 退出装配、断网/不确定提交与完整 Java/Go 差分仍待完成，不能 verified。"
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "test:backend/src/test/java/com/personalos/common/web/DatabaseCoordinationIntegrationTest.java:66": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/ratelimit/postgres.go",
         "backend-go/internal/platform/ratelimit/postgres_test.go",
         "backend-go/internal/platform/ratelimit/postgres_integration_test.go",
         "scripts/migration/run_go_postgres_tests.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "限流共享与数据库时钟补充断言已在 Go 真 PostgreSQL 通过；未实际执行 Java/Go 服务差分，不能 verified。"
+      "note": "P8逐声明：DatabaseCoordinationIntegrationTest.rateBudgetIsSharedAndRefillsUsingDatabaseClock → TestPostgresBucketIntegration；真实双池共享容量，Java shared capacity and database clock refill子例用数据库时钟复充。"
     },
     "file:backend/src/main/resources/db/migration/V37__runtime_coordination.sql": {
       "status": "in_progress",
@@ -1876,37 +1894,45 @@
       "note": "认证路由存在于独立可组合处理器，已验证本地会话和 CSRF；尚未挂载至诊断应用，真实 Java/Go 路由差分待验，不能 verified。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/auth/http.go",
         "backend-go/internal/platform/auth/http_test.go",
         "backend-go/internal/platform/auth/session.go",
         "backend-go/internal/platform/auth/session_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "backend-go/internal/app/foundation_http_oracle_test.go"
       ],
-      "note": "认证相关 HTTP 子集与真实回环 CookieJar 已验证；真实健康/任务写入等业务断言和原测试完整运行尚未迁移，不能 verified。"
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthDisabledIntegrationTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/auth/http.go",
         "backend-go/internal/platform/auth/http_test.go",
         "backend-go/internal/platform/auth/session.go",
         "backend-go/internal/platform/auth/session_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "认证相关 HTTP 子集与真实回环 CookieJar 已验证；真实健康/任务写入等业务断言和原测试完整运行尚未迁移，不能 verified。"
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthLockoutIntegrationTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/auth/http.go",
         "backend-go/internal/platform/auth/http_test.go",
         "backend-go/internal/platform/auth/session.go",
         "backend-go/internal/platform/auth/session_test.go",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/platform/auth/service_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "认证相关 HTTP 子集与真实回环 CookieJar 已验证；真实健康/任务写入等业务断言和原测试完整运行尚未迁移，不能 verified。"
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/main/java/com/personalos/common/auth/SharedSessionConfig.java": {
       "status": "in_progress",
@@ -2298,7 +2324,7 @@
       "note": "真实Java处理器36响应与Go边界逐项对照；业务错误和资源自定义/空文案保留，日志脱敏与已提交HTTP响应保护通过。完整Servlet/业务调用点装配尚未完成。"
     },
     "file:backend/src/test/java/com/personalos/common/exception/GlobalExceptionHandlerLogTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/api/business.go",
         "backend-go/internal/platform/api/business_test.go",
@@ -2307,12 +2333,14 @@
         "backend-go/internal/platform/http/testdata/java-exceptions.json",
         "scripts/migration/java_exception_fixture.py",
         "scripts/migration/ExceptionHandlerOracle.java",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "405路径/无查询串和断连DEBUG已有Go替代断言，JavaOracle真实重验原处理器日志；完整应用分派未装配，不能verified。"
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "test:backend/src/test/java/com/personalos/common/exception/GlobalExceptionHandlerLogTest.java:61": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/api/business.go",
         "backend-go/internal/platform/api/business_test.go",
@@ -2321,12 +2349,14 @@
         "backend-go/internal/platform/http/testdata/java-exceptions.json",
         "scripts/migration/java_exception_fixture.py",
         "scripts/migration/ExceptionHandlerOracle.java",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "TestJavaExceptionHandler36ResponseFixtures/TestExceptionBoundaryHEADPanicAndDisconnect与真实JavaOracle覆盖日志契约；完整应用差分仍待验收。"
+      "note": "P8逐声明：GlobalExceptionHandlerLogTest.methodNotSupportedLogsRequestUri → TestJavaExceptionHandler36ResponseFixtures；405日志包含URI和requestId，WARN级别。"
     },
     "test:backend/src/test/java/com/personalos/common/exception/GlobalExceptionHandlerLogTest.java:78": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/api/business.go",
         "backend-go/internal/platform/api/business_test.go",
@@ -2335,12 +2365,14 @@
         "backend-go/internal/platform/http/testdata/java-exceptions.json",
         "scripts/migration/java_exception_fixture.py",
         "scripts/migration/ExceptionHandlerOracle.java",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "TestJavaExceptionHandler36ResponseFixtures/TestExceptionBoundaryHEADPanicAndDisconnect与真实JavaOracle覆盖日志契约；完整应用差分仍待验收。"
+      "note": "P8逐声明：GlobalExceptionHandlerLogTest.methodNotSupportedLogsPathWithoutQueryString → TestJavaExceptionHandler36ResponseFixtures；日志仅路径不包含查询字符串/秘密。"
     },
     "test:backend/src/test/java/com/personalos/common/exception/GlobalExceptionHandlerLogTest.java:93": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/api/business.go",
         "backend-go/internal/platform/api/business_test.go",
@@ -2349,9 +2381,11 @@
         "backend-go/internal/platform/http/testdata/java-exceptions.json",
         "scripts/migration/java_exception_fixture.py",
         "scripts/migration/ExceptionHandlerOracle.java",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "TestJavaExceptionHandler36ResponseFixtures/TestExceptionBoundaryHEADPanicAndDisconnect与真实JavaOracle覆盖日志契约；完整应用差分仍待验收。"
+      "note": "P8逐声明：GlobalExceptionHandlerLogTest.clientDisconnectIsNotLoggedAsError → TestExceptionBoundaryHEADPanicAndDisconnect；断连分类不输出ERROR，已提交流不追加JSON。"
     },
     "file:backend/src/main/resources/application-prod.yml": {
       "status": "in_progress",
@@ -2475,16 +2509,18 @@
       "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
     },
     "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:22": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/platform/config/mcp_binding.go",
         "backend-go/internal/platform/config/mcp_binding_test.go",
         "backend-go/internal/platform/config/testdata/java-binding.json",
         "scripts/migration/ConfigBindingOracle.java",
         "scripts/migration/java_config_binding_fixture.py",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "临时目录合成.env显式加载后，fetch/uvx/args/autoTools/30s与真实Spring环境绑定结果相同；全量ConfigData/其他属性来源/应用装配未验收，不能verified。"
+      "note": "P8逐声明：DotEnvParserTest.bindsMcpEnvironmentVariablesFromDotEnv → TestMCPDotEnvBindingOriginalScenario；原命名环境键映射MCP开关/列表/命令，临时合成文件无现有秘密。"
     },
     "file:backend/src/main/java/com/personalos/agent/plan/PlanProperties.java": {
       "status": "implemented",
@@ -8135,16 +8171,20 @@
       "note": "P4测试来源职责映射：旧SSE/超时/取消/部分回复、计划/日历防伪完成与轮末接口；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/chat/prompt.go",
         "backend-go/internal/business/chat/prompt_test.go",
         "backend-go/internal/business/chat/context_integration_test.go",
         "backend-go/internal/business/context/token_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "backend-go/internal/app/foundation_p8_guarded_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：贡献顺序、时间/知识/附件与固定预算；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。 真实RAG/冲突证据仍待P6，六项SPI/引用/降级契约已覆盖。"
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java": {
       "status": "implemented",
@@ -8198,16 +8238,20 @@
       "note": "P4测试来源职责映射：持久Run/事件游标/租约fence、启动恢复/停止/关闭与读者解耦；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
     },
     "file:backend/src/test/java/com/personalos/chat/TokenUsageIntegrationTest.java": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/chat/usage.go",
         "backend-go/internal/business/chat/usage_integration_test.go",
         "backend-go/internal/business/chat/p4_oracle_test.go",
         "backend-go/internal/business/chat/execution_integration_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：有效usage快照/估算、完成后尽力记账、时区/DST与来源聚合；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。 两项保留清理属于P8仍开放，其他用量职责已实现。"
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/test/java/com/personalos/chat/controller/ChatContextControllerTest.java": {
       "status": "implemented",
@@ -10193,16 +10237,20 @@
       "note": "来源 ChatKnowledgeIntegrationTest.deletingSessionCascadesCitations：贡献顺序、时间/知识/附件与固定预算；Go按同职责合并测试与持久化/网络副作用验收，非逐Java方法一对一差分，未升级为全量verified。"
     },
     "test:backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java:327": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/chat/prompt.go",
         "backend-go/internal/business/chat/prompt_test.go",
         "backend-go/internal/business/chat/context_integration_test.go",
         "backend-go/internal/business/context/token_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "backend-go/internal/app/foundation_p8_guarded_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "来源 ChatKnowledgeIntegrationTest.conflictingEvidenceBypassesAnswerModelAndPersistsBothSources：P6完整RAG/冲突证据guard尚未实现；P4仅提供检索SPI、引用挂载与失败降级。"
+      "note": "P8逐声明：ChatKnowledgeIntegrationTest.conflictingEvidenceBypassesAnswerModelAndPersistsBothSources → TestP8ConflictingEvidenceBypassesAnswerAndPersistsBothSources；原样替换检索端口；SSE含rag/delta/done、不同说法/适用日期；回答零调用、两消息及两条有序引用落库。"
     },
     "test:backend/src/test/java/com/personalos/chat/ChatRunIntegrationTest.java:66": {
       "status": "implemented",
@@ -10457,28 +10505,36 @@
       "note": "来源 TokenUsageIntegrationTest.separatesSourcesInAggregation：有效usage快照/估算、完成后尽力记账、时区/DST与来源聚合；Go按同职责合并测试与持久化/网络副作用验收，非逐Java方法一对一差分，未升级为全量verified。"
     },
     "test:backend/src/test/java/com/personalos/chat/TokenUsageIntegrationTest.java:211": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/chat/usage.go",
         "backend-go/internal/business/chat/usage_integration_test.go",
         "backend-go/internal/business/chat/p4_oracle_test.go",
         "backend-go/internal/business/chat/execution_integration_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "来源 TokenUsageIntegrationTest.bulkRetentionPreservesExactBoundaryAndNewerRecords：P8保留期/批量清理尚未实现，本阶段仅完成用量落库/统计；不得视为已验收。"
+      "note": "P8逐声明：TokenUsageIntegrationTest.bulkRetentionPreservesExactBoundaryAndNewerRecords → TestP8RetentionCutoffsAndUncertainTools；真实库严格早于UTC截止才删，精确边界/较新保留，二次零删除。"
     },
     "test:backend/src/test/java/com/personalos/chat/TokenUsageIntegrationTest.java:225": {
-      "status": "in_progress",
+      "status": "implemented",
       "evidence": [
         "backend-go/internal/business/chat/usage.go",
         "backend-go/internal/business/chat/usage_integration_test.go",
         "backend-go/internal/business/chat/p4_oracle_test.go",
         "backend-go/internal/business/chat/execution_integration_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "backend-go/internal/app/foundation_p8_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "来源 TokenUsageIntegrationTest.operationRetentionUsesBulkDeleteAndStrictBoundary：P8操作审计保留期/清理尚未实现；不得视为已验收。"
+      "note": "P8逐声明：TokenUsageIntegrationTest.operationRetentionUsesBulkDeleteAndStrictBoundary → TestP8RetentionCutoffsAndUncertainTools；审计严格截止；R-053有意保留未知TOOL IN_PROGRESS，与Java删除全部的安全差异显式记录。"
     },
     "test:backend/src/test/java/com/personalos/chat/controller/ChatContextControllerTest.java:16": {
       "status": "implemented",
@@ -23416,34 +23472,1614 @@
     },
     "file:compose.monitoring.yml": {
       "status": "in_progress",
-      "evidence": ["backend-go/deploy/compose.monitoring.yml", "scripts/migration/run_go_compose_tests.py", "specs/033-go-rewrite/p8-completion.md"],
+      "evidence": [
+        "backend-go/deploy/compose.monitoring.yml",
+        "scripts/migration/run_go_compose_tests.py",
+        "specs/033-go-rewrite/p8-completion.md"
+      ],
       "note": "P8/T801c：独立combined监控栈真实采集/健康/20面板通过；非root/只读根/独立卷/随机回环Grafana。distributed与通知投递仍待验收，不替换原Java资产。"
     },
     "file:deploy/monitoring/prometheus.yml": {
       "status": "in_progress",
-      "evidence": ["backend-go/deploy/monitoring/prometheus.yml", "backend-go/deploy/monitoring/prometheus.combined.yml", "backend-go/deploy/monitoring/alerts.yml", "backend-go/deploy/monitoring/alerts.test.yml", "scripts/migration/run_go_compose_tests.py"],
+      "evidence": [
+        "backend-go/deploy/monitoring/prometheus.yml",
+        "backend-go/deploy/monitoring/prometheus.combined.yml",
+        "backend-go/deploy/monitoring/alerts.yml",
+        "backend-go/deploy/monitoring/alerts.test.yml",
+        "scripts/migration/run_go_compose_tests.py"
+      ],
       "note": "P8/T801c：combined实际采集Go运行时/知识库样本；六告警pending/firing/recovery经真实promtool测试通过。distributed DNS和实际持续故障/通知尚待验证。"
     },
     "file:deploy/monitoring/grafana/dashboards/runtime.json": {
       "status": "implemented",
-      "evidence": ["backend-go/deploy/monitoring/grafana/dashboards/runtime.json", "scripts/migration/go_monitoring_assets.py", "scripts/migration/test_go_monitoring.py", "scripts/migration/run_go_compose_tests.py"],
+      "evidence": [
+        "backend-go/deploy/monitoring/grafana/dashboards/runtime.json",
+        "scripts/migration/go_monitoring_assets.py",
+        "scripts/migration/test_go_monitoring.py",
+        "scripts/migration/run_go_compose_tests.py"
+      ],
       "note": "固定Java20面板保留；Hikari/JVM明确改为Go池使用率/堆内存，新UID。实际Grafana provisioning及查询通过；未声称逐面板浏览器视觉验收。"
     },
     "file:deploy/monitoring/grafana/provisioning/dashboards/default.yml": {
       "status": "implemented",
-      "evidence": ["backend-go/deploy/monitoring/grafana/provisioning/dashboards/default.yml", "scripts/migration/run_go_compose_tests.py"],
+      "evidence": [
+        "backend-go/deploy/monitoring/grafana/provisioning/dashboards/default.yml",
+        "scripts/migration/run_go_compose_tests.py"
+      ],
       "note": "独立Go dashboard目录和provider，实际Grafana20面板provisioning通过。"
     },
     "file:deploy/monitoring/grafana/provisioning/datasources/prometheus.yml": {
       "status": "implemented",
-      "evidence": ["backend-go/deploy/monitoring/grafana/provisioning/datasources/prometheus.yml", "scripts/migration/run_go_compose_tests.py"],
+      "evidence": [
+        "backend-go/deploy/monitoring/grafana/provisioning/datasources/prometheus.yml",
+        "scripts/migration/run_go_compose_tests.py"
+      ],
       "note": "独立Go Prometheus UID/私有服务地址，实际采集与Grafana datasource引用通过。"
+    },
+    "test:backend/src/test/java/com/personalos/PersonalOsApplicationTests.java:57": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/migration/postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PersonalOsApplicationTests.flywayMigrationAppliesVectorExtension → TestPostgresOriginalMigrationsIntegration；原42迁移在空库与合成升级库执行，vector扩展存在。"
+    },
+    "test:backend/src/test/java/com/personalos/PersonalOsApplicationTests.java:69": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/migration/postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PersonalOsApplicationTests.pgvectorIsFunctional → TestPostgresOriginalMigrationsIntegration；真实PostgreSQL中向量写入与距离运算；非mock连接。"
+    },
+    "test:backend/src/test/java/com/personalos/PersonalOsApplicationTests.java:80": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/health/http_test.go",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PersonalOsApplicationTests.healthEndpointReturnsUnifiedEnvelope → TestJavaHealthHTTPReportAndMethods, TestFoundationBusinessHealthRealServletOracle；公开业务health统一信封及数据库/模型依赖组合；真实Servlet对照。"
+    },
+    "test:backend/src/test/java/com/personalos/PersonalOsApplicationTests.java:99": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PersonalOsApplicationTests.mcpRegistryAbsentWhenNotConfigured → TestP7ConfigurationFailureAndDisabledNoSideEffects, TestP7PersonalProtocolReadOnlyCatalogAndIndependentSwitch；Go无Spring Bean；未配置不启动外部连接，个人只读开关独立，空目录无副作用承担原职责。"
+    },
+    "test:backend/src/test/java/com/personalos/PersonalOsApplicationTests.java:105": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/errors_test.go",
+        "backend-go/internal/app/foundation_http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PersonalOsApplicationTests.unknownPathReturnsUnifiedErrorEnvelope → TestJavaExceptionHandler36ResponseFixtures, TestFoundationHTTPRoutesAndErrorBoundary；未知路径404统一错误信封，默认与真实Servlet错误快照相同。"
+    },
+    "test:backend/src/test/java/com/personalos/common/api/ApiResponseTest.java:13": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ApiResponseTest.okShouldWrapData → TestResponseWireContract；code=0、OK、原data及时间戳/四字段序列化。"
+    },
+    "test:backend/src/test/java/com/personalos/common/api/ApiResponseTest.java:25": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ApiResponseTest.okShouldAllowNullData → TestResponseWireContract；成功空值保留data:null，不能省略。"
+    },
+    "test:backend/src/test/java/com/personalos/common/api/ApiResponseTest.java:34": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ApiResponseTest.errorShouldCarryErrorCodeAndCustomMessage → TestResponseWireContract；失败状态与自定义文案、null data。"
+    },
+    "test:backend/src/test/java/com/personalos/common/api/ApiResponseTest.java:45": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ApiResponseTest.errorShouldFallbackToDefaultMessage → TestResponseWireContract, TestSerializationFailureIsSafe；Failure使用错误码默认消息；明确检查50000/默认服务器内部错误，不额外增加空字符串回退语义。"
+    },
+    "test:backend/src/test/java/com/personalos/common/api/PageDtoTest.java:20": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PageDtoTest.shouldSlicePages → TestPaginationBoundaries；五元素第一页/第二页/末页准确切片与总数。"
+    },
+    "test:backend/src/test/java/com/personalos/common/api/PageDtoTest.java:29": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PageDtoTest.shouldNotOverflowOnHugePage → TestPaginationBoundaries, TestSQLResultIsNotPaginatedTwice；最大int与Java int偏移边界不溢出，返回空页保留总数。"
+    },
+    "test:backend/src/test/java/com/personalos/common/api/PageDtoTest.java:44": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PageDtoTest.shouldReturnEmptyPageBeyondEnd → TestPaginationBoundaries；越界页为非nil空数组且总数不丢失。"
+    },
+    "test:backend/src/test/java/com/personalos/common/api/PageDtoTest.java:51": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PageDtoTest.shouldNormalizeIllegalArguments → TestPaginationBoundaries；负page归零、非正size归一，保留原辅助PageDto规则。"
+    },
+    "test:backend/src/test/java/com/personalos/common/api/PageDtoTest.java:63": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PageDtoTest.shouldHandleEmptySource → TestPaginationBoundaries；nil源序列化items:[]，不输出null。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthDisabledIntegrationTest.java:39": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthDisabledIntegrationTest.shouldAllowEverythingWhenDisabled → TestHTTPDisabledValidationAndLockout；认证/CSRF关闭后写请求直达下游。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthDisabledIntegrationTest.java:47": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthDisabledIntegrationTest.meShouldReportDisabled → TestHTTPDisabledValidationAndLockout；me返回authEnabled=false、username=null。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthDisabledIntegrationTest.java:58": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthDisabledIntegrationTest.loginShouldNotFakeSessionWhenDisabled → TestHTTPDisabledValidationAndLockout；关闭时login不创建Cookie或伪登录身份。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java:74": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthIntegrationTest.shouldRejectAnonymous → TestHTTPLoginRotationLogoutAndCSRF；任务/资源/MCP匿名请求401并保留null data和requestId。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java:86": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthIntegrationTest.healthShouldStayPublic → TestHTTPLoginRotationLogoutAndCSRF, TestFoundationBusinessHealthRealServletOracle；公开health不创建会话，实际业务health真实Servlet差分。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java:93": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthIntegrationTest.reminderStreamRequiresAuthentication → TestHTTPLoginRotationLogoutAndCSRF；匿名GET /api/v1/reminders/events返回401。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java:104": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthIntegrationTest.healthDetailsShouldBeHiddenWhenAnonymous → TestFoundationActuatorRealServletOracle；真实Servlet与Go对照匿名健康响应，详情可见性依认证状态。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java:121": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthIntegrationTest.meShouldReportAnonymous → TestHTTPLoginRotationLogoutAndCSRF；me匿名成功、authEnabled=true、username=null。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java:135": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthIntegrationTest.shouldRejectWrongPassword → TestHTTPDisabledValidationAndLockout, TestFoundationAuthRealServletOracle；错误密码统一401不可枚举；实际认证协议Java对照。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java:159": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthIntegrationTest.loginThenLogout → TestHTTPLoginRotationLogoutAndCSRF；登录旋转会话、旧Cookie失效、注销删除Cookie和服务端记录。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java:180": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthIntegrationTest.writeEndpointsShouldWorkAfterLogin → TestHTTPLoginRotationLogoutAndCSRF；登录后有效新CSRF写成功，旧token/缺token拒绝。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthLockoutIntegrationTest.java:74": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/http_test.go",
+        "backend-go/internal/platform/auth/service_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthLockoutIntegrationTest.locksAfterConsecutiveFailures → TestHTTPDisabledValidationAndLockout, TestServiceLockoutSerialContract；连续失败达到阈值锁定，正确凭据在锁期内仍429。"
+    },
+    "test:backend/src/test/java/com/personalos/common/auth/AuthLockoutIntegrationTest.java:92": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/auth/service_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：AuthLockoutIntegrationTest.unlocksAfterLockoutExpires → TestServiceLockoutSerialContract；可控时钟越过锁期，正确登录恢复并重置失败计数。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:47": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.parsesSimplePairs → TestParseDotEnvJavaContract；注释/空行/首个等号及键值strip。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:65": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.keepsEqualsAndColonInValue → TestParseDotEnvJavaContract；值中等号与冒号完整保留。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:77": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.doesNotStripInlineComment → TestParseDotEnvJavaContract；行内井号是值的一部分。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:87": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.unquotesOnlyPairedQuotes → TestParseDotEnvJavaContract；仅剥离配对首尾单/双引号，错配保留。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:103": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.stripsExportPrefix → TestParseDotEnvJavaContract；export前缀行为与Java表格样例一致。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:112": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.skipsMalformedLines → TestParseDotEnvJavaContract；无等号/空键行忽略。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:125": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.laterDuplicateWins → TestDotEnvJavaWhitespaceAndOrderedDuplicate；重复键后值覆盖并维持Java顺序。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:138": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.keepsEmptyValue → TestParseDotEnvJavaContract；空值保留，非缺失键。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:146": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.testEnvironmentMustNotReadLocalSecrets → TestEnvironmentDefaultAndExplicitDisableNeverLoadLocalSecrets；测试profile和显式禁用不读取本地文件。"
+    },
+    "test:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java:157": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/config/dotenv_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：DotEnvParserTest.localStartupKeepsFallbackAndEnvironmentPriority → TestEnvironmentNearestFileSystemPriorityAndEmptyOverride；最近临时文件回落，显式环境及空覆盖优先。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java:81": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationTransactionTest.businessExceptionDoesNotLeaveConfirmedStatus → TestPostgresP8ConfirmationTransactionOutcomes；business子例：业务失败独立提交FAILED。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java:96": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationTransactionTest.runtimeExceptionIsRecordedAsFailed → TestPostgresP8ConfirmationTransactionOutcomes；runtime子例：普通错误独立提交FAILED。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java:108": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationTransactionTest.resourceNotFoundIsCancelledNotFailed → TestPostgresP8ConfirmationTransactionOutcomes；missing子例：目标不存在为CANCELLED且零影响。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java:122": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationTransactionTest.successRecordsConfirmed → TestPostgresP8ConfirmationTransactionOutcomes；success子例：CONFIRMED、影响3条、已执行摘要。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java:137": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationTransactionTest.failedConfirmationIsStillSingleUse → TestPostgresP8ConfirmationTransactionOutcomes；失败后原token重放拒绝，处理器仅一次。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java:154": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationTransactionTest.claimCommitsBeforeHandlerRuns → TestPostgresP8ConfirmationTransactionOutcomes；处理器内由第二连接池读到已提交CONFIRMED和resolved_at。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java:168": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationTransactionTest.failureDoesNotRollbackClaim → TestPostgresP8ConfirmationTransactionOutcomes；处理器错误后第二池观察终态及解决时间，非业务事务回滚。"
+    },
+    "test:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java:182": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationTransactionTest.expiredMarkerSurvivesTheException → TestPostgresP8ConfirmationTransactionOutcomes；真实SQL设置过去期限，异常返回后EXPIRED/时间与过滤列表仍存在。"
+    },
+    "test:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java:47": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/p8_extract_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PlainTextExtractorTest.readsPlainText → TestP8PlainExtractionFallbackUnsupportedAndBlank；text/plain中文原文提取。"
+    },
+    "test:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java:58": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/p8_extract_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PlainTextExtractorTest.fallsBackToExtension → TestP8PlainExtractionFallbackUnsupportedAndBlank；octet-stream的md、空媒体json按扩展名提取。"
+    },
+    "test:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java:67": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/attachments_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PlainTextExtractorTest.readsPdfTextLayer → TestPDFActualExtractionAndFailure；实际Poppler从带文本层PDF提取，非手填字符串。"
+    },
+    "test:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java:77": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/p8_extract_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PlainTextExtractorTest.unsupportedTypeYieldsEmpty → TestP8PlainExtractionFallbackUnsupportedAndBlank；zip/image不作为普通文本提取。"
+    },
+    "test:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java:86": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/p8_extract_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PlainTextExtractorTest.truncatesOverlongText → TestP8PlainExtractionFallbackUnsupportedAndBlank；附件上下文恰好8000 UTF-16且带截断提示。"
+    },
+    "test:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java:99": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/p8_extract_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：PlainTextExtractorTest.blankOrBrokenYieldsEmpty → TestP8PlainExtractionFallbackUnsupportedAndBlank；空字节、空白和坏PDF均无文本。"
+    },
+    "test:backend/src/test/java/com/personalos/common/exception/ErrorEnvelopeIntegrationTest.java:71": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/errors_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ErrorEnvelopeIntegrationTest.malformedJsonIsClientError → TestJavaExceptionHandler36ResponseFixtures；真实Java malformed JSON错误快照对照400/40000及安全消息。"
+    },
+    "test:backend/src/test/java/com/personalos/common/exception/ErrorEnvelopeIntegrationTest.java:85": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/errors_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ErrorEnvelopeIntegrationTest.methodNotAllowedIsClientError → TestJavaExceptionHandler36ResponseFixtures；405/40500、Allow与WARN分类对照。"
+    },
+    "test:backend/src/test/java/com/personalos/common/exception/ErrorEnvelopeIntegrationTest.java:95": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_batch_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ErrorEnvelopeIntegrationTest.hugePageNumberReturnsEmptyPage → TestPostgresP8TaskBatchTagsPaginationAndStats；真实任务溢出页为空，总数不变。"
+    },
+    "test:backend/src/test/java/com/personalos/common/exception/ErrorEnvelopeIntegrationTest.java:111": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ErrorEnvelopeIntegrationTest.hugePageNumberOnSessionSearchReturnsEmptyPage → TestP8SessionAndDocumentListSearchContracts；真实会话2147483647页为空且total=25。"
+    },
+    "test:backend/src/test/java/com/personalos/common/exception/ErrorEnvelopeIntegrationTest.java:129": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/errors_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ErrorEnvelopeIntegrationTest.unacceptableResponseTypeIsNotServerError → TestJavaExceptionHandler36ResponseFixtures；不接受响应媒体为406而非500，实际MVC fixture对照。"
+    },
+    "test:backend/src/test/java/com/personalos/common/monitoring/MonitoringIntegrationTest.java:33": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "backend-go/internal/app/actuator_metrics_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：MonitoringIntegrationTest.internalScrapeExportsMetricsButDoesNotExposeApplicationOrEnvironment → TestFoundationPostgresManagementAndListeners, TestFoundationPostgresActualHTTPAndRuntimeMetrics；独立管理监听真实health/指标、业务/环境路径拒绝、应用端不暴露指标；真实HTTP计数与Go运行时样本。"
+    },
+    "test:backend/src/test/java/com/personalos/common/text/TextsTest.java:20": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/text/text_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TextsTest.trimToNullShouldCollapseBlankToNull → TestJavaTextsNullStripRequiredAndUTF16Boundaries；nil/空串/Java空白归nil，NBSP等不误删。"
+    },
+    "test:backend/src/test/java/com/personalos/common/text/TextsTest.java:29": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/text/text_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TextsTest.trimToNullShouldStripEndsOnly → TestJavaTextsNullStripRequiredAndUTF16Boundaries；只裁首尾，内部空白保留。"
+    },
+    "test:backend/src/test/java/com/personalos/common/text/TextsTest.java:36": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/text/text_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TextsTest.requireNotBlankShouldRejectBlank → TestJavaTextsNullStripRequiredAndUTF16Boundaries；空值抛ValidationFailed且精确标签错误文案。"
+    },
+    "test:backend/src/test/java/com/personalos/common/text/TextsTest.java:49": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/text/text_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TextsTest.requireNotBlankShouldReturnStripped → TestJavaTextsNullStripRequiredAndUTF16Boundaries；非空返回Java strip后的值。"
+    },
+    "test:backend/src/test/java/com/personalos/common/text/TextsTest.java:56": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/text/text_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TextsTest.requireNotBlankShouldAcceptExactLimit → TestJavaTextsNullStripRequiredAndUTF16Boundaries；裁剪后200字符/100非BMP字符等于200 UTF-16通过。"
+    },
+    "test:backend/src/test/java/com/personalos/common/text/TextsTest.java:65": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/text/text_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TextsTest.requireNotBlankShouldRejectOverLimit → TestJavaTextsNullStripRequiredAndUTF16Boundaries；201单元/101非BMP拒绝并给出精确长度文案。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/ModelConcurrencyFilterTest.java:24": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/concurrency_test.go",
+        "backend-go/internal/platform/modelgate/gate_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ModelConcurrencyFilterTest.asyncPermitIsHeldUntilCompletionAndReleasedOnlyOnce → TestConcurrencyHoldsStreamUntilHandlerCompletion, TestLocalBoundAndIdempotentRelease；真实流处理完成前持有permit，Gate并发/重复release不超额。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/ModelConcurrencyFilterTest.java:34": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/concurrency_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ModelConcurrencyFilterTest.failuresAndSyncCompletionReleasePermit → TestConcurrencyCleanupOnPanicCancellationAndNormalRoutes；panic/取消/同步完成均释放，普通路径不获取模型许可。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/RequestIdFilterTest.java:30": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：RequestIdFilterTest.passesThroughSafeInboundId → TestRequestIDValidationAndJavaTrim, TestConcurrentRequestIDsDoNotLeak；安全字符与Java trim保留入站ID，context/响应头一致且并发不串线。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/RequestIdFilterTest.java:45": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：RequestIdFilterTest.rejectsLogInjection → TestRequestIDValidationAndJavaTrim；换行/非法字符拒绝并重新生成。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/RequestIdFilterTest.java:59": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：RequestIdFilterTest.rejectsOverlongInboundId → TestRequestIDValidationAndJavaTrim；64字符边界允许，65字符拒绝并生成12位hex。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/RequestIdFilterTest.java:71": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：RequestIdFilterTest.generatesWhenHeaderMissing → TestRequestIDValidationAndJavaTrim；缺失ID生成12位hex；context传播另由并发链测试覆盖。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/WorkerIsolationFilterTest.java:12": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：WorkerIsolationFilterTest.workerRejectsBusinessRequestsBeforeCallingDownstream → TestFoundationHTTPWorkerIsolation；三个Worker在认证/限流/业务依赖前空404且无Cookie。"
+    },
+    "test:backend/src/test/java/com/personalos/common/web/WorkerIsolationFilterTest.java:20": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_http_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：WorkerIsolationFilterTest.workerHealthAndApiRequestsRemainAccessibleOnTheirRespectiveRoles → TestFoundationHTTPWorkerIsolation, TestFoundationHTTPRoutesAndErrorBoundary, TestFoundationPostgresManagementAndListeners；业务监听Worker隔离，health/指标走原独立管理监听；API/combined业务链仍可达。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:97": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_batch_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.taskTagsAreBatchLoaded → TestPostgresP8TaskBatchTagsPaginationAndStats；真实驱动计数：20条任务页恰好三查询、25ID批取两查询，顺序不变。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:123": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.shouldPageSessions → TestP8SessionAndDocumentListSearchContracts；25会话20+5分页、total与无重复遗漏。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:141": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.shouldSearchSessions → TestP8SessionAndDocumentListSearchContracts；会话标题唯一命中、缺失词零命中。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:159": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.shouldClampSessionParams → TestP8SessionAndDocumentListSearchContracts；size1000→100、0→20、负页→0、越界与int最大页空。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:176": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.shouldKeepMessageCountsAcrossPages → TestP8SessionAndDocumentListSearchContracts；活跃会话第一页消息数2，其余会话参与分页。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:205": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.shouldKeepFullListEndpoint → TestP8SessionAndDocumentListSearchContracts；原完整会话端点仍含本次25条，不被默认分页截断。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:223": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.shouldPageDocuments → TestP8SessionAndDocumentListSearchContracts；25真实文档/向量20+5页、total与不重漏。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:243": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.shouldSearchDocuments → TestP8SessionAndDocumentListSearchContracts；文档标题与文件名分别唯一命中、缺失词零命中。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:261": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.shouldClampDocumentParams → TestP8SessionAndDocumentListSearchContracts；文档size/负页/溢出与会话同边界。"
+    },
+    "test:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java:277": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ListSearchIntegrationTest.shouldKeepFullDocumentEndpoint → TestP8SessionAndDocumentListSearchContracts；原完整文档端点仍含本次25条。"
+    },
+    "test:backend/src/test/java/com/personalos/support/InstantsTest.java:22": {
+      "status": "implemented",
+      "evidence": [
+        "scripts/migration/test_go_cutover.py",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：InstantsTest.nanosecondValueEqualsItsMicrosecondRoundedForm → scripts/migration/test_go_cutover.py:CutoverStoragePrecisionTest.test_original_nanoseconds_and_database_rounding_agree；原职责是测试辅助比较；迁移Python比较器按PG微秒舍入，含跨秒与五位小数，不新增生产API。"
+    },
+    "test:backend/src/test/java/com/personalos/support/InstantsTest.java:29": {
+      "status": "implemented",
+      "evidence": [
+        "scripts/migration/test_go_cutover.py",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：InstantsTest.oneMillisecondApartIsDifferent → scripts/migration/test_go_cutover.py:CutoverStoragePrecisionTest.test_one_millisecond_and_null_are_not_hidden；一毫秒差异仍检测，未引入宽容时间窗。"
+    },
+    "test:backend/src/test/java/com/personalos/support/InstantsTest.java:35": {
+      "status": "implemented",
+      "evidence": [
+        "scripts/migration/test_go_cutover.py",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：InstantsTest.nullHandling → scripts/migration/test_go_cutover.py:CutoverStoragePrecisionTest.test_one_millisecond_and_null_are_not_hidden；null仅等于null，日期与null有差异。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:67": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.createTaskInsertsRow → TestP8TaskHTTPNoKeyMissingAndTagValidation；真实HTTP201后的ID由仓储读回，标题持久。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:79": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.blankTitleIsRejected → TestFoundationP2TaskRoutesAndIdempotency；空白标题HTTP400。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:89": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "backend-go/internal/app/foundation_p8_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.listSupportsFiltering → TestFoundationP2TaskRoutesAndIdempotency, TestP8TaskHTTPNoKeyMissingAndTagValidation；真实HTTP tag过滤及status/priority/keyword组合仅命中目标ID。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:100": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.invalidEnumQueryParamIsClientError → TestFoundationP2TaskRoutesAndIdempotency；非法status参数400，不能进入服务查询。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:109": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.unknownTaskReturns404 → TestP8TaskHTTPNoKeyMissingAndTagValidation；不存在UUID真实HTTP404/40004。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:118": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.patchOnlyUpdatesPresentFields → TestPostgresP8TaskTagsAndLifecycle；仅改title保留description/due/tags，PATCH省略与清空分离。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:139": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.completeAndReopenMaintainInvariant → TestPostgresP8TaskTagsAndLifecycle；完成设置时间/previousStatus，重开清时间和previousStatus。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:155": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.deleteIsImmediateForHumans → TestP8TaskHTTPNoKeyMissingAndTagValidation；DELETE200 deleted=true，随即GET404，无确认等待。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:169": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.sameIdempotencyKeyCreatesOnce → TestFoundationP2TaskRoutesAndIdempotency, TestFoundationP2ConfirmationAndCrossConnectionIdempotency；同key返回同ID，双API24路并发最终仅一行。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:185": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.sameKeyWithDifferentBodyConflicts → TestFoundationP2TaskRoutesAndIdempotency；同key不同digest为409/40001。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:199": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.invalidIdempotencyKeyIsRejected → TestFoundationP2TaskRoutesAndIdempotency；过短幂等key在写前400。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:209": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.withoutIdempotencyKeyNoDeduplication → TestP8TaskHTTPNoKeyMissingAndTagValidation；两次同内容无key创建不同ID，搜索确有两行。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:218": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.deleteIsIdempotentWithKey → TestFoundationP2TaskRoutesAndIdempotency；相同key重复DELETE均200。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:235": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.bulkDeleteRespectsLimit → TestPostgresP8TaskOrderingAndBulkDelete；51ID拒绝，无批量写入。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:248": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.bulkDeleteReturnsAffectedCount → TestPostgresP8TaskOrderingAndBulkDelete；重复ID/缺失ID不虚增，实际删除两行。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:260": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/model_test.go",
+        "backend-go/internal/business/task/p8_batch_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.queryPagingParamsAreNormalized → TestQueryAndTitleBoundaries, TestPostgresP8TaskBatchTagsPaginationAndStats；负页/size上限/空tag归一及真实SQL溢出页。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:268": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_batch_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.listIsPaginatedWithTotal → TestPostgresP8TaskBatchTagsPaginationAndStats；25真实任务第一页20条、总数25。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:285": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.searchOrdersUnfinishedFirstThenByDueDate → TestPostgresP8TaskOrderingAndBulkDelete；未完成优先、截止升序、null在后、完成任务最后。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:304": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_batch_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.paginationCoversEveryTaskExactlyOnce → TestPostgresP8TaskBatchTagsPaginationAndStats；每页4条遍历25任务、无重漏且保持排序。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:345": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.missingTaskRaisesNotFound → TestPostgresP8TaskTagsAndLifecycle；删除后service.Get返回ErrNotFound。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:356": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_batch_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.statsAreAggregatedNotPaginated → TestPostgresP8TaskBatchTagsPaginationAndStats；全局待办统计不受页大小影响，完成后减一。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:388": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.reopenRestoresDoingStatus → TestPostgresP8TaskTagsAndLifecycle；DOING完成后重开恢复DOING。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:405": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.reopenTodoStaysTodo → TestPostgresP8TaskTagsAndLifecycle；TODO完成后重开保持TODO。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:416": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.repeatedCompleteDoesNotOverwritePreviousStatus → TestPostgresP8TaskTagsAndLifecycle；连续两次完成仍保留首次previousStatus。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java:432": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskApiIntegrationTest.previousStatusIsRecomputedAfterReopen → TestPostgresP8TaskTagsAndLifecycle；同任务重开后改DOING，新一轮完成记录新previousStatus。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:80": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldKeepTagOrderOnCreate → TestPostgresP8TaskTagsAndLifecycle；真实create/get标签顺序一致。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:89": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldReplaceTags → TestPostgresP8TaskTagsAndLifecycle；PATCH替换按新顺序持久。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:100": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldClearTagsWithEmptyArray → TestPostgresP8TaskTagsAndLifecycle；显式空数组清空，读回非nil空数组。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:111": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldKeepTagsWhenOmitted → TestPostgresP8TaskTagsAndLifecycle；仅改标题不改标签。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:122": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldRejectTooManyTags → TestP8TaskHTTPNoKeyMissingAndTagValidation；六个唯一标签HTTP400，无部分任务写入。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:134": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldRejectTooLongTag → TestP8TaskHTTPNoKeyMissingAndTagValidation；21UTF-16标签HTTP400，无部分任务写入。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:145": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldFilterByTag → TestPostgresP8TaskTagsAndLifecycle；按本次唯一标签精确筛到一条。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:161": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldMatchTagExactly → TestPostgresP8TaskTagsAndLifecycle；截短标签不能匹配，不用LIKE模糊过滤。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:173": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldListDistinctTags → TestPostgresP8TaskTagsAndLifecycle；去重列表本次标签仅一次。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:194": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldReturnEmptyTagList → TestPostgresP8EmptyTaskTagList；空独立真实数据库ListTags返回非nil空列表。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java:205": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsIntegrationTest.shouldCascadeTagsOnDelete → TestPostgresP8TaskTagsAndLifecycle；删除后直接SQL确认task_tag零行。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsTest.java:20": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/model_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsTest.shouldKeepOrder → TestTagsKeepOrderAndRejectLimits；工作/学习标签保持输入顺序。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsTest.java:27": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/model_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsTest.shouldNormalizeDuplicatesAndBlanks → TestTagsKeepOrderAndRejectLimits；首尾strip、空白忽略、首次重复保留。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsTest.java:34": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/model_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsTest.shouldReturnEmptyForNull → TestP8TagEmptyUniqueAndExactBoundaries；nil/空/全空白均非nil空列表。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsTest.java:42": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/model_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsTest.shouldRejectTooLongTag → TestTagsKeepOrderAndRejectLimits；11非BMP字符超过20UTF-16拒绝。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsTest.java:52": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/model_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsTest.shouldRejectTooManyTags → TestTagsKeepOrderAndRejectLimits；六唯一标签拒绝。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsTest.java:62": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/model_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsTest.shouldAllowBoundaryValues → TestP8TagEmptyUniqueAndExactBoundaries；恰好20UTF-16、五标签、10非BMP均通过。"
+    },
+    "test:backend/src/test/java/com/personalos/task/TaskTagsTest.java:71": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/model_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：TaskTagsTest.shouldCountUniqueTags → TestP8TagEmptyUniqueAndExactBoundaries；先去重再限量，六输入三唯一通过。"
+    },
+    "test:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java:63": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationIntegrationTest.wrongTokenIsRejected → TestPostgresP8ConfirmationTransactionOutcomes；错误token不消费占位、不调用处理器；正确token随后仍可执行。"
+    },
+    "test:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java:79": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationIntegrationTest.confirmationIsSingleUse → TestPostgresP8ConfirmationTransactionOutcomes, TestFoundationP2ConfirmationAndCrossConnectionIdempotency；终态token重放拒绝、HTTP真实链只一次写入。"
+    },
+    "test:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java:95": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationIntegrationTest.expiredConfirmationIsRejected → TestPostgresP8ConfirmationTransactionOutcomes；过去期限拒绝并提交EXPIRED。"
+    },
+    "test:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java:112": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_lifecycle_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationIntegrationTest.cancelledConfirmationCannotBeConfirmed → TestPostgresP8CancelledUnknownAndFilteredConfirmations；真实取消后确认拒绝、处理器零调用。"
+    },
+    "test:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java:128": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationIntegrationTest.missingTargetIsHandledGracefully → TestPostgresP8ConfirmationTransactionOutcomes；目标已不存在转CANCELLED、Executed=false/count=0，无错误副作用。"
+    },
+    "test:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java:148": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationIntegrationTest.scheduleAndPriorityApplyOnlyAfterConfirmation → TestPostgresP8TaskConfirmationDefersScheduleAndPriority；真实任务确认前原截止/优先级不变，两确认后准确写入。"
+    },
+    "test:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java:173": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_lifecycle_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationIntegrationTest.listFiltersByConversationAndStatus → TestPostgresP8CancelledUnknownAndFilteredConfirmations；同会话Pending/Cancelled及默认Pending精确筛选，排除另一会话。"
+    },
+    "test:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java:186": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_lifecycle_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationIntegrationTest.unknownConfirmationRaisesNotFound → TestPostgresP8CancelledUnknownAndFilteredConfirmations；不存在UUID为ResourceNotFound、处理器零调用。"
+    },
+    "test:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java:193": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明：ConfirmationIntegrationTest.onlyOneConcurrentConfirmWins → TestPostgresCASAcrossConnections；双池24并发只一成功、处理器仅一次，终态从另一池可见。"
+    },
+    "file:backend/src/test/java/com/personalos/PersonalOsApplicationTests.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/migration/postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/platform/health/http_test.go",
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "backend-go/internal/business/mcp/registry_test.go",
+        "backend-go/internal/business/mcp/personal_test.go",
+        "backend-go/internal/platform/http/errors_test.go",
+        "backend-go/internal/app/foundation_http_test.go"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/common/api/ApiResponseTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/common/api/PageDtoTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/api/response_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/chat/p8_extract_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/business/chat/attachments_test.go"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/common/exception/ErrorEnvelopeIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/errors_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/business/task/p8_batch_integration_test.go",
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/common/monitoring/MonitoringIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "backend-go/internal/app/actuator_metrics_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/common/text/TextsTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/text/text_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/common/web/RequestIdFilterTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/platform/http/request_id_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/common/web/WorkerIsolationFilterTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_http_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_postgres_integration_test.go"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_batch_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/support/InstantsTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "scripts/migration/test_go_cutover.py",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/app/foundation_p8_task_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "backend-go/internal/business/task/model_test.go",
+        "backend-go/internal/business/task/p8_batch_integration_test.go"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_p8_task_integration_test.go"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/task/TaskTagsTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/task/model_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+    },
+    "file:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java": {
+      "status": "implemented",
+      "evidence": [
+        "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
+        "specs/033-go-rewrite/p8-test-mapping.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md",
+        "backend-go/internal/app/foundation_task_integration_test.go",
+        "backend-go/internal/business/confirmation/p8_lifecycle_integration_test.go",
+        "backend-go/internal/business/task/p8_contract_integration_test.go",
+        "backend-go/internal/business/confirmation/postgres_integration_test.go"
+      ],
+      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     }
   },
   "release_gates": {
     "frontend_e2e": {
       "status": "in_progress",
-      "evidence": ["specs/033-go-rewrite/p8-e2e/README.md", "specs/033-go-rewrite/p8-e2e/browser-go.json", "specs/033-go-rewrite/p8-e2e/go/e2e-20261104-171712.json", "specs/033-go-rewrite/p8-e2e/go/cancellation.json", "specs/033-go-rewrite/p8-e2e/java/cancellation.json"]
+      "evidence": [
+        "specs/033-go-rewrite/p8-e2e/README.md",
+        "specs/033-go-rewrite/p8-e2e/browser-go.json",
+        "specs/033-go-rewrite/p8-e2e/go/e2e-20261104-171712.json",
+        "specs/033-go-rewrite/p8-e2e/go/cancellation.json",
+        "specs/033-go-rewrite/p8-e2e/java/cancellation.json"
+      ]
     },
     "java_go_differential": {
       "status": "not_started",

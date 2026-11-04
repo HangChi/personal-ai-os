@@ -619,3 +619,5 @@ P8隔离切换第10轮完整通过，日志`/tmp/personalos-p8-cutover-10.log`�
 T803d共享Java Texts/任务日程接线、附件六声明缺口及25会话/25文档列表契约补验完成。定向race、真实TLS列表与task、calendar完整包race通过；最终Go全包串行race退出0（app215.449s），日志`/tmp/personalos-p8-go-final-serial-2.log`。旧轮calendar无匹配不作为数据库证据，单独全包calendar3.043s通过；详情与失败历史见P8进度。未新增verified或解除门禁。
 
 T803e新增冲突对话双来源真实HTTP/数据库回归，回答模型零调用、两消息和两引用快照相等通过；与25会话/文档列表复验同轮race2.735s，日志`/tmp/personalos-p8-conflict-final.log`。检索边界stub范围与原Java声明相同，不冒充真实语义质量。
+
+T803f补齐剩余144声明逐项映射及25个来源测试文件证据，完整1119声明均已implemented/verified处置；不新增verified，其他条目与五门禁不变。新增无key/组合过滤/标签拒绝/立即删除及取消后拒绝/未知确认/空列表真实边界测试；`run_go_postgres_tests.py --package task --package confirmation --package app --tls --run '^Test(Postgres|P8)'`三包race通过，日志`/tmp/personalos-p8-final-mapping-db.log`。三项映射脚本单测通过，CI增加派生映射检查；T803父项仍须完成全清单职责审计。

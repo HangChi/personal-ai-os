@@ -14,6 +14,15 @@ import (
 	"personal-ai-os/backend-go/internal/business/confirmation"
 )
 
+func TestPostgresP8EmptyTaskTagList(t *testing.T) {
+	store, _ := NewPostgresStore(fixturePool(t))
+	service, _ := NewService(store)
+	tags, err := service.ListTags(context.Background())
+	if err != nil || tags == nil || len(tags) != 0 {
+		t.Fatal("empty disposable database must return [] tags", tags, err)
+	}
+}
+
 func TestPostgresP8TaskTagsAndLifecycle(t *testing.T) {
 	ctx := context.Background()
 	store, _ := NewPostgresStore(fixturePool(t))

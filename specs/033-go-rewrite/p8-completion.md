@@ -139,6 +139,14 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 
 `python3 scripts/migration/run_go_postgres_tests.py --package app --tls --run '^TestP8(ConflictingEvidence|SessionAndDocument)'`两项race通过2.735s，日志`/tmp/personalos-p8-conflict-final.log`，原42迁移及临时容器清理通过。未更改生产实现或原Java断言，逐声明台账另行记录。
 
+## T803f 剩余144声明逐项映射
+
+[p8-test-mapping.md](p8-test-mapping.md)逐行列出144个剩余声明、具体测试函数/文件和对应断言；与前阶段映射合计1119声明均有implemented/verified处置。25个来源测试文件只有其全部声明已处置才汇总证据。脚本检查固定声明集合、证据函数唯一存在及Python类方法AST；三项脚本测试验证幂等生成、缺失证据/基线漂移拒绝、其他条目/既有verified/五发布门禁不变。仅函数存在不证明测试运行，执行证据仍分别列明。
+
+新增真实边界测试：无幂等key同内容两次创建不同ID并仓储读回；HTTP状态/优先级/关键词组合过滤；六标签/21单元标签400且无部分行；立即删除后404/40004；空独立库标签为[]；取消后不能确认且处理器零调用、会话/状态/默认Pending过滤、未知确认为ResourceNotFound。首轮错误地断言确认模块错误为通用BusinessError，日志保留；修为原模块Error.Code，不改生产行为。任务HTTP错误码按原40004断言，不误用40400。
+
+最终`python3 scripts/migration/run_go_postgres_tests.py --package task --package confirmation --package app --tls --run '^Test(Postgres|P8)'`完整通过，日志`/tmp/personalos-p8-final-mapping-db.log`，三包真实库race含task/confirmation全套和app全部P8。此前失败日志`/tmp/personalos-p8-final-contract-boundaries.log`保留，修正后同链已复验。Spring Bean缺席与Instants测试辅助职责按架构对应，R-053未知TOOL保留差异明确列出；不按类名或计数批量verified。
+
 ## T805a 候选CI与T807文档
 
 独立`.github/workflows/go.yml`保留原ci.yml，Go分支/相关PR及手动触发，最小只读权限。执行全包串行race、integration vet、build、模块校验、44项Python测试/固定基线/78配置处置检查及新TLS库task/confirmation/P8回归，失败日志作为artifact。没有远端push或工作流运行，不声称GitHub已绿；它也不替代原Java/前端及浏览器/切换/人工门禁。
