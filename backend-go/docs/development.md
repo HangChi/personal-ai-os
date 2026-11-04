@@ -62,11 +62,22 @@ python3 scripts/migration/run_go_real_eval_tests.py \
 
 默认`--mode retrieval`；另加`--mode multistage`只验证固定原问题“BRIN 索引适合什么场景”的完整前台流程。两端均重新入库并核验模型输入，要求READY、recall/rewrite/rerank/evidence全OK、零warning、恰好四次前台chat调用及精确持久引用；隔离进程显式关闭后台入库审查，避免污染计数，不改变应用默认值。该模式不跑直接检索/噪声套件，不生成检索比较；报告明确1题执行、83道材料齐备题未执行和45题缺材料。2026-11-04双端通过见`p8-eval-real-20261104-224539.json`；首轮多调用失败保留，完整多阶段质量和后台审查仍未验收。
 
+另加`--mode no-evidence`运行一个补充负例“量子引力理论能否解释黑洞信息悖论的最终答案是什么？”，不是原标注查询。每端仍重新上传16篇并核验142向量；关闭隔离进程后台审查，明确执行原查询0条、84条材料齐备题未执行、45条缺材料，不跑检索/噪声套件或生成质量比较。严格要求answered=false、空引用/命中、固定无内容答复、INSUFFICIENT、四阶段全OK/零warning及恰好三次前台chat，不能调用最终回答模型。
+
+```bash
+python3 scripts/migration/run_go_real_eval_tests.py \
+  --model-env-file /absolute/project/.env \
+  --downloaded-corpus-dir /absolute/downloaded-corpus \
+  --mode no-evidence
+```
+
+默认首个失败即停止；如需独立Java对照，显式加`--backend java`，不重试Go去寻找通过样本。2026-11-04 Go报告`p8-eval-real-20261104-230130.json`与独立Java报告`p8-eval-real-20261104-230340.json`均FAIL/实际退出1：四阶段均OK、无warning、三次前台chat、answered=false、无引用或命中，但实际为CLARIFY，未满足严格INSUFFICIENT契约。保留失败，不把相同安全澄清行为认定为通过或已证明的业务缺陷；分类语义和事实验收继续开放。后续新增的安全计数/哈希字段不回填旧报告；回答与澄清正文仍仅私有本地留存。
+
 默认比较两端；可加`--backend java`或`--backend go`单独定位，但单端报告不生成对照结论。代理只允许精确的`/embeddings`、`/v1/embeddings`及对应chat路径；Java的base64向量保持请求/响应原格式，只在代理中按little-endian float32解码验证1024维/有限/非零，不改写Java基线或拆分其原有批次。原Java超出提供商批次限制时应如实失败。
 
 OpenAI知识文档输入现遵循固定Spring AI 2.0.1默认EMBED格式，包含标题/分块序号/文件名/文档ID；Ollama与普通查询字符串仍保持原行为。两端预期输入均由真实Java依赖oracle逐分块生成SHA，与各自本轮成功的真实嵌入回执比较，数据库原文/引用不变。不对已有库自动重建或重写向量。
 
-完整报告的`result=PASS`仅表示子集执行完成，质量需同时审阅严格与原判平指标。可运行`python3 scripts/migration/review_go_real_eval.py --report specs/033-go-rewrite/p8-eval-real-20261104-222729.json --write`生成独立`p8-real-model-review.json`；不请求模型、不改旧报告，拒绝失败/mock/multistage单题/指标漂移/原标注变更。2026-11-04实测两端R@5=100%，严格MRR Go0.937500/Java0.943452；原0.007判平后同0.946429。复核明确记录严格退化及未批准质量，不能用执行PASS解除门禁。
+完整报告的`result=PASS`仅表示子集执行完成，质量需同时审阅严格与原判平指标。可运行`python3 scripts/migration/review_go_real_eval.py --report specs/033-go-rewrite/p8-eval-real-20261104-222729.json --write`生成独立`p8-real-model-review.json`；不请求模型、不改旧报告，拒绝失败/mock/multistage单题/no-evidence负例/指标漂移/原标注变更。2026-11-04实测两端R@5=100%，严格MRR Go0.937500/Java0.943452；原0.007判平后同0.946429。复核明确记录严格退化及未批准质量，不能用执行PASS解除门禁。
 
 真实密钥只在独立验收/传输进程内存中，通过标准输入交给支持`--use-env-proxy`的Node运行时，使用内置fetch复用HTTPS连接；不会放入进程参数、子应用环境或文件。子应用仅持随机回环代理令牌。默认上限600请求、12聊天请求、100万输入字符、每次聊天最多1024输出token、上游90秒；不自动重试、不跟随重定向，保留证书验证。此为请求/用量上限，不等于金额承诺，报告记录提供商实际返回的token用量。完整回答和引用仅保存于新0700本地证据目录；仓库报告仅含来源/哈希/统计/原查询排序。每次失败另存，不覆盖旧报告；受控子集通过仍不自动认证历史26篇语料、多阶段RAG、事实正确性或发布门禁。
 

@@ -1,5 +1,15 @@
 # 验证记录
 
+## 2026-11-04 P8 真实无证据负例失败取证
+
+`run_go_real_eval_tests.py --mode no-evidence`以获准真实模型执行补充量子引力问题；不属于原标注，原查询执行0条、84条齐备题未执行、45条缺材料。Go与独立Java各新TLS库/原42迁移/认证API、16篇142向量及Java格式预期输入SHA核验。Go失败即停后仅单独Java对照一次，没有重试Go。
+
+Go报告`p8-eval-real-20261104-230130.json`、Java报告`p8-eval-real-20261104-230340.json`均FAIL，实际退出1；均CLARIFY、answered=false、无引用/命中、四阶段OK、零warning、恰好三次前台chat。严格INSUFFICIENT/固定答复预期不变，不因两端安全澄清相同而改成通过或宣称已证明业务缺陷。Go旧报告缺新增计数字段，只从原私有回答核对并在P8进度记录原响应SHA，不回填旧报告；回答/澄清正文不上Git。
+
+日志`/tmp/personalos-p8-real-no-evidence-1.log`、`/tmp/personalos-p8-real-no-evidence-java-1.log`；实际用量Go102132/Java104135 total tokens，无上游失败/重试，应用停止且本次容器清理。工具/两端失败报告及时提交`92a3404`。完整120项Python单测通过（5.268s，`/tmp/personalos-p8-python-negative-final.log`），覆盖严格状态、答案/引用/命中、阶段与调用数，以及负例不得作为全检索质量证据；本批无生产实现变更。T801l仅完成工具和诊断，负例语义验收及所有父项/五门禁仍开放。
+
+文档/职责证据更新后，1093文件固定SHA/104路由/27工具/95钩子/1119声明、78配置处置、144声明映射和全清单派生检查通过；三项派生审计单测及diff检查通过。逐项比较确认2415 implemented/23 in_progress、零verified及五门禁完整状态未变。`check-complete`实际退出1（`/tmp/personalos-p8-check-complete-negative-final.log`），2438项未verified/五门禁未通过；测试标签容器查询为空，未推送、部署或批准发布。
+
 ## 2026-11-04 P8 上下文预算边界对照
 
 `run_go_e2e_tests.py --mode context`与`--backend java --mode context`各新TLS空库/42迁移/认证CSRF下实际退出0。直接原G4函数得到同一首轮FAIL：1811字符当前输入41301、零上游调用，精确USER与原Java中断标记保存。六轮真实历史后下调预算，短输入均一次调用完成；Go/Java保留用户消息2/1条，明确非逐字相同，14条持久消息及旧记录均不变。恢复预算后原拒绝会话可继续，原记录不变，产物清理归零、本次进程及容器清理。

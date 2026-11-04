@@ -29464,9 +29464,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/agent-eval.py": {
       "status": "in_progress",
@@ -29484,9 +29486,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/fetch-corpus-batch3.py": {
       "status": "in_progress",
@@ -29504,9 +29508,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/fetch-corpus-browser.js": {
       "status": "in_progress",
@@ -29524,9 +29530,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/fetch-corpus-juejin.py": {
       "status": "in_progress",
@@ -29544,7 +29552,9 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
       "note": "P8职责处置：原提取器固定SHA复用，用户授权后独立采集器按原清单取得16篇公开正文并记录来源/时间/哈希，第17篇无有效正文即停。全文仅本地，未操作原fetch/main；已用获准真实模型跑两端84查询子集，仍缺10篇、历史快照/标注认证及完整质量验收。"
     },
@@ -29568,9 +29578,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。另双端BRIN单题多阶段流程/四次前台调用/引用通过，其余83道齐备题未跑。仍缺10篇/45查询、历史认证/人工事实与完整多阶段RAG验收，严格退化不被PASS掩盖，五门禁保持。"
+      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。另双端BRIN单题多阶段流程/四次前台调用/引用通过，其余83道齐备题未跑。仍缺10篇/45查询、历史认证/人工事实与完整多阶段RAG验收，严格退化不被PASS掩盖，五门禁保持。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/queries.py": {
       "status": "in_progress",
@@ -29592,9 +29604,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。另双端BRIN单题多阶段流程/四次前台调用/引用通过，其余83道齐备题未跑。仍缺10篇/45查询、历史认证/人工事实与完整多阶段RAG验收，严格退化不被PASS掩盖，五门禁保持。"
+      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。另双端BRIN单题多阶段流程/四次前台调用/引用通过，其余83道齐备题未跑。仍缺10篇/45查询、历史认证/人工事实与完整多阶段RAG验收，严格退化不被PASS掩盖，五门禁保持。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/rag-live-cases.json": {
       "status": "in_progress",
@@ -29612,9 +29626,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/rag-live-conflicts.py": {
       "status": "in_progress",
@@ -29632,9 +29648,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/rag-live-eval.py": {
       "status": "in_progress",
@@ -29652,9 +29670,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/rag-live-ingestion.py": {
       "status": "in_progress",
@@ -29672,9 +29692,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/rebuild-corpus.py": {
       "status": "in_progress",
@@ -29696,9 +29718,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。另双端BRIN单题多阶段流程/四次前台调用/引用通过，其余83道齐备题未跑。仍缺10篇/45查询、历史认证/人工事实与完整多阶段RAG验收，严格退化不被PASS掩盖，五门禁保持。"
+      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。另双端BRIN单题多阶段流程/四次前台调用/引用通过，其余83道齐备题未跑。仍缺10篇/45查询、历史认证/人工事实与完整多阶段RAG验收，严格退化不被PASS掩盖，五门禁保持。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/retrieval-eval.py": {
       "status": "in_progress",
@@ -29720,9 +29744,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。另双端BRIN单题多阶段流程/四次前台调用/引用通过，其余83道齐备题未跑。仍缺10篇/45查询、历史认证/人工事实与完整多阶段RAG验收，严格退化不被PASS掩盖，五门禁保持。"
+      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改；16篇公开正文在Java/Go各新TLS库真实模型完整执行84查询、两次问答/持久分块引用和50次噪声请求，142条1024维向量的预期输入SHA按真实Java格式核验。Go嵌入元数据遗漏已修复；两端R@5=100%，严格MRR Go0.9375/Java0.94345，唯一名次差在原0.007判平内，判平MRR同0.94643。另双端BRIN单题多阶段流程/四次前台调用/引用通过，其余83道齐备题未跑。仍缺10篇/45查询、历史认证/人工事实与完整多阶段RAG验收，严格退化不被PASS掩盖，五门禁保持。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/test_agent_eval.py": {
       "status": "in_progress",
@@ -29740,9 +29766,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:scripts/eval/to-markdown.py": {
       "status": "in_progress",
@@ -29760,9 +29788,11 @@
         "scripts/migration/java_embedding_content.py",
         "specs/033-go-rewrite/p8-eval-real-20261104-222729.json",
         "specs/033-go-rewrite/p8-real-model-review.json",
-        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json"
+        "specs/033-go-rewrite/p8-eval-real-20261104-224539.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230130.json",
+        "specs/033-go-rewrite/p8-eval-real-20261104-230340.json"
       ],
-      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。"
+      "note": "P8职责处置：原在线评估工具保留；获准真实模型已完成16篇/84查询双端检索与传统知识问答引用子集，严格与原判平指标独立记录。另双端各一道BRIN多阶段流程/四次前台调用/持久引用通过，其余83道齐备题未执行，后台审查不含在内；不替代Agent/完整多阶段RAG/人工事实验收。缺10篇/历史26篇认证及完整在线质量，继续开放。补充无证据负例两端均CLARIFY/未给确定答案及引用，三次前台调用且四阶段OK，但未满足严格INSUFFICIENT，均FAIL保留；原查询执行0条，不替代质量验收。"
     },
     "file:specs/001-project-skeleton/checklists/requirements.md": {
       "status": "implemented",
