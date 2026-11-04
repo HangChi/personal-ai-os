@@ -68,6 +68,7 @@ jobs:
           python3 scripts/migration/go_inventory.py check
           python3 scripts/migration/go_config_disposition.py
           python3 scripts/migration/go_p8_test_progress.py
+          python3 scripts/migration/go_p8_inventory_progress.py
           git diff --exit-code -- backend/src/main/resources/db/migration
       - name: Disposable TLS PostgreSQL regressions
         shell: bash

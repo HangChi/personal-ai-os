@@ -621,3 +621,7 @@ T803d共享Java Texts/任务日程接线、附件六声明缺口及25会话/25�
 T803e新增冲突对话双来源真实HTTP/数据库回归，回答模型零调用、两消息和两引用快照相等通过；与25会话/文档列表复验同轮race2.735s，日志`/tmp/personalos-p8-conflict-final.log`。检索边界stub范围与原Java声明相同，不冒充真实语义质量。
 
 T803f补齐剩余144声明逐项映射及25个来源测试文件证据，完整1119声明均已implemented/verified处置；不新增verified，其他条目与五门禁不变。新增无key/组合过滤/标签拒绝/立即删除及取消后拒绝/未知确认/空列表真实边界测试；`run_go_postgres_tests.py --package task --package confirmation --package app --tls --run '^Test(Postgres|P8)'`三包race通过，日志`/tmp/personalos-p8-final-mapping-db.log`。三项映射脚本单测通过，CI增加派生映射检查；T803父项仍须完成全清单职责审计。
+
+T803g全清单职责审计已记录1093原文件哈希/处置，57个基础/测试辅助文件显式映射并补记两路由/14钩子；2414implemented、24in_progress，零新增verified/五门禁不变。三项审计单测通过，未映射Java/哈希漂移拒绝。原Agent评估器3纯单测通过，不冒充真实语料/模型评估；演示脚本默认清空现有库，未运行。未完成职责及逐文件处置见`p8-inventory-review.md`，T803父项仍开放。
+
+审计提交前最终53项迁移Python单测通过（`/tmp/personalos-p8-python-final.log`）；Go integration vet/build/mod verify、固定基线/78配置处置/两个P8派生映射检查、workflow YAML解析与diff检查通过。`go_inventory.py check-complete`实际退出1（`/tmp/personalos-p8-check-complete-final.log`），2438项未verified、五门禁未验证；未批量升级状态，T806/T808开放。此前全包串行race及真实TLS结果见上，本批无生产实现变更。

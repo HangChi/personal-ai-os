@@ -147,6 +147,18 @@ Chrome真实Push复验中，应用端实际加密/VAPID请求被FCM接受，专�
 
 最终`python3 scripts/migration/run_go_postgres_tests.py --package task --package confirmation --package app --tls --run '^Test(Postgres|P8)'`完整通过，日志`/tmp/personalos-p8-final-mapping-db.log`，三包真实库race含task/confirmation全套和app全部P8。此前失败日志`/tmp/personalos-p8-final-contract-boundaries.log`保留，修正后同链已复验。Spring Bean缺席与Instants测试辅助职责按架构对应，R-053未知TOOL保留差异明确列出；不按类名或计数批量verified。
 
+## T803g 全清单职责审计
+
+[p8-inventory-review.md](p8-inventory-review.md)与[p8-inventory-disposition.json](p8-inventory-disposition.json)区分源代码职责、原样保留资产和未通过的真实验收。1093个原文件逐项SHA一致；57个基础/测试辅助文件显式映射到Go实现与执行证据，不按Java目录批量通过。补记两路由/14运行钩子；前阶段证据保留，104路由/27工具/95钩子/1119声明都有实现处置。
+
+原42 SQL/Java构建/前端/业务规格/历史报告分别保留：SHA相同不能证明功能通过，实际测试/部署/回退证据另列。24个文件继续in_progress：生产配置3、Push源码/测试4、演示种子1、原E2E1、在线评估集合15。演示脚本固定现有容器且默认清空业务表，未执行；只允许新建资源的授权不涵盖清空用户数据。原Agent评估器三项纯单测通过（`/tmp/personalos-p8-original-eval-unit.log`），不解除在线评估集合需要真实语料/模型的职责。
+
+三项审计脚本测试验证每文件有处置、哈希漂移/未映射Java拒绝、生成幂等、未完成任务保持开放及既有verified/五门禁不变。审计后2414项implemented、24项in_progress、零新增verified；T803父项保持开放，因为记录未完成职责不等于职责已验收。未读取本机.env、未修改原Java/前端/SQL/部署资产，未push/合并/部署。
+
+审计提交前最终验证：全部53项迁移Python单测通过（`/tmp/personalos-p8-python-final.log`），原Agent评估器3项纯单测通过；Go integration vet、build、mod verify退出0。1093文件/104路由/27工具/95钩子/1119声明固定基线、78配置处置、两个P8派生映射检查与`git diff --check`通过。候选workflow经Ruby YAML解析通过，未安装actionlint、未运行远端CI。此前最终全包串行race及真实TLS三包结果保持有效，本批只改审计脚本/记录，未重复执行长回归。
+
+实际运行`go_inventory.py check-complete`退出1（`/tmp/personalos-p8-check-complete-final.log`）：2438项均尚未verified，五发布门禁仍未验证。这是未完成验收的真实结果，未通过批量升级状态消除失败；T806与T808继续开放。
+
 ## T805a 候选CI与T807文档
 
 独立`.github/workflows/go.yml`保留原ci.yml，Go分支/相关PR及手动触发，最小只读权限。执行全包串行race、integration vet、build、模块校验、44项Python测试/固定基线/78配置处置检查及新TLS库task/confirmation/P8回归，失败日志作为artifact。没有远端push或工作流运行，不声称GitHub已绿；它也不替代原Java/前端及浏览器/切换/人工门禁。
