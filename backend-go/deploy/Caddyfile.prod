@@ -1,0 +1,33 @@
+{
+    admin off
+    http_port 8080
+    https_port 8443
+}
+
+https://{$GO_PUBLIC_HOST} {
+    root * /srv
+    encode gzip
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+        Permissions-Policy "camera=(), geolocation=(), payment=()"
+    }
+    @private path /actuator /actuator/* /livez /readyz
+    respond @private 404
+    handle /api/* {
+        reverse_proxy backend:8081 {
+            flush_interval -1
+        }
+    }
+    handle /mcp {
+        reverse_proxy backend:8081 {
+            flush_interval -1
+        }
+    }
+    handle {
+        try_files {path} /index.html
+        file_server
+    }
+}

@@ -1,0 +1,23 @@
+# Candidate only: the binary still refuses prod until the five release gates pass.
+# Requires Docker Compose 2.24.4+ for !override.
+services:
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: monitoring,prod
+      APP_SECURITY_PRODUCTIONMODE: "true"
+      SERVER_SERVLET_SESSION_COOKIE_SECURE: "true"
+  web:
+    environment:
+      GO_PUBLIC_HOST: ${GO_PUBLIC_HOST:?set GO_PUBLIC_HOST}
+    ports: !override
+      - "${GO_PUBLIC_BIND:-127.0.0.1}:${GO_HTTPS_PORT:-18443}:8443"
+      - "${GO_PUBLIC_BIND:-127.0.0.1}:${GO_HTTP_PORT:-18080}:8080"
+    tmpfs: !override [/tmp:rw,noexec,nosuid,size=16m,mode=1777]
+    volumes:
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - go-caddy-data:/data
+      - go-caddy-config:/config
+
+volumes:
+  go-caddy-data:
+  go-caddy-config:

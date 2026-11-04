@@ -164,6 +164,7 @@ P0 提交：`f255fec` 固定基线，`b125f7e` 保存规格文档，`d59f85b` �
 实施状态：2026-11-04开始。顺序、实际验证与安全差异见[P8进度](p8-completion.md)。当前先交付运维运行时和隔离部署资产；父项及五个发布门禁在各自证据完成前保持开放。
 
 - [ ] T800 适配 Go 镜像/Compose/prod/Caddy、独立管理端口/角色、凭据与非 root 运行，不替换仍在用的 Java 配置。
+- [x] T800a 独立Go/Web镜像实际构建，Go镜像五角色在新建TLS库实际验证认证/CSRF/管理隔离/non-root/SIGTERM；Compose combined/distributed/prod候选4项原生配置检查通过。完整Compose/Web反代/生产TLS仍由父项追踪。
 - [ ] T801 适配本地启动/停止/Worker discovery、备份恢复/保留清理、Push key、监控/告警/仪表盘与评估脚本。
 - [x] T801a 显式P8接入用量/操作记录独立保留期与本地cron/关闭；默认永久保留、真实TLS库严格截止/重复清理和未知TOOL占位保护通过。备份/恢复/监控仍由父项追踪。
 - [ ] T802 跑全量前端 lint/format/type-check/logic/component/build，现有 E2E 接 Go 运行；页面/组件/通知/上传下载逐项验收。

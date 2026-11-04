@@ -1,0 +1,14 @@
+**
+!frontend/
+!frontend/**
+!backend-go/
+!backend-go/deploy/
+!backend-go/deploy/Caddyfile
+**/.env*
+**/*.pem
+**/*.key
+**/*.log
+**/node_modules/
+**/dist/
+**/coverage/
+**/.DS_Store

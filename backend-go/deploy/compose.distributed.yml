@@ -1,0 +1,29 @@
+services:
+  backend:
+    environment:
+      APP_RUNTIME_ROLE: api
+      SPRING_PROFILES_ACTIVE: monitoring,runtime-api
+      APP_SHAREDSESSION_ENABLED: "true"
+      APP_SHAREDSESSION_URI: ${GO_REDIS_SESSION_URI:?set GO_REDIS_SESSION_URI}
+      APP_SHAREDSESSION_NAMESPACE: ${GO_REDIS_SESSION_NAMESPACE:?set GO_REDIS_SESSION_NAMESPACE}
+  index:
+    extends:
+      file: compose.yml
+      service: backend
+    environment:
+      APP_RUNTIME_ROLE: index
+      SPRING_PROFILES_ACTIVE: monitoring,worker-index
+  review:
+    extends:
+      file: compose.yml
+      service: backend
+    environment:
+      APP_RUNTIME_ROLE: review
+      SPRING_PROFILES_ACTIVE: monitoring,worker-review
+  delivery:
+    extends:
+      file: compose.yml
+      service: backend
+    environment:
+      APP_RUNTIME_ROLE: delivery
+      SPRING_PROFILES_ACTIVE: monitoring,worker-delivery

@@ -1,0 +1,129 @@
+name: ${GO_COMPOSE_PROJECT:-personal-ai-os-go-candidate}
+
+x-runtime: &runtime
+  image: personal-ai-os-backend-go:candidate
+  build:
+    context: ../..
+    dockerfile: backend-go/Dockerfile
+  init: true
+  user: "10001:10001"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: [/tmp:rw,noexec,nosuid,size=128m,mode=1777]
+  stop_grace_period: 40s
+  restart: unless-stopped
+  networks: [private]
+  volumes: [go-uploads:/app/data/uploads]
+  environment: &environment
+    GO_DOTENV_ENABLED: "false"
+    SPRING_PROFILES_ACTIVE: monitoring
+    APP_RUNTIME_ROLE: combined
+    SERVER_PORT: "8081"
+    MANAGEMENT_SERVER_PORT: "9091"
+    AUTH_ENABLED: "true"
+    AUTH_USERNAME: ${GO_AUTH_USERNAME:?set GO_AUTH_USERNAME}
+    AUTH_PASSWORD: ${GO_AUTH_PASSWORD:?set GO_AUTH_PASSWORD}
+    APP_SECURITY_CSRF_ENABLED: "true"
+    SERVER_SERVLET_SESSION_COOKIE_HTTPONLY: "true"
+    SERVER_SERVLET_SESSION_COOKIE_SAMESITE: Lax
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: "5432"
+    POSTGRES_DB: ${GO_POSTGRES_DB:?set GO_POSTGRES_DB}
+    POSTGRES_USER: ${GO_POSTGRES_USER:?set GO_POSTGRES_USER}
+    POSTGRES_PASSWORD: ${GO_POSTGRES_PASSWORD:?set GO_POSTGRES_PASSWORD}
+    GO_POSTGRES_SSL_MODE: verify-full
+    GO_POSTGRES_ROOT_CERT: /run/certs/postgres-ca.crt
+    AI_CHAT_UPLOAD_DIR: /app/data/uploads
+    MODEL_KEY_ENCRYPTION_KEY: ${GO_MODEL_KEY_ENCRYPTION_KEY:?set GO_MODEL_KEY_ENCRYPTION_KEY}
+    APP_RETENTION_TOKENUSAGEDAYS: ${GO_TOKEN_USAGE_RETENTION_DAYS:-0}
+    APP_RETENTION_OPERATIONRECORDDAYS: ${GO_OPERATION_RETENTION_DAYS:-0}
+    APP_RETENTION_CRON: ${GO_RETENTION_CRON:-0 30 4 * * *}
+    MCP_ENABLED: "false"
+    SPRING_AI_MCP_SERVER_ENABLED: "false"
+    OPENAI_API_KEY: ""
+  secrets:
+    - source: postgres-ca
+      target: /run/certs/postgres-ca.crt
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    networks: [private]
+    environment:
+      POSTGRES_DB: ${GO_POSTGRES_DB:?set GO_POSTGRES_DB}
+      POSTGRES_USER: ${GO_POSTGRES_USER:?set GO_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${GO_POSTGRES_PASSWORD:?set GO_POSTGRES_PASSWORD}
+      TZ: UTC
+    volumes:
+      - go-postgres:/var/lib/postgresql/data
+      - ${GO_POSTGRES_TLS_DIR:?set GO_POSTGRES_TLS_DIR}:/run/postgres-tls:ro
+    # Copy only the mounted server certificate/key; never mount the CA private key.
+    command:
+      - sh
+      - -c
+      - >-
+        mkdir -p /tmp/postgres-tls &&
+        cp /run/postgres-tls/server.crt /run/postgres-tls/server.key /tmp/postgres-tls/ &&
+        chown postgres:postgres /tmp/postgres-tls/* && chmod 600 /tmp/postgres-tls/server.key &&
+        exec docker-entrypoint.sh postgres -c ssl=on
+        -c ssl_cert_file=/tmp/postgres-tls/server.crt -c ssl_key_file=/tmp/postgres-tls/server.key
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -h 127.0.0.1 -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    image: redgate/flyway:12.4.0
+    restart: "no"
+    networks: [private]
+    environment:
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/${GO_POSTGRES_DB:?set GO_POSTGRES_DB}?sslmode=verify-full&sslrootcert=/run/certs/postgres-ca.crt
+      FLYWAY_USER: ${GO_POSTGRES_USER:?set GO_POSTGRES_USER}
+      FLYWAY_PASSWORD: ${GO_POSTGRES_PASSWORD:?set GO_POSTGRES_PASSWORD}
+      FLYWAY_BASELINE_ON_MIGRATE: "false"
+      FLYWAY_CONNECT_RETRIES: "0"
+    command: [migrate, validate]
+    volumes:
+      - ../../backend/src/main/resources/db/migration:/flyway/sql:ro
+    secrets:
+      - source: postgres-ca
+        target: /run/certs/postgres-ca.crt
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  backend:
+    <<: *runtime
+
+  web:
+    image: personal-ai-os-web-go:candidate
+    build:
+      context: ../..
+      dockerfile: backend-go/deploy/Dockerfile.web
+    restart: unless-stopped
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/config:rw,nosuid,size=16m,mode=1777, /data:rw,nosuid,size=16m,mode=1777, /tmp:rw,noexec,nosuid,size=16m,mode=1777]
+    ports: ["127.0.0.1:${GO_WEB_PORT:-18088}:8088"]
+    networks: [private]
+    depends_on: [backend]
+
+networks:
+  private:
+    driver: bridge
+
+volumes:
+  go-postgres:
+  go-uploads:
+
+secrets:
+  postgres-ca:
+    file: ${GO_POSTGRES_CA:?set GO_POSTGRES_CA}

@@ -38,3 +38,11 @@
 2026-11-04 Java全量离线verify通过：1137测试、零失败/错误/跳过，JaCoCo原覆盖率门禁通过，BUILD SUCCESS（27:49）。命令另加`-Dapp.dotenv.enabled=false -Dspring.test.context.cache.maxSize=2`，不读取现有.env。日志`/tmp/personalos-p8-java-verify.log`。
 
 前端lint/format/type-check、1151逻辑测试通过；首轮组件并发运行两项超时，保留失败记录，串行复验30文件/195测试全部通过（145.88s），随后生产构建通过（6.60s）。未改前端源码或放宽测试期限。日志`/tmp/personalos-p8-frontend-components-serial.log`、`/tmp/personalos-p8-frontend-build.log`。最后源码的integration vet/build也通过。
+
+## T800a 独立镜像与角色边界
+
+Go和原前端Web候选镜像均实际构建成功。第一次Go构建的Debian HTTP源经本机代理返回EOF，切HTTPS并保留签名验证后成功；没有关闭TLS或包签名。Dockerignore以源码/原SQL白名单排除.env、密钥、缓存和测试材料。Go运行UID10001、只读根、无capability且no-new-privileges；镜像包含Poppler22.12.0及发行版版权信息。
+
+`python3 scripts/migration/run_go_postgres_tests.py --package app --tls --run '^TestP8' --p8-image personal-ai-os-backend-go:candidate`：重跑的3个P8顶层测试race通过（3.039s），随后combined/api/index/review/delivery五种实际镜像角色全部通过。覆盖真实verify-full数据库连接、管理health/metrics、未知管理路径403、API登录Cookie/CSRF、业务不暴露监控、Worker不暴露业务、readyz503及SIGTERM退出0。无应用宿主端口、无持久卷，所有新建容器已清理。首轮smoke脚本错误把空403正文的前导换行strip后丢失状态分隔，已改为显式HTTP_STATUS标记；并非后端启动/鉴权失败。保留两轮日志`/tmp/personalos-p8-container-smoke.log`、`/tmp/personalos-p8-container-smoke-retry.log`。
+
+原生Compose配置4测试通过：缺凭据拒绝、combined非root/私有端口/原SQL、distributed角色/独立池、prod候选安全Cookie/TLS端口。候选`compose.prod.yml`仍会被二进制prod守卫拒绝，不是生产可用性证明；Caddy实际HTTP/TLS、Flyway镜像及完整Compose运行在后续验证。部署配置和操作边界见`backend-go/deploy/README.md`。首批运行时已提交`a376cc9`，本批镜像/部署定义独立提交。

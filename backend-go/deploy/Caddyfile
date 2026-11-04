@@ -1,0 +1,31 @@
+{
+    admin off
+    auto_https off
+}
+
+:8088 {
+    root * /srv
+    encode gzip
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+        Permissions-Policy "camera=(), geolocation=(), payment=()"
+    }
+    @private path /actuator /actuator/* /livez /readyz
+    respond @private 404
+    handle /api/* {
+        reverse_proxy backend:8081 {
+            flush_interval -1
+        }
+    }
+    handle /mcp {
+        reverse_proxy backend:8081 {
+            flush_interval -1
+        }
+    }
+    handle {
+        try_files {path} /index.html
+        file_server
+    }
+}

@@ -29,7 +29,7 @@ BUSINESS_PACKAGES = {"idempotency", "confirmation", "task", "model", "chat", "ca
 PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", *sorted(BUSINESS_PACKAGES), "app", "command"]
 
 
-def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None, test_pattern=None):
+def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None, test_pattern=None, p8_image=None):
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, POSTGRES_PASSWORD=password)
     container = None
@@ -113,6 +113,11 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
         test_filter = ["-run", test_pattern] if test_pattern else []
         subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration", *test_filter, target],
                        cwd=ROOT / "backend-go", env=go_env, check=True, timeout=180)
+        if p8_image:
+            if package != "app" or not tls_mode:
+                raise ValueError("P8 image smoke requires the app package with TLS")
+            from smoke_go_container import run as smoke_container
+            smoke_container(p8_image, container, go_env)
         if package == "command":
             from smoke_go_foundation import run as smoke_foundation
             with tempfile.TemporaryDirectory(prefix="personalos-go-foundation-build-") as directory:
@@ -143,9 +148,12 @@ def main():
     parser.add_argument("--flyway", action="store_true", help="migration包先以基线Java Flyway真实执行迁移；app包始终先迁移独立库")
     parser.add_argument("--backup", action="store_true", help="隐含--flyway，只在新建容器填合成数据并备份恢复到另一空库")
     parser.add_argument("--baseline", action="store_true", help="隐含--flyway，另建非空旧schema验证真实baseline-on-migrate")
+    parser.add_argument("--p8-image", help="在本次临时TLS库的容器网络中实际验证P8镜像五角色，不启动Compose")
     args = parser.parse_args()
+    if args.p8_image and (args.package != ["app"] or not args.tls):
+        parser.error("--p8-image 必须与 --package app --tls 一起使用")
     for package in args.package or PACKAGES:
-        run_package(args.image, package, args.tls, args.flyway or args.backup or args.baseline, args.backup, args.baseline, test_pattern=args.run)
+        run_package(args.image, package, args.tls, args.flyway or args.backup or args.baseline, args.backup, args.baseline, test_pattern=args.run, p8_image=args.p8_image)
 
 
 if __name__ == "__main__":
