@@ -125,6 +125,9 @@ export async function followRun(initial: ChatRun, handlers: RunHandlers, signal:
         case 'delta':
           handlers.onDelta(data.content)
           break
+        case 'warning':
+          handlers.onWarning?.({ code: String(data.code ?? ''), message: String(data.message ?? '') })
+          break
         case 'error':
           handlers.onError(data.message)
           break

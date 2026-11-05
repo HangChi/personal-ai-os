@@ -197,24 +197,11 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 		return err
 	}
 	if request.Knowledge() {
-		var err error
-		var evidence RetrievedEvidence
-		if e.RetrieveEvidence != nil {
-			evidence, err = e.RetrieveEvidence(ctx, request.Content, request.Limit())
-			hits = evidence.Citations
-		} else if e.Retrieve != nil {
-			hits, err = e.Retrieve(ctx, request.Content, request.Limit())
-		}
+		evidence, err := e.retrieveForPrompt(ctx, request.Content, request.Limit(), send)
 		if err != nil {
-			if ctx.Err() != nil {
-				return ctx.Err()
-			}
-			if e.Logger != nil {
-				e.Logger.WarnContext(ctx, "知识检索失败，本轮退回普通对话")
-			}
-			hits = nil
-			evidence = RetrievedEvidence{}
+			return err
 		}
+		hits = evidence.Citations
 		if hits == nil {
 			hits = []Citation{}
 		}

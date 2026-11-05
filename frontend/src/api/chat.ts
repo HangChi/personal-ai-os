@@ -114,12 +114,19 @@ export function listMessages(conversationId: string, query: MessageListQuery = {
 }
 
 /** 流式对话的回调集合 */
+export interface StreamWarning {
+  code: string
+  message: string
+}
+
 export interface StreamHandlers {
   /** 流建立后触发一次 */
   onStart?: (conversationId: string) => void
   /** 知识库增强开启且检索完成后触发一次（阶段 19）；空数组表示零命中 */
   onCitations?: (citations: ChatCitation[]) => void
   onRag?: (retrieval: RagRetrieval) => void
+  /** 可恢复的降级提示；后续 delta/done 仍需继续处理。 */
+  onWarning?: (warning: StreamWarning) => void
   /** 每个内容增量触发一次 */
   onDelta: (content: string) => void
   /** 正常结束，参数为完整回复 */
@@ -343,6 +350,9 @@ function dispatchEvent(eventName: string, payload: string, handlers: StreamHandl
       break
     case 'delta':
       handlers.onDelta(String(parsed.content ?? ''))
+      break
+    case 'warning':
+      handlers.onWarning?.({ code: String(parsed.code ?? ''), message: String(parsed.message ?? '') })
       break
     case 'done':
       handlers.onDone(String(parsed.content ?? ''), {

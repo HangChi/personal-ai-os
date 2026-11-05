@@ -29,7 +29,7 @@ import {
 } from '@/api/chat-runs'
 import { listToolInvocations } from '@/api/activity'
 import { cancelOperation, confirmOperation, listConfirmations } from '@/api/confirmations'
-import type { ContextUsage } from '@/api/chat'
+import type { ContextUsage, StreamWarning } from '@/api/chat'
 import type {
   ChatAttachment,
   ChatCitation,
@@ -82,6 +82,22 @@ export const useChatStore = defineStore('chat', () => {
   const loadingSessions = ref(false)
   const loadingMessages = ref(false)
   const error = ref<string | null>(null)
+  const warnings = ref<StreamWarning[]>([])
+
+  function recordWarning(warning: StreamWarning): void {
+    if (!warnings.value.some((item) => item.code === warning.code && item.message === warning.message)) {
+      warnings.value.push(warning)
+    }
+    if (warning.code === 'KNOWLEDGE_RETRIEVAL_FAILED') retrievalState.value = 'done'
+  }
+
+  function restoreWarnings(run: ChatRun | null): void {
+    warnings.value = []
+    for (const event of run?.events ?? []) {
+      if (event.name === 'reset') warnings.value = []
+      if (event.name === 'warning') recordWarning(JSON.parse(event.payload) as StreamWarning)
+    }
+  }
 
   /**
    * 当前会话的待确认操作。
@@ -263,6 +279,7 @@ export const useChatStore = defineStore('chat', () => {
     const reqSeq = ++sessionReqSeq
     currentConversationId.value = conversationId
     activeRun.value = null
+    warnings.value = []
     liveActivities.value = []
     toolTrail.value = []
     toolHistory.value = []
@@ -293,6 +310,7 @@ export const useChatStore = defineStore('chat', () => {
         const run = await latestRun(conversationId)
         if (reqSeq !== sessionReqSeq) return
         activeRun.value = run
+        restoreWarnings(run)
         if (run?.status === 'RUNNING') void trackRun(run)
       } catch {
         /* 执行记录查询失败不清空已加载的消息 */
@@ -634,6 +652,7 @@ export const useChatStore = defineStore('chat', () => {
     const controller = new AbortController()
     abortController = controller
     activeRun.value = run
+    warnings.value = []
     streaming.value = true
     reconnecting.value = false
     streamingContent.value = ''
@@ -652,6 +671,9 @@ export const useChatStore = defineStore('chat', () => {
             streamingContent.value = ''
             liveActivities.value = []
             error.value = null
+            warnings.value = []
+            liveCitations.value = []
+            liveRag.value = null
           },
           onActivity: (activity) => {
             const index = liveActivities.value.findIndex((item) => item.id === activity.id)
@@ -662,6 +684,7 @@ export const useChatStore = defineStore('chat', () => {
           onRag: (retrieval) => {
             liveRag.value = retrieval
           },
+          onWarning: recordWarning,
           onCitations: (citations) => {
             liveCitations.value = citations
             retrievalState.value = 'done'
@@ -909,6 +932,7 @@ export const useChatStore = defineStore('chat', () => {
     loadingSessions,
     loadingMessages,
     error,
+    warnings,
     pendingConfirmations,
     toolTrail,
     toolHistory,

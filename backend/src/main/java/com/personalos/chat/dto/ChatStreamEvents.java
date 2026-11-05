@@ -33,6 +33,10 @@ public final class ChatStreamEvents {
     public record Delta(String content) {
     }
 
+    /** 事件 {@code warning}：本轮已降级但仍继续生成；不得结束执行或释放模型租约。 */
+    public record Warning(String code, String message) {
+    }
+
     /**
      * 事件 {@code done}：正常结束时推送，携带完整回复。
      *

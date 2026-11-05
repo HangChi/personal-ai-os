@@ -627,6 +627,8 @@ public class ChatCompletionService {
         KnowledgeSearchPort port = knowledgeSearch.getIfAvailable();
         if (port == null) {
             log.warn("知识库增强开启但检索端口不可用，本轮降级为普通对话 conversationId={}", conversationId);
+            send(emitter, "warning", new ChatStreamEvents.Warning("KNOWLEDGE_RETRIEVAL_FAILED",
+                    "知识库检索失败，本轮未使用知识库回答"));
         } else {
             try {
                 var result = port.retrieve(userContent, topK);
@@ -634,10 +636,9 @@ public class ChatCompletionService {
                 hits = result.hits();
             } catch (RuntimeException ex) {
                 log.warn("知识库检索失败，本轮降级 conversationId={}", conversationId, ex);
-                send(emitter, EVENT_ERROR,
-                        new ChatStreamEvents.Error(ErrorCode.AI_UPSTREAM_ERROR.getCode(),
+                send(emitter, "warning",
+                        new ChatStreamEvents.Warning("KNOWLEDGE_RETRIEVAL_FAILED",
                                 "知识库检索失败，本轮未使用知识库回答"));
-                return List.of();
             }
         }
         // 检索结果先于生成内容告知用户：N=0 也发（前端据此关闭「正在检索」态）

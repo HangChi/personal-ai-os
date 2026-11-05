@@ -165,3 +165,18 @@ fetchImpl = () => responseOf(['event: error\ndata: {"message":"上游错误"}\n\
 const serverError = recorder()
 await streamChat('error', 'hi', serverError.handlers)
 eq('已收到服务端错误时保留原始错误', serverError.log.error, '上游错误')
+
+fetchImpl = () =>
+  responseOf([
+    'event: warning\ndata: {"code":"KNOWLEDGE_RETRIEVAL_FAILED","message":"知识库检索失败，本轮未使用知识库回答"}\n\n',
+    'event: delta\ndata: {"content":"普通回答"}\n\n',
+    'event: done\ndata: {"content":"普通回答","promptTokens":1}\n\n',
+  ])
+const degraded = recorder()
+const warnings = []
+degraded.handlers.onWarning = (warning) => warnings.push(warning)
+await streamChat('degraded', 'hi', degraded.handlers)
+eq('检索降级提示保留可识别代码', warnings[0]?.code, 'KNOWLEDGE_RETRIEVAL_FAILED')
+eq('非终态提示不触发失败回调', degraded.log.error, null)
+eq('降级后继续接收回答增量', degraded.log.deltas.join(''), '普通回答')
+eq('降级后正常完成', degraded.log.done?.content, '普通回答')

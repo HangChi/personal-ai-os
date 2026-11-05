@@ -38,6 +38,38 @@ loseResponse = true
 await store.send('原内容')
 await store.send('修改后的内容')
 check('修改内容后使用新幂等键', attempts[3] !== attempts[4])
+// Nonterminal warnings survive completion and refresh, but never leak into another conversation.
+const warning = { code: 'KNOWLEDGE_RETRIEVAL_FAILED', message: '知识库检索失败，本轮未使用知识库回答' }
+const event = (id, name, data) => ({ id, name, payload: JSON.stringify(data) })
+const degradedRun = {
+  id: 'degraded',
+  conversationId: id,
+  status: 'COMPLETED',
+  events: [
+    event(1, 'warning', warning),
+    event(2, 'delta', { content: '普通回答' }),
+    event(3, 'done', { content: '普通回答', promptTokens: 1 }),
+  ],
+}
+handlers.set(`/chat/sessions/${id}/runs`, () => Promise.resolve(degradedRun))
+handlers.set(`/chat/sessions/${id}/runs/latest`, () => Promise.resolve(degradedRun))
+await store.send('降级回答', { useKnowledge: true })
+eq('降级回复正常完成', store.streaming, false)
+eq('降级提示独立于错误状态', store.error, null)
+eq('完成后仍显示降级提示', store.warnings[0]?.code, warning.code)
+await store.selectSession(id)
+eq('刷新会话从已保存的执行记录恢复提示', store.warnings[0]?.message, warning.message)
+const resetRun = {
+  ...degradedRun,
+  events: [...degradedRun.events, event(4, 'reset', {}), event(5, 'done', { content: '重试成功' })],
+}
+handlers.set(`/chat/sessions/${id}/runs/latest`, () => Promise.resolve(resetRun))
+await store.selectSession(id)
+eq('恢复后的成功尝试不显示旧降级提示', store.warnings.length, 0)
+handlers.set(`/chat/sessions/${id}/runs/latest`, () => Promise.resolve(null))
+await store.selectSession(id)
+eq('没有执行记录时清空旧提示', store.warnings.length, 0)
+
 for (const path of [
   `/chat/sessions/${id}/runs`,
   `/chat/sessions/${id}/messages`,

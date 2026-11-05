@@ -443,7 +443,14 @@ func TestPostgresP4RetrievalPortCitationOrderingAndFailureDegradation(t *testing
 			if err != nil || events[len(events)-1] != "done" {
 				t.Fatal(events, err)
 			}
-			if enabled && (calls != 1 || events[1] != "citations") || !enabled && calls != 0 {
+			citationIndex := 1
+			if mode == "retrieval-failure" {
+				if events[1] != "warning" {
+					t.Fatal("missing degradation warning", events)
+				}
+				citationIndex = 2
+			}
+			if enabled && (calls != 1 || events[citationIndex] != "citations") || !enabled && calls != 0 {
 				t.Fatal(calls, events)
 			}
 		})

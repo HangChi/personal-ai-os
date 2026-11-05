@@ -11,6 +11,7 @@ const callbacks = () => ({
   onDelta: vi.fn(),
   onDone: vi.fn(),
   onError: vi.fn(),
+  onWarning: vi.fn(),
 })
 afterEach(() => {
   vi.useRealTimers()
@@ -52,6 +53,28 @@ describe('执行记录追赶', () => {
     expect(fetcher).toHaveBeenCalledTimes(2)
     expect(fetcher.mock.calls.every(([url]) => url.endsWith('/events?after=1'))).toBe(true)
     expect(requestData).not.toHaveBeenCalled()
+  })
+  it('重放降级提示后仍继续接收回答，不触发终态错误', async () => {
+    const handlers = callbacks()
+    const warning = { code: 'KNOWLEDGE_RETRIEVAL_FAILED', message: '知识库检索失败，本轮未使用知识库回答' }
+    await followRun(
+      {
+        id: 'r',
+        conversationId: 's',
+        status: 'COMPLETED',
+        events: [
+          event(1, 'warning', warning),
+          event(2, 'delta', { content: '普通回答' }),
+          event(3, 'done', { content: '普通回答', promptTokens: 1 }),
+        ],
+      },
+      handlers,
+      new AbortController().signal,
+    )
+    expect(handlers.onWarning).toHaveBeenCalledExactlyOnceWith(warning)
+    expect(handlers.onDelta).toHaveBeenCalledExactlyOnceWith('普通回答')
+    expect(handlers.onDone).toHaveBeenCalledOnce()
+    expect(handlers.onError).not.toHaveBeenCalled()
   })
   it('恢复边界清空旧临时回答，随后接收新活动', async () => {
     const handlers = callbacks()
