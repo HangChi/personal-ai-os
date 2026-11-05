@@ -232,20 +232,32 @@ def disposition(entry, old):
 
 
 def apply(inventory, before):
+    import go_inventory
+    import go_scope_changes
+    scope, amended = go_scope_changes.load(inventory, ROOT,
+            lambda revision, path: go_inventory.git("show", revision + ":" + path))
     result = copy.deepcopy(before)
     rows = []
     for entry in inventory["files"]:
         path = ROOT / entry["path"]
-        # This only hashes fixed tracked baseline files, never discovers local configuration.
-        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != entry["sha256"]:
+        # Original hashes remain in inventory; only explicit, committed amendments
+        # may change live bytes. Unreviewed drift continues to fail closed.
+        amendment = amended.get(entry["path"])
+        expected = amendment["candidate_sha256"] if amendment else entry["sha256"]
+        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
             raise ValueError("Baseline file drift: " + entry["path"])
         old = result["items"].get(entry["id"], {})
-        status, kind, evidence, note = disposition(entry, old)
+        if amendment:
+            status, kind = amendment["status"], "post-baseline-scope"
+            evidence = amendment["evidence"]
+            note = "冻结哈希仅代表原基线；增量范围 " + amendment["change_id"] + "：" + amendment["summary"] + "；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+        else:
+            status, kind, evidence, note = disposition(entry, old)
         for proof in evidence:
             if not (ROOT / proof).is_file():
                 raise ValueError("Missing inventory evidence: " + proof)
         if kind != "prior-stage-evidence":
-            status = "verified" if old.get("status") == "verified" else status
+            status = "verified" if old.get("status") == "verified" and not amendment else status
             evidence = list(dict.fromkeys(old.get("evidence", []) + evidence + COMMON))
             result["items"][entry["id"]] = dict(old, status=status, evidence=evidence, note="P8职责处置：" + note)
         rows.append(dict(id=entry["id"], path=entry["path"], sha256=entry["sha256"], disposition=kind,
@@ -273,6 +285,8 @@ def apply(inventory, before):
                 note="P8显式运行职责：" + entry.get("annotation", entry.get("route", "")) + "；" + note)
     audit = dict(baseline_commit=inventory["baseline_commit"], scope="Every baseline file, original hash and reviewed disposition; implemented is not release verification.",
                  release_gates_changed=False, files=rows)
+    audit["post_baseline_changes"] = [dict(id=change["id"], status=change["status"],
+            source_commit=change["source_commit"], files=len(change["files"])) for change in scope["changes"]]
     return result, audit
 
 
@@ -287,7 +301,7 @@ def update(write=False):
             path.write_text(content)
         elif not path.is_file() or path.read_text() != content:
             raise ValueError("Inventory disposition differs; review then run --write: " + path.name)
-    print("P8 inventory: all original files hashed and disposed; real Push/production/live evaluation remain open; no release approval")
+    print("P8 inventory: immutable original hashes and committed amendments accounted for; pending scope and release gates remain open")
 
 
 if __name__ == "__main__":

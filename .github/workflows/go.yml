@@ -3,9 +3,9 @@ name: Go Candidate
 on:
   push:
     branches: [go]
-    paths: ['backend-go/**', 'scripts/migration/**', 'specs/033-go-rewrite/**', '.github/workflows/go.yml']
+    paths: ['backend/**', 'backend-go/**', 'frontend/**', 'scripts/migration/**', 'specs/033-go-rewrite/**', '.github/workflows/go.yml', '.env.example', 'docs/mcp.md']
   pull_request:
-    paths: ['backend-go/**', 'scripts/migration/**', 'specs/033-go-rewrite/**', '.github/workflows/go.yml']
+    paths: ['backend/**', 'backend-go/**', 'frontend/**', 'scripts/migration/**', 'specs/033-go-rewrite/**', '.github/workflows/go.yml', '.env.example', 'docs/mcp.md']
   workflow_dispatch:
 
 permissions:

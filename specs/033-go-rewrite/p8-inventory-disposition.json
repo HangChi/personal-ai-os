@@ -84,8 +84,8 @@
       "id": "file:.env.example",
       "path": ".env.example",
       "sha256": "d611717a56585a876341166b81fe390e5dce132e26195aec82c3f2048629b307",
-      "disposition": "retained-repository-metadata",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:.github/workflows/ci.yml",
@@ -861,8 +861,8 @@
       "id": "file:backend/src/main/java/com/personalos/chat/dto/ChatCitationDto.java",
       "path": "backend/src/main/java/com/personalos/chat/dto/ChatCitationDto.java",
       "sha256": "57f3bf6b8e556be7b0e5008e8781a6b23dfdcf03ee163f52225bf93b368fa045",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/dto/ChatContextUsageDto.java",
@@ -903,8 +903,8 @@
       "id": "file:backend/src/main/java/com/personalos/chat/dto/ChatStreamEvents.java",
       "path": "backend/src/main/java/com/personalos/chat/dto/ChatStreamEvents.java",
       "sha256": "ddbba9108b3c420b9edf70b2dc5fb9eda0b482d43c203f227284186590c9318a",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/dto/CreateSessionRequest.java",
@@ -1078,22 +1078,22 @@
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatCitationService.java",
       "path": "backend/src/main/java/com/personalos/chat/service/ChatCitationService.java",
       "sha256": "ce53f963db8e1e9b5caf70fb2a9f658f25601a9586052604dc014e19a7bd4993",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java",
       "path": "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java",
       "sha256": "400368d26cd5851759899b8d52896c1dd1cde9b5073df5eba8edf531b72456f6",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatMarkdownExporter.java",
       "path": "backend/src/main/java/com/personalos/chat/service/ChatMarkdownExporter.java",
       "sha256": "507da43bd310cabb4f07e1b44081b4c33a59cdc39d5707bc05283871c07ef672",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatMessageService.java",
@@ -1134,8 +1134,8 @@
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatTurnFinisher.java",
       "path": "backend/src/main/java/com/personalos/chat/service/ChatTurnFinisher.java",
       "sha256": "e51d45bb02ab784d1663966b3696e977a2954c99ce92ffe4a5018cd47309cacf",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/service/RunEmitter.java",
@@ -1379,8 +1379,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/ai/ToolContextKeys.java",
       "path": "backend/src/main/java/com/personalos/common/ai/ToolContextKeys.java",
       "sha256": "6eee180da5ffc40288bd1e56da602b4e8564eee5684463f13ff798a41b091cfd",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/ai/ToolContributor.java",
@@ -2170,8 +2170,8 @@
       "id": "file:backend/src/main/java/com/personalos/export/DataImportService.java",
       "path": "backend/src/main/java/com/personalos/export/DataImportService.java",
       "sha256": "131e98c17a09c74357e95847179db4c7ff066749466575a21d56bea94125fd7c",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/export/ExportContributor.java",
@@ -2233,8 +2233,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/dto/CitationDto.java",
       "path": "backend/src/main/java/com/personalos/knowledge/dto/CitationDto.java",
       "sha256": "a5493fa58a38a306c750fef5a080ed75a298f9021accd450aa646468c7630738",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeAskRequest.java",
@@ -2247,8 +2247,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeAskResponse.java",
       "path": "backend/src/main/java/com/personalos/knowledge/dto/KnowledgeAskResponse.java",
       "sha256": "aa82642eb1cc963068f93919251275fd1439b4756fc109052f3bebf654f50e24",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeDocumentDeletedDto.java",
@@ -2415,8 +2415,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/rag/RagResult.java",
       "path": "backend/src/main/java/com/personalos/knowledge/rag/RagResult.java",
       "sha256": "9e46a92193e311461b72d7bf05fbef525fc6bbe6335fddba0e21ff9e3760e582",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
@@ -2548,8 +2548,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/service/KnowledgeQaService.java",
       "path": "backend/src/main/java/com/personalos/knowledge/service/KnowledgeQaService.java",
       "sha256": "1ed3f51f227b78dd73e71c19edf7cb82387c029098a19b36f0b4f4e08df7cfb9",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/service/KnowledgeRetrievalService.java",
@@ -2604,8 +2604,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/tool/KnowledgeTools.java",
       "path": "backend/src/main/java/com/personalos/knowledge/tool/KnowledgeTools.java",
       "sha256": "70eb72e84e8b423fda7ebeaed985a87762257384a49c47e27332111b2b91bde7",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/mcp/client/McpClientRegistry.java",
@@ -2737,8 +2737,8 @@
       "id": "file:backend/src/main/java/com/personalos/mcp/tool/McpToolCallback.java",
       "path": "backend/src/main/java/com/personalos/mcp/tool/McpToolCallback.java",
       "sha256": "975be9d00624b61180f268b0806d6a5c61d2f191212b914289bf397513fe41be",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/mcp/tool/McpToolCallbackProvider.java",
@@ -3507,8 +3507,8 @@
       "id": "file:backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java",
       "sha256": "ea576133d6dc71477ef3b101124cb25f349271f7ff430bccc863055507e57b56",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java",
@@ -4095,8 +4095,8 @@
       "id": "file:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java",
       "sha256": "193f637288963d3e6e78fc4f1d38cbda2a71c651116cde8d2094044f129f3a8a",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/EmbeddingDimensionMismatchIntegrationTest.java",
@@ -4144,8 +4144,8 @@
       "id": "file:backend/src/test/java/com/personalos/knowledge/KnowledgeRagIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeRagIntegrationTest.java",
       "sha256": "96c901f62312377bf362763389d24899c49b39f6f61a37541f47ad8bc9b7ca10",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/RabbitJobNotifierIntegrationTest.java",
@@ -4634,8 +4634,8 @@
       "id": "file:docs/mcp.md",
       "path": "docs/mcp.md",
       "sha256": "5fb0a1174bbada8be293c5548f9eecfb7b9c00c347bf7b2d26826655a6b4ad55",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/operations.md",
@@ -4809,15 +4809,15 @@
       "id": "file:frontend/src/api/chat-runs.ts",
       "path": "frontend/src/api/chat-runs.ts",
       "sha256": "7369cfd1fd22d29c110ede8dfcb73ad0d129758e85ebba96cd5ec8eeb63ce679",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/api/chat.ts",
       "path": "frontend/src/api/chat.ts",
       "sha256": "e204529ad8f3cf1f7695ea72cd440a254c110382908adcc67a5aa1e12322fab8",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/api/confirmations.ts",
@@ -4970,8 +4970,8 @@
       "id": "file:frontend/src/components/MarkdownRenderer.vue",
       "path": "frontend/src/components/MarkdownRenderer.vue",
       "sha256": "8e1b27305046e65f43077efe180ad663faf68e9e9bb4418ab4cd96ea9c2e475f",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/PageHeader.vue",
@@ -5082,8 +5082,8 @@
       "id": "file:frontend/src/components/chat/ChatMessageItem.vue",
       "path": "frontend/src/components/chat/ChatMessageItem.vue",
       "sha256": "627c7d3e01c4c456e1321c607a88d21ad59b249eb61393c571b5c4ec2f09a4d9",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/chat/ChatModelPicker.vue",
@@ -5103,8 +5103,8 @@
       "id": "file:frontend/src/components/chat/ChatStreamingItem.vue",
       "path": "frontend/src/components/chat/ChatStreamingItem.vue",
       "sha256": "c271bd8b15c44497b3dcb21fd8d040ee79424283fb3b9557231e03ffa20eca34",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/chat/ChatToolTrail.vue",
@@ -5145,8 +5145,8 @@
       "id": "file:frontend/src/components/knowledge/KnowledgeAskTab.vue",
       "path": "frontend/src/components/knowledge/KnowledgeAskTab.vue",
       "sha256": "12da4ec0e9c0f4c3c461946448b156285c9c54cb614907f8f080d0fd82d4a9de",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/knowledge/KnowledgeDocumentsTab.vue",
@@ -5166,15 +5166,15 @@
       "id": "file:frontend/src/components/knowledge/KnowledgeHitList.vue",
       "path": "frontend/src/components/knowledge/KnowledgeHitList.vue",
       "sha256": "90fe1d5a455e00fccfea8e8e94094df6b7b1fa689215250764d7f030478ad445",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/knowledge/KnowledgeSearchTab.vue",
       "path": "frontend/src/components/knowledge/KnowledgeSearchTab.vue",
       "sha256": "7f24222423bb374efbeb0fa217682d17b1d52e61545eca54c08fcf6fef5d4205",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/knowledge/RagTrace.vue",
@@ -5495,8 +5495,8 @@
       "id": "file:frontend/src/stores/chat.ts",
       "path": "frontend/src/stores/chat.ts",
       "sha256": "c24e1e331377cd47b9053de0350a2b2c3579c272c016a1121bfb1823ae43719f",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/stores/knowledge.ts",
@@ -5593,8 +5593,8 @@
       "id": "file:frontend/src/types/api.ts",
       "path": "frontend/src/types/api.ts",
       "sha256": "30214fee203c382860f16c6a31cd0827bb5b004b1638b0051fc6134f671de78a",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/types/usage.ts",
@@ -5621,15 +5621,15 @@
       "id": "file:frontend/src/views/ChatView.vue",
       "path": "frontend/src/views/ChatView.vue",
       "sha256": "96116adc1684fe6a0950ced4a9f8f9e1c0e7540377dcaf28161c8fa0ecbb6e47",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/HomeView.vue",
       "path": "frontend/src/views/HomeView.vue",
       "sha256": "d10d9069a6075c84eacfa7b029b96b0b64d3a93cb7ab36a7b718f8687fef1bed",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/KnowledgeView.vue",
@@ -5768,8 +5768,8 @@
       "id": "file:frontend/test/chat-send-retry.test.mjs",
       "path": "frontend/test/chat-send-retry.test.mjs",
       "sha256": "e6d8474e04496ca5dd8e047e05ce355b957a6cb64504f159808814d26b5a1789",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/chat-store-rename.test.mjs",
@@ -5782,8 +5782,8 @@
       "id": "file:frontend/test/chat-stream.test.mjs",
       "path": "frontend/test/chat-stream.test.mjs",
       "sha256": "ff1951a274c972b2864e25bd027af8e7e28eda487dceb86efa29f31bbad5c148",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/chat-tool-history.test.mjs",
@@ -5887,8 +5887,8 @@
       "id": "file:frontend/test/component/chat-runs.test.ts",
       "path": "frontend/test/component/chat-runs.test.ts",
       "sha256": "815a7e31507b5bede743d020efdccc9459cd9d1d7bd9e12d6bbbc152b7ae9960",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/component/chat-session-collapse.test.ts",
@@ -7357,8 +7357,8 @@
       "id": "file:specs/019-knowledge-chat-settings/contracts/chat-knowledge-and-settings.md",
       "path": "specs/019-knowledge-chat-settings/contracts/chat-knowledge-and-settings.md",
       "sha256": "bc08acf9cc7852352f7f7c68e96a603504e8fd28ce1fc01ca69092409326c241",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:specs/019-knowledge-chat-settings/data-model.md",
@@ -7653,6 +7653,26 @@
       "sha256": "8e4ff7b81112ef980f9211527d240e10b8a24026b08dabf85d0e44bf274b03a3",
       "disposition": "retained-specification-or-history",
       "status": "implemented"
+    }
+  ],
+  "post_baseline_changes": [
+    {
+      "id": "scope:calendar-import-recurrence-20261105",
+      "status": "in_progress",
+      "source_commit": "527d399fc5016157147fe66d80438259561d6e48",
+      "files": 5
+    },
+    {
+      "id": "scope:chat-retrieval-and-citation-candidate-20261105",
+      "status": "in_progress",
+      "source_commit": "a8a9dfb62c4bef36cdb55796ac4c3dc2f282d3bf",
+      "files": 72
+    },
+    {
+      "id": "scope:dashboard-independent-statistics-20261105",
+      "status": "in_progress",
+      "source_commit": "527d399fc5016157147fe66d80438259561d6e48",
+      "files": 2
     }
   ]
 }

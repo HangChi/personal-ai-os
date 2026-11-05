@@ -19,7 +19,7 @@
 - P8逐声明映射见[剩余144声明](p8-test-mapping.md)，与前阶段合计1119声明均有处置；[全清单职责审计](p8-inventory-review.md)逐文件核对1093个原文件，演示配方隔离回读通过后保留23个尚未验收文件。implemented不等于verified，五发布门禁不自动解除。
 - **Go尚不能替代Java。业务模块已接入显式开关，剩余的是全量证据审查、真实失败与发布/用户门禁。**
 - Go默认离线诊断不读现有`.env`、不连数据库、不迁移或启业务Worker，`/readyz`固定503。显式GO_DOTENV_ENABLED才允许加载配置；显式基础模式要求独立连接参数/迁移目录，允许已实现的认证/CSRF，生产继续拒绝。
-- 不修改现有 Java、前端业务源码、SQL、Compose 或本地运行实例。两个后端必须使用独立测试数据验证。
+- 原冻结迁移阶段不修改 Java、前端业务源码、SQL、Compose 或本地运行实例。2026-11-05 用户要求双端缺陷修复后，Java/前端的增量按[独立范围清单](post-baseline-scope.md)追踪；原 oracle、SQL 与发布门禁不变。两个后端必须使用独立测试数据验证。
 
 基础代码的可执行验证结果见 [validation.md](validation.md)。实施状态见 [tasks.md](tasks.md)；逐项证据见 [progress.json](progress.json)。
 

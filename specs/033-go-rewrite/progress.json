@@ -6049,7 +6049,7 @@
       "note": "P4已装配：会话/消息/引用、分页搜索与rewind/导出。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/ChatCitationDto.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/model.go",
         "backend-go/internal/business/chat/model_test.go",
@@ -6061,9 +6061,20 @@
         "backend-go/internal/business/chat/markdown.go",
         "backend-go/internal/business/chat/postgres_integration_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已装配：会话/消息/引用、分页搜索与rewind/导出。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/ChatMessageDto.java": {
       "status": "implemented",
@@ -6315,7 +6326,7 @@
       "note": "P4已装配：UUID/大小/路径、文本/DOCX/PDF/图片与引用清理。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatCitationService.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/service.go",
         "backend-go/internal/business/chat/postgres.go",
@@ -6326,12 +6337,23 @@
         "backend-go/internal/business/chat/java_oracle_test.go",
         "backend-go/internal/business/chat/model_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已装配：会话/消息/引用、分页搜索与rewind/导出。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatMarkdownExporter.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/markdown.go",
         "backend-go/internal/business/chat/java_oracle_test.go",
@@ -6342,9 +6364,20 @@
         "backend-go/internal/business/chat/postgres_integration_test.go",
         "backend-go/internal/business/chat/model_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已装配：会话/消息/引用、分页搜索与rewind/导出。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatMessageService.java": {
       "status": "implemented",
@@ -7634,16 +7667,27 @@
       "note": "P4已装配：持久Run/事件游标/租约fence、启动恢复/停止/关闭与读者解耦。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/ChatStreamEvents.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/stream.go",
         "backend-go/internal/business/chat/module_http.go",
         "backend-go/internal/business/chat/execution_integration_test.go",
         "backend-go/internal/business/chat/stream_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已装配：旧SSE/超时/取消/部分回复、计划/日历防伪完成与轮末接口。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/StreamChatRequest.java": {
       "status": "implemented",
@@ -7794,16 +7838,27 @@
       "note": "P4已装配：两种SSE可配置心跳、默认本地04:30附件cron与关闭开关。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/stream.go",
         "backend-go/internal/business/chat/module_http.go",
         "backend-go/internal/business/chat/execution_integration_test.go",
         "backend-go/internal/business/chat/stream_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已装配：旧SSE/超时/取消/部分回复、计划/日历防伪完成与轮末接口。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatPromptAssembler.java": {
       "status": "implemented",
@@ -7842,16 +7897,27 @@
       "note": "P4已装配：事务外摘要、边界快照/竞态与超时。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatTurnFinisher.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/stream.go",
         "backend-go/internal/business/chat/module_http.go",
         "backend-go/internal/business/chat/execution_integration_test.go",
         "backend-go/internal/business/chat/stream_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已装配：旧SSE/超时/取消/部分回复、计划/日历防伪完成与轮末接口。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/RunEmitter.java": {
       "status": "implemented",
@@ -8170,7 +8236,7 @@
       "note": "P4已装配：原BPE词表与UTF-16/字符估算、schema开销。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/ToolContextKeys.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/agent/tools.go",
         "backend-go/internal/business/agent/task.go",
@@ -8180,9 +8246,20 @@
         "backend-go/internal/business/chat/execution_integration_test.go",
         "scripts/migration/java_p4_fixture.py",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已装配：参数/16工具定义、预算/审计/幂等与真实任务副作用。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/ToolContributor.java": {
       "status": "implemented",
@@ -8409,7 +8486,7 @@
       "note": "P4测试来源职责映射：旧SSE/超时/取消/部分回复、计划/日历防伪完成与轮末接口；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/prompt.go",
         "backend-go/internal/business/chat/prompt_test.go",
@@ -8420,9 +8497,18 @@
         "backend-go/internal/app/foundation_p8_guarded_integration_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java": {
       "status": "implemented",
@@ -20080,7 +20166,7 @@
       "note": "原断言 chineseHybridVersionFenceAndDeletion；Go: TestP6RealOpenSearchProjectionHydrationVersionAndDelete。中文混合索引、版本拒旧及删除。逐方法清单见p6-test-mapping.md。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/dto/CitationDto.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/rag.go",
         "backend-go/internal/business/knowledge/qa.go",
@@ -20092,9 +20178,19 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeAskRequest.java": {
       "status": "implemented",
@@ -20114,7 +20210,7 @@
       "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeAskResponse.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/rag.go",
         "backend-go/internal/business/knowledge/qa.go",
@@ -20126,9 +20222,19 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeSearchRequest.java": {
       "status": "implemented",
@@ -20216,7 +20322,7 @@
       "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/rag/RagResult.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/rag.go",
         "backend-go/internal/business/knowledge/qa.go",
@@ -20228,9 +20334,19 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java": {
       "status": "implemented",
@@ -20250,7 +20366,7 @@
       "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/service/KnowledgeQaService.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/rag.go",
         "backend-go/internal/business/knowledge/qa.go",
@@ -20262,12 +20378,22 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeRagIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/rag.go",
         "backend-go/internal/business/knowledge/qa.go",
@@ -20279,9 +20405,19 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/rag/AdvancedRagIntegrationTest.java": {
       "status": "implemented",
@@ -21134,7 +21270,7 @@
       "note": "T600–T608：--foundation --p6显式装配全部知识HTTP/认证/CSRF/限流、只读工具、聊天共享端口与保守引用落库，独立候选Redis；五角色隔离/退出、索引enabled开关、可选设施关闭和消息代理失联轮询已验证。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/tool/KnowledgeTools.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/http.go",
         "backend-go/internal/business/knowledge/module.go",
@@ -21148,9 +21284,19 @@
         "specs/033-go-rewrite/p6-completion.md",
         "specs/033-go-rewrite/p6-test-mapping.md",
         "backend-go/internal/business/agent/knowledge.go",
-        "backend-go/internal/business/agent/knowledge_test.go"
+        "backend-go/internal/business/agent/knowledge_test.go",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T600–T608：--foundation --p6显式装配全部知识HTTP/认证/CSRF/限流、只读工具、聊天共享端口与保守引用落库，独立候选Redis；五角色隔离/退出、索引enabled开关、可选设施关闭和消息代理失联轮询已验证。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/RichDocumentIngestIntegrationTest.java": {
       "status": "implemented",
@@ -21843,7 +21989,7 @@
       "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
     },
     "file:backend/src/main/java/com/personalos/export/DataImportService.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/dataexport/export.go",
         "backend-go/internal/business/dataimport/import.go",
@@ -21853,9 +21999,16 @@
         "backend-go/internal/app/foundation_p7_integration_test.go",
         "specs/033-go-rewrite/p7-completion.md",
         "specs/033-go-rewrite/p7-test-mapping.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/export/DataImportCalendarTest.java",
+        "backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java",
+        "backend-go/internal/business/dataimport/import_calendar_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T704：同一REPEATABLE READ快照/200条流式导出，20MiB空库导入/格式绑定，嵌入在事务外，表锁二次校验/全部业务向量来源原子写入；引用/附件/摘要/提醒按原边界不恢复。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:calendar-import-recurrence-20261105：五种日程重复规则导入修复，双端写入回归已通过，数据库往返尚待执行。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/export/ExportContributor.java": {
       "status": "implemented",
@@ -22243,7 +22396,7 @@
       "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
     },
     "file:backend/src/main/java/com/personalos/mcp/tool/McpToolCallback.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/mcp/registry.go",
         "backend-go/internal/business/mcp/naming.go",
@@ -22258,9 +22411,19 @@
         "backend-go/internal/app/foundation.go",
         "specs/033-go-rewrite/p7-completion.md",
         "specs/033-go-rewrite/p7-test-mapping.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/mcp/tool/McpToolCallbackProvider.java": {
       "status": "implemented",
@@ -22358,7 +22521,7 @@
       "note": "TestP7StreamingExportImportRoundTripPostgres, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ExportHEADAndNegotiation, TestP7BoundedStreamingArrayAndWriterFailures。空数组/同源counts/附件头/无信封与embedding；200条批次含405消息/205块长文，单快照并发写入隔离及写失败传播"
     },
     "file:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/app/foundation_p7_integration_test.go",
         "backend-go/internal/business/exchange/http_test.go",
@@ -22366,9 +22529,16 @@
         "backend-go/internal/business/mcp/oracle_test.go",
         "specs/033-go-rewrite/p7-completion.md",
         "specs/033-go-rewrite/p7-test-mapping.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/export/DataImportCalendarTest.java",
+        "backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java",
+        "backend-go/internal/business/dataimport/import_calendar_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "TestP7StreamingExportImportRoundTripPostgres, TestP7ImportAtomicityConcurrencyAndEmbeddingBoundary, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ImportHTTPRejectsInvalidInputBeforeDatabase, TestP7ImportFormatAndSizeValidation, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块/记忆替代链与状态、非空/待索引拒绝、版本/20MiB、脏行回落、嵌入无业务锁、失败整笔回滚及并发二次空库检查"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:calendar-import-recurrence-20261105：五种日程重复规则导入修复，双端写入回归已通过，数据库往返尚待执行。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/mcp/McpChatToolCallingIntegrationTest.java": {
       "status": "implemented",
@@ -25456,15 +25626,23 @@
       "note": "P8职责处置：原仓库元数据/工作流模板/示例按固定基线保留；示例不是本机.env，不载入实际凭据。"
     },
     "file:.env.example": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "scripts/migration/go_inventory.py",
         "backend-go/docs/development.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原仓库元数据/工作流模板/示例按固定基线保留；示例不是本机.env，不载入实际凭据。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:.github/workflows/ci.yml": {
       "status": "implemented",
@@ -26538,16 +26716,24 @@
       "note": "P8职责处置：原业务规格/仓库规则/历史文档保留，不替换为Go说明；当前Go操作与已知差异见新docs/迁移记录，无运行时需要移植。"
     },
     "file:docs/mcp.md": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/docs/architecture.md",
         "backend-go/docs/development.md",
         "specs/033-go-rewrite/feature-parity.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原业务规格/仓库规则/历史文档保留，不替换为Go说明；当前Go操作与已知差异见新docs/迁移记录，无运行时需要移植。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:docs/operations.md": {
       "status": "implemented",
@@ -26822,26 +27008,42 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/src/api/chat-runs.ts": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/api/chat.ts": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/api/confirmations.ts": {
       "status": "implemented",
@@ -27075,15 +27277,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/src/components/MarkdownRenderer.vue": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/PageHeader.vue": {
       "status": "implemented",
@@ -27251,15 +27461,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/src/components/chat/ChatMessageItem.vue": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/chat/ChatModelPicker.vue": {
       "status": "implemented",
@@ -27284,15 +27502,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/src/components/chat/ChatStreamingItem.vue": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/chat/ChatToolTrail.vue": {
       "status": "implemented",
@@ -27350,15 +27576,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/src/components/knowledge/KnowledgeAskTab.vue": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeDocumentsTab.vue": {
       "status": "implemented",
@@ -27383,26 +27617,42 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/src/components/knowledge/KnowledgeHitList.vue": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeSearchTab.vue": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/RagTrace.vue": {
       "status": "implemented",
@@ -27904,15 +28154,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/src/stores/chat.ts": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/stores/knowledge.ts": {
       "status": "implemented",
@@ -28058,15 +28316,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/src/types/api.ts": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/types/usage.ts": {
       "status": "implemented",
@@ -28102,26 +28368,37 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/src/views/ChatView.vue": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/HomeView.vue": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "frontend/test/component/home-stats.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:dashboard-independent-statistics-20261105：首页独立读取两端既有统计接口；筛选隔离、失败、零值、加载和重试组件回归已通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/KnowledgeView.vue": {
       "status": "implemented",
@@ -28333,15 +28610,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/test/chat-send-retry.test.mjs": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/chat-store-rename.test.mjs": {
       "status": "implemented",
@@ -28355,15 +28640,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/test/chat-stream.test.mjs": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/chat-tool-history.test.mjs": {
       "status": "implemented",
@@ -28520,15 +28813,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/test/component/chat-runs.test.ts": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/chat-session-collapse.test.ts": {
       "status": "implemented",
@@ -31509,16 +31810,24 @@
       "note": "P8职责处置：原业务规格/仓库规则/历史文档保留，不替换为Go说明；当前Go操作与已知差异见新docs/迁移记录，无运行时需要移植。"
     },
     "file:specs/019-knowledge-chat-settings/contracts/chat-knowledge-and-settings.md": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/docs/architecture.md",
         "backend-go/docs/development.md",
         "specs/033-go-rewrite/feature-parity.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/post-baseline-scope.md",
+        "specs/033-go-rewrite/repair-validation-20261105.md",
+        "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
+        "backend-go/internal/business/chat/retrieval_test.go",
+        "frontend/test/chat-stream.test.mjs",
+        "frontend/test/chat-send-retry.test.mjs",
+        "frontend/test/component/chat-runs.test.ts",
+        "frontend/test/component/markdown-citations.test.ts"
       ],
-      "note": "P8职责处置：原业务规格/仓库规则/历史文档保留，不替换为Go说明；当前Go操作与已知差异见新docs/迁移记录，无运行时需要移植。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:specs/019-knowledge-chat-settings/data-model.md": {
       "status": "implemented",

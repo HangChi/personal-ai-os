@@ -304,6 +304,10 @@ def resolve_tests():
 
 
 def apply(inventory, before):
+    import go_inventory
+    import go_scope_changes
+    _, amended = go_scope_changes.load(inventory, ROOT,
+            lambda revision, path: go_inventory.git("show", revision + ":" + path))
     expected = mappings()
     resolved = resolve_tests()
     result = copy.deepcopy(before)
@@ -327,6 +331,10 @@ def apply(inventory, before):
     selected_paths = {entry["path"] for entry in entries.values()}
     for entry in inventory["files"]:
         if entry["path"] not in selected_paths:
+            continue
+        # This mapping covers original declarations only. Candidate file status
+        # belongs to the scope ledger and cannot inherit historical completion.
+        if entry["path"] in amended:
             continue
         cases = [case for case in inventory["java_test_cases"] if case["path"] == entry["path"]]
         if any(result["items"].get(case["id"], {}).get("status") not in {"implemented", "verified"} for case in cases):

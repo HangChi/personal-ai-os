@@ -58,6 +58,18 @@ class P8InventoryDispositionTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Baseline file drift"):
             subject.apply(inventory, self.progress)
 
+    def test_amended_file_never_inherits_historical_verification(self):
+        progress = copy.deepcopy(self.progress)
+        key = "file:backend/src/main/java/com/personalos/export/DataImportService.java"
+        progress["items"][key]["status"] = "verified"
+        after, audit = subject.apply(self.inventory, progress)
+        self.assertEqual(after["items"][key]["status"], "in_progress")
+        self.assertIn("scope:calendar-import-recurrence-20261105", after["items"][key]["note"])
+        row = next(row for row in audit["files"] if row["id"] == key)
+        original = next(row for row in self.inventory["files"] if row["id"] == key)
+        self.assertEqual(row["sha256"], original["sha256"])
+        self.assertEqual(after["release_gates"], progress["release_gates"])
+
     def test_unreviewed_java_code_does_not_inherit_a_category_wide_pass(self):
         path = "backend/src/main/java/com/personalos/task/service/TaskService.java"
         progress = copy.deepcopy(self.progress)

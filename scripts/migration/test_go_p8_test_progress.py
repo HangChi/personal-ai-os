@@ -47,6 +47,13 @@ class P8DeclarationMappingTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "scope changed"):
             subject.apply(inventory, self.progress)
 
+    def test_original_declaration_mapping_cannot_promote_an_amended_file(self):
+        before = copy.deepcopy(self.progress)
+        key = "file:backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java"
+        before["items"][key] = dict(status="in_progress", evidence=[], note="candidate not verified")
+        after, _ = subject.apply(self.inventory, before)
+        self.assertEqual(after["items"][key], before["items"][key])
+
     def test_missing_concrete_evidence_is_rejected(self):
         with patch.dict(subject.TESTS, response="TestMissingP8Evidence"):
             with self.assertRaisesRegex(ValueError, "Expected unique Go test"):

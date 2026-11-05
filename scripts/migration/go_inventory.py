@@ -15,6 +15,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+import go_scope_changes
+
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = ROOT / "specs/033-go-rewrite"
 MANIFEST = SPEC / "inventory.json"
@@ -303,14 +305,20 @@ def check(manifest, complete=False):
     reproduced = collect(manifest["baseline_commit"])
     if reproduced != manifest:
         errors.append("清单与固定 Git 基线的提取结果不一致，请审查提取器/基线变更。")
+    try:
+        scope, amended = go_scope_changes.load(manifest, ROOT, lambda revision, path: git("show", revision + ":" + path))
+    except (ValueError, OSError, subprocess.CalledProcessError) as error:
+        errors.append("增量范围校验失败：" + str(error))
+        scope, amended = {"changes": []}, {}
     for entry in manifest["files"]:
         path = ROOT / entry["path"]
-        if not path.is_file() or digest(path.read_bytes()) != entry["sha256"]:
+        expected = amended.get(entry["path"], {}).get("candidate_sha256", entry["sha256"])
+        if not path.is_file() or digest(path.read_bytes()) != expected:
             errors.append("基线文件发生漂移：" + entry["path"])
     known = {entry["path"] for entry in manifest["files"]}
     live = git("ls-files", "--cached", "--others", "--exclude-standard").decode().splitlines()
     for path in live:
-        if path not in known and not path.startswith(EXCLUDED):
+        if path not in known and path not in amended and not path.startswith(EXCLUDED):
             errors.append("新增文件尚未纳入迁移基线：" + path)
     for name, expected in [("inventory.md", markdown(manifest)), ("surface.md", surface_markdown(manifest))]:
         path = SPEC / name
@@ -333,6 +341,9 @@ def check(manifest, complete=False):
             if evidence_path.is_absolute() or ".." in evidence_path.parts or not (ROOT / evidence_path).is_file():
                 errors.append("证据必须是仓库内的现有文件：" + evidence)
     if complete:
+        for change in scope["changes"]:
+            if change["status"] != "verified":
+                errors.append("增量范围尚未验证：" + change["id"])
         remaining = sorted(key for key in valid if progress.get("items", {}).get(key, {}).get("status") != "verified")
         if remaining:
             errors.append("迁移未完成：%d/%d 项尚未 verified。前 10 项：\n%s" % (len(remaining), len(valid), "\n".join(remaining[:10])))
@@ -352,6 +363,9 @@ def check(manifest, complete=False):
     print("基线检查通过：%d 文件、%d 路由、%d 工具、%d 运行钩子、%d 测试声明。" % (
         len(manifest["files"]), len(manifest["http_routes"]), len(manifest["tools"]),
         len(manifest["runtime_hooks"]), len(manifest["java_test_cases"])))
+    if scope["changes"]:
+        print("独立增量范围：%d 组、%d 候选文件；%d 组尚未 verified，不代表迁移完成。" % (
+            len(scope["changes"]), len(amended), sum(change["status"] != "verified" for change in scope["changes"])))
     return 0
 
 
