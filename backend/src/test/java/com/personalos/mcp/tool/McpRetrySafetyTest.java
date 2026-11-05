@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
@@ -49,9 +50,21 @@ class McpRetrySafetyTest {
                 executor, mock(McpConfirmationService.class), codec, registry);
         var context = new ToolContext(Map.of(ToolContextKeys.CONVERSATION_ID, "c", ToolContextKeys.TURN_ID, "t"));
         assertThat(callback.call("{\"quantity\":1,\"item\":{\"z\":2,\"a\":1}}", context)).contains("OK");
-        // A new callback and no in-memory budget still replay the durable receipt.
+        // No in-memory budget is needed to replay the durable receipt.
         assertThat(callback.call("{\"item\":{\"a\":1,\"z\":2},\"quantity\":1}", context)).contains("DUPLICATE");
         assertThat(quantity).hasValue(2);
         verify(client, times(1)).callTool(any(McpSchema.CallToolRequest.class));
+        var request = ArgumentCaptor.forClass(McpSchema.CallToolRequest.class);
+        verify(client).callTool(request.capture());
+        assertThat(request.getValue().meta().get(McpOperation.META_KEY)).isNotNull();
+
+        when(client.callTool(any(McpSchema.CallToolRequest.class))).thenAnswer(invocation -> {
+            quantity.decrementAndGet();
+            return McpSchema.CallToolResult.builder().isError(true).addTextContent("failed after committing").build();
+        });
+        var next = new ToolContext(Map.of(ToolContextKeys.CONVERSATION_ID, "c", ToolContextKeys.TURN_ID, "next"));
+        assertThat(callback.call("{}", next)).contains("执行结果未确认").doesNotContain("目标未变更");
+        assertThat(callback.call("{}", next)).contains("REJECTED");
+        assertThat(quantity).hasValue(1);
     }
 }

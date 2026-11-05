@@ -6,6 +6,7 @@ import com.personalos.common.exception.BusinessException;
 import com.personalos.common.exception.ResourceNotFoundException;
 import com.personalos.common.json.JsonCodec;
 import com.personalos.mcp.client.McpClientRegistry;
+import com.personalos.mcp.tool.McpOperation;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.Map;
@@ -45,6 +46,11 @@ public class McpConfirmationHandler implements ConfirmationActionHandler {
 
     @Override
     public int execute(ConfirmationAction action, String payloadJson) {
+        return execute(action, payloadJson, null);
+    }
+
+    @Override
+    public int execute(ConfirmationAction action, String payloadJson, String operationId) {
         McpToolCall payload = jsonCodec.fromJson(payloadJson, McpToolCall.class);
         McpClientRegistry registry = registryProvider.getIfAvailable();
         if (registry == null) {
@@ -65,12 +71,14 @@ public class McpConfirmationHandler implements ConfirmationActionHandler {
             result = client.callTool(
                     McpSchema.CallToolRequest.builder(payload.tool())
                             .arguments(payload.arguments())
+                            .meta(McpOperation.metadata(operationId))
                             .build());
         } catch (RuntimeException ex) {
             // 子进程可能在启动后崩溃：这次调用失败要回写 registry 状态（审查 P2），
             // 否则 isAvailable 仍读内存里那份「可用」快照，后续调用继续白等超时
             registry.markUnavailable(payload.server(), client, ex.getMessage());
-            throw ex;
+            throw new BusinessException(com.personalos.common.api.ErrorCode.BUSINESS_CONFLICT,
+                    McpOperation.unknown(payload.tool()));
         }
         if (Boolean.TRUE.equals(result.isError())) {
             // MCP 协议用 isError 标记「工具执行失败」。改造前这里只 log 一句就 return 1，
@@ -79,7 +87,7 @@ public class McpConfirmationHandler implements ConfirmationActionHandler {
             // 抛业务异常让 ConfirmationService 记 FAILED，用户能看到真实结果。
             log.warn("MCP 工具执行失败 server={} tool={}", payload.server(), payload.tool());
             throw new BusinessException(com.personalos.common.api.ErrorCode.BUSINESS_CONFLICT,
-                    "MCP 工具执行失败：" + payload.tool() + "（目标未变更）");
+                    McpOperation.unknown(payload.tool()));
         }
         log.info("已执行 MCP 待确认调用 server={} tool={}", payload.server(), payload.tool());
         return 1;

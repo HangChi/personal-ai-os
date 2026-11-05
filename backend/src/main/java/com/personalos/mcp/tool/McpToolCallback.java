@@ -6,6 +6,7 @@ import com.personalos.common.ai.tool.ToolExecutionResult;
 import com.personalos.common.ai.tool.ToolExecutor;
 import com.personalos.common.confirmation.ConfirmationDto;
 import com.personalos.common.json.JsonCodec;
+import com.personalos.common.idempotency.IdempotencyService;
 import com.personalos.mcp.confirmation.McpConfirmationService;
 import com.personalos.mcp.client.McpClientRegistry;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -110,11 +111,14 @@ public class McpToolCallback implements ToolCallback {
             if (client == null) return ToolExecutionResult.error("MCP server 不可用，请在设置中重连：" + serverName);
             try {
                 var result = client.callTool(McpSchema.CallToolRequest.builder(originalToolName)
-                        .arguments(arguments).build());
+                        .arguments(arguments).meta(McpOperation.metadata(IdempotencyService.toolKey(
+                                ToolExecutor.conversationId(toolContext),
+                                ToolExecutor.contextValue(toolContext, ToolContextKeys.TURN_ID),
+                                assembledName, jsonCodec.digestOf(arguments)))).build());
                 String raw = jsonCodec.toJson(result);
                 if (Boolean.TRUE.equals(result.isError())) {
                     // 工具业务失败不等于连接已断开，不关闭仍然健康的客户端。
-                    return ToolExecutionResult.error("MCP server 执行失败：" + raw);
+                    return ToolExecutionResult.error(McpOperation.unknown(originalToolName));
                 }
                 if (toolContext != null && toolContext.getContext().get(ToolContextKeys.WEB_SOURCES) instanceof WebSource.Registrar register) {
                     var sources = McpWebSources.extract(originalToolName, arguments, raw, jsonCodec);
@@ -126,7 +130,7 @@ public class McpToolCallback implements ToolCallback {
                 return ToolExecutionResult.ok(raw, raw);
             } catch (RuntimeException ex) {
                 registry.markUnavailable(serverName, client, ex.getMessage());
-                return ToolExecutionResult.error("MCP server 连接失败，请重连后重试：" + serverName);
+                return ToolExecutionResult.error(McpOperation.unknown(originalToolName));
             }
         });
     }

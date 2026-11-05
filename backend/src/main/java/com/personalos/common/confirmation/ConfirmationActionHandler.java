@@ -32,4 +32,9 @@ public interface ConfirmationActionHandler {
      *         由 {@link ConfirmationService} 转换为「目标已不存在」的优雅结果
      */
     int execute(ConfirmationAction action, String payloadJson);
+
+    /** Stable identity for downstream systems that opt into idempotency. */
+    default int execute(ConfirmationAction action, String payloadJson, String operationId) {
+        return execute(action, payloadJson);
+    }
 }

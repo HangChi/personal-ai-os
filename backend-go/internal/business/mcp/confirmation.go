@@ -78,12 +78,12 @@ func (h *ConfirmationHandler) Execute(ctx context.Context, _ confirmation.Action
 	if h.Registry.session(p.Server) == nil {
 		return 0, confirmation.ErrTargetMissing
 	}
-	result, err := h.Registry.Call(ctx, p.Server, p.Tool, p.Arguments)
+	result, err := h.Registry.CallWithOperationID(ctx, p.Server, p.Tool, p.Arguments, confirmation.OperationID(ctx))
 	if err != nil {
-		return 0, err
+		return 0, api.NewBusinessError(api.BusinessConflict, UnknownOutcome(p.Tool))
 	}
 	if result.IsError {
-		return 0, api.NewBusinessError(api.BusinessConflict, "MCP 工具执行失败："+p.Tool+"（目标未变更）")
+		return 0, api.NewBusinessError(api.BusinessConflict, UnknownOutcome(p.Tool))
 	}
 	return 1, nil
 }

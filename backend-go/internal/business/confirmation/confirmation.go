@@ -124,6 +124,14 @@ func missing(id string) error {
 // ErrTargetMissing is returned by a handler when its target disappeared.
 var ErrTargetMissing = errors.New("待确认目标不存在")
 
+type operationIDKey struct{}
+
+// OperationID identifies one human decision; retrying transport never creates a new identity.
+func OperationID(ctx context.Context) string {
+	value, _ := ctx.Value(operationIDKey{}).(string)
+	return value
+}
+
 type Service struct {
 	store    Store
 	registry *Registry
@@ -209,7 +217,7 @@ func (s *Service) Confirm(ctx context.Context, id, token string) (Execution, err
 	if err != nil {
 		return Execution{}, err
 	}
-	count, runErr := handler.Execute(ctx, r.Action, r.Payload)
+	count, runErr := handler.Execute(context.WithValue(ctx, operationIDKey{}, "confirmation:"+id), r.Action, r.Payload)
 	outcome := Confirmed
 	if errors.Is(runErr, ErrTargetMissing) {
 		outcome = Cancelled

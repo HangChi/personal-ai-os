@@ -143,7 +143,7 @@ public class ToolExecutor {
             progress(toolContext, activityId, toolName, "ERROR", (System.nanoTime() - activityStarted) / 1_000_000);
             if (budget != null) budget.record(fingerprint, ToolExecutionResult.error("工具外壳执行失败"));
             log.error("工具外壳执行失败 tool={}", toolName, ex);
-            return jsonCodec.toJson(ToolExecutionResult.error("工具执行失败，请稍后重试"));
+            return jsonCodec.toJson(ToolExecutionResult.error("工具执行结果未确认，请先核对目标状态，不要直接重试"));
         }
     }
 

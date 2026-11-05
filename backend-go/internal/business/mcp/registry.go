@@ -274,6 +274,12 @@ func (r *Registry) markUnavailable(name string, failed *sdk.ClientSession) {
 }
 
 func (r *Registry) Call(parent context.Context, server, tool string, args map[string]any) (*sdk.CallToolResult, error) {
+	return r.CallWithOperationID(parent, server, tool, args, "")
+}
+
+// CallWithOperationID sends optional application metadata, without altering tool arguments.
+// A remote server must explicitly support the key to provide end-to-end idempotency.
+func (r *Registry) CallWithOperationID(parent context.Context, server, tool string, args map[string]any, operationID string) (*sdk.CallToolResult, error) {
 	r.mu.RLock()
 	slot := r.servers[server]
 	var session *sdk.ClientSession
@@ -290,7 +296,11 @@ func (r *Registry) Call(parent context.Context, server, tool string, args map[st
 	defer cancel()
 	stop := context.AfterFunc(r.ctx, cancel)
 	defer stop()
-	result, err := session.CallTool(ctx, &sdk.CallToolParams{Name: tool, Arguments: args})
+	var meta sdk.Meta
+	if operationID != "" {
+		meta = sdk.Meta{IdempotencyMetaKey: operationID}
+	}
+	result, err := session.CallTool(ctx, &sdk.CallToolParams{Name: tool, Arguments: args, Meta: meta})
 	if err != nil {
 		if parent.Err() == nil {
 			r.markUnavailable(server, session)

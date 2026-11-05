@@ -134,10 +134,14 @@ func TestP7MCPAuditBudgetConfirmationAndReconnect(t *testing.T) {
 func TestMCPAutoDecrementReplaysAcrossFreshBudgetsAndReorderedArguments(t *testing.T) {
 	var quantity atomic.Int32
 	quantity.Store(3)
+	var fail atomic.Bool
+	identities := make(chan string, 8)
 	server := sdk.NewServer(&sdk.Implementation{Name: "counter", Version: "1"}, nil)
-	server.AddTool(&sdk.Tool{Name: "decrement", InputSchema: map[string]any{"type": "object", "properties": map[string]any{}}}, func(context.Context, *sdk.CallToolRequest) (*sdk.CallToolResult, error) {
+	server.AddTool(&sdk.Tool{Name: "decrement", InputSchema: map[string]any{"type": "object", "properties": map[string]any{}}}, func(_ context.Context, request *sdk.CallToolRequest) (*sdk.CallToolResult, error) {
 		quantity.Add(-1)
-		return &sdk.CallToolResult{Content: []sdk.Content{&sdk.TextContent{Text: "done"}}}, nil
+		identity, _ := request.Params.Meta[mcp.IdempotencyMetaKey].(string)
+		identities <- identity
+		return &sdk.CallToolResult{IsError: fail.Load(), Content: []sdk.Content{&sdk.TextContent{Text: "done"}}}, nil
 	})
 	upstream := httptest.NewServer(sdk.NewStreamableHTTPHandler(func(*http.Request) *sdk.Server { return server }, &sdk.StreamableHTTPOptions{Stateless: true, JSONResponse: true}))
 	defer upstream.Close()
@@ -163,5 +167,43 @@ func TestMCPAutoDecrementReplaysAcrossFreshBudgetsAndReorderedArguments(t *testi
 	second, err := registry.Execute(context.Background(), testTurn(), call)
 	if err != nil || second.Status != "DUPLICATE" || quantity.Load() != 2 {
 		t.Fatal("decrement ran twice", second, err, quantity.Load())
+	}
+	if identity := <-identities; identity == "" {
+		t.Fatal("AUTO call omitted stable operation metadata")
+	}
+	fail.Store(true)
+	next := testTurn()
+	next.ID = "next"
+	failed, err := registry.Execute(context.Background(), next, call)
+	if err != nil || failed.Status != "ERROR" || failed.Message != mcp.UnknownOutcome("decrement") {
+		t.Fatal(failed, err)
+	}
+	if identity := <-identities; identity == "" {
+		t.Fatal("failed call omitted identity")
+	}
+	retry := testTurn()
+	retry.ID = "next"
+	blocked, err := registry.Execute(context.Background(), retry, call)
+	if err != nil || blocked.Status != "REJECTED" || quantity.Load() != 1 {
+		t.Fatal("failed AUTO call reexecuted", blocked, err, quantity.Load())
+	}
+
+	store := &p7ConfirmStore{rows: map[string]confirmation.Record{}}
+	handlers, _ := confirmation.NewRegistryFor([]confirmation.Action{confirmation.MCPToolCall}, &mcp.ConfirmationHandler{Registry: remote})
+	confirms, _ := confirmation.NewService(store, handlers)
+	dto, err := confirms.Create(context.Background(), confirmation.MCPToolCall, "扣减", mcp.ToolCall{Server: "counter", Tool: "decrement", Arguments: map[string]any{}}, 1, "c")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = confirms.Confirm(context.Background(), dto.ID, dto.Token)
+	if err == nil || err.Error() != mcp.UnknownOutcome("decrement") {
+		t.Fatal(err)
+	}
+	if identity := <-identities; identity != "confirmation:"+dto.ID {
+		t.Fatal("decision identity changed", identity)
+	}
+	_, err = confirms.Confirm(context.Background(), dto.ID, dto.Token)
+	if err == nil || quantity.Load() != 0 {
+		t.Fatal("confirmation retried the remote side effect", err, quantity.Load())
 	}
 }

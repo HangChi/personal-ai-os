@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"personal-ai-os/backend-go/internal/business/confirmation"
+	"personal-ai-os/backend-go/internal/business/idempotency"
 	"personal-ai-os/backend-go/internal/business/mcp"
 	"personal-ai-os/backend-go/internal/business/model"
 )
@@ -26,19 +27,24 @@ func MCPBindings(registry *mcp.Registry, confirms *confirmation.Service) []Defin
 				}
 				return Result{Status: "REQUIRES_CONFIRMATION", Message: "该操作会修改外部系统，需要你确认。已生成待确认事项：" + item.Summary + "。请用户在界面上确认后再执行。", ConfirmationID: &item.ID}, nil
 			}
-			result, err := registry.Call(ctx, tool.Server, tool.Original, args)
+			digest, err := idempotency.Digest(args)
+			if err != nil {
+				return Result{}, err
+			}
+			result, err := registry.CallWithOperationID(ctx, tool.Server, tool.Original, args,
+				idempotency.ToolKey(t.ConversationID, t.ID, tool.Name, digest))
 			if err != nil {
 				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 					return Result{}, err
 				}
-				return Result{Status: "ERROR", Message: "MCP server 连接失败，请重连后重试：" + tool.Server}, nil
+				return Result{Status: "ERROR", Message: mcp.UnknownOutcome(tool.Original)}, nil
 			}
 			raw, err := json.Marshal(result)
 			if err != nil {
 				return Result{}, err
 			}
 			if result.IsError {
-				return Result{Status: "ERROR", Message: "MCP server 执行失败：" + string(raw)}, nil
+				return Result{Status: "ERROR", Message: mcp.UnknownOutcome(tool.Original)}, nil
 			}
 			if t.AddWebSources != nil {
 				if sources := mcpWebSources(tool.Original, args, result); len(sources) > 0 {

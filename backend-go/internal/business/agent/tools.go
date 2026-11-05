@@ -305,7 +305,7 @@ func (r *Registry) Execute(ctx context.Context, t *Turn, call model.ToolCall) (r
 		if errors.Is(executeErr, ErrYield) || errors.Is(executeErr, context.Canceled) || errors.Is(executeErr, context.DeadlineExceeded) {
 			return Result{}, executeErr
 		}
-		result = Result{Status: "ERROR", Message: "工具执行失败，请稍后重试"}
+		result = Result{Status: "ERROR", Message: "工具执行结果未确认，请先核对目标状态，不要直接重试"}
 		var conflict *idempotency.ConflictError
 		if errors.As(executeErr, &conflict) {
 			result.Status = "REJECTED"

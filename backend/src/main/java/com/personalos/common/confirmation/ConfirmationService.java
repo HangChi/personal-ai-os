@@ -149,7 +149,7 @@ public class ConfirmationService {
         int affected;
         try {
             affected = registry.require(claimed.getAction())
-                    .execute(claimed.getAction(), claimed.getPayload());
+                    .execute(claimed.getAction(), claimed.getPayload(), "confirmation:" + id);
         } catch (ResourceNotFoundException ex) {
             // 目标在确认前已被删除：这不是系统故障，用户不需要重试
             recordOutcome(id, ConfirmationStatus.CANCELLED);

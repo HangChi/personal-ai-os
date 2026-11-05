@@ -86,7 +86,7 @@ func (e *ConflictError) Error() string {
 	case ErrDigestConflict:
 		return "该幂等键已用于内容不同的请求，请更换幂等键：" + e.Key
 	case ErrPreviousFailed:
-		return "该操作之前执行失败，请更换幂等键后重试：" + e.Key
+		return "该操作之前未正常完成，执行结果需核对；请先检查目标状态，不要更换标识直接重试"
 	default:
 		return "该操作的执行结果尚未确定，请核对后再继续，系统不会重复执行"
 	}

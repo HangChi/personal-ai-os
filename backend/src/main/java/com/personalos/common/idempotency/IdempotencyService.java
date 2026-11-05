@@ -122,7 +122,7 @@ public class IdempotencyService {
             // 之前执行失败：responsePayload 是 null，原样回放会让调用方拿到「成功但空响应」，
             // 分不清是失败还是空结果。改为明确报错，用户换一个幂等键即可重试（审查 P2）
             throw new BusinessException(ErrorCode.BUSINESS_CONFLICT,
-                    "该操作之前执行失败，请更换幂等键后重试：" + request.key());
+                    "该操作之前未正常完成，执行结果需核对；请先检查目标状态，不要更换标识直接重试");
         }
         return new IdempotentResult(record.getResponsePayload(), record.getOutcome(), true);
     }
