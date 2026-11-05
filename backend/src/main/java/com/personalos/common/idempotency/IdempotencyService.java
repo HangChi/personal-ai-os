@@ -32,8 +32,8 @@ public class IdempotencyService {
      *
      * <p>占位（IN_PROGRESS）与回填是两个独立事务，进程若在中间崩溃，记录会永久停在
      * IN_PROGRESS —— 此后同一幂等键的所有请求都命中它、被当成「处理中」而拿不到结果。
-     * 超过这个时长仍停在 IN_PROGRESS，就视为崩溃残留，删除后允许重新执行。
-     * 5 分钟远超任何一次正常执行（最慢的是模型调用，也远不到 5 分钟）。
+     * 非工具请求超过这个时长仍停在 IN_PROGRESS，可视为崩溃残留。
+     * TOOL 可能已产生外部副作用，永久保留其执行所有权，不按超时重新执行。
      */
     static final long IN_PROGRESS_STALE_SECONDS = 300;
 
@@ -58,8 +58,7 @@ public class IdempotencyService {
         Optional<OperationRecordEntity> existing = repository.findByIdempotencyKey(request.key());
         if (existing.isPresent()) {
             OperationRecordEntity record = existing.get();
-            // 崩溃残留：占位后进程死掉，记录永久停在 IN_PROGRESS。超阈值则废弃重来，
-            // 否则这个键永远「正在处理中」，既不能重试也不能复用（审查 P2）
+            // 仅回收非 TOOL 的超时占位；工具结果未知时保留所有权，必须先核对。
             if (record.getOutcome() == IdempotencyOutcome.IN_PROGRESS && isStale(record)
                     && record.getSource() != OperationSource.TOOL) {
                 log.warn("清理崩溃残留的 IN_PROGRESS 幂等记录：key={} createdAt={}",
@@ -120,7 +119,7 @@ public class IdempotencyService {
         }
         if (record.getOutcome() == IdempotencyOutcome.FAILED) {
             // 之前执行失败：responsePayload 是 null，原样回放会让调用方拿到「成功但空响应」，
-            // 分不清是失败还是空结果。改为明确报错，用户换一个幂等键即可重试（审查 P2）
+            // 分不清是失败还是空结果。明确要求核对，不能靠更换键绕过执行所有权。
             throw new BusinessException(ErrorCode.BUSINESS_CONFLICT,
                     "该操作之前未正常完成，执行结果需核对；请先检查目标状态，不要更换标识直接重试");
         }
