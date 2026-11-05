@@ -777,8 +777,8 @@
       "id": "file:backend/src/main/java/com/personalos/calendar/service/ReminderStreamDelivery.java",
       "path": "backend/src/main/java/com/personalos/calendar/service/ReminderStreamDelivery.java",
       "sha256": "640ff99ed1a748157309d5c904c3ace952db579bbeaafe8fd24bc544076707ad",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/calendar/tool/CalendarToolContributor.java",
@@ -3402,22 +3402,22 @@
       "id": "file:backend/src/test/java/com/personalos/PersonalOsApplicationTests.java",
       "path": "backend/src/test/java/com/personalos/PersonalOsApplicationTests.java",
       "sha256": "70d1cd3ece41bfbac784826528fae31e817fcd578579c1c062176fed0829d4df",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/agent/AgentToolCallingIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/agent/AgentToolCallingIntegrationTest.java",
       "sha256": "2d2390f454f8e73730c386c0acb0b5b87dba3cb3e8378ff52a7e35be862faf9a",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/agent/audit/ToolInvocationAuditIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/agent/audit/ToolInvocationAuditIntegrationTest.java",
       "sha256": "533051a80ee6b68dbc09b2d944b266b52f4e2cbedfe7327d0d25560780710b99",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/agent/plan/AgentPlanServiceTest.java",
@@ -3451,15 +3451,15 @@
       "id": "file:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java",
       "sha256": "e87d5f6270a52c82a256c3945ff538321e8a9d7362b649a6fda72c5ea84107b2",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java",
       "sha256": "490abf804a781ffa33e900521ed456ae5757cc8701be1674ed310a98e1f125f0",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java",
@@ -3486,22 +3486,22 @@
       "id": "file:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
       "path": "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
       "sha256": "5a1c2ad99a6905080e6336ec8ba774828adaeb2650b9b5f193ef78a8cd02e159",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/AgentInteractionIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/chat/AgentInteractionIntegrationTest.java",
       "sha256": "b655fcccf3743fac6335926f243c1923c62327860c00e16c0b569f66c88bb784",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/ChatApiIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/chat/ChatApiIntegrationTest.java",
       "sha256": "e1cafd4b0676c7b7c29cbccb676578b13d8b158c4ab95dfc50ae8dee5ab194ef",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java",
@@ -3514,22 +3514,22 @@
       "id": "file:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java",
       "sha256": "7b112efdd86c064f52b604fccd80a24999afcfe4b2dead4c08f0dc27a3f244e6",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/ChatRunIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/chat/ChatRunIntegrationTest.java",
       "sha256": "80e97e3664e79504a1a49bf70d74cc8718f80439afb95b8f51b52f26b35b3423",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/ChatStreamTerminationIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/chat/ChatStreamTerminationIntegrationTest.java",
       "sha256": "6c21913a0ec432f3ceb752f73c75c5d82dfd72181a8cfc8334ca399d4473f3b5",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/RunEventBufferTest.java",
@@ -3542,8 +3542,8 @@
       "id": "file:backend/src/test/java/com/personalos/chat/TokenUsageIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/chat/TokenUsageIntegrationTest.java",
       "sha256": "c55da4eb754c4ee679dd279422d92a1f15619186fbc17a46a0291563677ef75c",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/controller/ChatContextControllerTest.java",
@@ -3689,8 +3689,8 @@
       "id": "file:backend/src/test/java/com/personalos/common/ai/ContextBudgetPersistenceIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/common/ai/ContextBudgetPersistenceIntegrationTest.java",
       "sha256": "9777244173b9eec174c7ab92c4f6fbd8b8ed16c6fd93af6d2854e15a5d762d97",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/ai/ContextBudgetServiceTest.java",
@@ -3899,22 +3899,22 @@
       "id": "file:backend/src/test/java/com/personalos/common/auth/AuthDisabledIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/common/auth/AuthDisabledIntegrationTest.java",
       "sha256": "ce79a0d9a267a05dc9b46ffedbaa37291bb9c2f73f68e3aaaca01fb8063eb726",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java",
       "sha256": "fa551fb37c1586ba3b5d429b908c3dbc371456fcf78a249400de489042e47762",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/auth/AuthLockoutIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/common/auth/AuthLockoutIntegrationTest.java",
       "sha256": "0e5899b97a704b1dbfffdfaaba9ad5fde04c494a131f375698cc266dc8684c44",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/auth/AuthServiceTest.java",
@@ -3948,8 +3948,8 @@
       "id": "file:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java",
       "path": "backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java",
       "sha256": "e9716a36bde645e1c44973a124fc4b6ce919875683ce549f7b5ffc9d22211be6",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java",
@@ -3962,8 +3962,8 @@
       "id": "file:backend/src/test/java/com/personalos/common/exception/ErrorEnvelopeIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/common/exception/ErrorEnvelopeIntegrationTest.java",
       "sha256": "4b41f336b07befc7e6179daa2e4d62d9f3e0985f8c302ca5efae0dfb02f556b7",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/exception/GlobalExceptionHandlerLogTest.java",
@@ -3997,15 +3997,15 @@
       "id": "file:backend/src/test/java/com/personalos/common/monitoring/MonitoringIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/common/monitoring/MonitoringIntegrationTest.java",
       "sha256": "1a9cee602a8fb2e44d542aacdf374880647a32cc3c0f42536d5891a40c82754a",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java",
       "sha256": "bf621760e57162e1f8618a1c6a8566b1408492f36e01cdc041486f8032e73fb2",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/search/SearchPatternsTest.java",
@@ -4088,8 +4088,8 @@
       "id": "file:backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java",
       "sha256": "e39e2e65ace14d6c9241593fc959d73a04c0a840b5e56918b065076bc75f510f",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java",
@@ -4102,43 +4102,43 @@
       "id": "file:backend/src/test/java/com/personalos/knowledge/EmbeddingDimensionMismatchIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/EmbeddingDimensionMismatchIntegrationTest.java",
       "sha256": "277b5add71f9bb4aacb1794fabbc193ab92535b6a96937704c4e57cfc87de443",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/HybridSearchIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/HybridSearchIntegrationTest.java",
       "sha256": "7605a30697247cdf03a09d117db3b3e984a83490c159e8cc891decc3d8c91aec",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentPageOverflowIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentPageOverflowIntegrationTest.java",
       "sha256": "3da68ec3e0d6ce910ba4b5011a8311c0e2821992d32835b82d397b236f49a0b9",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java",
       "sha256": "cb91d44a704329d5c6fbd2b8c672bc9528563ea49e5cda267f7d21ed5e01ddba",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java",
       "sha256": "dffbb97aec613b891ba55845a152894729b35dac9491aab23ee67fdc901cee4c",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/KnowledgeMinLengthIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeMinLengthIntegrationTest.java",
       "sha256": "80f2ab6e62a7ee11263e9fc95f293cc5b2f98beec76f34a8d75d4bc010b89f33",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/KnowledgeRagIntegrationTest.java",
@@ -4158,29 +4158,29 @@
       "id": "file:backend/src/test/java/com/personalos/knowledge/RichDocumentIngestIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/RichDocumentIngestIntegrationTest.java",
       "sha256": "657b27e6c04bd90a0f5bd783be6ce7e27b83f6dfa79986f8f6bffd8e0916bc62",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/VectorStoreIndexMigrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/VectorStoreIndexMigrationTest.java",
       "sha256": "3767fe6aa0e4acd18ce0f7ba406731f05ae6920b1e186cbc539e40c69b05ccc3",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/governance/KnowledgeGovernanceIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/governance/KnowledgeGovernanceIntegrationTest.java",
       "sha256": "6b0635cb13ea53658223273d6c219f5d73d4b6f502bcc981e36a89c9b9760e74",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/rag/AdvancedRagIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/rag/AdvancedRagIntegrationTest.java",
       "sha256": "a90a491b3cdb5f5dc44b809b976b843dc1fd5b75f4edb8ef12d7ae659bb6ffc5",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/rag/CrossEncoderRerankerTest.java",
@@ -4270,15 +4270,15 @@
       "id": "file:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java",
       "sha256": "56cdffb9518259ff68750db9a197a4437a96e304fcb30dab94def2db27f25682",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/mcp/McpChatToolCallingIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/mcp/McpChatToolCallingIntegrationTest.java",
       "sha256": "a346d4465a83e1a769d96a089f638e93f64062f036529037fe78a590b7551aef",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java",
@@ -4298,8 +4298,8 @@
       "id": "file:backend/src/test/java/com/personalos/mcp/McpDegradedStartupIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/mcp/McpDegradedStartupIntegrationTest.java",
       "sha256": "1f865a34ae81a8d438c0674228d32d8609ffe4ac95748da8411430adda4d0164",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/mcp/TestMcpServerMain.java",
@@ -4361,8 +4361,8 @@
       "id": "file:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java",
       "sha256": "cc79ae2851e69c0ded27cde30edcad421146c57a29703b36348b419f4f7a9d8a",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/memory/MemoryPropertiesTest.java",
@@ -4452,15 +4452,15 @@
       "id": "file:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java",
       "sha256": "0e81da77b6fd1d1d0f1a6ff6abacf8a99510cdad1441c3a3c8ac0a101d10a895",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java",
       "sha256": "569d29c949878d9c66022acf285d5cfdbe8b8ebaa1e5522ad4a05167486e7c9d",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/task/TaskTagsTest.java",
@@ -4473,8 +4473,8 @@
       "id": "file:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java",
       "sha256": "139c6d50fa8c530be11e2d35ef0f7a4de36fefa1dcf05f39467d1ec9291907d5",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/resources/application.properties",
@@ -7659,13 +7659,13 @@
     {
       "id": "scope:calendar-import-recurrence-20261105",
       "status": "in_progress",
-      "source_commit": "22ba4d3f1227b9d1f6d8cd7e3e876273bbc6f732",
+      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
       "files": 6
     },
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "22ba4d3f1227b9d1f6d8cd7e3e876273bbc6f732",
+      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
       "files": 72
     },
     {
@@ -7677,8 +7677,14 @@
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "22ba4d3f1227b9d1f6d8cd7e3e876273bbc6f732",
+      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
       "files": 40
+    },
+    {
+      "id": "scope:test-and-stream-shutdown-20261106",
+      "status": "in_progress",
+      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
+      "files": 43
     }
   ]
 }

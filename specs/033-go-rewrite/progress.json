@@ -2060,7 +2060,7 @@
       "note": "认证路由存在于独立可组合处理器，已验证本地会话和 CSRF；尚未挂载至诊断应用，真实 Java/Go 路由差分待验，不能 verified。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/auth/http.go",
         "backend-go/internal/platform/auth/http_test.go",
@@ -2069,12 +2069,21 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-test-mapping.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "backend-go/internal/app/foundation_http_oracle_test.go"
+        "backend-go/internal/app/foundation_http_oracle_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthDisabledIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/auth/http.go",
         "backend-go/internal/platform/auth/http_test.go",
@@ -2082,12 +2091,21 @@
         "backend-go/internal/platform/auth/session_test.go",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-test-mapping.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthLockoutIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/auth/http.go",
         "backend-go/internal/platform/auth/http_test.go",
@@ -2096,9 +2114,18 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/platform/auth/service_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/auth/SharedSessionConfig.java": {
       "status": "implemented",
@@ -2502,9 +2529,14 @@
         "frontend/test/component/chat-command-composer.test.ts",
         "frontend/test/component/chat-command-view.test.ts",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/exception/BusinessException.java": {
       "status": "implemented",
@@ -2955,9 +2987,14 @@
         "frontend/test/component/chat-command-composer.test.ts",
         "frontend/test/component/chat-command-view.test.ts",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationRegistry.java": {
       "status": "implemented",
@@ -3091,9 +3128,14 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/idempotency/OperationRecordEntity.java": {
       "status": "implemented",
@@ -3129,9 +3171,14 @@
         "frontend/test/component/chat-command-composer.test.ts",
         "frontend/test/component/chat-command-view.test.ts",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/json/JsonCodec.java": {
       "status": "implemented",
@@ -6135,9 +6182,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/ChatMessageDto.java": {
       "status": "implemented",
@@ -6412,9 +6461,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatMarkdownExporter.java": {
       "status": "in_progress",
@@ -6440,9 +6491,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatMessageService.java": {
       "status": "implemented",
@@ -7751,9 +7804,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/StreamChatRequest.java": {
       "status": "implemented",
@@ -7923,9 +7978,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatPromptAssembler.java": {
       "status": "implemented",
@@ -7983,9 +8040,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/RunEmitter.java": {
       "status": "implemented",
@@ -8326,9 +8385,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/ToolContributor.java": {
       "status": "implemented",
@@ -8445,9 +8506,14 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/tool/ToolProgress.java": {
       "status": "implemented",
@@ -8465,7 +8531,7 @@
       "note": "P4已装配：参数/16工具定义、预算/审计/幂等与真实任务副作用。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
     },
     "file:backend/src/test/java/com/personalos/agent/AgentToolCallingIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/agent/tools.go",
         "backend-go/internal/business/agent/task.go",
@@ -8475,12 +8541,23 @@
         "backend-go/internal/business/chat/execution_integration_test.go",
         "scripts/migration/java_p4_fixture.py",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：参数/16工具定义、预算/审计/幂等与真实任务副作用；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/agent/audit/ToolInvocationAuditIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/agent/tools.go",
         "backend-go/internal/business/agent/task.go",
@@ -8490,9 +8567,20 @@
         "backend-go/internal/business/chat/execution_integration_test.go",
         "scripts/migration/java_p4_fixture.py",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：参数/16工具定义、预算/审计/幂等与真实任务副作用；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/agent/plan/AgentPlanServiceTest.java": {
       "status": "implemented",
@@ -8543,18 +8631,29 @@
       "note": "P4测试来源职责映射：计划七工具、顺序/失败/证据/修订与防提前结束；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
     },
     "file:backend/src/test/java/com/personalos/chat/AgentInteractionIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/interaction.go",
         "backend-go/internal/business/chat/runs.go",
         "backend-go/internal/business/chat/execution_integration_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：askUser/等待/回答、QUEUE/STEER、恢复与确认边界；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatApiIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/stream.go",
         "backend-go/internal/business/chat/module_http.go",
@@ -8568,9 +8667,20 @@
         "backend-go/internal/business/chat/java_oracle_test.go",
         "backend-go/internal/business/chat/model_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：旧SSE/超时/取消/部分回复、计划/日历防伪完成与轮末接口；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java": {
       "status": "in_progress",
@@ -8594,12 +8704,14 @@
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/service.go",
         "backend-go/internal/business/chat/postgres.go",
@@ -8609,33 +8721,66 @@
         "backend-go/internal/business/chat/java_oracle_test.go",
         "backend-go/internal/business/chat/model_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：会话/消息/引用、分页搜索与rewind/导出；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatRunIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/runs.go",
         "backend-go/internal/business/chat/module_http.go",
         "backend-go/internal/business/chat/stream_test.go",
         "backend-go/internal/business/chat/execution_integration_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：持久Run/事件游标/租约fence、启动恢复/停止/关闭与读者解耦；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatStreamTerminationIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/stream.go",
         "backend-go/internal/business/chat/module_http.go",
         "backend-go/internal/business/chat/execution_integration_test.go",
         "backend-go/internal/business/chat/stream_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：旧SSE/超时/取消/部分回复、计划/日历防伪完成与轮末接口；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/RunEventBufferTest.java": {
       "status": "implemented",
@@ -8650,7 +8795,7 @@
       "note": "P4测试来源职责映射：持久Run/事件游标/租约fence、启动恢复/停止/关闭与读者解耦；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
     },
     "file:backend/src/test/java/com/personalos/chat/TokenUsageIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/usage.go",
         "backend-go/internal/business/chat/usage_integration_test.go",
@@ -8661,9 +8806,18 @@
         "backend-go/internal/app/foundation_p8_integration_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/controller/ChatContextControllerTest.java": {
       "status": "implemented",
@@ -8926,16 +9080,27 @@
       "note": "P4测试来源职责映射：旧SSE/超时/取消/部分回复、计划/日历防伪完成与轮末接口；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
     },
     "file:backend/src/test/java/com/personalos/common/ai/ContextBudgetPersistenceIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/context/budget.go",
         "backend-go/internal/business/context/budget_test.go",
         "backend-go/internal/business/context/guard_test.go",
         "backend-go/internal/business/chat/context_integration_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4测试来源职责映射：预算偏好/窗口、历史副本/工具配对与有界保护重试；Go采用合并断言而非复制Mockito/JPA对象细节，逐声明证据在本账。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/ai/ContextBudgetServiceTest.java": {
       "status": "implemented",
@@ -14497,15 +14662,26 @@
       "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
     },
     "file:backend/src/main/java/com/personalos/calendar/service/ReminderStreamDelivery.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/calendar/stream.go",
         "backend-go/internal/app/reminder_metrics.go",
         "backend-go/internal/app/foundation_p5_integration_test.go",
         "backend-go/internal/app/foundation_p5.go",
-        "specs/033-go-rewrite/p5-completion.md"
+        "specs/033-go-rewrite/p5-completion.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/calendar/tool/CalendarToolContributor.java": {
       "status": "implemented",
@@ -14785,7 +14961,7 @@
       "note": "P5功能已接显式Foundation/CLI，验证职责与边界见P5验收。"
     },
     "file:backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/calendar/events.go",
         "backend-go/internal/business/calendar/http.go",
@@ -14799,21 +14975,42 @@
         "backend-go/internal/business/agent/calendar.go",
         "backend-go/internal/business/calendar/stream_test.go",
         "specs/033-go-rewrite/p5-test-mapping.md",
-        "specs/033-go-rewrite/p5-completion.md"
+        "specs/033-go-rewrite/p5-completion.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/calendar/push.go",
         "backend-go/internal/business/calendar/push_http.go",
         "backend-go/internal/business/calendar/push_integration_test.go",
         "scripts/migration/chrome_p5_web_push.mjs",
         "specs/033-go-rewrite/p5-test-mapping.md",
-        "specs/033-go-rewrite/p5-completion.md"
+        "specs/033-go-rewrite/p5-completion.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java": {
       "status": "implemented",
@@ -14851,7 +15048,7 @@
       "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
     },
     "file:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/calendar/stream.go",
         "backend-go/internal/app/reminder_metrics.go",
@@ -14859,9 +15056,19 @@
         "backend-go/internal/business/calendar/broadcast.go",
         "backend-go/internal/business/calendar/stream_test.go",
         "specs/033-go-rewrite/p5-test-mapping.md",
-        "specs/033-go-rewrite/p5-completion.md"
+        "specs/033-go-rewrite/p5-completion.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/memory/MemoryEmbeddingBackfillTest.java": {
       "status": "implemented",
@@ -14875,7 +15082,7 @@
       "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
     },
     "file:backend/src/test/java/com/personalos/memory/MemoryIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/memory/store.go",
         "backend-go/internal/business/memory/http.go",
@@ -14885,9 +15092,20 @@
         "backend-go/internal/business/agent/calendar.go",
         "backend-go/internal/business/agent/tool-definitions-p5.json",
         "specs/033-go-rewrite/p5-test-mapping.md",
-        "specs/033-go-rewrite/p5-completion.md"
+        "specs/033-go-rewrite/p5-completion.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "固定Java用例已运行；Go按合并业务职责对照，断言与框架边界见P5测试映射。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/memory/MemoryPropertiesTest.java": {
       "status": "implemented",
@@ -18668,7 +18886,7 @@
       "note": "T601/T602：原42迁移与TLS PostgreSQL/pgvector验证JSON/维度/HNSW/表达式索引EXPLAIN及去索引反证、文档租约/原子替换/删除/引用、队列容量/幂等/回执/续租/最终fencing/负载清理；索引真实子进程SIGKILL后新进程完整恢复。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/EmbeddingDimensionMismatchIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/store.go",
         "backend-go/internal/business/knowledge/jobs.go",
@@ -18680,12 +18898,22 @@
         "backend-go/internal/business/knowledge/process_integration_test.go",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T601/T602：原42迁移与TLS PostgreSQL/pgvector验证JSON/维度/HNSW/表达式索引EXPLAIN及去索引反证、文档租约/原子替换/删除/引用、队列容量/幂等/回执/续租/最终fencing/负载清理；索引真实子进程SIGKILL后新进程完整恢复。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentPageOverflowIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/store.go",
         "backend-go/internal/business/knowledge/jobs.go",
@@ -18697,12 +18925,22 @@
         "backend-go/internal/business/knowledge/process_integration_test.go",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T601/T602：原42迁移与TLS PostgreSQL/pgvector验证JSON/维度/HNSW/表达式索引EXPLAIN及去索引反证、文档租约/原子替换/删除/引用、队列容量/幂等/回执/续租/最终fencing/负载清理；索引真实子进程SIGKILL后新进程完整恢复。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/store.go",
         "backend-go/internal/business/knowledge/jobs.go",
@@ -18714,12 +18952,22 @@
         "backend-go/internal/business/knowledge/process_integration_test.go",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T601/T602：原42迁移与TLS PostgreSQL/pgvector验证JSON/维度/HNSW/表达式索引EXPLAIN及去索引反证、文档租约/原子替换/删除/引用、队列容量/幂等/回执/续租/最终fencing/负载清理；索引真实子进程SIGKILL后新进程完整恢复。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/store.go",
         "backend-go/internal/business/knowledge/jobs.go",
@@ -18731,12 +18979,22 @@
         "backend-go/internal/business/knowledge/process_integration_test.go",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T601/T602：原42迁移与TLS PostgreSQL/pgvector验证JSON/维度/HNSW/表达式索引EXPLAIN及去索引反证、文档租约/原子替换/删除/引用、队列容量/幂等/回执/续租/最终fencing/负载清理；索引真实子进程SIGKILL后新进程完整恢复。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeMinLengthIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/store.go",
         "backend-go/internal/business/knowledge/jobs.go",
@@ -18748,12 +19006,22 @@
         "backend-go/internal/business/knowledge/process_integration_test.go",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T601/T602：原42迁移与TLS PostgreSQL/pgvector验证JSON/维度/HNSW/表达式索引EXPLAIN及去索引反证、文档租约/原子替换/删除/引用、队列容量/幂等/回执/续租/最终fencing/负载清理；索引真实子进程SIGKILL后新进程完整恢复。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/VectorStoreIndexMigrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/store.go",
         "backend-go/internal/business/knowledge/jobs.go",
@@ -18765,9 +19033,19 @@
         "backend-go/internal/business/knowledge/process_integration_test.go",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T601/T602：原42迁移与TLS PostgreSQL/pgvector验证JSON/维度/HNSW/表达式索引EXPLAIN及去索引反证、文档租约/原子替换/删除/引用、队列容量/幂等/回执/续租/最终fencing/负载清理；索引真实子进程SIGKILL后新进程完整恢复。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/service/DocumentWriteLockTest.java": {
       "status": "implemented",
@@ -19365,7 +19643,7 @@
       "note": "T603/T607/T609：真实TLS PostgreSQL/Redis验证阈值、RRF/IDF、中文补召回、LIKE字面量、权威回表、20秒TTL/256KiB/generation/事务绕过/关闭/故障；固定Java 152查询及18组受控召回和引用逐项相等。受控向量不表示真实语义质量。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/HybridSearchIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/retrieval.go",
         "backend-go/internal/business/knowledge/cache.go",
@@ -19376,9 +19654,19 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T603/T607/T609：真实TLS PostgreSQL/Redis验证阈值、RRF/IDF、中文补召回、LIKE字面量、权威回表、20秒TTL/256KiB/generation/事务绕过/关闭/故障；固定Java 152查询及18组受控召回和引用逐项相等。受控向量不表示真实语义质量。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/service/KeywordExtractorTest.java": {
       "status": "implemented",
@@ -20277,9 +20565,11 @@
         "frontend/test/component/markdown-citations.test.ts",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeAskRequest.java": {
       "status": "implemented",
@@ -20322,9 +20612,11 @@
         "frontend/test/component/markdown-citations.test.ts",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeSearchRequest.java": {
       "status": "implemented",
@@ -20435,9 +20727,11 @@
         "frontend/test/component/markdown-citations.test.ts",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java": {
       "status": "implemented",
@@ -20480,9 +20774,11 @@
         "frontend/test/component/markdown-citations.test.ts",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeRagIntegrationTest.java": {
       "status": "in_progress",
@@ -20508,12 +20804,14 @@
         "frontend/test/component/markdown-citations.test.ts",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/rag/AdvancedRagIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/rag.go",
         "backend-go/internal/business/knowledge/qa.go",
@@ -20525,9 +20823,19 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/rag/CrossEncoderRerankerTest.java": {
       "status": "implemented",
@@ -21091,7 +21399,7 @@
       "note": "T606：空间/生效期/元数据/revision/生命周期、原文连续摘录复核、人工决议/审计/版本失效；review逐片段、16路领取、租约与revision最终fencing、失败三次暂停和人工重排。全量导出导入及备份切换仍按P7/P8验收。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/governance/KnowledgeGovernanceIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/governance.go",
         "backend-go/internal/business/knowledge/review.go",
@@ -21099,9 +21407,19 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T606：空间/生效期/元数据/revision/生命周期、原文连续摘录复核、人工决议/审计/版本失效；review逐片段、16路领取、租约与revision最终fencing、失败三次暂停和人工重排。全量导出导入及备份切换仍按P7/P8验收。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "hook:backend/src/main/java/com/personalos/knowledge/governance/IngestionReviewWorker.java:102:PreDestroy": {
       "status": "implemented",
@@ -21388,12 +21706,14 @@
         "frontend/test/component/markdown-citations.test.ts",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/RichDocumentIngestIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/http.go",
         "backend-go/internal/business/knowledge/module.go",
@@ -21407,9 +21727,19 @@
         "specs/033-go-rewrite/p6-completion.md",
         "specs/033-go-rewrite/p6-test-mapping.md",
         "backend-go/internal/business/agent/knowledge.go",
-        "backend-go/internal/business/agent/knowledge_test.go"
+        "backend-go/internal/business/agent/knowledge_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T600–T608：--foundation --p6显式装配全部知识HTTP/认证/CSRF/限流、只读工具、聊天共享端口与保守引用落库，独立候选Redis；五角色隔离/退出、索引enabled开关、可选设施关闭和消息代理失联轮询已验证。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "hook:backend/src/main/java/com/personalos/knowledge/config/KnowledgeProperties.java:21:ConfigurationProperties": {
       "status": "implemented",
@@ -22102,9 +22432,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "backend-go/internal/app/foundation_calendar_import_integration_test.go",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:calendar-import-recurrence-20261105：五种日程重复规则导入修复，Java / Go 均已通过独立 PostgreSQL 导出—导入往返，保留重复截止时间和提醒提前量。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:calendar-import-recurrence-20261105：五种日程重复规则导入修复，Java / Go 均已通过独立 PostgreSQL 导出—导入往返，保留重复截止时间和提醒提前量。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/export/ExportContributor.java": {
       "status": "implemented",
@@ -22283,9 +22615,14 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationService.java": {
       "status": "implemented",
@@ -22534,9 +22871,11 @@
         "frontend/test/component/markdown-citations.test.ts",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/mcp/tool/McpToolCallbackProvider.java": {
       "status": "implemented",
@@ -22599,16 +22938,26 @@
       "note": "T700–T702：真实stdio/HTTP与受控超时/关闭/重连/降级，默认CONFIRM及共同预算/审计/幂等，独立个人只读四工具/认证CSRF；原协议版本2025-06-18。"
     },
     "file:backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/app/foundation_p7_integration_test.go",
         "backend-go/internal/business/search/search_test.go",
         "backend-go/internal/business/mcp/oracle_test.go",
         "specs/033-go-rewrite/p7-completion.md",
         "specs/033-go-rewrite/p7-test-mapping.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "TestP7MCPAndFiveModuleSearchPostgres, TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。五模块、标题优先/内容补充/会话去重、matchedField、字面量、分组排序/限额/无命中及单模块SQL故障隔离"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/search/SearchPatternsTest.java": {
       "status": "implemented",
@@ -22622,16 +22971,26 @@
       "note": "TestP7GlobalSearchContractIsolationAndLimits, TestJavaP7NamingPolicySummarySearchPersonalAndImportOracle。strip/Locale.ROOT小写/反斜线及%_字面量，不把单独通配符当全库搜索"
     },
     "file:backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/app/foundation_p7_integration_test.go",
         "backend-go/internal/business/exchange/http_test.go",
         "backend-go/internal/business/dataexport/export_test.go",
         "specs/033-go-rewrite/p7-completion.md",
         "specs/033-go-rewrite/p7-test-mapping.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "TestP7StreamingExportImportRoundTripPostgres, TestP7ExportSnapshotAcrossBatchesAndImportConstraintRollback, TestP7EmptyExportPendingJobsAndSanitizedImport, TestP7ExportHEADAndNegotiation, TestP7BoundedStreamingArrayAndWriterFailures。空数组/同源counts/附件头/无信封与embedding；200条批次含405消息/205块长文，单快照并发写入隔离及写失败传播"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java": {
       "status": "in_progress",
@@ -22651,20 +23010,32 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "backend-go/internal/app/foundation_calendar_import_integration_test.go",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:calendar-import-recurrence-20261105：五种日程重复规则导入修复，Java / Go 均已通过独立 PostgreSQL 导出—导入往返，保留重复截止时间和提醒提前量。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:calendar-import-recurrence-20261105：五种日程重复规则导入修复，Java / Go 均已通过独立 PostgreSQL 导出—导入往返，保留重复截止时间和提醒提前量。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/mcp/McpChatToolCallingIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/agent/mcp_test.go",
         "specs/033-go-rewrite/p7-completion.md",
         "specs/033-go-rewrite/p7-test-mapping.md",
         "specs/033-go-rewrite/validation.md",
-        "backend-go/internal/app/foundation_p7_integration_test.go"
+        "backend-go/internal/app/foundation_p7_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "TestP7MCPChatHTTPAndPersistentConfirmation, TestP7MCPAuditBudgetConfirmationAndReconnect。真实HTTP对话流与MCP协议：工具实际出现在模型请求，AUTO结果与CONFIRM状态回到下一轮模型上下文；确认前零写入、真实库并发CAS/审计；预算耗尽不调用/不申请"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java": {
       "status": "implemented",
@@ -22701,20 +23072,35 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/mcp/McpDegradedStartupIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/mcp/registry_test.go",
         "backend-go/internal/app/foundation_p7_integration_test.go",
         "specs/033-go-rewrite/p7-completion.md",
         "specs/033-go-rewrite/p7-test-mapping.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "TestP7RealStdioLifecycleAndFailureIsolation, TestP7ConfigurationFailureAndDisabledNoSideEffects, TestP7MCPAndFiveModuleSearchPostgres。外部失败不阻止注册表建立；外部MCP开关与个人只读服务/模型独立，非法配置仍拒绝"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/mcp/TestMcpServerMain.java": {
       "status": "implemented",
@@ -25445,7 +25831,7 @@
       "note": "P8逐声明：ConfirmationIntegrationTest.onlyOneConcurrentConfirmWins → TestPostgresCASAcrossConnections；双池24并发只一成功、处理器仅一次，终态从另一池可见。"
     },
     "file:backend/src/test/java/com/personalos/PersonalOsApplicationTests.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/migration/postgres_integration_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
@@ -25456,9 +25842,18 @@
         "backend-go/internal/business/mcp/registry_test.go",
         "backend-go/internal/business/mcp/personal_test.go",
         "backend-go/internal/platform/http/errors_test.go",
-        "backend-go/internal/app/foundation_http_test.go"
+        "backend-go/internal/app/foundation_http_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/api/ApiResponseTest.java": {
       "status": "implemented",
@@ -25481,14 +25876,23 @@
       "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/test/java/com/personalos/common/confirmation/ConfirmationTransactionTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java": {
       "status": "implemented",
@@ -25502,27 +25906,44 @@
       "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/test/java/com/personalos/common/exception/ErrorEnvelopeIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/platform/http/errors_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/business/task/p8_batch_integration_test.go",
-        "backend-go/internal/app/foundation_p8_lists_integration_test.go"
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/monitoring/MonitoringIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/app/foundation_postgres_integration_test.go",
         "backend-go/internal/app/actuator_metrics_integration_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "specs/033-go-rewrite/validation.md"
+        "specs/033-go-rewrite/validation.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/text/TextsTest.java": {
       "status": "implemented",
@@ -25556,15 +25977,24 @@
       "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/test/java/com/personalos/list/ListSearchIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/task/p8_batch_integration_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
-        "backend-go/internal/app/foundation_p8_lists_integration_test.go"
+        "backend-go/internal/app/foundation_p8_lists_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/support/InstantsTest.java": {
       "status": "implemented",
@@ -25577,7 +26007,7 @@
       "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/test/java/com/personalos/task/TaskApiIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/app/foundation_p8_task_integration_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
@@ -25586,20 +26016,38 @@
         "backend-go/internal/app/foundation_task_integration_test.go",
         "backend-go/internal/business/task/p8_contract_integration_test.go",
         "backend-go/internal/business/task/model_test.go",
-        "backend-go/internal/business/task/p8_batch_integration_test.go"
+        "backend-go/internal/business/task/p8_batch_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/task/p8_contract_integration_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
-        "backend-go/internal/app/foundation_p8_task_integration_test.go"
+        "backend-go/internal/app/foundation_p8_task_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/task/TaskTagsTest.java": {
       "status": "implemented",
@@ -25612,7 +26060,7 @@
       "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
     },
     "file:backend/src/test/java/com/personalos/task/confirmation/ConfirmationIntegrationTest.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/confirmation/p8_transaction_integration_test.go",
         "specs/033-go-rewrite/p8-test-mapping.md",
@@ -25621,9 +26069,18 @@
         "backend-go/internal/app/foundation_task_integration_test.go",
         "backend-go/internal/business/confirmation/p8_lifecycle_integration_test.go",
         "backend-go/internal/business/task/p8_contract_integration_test.go",
-        "backend-go/internal/business/confirmation/postgres_integration_test.go"
+        "backend-go/internal/business/confirmation/postgres_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextTest.java",
+        "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
+        "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
+        "backend-go/internal/business/calendar/stream_test.go",
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/p8-inventory-review.md"
       ],
-      "note": "P8逐声明审读；本文件全部原声明已有具体测试映射，含前阶段证据。发布核验另行处理。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:.claude/skills/speckit-analyze/SKILL.md": {
       "status": "implemented",
@@ -25772,9 +26229,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:.github/workflows/ci.yml": {
       "status": "implemented",
@@ -26182,9 +26641,14 @@
         "frontend/test/component/chat-command-composer.test.ts",
         "frontend/test/component/chat-command-view.test.ts",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationDto.java": {
       "status": "implemented",
@@ -26879,9 +27343,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:docs/operations.md": {
       "status": "implemented",
@@ -27030,9 +27496,14 @@
         "frontend/test/component/chat-command-composer.test.ts",
         "frontend/test/component/chat-command-view.test.ts",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/env.d.ts": {
       "status": "implemented",
@@ -27186,9 +27657,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/api/chat.ts": {
       "status": "in_progress",
@@ -27206,9 +27679,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/api/confirmations.ts": {
       "status": "implemented",
@@ -27457,9 +27932,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/PageHeader.vue": {
       "status": "implemented",
@@ -27604,9 +28081,14 @@
         "frontend/test/component/chat-command-composer.test.ts",
         "frontend/test/component/chat-command-view.test.ts",
         "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
-        "backend-go/internal/app/foundation_commands_integration_test.go"
+        "backend-go/internal/app/foundation_commands_integration_test.go",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "scripts/migration/mcp_stdio_fault_proxy.py",
+        "scripts/migration/run_retry_command_acceptance.py",
+        "scripts/migration/run_retry_commands_browser.mjs"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/chat/ChatConfirmationList.vue": {
       "status": "implemented",
@@ -27657,9 +28139,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/chat/ChatModelPicker.vue": {
       "status": "implemented",
@@ -27699,9 +28183,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/chat/ChatToolTrail.vue": {
       "status": "implemented",
@@ -27774,9 +28260,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeDocumentsTab.vue": {
       "status": "implemented",
@@ -27816,9 +28304,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeSearchTab.vue": {
       "status": "in_progress",
@@ -27836,9 +28326,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/RagTrace.vue": {
       "status": "implemented",
@@ -28355,9 +28847,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/stores/knowledge.ts": {
       "status": "implemented",
@@ -28518,9 +29012,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/types/usage.ts": {
       "status": "implemented",
@@ -28571,9 +29067,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/HomeView.vue": {
       "status": "in_progress",
@@ -28814,9 +29312,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/chat-store-rename.test.mjs": {
       "status": "implemented",
@@ -28845,9 +29345,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/chat-tool-history.test.mjs": {
       "status": "implemented",
@@ -29019,9 +29521,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/chat-session-collapse.test.ts": {
       "status": "implemented",
@@ -32018,9 +32522,11 @@
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
         "frontend/test/component/markdown-citations.test.ts",
-        "specs/033-go-rewrite/retry-command-validation-20261105.md"
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-validation-20261105.md",
+        "specs/033-go-rewrite/retry-followup-results-20261105.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:specs/019-knowledge-chat-settings/data-model.md": {
       "status": "implemented",

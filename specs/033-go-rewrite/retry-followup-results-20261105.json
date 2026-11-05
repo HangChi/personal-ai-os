@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "validation_date": "2026-11-05",
-  "source_commit": "c0b97ea7f9bfc94860e302133c5e32aa096cc4bd",
+  "validation_date": "2026-11-06",
+  "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
   "source_checks": {
     "java_backend": {
       "files": 623,
       "manifest_sha256": "f005668ac7b78c9e1596c29c6f583fe136c6b9f8228df25e896f2c635d4a794a"
     },
     "go_backend": {
-      "files": 477,
-      "manifest_sha256": "1e3fa85a22d310726e1112d595f7ba24ace36149b5dbe6eeccfc1fea770fbe4c"
+      "files": 478,
+      "manifest_sha256": "16023c43bfed88d06e4e3121259d88784e895971d4edfc731578b47d50968dd0"
     },
     "frontend": {
       "files": 237,
@@ -191,5 +191,53 @@
     "Browser scope is direct slash commands and confirmations; no live model/search/chat-run acceptance claimed.",
     "Original migration release gates remain open."
   ],
-  "local_evidence": ".cache/retry-followup-20261105-054e965a/"
+  "local_evidence": ".cache/retry-followup-20261105-054e965a/",
+  "validation_started": "2026-11-05",
+  "go_shutdown": {
+    "result": "PASS",
+    "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
+    "reproduced_before_fix": true,
+    "tls_postgres_race_tests": 3,
+    "regression_seconds": 0.09,
+    "all_package_race_tests": "PASS",
+    "go_vet": "PASS",
+    "successful_test_packages": 32
+  },
+  "migration_integrity": {
+    "ordinary_checks": [
+      {
+        "command": "go_inventory.py check",
+        "exit_code": 0
+      },
+      {
+        "command": "go_config_disposition.py",
+        "exit_code": 0
+      },
+      {
+        "command": "go_p8_test_progress.py",
+        "exit_code": 0
+      },
+      {
+        "command": "go_p8_inventory_progress.py",
+        "exit_code": 0
+      }
+    ],
+    "related_unit_tests": 19,
+    "check_complete": "expected rejection: original gates and unverified scope",
+    "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
+    "groups": 5,
+    "candidate_files": 163,
+    "new_lifecycle_files": 43,
+    "updated_existing_groups": [
+      "scope:calendar-import-recurrence-20261105",
+      "scope:chat-retrieval-and-citation-candidate-20261105",
+      "scope:retry-safety-and-chat-commands-20261105"
+    ],
+    "own_progress_items": 83,
+    "own_audit_rows": 39,
+    "preserved_progress_wip": 20,
+    "preserved_audit_wip": 4,
+    "release_gates_unchanged": true,
+    "independent_snapshot": true
+  }
 }
