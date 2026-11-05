@@ -1666,8 +1666,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/ai/tool/ToolExecutor.java",
       "path": "backend/src/main/java/com/personalos/common/ai/tool/ToolExecutor.java",
       "sha256": "782ef3b3ffc75719e2263e19c94e37972233cf10745d8a9b68ed9288a8188ce5",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/ai/tool/ToolProgress.java",
@@ -1813,8 +1813,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationActionHandler.java",
       "path": "backend/src/main/java/com/personalos/common/confirmation/ConfirmationActionHandler.java",
       "sha256": "24004fd067234ad48144facc1a794ab02348a8ad679ddbac52b24bd1f8e51787",
-      "disposition": "explicit-go-responsibility",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationController.java",
@@ -1869,8 +1869,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationService.java",
       "path": "backend/src/main/java/com/personalos/common/confirmation/ConfirmationService.java",
       "sha256": "4761b4edf27a12f87613ebd00e4cb33eadb10a929f44efac7d873584bda8afb8",
-      "disposition": "explicit-go-responsibility",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationStatus.java",
@@ -1960,8 +1960,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/idempotency/IdempotencyService.java",
       "path": "backend/src/main/java/com/personalos/common/idempotency/IdempotencyService.java",
       "sha256": "31baf9ea926bafe4be3d67a4a612d7e1567d52934efc376ab6e38368bd0d1d4b",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/idempotency/IdempotentResult.java",
@@ -1981,8 +1981,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/idempotency/OperationRecordRepository.java",
       "path": "backend/src/main/java/com/personalos/common/idempotency/OperationRecordRepository.java",
       "sha256": "bf6564c6c19243cb41eb26e6a84fa719d3d8dd57437d1ae52cc77155ba7b7e53",
-      "disposition": "explicit-go-responsibility",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/idempotency/OperationSource.java",
@@ -2653,8 +2653,8 @@
       "id": "file:backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationHandler.java",
       "path": "backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationHandler.java",
       "sha256": "68e46b91a1a5342e9ad342889014ad9ef369bed731a7212a0f05fbfd83d52661",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationService.java",
@@ -4291,8 +4291,8 @@
       "id": "file:backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java",
       "path": "backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java",
       "sha256": "cbc2ea8f51f5f2199c180c9dfdcab0da112b3d644cf94620549dabe10ecc50ba",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/mcp/McpDegradedStartupIntegrationTest.java",
@@ -4718,8 +4718,8 @@
       "id": "file:frontend/components.d.ts",
       "path": "frontend/components.d.ts",
       "sha256": "16aab8913c34bc503798858a315e80311a892e948c0f2f6224cc0756a13154d1",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/env.d.ts",
@@ -5054,8 +5054,8 @@
       "id": "file:frontend/src/components/chat/ChatComposer.vue",
       "path": "frontend/src/components/chat/ChatComposer.vue",
       "sha256": "f0efc62dfb185265e10906cc31d1715266bb71af09e06c99c6e8bc8483c1c464",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/chat/ChatConfirmationList.vue",
@@ -7665,7 +7665,7 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "a8a9dfb62c4bef36cdb55796ac4c3dc2f282d3bf",
+      "source_commit": "f6e724ffcc25b84f53c004d2393533698febe241",
       "files": 72
     },
     {
@@ -7673,6 +7673,12 @@
       "status": "in_progress",
       "source_commit": "527d399fc5016157147fe66d80438259561d6e48",
       "files": 2
+    },
+    {
+      "id": "scope:retry-safety-and-chat-commands-20261105",
+      "status": "in_progress",
+      "source_commit": "f6e724ffcc25b84f53c004d2393533698febe241",
+      "files": 37
     }
   ]
 }

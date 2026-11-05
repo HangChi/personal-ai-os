@@ -56,8 +56,8 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "a8a9dfb62c4bef36cdb55796ac4c3dc2f282d3bf",
-      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。",
+      "source_commit": "f6e724ffcc25b84f53c004d2393533698febe241",
+      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。",
       "files": [
         {
           "path": ".env.example",
@@ -77,7 +77,7 @@
         {
           "path": "backend-go/internal/business/agent/mcp.go",
           "baseline_sha256": null,
-          "candidate_sha256": "da607113331171667b99abd635fccd4923f30e62df69424f2e9cc97af3ee3645"
+          "candidate_sha256": "ce192639ddc60b3d2b041179bb6d6804507e77533190fc5eb1a04cf7c8741fc1"
         },
         {
           "path": "backend-go/internal/business/agent/mcp_web_sources.go",
@@ -92,7 +92,7 @@
         {
           "path": "backend-go/internal/business/agent/tools.go",
           "baseline_sha256": null,
-          "candidate_sha256": "78076fdf4ee8067d3460f3e8dba8ceb892b6e25158d6565fa7e63a8e88df0838"
+          "candidate_sha256": "ce38f8ca17e084a2af5d29682f063c34a8a5541ab4c79702546fb350e9ad8467"
         },
         {
           "path": "backend-go/internal/business/agent/web_search.go",
@@ -122,7 +122,7 @@
         {
           "path": "backend-go/internal/business/chat/module.go",
           "baseline_sha256": null,
-          "candidate_sha256": "f4cc6d545ad2b4c039f0d8a61783b9641cf5d087be1914b3416c4bafe8b92940"
+          "candidate_sha256": "c257c73aaca377bde4e6f0ba21c8df06ed8dd473dce114c105267f68fc8a9da7"
         },
         {
           "path": "backend-go/internal/business/chat/postgres.go",
@@ -292,7 +292,7 @@
         {
           "path": "backend/src/main/java/com/personalos/mcp/tool/McpToolCallback.java",
           "baseline_sha256": "975be9d00624b61180f268b0806d6a5c61d2f191212b914289bf397513fe41be",
-          "candidate_sha256": "ff12107083b9bb8fcc511b9e69534bed34d7389392b733d0fd4f0b9faf9d4b59"
+          "candidate_sha256": "d621488af17332eccaf91d74b3da44f89c827898bf3ccac967096d40e191a9a6"
         },
         {
           "path": "backend/src/main/java/com/personalos/mcp/tool/McpWebSources.java",
@@ -392,7 +392,7 @@
         {
           "path": "frontend/src/views/ChatView.vue",
           "baseline_sha256": "96116adc1684fe6a0950ced4a9f8f9e1c0e7540377dcaf28161c8fa0ecbb6e47",
-          "candidate_sha256": "f3d2716f55d61891dddaa1d645bd0e55e736c311033bd39fa24b8c207f014c1c"
+          "candidate_sha256": "65460ee56fa1a76dcddd45081668ba6fc1f15c25fb474a50c2db8e40cd4886e5"
         },
         {
           "path": "frontend/test/chat-send-retry.test.mjs",
@@ -470,7 +470,8 @@
         "frontend/test/chat-stream.test.mjs",
         "frontend/test/chat-send-retry.test.mjs",
         "frontend/test/component/chat-runs.test.ts",
-        "frontend/test/component/markdown-citations.test.ts"
+        "frontend/test/component/markdown-citations.test.ts",
+        "specs/033-go-rewrite/retry-command-validation-20261105.md"
       ],
       "limitations": [
         "warning 的离线链路已验证，数据库持久化及真实浏览器双端回归待执行。",
@@ -526,6 +527,239 @@
         "backend/src/main/java/com/personalos/memory/controller/MemoryController.java": "8a57a2980ef1092342d91ce37628610e741971a83ed60053d83d45a8555457c2",
         "backend/src/main/java/com/personalos/task/controller/TaskController.java": "ab00ba3996f45065df7be1998ff0eb79a6ab4e2345e6cc105ca1128b19afc5b6"
       }
+    },
+    {
+      "id": "scope:retry-safety-and-chat-commands-20261105",
+      "status": "in_progress",
+      "source_commit": "f6e724ffcc25b84f53c004d2393533698febe241",
+      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。",
+      "files": [
+        {
+          "path": "backend-go/internal/app/foundation_p8_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "f85bad61a0978fa97f4e62268d125fb536b0115ff8a4be806e6a03237de0b215"
+        },
+        {
+          "path": "backend-go/internal/business/agent/commands.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "c61beebe20fb4e1d293bd36b514d0a5ce1c94a3a505301f5ac5da021c9f99719"
+        },
+        {
+          "path": "backend-go/internal/business/agent/commands_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "a5151c96185a917535acbb81ddc3ba70ce25f0a3ef11d8fe3a1602d99df4f10c"
+        },
+        {
+          "path": "backend-go/internal/business/agent/mcp_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "ca5177710e2bf4dd5cf26779848bb5256eafbf869bc556d87e3e30724aa92bef"
+        },
+        {
+          "path": "backend-go/internal/business/chat/commands_http_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "c915d79ac6e4b0895d68738cac7ec7ade0441b74693c971eb9c97c12d99e0ea3"
+        },
+        {
+          "path": "backend-go/internal/business/chat/module_http.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "80af36e5e0f481b67bc993fa022d250fdf7eb7e06711d436612d8c588ace641a"
+        },
+        {
+          "path": "backend-go/internal/business/confirmation/confirmation.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "a4d7dcab5afed60017f0f3f5a7f5a3315a4ae4e341b971ba3717759f396b706b"
+        },
+        {
+          "path": "backend-go/internal/business/idempotency/idempotency.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "fb0fec8363b0055deb5295b28664477d5a3dc18cc64d8064614d98cf895b9577"
+        },
+        {
+          "path": "backend-go/internal/business/mcp/confirmation.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "99af00da2db723cc56d18296141aa4eccc2eed2399892d1f4ef10472ca5b33d2"
+        },
+        {
+          "path": "backend-go/internal/business/mcp/operation.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "6f4e891bcbeb62e35adab865ea8b824d1c6f770fcd2b5a1a994f9db8bfb0e9d6"
+        },
+        {
+          "path": "backend-go/internal/business/mcp/registry.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "091da0e1faa68b6005cf357a53431b1b048c57a88a1e71cef93591f8193af721"
+        },
+        {
+          "path": "backend-go/internal/platform/maintenance/retention.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "a52c63ebea3b02a931fdc3106a10392b98ea8b9e5b2ad3a3b8d52bbe60332cc8"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/agent/tool/DirectToolService.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "aa9ed8ae1ccd8f22393556f460885f5c9b26ec6afda9610cbe0ee96a3f0d4092"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/controller/DirectToolController.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "4162cec5720061746e1e6c75a704870cbb4f2a9af85c45c321e115914109aa0d"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/common/ai/tool/ToolExecutor.java",
+          "baseline_sha256": "782ef3b3ffc75719e2263e19c94e37972233cf10745d8a9b68ed9288a8188ce5",
+          "candidate_sha256": "322824c0a335dc03db02535c48f70d7d5949113004cd2dd591d57409b45bbac6"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/common/confirmation/ConfirmationActionHandler.java",
+          "baseline_sha256": "24004fd067234ad48144facc1a794ab02348a8ad679ddbac52b24bd1f8e51787",
+          "candidate_sha256": "d0b6d7220444e3c408f924d8de64da83f859536bf10f789dcaadfb55713fc54c"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/common/confirmation/ConfirmationService.java",
+          "baseline_sha256": "4761b4edf27a12f87613ebd00e4cb33eadb10a929f44efac7d873584bda8afb8",
+          "candidate_sha256": "87bbe22029c2d79b92167a37607baa966007a0bf16687c1056e96115c445037f"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/common/idempotency/IdempotencyService.java",
+          "baseline_sha256": "31baf9ea926bafe4be3d67a4a612d7e1567d52934efc376ab6e38368bd0d1d4b",
+          "candidate_sha256": "484dd48b6a2445b9ab9faea56ed938fa9f722128aab0a53714b491f10c84f754"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/common/idempotency/OperationRecordRepository.java",
+          "baseline_sha256": "bf6564c6c19243cb41eb26e6a84fa719d3d8dd57437d1ae52cc77155ba7b7e53",
+          "candidate_sha256": "105b3cd2b98a36d5d1a33fd1080b4c00597c237293711eca5039efae487b0730"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationHandler.java",
+          "baseline_sha256": "68e46b91a1a5342e9ad342889014ad9ef369bed731a7212a0f05fbfd83d52661",
+          "candidate_sha256": "2c57a1576ea0352919a7c13f206f72fc0716190d6fcd623a465f3211c2f3456d"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/mcp/tool/McpOperation.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "a3720071eafb1c2d0aa835fb69eecff231fce70137ecb9c199357f1c7d2c7325"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/agent/tool/DirectToolServiceTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "3e2c7fab3fea709c1615acb20ebb9af51da2b1260cd20eaea20a9307e0fd33c9"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/controller/DirectToolControllerTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "2731b055dc447bbde3fae48946e671e4575ac02bc2a81ac8ae43b9e606c441f6"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/maintenance/OperationRecordRetentionIntegrationTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "85a8fdd3b4ab453ab902b137bed45076caee70178a95d9501f1cf76a7115d714"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java",
+          "baseline_sha256": "cbc2ea8f51f5f2199c180c9dfdcab0da112b3d644cf94620549dabe10ecc50ba",
+          "candidate_sha256": "836a9944d2c9d574fe61064c44f99d5b736f4df6e5261b0e67f29abc298fdee5"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/mcp/confirmation/McpConfirmationSafetyTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "ad6b5be0141ebb678632ef4d2badce1f65bd8fc8f30c5fe679c69d79fa3f61b5"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/mcp/tool/McpRetrySafetyTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "fcc77a05d248669298f8329b889550e7367b7aca7e4d0a917af88664960edcf8"
+        },
+        {
+          "path": "docs/chat-commands.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "ff6e22c3f55639e89258c14f12cf17b76abdb5ebd3ea83598b84355a65ebc4d8"
+        },
+        {
+          "path": "frontend/components.d.ts",
+          "baseline_sha256": "16aab8913c34bc503798858a315e80311a892e948c0f2f6224cc0756a13154d1",
+          "candidate_sha256": "22df7f24cd609225b43d24a0721ed49de66928828fdccaec5a9147a365ddd76c"
+        },
+        {
+          "path": "frontend/src/api/chat-tools.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "0327bed66b2f5ebd4c74be4425cfab68d3548de25e9c4e977e16a960f2405938"
+        },
+        {
+          "path": "frontend/src/components/chat/ChatCommandPanel.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "f4fbcb16ef1eb419895005bb35ec08cf5496c1f832266ca9a2d57b32dd322bdf"
+        },
+        {
+          "path": "frontend/src/components/chat/ChatComposer.vue",
+          "baseline_sha256": "f0efc62dfb185265e10906cc31d1715266bb71af09e06c99c6e8bc8483c1c464",
+          "candidate_sha256": "f74f963bca699c3b0d6ebaab11c77b76bf24b16e941fd6807762e773d9affba3"
+        },
+        {
+          "path": "frontend/src/lib/chat-commands.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "8f48e69ec0b08a5c30f0ce1df94436f5f5ccefe9549257bfef351a5a301bb0fc"
+        },
+        {
+          "path": "frontend/src/stores/chat-commands.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "6570d01b94c4c0460991220bd5f6c3042b1854c6d23c00a6be1b8dee356083fd"
+        },
+        {
+          "path": "frontend/test/component/chat-command-composer.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "b56191bcd98fb73e0e8c8298e1ea127017d70dfc52f9b8e252c3cdadbfc8ecf6"
+        },
+        {
+          "path": "frontend/test/component/chat-command-view.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "c7172442554086f8bf87937dc8674c06878380cc5d9e5a73b8e27814f2976e0f"
+        },
+        {
+          "path": "frontend/test/component/chat-commands.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "44a23105244a0a3b7a857edf44a0d1bffa94667b10ddcb1bb41e19381f535b64"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/agent/tool/DirectToolService.java",
+          "backend/src/main/java/com/personalos/chat/controller/DirectToolController.java",
+          "backend/src/main/java/com/personalos/common/ai/tool/ToolExecutor.java",
+          "backend/src/main/java/com/personalos/common/idempotency/OperationRecordRepository.java",
+          "backend/src/main/java/com/personalos/mcp/tool/McpOperation.java",
+          "backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationHandler.java"
+        ],
+        "go": [
+          "backend-go/internal/business/agent/commands.go",
+          "backend-go/internal/business/chat/module_http.go",
+          "backend-go/internal/business/idempotency/idempotency.go",
+          "backend-go/internal/platform/maintenance/retention.go",
+          "backend-go/internal/business/mcp/operation.go",
+          "backend-go/internal/business/mcp/confirmation.go"
+        ]
+      },
+      "evidence": [
+        "specs/033-go-rewrite/retry-command-validation-20261105.md",
+        "docs/chat-commands.md",
+        "backend/src/test/java/com/personalos/agent/tool/DirectToolServiceTest.java",
+        "backend/src/test/java/com/personalos/chat/controller/DirectToolControllerTest.java",
+        "backend/src/test/java/com/personalos/mcp/tool/McpRetrySafetyTest.java",
+        "backend/src/test/java/com/personalos/mcp/confirmation/McpConfirmationSafetyTest.java",
+        "backend/src/test/java/com/personalos/common/maintenance/OperationRecordRetentionIntegrationTest.java",
+        "backend-go/internal/business/agent/commands_test.go",
+        "backend-go/internal/business/agent/mcp_test.go",
+        "backend-go/internal/business/chat/commands_http_test.go",
+        "frontend/test/component/chat-commands.test.ts",
+        "frontend/test/component/chat-command-composer.test.ts",
+        "frontend/test/component/chat-command-view.test.ts"
+      ],
+      "limitations": [
+        "Docker 不可用，真实 PostgreSQL 保留策略与数据库集成测试未运行；单元/替身测试不代替真实数据库验证。",
+        "浏览器检查使用本地 mock API；未向真实模型、搜索或 MCP 服务发送请求，未执行双后端真实服务全流程对照。",
+        "MCP 端到端去重依赖远端实现 personal-ai-os/idempotency-key 元数据；结果未知时保留执行所有权而非承诺任意远端恰好执行一次。",
+        "前端重试标识仅覆盖当前标签页和刷新；新会话、跨标签页、改变参数或新标识属于新操作；主动清理成功回执会缩短历史去重范围。",
+        "原五项发布门禁保持原状，增量登记与静态/离线回归不代表发布批准。"
+      ]
     }
   ]
 }
