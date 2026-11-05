@@ -69,6 +69,11 @@ eq('恢复后的成功尝试不显示旧降级提示', store.warnings.length, 0)
 handlers.set(`/chat/sessions/${id}/runs/latest`, () => Promise.resolve(null))
 await store.selectSession(id)
 eq('没有执行记录时清空旧提示', store.warnings.length, 0)
+handlers.set(`/chat/sessions/${id}`, () => Promise.resolve())
+store.warnings = [warning]
+await store.removeSession(id)
+eq('删除当前会话后清空降级提示', store.warnings.length, 0)
+handlers.delete(`/chat/sessions/${id}`)
 
 for (const path of [
   `/chat/sessions/${id}/runs`,

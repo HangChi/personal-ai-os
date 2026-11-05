@@ -510,6 +510,7 @@ export const useChatStore = defineStore('chat', () => {
       if (currentConversationId.value === conversationId) {
         currentConversationId.value = null
         messages.value = []
+        warnings.value = []
       }
       await loadSessions()
     } catch (cause) {
