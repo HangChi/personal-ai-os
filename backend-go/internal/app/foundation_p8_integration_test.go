@@ -23,7 +23,8 @@ func TestP8RetentionCutoffsAndUncertainTools(t *testing.T) {
 	 ('retention',1,1,'ACTUAL','2026-05-04T23:59:59.999999Z'),('retention',1,1,'ESTIMATED','2026-05-05Z'),('retention',1,1,'ACTUAL','2026-10-31Z');
 	 INSERT INTO operation_record(idempotency_key,source,operation,request_digest,outcome,created_at) VALUES
 	 ('old-http','HTTP','fixture','digest','SUCCESS','2026-10-01Z'),('boundary-http','HTTP','fixture','digest','SUCCESS','2026-10-02Z'),
-	 ('old-tool-unknown','TOOL','fixture','digest','IN_PROGRESS','2020-01-01Z'),('old-tool-success','TOOL','fixture','digest','SUCCESS','2026-10-01Z');`)
+	 ('old-tool-unknown','TOOL','fixture','digest','IN_PROGRESS','2020-01-01Z'),('old-tool-success','TOOL','fixture','digest','SUCCESS','2026-10-01Z'),
+	 ('old-tool-failed','TOOL','fixture','digest','FAILED','2020-01-01Z');`)
 	t.Cleanup(func() { appExec(t, f, `DELETE FROM token_usage`) })
 	now := time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)
 	store := maintenance.NewPostgresStore(f.pool)
@@ -32,7 +33,7 @@ func TestP8RetentionCutoffsAndUncertainTools(t *testing.T) {
 		t.Fatal(err)
 	}
 	counts, err := service.Cleanup(context.Background())
-	if err != nil || counts != (maintenance.Counts{}) || p7Count(t, f, "token_usage") != 3 || p7Count(t, f, "operation_record") != 4 {
+	if err != nil || counts != (maintenance.Counts{}) || p7Count(t, f, "token_usage") != 3 || p7Count(t, f, "operation_record") != 5 {
 		t.Fatal(counts, err)
 	}
 	service, err = maintenance.New(store, config.RetentionProperties{TokenUsageDays: 180, OperationRecordDays: 30}, func() time.Time { return now })
@@ -40,14 +41,14 @@ func TestP8RetentionCutoffsAndUncertainTools(t *testing.T) {
 		t.Fatal(err)
 	}
 	counts, err = service.Cleanup(context.Background())
-	if err != nil || counts.Usage != 1 || counts.Operations != 2 || p7Count(t, f, "token_usage") != 2 || p7Count(t, f, "operation_record") != 2 {
+	if err != nil || counts.Usage != 1 || counts.Operations != 2 || p7Count(t, f, "token_usage") != 2 || p7Count(t, f, "operation_record") != 3 {
 		t.Fatal(counts, err)
 	}
 	var unresolved int
 	err = f.pool.WithConn(context.Background(), func(c *sql.Conn) error {
-		return c.QueryRowContext(context.Background(), "SELECT count(*) FROM operation_record WHERE idempotency_key='old-tool-unknown' AND source='TOOL' AND outcome='IN_PROGRESS'").Scan(&unresolved)
+		return c.QueryRowContext(context.Background(), "SELECT count(*) FROM operation_record WHERE idempotency_key IN ('old-tool-unknown','old-tool-failed') AND source='TOOL' AND outcome IN ('IN_PROGRESS','FAILED')").Scan(&unresolved)
 	})
-	if err != nil || unresolved != 1 {
+	if err != nil || unresolved != 2 {
 		t.Fatal(unresolved, err)
 	}
 	counts, err = service.Cleanup(context.Background())

@@ -25,9 +25,14 @@ public interface OperationRecordRepository extends JpaRepository<OperationRecord
 
     List<OperationRecordEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    /** 删除早于某时刻的记录（保留期清理，审查 P2）。批量删除必须标 @Modifying */
+    /** Unresolved tool effects retain their ownership even after the audit retention cutoff. */
     @Modifying
     @org.springframework.transaction.annotation.Transactional
-    @Query("delete from OperationRecordEntity e where e.createdAt < ?1")
+    @Query("""
+            delete from OperationRecordEntity e where e.createdAt < ?1
+            and not (e.source = com.personalos.common.idempotency.OperationSource.TOOL
+                and e.outcome in (com.personalos.common.idempotency.IdempotencyOutcome.IN_PROGRESS,
+                    com.personalos.common.idempotency.IdempotencyOutcome.FAILED))
+            """)
     int deleteByCreatedAtBefore(java.time.Instant threshold);
 }

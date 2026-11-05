@@ -41,7 +41,7 @@ func (s *PostgresStore) DeleteUsage(ctx context.Context, cutoff time.Time) (int6
 }
 func (s *PostgresStore) DeleteOperations(ctx context.Context, cutoff time.Time) (int64, error) {
 	// 不确定的外部副作用仍需人工核查；保留其所有权，不能因审计保留期重新执行。
-	return s.delete(ctx, "DELETE FROM operation_record WHERE created_at < $1 AND NOT (source='TOOL' AND outcome='IN_PROGRESS')", cutoff)
+	return s.delete(ctx, "DELETE FROM operation_record WHERE created_at < $1 AND NOT (source='TOOL' AND outcome IN ('IN_PROGRESS','FAILED'))", cutoff)
 }
 
 type Service struct {
