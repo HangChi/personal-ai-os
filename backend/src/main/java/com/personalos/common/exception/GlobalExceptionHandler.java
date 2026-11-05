@@ -15,6 +15,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -151,6 +152,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED, "请求体格式错误，请检查 JSON 结构与字段类型"));
+    }
+
+    /** 缺少必需请求头属于客户端参数错误，不能落入 500 兜底。 */
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingHeader(MissingRequestHeaderException ex) {
+        String name = ex.getHeaderName();
+        log.warn("缺少必需的请求头: {}", name);
+        return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED, "缺少必需的请求头: " + name));
     }
 
     /**

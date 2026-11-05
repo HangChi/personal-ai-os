@@ -289,7 +289,7 @@ class ChatKnowledgeIntegrationTest {
     // ------------------------------------------------------- 降级路径
 
     @Test
-    @DisplayName("检索故障：error 降级提示 + 流继续答完 + 无引用落库（FR-005）")
+    @DisplayName("检索故障：warning 降级提示 + 流继续答完 + 无引用落库（FR-005）")
     void retrievalFailureDegradesGracefully() throws Exception {
         String conversationId = createSession();
         searchStub.failNextCall();
@@ -298,9 +298,10 @@ class ChatKnowledgeIntegrationTest {
                 "{\"content\":\"检索会失败的问题\",\"useKnowledge\":true}");
 
         assertThat(events).extracting(SseEvent::name)
-                .contains("error", "delta", "delta", "done");
-        SseEvent errorEvent = events.stream().filter(e -> "error".equals(e.name())).findFirst().orElseThrow();
-        assertThat(errorEvent.data()).contains("知识库检索失败");
+                .containsSubsequence("warning", "delta", "delta", "done")
+                .doesNotContain("error");
+        SseEvent warningEvent = events.stream().filter(e -> "warning".equals(e.name())).findFirst().orElseThrow();
+        assertThat(warningEvent.data()).contains("KNOWLEDGE_RETRIEVAL_FAILED", "知识库检索失败");
         // 降级后不注入检索区块，也不落引用
         assertThat(citationCountOf(conversationId)).isZero();
     }
