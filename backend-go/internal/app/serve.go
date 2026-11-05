@@ -70,6 +70,11 @@ func (f *Foundation) Serve(ctx context.Context, business, management net.Listene
 			failure = errors.New("基础HTTP监听失败")
 		}
 	}
+	// End long-lived reminder responses before HTTP waits for active handlers.
+	// Keep the pool and other workers alive until ordinary requests have drained.
+	if f.p5 != nil && f.p5.stream != nil {
+		f.p5.stream.Close()
+	}
 	shutdown, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 	closed := make(chan error, len(servers))
