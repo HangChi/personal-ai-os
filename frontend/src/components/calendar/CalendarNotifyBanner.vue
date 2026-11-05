@@ -16,6 +16,7 @@ import {
   unsubscribePush,
 } from '@/notifications/web-push'
 import type { NotificationPermissionState } from '@/notifications/permission'
+import { Bell, BellFilled } from '@element-plus/icons-vue'
 
 defineProps<{
   permission: NotificationPermissionState
@@ -26,25 +27,28 @@ const emit = defineEmits<{ (e: 'enable'): void }>()
 </script>
 
 <template>
-  <el-card class="cal-notify" shadow="never">
+  <div class="cal-notify" aria-label="日程通知">
     <div class="cal-notify__row">
       <template v-if="permission === 'granted'">
         <!-- 已授权时折叠为一行小条：不再占半屏（T032） -->
-        <el-tag size="small" type="success" effect="plain">通知已开启</el-tag>
+        <span class="cal-notify__state"
+          ><el-icon aria-hidden="true"><BellFilled /></el-icon>通知已开启</span
+        >
         <span class="cal-notify__compact">{{ pushSubscribed ? '后台推送已订阅' : '页面关闭后停止提醒' }}</span>
       </template>
       <template v-else-if="permission === 'default'">
-        <el-tag size="small" type="info" effect="plain">通知未开启</el-tag>
-        <el-button size="small" type="primary" :loading="requesting" @click="emit('enable')">
-          开启浏览器通知
-        </el-button>
+        <el-button plain :icon="Bell" :loading="requesting" @click="emit('enable')"> 开启浏览器通知 </el-button>
       </template>
       <template v-else-if="permission === 'denied'">
-        <el-tag size="small" type="warning" effect="plain">通知被阻止</el-tag>
+        <span class="cal-notify__state"
+          ><el-icon aria-hidden="true"><Bell /></el-icon>通知被阻止</span
+        >
         <span>请在浏览器站点设置中允许通知。</span>
       </template>
       <template v-else>
-        <el-tag size="small" type="info" effect="plain">不支持通知</el-tag>
+        <span class="cal-notify__state"
+          ><el-icon aria-hidden="true"><Bell /></el-icon>不支持通知</span
+        >
         <span>提醒仅在页面内显示。</span>
       </template>
     </div>
@@ -54,13 +58,19 @@ const emit = defineEmits<{ (e: 'enable'): void }>()
       </el-button>
       <el-button v-else size="small" :loading="pushBusy" @click="unsubscribePush">取消后台推送</el-button>
     </div>
-    <p v-if="pushError" role="status">{{ pushError }}</p>
-  </el-card>
+    <p v-if="pushError" class="cal-notify__error" role="status">{{ pushError }}</p>
+  </div>
 </template>
 
 <style scoped>
 .cal-notify {
-  margin-bottom: var(--os-space-3);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--os-space-2) var(--os-space-3);
+  margin-left: auto;
+  max-width: 100%;
 }
 
 .cal-notify__row {
@@ -73,10 +83,22 @@ const emit = defineEmits<{ (e: 'enable'): void }>()
   color: var(--el-text-color-secondary);
 }
 
-/* 已授权时的一行小条：不换行、超出省略（T032） */
+.cal-notify__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  color: var(--el-text-color-regular);
+}
+
+.cal-notify__error {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--os-font-xs);
+  color: var(--el-color-danger);
+  overflow-wrap: anywhere;
+}
+
 .cal-notify__compact {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 </style>

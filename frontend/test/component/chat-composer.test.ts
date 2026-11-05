@@ -61,6 +61,50 @@ function buttonByText(wrapper: ReturnType<typeof mount>, text: string) {
 }
 
 describe('ChatComposer', () => {
+  it('晚到的上传结果只回到原会话，切换回来仍能使用', async () => {
+    let finish!: (value: object) => void
+    uploadAttachment.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        }),
+    )
+    const wrapper = mount(ChatComposer, { props: baseProps({ draftKey: 'a', modelValue: '问题' }) })
+    const drop = new Event('drop', { bubbles: true, cancelable: true })
+    Object.assign(drop, { dataTransfer: { files: [new File(['text'], 'original.txt', { type: 'text/plain' })] } })
+    wrapper.get('.chat-composer').element.dispatchEvent(drop)
+    await flushPromises()
+    await wrapper.setProps({ draftKey: 'b' })
+    finish({ id: 'file-a', filename: 'original.txt', contentType: 'text/plain', size: 4 })
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('original.txt')
+    await wrapper.setProps({ draftKey: 'a' })
+    expect(wrapper.text()).toContain('original.txt')
+    await buttonByText(wrapper, '发送')!.trigger('click')
+    expect(wrapper.emitted('send')![0]![0]).toEqual([expect.objectContaining({ id: 'file-a' })])
+    wrapper.unmount()
+  })
+
+  it('跟进成功回调只清除原会话的附件', async () => {
+    uploadAttachment.mockResolvedValueOnce({ id: 'file-a', filename: 'a.txt', contentType: 'text/plain', size: 1 })
+    const wrapper = mount(ChatComposer, { props: baseProps({ draftKey: 'a', modelValue: '跟进', streaming: true }) })
+    const drop = new Event('drop', { bubbles: true, cancelable: true })
+    Object.assign(drop, { dataTransfer: { files: [new File(['a'], 'a.txt')] } })
+    wrapper.get('.chat-composer').element.dispatchEvent(drop)
+    await flushPromises()
+    await wrapper.get('textarea').trigger('keydown', { key: 'Enter' })
+    const done = wrapper.emitted('followup')![0]![1] as (success: boolean) => void
+    await wrapper.setProps({ draftKey: 'b' })
+    uploadAttachment.mockResolvedValueOnce({ id: 'file-b', filename: 'b.txt', contentType: 'text/plain', size: 1 })
+    wrapper.get('.chat-composer').element.dispatchEvent(drop)
+    await flushPromises()
+    done(true)
+    await flushPromises()
+    expect(wrapper.text()).toContain('b.txt')
+    await wrapper.setProps({ draftKey: 'a' })
+    expect(wrapper.text()).not.toContain('a.txt')
+    wrapper.unmount()
+  })
   it('正在生成时按钮变成「停止」，点击只发 stop', async () => {
     const wrapper = mount(ChatComposer, { props: baseProps({ streaming: true, modelValue: '内容' }) })
 

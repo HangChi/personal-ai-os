@@ -68,15 +68,15 @@ async function submit(): Promise<void> {
 
       <h1 class="login__heading">登录</h1>
 
-      <el-form label-position="top" size="large" @submit.prevent="submit">
-        <el-form-item label="用户名">
+      <el-form class="login__form" label-position="top" size="large" @submit.prevent="submit">
+        <el-form-item label="用户名" prop="username">
           <el-input v-model="username" autocomplete="username" placeholder="请输入用户名">
             <template #prefix>
               <el-icon><User /></el-icon>
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item label="密码">
+        <el-form-item label="密码" prop="password">
           <el-input
             v-model="password"
             type="password"
@@ -186,7 +186,7 @@ async function submit(): Promise<void> {
 
 /* 卡片内的主标题：品牌区负责「是谁」，这里负责「要做什么」 */
 .login__heading {
-  margin: 0;
+  margin: 0 0 var(--os-space-6);
   font-size: var(--os-font-2xl);
   font-weight: 650;
   letter-spacing: -0.2px;
@@ -194,6 +194,15 @@ async function submit(): Promise<void> {
 
 .login__error {
   margin-bottom: var(--os-space-3);
+}
+
+.login__form :deep(.el-form-item) {
+  margin-bottom: var(--os-space-6);
+}
+
+.login__form :deep(.el-form-item__label) {
+  margin-bottom: var(--os-space-2);
+  line-height: 1.5;
 }
 
 .login__submit {

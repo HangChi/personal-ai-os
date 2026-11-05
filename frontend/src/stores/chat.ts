@@ -23,6 +23,7 @@ import {
   latestRun,
   startRun,
   resumeRun,
+  summarizeRun,
   stopRun,
   type ChatRun,
   type RunActivity,
@@ -738,11 +739,14 @@ export const useChatStore = defineStore('chat', () => {
     error.value = null
     try {
       const next = await answerQuestion(run.conversationId, run.id, run.question.id, answer)
-      activeRun.value = next
-      void trackRun(next)
+      if (currentConversationId.value === run.conversationId) {
+        activeRun.value = next
+        void trackRun(next)
+      }
       return true
     } catch (cause) {
-      error.value = cause instanceof Error ? cause.message : '提交回答失败'
+      if (currentConversationId.value === run.conversationId)
+        error.value = cause instanceof Error ? cause.message : '提交回答失败'
       return false
     } finally {
       submittingInput.value = false
@@ -763,14 +767,21 @@ export const useChatStore = defineStore('chat', () => {
       if (followupAttempt?.signature !== signature) followupAttempt = { signature, key: crypto.randomUUID() }
       const next = await submitFollowup(run.conversationId, run.id, mode, content.trim(), options, followupAttempt.key)
       followupAttempt = null
+      if (currentConversationId.value !== run.conversationId) return true
       activeRun.value = next
       if (!streaming.value) {
         const latest = await latestRun(run.conversationId)
-        if (latest && ['RUNNING', 'COMPLETED'].includes(latest.status)) void trackRun(latest)
+        if (
+          currentConversationId.value === run.conversationId &&
+          latest &&
+          ['RUNNING', 'COMPLETED'].includes(latest.status)
+        )
+          void trackRun(latest)
       }
       return true
     } catch (cause) {
-      error.value = cause instanceof Error ? cause.message : '跟进消息发送失败'
+      if (currentConversationId.value === run.conversationId)
+        error.value = cause instanceof Error ? cause.message : '跟进消息发送失败'
       return false
     } finally {
       submittingInput.value = false
@@ -825,14 +836,25 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  async function continueRun(): Promise<void> {
+  const recoveringRun = ref(false)
+
+  async function continueRun(summaryOnly = false): Promise<void> {
     const run = activeRun.value
-    if (!run || streaming.value) return
+    if (!run || streaming.value || recoveringRun.value) return
     error.value = null
+    if (!summaryOnly && run.status !== 'RUNNING' && run.recoveryMode === 'SUMMARY_ONLY') {
+      error.value = '工具结果待核实。请先整理已有结果或查看活动记录；不会自动重试工具。'
+      return
+    }
+    recoveringRun.value = true
     try {
-      await trackRun(await resumeRun(run.conversationId, run.id))
+      const next = await (summaryOnly ? summarizeRun : resumeRun)(run.conversationId, run.id)
+      if (currentConversationId.value === run.conversationId) await trackRun(next)
     } catch (cause) {
-      error.value = cause instanceof Error ? cause.message : '继续执行失败'
+      if (currentConversationId.value === run.conversationId)
+        error.value = cause instanceof Error ? cause.message : '继续执行失败'
+    } finally {
+      recoveringRun.value = false
     }
   }
 
@@ -928,6 +950,7 @@ export const useChatStore = defineStore('chat', () => {
     liveActivities,
     reconnecting,
     continueRun,
+    recoveringRun,
     streamingContent,
     streaming,
     loadingSessions,

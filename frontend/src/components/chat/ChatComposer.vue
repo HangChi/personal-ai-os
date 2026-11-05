@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /** 对话输入区：输入与工具栏在框内，快捷键和用量读数在框下。 */
 import { Close, Document, MagicStick, Paperclip, Promotion, Reading, UploadFilled } from '@element-plus/icons-vue'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, useId, watch } from 'vue'
 import type { InputInstance } from 'element-plus'
 import { uploadAttachment } from '@/api/chat'
 import { ElMessage } from 'element-plus'
@@ -17,6 +17,8 @@ import { commandSuggestions, isCommandInput, type CommandSuggestion } from '@/li
 const props = defineProps<{
   /** 输入内容（v-model） */
   modelValue: string
+  /** Stable conversation draft identity, including attachments. */
+  draftKey?: string
   /** 是否正在生成：决定显示「停止」还是「发送」 */
   streaming: boolean
   submitting?: boolean
@@ -59,14 +61,21 @@ const emit = defineEmits<{
 /** 字数上限，与输入框的 `maxlength` 同源，避免两处硬编码漂移 */
 const MAX_LENGTH = 4000
 
-/**
- * 待发送的附件（阶段 22）。
- *
- * <p>本地持有而不是提升到父组件：它只在本轮输入有效，发送后即清空。
- * 提升上去反而要让父组件多管一份「什么时候该清」的状态。
- */
-const attachments = ref<ChatAttachment[]>([])
-const uploading = ref(false)
+/** Attachments and in-flight uploads belong to the draft that started them. */
+const attachmentDrafts = reactive<Record<string, { items: ChatAttachment[]; uploads: number }>>({})
+watch(
+  () => props.draftKey,
+  (key) => {
+    attachmentDrafts[key ?? ''] ??= { items: [], uploads: 0 }
+  },
+  { immediate: true, flush: 'sync' },
+)
+const attachmentDraft = computed(() => attachmentDrafts[props.draftKey ?? '']!)
+const attachments = computed({
+  get: () => attachmentDraft.value.items,
+  set: (items) => (attachmentDraft.value.items = items),
+})
+const uploading = computed(() => attachmentDraft.value.uploads > 0)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 /** 单文件上限与后端一致（20MB）：前端先挡一道，省得传完才被拒 */
@@ -150,7 +159,8 @@ async function pickFiles(files: FileList | null): Promise<void> {
   if (!files || files.length === 0) {
     return
   }
-  uploading.value = true
+  const origin = attachmentDraft.value
+  origin.uploads++
   try {
     for (const file of Array.from(files)) {
       if (file.size > MAX_SIZE) {
@@ -159,14 +169,14 @@ async function pickFiles(files: FileList | null): Promise<void> {
       }
       try {
         const uploaded = await uploadAttachment(file)
-        attachments.value = [...attachments.value, uploaded]
+        origin.items.push(uploaded)
       } catch {
         // 上传失败不影响已选中的其他文件，也不阻断输入
         ElMessage.error(`${file.name} 上传失败`)
       }
     }
   } finally {
-    uploading.value = false
+    origin.uploads--
     // 清空 input 的 value，否则连续选同一个文件不会触发 change
     if (fileInput.value) {
       fileInput.value.value = ''
@@ -207,13 +217,15 @@ function handleSend(): void {
     return
   }
   if (props.streaming) {
-    const sent = new Set(attachments.value.map((item) => item.id))
+    const origin = attachmentDraft.value
+    const sent = new Set(origin.items.map((item) => item.id))
     emit('followup', attachments.value, (success) => {
-      if (success) attachments.value = attachments.value.filter((item) => !sent.has(item.id))
+      if (success) origin.items = origin.items.filter((item) => !sent.has(item.id))
     })
   } else {
-    emit('send', attachments.value)
-    attachments.value = []
+    const origin = attachmentDraft.value
+    emit('send', origin.items)
+    origin.items = []
   }
 }
 

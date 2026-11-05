@@ -231,13 +231,13 @@ async function acknowledgeAll(): Promise<void> {
 
 <template>
   <div class="calendar">
-    <PageHeader size="page" title="日程" />
-
-    <CalendarNotifyBanner
-      :permission="notificationPermission"
-      :requesting="requestingPermission"
-      @enable="enableNotifications"
-    />
+    <PageHeader size="page" title="日程">
+      <CalendarNotifyBanner
+        :permission="notificationPermission"
+        :requesting="requestingPermission"
+        @enable="enableNotifications"
+      />
+    </PageHeader>
 
     <CalendarDueReminders
       v-if="dueReminders.length > 0"

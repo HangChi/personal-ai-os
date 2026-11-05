@@ -38,6 +38,17 @@ async function open() {
 }
 
 describe('对话页切换模型', () => {
+  it('首次选择模型创建会话时，文字和附件草稿身份保持不变', async () => {
+    const { wrapper, pick } = await open()
+    const composer = wrapper.getComponent(ChatComposer)
+    const key = composer.props('draftKey')
+    composer.vm.$emit('update:modelValue', '尚未发送的问题')
+    await flushPromises()
+    pick('alternate')
+    await flushPromises()
+    expect(composer.props('modelValue')).toBe('尚未发送的问题')
+    expect(composer.props('draftKey')).toBe(key)
+  })
   it('尚无会话时先创建，再把选择保存到新会话', async () => {
     const { create, change, pick } = await open()
     pick('alternate')

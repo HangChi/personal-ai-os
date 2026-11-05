@@ -27,6 +27,7 @@ export interface ChatRun {
   id: string
   conversationId: string
   status: 'RUNNING' | 'COMPLETED' | 'WAITING_CONFIRMATION' | 'WAITING_USER' | 'INTERRUPTED' | 'STOPPED'
+  recoveryMode?: 'CONTINUE' | 'SUMMARY_ONLY'
   question?: AgentQuestion | null
   followups?: AgentFollowup[]
   events: { id: number; name: string; payload: string }[]
@@ -37,6 +38,8 @@ export interface RunHandlers extends StreamHandlers {
   onReset: () => void
   onConnection: (reconnecting: boolean) => void
 }
+export const summarizeRun = (conversationId: string, id: string): Promise<ChatRun> =>
+  requestData({ url: '/chat/sessions/' + conversationId + '/runs/' + id + '/summarize', method: 'post' })
 const base = (conversationId: string) => `/chat/sessions/${conversationId}/runs`
 export const finishConfirmations = (conversationId: string, id: string): Promise<ChatRun> =>
   requestData({ url: `${base(conversationId)}/${id}/confirmations/finish`, method: 'post' })

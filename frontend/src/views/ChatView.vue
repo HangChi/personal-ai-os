@@ -12,7 +12,7 @@
 import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 
 import { downloadSessionMarkdown } from '@/api/chat'
 import { matchMessageIds, nextMatchCursor } from '@/lib/chat-search'
@@ -21,6 +21,7 @@ import { isNearBottom as isNearBottomOf, scrollDeltaForPrepend } from '@/lib/cha
 import ChatUserQuestion from '@/components/chat/ChatUserQuestion.vue'
 import ChatFollowupQueue from '@/components/chat/ChatFollowupQueue.vue'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
+import ChatRunNotice from '@/components/chat/ChatRunNotice.vue'
 import ChatCommandPanel from '@/components/chat/ChatCommandPanel.vue'
 import { useChatCommandsStore } from '@/stores/chat-commands'
 import { isCommandInput, parseChatCommand } from '@/lib/chat-commands'
@@ -81,7 +82,31 @@ const {
 } = storeToRefs(chatStore)
 const { settings } = storeToRefs(settingsStore)
 
-const draft = ref('')
+// Preserve draft identity across async work without sharing it between conversations.
+const drafts = reactive<Record<string, { key: string; text: string }>>({})
+watch(
+  currentConversationId,
+  (id) => {
+    drafts[id ?? ''] ??= { key: crypto.randomUUID(), text: '' }
+  },
+  { immediate: true, flush: 'sync' },
+)
+const currentDraft = computed(() => {
+  const id = currentConversationId.value ?? ''
+  return drafts[id]!
+})
+const draft = computed({ get: () => currentDraft.value.text, set: (text) => (currentDraft.value.text = text) })
+
+async function ensureDraftSession(): Promise<void> {
+  if (currentConversationId.value) return
+  const origin = currentDraft.value
+  await chatStore.createSession()
+  const id = currentConversationId.value
+  if (id) {
+    drafts[id] = origin
+    delete drafts['']
+  }
+}
 const changingModel = ref(false)
 const editingMessageId = ref<number | null>(null)
 const editDraft = ref('')
@@ -403,7 +428,7 @@ async function handleModelChange(model: string | null): Promise<void> {
   changingModel.value = true
   try {
     // 首次使用还没有会话，先创建再保存选择，避免点击模型后静默失效。
-    if (!currentConversationId.value) await chatStore.createSession()
+    if (!currentConversationId.value) await ensureDraftSession()
     const id = currentConversationId.value
     if (!id) {
       ElMessage.error(chatStore.error || '创建会话失败，请重试')
@@ -433,9 +458,10 @@ async function handleSend(attachments: ChatAttachment[] = []): Promise<void> {
   if (content.kind !== 'chat') return
   const text = content.content
   if (activeRun.value?.status === 'WAITING_USER' && activeRun.value.question) {
-    const original = draft.value
+    const origin = currentDraft.value
+    const original = origin.text
     const success = await chatStore.respondToQuestion(text)
-    if (success && draft.value === original) draft.value = ''
+    if (success && origin.text === original) origin.text = ''
     return
   }
   draft.value = ''
@@ -462,7 +488,8 @@ async function handleFollowup(attachments: ChatAttachment[], done: (success: boo
     done(false)
     return
   }
-  const content = draft.value
+  const origin = currentDraft.value
+  const content = origin.text
   if (!content.trim()) {
     done(false)
     return
@@ -481,7 +508,7 @@ async function handleFollowup(attachments: ChatAttachment[], done: (success: boo
   })
   done(success)
   if (success) {
-    if (draft.value === content) draft.value = ''
+    if (origin.text === content) origin.text = ''
     ElMessage.success(mode === 'QUEUE' ? '已加入队列，当前任务完成后处理' : '引导已提交，将在安全边界生效')
   }
 }
@@ -496,6 +523,7 @@ async function handleNewSession(): Promise<void> {
 
 async function handleCommand(input: string): Promise<void> {
   if (commandSubmitting.value || commandsStore.busy || submittingInput.value || changingModel.value) return
+  const origin = currentDraft.value
   commandSubmitting.value = true
   try {
     const parsed = parseChatCommand(input)
@@ -503,14 +531,14 @@ async function handleCommand(input: string): Promise<void> {
     if (parsed.kind === 'local' && (parsed.action === 'help' || parsed.action === 'tools')) {
       commandView.value = parsed.action
       if (parsed.action === 'tools') await commandsStore.loadCatalog()
-      if (draft.value === input) draft.value = ''
+      if (origin.text === input) origin.text = ''
       return
     }
     if (parsed.kind === 'local' && parsed.action === 'stop') {
       chatStore.error = null
       await chatStore.stopStreaming()
       if (chatStore.error) return
-      if (draft.value === input) draft.value = ''
+      if (origin.text === input) origin.text = ''
       return
     }
     if (streaming.value) {
@@ -528,19 +556,19 @@ async function handleCommand(input: string): Promise<void> {
         await chatStore.continueRun()
       }
       if (chatStore.error) return
-      if (draft.value === input) draft.value = ''
+      if (origin.text === input) origin.text = ''
       return
     }
-    if (!currentConversationId.value) await chatStore.createSession()
+    if (!currentConversationId.value) await ensureDraftSession()
     const conversation = currentConversationId.value
     if (!conversation) {
       ElMessage.error(chatStore.error || '创建会话失败')
       return
     }
     const result = await commandsStore.execute(conversation, input, parsed.tool, parsed.arguments)
+    if (result && ['OK', 'DUPLICATE', 'REQUIRES_CONFIRMATION'].includes(result.result.status) && origin.text === input)
+      origin.text = ''
     if (currentConversationId.value !== conversation) return
-    if (result && ['OK', 'DUPLICATE', 'REQUIRES_CONFIRMATION'].includes(result.result.status) && draft.value === input)
-      draft.value = ''
     await Promise.all([chatStore.loadConfirmations(), chatStore.loadToolTrail()])
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '快捷操作失败')
@@ -845,23 +873,18 @@ async function jumpToMatch(step: number): Promise<void> {
             :activities="liveActivities"
             :reconnecting="reconnecting"
           />
-          <el-alert
+          <ChatRunNotice
             v-if="
               !streaming &&
               activeRun &&
               (['RUNNING', 'INTERRUPTED', 'STOPPED'].includes(activeRun.status) ||
                 (activeRun.status === 'WAITING_USER' && !activeRun.question))
             "
-            type="warning"
-            :closable="false"
-            show-icon
-            :title="activeRun.status === 'RUNNING' ? '连接已断开，任务仍在后台执行' : '任务已暂停，已保存执行进度'"
-          >
-            <p>继续时会核对已完成操作，从剩余步骤推进。</p>
-            <el-button size="small" @click="chatStore.continueRun()">{{
-              activeRun.status === 'RUNNING' ? '重新连接' : '继续任务'
-            }}</el-button>
-          </el-alert>
+            :run="activeRun"
+            :busy="chatStore.recoveringRun"
+            @resume="chatStore.continueRun()"
+            @summarize="chatStore.continueRun(true)"
+          />
 
           <ChatUserQuestion
             v-if="activeRun?.question"
@@ -902,6 +925,7 @@ async function jumpToMatch(step: number): Promise<void> {
         />
         <ChatComposer
           v-model="draft"
+          :draft-key="currentDraft.key"
           :streaming="streaming"
           :submitting="submittingInput"
           :command-busy="commandsStore.busy || commandSubmitting"

@@ -50,6 +50,53 @@ async function open() {
   return { wrapper, composer, chat, commands, send, execute, stop, command }
 }
 describe('对话页快捷操作编排', () => {
+  it('切换会话分别保留草稿，新会话为空，返回后恢复原稿', async () => {
+    const { composer, chat, command } = await open()
+    composer.vm.$emit('update:modelValue', '会话 A 的草稿')
+    await flushPromises()
+    chat.currentConversationId = 'other'
+    await flushPromises()
+    expect(composer.props('modelValue')).toBe('')
+    composer.vm.$emit('update:modelValue', '会话 B 的草稿')
+    await flushPromises()
+    chat.currentConversationId = 'c'
+    await flushPromises()
+    expect(composer.props('modelValue')).toBe('会话 A 的草稿')
+    vi.spyOn(chat, 'createSession').mockImplementation(async () => {
+      chat.currentConversationId = 'new'
+    })
+    await command('/new')
+    expect(composer.props('modelValue')).toBe('')
+    chat.currentConversationId = 'other'
+    await flushPromises()
+    expect(composer.props('modelValue')).toBe('会话 B 的草稿')
+  })
+  it('跟进请求晚返回只清除原会话已发送的文字', async () => {
+    const { composer, chat } = await open()
+    let finish!: (success: boolean) => void
+    vi.spyOn(chat, 'sendFollowup').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        }),
+    )
+    composer.vm.$emit('update:modelValue', '补充要求')
+    await flushPromises()
+    const done = vi.fn()
+    composer.vm.$emit('followup', [], done)
+    await flushPromises()
+    chat.currentConversationId = 'other'
+    await flushPromises()
+    composer.vm.$emit('update:modelValue', '另一会话的文字')
+    await flushPromises()
+    finish(true)
+    await flushPromises()
+    expect(done).toHaveBeenCalledWith(true)
+    expect(composer.props('modelValue')).toBe('另一会话的文字')
+    chat.currentConversationId = 'c'
+    await flushPromises()
+    expect(composer.props('modelValue')).toBe('')
+  })
   it('直接调用工具并刷新待确认列表，不发送模型消息', async () => {
     const { chat, execute, send, command, composer } = await open()
     await command('/task 买牛奶')
