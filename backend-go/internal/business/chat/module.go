@@ -302,5 +302,5 @@ func (m *Module) Close(ctx context.Context) error {
 	}
 }
 func OwnsPath(path string) bool {
-	return strings.HasPrefix(path, "/api/v1/chat/sessions") || path == "/api/v1/chat/context" || path == "/api/v1/chat/context-budget" || strings.HasPrefix(path, "/api/v1/chat/uploads") || path == "/api/v1/usage" || strings.HasPrefix(path, "/api/v1/conversations/") && strings.HasSuffix(path, "/plan") || path == "/api/v1/agent/tool-invocations"
+	return strings.HasPrefix(path, "/api/v1/chat/sessions") || path == "/api/v1/chat/tools" || path == "/api/v1/chat/context" || path == "/api/v1/chat/context-budget" || strings.HasPrefix(path, "/api/v1/chat/uploads") || path == "/api/v1/usage" || strings.HasPrefix(path, "/api/v1/conversations/") && strings.HasSuffix(path, "/plan") || path == "/api/v1/agent/tool-invocations"
 }

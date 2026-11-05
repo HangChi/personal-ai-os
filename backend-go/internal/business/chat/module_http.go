@@ -37,6 +37,12 @@ func only(r *http.Request, methods ...string) error {
 func (h *ModuleHTTP) serve(w http.ResponseWriter, r *http.Request) error {
 	path := r.URL.Path
 	m := h.module
+	if path == "/api/v1/chat/tools" {
+		if e := only(r, "GET"); e != nil {
+			return e
+		}
+		return respond(w, r, 200, m.Engine.Registry.DirectTools())
+	}
 	if path == "/api/v1/usage" {
 		if e := only(r, "GET"); e != nil {
 			return e
@@ -149,6 +155,9 @@ func (h *ModuleHTTP) serve(w http.ResponseWriter, r *http.Request) error {
 	const base = "/api/v1/chat/sessions/"
 	if strings.HasPrefix(path, base) {
 		parts := strings.Split(strings.TrimPrefix(path, base), "/")
+		if len(parts) == 2 && parts[1] == "tools" {
+			return h.directTool(w, r, parts[0])
+		}
 		if len(parts) >= 2 {
 			id := parts[0]
 			switch parts[1] {
@@ -193,6 +202,50 @@ func (h *ModuleHTTP) serve(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 	return h.storage.serve(w, r)
+}
+
+func (h *ModuleHTTP) directTool(w http.ResponseWriter, r *http.Request, conversation string) error {
+	if e := only(r, "POST"); e != nil {
+		return e
+	}
+	if _, ok := web.SelectJSONMediaType(r.Header.Get("Accept"), []string{"application/json", "application/*+json"}); !ok {
+		return web.NotAcceptable()
+	}
+	obj, e := web.DecodeJSONObject(w, r, 10<<20)
+	if e != nil {
+		return e
+	}
+	tool, e := web.JSONStringField(obj, "tool")
+	if e != nil {
+		return e
+	}
+	var arguments map[string]any
+	decoder := json.NewDecoder(bytes.NewReader(obj["arguments"]))
+	decoder.UseNumber()
+	if decoder.Decode(&arguments) != nil || arguments == nil {
+		return invalid("arguments 必须是 JSON 对象")
+	}
+	if _, e = h.module.Service.Require(r.Context(), conversation); e != nil {
+		return e
+	}
+	lease, e := h.coordinator.Acquire(r.Context(), "chat-session:"+conversation, 1)
+	if e != nil {
+		return e
+	}
+	if lease == nil {
+		return agent.Conflict("该会话正在执行，请先停止任务再运行快捷操作")
+	}
+	defer func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = lease.Release(cleanup)
+	}()
+	ctx := database.WithWriteGuard(r.Context(), lease.Fence)
+	result, e := h.module.Engine.Registry.ExecuteCommand(ctx, conversation, r.Header.Get("Idempotency-Key"), agent.DirectToolRequest{Tool: value(tool), Arguments: arguments}, h.module.Engine.Agent)
+	if e != nil {
+		return e
+	}
+	return respond(w, r, 200, result)
 }
 func (h *ModuleHTTP) context(w http.ResponseWriter, r *http.Request, id string) error {
 	m := h.module
