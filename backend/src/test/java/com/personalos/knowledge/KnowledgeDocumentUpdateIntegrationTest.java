@@ -1,5 +1,7 @@
 package com.personalos.knowledge;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -40,7 +42,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "app.knowledge.similarity-threshold=0.0"
 })
 @Testcontainers
-class KnowledgeDocumentUpdateIntegrationTest {
+class KnowledgeDocumentUpdateIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

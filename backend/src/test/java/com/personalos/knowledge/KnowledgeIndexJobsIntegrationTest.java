@@ -1,5 +1,7 @@
 package com.personalos.knowledge;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.*;
 import com.personalos.knowledge.jobs.*;
 import com.personalos.support.DeterministicEmbeddingModel;
@@ -18,7 +20,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={"spring.ai.model.chat=none","spring.ai.model.embedding=none",
         "app.knowledge.jobs.enabled=false","app.rate-limit.enabled=false","app.knowledge.min-chunk-size-chars=10"})
 @Testcontainers
-class KnowledgeIndexJobsIntegrationTest {
+class KnowledgeIndexJobsIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection static final PostgreSQLContainer POSTGRES=new PostgreSQLContainer("pgvector/pgvector:pg17");
     static class Model extends DeterministicEmbeddingModel {
         int failures;

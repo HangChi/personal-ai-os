@@ -1,5 +1,7 @@
 package com.personalos.task;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.support.HttpTestClient;
@@ -30,7 +32,7 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"spring.ai.model.chat=none", "app.calendar.scan-enabled=false"})
 @Testcontainers
-class TaskTagsIntegrationTest {
+class TaskTagsIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

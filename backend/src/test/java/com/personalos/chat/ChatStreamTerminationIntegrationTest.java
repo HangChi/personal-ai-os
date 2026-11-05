@@ -1,5 +1,7 @@
 package com.personalos.chat;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -71,7 +73,7 @@ import reactor.core.publisher.Flux;
         "app.context.summary.min-messages=100000"
 })
 @Testcontainers
-class ChatStreamTerminationIntegrationTest {
+class ChatStreamTerminationIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

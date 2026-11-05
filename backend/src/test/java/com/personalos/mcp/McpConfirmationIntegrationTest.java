@@ -1,5 +1,7 @@
 package com.personalos.mcp;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -50,7 +52,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "mcp.enabled=true")
 @Testcontainers
-class McpConfirmationIntegrationTest {
+class McpConfirmationIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

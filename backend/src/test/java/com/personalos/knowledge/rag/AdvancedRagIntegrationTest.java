@@ -1,4 +1,6 @@
 package com.personalos.knowledge.rag;
+
+import com.personalos.support.ContainerContextTest;
 import static org.assertj.core.api.Assertions.*;
 import com.personalos.knowledge.service.*;
 import com.personalos.knowledge.spi.KnowledgeSearchPort;
@@ -18,7 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest(properties={"spring.ai.model.chat=none","spring.ai.model.embedding=none","app.knowledge.rag.enabled=true",
     "app.knowledge.rag.ingestion-review-enabled=false","app.knowledge.search.poll-ms=3600000","app.knowledge.jobs.enabled=false","app.knowledge.min-chunk-size-chars=10","app.knowledge.similarity-threshold=0.0"})
 @Testcontainers
-class AdvancedRagIntegrationTest {
+class AdvancedRagIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection static PostgreSQLContainer postgres=new PostgreSQLContainer("pgvector/pgvector:pg17");
     @Container static org.testcontainers.containers.GenericContainer<?> search=new org.testcontainers.containers.GenericContainer<>(org.testcontainers.utility.DockerImageName.parse("opensearchproject/opensearch:3.9.0"))
         .withEnv("discovery.type","single-node").withEnv("DISABLE_SECURITY_PLUGIN","true").withEnv("DISABLE_INSTALL_DEMO_CONFIG","true")

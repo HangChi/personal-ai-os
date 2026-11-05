@@ -1,5 +1,7 @@
 package com.personalos.chat;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.chat.entity.ChatMessageEntity;
@@ -50,7 +52,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "app.calendar.scan-enabled=false"
 })
 @Testcontainers
-class ChatMessagePaginationIntegrationTest {
+class ChatMessagePaginationIntegrationTest extends ContainerContextTest {
 
     private static final String CONVERSATION_ID = "paging-test-conversation";
     /** 造 7 条消息：sequence_no 1..7 */

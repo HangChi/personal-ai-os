@@ -1,5 +1,7 @@
 package com.personalos.chat;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.chat.entity.TokenUsageEntity;
@@ -47,7 +49,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "app.rate-limit.enabled=false"
 })
 @Testcontainers
-class TokenUsageIntegrationTest {
+class TokenUsageIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

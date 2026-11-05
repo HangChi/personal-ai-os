@@ -1,5 +1,7 @@
 package com.personalos.chat;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.*;
 import com.personalos.chat.dto.ChatRunDto;
 import com.personalos.chat.dto.StreamChatRequest;
@@ -28,7 +30,7 @@ import reactor.core.publisher.Flux;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.ai.model.chat=none", "app.context.summary.min-messages=100000"})
 @Testcontainers
-class ChatRunIntegrationTest {
+class ChatRunIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
     @org.springframework.beans.factory.annotation.Value("${local.server.port}") int port;

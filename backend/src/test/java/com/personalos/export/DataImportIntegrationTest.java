@@ -1,5 +1,7 @@
 package com.personalos.export;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -38,7 +40,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "spring.ai.model.embedding=none"
 })
 @Testcontainers
-class DataImportIntegrationTest {
+class DataImportIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

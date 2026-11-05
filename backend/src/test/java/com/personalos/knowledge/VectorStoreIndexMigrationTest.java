@@ -1,5 +1,7 @@
 package com.personalos.knowledge;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -39,7 +41,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "spring.ai.model.embedding=none"
 })
 @Testcontainers
-class VectorStoreIndexMigrationTest {
+class VectorStoreIndexMigrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

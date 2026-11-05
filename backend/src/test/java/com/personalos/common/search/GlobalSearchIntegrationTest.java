@@ -1,5 +1,7 @@
 package com.personalos.common.search;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.knowledge.service.KnowledgeDocumentService;
@@ -41,7 +43,7 @@ import tools.jackson.databind.ObjectMapper;
         "app.knowledge.min-chunk-size-chars=20"
 })
 @Testcontainers
-class GlobalSearchIntegrationTest {
+class GlobalSearchIntegrationTest extends ContainerContextTest {
 
     /** 五个模块共用的关键词，确保每条断言都知道自己在找什么 */
     private static final String KEYWORD = "孤岛搜索词";

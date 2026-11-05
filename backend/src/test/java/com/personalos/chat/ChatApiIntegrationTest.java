@@ -1,5 +1,7 @@
 package com.personalos.chat;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.chat.entity.ChatMessageEntity;
@@ -59,7 +61,7 @@ import reactor.core.publisher.Flux;
         "app.context.summary.min-messages=100000"
 })
 @Testcontainers
-class ChatApiIntegrationTest {
+class ChatApiIntegrationTest extends ContainerContextTest {
 
     private static final String USER_TURN_1 = "第一轮问题-标记AAAA";
     private static final String USER_TURN_3 = "第三轮问题-标记CCCC";

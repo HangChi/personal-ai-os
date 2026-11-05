@@ -1,5 +1,7 @@
 package com.personalos.mcp;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.common.ai.AiChatClientProvider;
@@ -40,7 +42,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
                 "spring.ai.model.chat=none",
         })
 @Testcontainers
-class McpDegradedStartupIntegrationTest {
+class McpDegradedStartupIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

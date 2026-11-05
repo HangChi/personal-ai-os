@@ -1,4 +1,6 @@
 package com.personalos.knowledge.governance;
+
+import com.personalos.support.ContainerContextTest;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
@@ -21,7 +23,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.ObjectMapper;
 @SpringBootTest(properties={"spring.ai.model.chat=none","spring.ai.model.embedding=none","app.knowledge.min-chunk-size-chars=10","app.knowledge.jobs.enabled=false"})
 @Testcontainers
-class KnowledgeGovernanceIntegrationTest {
+class KnowledgeGovernanceIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection static PostgreSQLContainer postgres=new PostgreSQLContainer("pgvector/pgvector:pg17");
     @TestConfiguration static class Models {
         @Bean EmbeddingModel embeddingModel(){return new com.personalos.support.DeterministicEmbeddingModel(1024);}

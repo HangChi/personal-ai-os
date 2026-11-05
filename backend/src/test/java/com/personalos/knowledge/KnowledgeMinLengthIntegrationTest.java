@@ -1,5 +1,7 @@
 package com.personalos.knowledge;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.knowledge.config.KnowledgeProperties;
@@ -36,7 +38,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "app.calendar.scan-enabled=false"
 })
 @Testcontainers
-class KnowledgeMinLengthIntegrationTest {
+class KnowledgeMinLengthIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

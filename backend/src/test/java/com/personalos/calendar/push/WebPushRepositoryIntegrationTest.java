@@ -1,5 +1,7 @@
 package com.personalos.calendar.push;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -21,7 +23,7 @@ import tools.jackson.databind.ObjectMapper;
         "spring.ai.model.chat=none", "spring.ai.model.embedding=none",
         "app.model-key-encryption-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="})
 @Testcontainers
-class WebPushRepositoryIntegrationTest {
+class WebPushRepositoryIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
     @TestConfiguration static class Stubs {

@@ -1,5 +1,7 @@
 package com.personalos.chat;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.common.confirmation.ConfirmationService;
@@ -42,7 +44,7 @@ import tools.jackson.databind.ObjectMapper;
         "app.memory.backfill.enabled=false"
 })
 @Testcontainers
-class DirectToolIntegrationTest {
+class DirectToolIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
     @Value("${local.server.port}") int port;

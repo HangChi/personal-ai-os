@@ -1,5 +1,7 @@
 package com.personalos.calendar;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -71,7 +73,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"spring.ai.model.chat=none"})
 @Testcontainers
-class CalendarReminderIntegrationTest {
+class CalendarReminderIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

@@ -1,5 +1,7 @@
 package com.personalos.common.maintenance;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import com.personalos.common.idempotency.*;
 import java.time.Instant;
@@ -13,7 +15,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @SpringBootTest(properties = {"spring.ai.model.chat=none"})
 @Testcontainers
-class OperationRecordRetentionIntegrationTest {
+class OperationRecordRetentionIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
     @Autowired OperationRecordRepository repository;

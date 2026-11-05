@@ -1,5 +1,7 @@
 package com.personalos.knowledge;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -44,7 +46,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "app.knowledge.min-chunk-size-chars=20"
 })
 @Testcontainers
-class EmbeddingDimensionMismatchIntegrationTest {
+class EmbeddingDimensionMismatchIntegrationTest extends ContainerContextTest {
 
     /** 故意与表结构（1024）不一致 */
     private static final int MISMATCHED_DIMENSIONS = 768;

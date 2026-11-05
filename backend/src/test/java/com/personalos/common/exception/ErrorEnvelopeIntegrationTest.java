@@ -1,5 +1,7 @@
 package com.personalos.common.exception;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.support.DeterministicEmbeddingModel;
@@ -39,7 +41,7 @@ import tools.jackson.databind.ObjectMapper;
         "app.calendar.scan-enabled=false"
 })
 @Testcontainers
-class ErrorEnvelopeIntegrationTest {
+class ErrorEnvelopeIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

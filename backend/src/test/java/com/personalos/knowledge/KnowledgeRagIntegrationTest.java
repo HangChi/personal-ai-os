@@ -1,5 +1,7 @@
 package com.personalos.knowledge;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.chat.dto.ChatCitationDto;
@@ -66,7 +68,7 @@ import tools.jackson.databind.ObjectMapper;
         "app.knowledge.min-chunk-size-chars=40"
 })
 @Testcontainers
-class KnowledgeRagIntegrationTest {
+class KnowledgeRagIntegrationTest extends ContainerContextTest {
 
     /** 主题 A：数据库事务 */
     private static final String TRANSACTION_MARKDOWN = """

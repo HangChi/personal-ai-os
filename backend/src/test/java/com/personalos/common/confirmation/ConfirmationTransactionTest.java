@@ -1,5 +1,7 @@
 package com.personalos.common.confirmation;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -39,7 +41,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  */
 @SpringBootTest(properties = {"spring.ai.model.chat=none"})
 @Testcontainers
-class ConfirmationTransactionTest {
+class ConfirmationTransactionTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

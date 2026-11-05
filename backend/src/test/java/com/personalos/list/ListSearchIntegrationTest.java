@@ -1,5 +1,7 @@
 package com.personalos.list;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.knowledge.service.KnowledgeDocumentService;
@@ -39,7 +41,7 @@ import tools.jackson.databind.ObjectMapper;
         properties = {"spring.ai.model.chat=none", "spring.ai.model.embedding=none",
                 "app.calendar.scan-enabled=false", "app.knowledge.min-chunk-size-chars=20"})
 @Testcontainers
-class ListSearchIntegrationTest {
+class ListSearchIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

@@ -1,5 +1,7 @@
 package com.personalos.common.auth;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.support.HttpTestClient;
@@ -23,7 +25,7 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"spring.ai.model.chat=none", "app.calendar.scan-enabled=false"})
 @Testcontainers
-class AuthDisabledIntegrationTest {
+class AuthDisabledIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

@@ -1,5 +1,7 @@
 package com.personalos.chat;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.*;
 import com.personalos.agent.interaction.dto.AgentQuestion;
 import com.personalos.agent.interaction.service.AgentInteractionService;
@@ -34,7 +36,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @SpringBootTest(properties={"spring.ai.model.chat=none", "app.context.summary.min-messages=100000"})
 @Testcontainers
-class AgentInteractionIntegrationTest {
+class AgentInteractionIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
     @Autowired ChatRunService runs;
     @Autowired ChatRunRepository repository;

@@ -1,5 +1,7 @@
 package com.personalos.agent;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.common.confirmation.ConfirmationAction;
@@ -58,7 +60,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "spring.ai.model.chat=none"
 })
 @Testcontainers
-class AgentToolCallingIntegrationTest {
+class AgentToolCallingIntegrationTest extends ContainerContextTest {
 
     @Autowired com.personalos.calendar.repository.CalendarEventRepository calendarEvents;
     @Autowired com.personalos.chat.repository.ChatMessageRepository chatMessages;

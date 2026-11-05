@@ -1,5 +1,7 @@
 package com.personalos.knowledge;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -54,7 +56,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "app.knowledge.min-chunk-size-chars=20"
 })
 @Testcontainers
-class RichDocumentIngestIntegrationTest {
+class RichDocumentIngestIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

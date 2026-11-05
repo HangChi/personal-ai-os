@@ -1,5 +1,7 @@
 package com.personalos.agent.audit;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.common.idempotency.IdempotencyOutcome;
@@ -35,7 +37,7 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"spring.ai.model.chat=none", "app.calendar.scan-enabled=false"})
 @Testcontainers
-class ToolInvocationAuditIntegrationTest {
+class ToolInvocationAuditIntegrationTest extends ContainerContextTest {
 
     @Autowired com.personalos.common.confirmation.ConfirmationRepository confirmations;
 

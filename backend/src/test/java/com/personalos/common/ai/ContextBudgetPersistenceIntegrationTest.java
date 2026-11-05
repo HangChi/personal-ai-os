@@ -1,5 +1,7 @@
 package com.personalos.common.ai;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +18,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @SpringBootTest(properties = {"spring.ai.model.chat=none", "spring.ai.model.embedding=none"})
 @Testcontainers
-class ContextBudgetPersistenceIntegrationTest {
+class ContextBudgetPersistenceIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
 

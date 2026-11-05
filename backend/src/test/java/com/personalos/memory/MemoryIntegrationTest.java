@@ -1,5 +1,7 @@
 package com.personalos.memory;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.common.ai.AiProperties;
@@ -46,7 +48,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "spring.ai.model.chat=none"
 })
 @Testcontainers
-class MemoryIntegrationTest {
+class MemoryIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

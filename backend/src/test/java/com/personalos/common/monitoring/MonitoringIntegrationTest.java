@@ -1,5 +1,7 @@
 package com.personalos.common.monitoring;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import com.personalos.chat.metrics.ChatStreamMetrics;
 import java.net.URI;
@@ -17,7 +19,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "app.auth.password=monitoring-test-password"})
 @ActiveProfiles("monitoring")
 @Testcontainers
-class MonitoringIntegrationTest {
+class MonitoringIntegrationTest extends ContainerContextTest {
     @Container @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("pgvector/pgvector:pg17");
     @Value("${local.server.port}") int appPort;

@@ -1,5 +1,7 @@
 package com.personalos.common.auth;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.CookieManager;
@@ -43,7 +45,7 @@ import tools.jackson.databind.ObjectMapper;
         "app.auth.lockout=1s"
 })
 @Testcontainers
-class AuthLockoutIntegrationTest {
+class AuthLockoutIntegrationTest extends ContainerContextTest {
 
     private static final String PASSWORD = "test-secret";
 

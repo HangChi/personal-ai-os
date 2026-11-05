@@ -1,5 +1,7 @@
 package com.personalos.knowledge;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.support.DeterministicEmbeddingModel;
@@ -46,7 +48,7 @@ import tools.jackson.databind.ObjectMapper;
         "app.calendar.scan-enabled=false"
 })
 @Testcontainers
-class KnowledgeDocumentPageOverflowIntegrationTest {
+class KnowledgeDocumentPageOverflowIntegrationTest extends ContainerContextTest {
 
     @Container
     @ServiceConnection

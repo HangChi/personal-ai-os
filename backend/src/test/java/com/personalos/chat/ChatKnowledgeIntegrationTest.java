@@ -1,5 +1,7 @@
 package com.personalos.chat;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
@@ -64,7 +66,7 @@ import reactor.core.publisher.Flux;
         "app.ai.memory.max-messages=6"
 })
 @Testcontainers
-class ChatKnowledgeIntegrationTest {
+class ChatKnowledgeIntegrationTest extends ContainerContextTest {
 
     private static final UUID DOC_A = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final UUID DOC_B = UUID.fromString("22222222-2222-2222-2222-222222222222");

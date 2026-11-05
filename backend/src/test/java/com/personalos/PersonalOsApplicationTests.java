@@ -1,5 +1,7 @@
 package com.personalos;
 
+import com.personalos.support.ContainerContextTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.mcp.client.McpClientRegistry;
@@ -32,7 +34,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-class PersonalOsApplicationTests {
+class PersonalOsApplicationTests extends ContainerContextTest {
 
     @Container
     @ServiceConnection
