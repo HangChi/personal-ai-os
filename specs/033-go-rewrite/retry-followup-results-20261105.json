@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "validation_date": "2026-11-05",
+  "source_commit": "c0b97ea7f9bfc94860e302133c5e32aa096cc4bd",
+  "source_checks": {
+    "java_backend": {
+      "files": 623,
+      "manifest_sha256": "f005668ac7b78c9e1596c29c6f583fe136c6b9f8228df25e896f2c635d4a794a"
+    },
+    "go_backend": {
+      "files": 477,
+      "manifest_sha256": "1e3fa85a22d310726e1112d595f7ba24ace36149b5dbe6eeccfc1fea770fbe4c"
+    },
+    "frontend": {
+      "files": 237,
+      "manifest_sha256": "3705fa0a4edf812298ba56e316c43e8da0d89c44f1bad524ae3efe79fb5120a6"
+    }
+  },
+  "java_verify": {
+    "result": "PASS",
+    "suites": 160,
+    "tests": 1175,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "coverage": {
+      "BRANCH": {
+        "covered": 3899,
+        "total": 5637,
+        "percentage": 69.17
+      },
+      "LINE": {
+        "covered": 9114,
+        "total": 10650,
+        "percentage": 85.58
+      }
+    },
+    "original_thresholds_percent": {
+      "LINE": 83,
+      "BRANCH": 65
+    },
+    "forced_fork_exit": false,
+    "graceful_shutdown_timeout": false
+  },
+  "backends": {
+    "go": {
+      "mcp": {
+        "backend": "go",
+        "result": "PASS",
+        "checks": [
+          "external AUTO edit executes once per identity; new identity executes again",
+          "committed external edit with lost reply stays unknown; retries and reconnect never resend",
+          "external CONFIRM move waits for approval; duplicate approval cannot execute again",
+          "confirmed external move commits before reply loss; FAILED receipt cannot be approved again, including after reconnect",
+          "application restart preserves successful replay and unknown-operation ownership",
+          "real authenticated browser command workflow passed"
+        ],
+        "real_external_server": {
+          "package": "@modelcontextprotocol/server-filesystem",
+          "version": "2.1.0"
+        },
+        "remote_dedup_claimed": false,
+        "scope": "isolated TLS DB, authenticated application, external stdio server in a fresh sandbox",
+        "external_calls": 5
+      },
+      "browser": {
+        "result": "PASS",
+        "workflows": [
+          "real browser login with authentication and CSRF enabled",
+          "slash menu keyboard completion, help panel and /new",
+          "/task, /tasks and /done persist through the real backend",
+          "lost real create response + page reload reuses UUID and replays; one task only",
+          "lost confirmation response + reload reuses pending approval; rejecting leaves task intact",
+          "fresh approval deletes once; duplicate approval conflicts; old create receipt cannot recreate task",
+          "/calendar, /reminders, /tool and live /tools catalog"
+        ],
+        "errors": [],
+        "modelRequests": 0,
+        "layouts": [
+          {
+            "width": 1280,
+            "overflow": 0,
+            "menu": {
+              "x": 526,
+              "y": 452,
+              "width": 724,
+              "height": 260
+            }
+          },
+          {
+            "width": 768,
+            "overflow": 0,
+            "menu": {
+              "x": 26,
+              "y": 456,
+              "width": 716,
+              "height": 260
+            }
+          },
+          {
+            "width": 375,
+            "overflow": 0,
+            "menu": {
+              "x": 26,
+              "y": 412,
+              "width": 323,
+              "height": 260
+            }
+          }
+        ]
+      },
+      "deliberately_lost_http_responses": 2
+    },
+    "java": {
+      "mcp": {
+        "backend": "java",
+        "result": "PASS",
+        "checks": [
+          "external AUTO edit executes once per identity; new identity executes again",
+          "committed external edit with lost reply stays unknown; retries and reconnect never resend",
+          "external CONFIRM move waits for approval; duplicate approval cannot execute again",
+          "confirmed external move commits before reply loss; FAILED receipt cannot be approved again, including after reconnect",
+          "application restart preserves successful replay and unknown-operation ownership",
+          "real authenticated browser command workflow passed"
+        ],
+        "real_external_server": {
+          "package": "@modelcontextprotocol/server-filesystem",
+          "version": "2.1.0"
+        },
+        "remote_dedup_claimed": false,
+        "scope": "isolated TLS DB, authenticated application, external stdio server in a fresh sandbox",
+        "external_calls": 5
+      },
+      "browser": {
+        "result": "PASS",
+        "workflows": [
+          "real browser login with authentication and CSRF enabled",
+          "slash menu keyboard completion, help panel and /new",
+          "/task, /tasks and /done persist through the real backend",
+          "lost real create response + page reload reuses UUID and replays; one task only",
+          "lost confirmation response + reload reuses pending approval; rejecting leaves task intact",
+          "fresh approval deletes once; duplicate approval conflicts; old create receipt cannot recreate task",
+          "/calendar, /reminders, /tool and live /tools catalog"
+        ],
+        "errors": [],
+        "modelRequests": 0,
+        "layouts": [
+          {
+            "width": 1280,
+            "overflow": 0,
+            "menu": {
+              "x": 526,
+              "y": 452,
+              "width": 724,
+              "height": 260
+            }
+          },
+          {
+            "width": 768,
+            "overflow": 0,
+            "menu": {
+              "x": 26,
+              "y": 456,
+              "width": 716,
+              "height": 260
+            }
+          },
+          {
+            "width": 375,
+            "overflow": 0,
+            "menu": {
+              "x": 26,
+              "y": 412,
+              "width": 323,
+              "height": 260
+            }
+          }
+        ]
+      },
+      "deliberately_lost_http_responses": 2
+    }
+  },
+  "runner_sha256": {
+    "scripts/migration/mcp_stdio_fault_proxy.py": "aa59193bdb302932a4f10f2ed7ec7649e22c268a2324de1ea6e2db38d62acac9",
+    "scripts/migration/run_retry_command_acceptance.py": "8161d46354fb519ad0e6f0c46012885754600cfc7717f3c0786d303c47c6b6e0",
+    "scripts/migration/run_retry_commands_browser.mjs": "6738f440b570533868d3c22edeac9cc7c55c3453607384000bac746f54d5803b"
+  },
+  "limits": [
+    "Filesystem MCP 2.1.0 in a fresh sandbox; does not certify deduplication support by arbitrary external servers.",
+    "Same-tab request IDs persist across reload only; new IDs or changed intent are distinct operations.",
+    "Browser scope is direct slash commands and confirmations; no live model/search/chat-run acceptance claimed.",
+    "Original migration release gates remain open."
+  ],
+  "local_evidence": ".cache/retry-followup-20261105-054e965a/"
+}
