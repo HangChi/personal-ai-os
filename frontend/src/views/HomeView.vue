@@ -5,9 +5,7 @@
  * 与原版的区别：从「三张说明卡」变成「统计卡行 + 能力入口 + 系统状态」。
  * 统计数据各自独立加载、各自容错——单卡失败显示「—」，不阻塞其他卡（FR-009）。
  *
- * 数据来源取舍：任务 / 记忆 / 知识库走各自 store（加载的就是各页默认视图，顺带预热）；
- * 今日日程走直连接口而不是 calendarStore——store 的 loadOccurrences 会改写全局查询
- * 窗口，首页一次统计会把日程页的默认窗口冲掉（跨页污染，且毫无提示）。
+ * 各统计直接读取接口，不使用列表页的筛选、分页或缓存，也不改写列表状态。
  */
 import {
   Calendar,
@@ -28,18 +26,13 @@ import { downloadExport, importData } from '@/api/export'
 import { listOccurrences } from '@/api/calendar'
 import { confirmAction } from '@/lib/confirm-box'
 import { useAppStore } from '@/stores/app'
-import { useKnowledgeStore } from '@/stores/knowledge'
-import { useMemoryStore } from '@/stores/memory'
-import { useTaskStore } from '@/stores/task'
+import { listDocuments } from '@/api/knowledge'
+import { listMemories } from '@/api/memory'
+import { fetchTaskStats } from '@/api/tasks'
 
 const appStore = useAppStore()
-const taskStore = useTaskStore()
-const memoryStore = useMemoryStore()
-const knowledgeStore = useKnowledgeStore()
 
 const { health, loading: healthLoading, error: healthError } = storeToRefs(appStore)
-const { pendingCount, overdueCount } = storeToRefs(taskStore)
-const { total: documentTotal } = storeToRefs(knowledgeStore)
 
 const router = useRouter()
 
@@ -49,6 +42,7 @@ interface StatCard {
   label: string
   icon: typeof Calendar
   value: number | null
+  status: 'loading' | 'ready' | 'error'
   tone: 'primary' | 'danger' | 'warning' | 'success' | 'info'
   route: string
   hint: string
@@ -60,6 +54,7 @@ const stats = ref<StatCard[]>([
     label: '待办任务',
     icon: Tickets,
     value: null,
+    status: 'loading',
     tone: 'primary',
     route: '/tasks',
     hint: '未完成的任务数',
@@ -69,6 +64,7 @@ const stats = ref<StatCard[]>([
     label: '已逾期',
     icon: WarningFilled,
     value: null,
+    status: 'loading',
     tone: 'danger',
     route: '/tasks',
     hint: '超过截止时间未完成',
@@ -78,6 +74,7 @@ const stats = ref<StatCard[]>([
     label: '今日日程',
     icon: Calendar,
     value: null,
+    status: 'loading',
     tone: 'warning',
     route: '/calendar',
     hint: '今天到明天的全部发生',
@@ -87,6 +84,7 @@ const stats = ref<StatCard[]>([
     label: '长期记忆',
     icon: Memo,
     value: null,
+    status: 'loading',
     tone: 'success',
     route: '/memory',
     hint: '注入每次对话的条数',
@@ -96,17 +94,54 @@ const stats = ref<StatCard[]>([
     label: '知识文档',
     icon: Document,
     value: null,
+    status: 'loading',
     tone: 'info',
     route: '/knowledge',
     hint: '已建立向量索引的篇数',
   },
 ])
 
-function setStat(key: string, value: number | null): void {
-  const card = stats.value.find((item) => item.key === key)
-  if (card) {
-    card.value = value
+async function loadCards(keys: string[], read: () => Promise<number[]>): Promise<void> {
+  const cards = stats.value.filter((card) => keys.includes(card.key))
+  for (const card of cards) {
+    card.value = null
+    card.status = 'loading'
   }
+  try {
+    const values = await read()
+    keys.forEach((key, index) => {
+      const card = cards.find((item) => item.key === key)!
+      card.value = values[index] ?? null
+      card.status = 'ready'
+    })
+  } catch {
+    for (const card of cards) card.status = 'error'
+  }
+}
+
+function loadStat(key: string): Promise<void> {
+  switch (key) {
+    case 'pending':
+    case 'overdue':
+      return loadCards(['pending', 'overdue'], async () => {
+        const result = await fetchTaskStats()
+        return [result.pending, result.overdue]
+      })
+    case 'memory':
+      return loadCards(['memory'], async () => [(await listMemories()).length])
+    case 'docs':
+      return loadCards(['docs'], async () => [(await listDocuments({ page: 0, size: 1 })).total])
+    default:
+      return loadCards(['today'], async () => {
+        const { from, to } = todayRange()
+        return [(await listOccurrences(from, to, 0, 1)).total]
+      })
+  }
+}
+
+function activateStat(card: StatCard): void {
+  if (card.status === 'error') void loadStat(card.key)
+  else void router.push(card.route)
 }
 
 /** 今日日程：本地时区的当天 00:00 ~ 23:59:59 */
@@ -117,29 +152,9 @@ function todayRange(): { from: string; to: string } {
   return { from: start.toISOString(), to: end.toISOString() }
 }
 
-onMounted(async () => {
+onMounted(() => {
   void appStore.loadHealth()
-
-  // 五个统计互不依赖，并发加载；各自的失败只把自己那一卡打成 —
-  // 任务统计用 loadStats（后端全量聚合），而非 load（分页列表的派生值）——
-  // 后者在待办超过一页时会把「100 条」显示成「20 条」（审查 #16）
-  const tasks = taskStore.loadStats().then(() => {
-    setStat('pending', pendingCount.value)
-    setStat('overdue', overdueCount.value)
-  })
-  const memories = memoryStore.load().then(() => {
-    setStat('memory', memoryStore.memories.length)
-  })
-  const documents = knowledgeStore.loadDocuments().then(() => {
-    setStat('docs', documentTotal.value)
-  })
-  const calendar = (async () => {
-    const { from, to } = todayRange()
-    const result = await listOccurrences(from, to, 0, 100)
-    setStat('today', result.total)
-  })()
-
-  await Promise.allSettled([tasks, memories, documents, calendar])
+  for (const key of ['pending', 'memory', 'docs', 'today']) void loadStat(key)
 })
 
 /** 状态标签颜色：UP 走成功色，其余走危险色 */
@@ -320,8 +335,9 @@ const overviewLine = computed(() => {
         type="button"
         class="home__stat"
         :class="`home__stat--${card.tone}`"
-        :title="card.hint"
-        @click="router.push(card.route)"
+        :title="card.status === 'error' ? '加载失败，点击重试' : card.hint"
+        :aria-busy="card.status === 'loading'"
+        @click="activateStat(card)"
       >
         <div class="home__stat-top">
           <span class="home__stat-label">{{ card.label }}</span>
@@ -332,6 +348,8 @@ const overviewLine = computed(() => {
         <span class="home__stat-value" :class="{ 'home__stat-value--empty': card.value === null }">
           {{ card.value ?? '—' }}
         </span>
+        <span v-if="card.status === 'error'" class="home__stat-status">加载失败，点击重试</span>
+        <span v-else-if="card.status === 'loading'" class="home__stat-status">加载中…</span>
       </button>
     </div>
 
@@ -508,6 +526,11 @@ const overviewLine = computed(() => {
   transform: translateY(-2px);
   border-color: var(--el-color-primary-light-7);
   box-shadow: var(--os-shadow-card-hover);
+}
+
+.home__stat-status {
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
 }
 
 .home__stat-top {
