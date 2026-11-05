@@ -121,6 +121,20 @@ class ReminderStreamDeliveryTest {
         assertThatThrownBy(() -> delivery.open()).isInstanceOf(BusinessException.class);
     }
 
+    @Test void lifecycleStopsStreamsBeforeHttpGracefulShutdown() {
+        delivery.start();
+        assertThat(delivery.isRunning()).isTrue();
+        assertThat(delivery.getPhase()).isGreaterThan(Integer.MAX_VALUE - 1024);
+        delivery.open();
+        var stopped = new java.util.concurrent.atomic.AtomicBoolean();
+        delivery.stop(() -> stopped.set(true));
+        assertThat(stopped).isTrue();
+        assertThat(delivery.isRunning()).isFalse();
+        delivery.close();
+        verify(emitters.getFirst(), times(1)).complete();
+        verify(writers, times(1)).shutdownNow();
+    }
+
     private ReminderDto reminder() {
         return new ReminderDto(UUID.randomUUID(), "TASK", UUID.randomUUID(), "提醒", Instant.now(), Instant.now(), "PENDING", null);
     }

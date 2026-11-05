@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  * 新连接和重连均发送完整快照，数据库是恢复来源，不依赖内存事件重放。
  */
 @Service
-public class ReminderStreamDelivery {
+public class ReminderStreamDelivery implements SmartLifecycle {
     private static final int MAX_CONNECTIONS = 32;
     private final ReminderService reminders;
     private final MeterRegistry metrics;
@@ -34,6 +35,7 @@ public class ReminderStreamDelivery {
     private final ExecutorService writers;
     private final Set<Client> clients = ConcurrentHashMap.newKeySet();
     private volatile boolean closed;
+    private volatile boolean running;
 
     @Autowired
     public ReminderStreamDelivery(ReminderService reminders, MeterRegistry metrics) {
@@ -114,11 +116,22 @@ public class ReminderStreamDelivery {
 
     @PreDestroy
     public synchronized void close() {
+        if (closed) return;
         closed = true;
+        running = false;
         for (Client client : clients) client.emitter.complete();
         clients.clear();
         writers.shutdownNow();
     }
+
+    @Override public void start() { if (!closed) running = true; }
+    @Override public boolean isRunning() { return running; }
+    @Override public void stop() { close(); }
+    @Override public void stop(Runnable callback) {
+        try { close(); } finally { callback.run(); }
+    }
+    // Stop long-lived responses before Tomcat waits for active HTTP requests.
+    @Override public int getPhase() { return Integer.MAX_VALUE; }
 
     private static final class Client {
         final SseEmitter emitter;
