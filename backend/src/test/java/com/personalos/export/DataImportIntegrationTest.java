@@ -205,6 +205,29 @@ class DataImportIntegrationTest {
         assertThat(inspector.countByDocumentId(DOC_ID)).isEqualTo(2);
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(com.personalos.calendar.entity.RecurrenceType.class)
+    void roundTripsEveryCalendarRule(com.personalos.calendar.entity.RecurrenceType rule) {
+        jdbc.update("insert into calendar_event (id, title, all_day, starts_at, ends_at, recurrence_type, "
+                        + "recurrence_until, reminder_lead_minutes, created_at, updated_at) "
+                        + "values (?, '例会', false, '2026-11-05T09:00:00Z', '2026-11-05T10:00:00Z', ?, "
+                        + "'2026-12-31T09:00:00Z', 30, now(), now())", EVENT_ID, rule.name());
+        var output = new java.io.ByteArrayOutputStream();
+        exportService.writeTo(output);
+        jdbc.execute("DELETE FROM calendar_event");
+
+        var result = importService.importAll(output.toString(java.nio.charset.StandardCharsets.UTF_8));
+
+        assertThat(result.calendarEvents()).isEqualTo(1);
+        assertThat(jdbc.queryForObject("select recurrence_type from calendar_event where id = ?",
+                String.class, EVENT_ID)).isEqualTo(rule.name());
+        assertThat(jdbc.queryForObject("select reminder_lead_minutes from calendar_event where id = ?",
+                Integer.class, EVENT_ID)).isEqualTo(30);
+        assertThat(jdbc.queryForObject("select recurrence_until from calendar_event where id = ?",
+                java.time.OffsetDateTime.class, EVENT_ID).toInstant())
+                .isEqualTo(java.time.Instant.parse("2026-12-31T09:00:00Z"));
+    }
+
     @Test
     @DisplayName("导出后恢复记忆，保留常驻、取代关系与使用记录，支持前向引用")
     void roundTripsMemoryState() {

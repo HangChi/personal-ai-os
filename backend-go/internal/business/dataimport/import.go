@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"personal-ai-os/backend-go/internal/business/calendar"
 	"personal-ai-os/backend-go/internal/business/knowledge"
 	"personal-ai-os/backend-go/internal/business/search"
 	"personal-ai-os/backend-go/internal/platform/api"
@@ -266,7 +267,7 @@ func importCalendar(ctx context.Context, tx *sql.Tx, events []*Calendar) (int, e
 		if v.Lead != nil {
 			lead = *v.Lead
 		}
-		recurrence := normalize(v.RecurrenceType, []string{"NONE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"}, "NONE")
+		recurrence := normalize(v.RecurrenceType, []string{string(calendar.None), string(calendar.Daily), string(calendar.Weekly), string(calendar.Monthly), string(calendar.Weekdays)}, string(calendar.None))
 		if _, e := tx.ExecContext(ctx, `INSERT INTO calendar_event(id,title,description,location,all_day,starts_at,ends_at,recurrence_type,recurrence_until,reminder_lead_minutes,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11)`, string(*v.ID), v.Title, v.Description, v.Location, v.AllDay, *v.StartsAt, fallbackAt(v.EndsAt, *v.StartsAt), recurrence, v.RecurrenceUntil, lead, created); e != nil {
 			return 0, e
 		}

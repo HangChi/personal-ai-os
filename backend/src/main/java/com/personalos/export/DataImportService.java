@@ -1,5 +1,6 @@
 package com.personalos.export;
 
+import com.personalos.calendar.entity.RecurrenceType;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.common.json.JsonCodec;
@@ -76,7 +77,8 @@ public class DataImportService {
      * 放进来会让 reopen 把任务退回已完成，用户点「取消完成」后毫无变化。
      */
     private static final Set<String> TASK_PREVIOUS_STATUS = Set.of("TODO", "DOING");
-    private static final Set<String> RECURRENCE = Set.of("NONE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY");
+    private static final Set<String> RECURRENCE = java.util.Arrays.stream(RecurrenceType.values())
+            .map(Enum::name).collect(java.util.stream.Collectors.toUnmodifiableSet());
 
     /** 空库校验覆盖的表；顺序只影响报错文案 */
     private static final List<String> GUARDED_TABLES = List.of(
