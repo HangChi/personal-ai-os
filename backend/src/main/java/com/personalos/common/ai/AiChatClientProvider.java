@@ -44,6 +44,11 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AiChatClientProvider {
+    /** Recovery summaries retain history but have no tool callbacks or tool-calling advisor. */
+    public ChatClient summaryChatClient(ChatTarget target) {
+        return target.plainChatClient().mutate()
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build()).build();
+    }
 
     private static final Logger log = LoggerFactory.getLogger(AiChatClientProvider.class);
 

@@ -47,10 +47,18 @@ class ChatRunIntegrationTest extends ContainerContextTest {
     @Autowired Model model;
     static class Model implements ChatModel {
         volatile boolean hold;
+        volatile boolean unsolicitedTool;
+        volatile Prompt lastPrompt;
+        final AtomicInteger streams = new AtomicInteger();
         @Override public ChatResponse call(Prompt prompt) { return response("完成"); }
-        @Override public ChatOptions getOptions() { return ChatOptions.builder().build(); }
+        @Override public ChatOptions getOptions() { return org.springframework.ai.model.tool.ToolCallingChatOptions.builder().build(); }
         @Override public Flux<ChatResponse> stream(Prompt prompt) {
+            lastPrompt = prompt;
+            streams.incrementAndGet();
             if (hold) return Flux.never();
+            if (unsolicitedTool) return Flux.just(new ChatResponse(List.of(new Generation(AssistantMessage.builder()
+                    .content("").toolCalls(List.of(new AssistantMessage.ToolCall("forbidden", "function", "createTask", "{}"))).build(),
+                    org.springframework.ai.chat.metadata.ChatGenerationMetadata.builder().finishReason("tool_calls").build()))));
             return Flux.concat(Flux.just(response("开始")), Flux.just(response("完成")).delayElements(Duration.ofMillis(400)));
         }
         private ChatResponse response(String text) { return new ChatResponse(List.of(new Generation(new AssistantMessage(text)))); }
@@ -188,6 +196,65 @@ class ChatRunIntegrationTest extends ContainerContextTest {
         assertThat(effects).hasValue(1);
         assertThat(states).containsExactly("RUNNING", "OK", "RUNNING", "DUPLICATE");
     }
+    @Test void summaryKeepsUnknownReceiptsAndPlanPausedWithoutTools() throws Exception {
+        String conversation = sessions.create("仅整理结果").conversationId();
+        String id = UUID.randomUUID().toString();
+        repository.create(id, conversation, json.toJson(new StreamChatRequest("搜索网页 https://example.invalid 并整理任务", true, 4, "off", List.of())));
+        repository.transition(id, "RUNNING", "INTERRUPTED");
+        plans.createPlan(conversation, "原计划", List.of("查阅资料", "形成结论"));
+        operations.saveAndFlush(new OperationRecordEntity("summary-" + id, OperationSource.TOOL,
+                "externalWrite", "digest", conversation, id, Instant.now().minusSeconds(600)));
+        String receipts = repository.receipts(id);
+        assertThat(runs.get(conversation, id, 0).recoveryMode()).isEqualTo("SUMMARY_ONLY");
+        assertThatThrownBy(() -> runs.resume(conversation, id)).hasMessageContaining("尚未核实");
+        var response = java.net.http.HttpClient.newHttpClient().send(java.net.http.HttpRequest.newBuilder(
+                java.net.URI.create("http://localhost:" + port + "/api/v1/chat/sessions/" + conversation + "/runs/" + id + "/summarize"))
+                .POST(java.net.http.HttpRequest.BodyPublishers.noBody()).build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).isEqualTo(200);
+        var done = awaitFinished(conversation, id);
+        assertThat(done.status()).isEqualTo("INTERRUPTED");
+        assertThat(done.events()).anyMatch(e -> e.name().equals("done"));
+        assertThat(repository.receipts(id)).isEqualTo(receipts);
+        assertThat(repository.unfinishedPlan(conversation)).isTrue();
+        assertThat(repository.summaryAttempt(id)).isTrue();
+        var options = (org.springframework.ai.model.tool.ToolCallingChatOptions) model.lastPrompt.getOptions();
+        assertThat(options.getToolCallbacks()).isNullOrEmpty();
+        assertThat(model.lastPrompt.getContents()).contains("externalWrite", "不得调用工具");
+        assertThatThrownBy(() -> runs.resume(conversation, id)).hasMessageContaining("尚未核实");
+    }
+
+    @Test void restartCannotTurnSummaryIntoExecutionAndExplicitResumeClearsMode() throws Exception {
+        String conversation = sessions.create("摘要崩溃恢复").conversationId();
+        String id = UUID.randomUUID().toString();
+        repository.create(id, conversation, json.toJson(request()));
+        repository.transition(id, "RUNNING", "INTERRUPTED");
+        assertThat(repository.beginResume(id, "INTERRUPTED", true)).isTrue();
+        int before = model.streams.get();
+        runs.recover();
+        assertThat(runs.get(conversation, id, 0).status()).isEqualTo("INTERRUPTED");
+        assertThat(model.streams).hasValue(before);
+        assertThat(repository.beginResume(id, "INTERRUPTED", false)).isTrue();
+        assertThat(repository.summaryAttempt(id)).isFalse();
+        runs.recover();
+        assertThat(awaitFinished(conversation, id).status()).isEqualTo("COMPLETED");
+    }
+
+    @Test void summaryRejectsUnsolicitedToolCalls() throws Exception {
+        String conversation = sessions.create("禁止摘要调用工具").conversationId();
+        String id = UUID.randomUUID().toString();
+        repository.create(id, conversation, json.toJson(request()));
+        repository.transition(id, "RUNNING", "INTERRUPTED");
+        model.unsolicitedTool = true;
+        try {
+            runs.summarize(conversation, id);
+            var done = awaitFinished(conversation, id);
+            assertThat(done.status()).isEqualTo("INTERRUPTED");
+            assertThat(done.events()).anyMatch(e -> e.name().equals("error"));
+            assertThat(done.events()).noneMatch(e -> e.name().equals("activity") || e.name().equals("done"));
+            assertThat(repository.receipts(id)).isEmpty();
+        } finally { model.unsolicitedTool = false; }
+    }
+
     @Test void restartAutomaticallyRecoversOnlyUnambiguousRuns() throws Exception {
         String conversation = sessions.create("重启续跑").conversationId();
         String id = UUID.randomUUID().toString();

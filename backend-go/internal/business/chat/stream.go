@@ -30,6 +30,7 @@ type PreparedTurn struct {
 	Session       Session
 	Request       StreamRequest
 	clientContext context.Context
+	summaryOnly   bool
 }
 type RetrievedEvidence struct {
 	Citations []Citation
@@ -202,6 +203,9 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 		return err
 	}
 	webQuery := agent.ExplicitWebQuery(request.Content)
+	if p.summaryOnly {
+		webQuery = ""
+	}
 	var webHits []agent.WebSource
 	webNotice := ""
 	if webQuery != "" {
@@ -222,7 +226,7 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 		}
 	}
 	var guardNotice string
-	if request.Knowledge() {
+	if !p.summaryOnly && request.Knowledge() {
 		evidence, err := e.retrieveForPrompt(ctx, request.Content, request.Limit(), send)
 		if err != nil {
 			return err
@@ -337,13 +341,16 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 		extra["thinking_budget"] = n
 	}
 	req := model.ChatRequest{Messages: messages, Tools: e.Registry.Definitions(), ExtraBody: extra}
+	if p.summaryOnly {
+		req.Tools = nil
+	}
 	var actual *model.Usage
 	actualModel := ""
 	repaired := false
 	planCorrection := false
-	hold := holdCalendar(request.Content)
+	hold := !p.summaryOnly && holdCalendar(request.Content)
 	var previousPlan string
-	if e.Plans != nil {
+	if !p.summaryOnly && e.Plans != nil {
 		previousPlan, err = e.Plans.Prompt(ctx, p.Session.ConversationID)
 		if err != nil {
 			return err
@@ -351,7 +358,7 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 	}
 	for {
 		activePlan := false
-		if e.Plans != nil {
+		if !p.summaryOnly && e.Plans != nil {
 			current, planErr := e.Plans.Get(ctx, p.Session.ConversationID, true)
 			if planErr != nil {
 				return planErr
@@ -410,6 +417,9 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 			actualModel = result.Model
 		}
 		if len(result.ToolCalls) > 0 {
+			if p.summaryOnly {
+				return agent.Conflict("整理已有结果时模型请求了工具，已拦截；没有执行任何工具")
+			}
 			planCorrection = false
 			for i := range result.ToolCalls {
 				if result.ToolCalls[i].ID == "" {
@@ -430,7 +440,7 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 			}
 			continue
 		}
-		if e.Plans != nil {
+		if !p.summaryOnly && e.Plans != nil {
 			active, err := e.Plans.Get(ctx, p.Session.ConversationID, true)
 			if err != nil {
 				return err
@@ -492,7 +502,7 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 			if e.Assembler.Summary != nil {
 				_, _ = e.Assembler.Summary.Refresh(post, p.Session.ConversationID, nil)
 			}
-			if guardNotice == "" {
+			if !p.summaryOnly && guardNotice == "" {
 				for _, hook := range e.PostTurn {
 					_ = hook(post, p.Session.ConversationID, request.Content, reply)
 				}

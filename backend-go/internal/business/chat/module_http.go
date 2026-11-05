@@ -522,7 +522,7 @@ func (h *ModuleHTTP) runs(w http.ResponseWriter, r *http.Request, conversation s
 		}
 		return respond(w, r, 200, v)
 	}
-	if len(parts) == 2 && (parts[1] == "resume" || parts[1] == "stop") || len(parts) == 3 && parts[1] == "confirmations" && parts[2] == "finish" {
+	if len(parts) == 2 && (parts[1] == "resume" || parts[1] == "stop" || parts[1] == "summarize") || len(parts) == 3 && parts[1] == "confirmations" && parts[2] == "finish" {
 		if e := only(r, "POST"); e != nil {
 			return e
 		}
@@ -536,6 +536,8 @@ func (h *ModuleHTTP) runs(w http.ResponseWriter, r *http.Request, conversation s
 		var e error
 		if parts[1] == "resume" {
 			v, e = s.Resume(r.Context(), conversation, id, "")
+		} else if parts[1] == "summarize" {
+			v, e = s.Summarize(r.Context(), conversation, id)
 		} else {
 			v, e = s.FinishConfirmations(r.Context(), conversation, id)
 		}

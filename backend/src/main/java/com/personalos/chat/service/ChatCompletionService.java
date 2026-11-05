@@ -218,7 +218,8 @@ public class ChatCompletionService {
         // 取到的模型实例必须与客户端**配对使用** —— applyThinkingOptions 要按
         // 这个模型的默认选项合并，拿错模型会让请求里带着另一个模型的名字（静默）。
         AiChatClientProvider.ChatTarget target = aiProvider.targetFor(session.getChatModel());
-        ChatClient chatClient = target.chatClient();
+        boolean summaryOnly = background != null && background.summaryOnly();
+        ChatClient chatClient = summaryOnly ? aiProvider.summaryChatClient(target) : target.chatClient();
         // 必须在消息落库之前调用，否则会被「已有消息」的条件挡掉
         sessionService.initializeTitleFromFirstMessage(conversationId, userContent);
 
@@ -287,7 +288,7 @@ public class ChatCompletionService {
         ScheduledFuture<?> heartbeat = heartbeatScheduler.start(emitter);
 
         Flux<ChatResponse> contentFlux = Flux.defer(() -> {
-            String webQuery = WebSearchTools.explicitQuery(userContent);
+            String webQuery = summaryOnly ? "" : WebSearchTools.explicitQuery(userContent);
             List<KnowledgeHitDto> retrieved = retrieveForPrompt(conversationId, userContent, topK, useKnowledge,
                     webQuery.isEmpty(), emitter, ragRef);
             var rag = ragRef.get();
@@ -396,7 +397,12 @@ public class ChatCompletionService {
             // 改成自己映射才能在同一路流上同时拿到正文与用量，不必为统计多发一次请求。
             return request
                     .stream()
-                    .chatResponse();
+                    .chatResponse().map(response -> {
+                        if (summaryOnly && response.hasToolCalls()) {
+                            throw new IllegalStateException("结果整理期间模型请求调用工具，已阻止执行");
+                        }
+                        return response;
+                    });
         }).subscribeOn(Schedulers.boundedElastic());
 
         // 本轮用量：只有流的最后一个块带 usage（OpenAI 协议的 choices 为空块），
@@ -569,7 +575,7 @@ public class ChatCompletionService {
                     metrics.usage(usage);
 
                     // done 之后：摘要刷新、轮末钩子（都只影响下一轮或仅用于展示）
-                    if(ragRef.get()==null || !ragRef.get().guarded()) finisher.afterDone(conversationId, userContent, reply);
+                    if(!summaryOnly && (ragRef.get()==null || !ragRef.get().guarded())) finisher.afterDone(conversationId, userContent, reply);
                 }));
         subscriptionRef.set(subscription);
         // 订阅返回前就已被终止（上面任一路径抢先）：这里补一次 dispose，

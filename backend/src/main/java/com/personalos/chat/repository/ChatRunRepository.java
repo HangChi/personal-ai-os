@@ -56,6 +56,17 @@ public class ChatRunRepository {
     public boolean transition(String id, String from, String to) {
         return jdbc.update("update chat_run set status=?,updated_at=now() where id=? and status=?", to, id, from) == 1;
     }
+    /** Persist intent with RUNNING, including a crash before worker launch. */
+    @org.springframework.transaction.annotation.Transactional
+    public boolean beginResume(String id, String from, boolean summaryOnly) {
+        if (!transition(id, from, "RUNNING")) return false;
+        event(id, "summary_only", Boolean.toString(summaryOnly));
+        return true;
+    }
+    public boolean summaryAttempt(String id) {
+        return jdbc.query("select payload from chat_run_event where run_id=? and name='summary_only' order by id desc limit 1",
+                (rs, n) -> rs.getString(1), id).stream().anyMatch("true"::equals);
+    }
     public boolean uncertain(String id) {
         return Boolean.TRUE.equals(jdbc.queryForObject(
                 "select exists(select 1 from operation_record where turn_id=? and outcome in ('IN_PROGRESS','FAILED'))",

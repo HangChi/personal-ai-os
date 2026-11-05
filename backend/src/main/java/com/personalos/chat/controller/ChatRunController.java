@@ -42,6 +42,10 @@ public class ChatRunController {
     public ApiResponse<ChatRunDto> resume(@PathVariable String conversationId, @PathVariable String id) {
         return ApiResponse.ok(service.resume(conversationId, id));
     }
+    @PostMapping("/{id}/summarize")
+    public ApiResponse<ChatRunDto> summarize(@PathVariable String conversationId, @PathVariable String id) {
+        return ApiResponse.ok(service.summarize(conversationId, id));
+    }
     @PostMapping("/{id}/stop")
     public ApiResponse<Void> stop(@PathVariable String conversationId, @PathVariable String id) {
         service.stop(conversationId, id);

@@ -14,6 +14,9 @@ public final class RunEmitter extends SseEmitter {
     public void control(Runnable action) { control = action; }
     public void checkpoint() { control.run(); }
     private String recoveryContext = "";
+    private boolean summaryOnly;
+    public void summaryOnly(boolean value) { summaryOnly = value; }
+    public boolean summaryOnly() { return summaryOnly; }
     public void recoveryContext(String context) { recoveryContext = context; }
     public String recoveryContext() { return recoveryContext; }
 
