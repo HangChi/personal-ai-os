@@ -1911,8 +1911,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/exception/GlobalExceptionHandler.java",
       "path": "backend/src/main/java/com/personalos/common/exception/GlobalExceptionHandler.java",
       "sha256": "4d5c909f18728d3995935cf302f810b32fc9aa6c9e5ae5ddefc8f19a98b56839",
-      "disposition": "explicit-go-responsibility",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/exception/ResourceNotFoundException.java",
@@ -7659,13 +7659,13 @@
     {
       "id": "scope:calendar-import-recurrence-20261105",
       "status": "in_progress",
-      "source_commit": "527d399fc5016157147fe66d80438259561d6e48",
-      "files": 5
+      "source_commit": "22ba4d3f1227b9d1f6d8cd7e3e876273bbc6f732",
+      "files": 6
     },
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "f6e724ffcc25b84f53c004d2393533698febe241",
+      "source_commit": "22ba4d3f1227b9d1f6d8cd7e3e876273bbc6f732",
       "files": 72
     },
     {
@@ -7677,8 +7677,8 @@
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "f6e724ffcc25b84f53c004d2393533698febe241",
-      "files": 37
+      "source_commit": "22ba4d3f1227b9d1f6d8cd7e3e876273bbc6f732",
+      "files": 40
     }
   ]
 }

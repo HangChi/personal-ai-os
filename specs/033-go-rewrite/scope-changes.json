@@ -5,8 +5,8 @@
     {
       "id": "scope:calendar-import-recurrence-20261105",
       "status": "in_progress",
-      "source_commit": "527d399fc5016157147fe66d80438259561d6e48",
-      "summary": "五种日程重复规则导入修复，双端写入回归已通过，数据库往返尚待执行。",
+      "source_commit": "22ba4d3f1227b9d1f6d8cd7e3e876273bbc6f732",
+      "summary": "五种日程重复规则导入修复，Java / Go 均已通过独立 PostgreSQL 导出—导入往返，保留重复截止时间和提醒提前量。",
       "files": [
         {
           "path": "backend-go/internal/business/dataimport/import.go",
@@ -32,6 +32,11 @@
           "path": "backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java",
           "baseline_sha256": "193f637288963d3e6e78fc4f1d38cbda2a71c651116cde8d2094044f129f3a8a",
           "candidate_sha256": "1c1f7962f40f671132cff69bf84004c7b0ef239d8cbcc9b849e1ada33568c836"
+        },
+        {
+          "path": "backend-go/internal/app/foundation_calendar_import_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "9a7c6d64886e3ea70cc2d6f7fccebb4010948d797a4b8230d9f63f8593d9e50d"
         }
       ],
       "parity": {
@@ -47,17 +52,19 @@
         "specs/033-go-rewrite/repair-validation-20261105.md",
         "backend/src/test/java/com/personalos/export/DataImportCalendarTest.java",
         "backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java",
-        "backend-go/internal/business/dataimport/import_calendar_test.go"
+        "backend-go/internal/business/dataimport/import_calendar_test.go",
+        "backend-go/internal/app/foundation_calendar_import_integration_test.go",
+        "specs/033-go-rewrite/retry-command-validation-20261105.md"
       ],
       "limitations": [
-        "Docker 不可用，新增真实数据库往返用例未执行。"
+        "真实数据库回归使用合成数据；不代表生产提醒送达或迁移发布批准。"
       ]
     },
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "f6e724ffcc25b84f53c004d2393533698febe241",
-      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。",
+      "source_commit": "22ba4d3f1227b9d1f6d8cd7e3e876273bbc6f732",
+      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。",
       "files": [
         {
           "path": ".env.example",
@@ -302,7 +309,7 @@
         {
           "path": "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java",
           "baseline_sha256": "ea576133d6dc71477ef3b101124cb25f349271f7ff430bccc863055507e57b56",
-          "candidate_sha256": "58ffc59da67ad9fae64881a384ad97c9cf108de81abad0f47514195680e85db9"
+          "candidate_sha256": "1718a2589b4c3db9e0a56a17ca95a0958fb51a33e39dd554715b71f25c2cb8da"
         },
         {
           "path": "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
@@ -474,7 +481,7 @@
         "specs/033-go-rewrite/retry-command-validation-20261105.md"
       ],
       "limitations": [
-        "warning 的离线链路已验证，数据库持久化及真实浏览器双端回归待执行。",
+        "Java 真实 HTTP + PostgreSQL 已验证检索故障 warning 后继续 delta/done、无 error 终态且降级轮引用为零；真实浏览器双端全流程回归仍待执行。",
         "既有联网 / MCP / citation audit 候选的真实服务与事实质量验收仍开放，不继承原迁移通过声明。"
       ]
     },
@@ -531,8 +538,8 @@
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "f6e724ffcc25b84f53c004d2393533698febe241",
-      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。",
+      "source_commit": "22ba4d3f1227b9d1f6d8cd7e3e876273bbc6f732",
+      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。",
       "files": [
         {
           "path": "backend-go/internal/app/foundation_p8_integration_test.go",
@@ -718,6 +725,21 @@
           "path": "frontend/test/component/chat-commands.test.ts",
           "baseline_sha256": null,
           "candidate_sha256": "44a23105244a0a3b7a857edf44a0d1bffa94667b10ddcb1bb41e19381f535b64"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/common/exception/GlobalExceptionHandler.java",
+          "baseline_sha256": "4d5c909f18728d3995935cf302f810b32fc9aa6c9e5ae5ddefc8f19a98b56839",
+          "candidate_sha256": "40460505525f59b082a26fd1e76e6063b020d2590589f96dd0edd179aedcf44c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "1c95672015a9c35f0fb214179f80bbe82976ef98b26af74e746791c3ce3981fc"
+        },
+        {
+          "path": "backend-go/internal/app/foundation_commands_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "dfab4a030b828120ab532004884d1de0bb21cb0bd1f7293108c7de3d3b787609"
         }
       ],
       "parity": {
@@ -751,10 +773,12 @@
         "backend-go/internal/business/chat/commands_http_test.go",
         "frontend/test/component/chat-commands.test.ts",
         "frontend/test/component/chat-command-composer.test.ts",
-        "frontend/test/component/chat-command-view.test.ts"
+        "frontend/test/component/chat-command-view.test.ts",
+        "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
+        "backend-go/internal/app/foundation_commands_integration_test.go"
       ],
       "limitations": [
-        "Docker 不可用，真实 PostgreSQL 保留策略与数据库集成测试未运行；单元/替身测试不代替真实数据库验证。",
+        "已通过独立 PostgreSQL 未决 TOOL 保留、跨连接幂等、确认执行及双端快捷工具 HTTP 回归；真实外部服务和生产验收仍不在此证明内。",
         "浏览器检查使用本地 mock API；未向真实模型、搜索或 MCP 服务发送请求，未执行双后端真实服务全流程对照。",
         "MCP 端到端去重依赖远端实现 personal-ai-os/idempotency-key 元数据；结果未知时保留执行所有权而非承诺任意远端恰好执行一次。",
         "前端重试标识仅覆盖当前标签页和刷新；新会话、跨标签页、改变参数或新标识属于新操作；主动清理成功回执会缩短历史去重范围。",
