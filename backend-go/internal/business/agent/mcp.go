@@ -14,7 +14,9 @@ import (
 func MCPBindings(registry *mcp.Registry, confirms *confirmation.Service) []Definition {
 	out := []Definition{}
 	for _, tool := range registry.Catalog() {
-		d := Definition{Model: model.Tool{Name: tool.Name, Description: tool.Description, Parameters: tool.Schema}, Write: tool.Policy == "CONFIRM", BindArguments: mcpArguments}
+		// AUTO only skips approval. Remote tools still need durable ownership,
+		// since even a purported read can commit a side effect before timing out.
+		d := Definition{Model: model.Tool{Name: tool.Name, Description: tool.Description, Parameters: tool.Schema}, Write: true, BindArguments: mcpArguments}
 		d.Action = func(ctx context.Context, t *Turn, args map[string]any) (Result, error) {
 			if tool.Policy == "CONFIRM" {
 				payload := mcp.ToolCall{Server: tool.Server, Tool: tool.Original, Arguments: args}

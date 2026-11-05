@@ -10,6 +10,8 @@ import com.personalos.mcp.confirmation.McpConfirmationService;
 import com.personalos.mcp.client.McpClientRegistry;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.List;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
@@ -99,7 +101,10 @@ public class McpToolCallback implements ToolCallback {
             });
         }
 
-        return toolExecutor.read(assembledName, arguments, toolContext, () -> {
+        // AUTO controls approval, not whether a remote tool can have side effects.
+        // Conservatively retain ownership even for AUTO calls; hints from a server
+        // cannot prove that a timeout or an error left the remote system unchanged.
+        return toolExecutor.write(assembledName, arguments, toolContext, () -> {
             // 每次解析当前客户端：重连后已装配的回调也必须使用新连接。
             var client = registry.clients().get(serverName);
             if (client == null) return ToolExecutionResult.error("MCP server 不可用，请在设置中重连：" + serverName);
@@ -139,9 +144,19 @@ public class McpToolCallback implements ToolCallback {
         }
         try {
             Map<String, Object> parsed = jsonCodec.fromJson(toolInput, Map.class);
-            return parsed == null ? Map.of() : parsed;
+            return parsed == null ? Map.of() : (Map<String, Object>) canonicalArguments(parsed);
         } catch (RuntimeException ex) {
             return Map.of();
         }
+    }
+
+    private static Object canonicalArguments(Object value) {
+        if (value instanceof Map<?, ?> map) {
+            Map<String, Object> sorted = new TreeMap<>();
+            map.forEach((key, item) -> sorted.put(key.toString(), canonicalArguments(item)));
+            return sorted;
+        }
+        if (value instanceof List<?> list) return list.stream().map(McpToolCallback::canonicalArguments).toList();
+        return value;
     }
 }

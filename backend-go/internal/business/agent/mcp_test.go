@@ -113,8 +113,14 @@ func TestP7MCPAuditBudgetConfirmationAndReconnect(t *testing.T) {
 	if len(audit.records) != 2 {
 		t.Fatal("missing durable audit", len(audit.records))
 	}
+	call.Function.Arguments = "{}"
+	replayedAuto, e := tools.Execute(context.Background(), testTurn(), call)
+	if e != nil || replayedAuto.Status != "DUPLICATE" || calls.Load() != 2 || len(audit.records) != 2 {
+		t.Fatal("AUTO call bypassed durable ownership", replayedAuto, e, calls.Load())
+	}
 	tools.TotalLimit = 1
 	turn := testTurn()
+	call.Function.Arguments = `{"path":"/another"}`
 	if _, e := tools.Execute(context.Background(), turn, call); e != nil {
 		t.Fatal(e)
 	}
@@ -122,5 +128,40 @@ func TestP7MCPAuditBudgetConfirmationAndReconnect(t *testing.T) {
 	call.Function.Arguments = `{"path":"/budget-blocked"}`
 	if _, e := tools.Execute(context.Background(), turn, call); e == nil || calls.Load() != 3 || len(store.rows) != 1 || len(audit.records) != 3 {
 		t.Fatal("external tools bypassed the common tool budget", e, calls.Load(), len(store.rows), len(audit.records))
+	}
+}
+
+func TestMCPAutoDecrementReplaysAcrossFreshBudgetsAndReorderedArguments(t *testing.T) {
+	var quantity atomic.Int32
+	quantity.Store(3)
+	server := sdk.NewServer(&sdk.Implementation{Name: "counter", Version: "1"}, nil)
+	server.AddTool(&sdk.Tool{Name: "decrement", InputSchema: map[string]any{"type": "object", "properties": map[string]any{}}}, func(context.Context, *sdk.CallToolRequest) (*sdk.CallToolResult, error) {
+		quantity.Add(-1)
+		return &sdk.CallToolResult{Content: []sdk.Content{&sdk.TextContent{Text: "done"}}}, nil
+	})
+	upstream := httptest.NewServer(sdk.NewStreamableHTTPHandler(func(*http.Request) *sdk.Server { return server }, &sdk.StreamableHTTPOptions{Stateless: true, JSONResponse: true}))
+	defer upstream.Close()
+	remote, err := mcp.OpenRegistry(context.Background(), mcp.Options{Enabled: true, Name: "fixture", Version: "1", Servers: map[string]mcp.ServerConfig{"counter": {Endpoint: upstream.URL, AutoTools: []string{"decrement"}, Timeout: time.Second}}}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer remote.Close()
+	audit := &memoryAudit{records: map[string]idempotency.Record{}}
+	idem, _ := idempotency.NewService(audit)
+	registry, err := NewRegistry(idem, nil, MCPBindings(remote, nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	call := model.ToolCall{}
+	call.Function.Name = "mcp_counter_decrement"
+	call.Function.Arguments = `{"quantity":1,"item":{"z":2,"a":1}}`
+	first, err := registry.Execute(context.Background(), testTurn(), call)
+	if err != nil || first.Status != "OK" {
+		t.Fatal(first, err)
+	}
+	call.Function.Arguments = `{"item":{"a":1,"z":2},"quantity":1}`
+	second, err := registry.Execute(context.Background(), testTurn(), call)
+	if err != nil || second.Status != "DUPLICATE" || quantity.Load() != 2 {
+		t.Fatal("decrement ran twice", second, err, quantity.Load())
 	}
 }
