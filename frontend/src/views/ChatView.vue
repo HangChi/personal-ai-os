@@ -21,6 +21,9 @@ import { isNearBottom as isNearBottomOf, scrollDeltaForPrepend } from '@/lib/cha
 import ChatUserQuestion from '@/components/chat/ChatUserQuestion.vue'
 import ChatFollowupQueue from '@/components/chat/ChatFollowupQueue.vue'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
+import ChatCommandPanel from '@/components/chat/ChatCommandPanel.vue'
+import { useChatCommandsStore } from '@/stores/chat-commands'
+import { isCommandInput, parseChatCommand } from '@/lib/chat-commands'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
 import RagTrace from '@/components/knowledge/RagTrace.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
@@ -41,6 +44,10 @@ import {
 import type { ChatAttachment, ChatMessage, ChatSession, TaskConfirmation } from '@/types/api'
 
 const chatStore = useChatStore()
+const commandsStore = useChatCommandsStore()
+const commandView = ref<'help' | 'tools' | null>(null)
+const commandSubmitting = ref(false)
+const commandEntries = computed(() => commandsStore.entries[currentConversationId.value ?? ''] ?? [])
 const settingsStore = useSettingsStore()
 const modelProfileStore = useModelProfileStore()
 const uiStore = useUiStore()
@@ -80,8 +87,13 @@ const editingMessageId = ref<number | null>(null)
 const editDraft = ref('')
 const submittingEdit = ref(false)
 watch(currentConversationId, () => {
+  commandView.value = null
   editingMessageId.value = null
   editDraft.value = ''
+})
+watch(draft, (value) => {
+  if (isCommandInput(value) && !commandsStore.catalog.length && !commandsStore.catalogError)
+    void commandsStore.loadCatalog()
 })
 const messageArea = ref<HTMLElement | null>(null)
 const resolvingId = ref<string | null>(null)
@@ -405,17 +417,29 @@ async function handleModelChange(model: string | null): Promise<void> {
 }
 
 async function handleSend(attachments: ChatAttachment[] = []): Promise<void> {
+  if (isCommandInput(draft.value)) {
+    if (attachments.length) {
+      ElMessage.warning('快捷指令不支持附件，请先移除附件或改为普通消息')
+      return
+    }
+    await handleCommand(draft.value)
+    return
+  }
+  if (commandsStore.busy) return
   if (!canSend.value) {
     return
   }
-  const content = draft.value
+  const content = parseChatCommand(draft.value)
+  if (content.kind !== 'chat') return
+  const text = content.content
   if (activeRun.value?.status === 'WAITING_USER' && activeRun.value.question) {
-    const success = await chatStore.respondToQuestion(content)
-    if (success && draft.value === content) draft.value = ''
+    const original = draft.value
+    const success = await chatStore.respondToQuestion(text)
+    if (success && draft.value === original) draft.value = ''
     return
   }
   draft.value = ''
-  await chatStore.send(content, {
+  await chatStore.send(text, {
     useKnowledge: knowledgeOn.value,
     topK: topK.value,
     thinkingLevel: settings.value.thinkingLevel,
@@ -424,13 +448,32 @@ async function handleSend(attachments: ChatAttachment[] = []): Promise<void> {
 }
 
 async function handleFollowup(attachments: ChatAttachment[], done: (success: boolean) => void): Promise<void> {
+  if (isCommandInput(draft.value)) {
+    if (attachments.length) {
+      ElMessage.warning('快捷指令不支持附件，请先移除附件或改为普通消息')
+      done(false)
+      return
+    }
+    await handleCommand(draft.value)
+    done(false)
+    return
+  }
+  if (commandsStore.busy) {
+    done(false)
+    return
+  }
   const content = draft.value
   if (!content.trim()) {
     done(false)
     return
   }
   const mode = settings.value.followupMode
-  const success = await chatStore.sendFollowup(content, mode, {
+  const parsed = parseChatCommand(content)
+  if (parsed.kind !== 'chat') {
+    done(false)
+    return
+  }
+  const success = await chatStore.sendFollowup(parsed.content, mode, {
     useKnowledge: knowledgeOn.value,
     topK: topK.value,
     thinkingLevel: settings.value.thinkingLevel,
@@ -449,6 +492,61 @@ async function handleEditFollowup(id: string, content: string, done: (success: b
 
 async function handleNewSession(): Promise<void> {
   await chatStore.createSession()
+}
+
+async function handleCommand(input: string): Promise<void> {
+  if (commandSubmitting.value || commandsStore.busy || submittingInput.value || changingModel.value) return
+  commandSubmitting.value = true
+  try {
+    const parsed = parseChatCommand(input)
+    if (parsed.kind === 'chat') return
+    if (parsed.kind === 'local' && (parsed.action === 'help' || parsed.action === 'tools')) {
+      commandView.value = parsed.action
+      if (parsed.action === 'tools') await commandsStore.loadCatalog()
+      if (draft.value === input) draft.value = ''
+      return
+    }
+    if (parsed.kind === 'local' && parsed.action === 'stop') {
+      chatStore.error = null
+      await chatStore.stopStreaming()
+      if (chatStore.error) return
+      if (draft.value === input) draft.value = ''
+      return
+    }
+    if (streaming.value) {
+      ElMessage.warning('请先停止当前任务，再执行快捷操作')
+      return
+    }
+    if (parsed.kind === 'local') {
+      chatStore.error = null
+      if (parsed.action === 'new') await handleNewSession()
+      else if (parsed.action === 'resume') {
+        if (!activeRun.value) {
+          ElMessage.warning('当前没有可继续的任务')
+          return
+        }
+        await chatStore.continueRun()
+      }
+      if (chatStore.error) return
+      if (draft.value === input) draft.value = ''
+      return
+    }
+    if (!currentConversationId.value) await chatStore.createSession()
+    const conversation = currentConversationId.value
+    if (!conversation) {
+      ElMessage.error(chatStore.error || '创建会话失败')
+      return
+    }
+    const result = await commandsStore.execute(conversation, input, parsed.tool, parsed.arguments)
+    if (currentConversationId.value !== conversation) return
+    if (result && ['OK', 'DUPLICATE', 'REQUIRES_CONFIRMATION'].includes(result.result.status) && draft.value === input)
+      draft.value = ''
+    await Promise.all([chatStore.loadConfirmations(), chatStore.loadToolTrail()])
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '快捷操作失败')
+  } finally {
+    commandSubmitting.value = false
+  }
 }
 
 /**
@@ -792,10 +890,22 @@ async function jumpToMatch(step: number): Promise<void> {
           @steer="chatStore.steerFollowup($event)"
         />
         <!-- ============ 停靠输入区 ============ -->
+        <ChatCommandPanel
+          :view="commandView"
+          :tools="commandsStore.catalog"
+          :loading="commandsStore.catalogLoading"
+          :error="commandsStore.catalogError"
+          :entries="commandEntries"
+          @close="commandView = null"
+          @fill="draft = $event"
+          @reload="commandsStore.loadCatalog()"
+        />
         <ChatComposer
           v-model="draft"
           :streaming="streaming"
           :submitting="submittingInput"
+          :command-busy="commandsStore.busy || commandSubmitting"
+          :tools="commandsStore.catalog"
           :knowledge-on="knowledgeOn"
           :top-k="topK"
           :thinking-level="settings.thinkingLevel"
@@ -811,6 +921,7 @@ async function jumpToMatch(step: number): Promise<void> {
           @update:session-model="handleModelChange"
           @change-budget="chatStore.changeContextBudget"
           @send="handleSend"
+          @command="handleCommand"
           @followup="handleFollowup"
           @stop="chatStore.stopStreaming()"
         />

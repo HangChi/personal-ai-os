@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /** 对话输入区：输入与工具栏在框内，快捷键和用量读数在框下。 */
 import { Close, Document, MagicStick, Paperclip, Promotion, Reading, UploadFilled } from '@element-plus/icons-vue'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import type { InputInstance } from 'element-plus'
 import { uploadAttachment } from '@/api/chat'
 import { ElMessage } from 'element-plus'
@@ -11,6 +11,8 @@ import ContextMeter from '@/components/chat/ContextMeter.vue'
 import { THINKING_HINTS, THINKING_LABELS, type ThinkingLevel } from '@/lib/settings'
 import type { ContextUsage } from '@/api/chat'
 import type { ChatAttachment } from '@/types/api'
+import type { DirectTool } from '@/api/chat-tools'
+import { commandSuggestions, isCommandInput, type CommandSuggestion } from '@/lib/chat-commands'
 
 const props = defineProps<{
   /** 输入内容（v-model） */
@@ -18,6 +20,8 @@ const props = defineProps<{
   /** 是否正在生成：决定显示「停止」还是「发送」 */
   streaming: boolean
   submitting?: boolean
+  commandBusy?: boolean
+  tools?: DirectTool[]
   /** 知识库增强开关 */
   knowledgeOn: boolean
   /** 检索条数 */
@@ -46,6 +50,7 @@ const emit = defineEmits<{
   (e: 'toggle-knowledge', next: boolean): void
   (e: 'send', attachments: ChatAttachment[]): void
   (e: 'stop'): void
+  (e: 'command', value: string): void
   (e: 'followup', attachments: ChatAttachment[], done: (success: boolean) => void): void
   /** 改上下文预算（转发给 ContextMeter 的父级处理） */
   (e: 'change-budget', tokens: number): void
@@ -175,7 +180,7 @@ function removeAttachment(id: string): void {
 
 /** 发送后由父组件回调这里清空（父组件持有 draft，清空也归它） */
 function handleSend(): void {
-  if (props.changingModel || props.submitting || !props.modelValue.trim()) return
+  if (props.changingModel || props.submitting || props.commandBusy || !props.modelValue.trim()) return
   /*
    * 上传未完成时不允许发送。
    *
@@ -190,6 +195,15 @@ function handleSend(): void {
    */
   if (uploading.value) {
     ElMessage.warning('附件还在上传，请稍候再发送')
+    return
+  }
+  if (isCommandInput(props.modelValue)) {
+    if (attachments.value.length) {
+      ElMessage.warning('快捷指令不支持附件，请先移除附件或改为普通消息')
+      return
+    }
+    menuDismissed.value = true
+    emit('command', props.modelValue)
     return
   }
   if (props.streaming) {
@@ -252,9 +266,69 @@ const THINKING_LEVELS: ThinkingLevel[] = ['off', 'standard', 'deep']
 
 const input = ref<InputInstance | null>(null)
 let inputResizeObserver: ResizeObserver | undefined
+const commandMode = computed(() => isCommandInput(props.modelValue))
+const menuId = 'chat-commands-' + useId()
+const focused = ref(false)
+const menuDismissed = ref(false)
+const selectedCommand = ref(0)
+const suggestions = computed(() => commandSuggestions(props.modelValue, props.tools))
+const menuOpen = computed(() => focused.value && !menuDismissed.value && suggestions.value.length > 0)
+watch(
+  () => props.modelValue,
+  () => {
+    menuDismissed.value = false
+    selectedCommand.value = 0
+  },
+)
+watch(selectedCommand, async () => {
+  await nextTick()
+  document.getElementById(menuId + '-' + selectedCommand.value)?.scrollIntoView?.({ block: 'nearest' })
+})
+
+function openCommandMenu(): void {
+  if (props.modelValue.trim()) return
+  emit('update:modelValue', '/')
+  input.value?.focus()
+}
+
+function completeCommand(item: CommandSuggestion): void {
+  emit('update:modelValue', item.completion)
+  menuDismissed.value = true
+  void nextTick(() => input.value?.focus())
+}
 
 function handleKeydown(event: KeyboardEvent): void {
-  if (event.key !== 'Enter' || event.isComposing) {
+  if (event.isComposing || event.keyCode === 229) return
+  if (menuOpen.value) {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      selectedCommand.value =
+        (selectedCommand.value + (event.key === 'ArrowDown' ? 1 : -1) + suggestions.value.length) %
+        suggestions.value.length
+      return
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      menuDismissed.value = true
+      return
+    }
+    const selected = suggestions.value[selectedCommand.value]
+    if (
+      selected &&
+      (event.key === 'Tab' ||
+        (event.key === 'Enter' &&
+          !event.shiftKey &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          props.enterSend &&
+          props.modelValue.trim() !== selected.completion.trim()))
+    ) {
+      event.preventDefault()
+      completeCommand(selected)
+      return
+    }
+  }
+  if (event.key !== 'Enter') {
     // isComposing：中文输入法选词期间的 Enter 不触发发送
     return
   }
@@ -331,6 +405,24 @@ onBeforeUnmount(() => {
         class="chat-composer__file-input"
         @change="pickFiles(($event.target as HTMLInputElement).files)"
       />
+      <div v-if="menuOpen" :id="menuId" class="chat-composer__commands" role="listbox" aria-label="快捷指令">
+        <button
+          v-for="(item, index) in suggestions"
+          :id="menuId + '-' + index"
+          :key="item.key"
+          type="button"
+          role="option"
+          :aria-selected="index === selectedCommand"
+          tabindex="-1"
+          :class="{ 'is-selected': index === selectedCommand }"
+          @mousedown.prevent
+          @click="completeCommand(item)"
+        >
+          <strong>{{ item.label }}</strong
+          ><span>{{ item.description }}</span>
+        </button>
+        <p>↑ ↓ 选择 · Tab 补全 · Esc 关闭 · 无需对话模型解析</p>
+      </div>
       <el-input
         ref="input"
         :model-value="modelValue"
@@ -339,11 +431,18 @@ onBeforeUnmount(() => {
         :rows="2"
         :autosize="{ minRows: 2, maxRows: 6 }"
         aria-label="消息内容"
+        role="combobox"
+        aria-autocomplete="list"
+        :aria-expanded="menuOpen"
+        :aria-controls="menuOpen ? menuId : undefined"
+        :aria-activedescendant="menuOpen ? menuId + '-' + selectedCommand : undefined"
         maxlength="4000"
         resize="none"
         :placeholder="inputPlaceholder"
         @update:model-value="(value: string) => emit('update:modelValue', value)"
         @keydown="handleKeydown"
+        @focus="focused = true"
+        @blur="focused = false"
         @paste="onPaste"
       />
       <div class="chat-composer__tool-row">
@@ -434,7 +533,7 @@ onBeforeUnmount(() => {
             @update:draft="(value: string) => emit('update:modelValue', value)"
           />
           <el-button
-            v-if="streaming"
+            v-if="streaming && !commandMode"
             class="chat-composer__submit"
             type="primary"
             round
@@ -449,18 +548,28 @@ onBeforeUnmount(() => {
             type="primary"
             class="chat-composer__submit"
             round
-            :disabled="modelValue.trim().length === 0 || uploading || changingModel || submitting"
-            :loading="uploading || submitting"
+            :disabled="modelValue.trim().length === 0 || uploading || changingModel || submitting || commandBusy"
+            :loading="uploading || submitting || commandBusy"
             :title="sendTooltip"
             @click="handleSend"
           >
             <el-icon :size="13"><Promotion /></el-icon>
-            发送
+            {{ commandMode ? '执行' : '发送' }}
           </el-button>
         </span>
       </div>
     </div>
     <div class="chat-composer__meta-row">
+      <button
+        type="button"
+        class="chat-composer__command-trigger"
+        :disabled="modelValue.trim().length > 0"
+        title="快捷指令：输入 /"
+        aria-label="打开快捷指令"
+        @click="openCommandMenu"
+      >
+        /
+      </button>
       <span class="chat-composer__shortcut">{{
         enterSend ? 'Enter 发送 · Shift + Enter 换行' : 'Ctrl / ⌘ + Enter 发送'
       }}</span>
@@ -480,6 +589,57 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.chat-composer__commands {
+  position: absolute;
+  bottom: calc(100% + var(--os-space-2));
+  left: 0;
+  right: 0;
+  z-index: 5;
+  max-height: min(260px, 35vh);
+  overflow-y: auto;
+  padding: var(--os-space-2);
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--os-radius-md);
+  background: var(--el-bg-color-overlay);
+}
+.chat-composer__commands button {
+  display: flex;
+  gap: var(--os-space-3);
+  align-items: baseline;
+  width: 100%;
+  padding: var(--os-space-2);
+  border: 0;
+  border-radius: var(--os-radius-sm);
+  background: transparent;
+  color: var(--el-text-color-primary);
+  text-align: left;
+  cursor: pointer;
+}
+.chat-composer__commands button.is-selected,
+.chat-composer__commands button:hover {
+  background: var(--el-fill-color);
+}
+.chat-composer__commands span,
+.chat-composer__commands p {
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+.chat-composer__commands p {
+  margin: var(--os-space-2);
+}
+.chat-composer__command-trigger {
+  min-width: 28px;
+  min-height: 28px;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--os-radius-sm);
+  background: var(--el-bg-color);
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+}
+.chat-composer__command-trigger:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 2px;
+}
 .chat-composer {
   flex: none;
   position: relative;
@@ -731,6 +891,7 @@ onBeforeUnmount(() => {
 }
 
 .chat-composer__box {
+  position: relative;
   border: 1px solid var(--el-border-color);
   border-radius: var(--os-radius-xl);
   background: var(--el-bg-color);
