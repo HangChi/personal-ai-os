@@ -21,8 +21,7 @@ public record RagResult(List<KnowledgeHitDto> hits,List<String> queries,List<Sta
             default -> "本次证据核对未完成，暂不生成确定结论。\n";
         });
         for(int i=0;i<hits.size();i++) {
-            var hit=hits.get(i); answer.append("\n[").append(i+1).append("] ").append(hit.documentTitle()).append("：\n")
-                .append(hit.content(),0,Math.min(hit.content().length(),700)).append('\n');
+            var hit=hits.get(i); answer.append("\n[").append(i+1).append("] ").append(hit.documentTitle()).append('\n');
         }
         if(!clarification.isBlank()) answer.append('\n').append(clarification);
         else answer.append("\n请补充适用对象、时间或制度版本，或到资料治理中核对来源。");

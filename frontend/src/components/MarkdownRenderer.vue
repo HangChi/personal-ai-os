@@ -25,8 +25,9 @@ import xml from 'highlight.js/lib/languages/xml'
 import yaml from 'highlight.js/lib/languages/yaml'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, watch } from 'vue'
 
+import { decorateCitations, safeCitationUrl, type InlineCitation } from '@/lib/citations'
 import { buildCodeHeader } from '@/lib/code-header'
 
 hljs.registerLanguage('java', java)
@@ -84,6 +85,7 @@ const props = defineProps<{
   content: string
   /** 流式输出中：显示打字光标 */
   streaming?: boolean
+  citations?: readonly InlineCitation[]
 }>()
 
 /** 超过该长度先截断，避免流式期间同步解析超长文本掉帧 */
@@ -97,10 +99,91 @@ const visibleContent = computed(() =>
   truncated.value && !expanded.value ? `${props.content.slice(0, LIMIT)}…` : props.content,
 )
 
-const sanitizedHtml = computed(() => {
+const sources = computed(() => new Map(props.citations?.map((source) => [source.index, source])))
+const rendered = computed(() => {
   const raw = marked.parse(visibleContent.value, { async: false }) as string
-  return DOMPurify.sanitize(raw)
+  if (!sources.value.size) return { html: DOMPurify.sanitize(raw), inlineCount: 0 }
+  const root = document.createElement('div')
+  root.append(DOMPurify.sanitize(raw, { RETURN_DOM_FRAGMENT: true, FORBID_ATTR: ['data-citation'] }))
+  const inlineCount = decorateCitations(root, sources.value)
+  return { html: root.innerHTML, inlineCount }
 })
+const sanitizedHtml = computed(() => rendered.value.html)
+
+const citationAnchor = shallowRef<HTMLButtonElement>()
+const citationPanelId = useId()
+const popoverAnchor = computed(() => {
+  const button = citationAnchor.value
+  return button && { contextElement: button, getBoundingClientRect: () => button.getBoundingClientRect() }
+})
+const activeCitation = computed(() => sources.value.get(Number(citationAnchor.value?.dataset.citation)))
+const citationUrl = computed(() => safeCitationUrl(activeCitation.value?.url))
+let closeTimer: ReturnType<typeof setTimeout> | undefined
+
+function keepCitationOpen(): void {
+  clearTimeout(closeTimer)
+}
+
+function closeCitation(): void {
+  keepCitationOpen()
+  citationAnchor.value = undefined
+}
+
+function scheduleCitationClose(): void {
+  keepCitationOpen()
+  closeTimer = setTimeout(closeCitation, 180)
+}
+
+function citationTarget(event: Event): HTMLButtonElement | null {
+  if (!(event.target instanceof Element)) return null
+  const button = event.target.closest<HTMLButtonElement>('button.md-citation[data-citation]')
+  return button && sources.value.has(Number(button.dataset.citation)) ? button : null
+}
+
+function showCitation(event: Event): void {
+  const button = citationTarget(event)
+  if (!button) return
+  keepCitationOpen()
+  citationAnchor.value = button
+}
+
+function leaveCitation(event: MouseEvent | FocusEvent): void {
+  if (citationTarget(event)) scheduleCitationClose()
+}
+
+function activateCitation(event: MouseEvent): void {
+  showCitation(event)
+  if (event.detail === 0 && citationTarget(event)) {
+    void nextTick(() => citationPanel.value?.querySelector<HTMLElement>('[tabindex="0"], a')?.focus())
+  }
+}
+
+const citationPanel = ref<HTMLElement>()
+function dismissCitation(): void {
+  citationAnchor.value?.focus({ preventScroll: true })
+  closeCitation()
+}
+
+watch([sanitizedHtml, sources], closeCitation)
+watch(citationAnchor, (anchor, previous, onCleanup) => {
+  previous?.setAttribute('aria-expanded', 'false')
+  previous?.removeAttribute('aria-controls')
+  if (!anchor) return
+  anchor.setAttribute('aria-expanded', 'true')
+  anchor.setAttribute('aria-controls', citationPanelId)
+  function closeOnOutsidePointer(event: PointerEvent): void {
+    if (
+      event.target instanceof Node &&
+      !anchor?.contains(event.target) &&
+      !citationPanel.value?.contains(event.target)
+    ) {
+      closeCitation()
+    }
+  }
+  document.addEventListener('pointerdown', closeOnOutsidePointer)
+  onCleanup(() => document.removeEventListener('pointerdown', closeOnOutsidePointer))
+})
+onBeforeUnmount(keepCitationOpen)
 
 /**
  * 给每个代码块加「头部条」：语言名 + 复制按钮（阶段 20，FR-005）。
@@ -151,7 +234,17 @@ function toggleExpand(): void {
 
 <template>
   <div class="md">
-    <div ref="container" class="md__body" :class="{ 'md__body--streaming': streaming }">
+    <div
+      ref="container"
+      class="md__body"
+      :class="{ 'md__body--streaming': streaming }"
+      @pointerover="showCitation"
+      @pointerout="leaveCitation"
+      @focusin="showCitation"
+      @focusout="leaveCitation"
+      @click="activateCitation"
+      @keydown.esc="closeCitation"
+    >
       <!--
         class="md__html" 不是为了样式好看，是**唯一定位得到 v-html 内容的锚点**。
         v-html 会把内容塞进这个 div，于是 `.md__body` 的直接子元素永远只有它一个 ——
@@ -161,7 +254,60 @@ function toggleExpand(): void {
       -->
       <!-- eslint-disable-next-line vue/no-v-html -- 内容已过 DOMPurify 消毒（C-01） -->
       <div class="md__html" v-html="sanitizedHtml"></div>
+      <div v-if="!streaming && sources.size && !rendered.inlineCount" class="md-source-list">
+        <span>本轮检索来源</span>
+        <button
+          v-for="source in sources.values()"
+          :key="source.index"
+          type="button"
+          class="md-citation"
+          :data-citation="source.index"
+          :aria-label="`查看来源 ${source.index}`"
+          aria-expanded="false"
+        >
+          [{{ source.index }}]
+        </button>
+      </div>
     </div>
+    <el-popover
+      v-if="citationAnchor && activeCitation"
+      :virtual-ref="popoverAnchor"
+      virtual-triggering
+      :visible="true"
+      :width="'min(380px, calc(100vw - 32px))'"
+      placement="top-start"
+    >
+      <div
+        :id="citationPanelId"
+        ref="citationPanel"
+        class="md-source"
+        role="region"
+        aria-label="引用来源"
+        @pointerenter="keepCitationOpen"
+        @pointerleave="scheduleCitationClose"
+        @focusin="keepCitationOpen"
+        @focusout="scheduleCitationClose"
+        @keydown.esc="dismissCitation"
+      >
+        <strong>{{ activeCitation.documentTitle }}</strong>
+        <span class="md-source__meta">
+          {{
+            citationUrl
+              ? citationUrl.hostname
+              : [
+                  activeCitation.filename,
+                  `第 ${activeCitation.chunkIndex + 1} 段`,
+                  activeCitation.source?.version,
+                  activeCitation.source?.scope,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+          }}
+        </span>
+        <p v-if="activeCitation.content" class="md-source__quote" tabindex="0">{{ activeCitation.content }}</p>
+        <a v-if="citationUrl" :href="citationUrl.href" target="_blank" rel="noopener noreferrer">打开原网页 ↗</a>
+      </div>
+    </el-popover>
     <el-button v-if="truncated" class="md__expand" link type="primary" size="small" @click="toggleExpand">
       {{ expanded ? '收起' : `展开全文（${content.length} 字符）` }}
     </el-button>
@@ -171,6 +317,62 @@ function toggleExpand(): void {
 <style scoped>
 .md {
   min-width: 0;
+}
+
+.md-source-list .md-citation,
+.md__body :deep(.md-citation) {
+  display: inline-block;
+  min-inline-size: 24px;
+  min-block-size: 24px;
+  margin-inline: 0.15em;
+  padding: 0 0.35em;
+  border: 0;
+  border-radius: var(--os-radius-sm);
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary-dark-2);
+  font: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.md-source-list .md-citation:hover,
+.md-source-list .md-citation:focus-visible,
+.md__body :deep(.md-citation:hover),
+.md__body :deep(.md-citation:focus-visible) {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 1px;
+}
+
+.md__body :deep(.md-citation-unavailable),
+.md-source-list {
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+
+.md-source-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--os-space-1);
+  margin-top: var(--os-space-2);
+}
+
+.md-source {
+  display: grid;
+  gap: var(--os-space-2);
+  overflow-wrap: anywhere;
+}
+
+.md-source__meta {
+  font-size: var(--os-font-xs);
+  color: var(--el-text-color-secondary);
+}
+
+.md-source__quote {
+  margin: 0;
+  max-height: min(220px, 35vh);
+  overflow: auto;
+  white-space: pre-wrap;
 }
 
 .md__body {

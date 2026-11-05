@@ -457,6 +457,64 @@ func TestPostgresP4RetrievalPortCitationOrderingAndFailureDegradation(t *testing
 	}
 }
 
+func TestPostgresGuardedExplicitWebAndInterruptedSources(t *testing.T) {
+	for _, interrupted := range []bool{false, true} {
+		t.Run(fmt.Sprint(interrupted), func(t *testing.T) {
+			f := newExecutionFixture(t, func(w http.ResponseWriter, r *http.Request) {
+				var input model.ChatRequest
+				if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+					t.Error(err)
+				}
+				prompt := input.Messages[0].Content
+				if !strings.Contains(prompt, "公开摘录") || !strings.Contains(prompt, "知识库证据需要核对") || strings.Contains(prompt, "私有冲突内容") {
+					t.Error("wrong guarded web prompt")
+				}
+				emitText(w, "网页事实 [1]")
+			})
+			f.module.Engine.SearchWeb = func(_ context.Context, q string) ([]agent.WebSource, error) {
+				if q != "公开标准" {
+					t.Error(q)
+				}
+				return []agent.WebSource{{Title: "公开报告", URL: "https://example.org/report", Host: "example.org", Content: "公开摘录"}}, nil
+			}
+			f.module.Engine.RetrieveEvidence = func(context.Context, string, int) (RetrievedEvidence, error) {
+				return RetrievedEvidence{Guarded: true, Answer: "知识库需核对", Citations: []Citation{
+					{Index: 1, DocumentID: "private", Content: "私有冲突内容"},
+				}}, nil
+			}
+			ctx := context.Background()
+			conversation := fixtureSession(t, f.module.Service, "guarded-web").ConversationID
+			enabled := true
+			prepared, err := f.module.Engine.Prepare(ctx, conversation, StreamRequest{Content: "请联网查公开标准", UseKnowledge: &enabled})
+			if err != nil {
+				t.Fatal(err)
+			}
+			var sawWebSources, done bool
+			err = f.module.Engine.Run(ctx, prepared, agent.UUID(), "", nil, func(event string, data any) error {
+				if event == "citations" {
+					sources := data.(map[string]any)["citations"].([]Citation)
+					sawWebSources = len(sources) == 1 && sources[0].URL == "https://example.org/report"
+				}
+				if event == "delta" && interrupted {
+					return errors.New("synthetic interruption")
+				}
+				if event == "done" {
+					done = true
+				}
+				return nil
+			})
+			if (err != nil) != interrupted || done == interrupted || !sawWebSources {
+				t.Fatal(interrupted, err, done, sawWebSources)
+			}
+			messages, err := f.module.Service.Messages(ctx, conversation, nil, nil)
+			if err != nil || len(messages) != 2 || len(messages[1].Citations) != 1 ||
+				messages[1].Citations[0].URL != "https://example.org/report" {
+				t.Fatal(messages, err)
+			}
+		})
+	}
+}
+
 func (allowModel) TryAcquire(context.Context) (bool, error) { return true, nil }
 
 type executionFixture struct {

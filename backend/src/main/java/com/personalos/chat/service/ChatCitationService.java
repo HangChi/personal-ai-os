@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +56,12 @@ public class ChatCitationService {
      */
     @Transactional
     public void attachToLatestAssistant(String conversationId, List<KnowledgeHitDto> hits) {
-        if (hits == null || hits.isEmpty()) {
+        attachToLatestAssistant(conversationId, hits, List.of());
+    }
+
+    @Transactional
+    public void attachToLatestAssistant(String conversationId, List<KnowledgeHitDto> hits, List<ChatCitationDto> extra) {
+        if ((hits == null || hits.isEmpty()) && extra.isEmpty()) {
             return;
         }
         var latest = messageRepository.findRecentByConversationId(conversationId,
@@ -67,22 +74,35 @@ public class ChatCitationService {
         }
         Long messageId = latest.get().getId();
         Instant now = Instant.now();
-        List<ChatMessageCitationEntity> entities = new ArrayList<>(hits.size());
-        for (int i = 0; i < hits.size(); i++) {
+        int hitCount = hits == null ? 0 : hits.size();
+        List<ChatMessageCitationEntity> entities = new ArrayList<>(hitCount + extra.size());
+        for (int i = 0; i < hitCount; i++) {
             KnowledgeHitDto hit = hits.get(i);
             entities.add(new ChatMessageCitationEntity(
                     messageId,
                     i + 1,
-                    hit.documentId().toString(),
+                    hit.documentId() == null ? "" : hit.documentId().toString(),
                     hit.chunkIndex(),
                     hit.documentTitle(),
                     hit.filename(),
                     hit.content(),
                     now));
         }
+        for (var citation : extra) {
+            entities.add(new ChatMessageCitationEntity(messageId, citation.index(), citation.documentId(),
+                    citation.chunkIndex(), citation.documentTitle(), citation.filename(),
+                    citation.url() == null ? citation.content() : citation.url() + "\n" + citation.content(), now));
+        }
         citationRepository.saveAll(entities);
         log.debug("引用挂载完成 conversationId={} messageId={} count={}",
                 conversationId, messageId, entities.size());
+    }
+
+    @Transactional
+    public void savePartialReply(ChatMemory memory, String conversationId, String content,
+                                 List<KnowledgeHitDto> hits, List<ChatCitationDto> extra) {
+        memory.add(conversationId, List.of(new AssistantMessage(content)));
+        attachToLatestAssistant(conversationId, hits, extra);
     }
 
     /**
@@ -100,13 +120,21 @@ public class ChatCitationService {
                 .collect(Collectors.groupingBy(
                         ChatMessageCitationEntity::getMessageId,
                         Collectors.mapping(
-                                entity -> new ChatCitationDto(
-                                        entity.getCitationIndex(),
-                                        entity.getDocumentId(),
-                                        entity.getDocumentTitle(),
-                                        entity.getFilename(),
-                                        entity.getChunkIndex(),
-                                        entity.getContent()),
+                                ChatCitationService::toDto,
                                 Collectors.toList())));
+    }
+
+    private static ChatCitationDto toDto(ChatMessageCitationEntity entity) {
+        String content = entity.getContent();
+        String url = null;
+        if (TurnCitationCollector.WEB_DOCUMENT_ID.equals(entity.getDocumentId())) {
+            int separator = content.indexOf('\n');
+            if (separator >= 0) {
+                url = content.substring(0, separator);
+                content = content.substring(separator + 1);
+            }
+        }
+        return new ChatCitationDto(entity.getCitationIndex(), entity.getDocumentId(), entity.getDocumentTitle(),
+                entity.getFilename(), entity.getChunkIndex(), content, url);
     }
 }

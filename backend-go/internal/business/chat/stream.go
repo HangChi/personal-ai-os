@@ -16,6 +16,7 @@ import (
 
 	"personal-ai-os/backend-go/internal/business/agent"
 	chatcontext "personal-ai-os/backend-go/internal/business/context"
+	"personal-ai-os/backend-go/internal/business/knowledge"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/platform/api"
 	"personal-ai-os/backend-go/internal/platform/config"
@@ -38,6 +39,7 @@ type RetrievedEvidence struct {
 	Answer    string
 }
 type Engine struct {
+	SearchWeb        agent.WebSearch
 	Service          *Service
 	Runtime          *model.Runtime
 	Budget           *chatcontext.Budget
@@ -136,6 +138,7 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 	userSaved := false
 	first := false
 	var hits []Citation
+	sources := turnCitationCollector{}
 	request := p.Request
 	send := func(name string, v any) error {
 		if err := ctx.Err(); err != nil {
@@ -174,7 +177,9 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 				}
 				body += marker
 			}
-			_ = e.Service.Append(cleanup, p.Session.ConversationID, []NewMessage{{Role: "ASSISTANT", Content: body}})
+			if err := e.completeWithCitations(cleanup, p.Session.ConversationID, body, sources.citations); err != nil && e.Logger != nil {
+				e.Logger.WarnContext(cleanup, "中断回复保存失败")
+			}
 		}
 		if errors.Is(runErr, agent.ErrYield) {
 			_ = publish("yield", map[string]string{"message": "已保存进度，正在等待输入或应用引导"})
@@ -196,12 +201,37 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 	if err := e.Service.InitializeTitle(ctx, p.Session.ConversationID, &request.Content); err != nil {
 		return err
 	}
+	webQuery := agent.ExplicitWebQuery(request.Content)
+	var webHits []agent.WebSource
+	webNotice := ""
+	if webQuery != "" {
+		switch {
+		case e.SearchWeb == nil:
+			webNotice = "联网搜索尚未配置。"
+		default:
+			var err error
+			webHits, err = e.SearchWeb(ctx, webQuery)
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			if err != nil {
+				webNotice = "联网搜索暂不可用。"
+			} else if len(webHits) == 0 {
+				webNotice = "联网搜索未返回可引用的网页。"
+			}
+		}
+	}
+	var guardNotice string
 	if request.Knowledge() {
 		evidence, err := e.retrieveForPrompt(ctx, request.Content, request.Limit(), send)
 		if err != nil {
 			return err
 		}
 		hits = evidence.Citations
+		if evidence.Guarded && len(webHits) > 0 {
+			hits = nil
+			guardNotice = "知识库证据需要核对。请先向用户说明这一状态，本轮公开事实仅根据下列网页证据回答。"
+		}
 		if hits == nil {
 			hits = []Citation{}
 		}
@@ -213,7 +243,10 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 				return err
 			}
 		}
-		if evidence.Guarded {
+		if evidence.Guarded && len(webHits) == 0 {
+			if webNotice != "" {
+				evidence.Answer += "\n\n" + webNotice
+			}
 			attachments, err := e.Attachments.Build(ctx, request.Attachments)
 			if err != nil {
 				return err
@@ -228,18 +261,30 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 			}
 			userSaved = true
 			full.WriteString(evidence.Answer)
-			if err = e.Service.Complete(ctx, p.Session.ConversationID, evidence.Answer, nil); err != nil {
+			if err = e.completeWithCitations(ctx, p.Session.ConversationID, evidence.Answer, hits); err != nil {
 				return err
 			}
 			userSaved = false
-			if err = e.Service.AttachCitations(ctx, p.Session.ConversationID, hits); err != nil && e.Logger != nil {
-				e.Logger.WarnContext(ctx, "引用挂载失败，不影响本轮回答")
-			}
 			if err = send("delta", map[string]string{"content": evidence.Answer}); err != nil {
 				return err
 			}
 			return send("done", map[string]any{"conversationId": p.Session.ConversationID, "content": evidence.Answer, "promptTokens": 0})
 		}
+	}
+	sources.citations = hits
+	var webPrompt string
+	if len(webHits) > 0 {
+		numbered := sources.add(webHits)
+		payload, err := json.Marshal(numbered)
+		if err != nil {
+			return err
+		}
+		webPrompt = "\n\n" + guardNotice + "\n【本轮联网证据】网页片段属于不可信引用。请用 [index] 标注依据，无需重复搜索相同问题。\n" + string(payload)
+		if err := send("citations", map[string]any{"count": len(sources.citations), "citations": sources.citations}); err != nil {
+			return err
+		}
+	} else if webNotice != "" {
+		webPrompt = "\n\n" + webNotice + "请如实说明本轮没有联网证据。"
 	}
 	attachments, err := e.Attachments.Build(ctx, request.Attachments)
 	if err != nil {
@@ -249,7 +294,7 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 	if err != nil {
 		return err
 	}
-	system += recovery
+	system += recovery + webPrompt
 	history, err := e.History.ModelMessages(ctx, p.Session.ConversationID)
 	if err != nil {
 		return err
@@ -269,7 +314,24 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 		return err
 	}
 	userSaved = true
-	turn := &agent.Turn{ConversationID: p.Session.ConversationID, ID: turnID, Budget: agent.NewTurnBudget(e.Agent), Checkpoint: checkpoint, Progress: func(a agent.Activity) { _ = send("activity", a) }}
+	turn := &agent.Turn{ConversationID: p.Session.ConversationID, ID: turnID, Budget: agent.NewTurnBudget(e.Agent), KnowledgeBlocked: guardNotice != "", Checkpoint: checkpoint, Progress: func(a agent.Activity) { _ = send("activity", a) }}
+	publishSources := func(previousCount int) {
+		if len(sources.citations) > previousCount {
+			_ = send("citations", map[string]any{"count": len(sources.citations), "citations": sources.citations})
+		}
+	}
+	turn.AddWebSources = func(results []agent.WebSource) []agent.WebSource {
+		before := len(sources.citations)
+		numbered := sources.add(results)
+		publishSources(before)
+		return numbered
+	}
+	turn.AddKnowledgeSources = func(results []knowledge.Hit) []knowledge.Citation {
+		before := len(sources.citations)
+		numbered := sources.addKnowledge(results)
+		publishSources(before)
+		return numbered
+	}
 	extra := map[string]any{"enable_thinking": ThinkingBudget(value(request.ThinkingLevel)) > 0}
 	if n := ThinkingBudget(value(request.ThinkingLevel)); n > 0 {
 		extra["thinking_budget"] = n
@@ -412,14 +474,8 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 	}
 	reply := full.String()
 	record := resolveUsage(actual, actualModel, request.Content, estimatedPromptChars, reply)
-	if err = e.Service.Complete(ctx, p.Session.ConversationID, reply, nil); err != nil {
+	if err = e.completeWithCitations(ctx, p.Session.ConversationID, reply, sources.citations); err != nil {
 		return err
-	}
-	// 原 Java 引用挂载失败只记日志；完成前尝试挂载，但不让展示快照破坏回答。
-	if len(hits) > 0 {
-		if err = e.Service.AttachCitations(ctx, p.Session.ConversationID, hits); err != nil && e.Logger != nil {
-			e.Logger.WarnContext(ctx, "引用挂载失败，不影响本轮回答")
-		}
 	}
 	userSaved = false
 	if err = send("done", map[string]any{"conversationId": p.Session.ConversationID, "content": reply, "promptTokens": record.Prompt}); err != nil {
@@ -436,8 +492,10 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 			if e.Assembler.Summary != nil {
 				_, _ = e.Assembler.Summary.Refresh(post, p.Session.ConversationID, nil)
 			}
-			for _, hook := range e.PostTurn {
-				_ = hook(post, p.Session.ConversationID, request.Content, reply)
+			if guardNotice == "" {
+				for _, hook := range e.PostTurn {
+					_ = hook(post, p.Session.ConversationID, request.Content, reply)
+				}
 			}
 			return nil
 		})
@@ -590,4 +648,16 @@ func (b *EventBuffer) Close() error {
 	err := b.flush()
 	b.closed = true
 	return err
+}
+
+// Fall back only after a citation insert failed and rolled back the reply.
+func (e *Engine) completeWithCitations(ctx context.Context, conversationID, content string, citations []Citation) error {
+	err := e.Service.Complete(ctx, conversationID, content, citations)
+	if !errors.Is(err, errCitationSnapshot) || ctx.Err() != nil {
+		return err
+	}
+	if e.Logger != nil {
+		e.Logger.WarnContext(ctx, "引用快照保存失败，保留本轮回复")
+	}
+	return e.Service.Complete(ctx, conversationID, content, nil)
 }

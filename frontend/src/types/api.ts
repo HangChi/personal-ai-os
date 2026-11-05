@@ -139,6 +139,7 @@ export interface ChatCitation {
   /** 片段在文档内的序号（0 起） */
   chunkIndex: number
   content: string
+  url?: string | null
 }
 
 /** 消息视图，对应后端 ChatMessageDto */
@@ -261,6 +262,10 @@ export interface KnowledgeAskResponse {
   answered: boolean
   citations: Citation[]
   retrieval?: RagRetrieval | null
+  citationAudit?: {
+    status: 'CHECKED' | 'UNVERIFIED'
+    claims: { claim: string; status: 'SUPPORTED' | 'PARTIAL' | 'UNSUPPORTED'; index: number; quote: string }[]
+  }
 }
 
 /** 检索响应 */

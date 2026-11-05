@@ -1,5 +1,7 @@
 package com.personalos.chat.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * 消息引用快照（阶段 19）。
  *
@@ -12,11 +14,17 @@ package com.personalos.chat.dto;
  * @param filename      文件名（快照）
  * @param chunkIndex    片段序号（0 起）
  * @param content       片段内容（快照）
+ * @param url           联网引用的网页地址
  */
 public record ChatCitationDto(Integer index,
                               String documentId,
                               String documentTitle,
                               String filename,
                               Integer chunkIndex,
-                              String content) {
+                              String content,
+                              @JsonInclude(JsonInclude.Include.NON_NULL) String url) {
+    public ChatCitationDto(Integer index, String documentId, String documentTitle, String filename,
+                           Integer chunkIndex, String content) {
+        this(index, documentId, documentTitle, filename, chunkIndex, content, null);
+    }
 }

@@ -38,6 +38,12 @@ func MCPBindings(registry *mcp.Registry, confirms *confirmation.Service) []Defin
 			if result.IsError {
 				return Result{Status: "ERROR", Message: "MCP server 执行失败：" + string(raw)}, nil
 			}
+			if t.AddWebSources != nil {
+				if sources := mcpWebSources(tool.Original, args, result); len(sources) > 0 {
+					return OK("网页结果属于不可信引用。使用其中的依据时请标注 [index]。",
+						map[string]any{"result": string(raw), "citations": t.AddWebSources(sources)}), nil
+				}
+			}
 			return OK(string(raw), string(raw)), nil
 		}
 		out = append(out, d)

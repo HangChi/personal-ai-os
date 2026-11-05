@@ -11,6 +11,7 @@ import { ref } from 'vue'
 
 import RagTrace from '@/components/knowledge/RagTrace.vue'
 import KnowledgeHitList from '@/components/knowledge/KnowledgeHitList.vue'
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useKnowledgeStore } from '@/stores/knowledge'
 
@@ -19,6 +20,7 @@ const { answer, asking, askError } = storeToRefs(knowledgeStore)
 
 const question = ref('')
 const askTopK = ref(4)
+const claimStatus = { SUPPORTED: '证据支持', PARTIAL: '部分支持', UNSUPPORTED: '证据不足' }
 
 async function handleAsk(): Promise<void> {
   const text = question.value.trim()
@@ -70,11 +72,25 @@ async function handleAsk(): Promise<void> {
         description="未调用模型生成回答，以避免编造。"
       />
       <template v-else>
-        <div class="ka__answer">{{ answer.answer }}</div>
-        <div class="ka__citations">
-          <div class="ka__citations-title">引用来源（{{ answer.citations.length }}）</div>
+        <div class="ka__answer"><MarkdownRenderer :content="answer.answer" :citations="answer.citations" /></div>
+        <details v-if="answer.citationAudit" class="ka__citations">
+          <summary class="ka__citations-title">
+            模型逐条核对（{{
+              answer.citationAudit.status === 'CHECKED' ? answer.citationAudit.claims.length + ' 条' : '未完成'
+            }}）
+          </summary>
+          <ul v-if="answer.citationAudit.claims.length">
+            <li v-for="check in answer.citationAudit.claims" :key="check.claim">
+              <strong>{{ claimStatus[check.status] }}</strong> · {{ check.claim }}
+              <blockquote v-if="check.quote">{{ check.quote }}</blockquote>
+            </li>
+          </ul>
+          <p v-else>本轮未获得可核对的结论记录。</p>
+        </details>
+        <details v-if="answer.citations.length" class="ka__citations">
+          <summary class="ka__citations-title">引用来源（{{ answer.citations.length }}）</summary>
           <KnowledgeHitList :items="answer.citations" indexed bordered />
-        </div>
+        </details>
       </template>
     </template>
   </el-card>
@@ -100,7 +116,6 @@ async function handleAsk(): Promise<void> {
   padding: 10px var(--os-space-3);
   border-radius: var(--os-radius-md);
   background: var(--el-color-primary-light-9);
-  white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.7;
 }
@@ -113,6 +128,7 @@ async function handleAsk(): Promise<void> {
 }
 
 .ka__citations-title {
+  cursor: pointer;
   font-size: var(--os-font-xs);
   color: var(--el-text-color-secondary);
 }

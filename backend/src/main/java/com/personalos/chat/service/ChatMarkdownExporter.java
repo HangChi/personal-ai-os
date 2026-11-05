@@ -135,6 +135,12 @@ public class ChatMarkdownExporter {
         }
         markdown.append("**引用来源**\n\n");
         for (ChatCitationDto citation : citations) {
+            if (citation.url() != null) {
+                markdown.append(citation.index()).append(". 《")
+                        .append(nullToPlaceholder(citation.documentTitle())).append("》 <")
+                        .append(citation.url()).append(">\n");
+                continue;
+            }
             markdown.append(citation.index()).append(". 《")
                     .append(nullToPlaceholder(citation.documentTitle())).append("》（")
                     .append(nullToPlaceholder(citation.filename())).append("，第 ")

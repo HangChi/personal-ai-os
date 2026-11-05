@@ -1,5 +1,8 @@
 package com.personalos.knowledge.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.personalos.knowledge.rag.CitationAudit;
+import com.personalos.knowledge.rag.RagResult;
 import java.util.List;
 
 /**
@@ -15,7 +18,12 @@ public record KnowledgeAskResponse(String question,
                                    String answer,
                                    boolean answered,
                                    List<CitationDto> citations,
-                                   com.personalos.knowledge.rag.RagResult retrieval) {
+                                   RagResult retrieval,
+                                   @JsonInclude(JsonInclude.Include.NON_NULL) CitationAudit.Result citationAudit) {
+    public KnowledgeAskResponse(String question, String answer, boolean answered, List<CitationDto> citations, RagResult retrieval) {
+        this(question, answer, answered, citations, retrieval, null);
+    }
+
     public KnowledgeAskResponse(String question,String answer,boolean answered,List<CitationDto> citations) {
         this(question,answer,answered,citations,null);
     }

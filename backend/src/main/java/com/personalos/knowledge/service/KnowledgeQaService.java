@@ -4,6 +4,7 @@ import com.personalos.common.ai.AiChatClientProvider;
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
 import com.personalos.knowledge.dto.CitationDto;
+import com.personalos.knowledge.rag.CitationAudit;
 import com.personalos.knowledge.spi.KnowledgeSearchPort;
 import com.personalos.knowledge.dto.KnowledgeAskResponse;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
@@ -18,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * 知识库问答：检索 → 编号注入 → 生成 → 组装引用。
@@ -50,6 +53,13 @@ public class KnowledgeQaService {
 
     private final KnowledgeSearchPort retrievalService;
     private final AiChatClientProvider aiProvider;
+    private CitationAudit citationAudit;
+
+    @Autowired
+    void configureCitationAudit(CitationAudit audit,
+                                @Value("${APP_KNOWLEDGE_RAG_CITATION_AUDIT_ENABLED:${app.knowledge.rag.citation-audit-enabled:false}}") boolean enabled) {
+        if (enabled) citationAudit = audit;
+    }
 
     public KnowledgeQaService(KnowledgeSearchPort retrievalService, AiChatClientProvider aiProvider) {
         this.retrievalService = retrievalService;
@@ -95,7 +105,8 @@ public class KnowledgeQaService {
 
         log.debug("知识库问答完成 question={} hits={} cited={}",
                 trimmedQuestion, hits.size(), citations.size());
-        return new KnowledgeAskResponse(trimmedQuestion, content, true, citations, retrieval);
+        var audit = citationAudit == null ? null : citationAudit.check(content, citations);
+        return new KnowledgeAskResponse(trimmedQuestion, content, true, citations, retrieval, audit);
     }
 
     /**
@@ -115,10 +126,13 @@ public class KnowledgeQaService {
         Set<Integer> cited = new TreeSet<>();
         Matcher matcher = CITATION_MARK.matcher(answer);
         while (matcher.find()) {
-            int index = Integer.parseInt(matcher.group(1));
-            // 过滤越界编号：模型可能写出 [7] 而只有 4 条片段
-            if (index >= 1 && index <= hits.size()) {
-                cited.add(index);
+            try {
+                int index = Integer.parseInt(matcher.group(1));
+                if (index >= 1 && index <= hits.size()) {
+                    cited.add(index);
+                }
+            } catch (NumberFormatException ignored) {
+                // 超出整数范围的编号也无法对应任何片段。
             }
         }
         if (cited.isEmpty()) {
@@ -127,9 +141,7 @@ public class KnowledgeQaService {
 
         List<CitationDto> citations = new ArrayList<>(cited.size());
         for (int index : cited) {
-            KnowledgeHitDto hit = hits.get(index - 1);
-            citations.add(new CitationDto(index, hit.documentId(), hit.documentTitle(),
-                    hit.filename(), hit.chunkIndex(), hit.content(), hit.score()));
+            citations.add(CitationDto.fromHit(index, hits.get(index - 1)));
         }
         return citations;
     }

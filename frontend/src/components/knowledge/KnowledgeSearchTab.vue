@@ -62,7 +62,7 @@ async function handleSearch(): Promise<void> {
 
     <RagTrace :retrieval="retrieval" />
     <el-empty v-if="searched && hits.length === 0" description="没有匹配的片段，换个检索词试试" :image-size="60" />
-    <KnowledgeHitList v-else-if="hits.length > 0" :items="hits" />
+    <KnowledgeHitList v-else-if="hits.length > 0" :items="hits" preview-only />
   </el-card>
 </template>
 

@@ -26,6 +26,7 @@ import (
 )
 
 type ModuleOptions struct {
+	SearchWeb        agent.WebSearch
 	ExtraTools       []agent.Definition
 	RetrieveEvidence func(context.Context, string, int) (RetrievedEvidence, error)
 	MemoryCapture    func(context.Context, string, string, int) error
@@ -232,6 +233,7 @@ func OpenModule(parent context.Context, o ModuleOptions) (m *Module, err error) 
 	usage := &UsageService{Pool: o.Pool, Zone: o.Zone, Now: time.Now, Logger: o.Logger}
 	engine := &Engine{Service: service, Runtime: o.Models.Runtime, Budget: budget, History: history, Assembler: assembler, Registry: registry, Plans: plans, Attachments: files, Usage: usage, Executor: o.Executor, Agent: execution, Timeout: *timeout, Logger: o.Logger}
 	engine.RetrieveEvidence = o.RetrieveEvidence
+	engine.SearchWeb = o.SearchWeb
 	if o.MemoryCapture != nil && cp.AutoMemory.Enabled {
 		engine.PostTurn = append(engine.PostTurn, func(ctx context.Context, _ string, user, reply string) error {
 			return o.MemoryCapture(ctx, user, reply, cp.AutoMemory.MaxItems)

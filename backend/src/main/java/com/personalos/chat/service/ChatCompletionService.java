@@ -1,5 +1,6 @@
 package com.personalos.chat.service;
 
+import com.personalos.common.ai.WebSource;
 import com.personalos.chat.dto.ChatAttachmentDto;
 import com.personalos.chat.dto.ChatCitationDto;
 import com.personalos.chat.dto.ChatStreamEvents;
@@ -125,6 +126,8 @@ public class ChatCompletionService {
      */
     private final com.personalos.common.ai.AgentExecutionProperties agentProperties;
 
+    private final WebSearchTools webSearch;
+
     private final ConcurrentHashMap<String, Boolean> activeStreams = new ConcurrentHashMap<>();
 
     public ChatCompletionService(AiChatClientProvider aiProvider,
@@ -137,8 +140,10 @@ public class ChatCompletionService {
                                  ChatAttachmentContextBuilder attachmentContextBuilder,
                                  @Value("${app.chat.stream-timeout:120s}") Duration baseStreamTimeout,
                                  TokenUsageRecorder usageRecorder,
-                                 com.personalos.common.ai.AgentExecutionProperties agentProperties) {
+                                 com.personalos.common.ai.AgentExecutionProperties agentProperties,
+                                 WebSearchTools webSearch) {
         this.agentProperties = agentProperties;
+        this.webSearch = webSearch;
         this.aiProvider = aiProvider;
         this.sessionService = sessionService;
         this.promptAssembler = promptAssembler;
@@ -237,6 +242,7 @@ public class ChatCompletionService {
         AtomicBoolean terminated = new AtomicBoolean(false);
         // 命中快照：检索在 defer 里才发生，终帧回调需要读它，故用原子引用跨阶段传递
         AtomicReference<List<KnowledgeHitDto>> hitsRef = new AtomicReference<>(List.of());
+        var turnCitations = new TurnCitationCollector();
         AtomicReference<com.personalos.knowledge.rag.RagResult> ragRef = new AtomicReference<>();
         // 本轮上下文字符数（仪表盘用）：在 defer 里算，终帧回调里读
         AtomicInteger promptCharsRef = new AtomicInteger(0);
@@ -281,17 +287,27 @@ public class ChatCompletionService {
         ScheduledFuture<?> heartbeat = heartbeatScheduler.start(emitter);
 
         Flux<ChatResponse> contentFlux = Flux.defer(() -> {
-            List<KnowledgeHitDto> hits = retrieveForPrompt(conversationId, userContent, topK, useKnowledge, emitter, ragRef);
-            hitsRef.set(hits);
+            String webQuery = WebSearchTools.explicitQuery(userContent);
+            List<KnowledgeHitDto> retrieved = retrieveForPrompt(conversationId, userContent, topK, useKnowledge,
+                    webQuery.isEmpty(), emitter, ragRef);
             var rag = ragRef.get();
-            if(rag != null) {
-                if(!rag.stages().isEmpty() || rag.guarded()) send(emitter,"rag",rag);
-                if(rag.guarded()) {
-                    String answer=rag.guardedAnswer();
-                    finisher.recordGuardedReply(conversationId,userContent,answer);
-                    return Flux.just(new ChatResponse(List.of(new org.springframework.ai.chat.model.Generation(
+            var webResult = webQuery.isEmpty()
+                    ? new WebSearchTools.SearchOutcome(List.of(), "", false)
+                    : webSearch.lookup(webQuery);
+            boolean guarded = rag != null && rag.guarded();
+            List<KnowledgeHitDto> hits = guarded && !webResult.sources().isEmpty() ? List.of() : retrieved;
+            hitsRef.set(hits);
+            if (useKnowledge && !webQuery.isEmpty() && webResult.sources().isEmpty()) {
+                var citations = toCitationDtos(hits);
+                send(emitter, EVENT_CITATIONS, new ChatStreamEvents.Citations(citations.size(), citations));
+            }
+            if (rag != null && (!rag.stages().isEmpty() || guarded)) send(emitter, "rag", rag);
+            if (guarded && webResult.sources().isEmpty()) {
+                String answer = rag.guardedAnswer();
+                if (!webResult.notice().isEmpty()) answer += "\n\n" + webResult.notice();
+                finisher.recordGuardedReply(conversationId, userContent, answer);
+                return Flux.just(new ChatResponse(List.of(new org.springframework.ai.chat.model.Generation(
                         new org.springframework.ai.chat.messages.AssistantMessage(answer)))));
-                }
             }
             // 附件：图片随 user message 走（多模态协议要求），文本进系统提示（避免存进历史）。
             // 只影响本轮 —— 见 ChatAttachmentContextBuilder 的类注释。
@@ -300,6 +316,15 @@ public class ChatCompletionService {
                     attachmentContext.textBlock(), attachmentContext.images().size(), session.getChatModel(), thinkingLevel.budget());
             if (background != null && !background.recoveryContext().isEmpty()) {
                 systemPrompt += background.recoveryContext();
+            }
+            if (!webResult.sources().isEmpty()) {
+                var numbered = turnCitations.add(hits.size(), webResult.sources());
+                var citations = toCitationDtos(hits);
+                citations.addAll(turnCitations.snapshot());
+                send(emitter, EVENT_CITATIONS, new ChatStreamEvents.Citations(citations.size(), citations));
+                systemPrompt += webSearch.evidencePrompt(numbered, guarded);
+            } else if (!webResult.notice().isEmpty()) {
+                systemPrompt += "\n\n" + webResult.notice() + "请如实说明本轮没有联网证据。";
             }
             final String effectiveSystemPrompt = systemPrompt;
             // 上下文用量：本轮系统提示 + 本条用户消息 + 窗口内历史（后两项为估算）。
@@ -313,6 +338,12 @@ public class ChatCompletionService {
                     + promptAssembler.toolOverheadChars());
             // 用户消息用作语言口径的判定样本（见 promptSampleRef 的声明处注释）
             promptSampleRef.set(userContent);
+            var initialCitations = toCitationDtos(hits);
+            Runnable publishSources = () -> {
+                var citations = new ArrayList<>(initialCitations);
+                citations.addAll(turnCitations.snapshot());
+                send(emitter, EVENT_CITATIONS, new ChatStreamEvents.Citations(citations.size(), citations));
+            };
             ChatClient.ChatClientRequestSpec request = chatClient.prompt()
                     // 请求级 system **替换** defaultSystem（Spring AI 不做拼接），
                     // 所以这里必须显式带上基础人设，否则只传记忆块会让助手「变了个样」且不报错。
@@ -331,6 +362,23 @@ public class ChatCompletionService {
                             ToolContextKeys.CONVERSATION_ID, conversationId,
                             ToolContextKeys.TURN_ID, turnId,
                             ToolContextKeys.EXECUTION_BUDGET, executionBudget,
+                            ToolContextKeys.WEB_SOURCES, (WebSource.Registrar) sources -> {
+                                synchronized (turnCitations) {
+                                    if (terminated.get()) return List.of();
+                                    var numbered = turnCitations.add(hits.size(), sources);
+                                    publishSources.run();
+                                    return numbered;
+                                }
+                            },
+                            ToolContextKeys.KNOWLEDGE_BLOCKED, guarded,
+                            ToolContextKeys.KNOWLEDGE_SOURCES, (com.personalos.knowledge.tool.KnowledgeTools.RegisterSources) sources -> {
+                                synchronized (turnCitations) {
+                                    if (terminated.get()) return List.of();
+                                    var numbered = turnCitations.addKnowledge(initialCitations, sources);
+                                    publishSources.run();
+                                    return numbered;
+                                }
+                            },
                             ToolContextKeys.CONTROL, (Runnable) () -> { if (background != null) background.checkpoint(); },
                             ToolContextKeys.PROGRESS, (com.personalos.common.ai.tool.ToolProgress) (id, tool, status, duration) -> {
                                 if (!terminated.get()) send(emitter, "activity", Map.of(
@@ -361,11 +409,14 @@ public class ChatCompletionService {
         // 现在统一成一个收尾动作，只有「怎么告知用户」这一句不同。
 
         /** 停止一切后续动作：心跳、看门狗、活跃指标、上游订阅。重复调用安全。 */
-        Runnable stopEverything = () -> {
+        Runnable stopProcessing = () -> {
             heartbeatScheduler.stop(heartbeat);
             heartbeatScheduler.stop(watchdogRef.get());
-            closeStream.run();
             disposeQuietly(subscriptionRef.get());
+        };
+        Runnable stopEverything = () -> {
+            stopProcessing.run();
+            closeStream.run();
         };
 
         /**
@@ -381,8 +432,9 @@ public class ChatCompletionService {
                 return; // 已有别的路径收过尾，不能重复写消息
             }
             metricOutcome.set(errorCode == ErrorCode.AI_TIMEOUT ? "timeout" : notifyClient ? "error" : "cancelled");
-            stopEverything.run();
-            finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode);
+            stopProcessing.run();
+            finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode, hitsRef.get(), turnCitations.snapshot());
+            closeStream.run();
             if (notifyClient) {
                 // 发送失败（客户端已断开）无需再通知，但收尾必须照做
                 send(emitter, EVENT_ERROR,
@@ -416,8 +468,9 @@ public class ChatCompletionService {
             log.warn("SSE 异步请求超时（兜底路径） conversationId={}", conversationId);
             if (terminated.compareAndSet(false, true)) {
                 metricOutcome.set("timeout");
-                stopEverything.run();
-                finisher.recordInterruptedReply(conversationId, fullContent.toString());
+                stopProcessing.run();
+                finisher.recordInterruptedReply(conversationId, fullContent.toString(), null, hitsRef.get(), turnCitations.snapshot());
+                closeStream.run();
             }
             emitter.complete();
         });
@@ -462,17 +515,19 @@ public class ChatCompletionService {
                     }
                     if (background != null && com.personalos.common.ai.AgentControlSignal.causedBy(error)) {
                         metricOutcome.set("yielded");
-                        stopEverything.run();
-                        finisher.recordYieldedReply(conversationId, fullContent.toString());
+                        stopProcessing.run();
+                        finisher.recordYieldedReply(conversationId, fullContent.toString(), hitsRef.get(), turnCitations.snapshot());
+                        closeStream.run();
                         send(emitter, "yield", Map.of("message", "已保存进度，正在等待输入或应用引导"));
                         emitter.complete();
                         return;
                     }
                     metricOutcome.set(classify(error) == ErrorCode.AI_TIMEOUT ? "timeout" : "error");
-                    stopEverything.run();
+                    stopProcessing.run();
                     log.warn("流式对话失败 conversationId={}", conversationId, error);
                     ErrorCode errorCode = classify(error);
-                    finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode);
+                    finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode, hitsRef.get(), turnCitations.snapshot());
+                    closeStream.run();
                     send(emitter, EVENT_ERROR,
                             new ChatStreamEvents.Error(errorCode.getCode(), errorCode.getDefaultMessage()));
                     emitter.complete();
@@ -489,15 +544,14 @@ public class ChatCompletionService {
                     // （2026-10-27 真机日志实测踩到）。虚假告警会让真超时被淹没。
                     heartbeatScheduler.stop(watchdogRef.get());
                     metricOutcome.set("success");
-                    closeStream.run();
-
                     // 引用挂载必须**先于** done 事件（2026-10-26 调整）：
                     // 客户端一收到 done 就可能认为本轮全部结束并去查库，
                     // 此时引用还没提交就会看到 0 条。详见 ChatTurnFinisher 的类注释。
-                    finisher.attachCitations(conversationId, hitsRef.get());
+                    finisher.attachCitations(conversationId, hitsRef.get(), turnCitations.snapshot());
                     // 附件与引用同一时机：都属于「用户消息的可追溯信息」，
                     // 客户端收到 done 后可能立刻重拉消息列表，晚一步写就等于「附件丢了」。
                     finisher.attachAttachments(conversationId, requestAttachments);
+                    closeStream.run();
 
                     String reply = fullContent.toString();
                     // 用量事件的下发与记录（清单第 7 项）。
@@ -618,7 +672,7 @@ public class ChatCompletionService {
      * @return 命中片段；未开启增强、端口缺失或检索失败时为空列表
      */
     private List<KnowledgeHitDto> retrieveForPrompt(String conversationId, String userContent,
-                                                    int topK, boolean useKnowledge, SseEmitter emitter,
+                                                    int topK, boolean useKnowledge, boolean publishCitations, SseEmitter emitter,
                                                     AtomicReference<com.personalos.knowledge.rag.RagResult> ragRef) {
         if (!useKnowledge) {
             return List.of();
@@ -642,8 +696,10 @@ public class ChatCompletionService {
             }
         }
         // 检索结果先于生成内容告知用户：N=0 也发（前端据此关闭「正在检索」态）
-        List<ChatCitationDto> payload = toCitationDtos(hits);
-        send(emitter, EVENT_CITATIONS, new ChatStreamEvents.Citations(payload.size(), payload));
+        if (publishCitations) {
+            List<ChatCitationDto> payload = toCitationDtos(hits);
+            send(emitter, EVENT_CITATIONS, new ChatStreamEvents.Citations(payload.size(), payload));
+        }
         return hits;
     }
 
@@ -654,7 +710,7 @@ public class ChatCompletionService {
             KnowledgeHitDto hit = hits.get(i);
             dtos.add(new ChatCitationDto(
                     i + 1,
-                    hit.documentId().toString(),
+                    hit.documentId() == null ? "" : hit.documentId().toString(),
                     hit.documentTitle(),
                     hit.filename(),
                     hit.chunkIndex(),

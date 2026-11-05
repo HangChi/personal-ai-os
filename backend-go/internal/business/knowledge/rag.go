@@ -61,7 +61,7 @@ func (r RagResult) GuardedAnswer() string {
 	var b strings.Builder
 	b.WriteString(text)
 	for i, h := range r.Hits {
-		fmt.Fprintf(&b, "\n[%d] %s：\n%s\n", i+1, h.DocumentTitle, truncate(h.Content, 700))
+		fmt.Fprintf(&b, "\n[%d] %s\n", i+1, h.DocumentTitle)
 	}
 	if strip(r.Clarification) != "" {
 		b.WriteString("\n" + r.Clarification)
@@ -464,6 +464,7 @@ func (p *Pipeline) Retrieve(parent context.Context, q string, topK *int) (RagRes
 		result.Hits = assessed.Relevant
 		result.Disagreements = assessed.Conflicts
 		result.Clarification = assessed.Clarification
+		stage("evidence", "OK", start, len(pool), len(assessed.Relevant))
 		switch {
 		case len(assessed.Conflicts) > 0:
 			result.Status = "CONFLICT"
@@ -493,7 +494,6 @@ func (p *Pipeline) Retrieve(parent context.Context, q string, topK *int) (RagRes
 			}
 			result.Hits = diverse(result.Hits, limit, 2)
 		}
-		stage("evidence", "OK", start, len(pool), len(result.Hits))
 	}
 	for _, h := range result.Hits {
 		var score *float64

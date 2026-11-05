@@ -65,6 +65,9 @@ func TestP6LiveCorpusControlledJavaRecallAndCitationParity(t *testing.T) {
 			t.Fatal(c.ID, got, want)
 		}
 		for j := range got {
+			// 原始 oracle 只记录基础引用字段。
+			want[j].MatchedBy = hits[j].MatchedBy
+			want[j].Source = hits[j].Source
 			if got[j].Score != nil && want[j].Score != nil && math.Abs(*got[j].Score-*want[j].Score) < .00001 {
 				got[j].Score = want[j].Score
 			}

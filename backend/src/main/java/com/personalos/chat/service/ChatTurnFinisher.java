@@ -1,6 +1,7 @@
 package com.personalos.chat.service;
 
 import com.personalos.chat.dto.ChatAttachmentDto;
+import com.personalos.chat.dto.ChatCitationDto;
 import com.personalos.chat.entity.MessageRole;
 import com.personalos.chat.repository.ChatMessageRepository;
 import com.personalos.common.ai.PostTurnContributor;
@@ -74,11 +75,19 @@ public class ChatTurnFinisher {
      * @param hits 本轮知识库命中；空表示不挂引用
      */
     public void attachCitations(String conversationId, List<KnowledgeHitDto> hits) {
-        if (hits == null || hits.isEmpty()) {
+        attachCitations(conversationId, hits, List.of());
+    }
+
+    public void attachCitations(String conversationId, List<KnowledgeHitDto> hits, List<ChatCitationDto> extra) {
+        if (extra.isEmpty() && (hits == null || hits.isEmpty())) {
             return;
         }
         try {
-            citationService.attachToLatestAssistant(conversationId, hits);
+            if (extra.isEmpty()) {
+                citationService.attachToLatestAssistant(conversationId, hits);
+            } else {
+                citationService.attachToLatestAssistant(conversationId, hits, extra);
+            }
         } catch (RuntimeException ex) {
             log.warn("引用挂载失败（不影响本轮回答） conversationId={}", conversationId, ex);
         }
@@ -104,9 +113,11 @@ public class ChatTurnFinisher {
         chatMemory.add(conversationId,List.of(new org.springframework.ai.chat.messages.UserMessage(question),new AssistantMessage(answer)));
     }
 
-    public void recordYieldedReply(String conversationId, String partialReply) {
-        String body = partialReply == null || partialReply.isBlank() ? "已保存进度，等待用户输入或应用补充要求。" : partialReply.strip();
-        chatMemory.add(conversationId, List.of(new AssistantMessage(body)));
+    public void recordYieldedReply(String conversationId, String partialReply,
+                                   List<KnowledgeHitDto> hits, List<ChatCitationDto> extra) {
+        String body = partialReply == null || partialReply.isBlank()
+                ? "已保存进度，等待用户输入或应用补充要求。" : partialReply.strip();
+        savePartialReply(conversationId, body, hits, extra);
     }
 
     public void recordInterruptedReply(String conversationId, String partialReply) {
@@ -114,14 +125,31 @@ public class ChatTurnFinisher {
     }
 
     public void recordInterruptedReply(String conversationId, String partialReply, ErrorCode errorCode) {
+        recordInterruptedReply(conversationId, partialReply, errorCode, List.of(), List.of());
+    }
+
+    public void recordInterruptedReply(String conversationId, String partialReply, ErrorCode errorCode,
+                                       List<KnowledgeHitDto> hits, List<ChatCitationDto> extra) {
         String body = partialReply == null ? "" : partialReply.strip();
         String marker = errorCode == ErrorCode.AGENT_EXECUTION_LIMIT
                 ? "（" + errorCode.getDefaultMessage() + "）" : INTERRUPTED_MARKER;
-        String content = body.isEmpty() ? marker : body + "\n\n" + marker;
+        savePartialReply(conversationId, body.isEmpty() ? marker : body + "\n\n" + marker, hits, extra);
+    }
+
+    private void savePartialReply(String conversationId, String content,
+                                  List<KnowledgeHitDto> hits, List<ChatCitationDto> extra) {
+        if (!hits.isEmpty() || !extra.isEmpty()) {
+            try {
+                citationService.savePartialReply(chatMemory, conversationId, content, hits, extra);
+                return;
+            } catch (RuntimeException ex) {
+                log.warn("部分回复的引用快照保存失败，保留回复 conversationId={}", conversationId, ex);
+            }
+        }
         try {
             chatMemory.add(conversationId, List.of(new AssistantMessage(content)));
         } catch (RuntimeException ex) {
-            log.warn("中断回答落库失败（不影响已推送的内容） conversationId={}", conversationId, ex);
+            log.warn("部分回复落库失败 conversationId={}", conversationId, ex);
         }
     }
 

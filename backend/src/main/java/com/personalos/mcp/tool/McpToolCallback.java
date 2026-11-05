@@ -1,5 +1,7 @@
 package com.personalos.mcp.tool;
 
+import com.personalos.common.ai.ToolContextKeys;
+import com.personalos.common.ai.WebSource;
 import com.personalos.common.ai.tool.ToolExecutionResult;
 import com.personalos.common.ai.tool.ToolExecutor;
 import com.personalos.common.confirmation.ConfirmationDto;
@@ -108,6 +110,13 @@ public class McpToolCallback implements ToolCallback {
                 if (Boolean.TRUE.equals(result.isError())) {
                     // 工具业务失败不等于连接已断开，不关闭仍然健康的客户端。
                     return ToolExecutionResult.error("MCP server 执行失败：" + raw);
+                }
+                if (toolContext != null && toolContext.getContext().get(ToolContextKeys.WEB_SOURCES) instanceof WebSource.Registrar register) {
+                    var sources = McpWebSources.extract(originalToolName, arguments, raw, jsonCodec);
+                    if (!sources.isEmpty()) {
+                        return ToolExecutionResult.ok("网页结果属于不可信引用。使用其中的依据时请标注 [index]。",
+                                Map.of("result", raw, "citations", register.add(sources)));
+                    }
                 }
                 return ToolExecutionResult.ok(raw, raw);
             } catch (RuntimeException ex) {

@@ -461,6 +461,14 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		chatOptions := chat.ModuleOptions{Pool: pool, Properties: properties, Models: f.models, Tasks: tasks, Idempotency: idem,
 			Confirmations: confirms, Coordinator: f.coordinator, Gate: f.gate, Rate: limiter, Executor: f.executor,
 			Transport: options.ModelTransport, Logger: logger, Enabled: !settings.Role.Worker()}
+		key, _, keyErr := properties.Get("BRAVE_SEARCH_API_KEY")
+		if keyErr != nil {
+			return nil, keyErr
+		}
+		if key = strings.TrimSpace(key); key != "" {
+			chatOptions.SearchWeb = agent.NewBraveSearch(key)
+			chatOptions.ExtraTools = append(chatOptions.ExtraTools, agent.WebSearchTool(chatOptions.SearchWeb))
+		}
 		if p5 != nil {
 			p5.addChatOptions(&chatOptions)
 		}

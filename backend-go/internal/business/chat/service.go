@@ -348,6 +348,8 @@ func (s *Service) AttachCitations(ctx context.Context, id string, hits []Citatio
 	})
 }
 
+var errCitationSnapshot = errors.New("保存引用快照失败")
+
 // Complete 将助手回答与引用快照一次提交，done 之前不会暴露半完成的回答。
 func (s *Service) Complete(ctx context.Context, id, content string, hits []Citation) error {
 	if err := ValidateConversationID(id); err != nil {
@@ -375,7 +377,7 @@ func (s *Service) Complete(ctx context.Context, id, content string, hits []Citat
 				return err
 			}
 			if err = tx.InsertCitations(ctx, messageID, hits, now); err != nil {
-				return err
+				return fmt.Errorf("%w: %w", errCitationSnapshot, err)
 			}
 		}
 		session.UpdatedAt = now

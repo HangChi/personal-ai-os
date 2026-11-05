@@ -229,6 +229,13 @@ func OpenModule(parent context.Context, o ModuleOptions) (m *Module, err error) 
 		}
 		return client.Call(ctx, r)
 	}}
+	citationAudit, e := flag("app.knowledge.rag.citation-audit-enabled", false)
+	if e != nil {
+		return nil, e
+	}
+	if citationAudit {
+		m.QA.CitationVerifier = m.Gateway
+	}
 	m.Review = &ReviewJobs{Store: store, Governance: m.Governance, Reviewer: reviewer, Recall: m.Retriever, Acquire: o.Acquire, Timeout: evidence, Stats: m.Stats}
 	m.Handler = (&HTTP{Store: store, Jobs: m.Jobs, Governance: m.Governance, Search: m.Pipeline, QA: m.QA, Projection: m.Projection}).Handler(o.Logger)
 	wakeups := map[string]func(){}

@@ -1,9 +1,14 @@
 package com.personalos.chat;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 
 import com.personalos.chat.repository.ChatMessageCitationRepository;
 import com.personalos.chat.repository.ChatMessageRepository;
+import com.personalos.chat.dto.ChatCitationDto;
+import com.personalos.chat.service.ChatTurnFinisher;
+import com.personalos.chat.service.WebSearchTools;
+import com.personalos.common.ai.WebSource;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
 import com.personalos.knowledge.dto.KnowledgeHitDto.MatchedBy;
 import com.personalos.knowledge.spi.KnowledgeSearchPort;
@@ -36,6 +41,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -173,6 +179,9 @@ class ChatKnowledgeIntegrationTest {
     private final StubKnowledgeSearch searchStub;
     private final ChatMessageRepository messageRepository;
     private final ChatMessageCitationRepository citationRepository;
+
+    @MockitoSpyBean
+    WebSearchTools webSearch;
 
     @Autowired
     ChatKnowledgeIntegrationTest(@Value("${local.server.port}") int port,
@@ -313,6 +322,35 @@ class ChatKnowledgeIntegrationTest {
     }
 
     // ------------------------------------------------------- 工具方法
+
+    @Test
+    void explicitWebSearchUsesOnlyPublicSourcesWhenKnowledgeIsGuarded() throws Exception {
+        String conversationId = createSession();
+        searchStub.guarded = true;
+        var source = WebSource.from("公开报告", "https://example.org/report", "网页中的明确摘录");
+        doReturn(new WebSearchTools.SearchOutcome(List.of(source), "", false)).when(webSearch).lookup("公开标准");
+
+        var events = streamEvents(conversationId, "{\"content\":\"请联网查公开标准\",\"useKnowledge\":true}");
+        assertThat(events).extracting(SseEvent::name).contains("rag", "citations", "done");
+        var emitted = events.stream().filter(e -> e.name().equals("citations")).findFirst().orElseThrow().data();
+        assertThat(emitted).contains("https://example.org/report").doesNotContain(HIT_A_CONTENT);
+        var system = stub.lastInstructions().stream().filter(m -> m.getMessageType().name().equals("SYSTEM"))
+                .findFirst().orElseThrow().getText();
+        assertThat(system).contains("知识库证据需要核对", "网页中的明确摘录").doesNotContain(HIT_A_CONTENT, HIT_B_CONTENT);
+        assertThat(citationCountOf(conversationId)).isEqualTo(1);
+    }
+
+    @Test
+    void interruptedReplyPersistsEvidenceWithItsOwnMessage(@Autowired ChatTurnFinisher finisher) throws Exception {
+        String conversationId = createSession();
+        streamEvents(conversationId, "{\"content\":\"先完成一轮\",\"useKnowledge\":true}");
+        var source = new ChatCitationDto(1, "web", "网页报告", "example.org", 0, "当前来源", "https://example.org/current");
+        finisher.recordInterruptedReply(conversationId, "部分回答 [1]", null, List.of(), List.of(source));
+
+        String messages = get("/api/v1/chat/sessions/" + conversationId + "/messages").body();
+        assertThat(messages).contains("部分回答 [1]", "https://example.org/current", HIT_A_CONTENT);
+        assertThat(citationCountOf(conversationId)).isEqualTo(3);
+    }
 
     /** 按会话计引用数（不用全局 count：同类用例共享容器库，全局数会被互相干扰）。 */
     private long citationCountOf(String conversationId) {

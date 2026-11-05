@@ -12,6 +12,7 @@ import { onBeforeUnmount, ref, watch } from 'vue'
 import ChatExecutionTrail from '@/components/chat/ChatExecutionTrail.vue'
 import type { RunActivity } from '@/api/chat-runs'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
+import type { InlineCitation } from '@/lib/citations'
 import { createThrottle } from '@/lib/throttle'
 
 const props = defineProps<{
@@ -19,6 +20,7 @@ const props = defineProps<{
   content: string
   /** 检索状态提示；null 表示没有提示可显示 */
   hint: string | null
+  citations?: readonly InlineCitation[]
   activities?: RunActivity[]
   reconnecting?: boolean
 }>()
@@ -85,7 +87,7 @@ onBeforeUnmount(() => {
             但没人读它 —— 于是每个 delta 都触发一次完整重解析，节流形同虚设，
             而 lint / vue-tsc 都不会报（ref 被写就算「已使用」）。
           -->
-          <MarkdownRenderer :content="renderedContent" streaming />
+          <MarkdownRenderer :content="renderedContent" :citations="citations" streaming />
         </div>
         <div class="chat-streaming__hint chat-streaming__hint--below" role="status">
           {{ hint || (content ? '正在生成回答' : '正在处理请求') }}

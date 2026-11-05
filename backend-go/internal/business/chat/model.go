@@ -53,6 +53,7 @@ type Citation struct {
 	Filename      *string `json:"filename"`
 	ChunkIndex    int     `json:"chunkIndex"`
 	Content       string  `json:"content"`
+	URL           string  `json:"url,omitempty"`
 }
 type Message struct {
 	ID          int64        `json:"id"`

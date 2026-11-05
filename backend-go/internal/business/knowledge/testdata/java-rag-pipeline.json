@@ -1,0 +1,919 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java": "eec047083a8a2af1dac273bb3ee640ca17de14545764cd2545c0f026aa4a3921",
+    "backend/src/main/java/com/personalos/knowledge/rag/EvidenceReview.java": "d37a6ee7fc65279a0be32f4cb904da9bea0f814be177f6f40407510a5cac5a10",
+    "backend/src/main/java/com/personalos/knowledge/rag/RagResult.java": "9e46a92193e311461b72d7bf05fbef525fc6bbe6335fddba0e21ff9e3760e582",
+    "backend/src/main/java/com/personalos/knowledge/rag/RagModelGateway.java": "465274816d08df9e8efe09c7800d5d6da2a247992445f6d1c06353824d0e3e85",
+    "backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java": "c15d9711b5ca8563f52815df3b61f5241472a49e3f126bed76daaf87757144b2",
+    "backend/src/main/java/com/personalos/knowledge/config/KnowledgeProperties.java": "8918e7b94d4ed84f7fa133a9a4e3b87564740271016e3b2836fc807414d5a4f4",
+    "backend/src/main/java/com/personalos/knowledge/dto/KnowledgeHitDto.java": "003f1c12da263d74f7e1d61e4391df99d82d198bfcd87ad6e8953cfc2dbb0b9b",
+    "backend/src/main/java/com/personalos/knowledge/service/KnowledgeRetrievalService.java": "544d3e9db4f24ddfbbc1baf3c4db1ae6e056e547bfc5642633e1881ac8cee42f",
+    "backend/src/main/java/com/personalos/knowledge/spi/KnowledgeSearchPort.java": "64a0258f80d8dfbe57347a01abbb078ca46eb230b5c20be055102359d5b317f2",
+    "backend/src/main/java/com/personalos/knowledge/governance/KnowledgeGovernance.java": "3a1df0ff883a5c4f38448a8ef24361a18f3d79efe10b9bb5ca83e4aef355346f",
+    "backend/src/main/java/com/personalos/knowledge/governance/SourceInfo.java": "c07216d5a3b7a43e188b62715baf9f87dc7ed007ed658fc12c0409d9bbb76c0e"
+  },
+  "inputs": [
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": []
+      },
+      "rerank": {
+        "order": [
+          1,
+          2,
+          3
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "name": "ready_top_one"
+    },
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": []
+      },
+      "rerank": {
+        "order": [
+          1,
+          2,
+          3
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "5 days",
+            "rightQuote": "6 days",
+            "reason": "different limits"
+          }
+        ],
+        "clarification": ""
+      },
+      "name": "conflict_top_one"
+    },
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": []
+      },
+      "rerank": {
+        "order": [
+          1,
+          2,
+          3
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": "Which policy applies?"
+      },
+      "name": "clarify"
+    },
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": []
+      },
+      "rerank": {
+        "order": [
+          1,
+          2,
+          3
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "IRRELEVANT"
+          },
+          {
+            "index": 2,
+            "grade": "IRRELEVANT"
+          },
+          {
+            "index": 3,
+            "grade": "IRRELEVANT"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "name": "insufficient"
+    },
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": []
+      },
+      "rerank": {
+        "order": [
+          1,
+          2,
+          3
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "IRRELEVANT"
+          },
+          {
+            "index": 2,
+            "grade": "IRRELEVANT"
+          },
+          {
+            "index": 3,
+            "grade": "IRRELEVANT"
+          }
+        ],
+        "conflicts": [],
+        "clarification": "Which policy applies?"
+      },
+      "name": "irrelevant_with_clarification"
+    },
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": []
+      },
+      "rerank": {
+        "order": [
+          1,
+          2
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "name": "incomplete_rerank"
+    },
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": []
+      },
+      "rerank": {
+        "order": [
+          1,
+          1,
+          3
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "name": "duplicate_rerank"
+    },
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": []
+      },
+      "rerank": {
+        "order": [
+          1,
+          2,
+          3
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "not present",
+            "rightQuote": "6 days",
+            "reason": "invalid"
+          }
+        ],
+        "clarification": ""
+      },
+      "name": "ungrounded_conflict"
+    },
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": [
+          "leave entitlement",
+          ""
+        ]
+      },
+      "rerank": {
+        "order": [
+          1,
+          2,
+          3
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "name": "partial_rewrite"
+    },
+    {
+      "query": "annual leave",
+      "topK": 1,
+      "hits": [
+        {
+          "documentId": "00000001-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 1",
+          "content": "Policy 1: annual leave is 5 days."
+        },
+        {
+          "documentId": "00000002-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 2",
+          "content": "Policy 2: annual leave is 6 days."
+        },
+        {
+          "documentId": "00000003-1111-4111-8111-111111111111",
+          "documentTitle": "Policy 3",
+          "content": "Policy 3: annual leave is 7 days."
+        }
+      ],
+      "rewrite": {
+        "queries": []
+      },
+      "rerank": {
+        "order": [
+          "3",
+          "2",
+          "1"
+        ]
+      },
+      "evidence": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "name": "quoted_rerank"
+    }
+  ],
+  "expected": [
+    {
+      "clarification": "",
+      "warnings": [],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "OK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave"
+      ],
+      "hits": [
+        "00000001-1111-4111-8111-111111111111:0"
+      ],
+      "status": "READY"
+    },
+    {
+      "clarification": "",
+      "warnings": [],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "OK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave"
+      ],
+      "hits": [
+        "00000001-1111-4111-8111-111111111111:0",
+        "00000002-1111-4111-8111-111111111111:0"
+      ],
+      "status": "CONFLICT"
+    },
+    {
+      "clarification": "Which policy applies?",
+      "warnings": [],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "OK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave"
+      ],
+      "hits": [
+        "00000001-1111-4111-8111-111111111111:0",
+        "00000002-1111-4111-8111-111111111111:0",
+        "00000003-1111-4111-8111-111111111111:0"
+      ],
+      "status": "CLARIFY"
+    },
+    {
+      "clarification": "",
+      "warnings": [],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "OK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "OK",
+          "outputCount": 0,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave"
+      ],
+      "hits": [],
+      "status": "INSUFFICIENT"
+    },
+    {
+      "clarification": "Which policy applies?",
+      "warnings": [],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "OK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "OK",
+          "outputCount": 0,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave"
+      ],
+      "hits": [],
+      "status": "CLARIFY"
+    },
+    {
+      "clarification": "",
+      "warnings": [
+        "重排不可用，采用 RRF 排名"
+      ],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "OK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "FALLBACK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave"
+      ],
+      "hits": [
+        "00000001-1111-4111-8111-111111111111:0"
+      ],
+      "status": "READY"
+    },
+    {
+      "clarification": "",
+      "warnings": [
+        "重排不可用，采用 RRF 排名"
+      ],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "OK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "FALLBACK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave"
+      ],
+      "hits": [
+        "00000001-1111-4111-8111-111111111111:0"
+      ],
+      "status": "READY"
+    },
+    {
+      "clarification": "",
+      "warnings": [
+        "证据精审未完成，展示来源并暂停确定作答"
+      ],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "OK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "FALLBACK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave"
+      ],
+      "hits": [
+        "00000001-1111-4111-8111-111111111111:0",
+        "00000002-1111-4111-8111-111111111111:0",
+        "00000003-1111-4111-8111-111111111111:0"
+      ],
+      "status": "UNVERIFIED"
+    },
+    {
+      "clarification": "",
+      "warnings": [
+        "查询改写不可用，保留原问题召回"
+      ],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "FALLBACK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave",
+        "leave entitlement"
+      ],
+      "hits": [
+        "00000001-1111-4111-8111-111111111111:0"
+      ],
+      "status": "READY"
+    },
+    {
+      "clarification": "",
+      "warnings": [],
+      "stages": [
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 1,
+          "name": "recall"
+        },
+        {
+          "status": "OK",
+          "outputCount": 1,
+          "inputCount": 1,
+          "name": "rewrite"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "rerank"
+        },
+        {
+          "status": "OK",
+          "outputCount": 3,
+          "inputCount": 3,
+          "name": "evidence"
+        }
+      ],
+      "queries": [
+        "annual leave"
+      ],
+      "hits": [
+        "00000003-1111-4111-8111-111111111111:0"
+      ],
+      "status": "READY"
+    }
+  ],
+  "scope": "Scripted stage responses; no real-model quality or historical-case attribution."
+}

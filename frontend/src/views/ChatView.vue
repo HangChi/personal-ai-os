@@ -742,6 +742,7 @@ async function jumpToMatch(step: number): Promise<void> {
           <ChatStreamingItem
             v-if="streaming || streamingContent"
             :content="streamingContent"
+            :citations="liveCitations"
             :hint="retrievalHint"
             :activities="liveActivities"
             :reconnecting="reconnecting"

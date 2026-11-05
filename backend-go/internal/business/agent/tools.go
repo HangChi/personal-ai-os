@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"personal-ai-os/backend-go/internal/business/idempotency"
+	"personal-ai-os/backend-go/internal/business/knowledge"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/platform/api"
 	"personal-ai-os/backend-go/internal/platform/config"
@@ -50,10 +51,13 @@ type Activity struct {
 	Duration int64  `json:"durationMs"`
 }
 type Turn struct {
-	ConversationID, ID string
-	Budget             *TurnBudget
-	Checkpoint         func(context.Context) error
-	Progress           func(Activity)
+	KnowledgeBlocked    bool
+	ConversationID, ID  string
+	Budget              *TurnBudget
+	Checkpoint          func(context.Context) error
+	Progress            func(Activity)
+	AddWebSources       func([]WebSource) []WebSource
+	AddKnowledgeSources func([]knowledge.Hit) []knowledge.Citation
 }
 
 func (t *Turn) Check(ctx context.Context) error {

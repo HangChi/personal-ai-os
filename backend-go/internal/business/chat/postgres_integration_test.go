@@ -231,7 +231,10 @@ func TestPostgresChatCitationsSnapshotsAndCascade(t *testing.T) {
 	if err := svc.Append(ctx, session.ConversationID, []NewMessage{{Role: "USER", Content: "question", Attachments: []Attachment{{ID: ptr("fixture-att"), Filename: ptr("需求.txt"), ContentType: ptr("text/plain"), Size: 12}}}, {Role: "ASSISTANT", Content: "answer"}}); err != nil {
 		t.Fatal(err)
 	}
-	hits := []Citation{{DocumentID: "deleted-document", DocumentTitle: ptr("原文标题"), Filename: ptr("source.md"), ChunkIndex: 2, Content: "historical evidence"}}
+	hits := []Citation{
+		{DocumentID: "deleted-document", DocumentTitle: ptr("原文标题"), Filename: ptr("source.md"), ChunkIndex: 2, Content: "historical evidence"},
+		{DocumentID: webCitationDocumentID, DocumentTitle: ptr("网页标题"), Filename: ptr("example.org"), Content: "web excerpt\nwith a newline", URL: "https://example.org/report"},
+	}
 	bad := append(append([]Citation{}, hits...), Citation{DocumentID: strings.Repeat("x", 65), DocumentTitle: ptr("bad"), Filename: ptr("bad.md")})
 	if err := svc.AttachCitations(ctx, session.ConversationID, bad); err == nil {
 		t.Fatal("bad citation accepted")
@@ -244,14 +247,17 @@ func TestPostgresChatCitationsSnapshotsAndCascade(t *testing.T) {
 		t.Fatal(err)
 	}
 	rows, err = svc.Messages(ctx, session.ConversationID, nil, nil)
-	if err != nil || len(rows[1].Citations) != 1 || rows[1].Citations[0].Index != 1 || rows[1].Citations[0].DocumentID != "deleted-document" || len(rows[0].Attachments) != 1 {
+	if err != nil || len(rows[1].Citations) != 2 || rows[1].Citations[0].Index != 1 || rows[1].Citations[0].DocumentID != "deleted-document" || len(rows[0].Attachments) != 1 {
 		t.Fatal(rows, err)
 	}
 	ids := []int64{rows[0].ID, rows[1].ID}
 	// 用全新服务/连接读取，引用不依赖内存或原知识文档的存续。
 	other, _ := fixtureService(t, fixturePool(t), func(context.Context, []Attachment) {})
-	if rows, err = other.Messages(ctx, session.ConversationID, nil, nil); err != nil || len(rows[1].Citations) != 1 {
+	if rows, err = other.Messages(ctx, session.ConversationID, nil, nil); err != nil || len(rows[1].Citations) != 2 {
 		t.Fatal(rows, err)
+	}
+	if citation := rows[1].Citations[1]; citation.Index != 2 || citation.URL != hits[1].URL || citation.Content != hits[1].Content {
+		t.Fatal(citation)
 	}
 	if err = svc.Delete(ctx, session.ConversationID); err != nil {
 		t.Fatal(err)

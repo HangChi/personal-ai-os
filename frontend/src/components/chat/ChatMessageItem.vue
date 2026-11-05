@@ -21,6 +21,7 @@ import { CopyDocument, Document, EditPen, RefreshRight, User } from '@element-pl
 import { computed, nextTick, ref, watch } from 'vue'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
+import { safeCitationUrl } from '@/lib/citations'
 import { relativeTime } from '@/lib/relative-time'
 import { confirmationFeedback } from '@/lib/chat-tool-history'
 import ChatToolTrail from '@/components/chat/ChatToolTrail.vue'
@@ -109,7 +110,7 @@ function submitEdit(): void {
         <p v-if="approvalFeedback" class="chat-msg__approval-feedback" role="status">{{ approvalFeedback }}</p>
 
         <div class="chat-msg__bubble chat-msg__bubble--assistant">
-          <MarkdownRenderer :content="message.content" />
+          <MarkdownRenderer :content="message.content" :citations="message.citations" />
         </div>
 
         <!-- 引用区（阶段 19） -->
@@ -122,9 +123,17 @@ function submitEdit(): void {
               <div v-for="citation in message.citations" :key="citation.index" class="chat-msg__citation">
                 <div class="chat-msg__citation-head">
                   <span class="chat-msg__citation-source">
-                    [{{ citation.index }}] {{ citation.documentTitle }}
+                    [{{ citation.index }}]
+                    <a
+                      v-if="safeCitationUrl(citation.url)"
+                      :href="safeCitationUrl(citation.url)?.href"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >{{ citation.documentTitle }} ↗</a
+                    >
+                    <template v-else>{{ citation.documentTitle }}</template>
                     <span class="chat-msg__citation-meta">
-                      {{ citation.filename }} · #{{ citation.chunkIndex + 1 }}
+                      {{ citation.filename }}<template v-if="!citation.url"> · #{{ citation.chunkIndex + 1 }}</template>
                     </span>
                   </span>
                 </div>

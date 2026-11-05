@@ -15,24 +15,28 @@ import (
 const NoContentAnswer = "知识库中没有找到相关内容。"
 
 type Citation struct {
-	Index         int      `json:"index"`
-	DocumentID    string   `json:"documentId"`
-	DocumentTitle string   `json:"documentTitle"`
-	Filename      string   `json:"filename"`
-	ChunkIndex    int      `json:"chunkIndex"`
-	Content       string   `json:"content"`
-	Score         *float64 `json:"score"`
+	Index         int         `json:"index"`
+	DocumentID    *string     `json:"documentId"`
+	DocumentTitle string      `json:"documentTitle"`
+	Filename      string      `json:"filename"`
+	ChunkIndex    int         `json:"chunkIndex"`
+	Content       string      `json:"content"`
+	Score         *float64    `json:"score"`
+	MatchedBy     string      `json:"matchedBy"`
+	Source        *SourceInfo `json:"source"`
 }
 type AskResponse struct {
-	Question  string     `json:"question"`
-	Answer    string     `json:"answer"`
-	Answered  bool       `json:"answered"`
-	Citations []Citation `json:"citations"`
-	Retrieval RagResult  `json:"retrieval"`
+	Question      string         `json:"question"`
+	Answer        string         `json:"answer"`
+	Answered      bool           `json:"answered"`
+	Citations     []Citation     `json:"citations"`
+	Retrieval     RagResult      `json:"retrieval"`
+	CitationAudit *CitationAudit `json:"citationAudit,omitempty"`
 }
 type QA struct {
-	Search KnowledgeSearchPort
-	Answer func(context.Context, model.ChatRequest) (model.ChatResult, error)
+	Search           KnowledgeSearchPort
+	CitationVerifier StructuredModel
+	Answer           func(context.Context, model.ChatRequest) (model.ChatResult, error)
 }
 
 func (q *QA) Ask(ctx context.Context, question string, topK *int) (AskResponse, error) {
@@ -71,10 +75,33 @@ func (q *QA) Ask(ctx context.Context, question string, topK *int) (AskResponse, 
 	response.Answer = answer.Content
 	response.Answered = true
 	response.Citations = BuildCitations(answer.Content, r.Hits)
+	if q.CitationVerifier != nil {
+		response.CitationAudit = auditCitations(ctx, q.CitationVerifier, answer.Content, response.Citations)
+	}
 	return response, nil
 }
 
 var citationMark = regexp.MustCompile(`\[([0-9]+)\]`)
+
+func CitationFromHit(index int, hit Hit) Citation {
+	var documentID *string
+	if hit.DocumentID != "" {
+		documentID = &hit.DocumentID
+	}
+	return Citation{
+		Index: index, DocumentID: documentID, DocumentTitle: hit.DocumentTitle,
+		Filename: hit.Filename, ChunkIndex: hit.ChunkIndex, Content: hit.Content,
+		Score: hit.Score, MatchedBy: hit.MatchedBy, Source: hit.Source,
+	}
+}
+
+func indexedCitations(hits []Hit) []Citation {
+	out := make([]Citation, len(hits))
+	for i, hit := range hits {
+		out[i] = CitationFromHit(i+1, hit)
+	}
+	return out
+}
 
 func BuildCitations(answer string, hits []Hit) []Citation {
 	seen := map[int]bool{}
@@ -85,9 +112,7 @@ func BuildCitations(answer string, hits []Hit) []Citation {
 		}
 	}
 	if len(seen) == 0 {
-		for i := range hits {
-			seen[i+1] = true
-		}
+		return indexedCitations(hits)
 	}
 	numbers := []int{}
 	for n := range seen {
@@ -96,8 +121,7 @@ func BuildCitations(answer string, hits []Hit) []Citation {
 	sort.Ints(numbers)
 	out := []Citation{}
 	for _, n := range numbers {
-		h := hits[n-1]
-		out = append(out, Citation{n, h.DocumentID, h.DocumentTitle, h.Filename, h.ChunkIndex, h.Content, h.Score})
+		out = append(out, CitationFromHit(n, hits[n-1]))
 	}
 	return out
 }

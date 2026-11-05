@@ -71,6 +71,10 @@ func RenderMarkdown(session Session, messages []Message, zone *time.Location) Ex
 				if strip(label) == "" {
 					label = "未命名"
 				}
+				if c.URL != "" {
+					fmt.Fprintf(&out, "%d. 《%s》 <%s>\n", c.Index, label, c.URL)
+					continue
+				}
 				filename := value(c.Filename)
 				if strip(filename) == "" {
 					filename = "未命名"

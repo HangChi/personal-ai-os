@@ -218,6 +218,11 @@ func (t *postgresTx) loadCitations(ctx context.Context, items []Message, byID ma
 		if err := rows.Scan(&id, &c.Index, &c.DocumentID, &c.DocumentTitle, &c.Filename, &c.ChunkIndex, &c.Content); err != nil {
 			return err
 		}
+		if c.DocumentID == webCitationDocumentID {
+			if link, excerpt, ok := strings.Cut(c.Content, "\n"); ok {
+				c.URL, c.Content = link, excerpt
+			}
+		}
 		i := byID[id]
 		items[i].Citations = append(items[i].Citations, c)
 	}
@@ -286,7 +291,11 @@ func (t *postgresTx) DeleteSession(ctx context.Context, id string) error {
 }
 func (t *postgresTx) InsertCitations(ctx context.Context, id int64, hits []Citation, now time.Time) error {
 	for i, c := range hits {
-		if _, err := t.tx.ExecContext(ctx, `INSERT INTO chat_message_citation(message_id,citation_index,document_id,document_title,filename,chunk_index,content,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`, id, i+1, c.DocumentID, c.DocumentTitle, c.Filename, c.ChunkIndex, c.Content, now); err != nil {
+		content := c.Content
+		if c.DocumentID == webCitationDocumentID {
+			content = c.URL + "\n" + content
+		}
+		if _, err := t.tx.ExecContext(ctx, `INSERT INTO chat_message_citation(message_id,citation_index,document_id,document_title,filename,chunk_index,content,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`, id, i+1, c.DocumentID, c.DocumentTitle, c.Filename, c.ChunkIndex, content, now); err != nil {
 			return err
 		}
 	}

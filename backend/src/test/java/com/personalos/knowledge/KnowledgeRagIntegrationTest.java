@@ -2,6 +2,8 @@ package com.personalos.knowledge;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.personalos.chat.dto.ChatCitationDto;
+import com.personalos.chat.service.ChatCitationService;
 import com.personalos.common.idempotency.IdempotencyOutcome;
 import com.personalos.common.idempotency.OperationRecordEntity;
 import com.personalos.common.idempotency.OperationRecordRepository;
@@ -37,6 +39,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * 知识库 RAG 集成测试（≥5 个可重复用例）。
@@ -207,7 +210,7 @@ class KnowledgeRagIntegrationTest {
         assertThat(response.body()).contains("共有四种隔离级别").contains("citations");
 
         // 结构化断言
-        model.enqueueText("再次回答 [1]。");
+        model.enqueueText("再次回答 [1][99999999999999999999]。");
         KnowledgeAskResponse ask = qaService.ask("支持哪些隔离级别？", null);
 
         assertThat(ask.answered()).isTrue();
@@ -217,6 +220,9 @@ class KnowledgeRagIntegrationTest {
             assertThat(citation.documentTitle()).isEqualTo("数据库事务");
             assertThat(citation.content()).isNotBlank();
             assertThat(citation.index()).isPositive();
+            var hit = ask.retrieval().hits().get(citation.index() - 1);
+            assertThat(citation.matchedBy()).isEqualTo(hit.matchedBy());
+            assertThat(citation.source()).isEqualTo(hit.source());
             // 引用片段必须真的来自原文（SC-005）。
             // 注意剥掉「【章节：…】」前缀 —— 结构切分器会给每块加章节路径，
             // 那是切分时补的上下文，不属于原文文本。
@@ -370,13 +376,21 @@ class KnowledgeRagIntegrationTest {
 
         String conversationId = createChatSession();
         model.enqueueToolCall("searchKnowledge", "{\"query\":\"隔离级别\"}");
-        model.enqueueText("你的资料里提到了四种隔离级别。");
+        model.enqueueText("你的资料里提到了四种隔离级别 [1]。");
 
         List<SseEvent> events = http.sse(
                 "/api/v1/chat/sessions/" + conversationId + "/stream",
                 "{\"content\":\"我的资料里怎么讲隔离级别的？\"}", Map.of());
 
         assertThat(events).extracting(SseEvent::name).contains("done");
+        assertThat(events).anySatisfy(event -> {
+            assertThat(event.name()).isEqualTo("citations");
+            var citation = new ObjectMapper().readTree(event.data()).path("citations").get(0);
+            assertThat(citation.path("index").asInt()).isEqualTo(1);
+            assertThat(citation.path("content").asText()).contains("隔离级别");
+        });
+        var history = http.get("/api/v1/chat/sessions/" + conversationId + "/messages");
+        assertThat(history.body()).contains("\"citations\":[{\"index\":1");
 
         // 工具确实被执行并留下审计
         assertThat(operationRecordRepository.findAll())
@@ -390,6 +404,23 @@ class KnowledgeRagIntegrationTest {
                 .map(Message::getText)
                 .reduce("", (left, right) -> left + "\n" + right);
         assertThat(followUp).contains("隔离级别");
+    }
+
+    @Test
+    void webCitationRemainsAvailableInHistory(@Autowired ChatCitationService citations) throws Exception {
+        String conversationId = createChatSession();
+        model.enqueueText("网页来源 [1]。");
+        http.sse("/api/v1/chat/sessions/" + conversationId + "/stream", "{\"content\":\"查资料\"}", Map.of());
+        var source = new ChatCitationDto(1, "web", "报告", "example.org", 0,
+                "网页摘录\n第二行", "https://example.org/report");
+        citations.attachToLatestAssistant(conversationId, List.of(), List.of(source));
+
+        var history = http.get("/api/v1/chat/sessions/" + conversationId + "/messages");
+        assertThat(history.status()).isEqualTo(200);
+        var mapper = new ObjectMapper();
+        var data = mapper.readTree(history.body()).path("data");
+        var reply = data.get(data.size() - 1);
+        assertThat(mapper.treeToValue(reply.path("citations").get(0), ChatCitationDto.class)).isEqualTo(source);
     }
 
     @Test

@@ -204,8 +204,10 @@ type searchFunc func(context.Context, string, *int) (RagResult, error)
 func (f searchFunc) Retrieve(c context.Context, q string, k *int) (RagResult, error) {
 	return f(c, q, k)
 }
+
 func TestQAActualCitationNumbersGuardAndEmptyNoAnswerCall(t *testing.T) {
 	hits := twoHits()
+	hits[1].Source = &SourceInfo{Version: "2026"}
 	calls := 0
 	q := &QA{Search: searchFunc(func(context.Context, string, *int) (RagResult, error) { return legacy(hits, "q"), nil }), Answer: func(_ context.Context, r model.ChatRequest) (model.ChatResult, error) {
 		calls++
@@ -217,6 +219,9 @@ func TestQAActualCitationNumbersGuardAndEmptyNoAnswerCall(t *testing.T) {
 	response, e := q.Ask(context.Background(), " question ", nil)
 	if e != nil || !response.Answered || len(response.Citations) != 1 || response.Citations[0].Index != 2 || response.Question != "question" {
 		t.Fatal(response, e)
+	}
+	if citation := response.Citations[0]; citation.Source != hits[1].Source || citation.MatchedBy != hits[1].MatchedBy {
+		t.Fatal(citation)
 	}
 	if got := BuildCitations("没有编号", hits); len(got) != 2 {
 		t.Fatal(got)

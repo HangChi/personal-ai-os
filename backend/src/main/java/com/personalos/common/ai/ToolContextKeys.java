@@ -26,6 +26,12 @@ public final class ToolContextKeys {
 
     public static final String CONTROL = "agentControl";
 
+    public static final String KNOWLEDGE_BLOCKED = "knowledgeBlocked";
+
+    public static final String KNOWLEDGE_SOURCES = "knowledgeSources";
+
+    public static final String WEB_SOURCES = "webSources";
+
     private ToolContextKeys() {
     }
 }

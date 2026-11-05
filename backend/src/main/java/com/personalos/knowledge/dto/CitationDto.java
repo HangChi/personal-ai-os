@@ -1,10 +1,12 @@
 package com.personalos.knowledge.dto;
 
+import com.personalos.knowledge.governance.SourceInfo;
+import java.util.UUID;
+
 /**
  * 引用。
  *
- * <p>由**检索结果的元数据**直接构造，不由模型生成 —— 模型只负责在答案里写 {@code [n]} 编号。
- * 这样引用与「实际进入上下文的片段」严格一一对应，可被测试逐条断言（SC-005）。
+ * <p>引用由检索命中直接构造。问答中的 {@code [n]} 对应第 n 条上下文片段。
  *
  * @param index         引用编号，与答案中的 {@code [n]} 对应
  * @param documentId    来源文档标识
@@ -13,12 +15,20 @@ package com.personalos.knowledge.dto;
  * @param chunkIndex    片段序号
  * @param content       片段原文
  * @param score         相似度
+ * @param matchedBy     命中的检索通道
+ * @param source        来源的治理元数据
  */
 public record CitationDto(int index,
-                          java.util.UUID documentId,
+                          UUID documentId,
                           String documentTitle,
                           String filename,
                           int chunkIndex,
                           String content,
-                          Double score) {
+                          Double score,
+                          KnowledgeHitDto.MatchedBy matchedBy,
+                          SourceInfo source) {
+    public static CitationDto fromHit(int index, KnowledgeHitDto hit) {
+        return new CitationDto(index, hit.documentId(), hit.documentTitle(), hit.filename(),
+                hit.chunkIndex(), hit.content(), hit.score(), hit.matchedBy(), hit.source());
+    }
 }

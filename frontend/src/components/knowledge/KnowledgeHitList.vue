@@ -2,10 +2,9 @@
 /**
  * 检索命中列表（检索 Tab 与问答 Tab 共用）。
  *
- * <p>两处展示的是同一种东西：文档标题 + 片段序号 + 命中来源徽标 + 片段正文。
- * 差异只有「要不要显示 [n] 编号」—— 问答的引用需要编号与正文里的标注对齐，
- * 检索结果则没有编号可言。用一个 `indexed` 开关表达，避免维护两份模板。
+ * 检索结果按命中顺序编号，问答引用沿用正文编号。
  */
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { hitBadge } from '@/lib/format'
 import type { KnowledgeHit } from '@/types/api'
 
@@ -15,6 +14,8 @@ const props = defineProps<{
   indexed?: boolean
   /** 是否给每条加左侧主色边条（问答引用用，强调「这是一段被引用的原文」） */
   bordered?: boolean
+  /** 原文通过编号预览 */
+  previewOnly?: boolean
 }>()
 
 /**
@@ -35,6 +36,11 @@ function labelOf(hit: KnowledgeHit, index: number): string {
       :class="['kh__item', { 'kh__item--bordered': props.bordered }]"
     >
       <div class="kh__head">
+        <MarkdownRenderer
+          v-if="props.previewOnly"
+          :content="labelOf(hit, index)"
+          :citations="[{ ...hit, index: index + 1 }]"
+        />
         <span class="kh__source">
           <template v-if="props.indexed">{{ labelOf(hit, index) }} </template>
           {{ hit.documentTitle }}
@@ -45,7 +51,7 @@ function labelOf(hit: KnowledgeHit, index: number): string {
       <div v-if="hit.source" class="kh__meta">
         {{ hit.source.spaceName }} · {{ hit.source.version || '版本未填写' }} · {{ hit.source.scope || '范围未填写' }}
       </div>
-      <div class="kh__content">{{ hit.content }}</div>
+      <div v-if="!props.previewOnly" class="kh__content">{{ hit.content }}</div>
     </li>
   </ul>
 </template>
@@ -74,6 +80,7 @@ function labelOf(hit: KnowledgeHit, index: number): string {
 }
 
 .kh__source {
+  flex: 1;
   font-size: var(--os-font-xs);
   font-weight: 600;
 }
