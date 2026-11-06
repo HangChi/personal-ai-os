@@ -371,7 +371,7 @@ async function handleLogout(): Promise<void> {
 
           <div class="app-shell__location">{{ route.meta.title }}</div>
 
-          <!-- 搜索：胶囊形 + 右侧快捷键提示（改造前是裸 el-input，看不出可 Ctrl K） -->
+          <!-- 顶栏搜索沿用表单圆角，右侧保留快捷键提示。 -->
           <div class="app-shell__search">
             <el-input
               ref="searchInput"
@@ -773,7 +773,7 @@ html.os-resizing .app-shell__aside {
   flex: none;
 }
 
-/* ---- 顶栏搜索（胶囊 + 快捷键提示） ---- */
+/* ---- 顶栏搜索（圆角矩形 + 快捷键提示） ---- */
 
 .app-shell__search {
   position: relative;
@@ -782,11 +782,11 @@ html.os-resizing .app-shell__aside {
 }
 
 /*
- * 胶囊形搜索框：EP 输入框默认圆角 8px，这里单独抬到 round。
+ * 搜索框沿用中号圆角，与页面表单保持一致。
  * 选中态（聚焦）由 EP 自己的 focus 边框处理，不重复写。
  */
 .app-shell__search :deep(.el-input__wrapper) {
-  border-radius: var(--os-radius-round);
+  border-radius: var(--os-radius-md);
   background: var(--el-fill-color-light);
   box-shadow: none;
   padding-right: 52px;
