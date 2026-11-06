@@ -721,7 +721,7 @@ public class ChatCompletionService {
                     "知识库检索失败，本轮未使用知识库回答"));
         } else {
             try {
-                var result = port.retrieve(userContent, topK);
+                var result = port.retrieveForConversation(userContent, topK, promptAssembler.retrievalHistory(conversationId));
                 ragRef.set(result);
                 hits = result.hits();
             } catch (RuntimeException ex) {

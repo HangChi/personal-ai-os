@@ -15,6 +15,13 @@ import java.util.List;
  * topK 的收敛（null / 越界）由实现方负责——口径只有一份，在 knowledge 模块内。
  */
 public interface KnowledgeSearchPort {
+    record ConversationMessage(String role, String content) { }
+
+    /** 对话增强专用入口；历史只用于理解指代，不能作为资料证据。 */
+    default com.personalos.knowledge.rag.RagResult retrieveForConversation(
+            String query, Integer topK, List<ConversationMessage> history) {
+        return retrieve(query, topK);
+    }
 
     /**
      * 检索知识库。

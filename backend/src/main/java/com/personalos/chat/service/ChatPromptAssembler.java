@@ -70,6 +70,18 @@ public class ChatPromptAssembler {
         return assemble(hits, userInput, conversationId, "");
     }
 
+    /** 路由仅需最近片段，不加载全量历史或附件；原模型上下文仍由正常会话记忆装配。 */
+    public List<com.personalos.knowledge.spi.KnowledgeSearchPort.ConversationMessage> retrievalHistory(String conversationId) {
+        var recent = new java.util.ArrayList<>(messageRepository.findRecentByConversationId(conversationId, PageRequest.of(0, 6)));
+        java.util.Collections.reverse(recent);
+        return recent.stream()
+                .filter(message -> message.getMessageType() == com.personalos.chat.entity.MessageRole.USER
+                        || message.getMessageType() == com.personalos.chat.entity.MessageRole.ASSISTANT)
+                .map(message -> new com.personalos.knowledge.spi.KnowledgeSearchPort.ConversationMessage(
+                        message.getMessageType().name(), message.getContent().substring(0, Math.min(600, message.getContent().length()))))
+                .toList();
+    }
+
     /**
      * 拼装本轮请求的系统提示（含用户上传的附件内容）。
      *

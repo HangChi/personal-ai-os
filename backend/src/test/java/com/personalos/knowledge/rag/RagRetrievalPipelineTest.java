@@ -24,6 +24,44 @@ class RagRetrievalPipelineTest {
     void responses(String rewrite,String order,String evidence) {
         when(model.call(anyString(),anyString(),anyLong())).thenReturn(json.readTree(rewrite),json.readTree(order),json.readTree(evidence));
     }
+    @Test void conversationActionsSkipIrrelevantEvidenceAndBoundHistory() {
+        when(model.call(anyString(), anyString(), anyLong())).thenAnswer(call -> {
+            assertThat((Long) call.getArgument(2)).isBetween(1L, 4000L);
+            var input = json.readTree((String) call.getArgument(1));
+            assertThat(input.path("history").size()).isEqualTo(6);
+            assertThat(input.path("history").get(5).path("content").asString()).hasSize(600);
+            assertThat(input.path("query").asString()).isEqualTo("改成八点半");
+            return json.readTree("{\"retrieve\":false,\"query\":\"\"}");
+        });
+        var history = java.util.stream.IntStream.range(0, 12).mapToObj(i ->
+                new com.personalos.knowledge.spi.KnowledgeSearchPort.ConversationMessage("ASSISTANT", "已创建双选会08:00".repeat(100))).toList();
+        var result = pipeline.retrieveForConversation("改成八点半", 4, history);
+        assertThat(result.guarded()).isFalse();
+        assertThat(result.hits()).isEmpty();
+        verify(recall, never()).candidates(anyString(), anyInt());
+    }
+    @Test void knowledgeFollowupUsesStandaloneQueryAndKeepsConflictGuard() {
+        when(model.call(anyString(), anyString(), anyLong())).thenReturn(
+                json.readTree("{\"retrieve\":true,\"query\":\"试用期住宿报销限额\"}"),
+                json.readTree("{\"queries\":[]}"), json.readTree("{\"order\":[1,2]}"),
+                json.readTree("""
+                    {"evidence":[{"index":1,"grade":"SUPPORTED"},{"index":2,"grade":"SUPPORTED"}],
+                    "conflicts":[{"left":1,"right":2,"leftQuote":"每天五百元","rightQuote":"每天八百元"}],"clarification":""}
+                    """));
+        var result = pipeline.retrieveForConversation("那试用期呢", 1, List.of(
+                new com.personalos.knowledge.spi.KnowledgeSearchPort.ConversationMessage("USER", "住宿报销标准是多少")));
+        verify(recall).candidates("试用期住宿报销限额", 40);
+        assertThat(result.status()).isEqualTo("CONFLICT");
+        assertThat(result.hits()).containsExactly(a, b);
+    }
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"{}", "{\"retrieve\":\"false\",\"query\":\"\"}", "{\"retrieve\":true,\"query\":\"\"}", "{\"retrieve\":false,\"query\":\"任意内容\"}", "{\"retrieve\":false,\"query\":null}"})
+    void invalidConversationRouteIsNotAFalseClarification(String output) {
+        when(model.call(anyString(), anyString(), anyLong())).thenReturn(json.readTree(output));
+        assertThatThrownBy(() -> pipeline.retrieveForConversation("改成八点半", 4, List.of())).isInstanceOf(IllegalArgumentException.class);
+        verify(recall, never()).candidates(anyString(), anyInt());
+    }
+
     @Test void conflictingSourcesSurviveTopOneAndAskForClarification() {
         responses("{\"queries\":[\"住宿报销限额\"]}","{\"order\":[1,2]}","""
             {"evidence":[{"index":1,"grade":"SUPPORTED"},{"index":2,"grade":"SUPPORTED"}],

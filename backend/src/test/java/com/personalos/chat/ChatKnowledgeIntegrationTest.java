@@ -85,6 +85,8 @@ class ChatKnowledgeIntegrationTest extends ContainerContextTest {
                 new KnowledgeHitDto(DOC_B, "隔离级别", "iso.md", 2, HIT_B_CONTENT, 0.83, MatchedBy.KEYWORD));
 
         private volatile boolean guarded;
+        private volatile boolean skipConversationRetrieval;
+        private volatile List<ConversationMessage> lastHistory = List.of();
         private volatile boolean failNext;
         private volatile boolean returnEmpty;
         private volatile int lastTopK = -1;
@@ -106,6 +108,11 @@ class ChatKnowledgeIntegrationTest extends ContainerContextTest {
             if(!guarded)return com.personalos.knowledge.rag.RagResult.legacy(hits,query);
             return new com.personalos.knowledge.rag.RagResult(hits,List.of(query),List.of(),List.of(),"CONFLICT",List.of(),"请说明适用日期");
         }
+        @Override
+        public com.personalos.knowledge.rag.RagResult retrieveForConversation(String query, Integer topK, List<ConversationMessage> history) {
+            lastHistory = history;
+            return skipConversationRetrieval ? com.personalos.knowledge.rag.RagResult.legacy(List.of(), query) : retrieve(query, topK);
+        }
         void failNextCall() {
             this.failNext = true;
         }
@@ -116,6 +123,8 @@ class ChatKnowledgeIntegrationTest extends ContainerContextTest {
 
         void reset() {
             this.guarded = false;
+            this.skipConversationRetrieval = false;
+            this.lastHistory = List.of();
             this.failNext = false;
             this.returnEmpty = false;
             this.lastTopK = -1;
@@ -217,6 +226,22 @@ class ChatKnowledgeIntegrationTest extends ContainerContextTest {
                 .containsExactly("start", "delta", "delta", "done");
         assertThat(searchStub.lastTopK).isEqualTo(-1);
         assertThat(citationCountOf(conversationId)).isZero();
+    }
+
+    @Test
+    @DisplayName("知识增强续改把历史交给只读路由，跳过资料时仍保留正常模型上下文")
+    void actionFollowupRetainsConversationHistory() throws Exception {
+        String conversationId = createSession();
+        streamEvents(conversationId, "{\"content\":\"明天早上8点我要参加双选会\"}");
+        searchStub.guarded = true;
+        searchStub.skipConversationRetrieval = true;
+        var events = streamEvents(conversationId, "{\"content\":\"改一下时间，改成八点半\",\"useKnowledge\":true}");
+        assertThat(searchStub.lastHistory).extracting(KnowledgeSearchPort.ConversationMessage::content)
+                .contains("明天早上8点我要参加双选会", StubChatModel.FULL_REPLY);
+        assertThat(stub.lastInstructions()).extracting(Message::getText)
+                .contains("明天早上8点我要参加双选会", "改一下时间，改成八点半");
+        assertThat(events).extracting(SseEvent::name).contains("delta", "done").doesNotContain("rag");
+        assertThat(events.toString()).doesNotContain("现有资料的适用条件不同");
     }
 
     // ------------------------------------------------------- 开关开启：事件 + 注入 + 落库

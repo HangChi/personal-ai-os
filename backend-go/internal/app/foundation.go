@@ -481,8 +481,8 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		}
 		if f.p6 != nil {
 			chatOptions.ExtraTools = append(chatOptions.ExtraTools, agent.KnowledgeTool(f.p6.Pipeline))
-			chatOptions.RetrieveEvidence = func(ctx context.Context, q string, limit int) (chat.RetrievedEvidence, error) {
-				r, e := f.p6.Pipeline.Retrieve(ctx, q, &limit)
+			chatOptions.RetrieveConversationEvidence = func(ctx context.Context, q string, history []knowledge.ConversationMessage, limit int) (chat.RetrievedEvidence, error) {
+				r, e := f.p6.Pipeline.RetrieveConversation(ctx, q, history, &limit)
 				if e != nil {
 					return chat.RetrievedEvidence{}, e
 				}

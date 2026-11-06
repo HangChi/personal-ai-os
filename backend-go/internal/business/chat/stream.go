@@ -42,24 +42,25 @@ type RetrievedEvidence struct {
 	Answer    string
 }
 type Engine struct {
-	SearchWeb        agent.WebSearch
-	Service          *Service
-	Runtime          *model.Runtime
-	Budget           *chatcontext.Budget
-	History          *History
-	Assembler        *Assembler
-	Registry         *agent.Registry
-	Plans            *agent.Plans
-	Attachments      *Attachments
-	Usage            *UsageService
-	Executor         *taskexec.Executor
-	Agent            config.AgentExecutionProperties
-	Timeout          time.Duration
-	Retrieve         func(context.Context, string, int) ([]Citation, error)
-	RetrieveEvidence func(context.Context, string, int) (RetrievedEvidence, error)
-	PostTurn         []func(context.Context, string, string, string) error
-	Metrics          StreamMetrics
-	Logger           *slog.Logger
+	SearchWeb                    agent.WebSearch
+	Service                      *Service
+	Runtime                      *model.Runtime
+	Budget                       *chatcontext.Budget
+	History                      *History
+	Assembler                    *Assembler
+	Registry                     *agent.Registry
+	Plans                        *agent.Plans
+	Attachments                  *Attachments
+	Usage                        *UsageService
+	Executor                     *taskexec.Executor
+	Agent                        config.AgentExecutionProperties
+	Timeout                      time.Duration
+	Retrieve                     func(context.Context, string, int) ([]Citation, error)
+	RetrieveEvidence             func(context.Context, string, int) (RetrievedEvidence, error)
+	RetrieveConversationEvidence func(context.Context, string, []knowledge.ConversationMessage, int) (RetrievedEvidence, error)
+	PostTurn                     []func(context.Context, string, string, string) error
+	Metrics                      StreamMetrics
+	Logger                       *slog.Logger
 }
 type StreamMetrics struct {
 	Measurements                       StreamMeasurements
@@ -269,7 +270,7 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 	}
 	var guardNotice string
 	if !p.summaryOnly && request.Knowledge() {
-		evidence, err := e.retrieveForPrompt(ctx, request.Content, request.Limit(), send)
+		evidence, err := e.retrieveForPrompt(ctx, request.Content, request.Limit(), send, p.Session.ConversationID)
 		if err != nil {
 			return err
 		}

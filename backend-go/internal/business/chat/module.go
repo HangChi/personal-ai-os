@@ -15,6 +15,7 @@ import (
 	"personal-ai-os/backend-go/internal/business/confirmation"
 	chatcontext "personal-ai-os/backend-go/internal/business/context"
 	"personal-ai-os/backend-go/internal/business/idempotency"
+	"personal-ai-os/backend-go/internal/business/knowledge"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/business/task"
 	"personal-ai-os/backend-go/internal/platform/config"
@@ -26,26 +27,27 @@ import (
 )
 
 type ModuleOptions struct {
-	SearchWeb        agent.WebSearch
-	ExtraTools       []agent.Definition
-	RetrieveEvidence func(context.Context, string, int) (RetrievedEvidence, error)
-	MemoryCapture    func(context.Context, string, string, int) error
-	MemoryPrompt     func(context.Context, string, string) (string, error)
-	Pool             *database.Pool
-	Properties       *config.Properties
-	Models           *model.Module
-	Tasks            *task.Service
-	Idempotency      *idempotency.Service
-	Confirmations    *confirmation.Service
-	Coordinator      *coordination.Coordinator
-	Gate             *modelgate.Gate
-	Rate             web.ModelLimiter
-	Executor         *taskexec.Executor
-	Transport        http.RoundTripper
-	Logger           *slog.Logger
-	Enabled          bool
-	Zone             *time.Location
-	Remote           ObjectStore
+	SearchWeb                    agent.WebSearch
+	ExtraTools                   []agent.Definition
+	RetrieveEvidence             func(context.Context, string, int) (RetrievedEvidence, error)
+	RetrieveConversationEvidence func(context.Context, string, []knowledge.ConversationMessage, int) (RetrievedEvidence, error)
+	MemoryCapture                func(context.Context, string, string, int) error
+	MemoryPrompt                 func(context.Context, string, string) (string, error)
+	Pool                         *database.Pool
+	Properties                   *config.Properties
+	Models                       *model.Module
+	Tasks                        *task.Service
+	Idempotency                  *idempotency.Service
+	Confirmations                *confirmation.Service
+	Coordinator                  *coordination.Coordinator
+	Gate                         *modelgate.Gate
+	Rate                         web.ModelLimiter
+	Executor                     *taskexec.Executor
+	Transport                    http.RoundTripper
+	Logger                       *slog.Logger
+	Enabled                      bool
+	Zone                         *time.Location
+	Remote                       ObjectStore
 }
 type Module struct {
 	Service     *Service
@@ -233,6 +235,7 @@ func OpenModule(parent context.Context, o ModuleOptions) (m *Module, err error) 
 	usage := &UsageService{Pool: o.Pool, Zone: o.Zone, Now: time.Now, Logger: o.Logger}
 	engine := &Engine{Service: service, Runtime: o.Models.Runtime, Budget: budget, History: history, Assembler: assembler, Registry: registry, Plans: plans, Attachments: files, Usage: usage, Executor: o.Executor, Agent: execution, Timeout: *timeout, Logger: o.Logger}
 	engine.RetrieveEvidence = o.RetrieveEvidence
+	engine.RetrieveConversationEvidence = o.RetrieveConversationEvidence
 	engine.SearchWeb = o.SearchWeb
 	if o.MemoryCapture != nil && cp.AutoMemory.Enabled {
 		engine.PostTurn = append(engine.PostTurn, func(ctx context.Context, _ string, user, reply string) error {
