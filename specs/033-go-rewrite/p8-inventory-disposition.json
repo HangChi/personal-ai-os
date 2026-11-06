@@ -308,8 +308,8 @@
       "id": "file:backend/pom.xml",
       "path": "backend/pom.xml",
       "sha256": "9a507857d5da3fd43f4d08f9f2c7017de4b0120a5457db6082984ef896d7f196",
-      "disposition": "parallel-go-build",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/PersonalOsApplication.java",
@@ -833,8 +833,8 @@
       "id": "file:backend/src/main/java/com/personalos/chat/controller/ChatRunController.java",
       "path": "backend/src/main/java/com/personalos/chat/controller/ChatRunController.java",
       "sha256": "aaa74e7abb6370599888d385d0a9146b5ab773246fd5e59ec374d4f0227a13b2",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java",
@@ -882,15 +882,15 @@
       "id": "file:backend/src/main/java/com/personalos/chat/dto/ChatRunDto.java",
       "path": "backend/src/main/java/com/personalos/chat/dto/ChatRunDto.java",
       "sha256": "13b1dcb0e9894ca64148ed4f94d5832479b6a02a47b98c271deb0d818b2fe190",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/dto/ChatSessionDto.java",
       "path": "backend/src/main/java/com/personalos/chat/dto/ChatSessionDto.java",
       "sha256": "7b06bf609d70157f456042369e603f6a5acb39da16514acd9ab0e1759bc9931a",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/dto/ChatSessionQuery.java",
@@ -966,8 +966,8 @@
       "id": "file:backend/src/main/java/com/personalos/chat/entity/ChatSessionEntity.java",
       "path": "backend/src/main/java/com/personalos/chat/entity/ChatSessionEntity.java",
       "sha256": "58f20fe09829d4d9822cf79699ddf83fae644c35c5261d44f77669c5d740cc3a",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/entity/MessageRole.java",
@@ -1029,8 +1029,8 @@
       "id": "file:backend/src/main/java/com/personalos/chat/repository/ChatRunRepository.java",
       "path": "backend/src/main/java/com/personalos/chat/repository/ChatRunRepository.java",
       "sha256": "a7ac41d08c1ed3610898d6fffff3716d7912b153e9459f0d67ad0e4fea4bdeb4",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/repository/ChatSessionRepository.java",
@@ -1099,8 +1099,8 @@
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatMessageService.java",
       "path": "backend/src/main/java/com/personalos/chat/service/ChatMessageService.java",
       "sha256": "a823fa37fb6c722bf8c8278a619312d3ad16321c10ce4831a2bb15ddcefdd08e",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatPromptAssembler.java",
@@ -1113,15 +1113,15 @@
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatRunService.java",
       "path": "backend/src/main/java/com/personalos/chat/service/ChatRunService.java",
       "sha256": "0302e1107a4dfd75b3c28c93193652cd80454322f1235ae06941e67b900ce0d8",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatSessionService.java",
       "path": "backend/src/main/java/com/personalos/chat/service/ChatSessionService.java",
       "sha256": "e0ccc3c178ea626e85d3cc7844ae6956af08d3713e501b52a7ccb46f7aac8f98",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatSummaryService.java",
@@ -1141,8 +1141,8 @@
       "id": "file:backend/src/main/java/com/personalos/chat/service/RunEmitter.java",
       "path": "backend/src/main/java/com/personalos/chat/service/RunEmitter.java",
       "sha256": "f8b0984079a291d7f551bbf19ab1edd84fe248cfadffd3cd67c4e11a9856ca88",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/service/RunEventBuffer.java",
@@ -1260,8 +1260,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/ai/AiChatClientProvider.java",
       "path": "backend/src/main/java/com/personalos/common/ai/AiChatClientProvider.java",
       "sha256": "a8d8ede02d393c9b10aafa0334d1f735b7a4a731c6c97a7d727f20c603680a4b",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/ai/AiProperties.java",
@@ -1393,8 +1393,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/ai/ToolResultPromptContributor.java",
       "path": "backend/src/main/java/com/personalos/common/ai/ToolResultPromptContributor.java",
       "sha256": "1ba3c253a372b12ab483eca02238b142864d4e1b44116c960c4d55a85725064c",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/ai/ToolSchemaOverhead.java",
@@ -1827,8 +1827,8 @@
       "id": "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationDto.java",
       "path": "backend/src/main/java/com/personalos/common/confirmation/ConfirmationDto.java",
       "sha256": "84bf9baaa1a8acdcad10a6015edcd32cc87e41be839c3a4e226c294f8631b34e",
-      "disposition": "explicit-go-responsibility",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationEntity.java",
@@ -2191,8 +2191,8 @@
       "id": "file:backend/src/main/java/com/personalos/export/ImportPayload.java",
       "path": "backend/src/main/java/com/personalos/export/ImportPayload.java",
       "sha256": "9bd7e140359d9395fd137955508dcb1a5c0ba5ece9d008617971a23343f41bd8",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/KnowledgeExportContributor.java",
@@ -2212,8 +2212,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/KnowledgeSearchContributor.java",
       "path": "backend/src/main/java/com/personalos/knowledge/KnowledgeSearchContributor.java",
       "sha256": "0d23c2463d207784e0761b8ae48ba0ca2e51a91da2fb8690974b55101eac1ac1",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/config/KnowledgeProperties.java",
@@ -2317,8 +2317,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/governance/KnowledgeGovernance.java",
       "path": "backend/src/main/java/com/personalos/knowledge/governance/KnowledgeGovernance.java",
       "sha256": "3a1df0ff883a5c4f38448a8ef24361a18f3d79efe10b9bb5ca83e4aef355346f",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/governance/SourceInfo.java",
@@ -2401,8 +2401,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/rag/EvidenceReview.java",
       "path": "backend/src/main/java/com/personalos/knowledge/rag/EvidenceReview.java",
       "sha256": "d37a6ee7fc65279a0be32f4cb904da9bea0f814be177f6f40407510a5cac5a10",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/rag/RagModelGateway.java",
@@ -2569,8 +2569,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java",
       "path": "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java",
       "sha256": "bd0e9e2d9a0613151e1c4046de7d883399129ef4b545f8798da046b2ece7b3ee",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/spi/KnowledgeSearchPort.java",
@@ -2961,15 +2961,15 @@
       "id": "file:backend/src/main/java/com/personalos/task/controller/TaskController.java",
       "path": "backend/src/main/java/com/personalos/task/controller/TaskController.java",
       "sha256": "ab00ba3996f45065df7be1998ff0eb79a6ab4e2345e6cc105ca1128b19afc5b6",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/task/dto/CreateTaskRequest.java",
       "path": "backend/src/main/java/com/personalos/task/dto/CreateTaskRequest.java",
       "sha256": "809bba510613ecbd7691c32a6248601a29cf04b71628ae6f07318fe193d6dfed",
-      "disposition": "explicit-go-responsibility",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/task/dto/DeletionAck.java",
@@ -2982,15 +2982,15 @@
       "id": "file:backend/src/main/java/com/personalos/task/dto/TaskDto.java",
       "path": "backend/src/main/java/com/personalos/task/dto/TaskDto.java",
       "sha256": "74e38b285efd5ec7e336da2405f8f44baec9e5ebe8441d19bb2f0197539fdba2",
-      "disposition": "explicit-go-responsibility",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/task/dto/TaskQuery.java",
       "path": "backend/src/main/java/com/personalos/task/dto/TaskQuery.java",
       "sha256": "6239c408d116b973e3521ddc917a4bef09a1fe92661b7724c836fb1d448256f8",
-      "disposition": "explicit-go-responsibility",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/task/dto/TaskStatsDto.java",
@@ -3003,15 +3003,15 @@
       "id": "file:backend/src/main/java/com/personalos/task/dto/UpdateTaskRequest.java",
       "path": "backend/src/main/java/com/personalos/task/dto/UpdateTaskRequest.java",
       "sha256": "7c3d27501babe8be7cb035d72fc00d23c3e47217e4eb91544b3848e8a08b14d9",
-      "disposition": "explicit-go-responsibility",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/task/entity/TaskEntity.java",
       "path": "backend/src/main/java/com/personalos/task/entity/TaskEntity.java",
       "sha256": "1117a495a05c14c4f7d230a9084344892ccddb726b836827a27541573554b3b8",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/task/entity/TaskPriority.java",
@@ -3045,8 +3045,8 @@
       "id": "file:backend/src/main/java/com/personalos/task/service/TaskService.java",
       "path": "backend/src/main/java/com/personalos/task/service/TaskService.java",
       "sha256": "e939d6ccf5b0a695ca709101525366f8023be15c223e5293f179f427f0cd5e43",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/resources/META-INF/spring.factories",
@@ -4200,8 +4200,8 @@
       "id": "file:backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
       "sha256": "c2d0d6ae90132b56c3706bcf656d5b57c20436a8c41c2a29ce9a318efd160037",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/reader/DocxDocumentReaderTest.java",
@@ -4781,8 +4781,8 @@
       "id": "file:frontend/src/App.vue",
       "path": "frontend/src/App.vue",
       "sha256": "3d46f20fc1f3ec12d64724cd22c80c4619df014f9da8f192adffe9be6c34a462",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/api/activity.ts",
@@ -4802,8 +4802,8 @@
       "id": "file:frontend/src/api/calendar.ts",
       "path": "frontend/src/api/calendar.ts",
       "sha256": "475127387c3a9e2ce2a99aeb9bbbfc3cf6218ae5b0ad97636d11832445807e8d",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/api/chat-runs.ts",
@@ -4921,8 +4921,8 @@
       "id": "file:frontend/src/api/tasks.ts",
       "path": "frontend/src/api/tasks.ts",
       "sha256": "cb2b77149e49955d29bf6d6311c1f1f76f32bdfd3fdce2f819c032f7e1df5d2b",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/api/usage.ts",
@@ -5033,8 +5033,8 @@
       "id": "file:frontend/src/components/calendar/CalendarNotifyBanner.vue",
       "path": "frontend/src/components/calendar/CalendarNotifyBanner.vue",
       "sha256": "12bead359d259792b363fdad88d78404a216abd68dac9b95c361cca36e69c7c2",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/calendar/ReminderNotice.vue",
@@ -5180,8 +5180,8 @@
       "id": "file:frontend/src/components/knowledge/RagTrace.vue",
       "path": "frontend/src/components/knowledge/RagTrace.vue",
       "sha256": "8c38d75a6b125535fd67815cf0aab81a6de31c69c0b637d00c73a5712465cfec",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/settings/McpSettingsPanel.vue",
@@ -5222,29 +5222,29 @@
       "id": "file:frontend/src/components/task/TaskBoardPanel.vue",
       "path": "frontend/src/components/task/TaskBoardPanel.vue",
       "sha256": "429e331afd537aa65812b04deea849939ce07dfd0bb176b23a09ff6dd0b04f37",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/task/TaskCreateForm.vue",
       "path": "frontend/src/components/task/TaskCreateForm.vue",
       "sha256": "020215836e505f91147758cd48720333cc2b6b02b443c9770a61b093d20dbb51",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/task/TaskEditDialog.vue",
       "path": "frontend/src/components/task/TaskEditDialog.vue",
       "sha256": "a9685fcdc8c71d20e6eccad971c1241b1f73fbcee2125435f8e6ed8316da8d4f",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/task/TaskTablePanel.vue",
       "path": "frontend/src/components/task/TaskTablePanel.vue",
       "sha256": "dc002817f1e65867d276dd20280477906080c162e44da950b2a6ece3575f10db",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/lib/board.ts",
@@ -5425,8 +5425,8 @@
       "id": "file:frontend/src/main.ts",
       "path": "frontend/src/main.ts",
       "sha256": "62c68356b0555fcae0c6acc45f20e353e9598ba8a657e8bf621f236292644585",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/notifications/permission.ts",
@@ -5460,8 +5460,8 @@
       "id": "file:frontend/src/router/index.ts",
       "path": "frontend/src/router/index.ts",
       "sha256": "06a3d24b3ea8afefbc81b5166aa281acca968e8f849a6194dcac93c43d1b1d11",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/stores/activity.ts",
@@ -5544,15 +5544,15 @@
       "id": "file:frontend/src/stores/task.ts",
       "path": "frontend/src/stores/task.ts",
       "sha256": "c95b6799f24838b44e71d1625039c25e6b97961a3378fbd503421377d4a6f77a",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/stores/ui.ts",
       "path": "frontend/src/stores/ui.ts",
       "sha256": "897c92e5fe93a4778dabbc761a212e6343c7f71e7f839f19e70af541829c4c32",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/stores/usage.ts",
@@ -5614,8 +5614,8 @@
       "id": "file:frontend/src/views/CalendarView.vue",
       "path": "frontend/src/views/CalendarView.vue",
       "sha256": "5f93963e3766bc9e215174aec9a97f0040d5b98b8acd0cfcd6f238745792f4c8",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/ChatView.vue",
@@ -5635,15 +5635,15 @@
       "id": "file:frontend/src/views/KnowledgeView.vue",
       "path": "frontend/src/views/KnowledgeView.vue",
       "sha256": "12eda767994e8702617bbd1a6115aaaec8849998f876c62a811e9879fd2ae5ad",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/LoginView.vue",
       "path": "frontend/src/views/LoginView.vue",
       "sha256": "49e4b5fc11fb0434445b400171601e74510f3ef5a2207d118ee66c35dcdb2df1",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/MemoryView.vue",
@@ -5677,8 +5677,8 @@
       "id": "file:frontend/src/views/TasksView.vue",
       "path": "frontend/src/views/TasksView.vue",
       "sha256": "f8aab82a67678a3b186ebe0865d148442cc40efb1b734dd2ba61b1f3654454ed",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/UsageView.vue",
@@ -5831,8 +5831,8 @@
       "id": "file:frontend/test/component/chat-composer.test.ts",
       "path": "frontend/test/component/chat-composer.test.ts",
       "sha256": "24ad8a133b828ef8aeb0f232bf04b7a0872f0d5cb6cfaf426785e5ed0ea583e8",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/component/chat-confirmation-list.test.ts",
@@ -5880,8 +5880,8 @@
       "id": "file:frontend/test/component/chat-model-switch.test.ts",
       "path": "frontend/test/component/chat-model-switch.test.ts",
       "sha256": "f12c44b4abbc14e44076355f1abc012345a858320653049e06126c2edad9f34c",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/component/chat-runs.test.ts",
@@ -5950,8 +5950,8 @@
       "id": "file:frontend/test/component/knowledge-rag.test.ts",
       "path": "frontend/test/component/knowledge-rag.test.ts",
       "sha256": "dde64999b0d63a1dd318e1b00f00aedb2f3d79b9981cfabbaac5dc34ff09d18d",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/component/model-profile-window.test.ts",
@@ -7659,32 +7659,56 @@
     {
       "id": "scope:calendar-import-recurrence-20261105",
       "status": "in_progress",
-      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
       "files": 6
     },
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
       "files": 72
     },
     {
       "id": "scope:dashboard-independent-statistics-20261105",
       "status": "in_progress",
-      "source_commit": "527d399fc5016157147fe66d80438259561d6e48",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
       "files": 2
     },
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
       "files": 40
     },
     {
       "id": "scope:test-and-stream-shutdown-20261106",
       "status": "in_progress",
-      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
       "files": 43
+    },
+    {
+      "id": "scope:task-workspace-candidate-20261106",
+      "status": "in_progress",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "files": 50
+    },
+    {
+      "id": "scope:safe-automation-candidate-20261106",
+      "status": "in_progress",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "files": 75
+    },
+    {
+      "id": "scope:recovery-and-rag-followup-candidate-20261106",
+      "status": "in_progress",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "files": 47
+    },
+    {
+      "id": "scope:write-negotiation-and-bounded-search-20261106",
+      "status": "in_progress",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "files": 20
     }
   ]
 }

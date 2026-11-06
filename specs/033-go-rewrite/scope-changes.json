@@ -5,13 +5,13 @@
     {
       "id": "scope:calendar-import-recurrence-20261105",
       "status": "in_progress",
-      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
-      "summary": "五种日程重复规则导入修复，Java / Go 均已通过独立 PostgreSQL 导出—导入往返，保留重复截止时间和提醒提前量。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "summary": "五种日程重复规则导入修复，Java / Go 均已通过独立 PostgreSQL 导出—导入往返，保留重复截止时间和提醒提前量。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
       "files": [
         {
           "path": "backend-go/internal/business/dataimport/import.go",
           "baseline_sha256": null,
-          "candidate_sha256": "7abad9967aadd7365a31d931cd17483302cdc7677ff71fa5c503369bec976ccb"
+          "candidate_sha256": "8beff67287aafb2c59eecef874ffc4be97dd66a1a17ef8768c3ca1ea2549a0d3"
         },
         {
           "path": "backend-go/internal/business/dataimport/import_calendar_test.go",
@@ -21,7 +21,7 @@
         {
           "path": "backend/src/main/java/com/personalos/export/DataImportService.java",
           "baseline_sha256": "131e98c17a09c74357e95847179db4c7ff066749466575a21d56bea94125fd7c",
-          "candidate_sha256": "f7645423407789818370b3ee98fee1096ed14a8dd2b1bcde16a059990024c690"
+          "candidate_sha256": "9e622bcabbd29fa3eed1b606645f7a52da7546fa59523c4e54743de332541e03"
         },
         {
           "path": "backend/src/test/java/com/personalos/export/DataImportCalendarTest.java",
@@ -56,17 +56,20 @@
         "backend-go/internal/app/foundation_calendar_import_integration_test.go",
         "specs/033-go-rewrite/retry-command-validation-20261105.md",
         "specs/033-go-rewrite/retry-followup-validation-20261105.md",
-        "specs/033-go-rewrite/retry-followup-results-20261105.json"
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
       "limitations": [
-        "真实数据库回归使用合成数据；不代表生产提醒送达或迁移发布批准。"
-      ]
+        "真实数据库回归使用合成数据；不代表生产提醒送达或迁移发布批准。",
+        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。"
+      ],
+      "parity_sha256": {}
     },
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
-      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
       "files": [
         {
           "path": ".env.example",
@@ -76,7 +79,7 @@
         {
           "path": "backend-go/internal/app/foundation.go",
           "baseline_sha256": null,
-          "candidate_sha256": "eef6b062e349924d87e76ac575534b633755ec9ff3f11098b19612c90dd29c96"
+          "candidate_sha256": "fb7ccc604e1b7ba4bbf23d81655365c007af38e1f8db91d2ca52fbfcc45cbfae"
         },
         {
           "path": "backend-go/internal/business/agent/knowledge.go",
@@ -86,7 +89,7 @@
         {
           "path": "backend-go/internal/business/agent/mcp.go",
           "baseline_sha256": null,
-          "candidate_sha256": "ce192639ddc60b3d2b041179bb6d6804507e77533190fc5eb1a04cf7c8741fc1"
+          "candidate_sha256": "6f3a705fe62da8670b5f837c18bf1a36df5571327469dde61ef37a129d9a8ee1"
         },
         {
           "path": "backend-go/internal/business/agent/mcp_web_sources.go",
@@ -126,7 +129,7 @@
         {
           "path": "backend-go/internal/business/chat/model.go",
           "baseline_sha256": null,
-          "candidate_sha256": "04a25efa09a536bbd56d29c2c2f86e163974a18b81787ff6cd741767394f6501"
+          "candidate_sha256": "c560e27e661ef0c7fe235ca5f064920b94ca5f2699b6aa60c85c4f82fbc4cd6c"
         },
         {
           "path": "backend-go/internal/business/chat/module.go",
@@ -136,7 +139,7 @@
         {
           "path": "backend-go/internal/business/chat/postgres.go",
           "baseline_sha256": null,
-          "candidate_sha256": "a25eba6d370a280feebded2e0a04d796ad07503c4d828b1b670085f83a77b8c5"
+          "candidate_sha256": "70111b20a7db2318e81c578fe597db46416c96d4dd2baea7a6304cf112efaaa7"
         },
         {
           "path": "backend-go/internal/business/chat/postgres_integration_test.go",
@@ -156,12 +159,12 @@
         {
           "path": "backend-go/internal/business/chat/service.go",
           "baseline_sha256": null,
-          "candidate_sha256": "30a142edbd6191b8f408fa22650889cb608b0f1274ab814a1bab2c889e1f7a9a"
+          "candidate_sha256": "f92ff0b8d3e63a9d0ed99109d1e9130ec4232b5edae6905fb0f08aaf98921408"
         },
         {
           "path": "backend-go/internal/business/chat/stream.go",
           "baseline_sha256": null,
-          "candidate_sha256": "60d198dfc35404befdbf7c9c34bfb13995a7b2343a4015ebb5b3fde57ff9c806"
+          "candidate_sha256": "63d6f8efa053285edc14926847c016d0e9bd1815646bb239ae3b7189f022a970"
         },
         {
           "path": "backend-go/internal/business/chat/turn_citations.go",
@@ -201,7 +204,7 @@
         {
           "path": "backend-go/internal/business/knowledge/rag.go",
           "baseline_sha256": null,
-          "candidate_sha256": "f975f0e17d0dc8df567a3a7b3de9099ad3ec1c1242b524eec4e2a14b5c868c7b"
+          "candidate_sha256": "032204d876b4cd3559a76cb1693c2f82fcf9ad11f23ade1129ca6a64dc44cba9"
         },
         {
           "path": "backend-go/internal/business/knowledge/rag_parity_test.go",
@@ -211,7 +214,7 @@
         {
           "path": "backend-go/internal/business/knowledge/rag_test.go",
           "baseline_sha256": null,
-          "candidate_sha256": "4b9212fa3a29192d256c5893f9a32a0c7ae393a94d071110c71c5fe388348838"
+          "candidate_sha256": "6c0fb2437e3e7461813db89f49f0d7bc6e87f5429e744157148dd8cc16424201"
         },
         {
           "path": "backend-go/internal/business/knowledge/testdata/java-rag-pipeline.json",
@@ -236,7 +239,7 @@
         {
           "path": "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java",
           "baseline_sha256": "400368d26cd5851759899b8d52896c1dd1cde9b5073df5eba8edf531b72456f6",
-          "candidate_sha256": "5893207354768a5424337f29bd4efd888841be8ce7f2be23429fb0cfd4bcc25b"
+          "candidate_sha256": "2f28955c7b483337cd70d7e35a69ba5c3fd74d188c5aae9f21f5b8a9c7c710b3"
         },
         {
           "path": "backend/src/main/java/com/personalos/chat/service/ChatMarkdownExporter.java",
@@ -301,7 +304,7 @@
         {
           "path": "backend/src/main/java/com/personalos/mcp/tool/McpToolCallback.java",
           "baseline_sha256": "975be9d00624b61180f268b0806d6a5c61d2f191212b914289bf397513fe41be",
-          "candidate_sha256": "d621488af17332eccaf91d74b3da44f89c827898bf3ccac967096d40e191a9a6"
+          "candidate_sha256": "e9ff8900b7d247f2187da882eac9174c18d8bfcb1228c8b090c3425276a0793d"
         },
         {
           "path": "backend/src/main/java/com/personalos/mcp/tool/McpWebSources.java",
@@ -341,12 +344,12 @@
         {
           "path": "docs/mcp.md",
           "baseline_sha256": "5fb0a1174bbada8be293c5548f9eecfb7b9c00c347bf7b2d26826655a6b4ad55",
-          "candidate_sha256": "b58a6906bcdff0c718895345876e9fa442f67b025dbb02f29d741ad45d1f2ee3"
+          "candidate_sha256": "388ce869a9efb7591514f7dd7ac2eede034abce26e64dd7ce27bfa7a55080b71"
         },
         {
           "path": "frontend/src/api/chat-runs.ts",
           "baseline_sha256": "7369cfd1fd22d29c110ede8dfcb73ad0d129758e85ebba96cd5ec8eeb63ce679",
-          "candidate_sha256": "a9688f8860632bfd8998e5da218c09db808b5ed952896320f328550ed1346281"
+          "candidate_sha256": "70037758ec9f4cf384295f547f49d14ad833d586b26b0264b6efc5c99ff1c773"
         },
         {
           "path": "frontend/src/api/chat.ts",
@@ -391,17 +394,17 @@
         {
           "path": "frontend/src/stores/chat.ts",
           "baseline_sha256": "c24e1e331377cd47b9053de0350a2b2c3579c272c016a1121bfb1823ae43719f",
-          "candidate_sha256": "9a07d021c4cf3f5ec4880f34124a4b10fa6ef138af4dc1231494a7bb42e34b12"
+          "candidate_sha256": "bdcb87f93471d97253f37af91cc733951b6c68b289febf793a58a72ba1f954b6"
         },
         {
           "path": "frontend/src/types/api.ts",
           "baseline_sha256": "30214fee203c382860f16c6a31cd0827bb5b004b1638b0051fc6134f671de78a",
-          "candidate_sha256": "a83bd47cbcf87e65da9e7318a2727047a5a62a2b716770bd4ec3b0a352f79759"
+          "candidate_sha256": "9d0444baa5d846757a6c3fe571e310b4bb4b779e9358bc8ecfd8e99eb0334ba1"
         },
         {
           "path": "frontend/src/views/ChatView.vue",
           "baseline_sha256": "96116adc1684fe6a0950ced4a9f8f9e1c0e7540377dcaf28161c8fa0ecbb6e47",
-          "candidate_sha256": "65460ee56fa1a76dcddd45081668ba6fc1f15c25fb474a50c2db8e40cd4886e5"
+          "candidate_sha256": "b1f4d49c357a67ee6cce5f406869ba9e05b325b9c167e1f39f4a436e4699e6a5"
         },
         {
           "path": "frontend/test/chat-send-retry.test.mjs",
@@ -482,28 +485,31 @@
         "frontend/test/component/markdown-citations.test.ts",
         "specs/033-go-rewrite/retry-command-validation-20261105.md",
         "specs/033-go-rewrite/retry-followup-validation-20261105.md",
-        "specs/033-go-rewrite/retry-followup-results-20261105.json"
+        "specs/033-go-rewrite/retry-followup-results-20261105.json",
+        "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
       "limitations": [
         "Java 真实 HTTP + PostgreSQL 已验证检索故障 warning 后继续 delta/done、无 error 终态且降级轮引用为零；真实浏览器双端全流程回归仍待执行。",
-        "既有联网 / MCP / citation audit 候选的真实服务与事实质量验收仍开放，不继承原迁移通过声明。"
-      ]
+        "既有联网 / MCP / citation audit 候选的真实服务与事实质量验收仍开放，不继承原迁移通过声明。",
+        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。"
+      ],
+      "parity_sha256": {}
     },
     {
       "id": "scope:dashboard-independent-statistics-20261105",
       "status": "in_progress",
-      "source_commit": "527d399fc5016157147fe66d80438259561d6e48",
-      "summary": "首页独立读取两端既有统计接口；筛选隔离、失败、零值、加载和重试组件回归已通过。",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "summary": "首页独立读取两端既有统计接口；筛选隔离、失败、零值、加载和重试组件回归已通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
       "files": [
         {
           "path": "frontend/src/views/HomeView.vue",
           "baseline_sha256": "d10d9069a6075c84eacfa7b029b96b0b64d3a93cb7ab36a7b718f8687fef1bed",
-          "candidate_sha256": "e96fe6da0333ee6b736de8c910e5791a0967021a95ef7efef835d283bc6756ea"
+          "candidate_sha256": "6b4a3b75961351aa47b2f505a3a60c6f24ba11f2fa9b82b0d2f1bbd99f4461c6"
         },
         {
           "path": "frontend/test/component/home-stats.test.ts",
           "baseline_sha256": null,
-          "candidate_sha256": "8e7f5848e9069ae9c209b9d1321a090edaf73c866d1771a50c12c8a52bf716e3"
+          "candidate_sha256": "62b98e834b59f4a3e44d2cf808e2475fbad101bae2586318e0bf3a09e9c3d97f"
         }
       ],
       "parity": {
@@ -523,27 +529,29 @@
       "evidence": [
         "specs/033-go-rewrite/post-baseline-scope.md",
         "specs/033-go-rewrite/repair-validation-20261105.md",
-        "frontend/test/component/home-stats.test.ts"
+        "frontend/test/component/home-stats.test.ts",
+        "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
       "limitations": [
-        "两端统计接口实现静态核对；真实 HTTP + 浏览器联调待执行。"
+        "两端统计接口实现静态核对；真实 HTTP + 浏览器联调待执行。",
+        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。"
       ],
       "parity_sha256": {
-        "backend-go/internal/business/calendar/http.go": "3edb6d97666204407e12ac338cc5b9687c9ea6d2362be1f325c27ccc99106f84",
-        "backend-go/internal/business/knowledge/http.go": "fbd9a09ff817047dfa61f2164839568b061ba99e9bea479621d59920440a6dcf",
-        "backend-go/internal/business/memory/http.go": "1664480a0cb83fb84b752de1bd07317ee9b83828d2db4b016687bb30400af27f",
-        "backend-go/internal/business/task/http.go": "d3aa6d343d9b3ec508128300dab72536fccb6bbe01f68cf0bf0a16f7584ebfa1",
+        "backend/src/main/java/com/personalos/task/controller/TaskController.java": "0f4c3540549c745d531659d94ef652722f99df51591484e0a68adc81e1fd8b68",
         "backend/src/main/java/com/personalos/calendar/controller/CalendarController.java": "7c2011cd692080aeba5a84591fdaa8aeaa4d35c82c6adeea8cfdc14ec323c19d",
         "backend/src/main/java/com/personalos/knowledge/controller/KnowledgeController.java": "10843600a0ad34c2789a00031eebb53bd213535eade1716dbcb42af1e4cfccd7",
         "backend/src/main/java/com/personalos/memory/controller/MemoryController.java": "8a57a2980ef1092342d91ce37628610e741971a83ed60053d83d45a8555457c2",
-        "backend/src/main/java/com/personalos/task/controller/TaskController.java": "ab00ba3996f45065df7be1998ff0eb79a6ab4e2345e6cc105ca1128b19afc5b6"
+        "backend-go/internal/business/task/http.go": "268bc51ad8e93cc3c7c6d9ec9959dc443ae2b808f313f67f35d14ea4ad267033",
+        "backend-go/internal/business/calendar/http.go": "fda8137feb6da84d4e55e59afeb5be24189960c0d3ba0b3d918fa86517651ff5",
+        "backend-go/internal/business/knowledge/http.go": "eabb7adbb71f83a5c6b422b19c18df6bafb9b909573764911ef3f544ed2e3423",
+        "backend-go/internal/business/memory/http.go": "1664480a0cb83fb84b752de1bd07317ee9b83828d2db4b016687bb30400af27f"
       }
     },
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
-      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
       "files": [
         {
           "path": "backend-go/internal/app/foundation_p8_integration_test.go",
@@ -563,7 +571,7 @@
         {
           "path": "backend-go/internal/business/agent/mcp_test.go",
           "baseline_sha256": null,
-          "candidate_sha256": "ca5177710e2bf4dd5cf26779848bb5256eafbf869bc556d87e3e30724aa92bef"
+          "candidate_sha256": "e60b5f428de2df91e6627ec25c6b1a15f8d63425f854588d0614b623019e3ae2"
         },
         {
           "path": "backend-go/internal/business/chat/commands_http_test.go",
@@ -573,12 +581,12 @@
         {
           "path": "backend-go/internal/business/chat/module_http.go",
           "baseline_sha256": null,
-          "candidate_sha256": "80af36e5e0f481b67bc993fa022d250fdf7eb7e06711d436612d8c588ace641a"
+          "candidate_sha256": "86f612c70181f0e359ecbc4b24afdb54b9912ccab27a51689a57ff39f0e29fee"
         },
         {
           "path": "backend-go/internal/business/confirmation/confirmation.go",
           "baseline_sha256": null,
-          "candidate_sha256": "a4d7dcab5afed60017f0f3f5a7f5a3315a4ae4e341b971ba3717759f396b706b"
+          "candidate_sha256": "eef3fa0c2457f80d5b0f6dcbce5235491dc5341e2e755334c254541a8f025e6e"
         },
         {
           "path": "backend-go/internal/business/idempotency/idempotency.go",
@@ -588,7 +596,7 @@
         {
           "path": "backend-go/internal/business/mcp/confirmation.go",
           "baseline_sha256": null,
-          "candidate_sha256": "99af00da2db723cc56d18296141aa4eccc2eed2399892d1f4ef10472ca5b33d2"
+          "candidate_sha256": "3050ecd4148afe11208f10d58efdccb5b983e74eb9482bd8bcb6b5e3f40bb95b"
         },
         {
           "path": "backend-go/internal/business/mcp/operation.go",
@@ -598,7 +606,7 @@
         {
           "path": "backend-go/internal/business/mcp/registry.go",
           "baseline_sha256": null,
-          "candidate_sha256": "091da0e1faa68b6005cf357a53431b1b048c57a88a1e71cef93591f8193af721"
+          "candidate_sha256": "3e5191d2e7194fd9c37c53285fe73b9364503005ff1c74301320c177ef31aaab"
         },
         {
           "path": "backend-go/internal/platform/maintenance/retention.go",
@@ -613,7 +621,7 @@
         {
           "path": "backend/src/main/java/com/personalos/chat/controller/DirectToolController.java",
           "baseline_sha256": null,
-          "candidate_sha256": "4162cec5720061746e1e6c75a704870cbb4f2a9af85c45c321e115914109aa0d"
+          "candidate_sha256": "5ec66df692ad3b76017fdc68d0cacd8037f080e7e718d6face31ae41227413d7"
         },
         {
           "path": "backend/src/main/java/com/personalos/common/ai/tool/ToolExecutor.java",
@@ -628,7 +636,7 @@
         {
           "path": "backend/src/main/java/com/personalos/common/confirmation/ConfirmationService.java",
           "baseline_sha256": "4761b4edf27a12f87613ebd00e4cb33eadb10a929f44efac7d873584bda8afb8",
-          "candidate_sha256": "87bbe22029c2d79b92167a37607baa966007a0bf16687c1056e96115c445037f"
+          "candidate_sha256": "0c7d9517ff74b5f294c711d9cc0bbd1773bfdc09bf3d0ea72216a477ca75ac23"
         },
         {
           "path": "backend/src/main/java/com/personalos/common/idempotency/IdempotencyService.java",
@@ -643,7 +651,7 @@
         {
           "path": "backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationHandler.java",
           "baseline_sha256": "68e46b91a1a5342e9ad342889014ad9ef369bed731a7212a0f05fbfd83d52661",
-          "candidate_sha256": "2c57a1576ea0352919a7c13f206f72fc0716190d6fcd623a465f3211c2f3456d"
+          "candidate_sha256": "e4e55190bfa0e3ca46eef9d1b487ad5801f16d7a1de35a6f0960be69fff8c10d"
         },
         {
           "path": "backend/src/main/java/com/personalos/mcp/tool/McpOperation.java",
@@ -668,17 +676,17 @@
         {
           "path": "backend/src/test/java/com/personalos/mcp/McpConfirmationIntegrationTest.java",
           "baseline_sha256": "cbc2ea8f51f5f2199c180c9dfdcab0da112b3d644cf94620549dabe10ecc50ba",
-          "candidate_sha256": "085e702798ee8ddb5494cc958ac0a0c9c807964f4f8cc5839ff8231ca873c9ce"
+          "candidate_sha256": "6c83de4c566ab9c42bb35a8d00e926e71e32a9af5fb72e9e46f1deadbb40445c"
         },
         {
           "path": "backend/src/test/java/com/personalos/mcp/confirmation/McpConfirmationSafetyTest.java",
           "baseline_sha256": null,
-          "candidate_sha256": "ad6b5be0141ebb678632ef4d2badce1f65bd8fc8f30c5fe679c69d79fa3f61b5"
+          "candidate_sha256": "1264ceb29a9f17345bc0f53b4aa51e741a064662410f364d4c9e7a5e35ba3242"
         },
         {
           "path": "backend/src/test/java/com/personalos/mcp/tool/McpRetrySafetyTest.java",
           "baseline_sha256": null,
-          "candidate_sha256": "fcc77a05d248669298f8329b889550e7367b7aca7e4d0a917af88664960edcf8"
+          "candidate_sha256": "1bc4a6c691a1540e8d081f77b16d895751b99e703b7547995ee2c7ed57ddd993"
         },
         {
           "path": "docs/chat-commands.md",
@@ -688,7 +696,7 @@
         {
           "path": "frontend/components.d.ts",
           "baseline_sha256": "16aab8913c34bc503798858a315e80311a892e948c0f2f6224cc0756a13154d1",
-          "candidate_sha256": "22df7f24cd609225b43d24a0721ed49de66928828fdccaec5a9147a365ddd76c"
+          "candidate_sha256": "140c3e0f21344817e1368e91e6eddce01e7c8aaddb7648e057bae78d59663bfd"
         },
         {
           "path": "frontend/src/api/chat-tools.ts",
@@ -703,7 +711,7 @@
         {
           "path": "frontend/src/components/chat/ChatComposer.vue",
           "baseline_sha256": "f0efc62dfb185265e10906cc31d1715266bb71af09e06c99c6e8bc8483c1c464",
-          "candidate_sha256": "f74f963bca699c3b0d6ebaab11c77b76bf24b16e941fd6807762e773d9affba3"
+          "candidate_sha256": "b4ec38cc2d7ea07609afa4416c90b083a01eed3461703f0ca67bc85e5d2345a6"
         },
         {
           "path": "frontend/src/lib/chat-commands.ts",
@@ -723,7 +731,7 @@
         {
           "path": "frontend/test/component/chat-command-view.test.ts",
           "baseline_sha256": null,
-          "candidate_sha256": "c7172442554086f8bf87937dc8674c06878380cc5d9e5a73b8e27814f2976e0f"
+          "candidate_sha256": "2e041f6460eb37310bf388c40d8f620133e41253ac9df61f45ae0b1e1cf2427d"
         },
         {
           "path": "frontend/test/component/chat-commands.test.ts",
@@ -733,7 +741,7 @@
         {
           "path": "backend/src/main/java/com/personalos/common/exception/GlobalExceptionHandler.java",
           "baseline_sha256": "4d5c909f18728d3995935cf302f810b32fc9aa6c9e5ae5ddefc8f19a98b56839",
-          "candidate_sha256": "40460505525f59b082a26fd1e76e6063b020d2590589f96dd0edd179aedcf44c"
+          "candidate_sha256": "437048a95dac5812202c818ea964adfbdae24b562aa8d4937f246b3d6559d07b"
         },
         {
           "path": "backend/src/test/java/com/personalos/chat/DirectToolIntegrationTest.java",
@@ -784,21 +792,24 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "scripts/migration/mcp_stdio_fault_proxy.py",
         "scripts/migration/run_retry_command_acceptance.py",
-        "scripts/migration/run_retry_commands_browser.mjs"
+        "scripts/migration/run_retry_commands_browser.mjs",
+        "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
       "limitations": [
         "已验证正式 filesystem MCP 2.1.0 的真实副作用与未知结果保护；不认证任意远端自身实现去重语义。",
         "已完成两端真实认证浏览器的快捷指令/确认/刷新重试与三宽度验收；原模型、搜索、推送、上下文 E2E 和生产验收仍另列。",
         "MCP 结果未知时保留执行所有权，不能据此承诺任意远端恰好执行一次。",
         "前端标识保留仅覆盖当前标签页及刷新；新标识、改变参数或新会话属于新操作。成功回执清理会缩短历史去重范围。",
-        "原五项发布门禁保持原状；本轮增量通过不代表完整迁移或发布批准。"
-      ]
+        "原五项发布门禁保持原状；本轮增量通过不代表完整迁移或发布批准。",
+        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。"
+      ],
+      "parity_sha256": {}
     },
     {
       "id": "scope:test-and-stream-shutdown-20261106",
       "status": "in_progress",
-      "source_commit": "d4d6002dd82033a23fcd16b7ddb3d6e2331d663a",
-      "summary": "Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "summary": "Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
       "files": [
         {
           "path": "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
@@ -863,7 +874,7 @@
         {
           "path": "backend/src/test/java/com/personalos/chat/ChatRunIntegrationTest.java",
           "baseline_sha256": "80e97e3664e79504a1a49bf70d74cc8718f80439afb95b8f51b52f26b35b3423",
-          "candidate_sha256": "eb6e15127ae9fefe1bf3c2000a50f3978c113735e400bafcae2b4fd8dfd98f67"
+          "candidate_sha256": "797550722deca166cca4fdfb7fa730d9175a5b2e247dc5cca8b178ca02b1d32a"
         },
         {
           "path": "backend/src/test/java/com/personalos/chat/ChatStreamTerminationIntegrationTest.java",
@@ -913,7 +924,7 @@
         {
           "path": "backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java",
           "baseline_sha256": "bf621760e57162e1f8618a1c6a8566b1408492f36e01cdc041486f8032e73fb2",
-          "candidate_sha256": "dc8f9dda957667238a53cf36bc9e3a157bc9f04f600931f9e5c5effca01d9447"
+          "candidate_sha256": "7ffd174b63e3be8a81220e23adc122c3b4b59578202618640ce6a5be2ce923b4"
         },
         {
           "path": "backend/src/test/java/com/personalos/export/DataExportIntegrationTest.java",
@@ -963,7 +974,7 @@
         {
           "path": "backend/src/test/java/com/personalos/knowledge/governance/KnowledgeGovernanceIntegrationTest.java",
           "baseline_sha256": "6b0635cb13ea53658223273d6c219f5d73d4b6f502bcc981e36a89c9b9760e74",
-          "candidate_sha256": "b2ba6fe706067f778801f01775cf82004ed5199f0cece4b78f4f8063f5a7e86b"
+          "candidate_sha256": "0afda10aee531e44f0f6af998ecae1dc52c1d920e1735e0fed21ea0e0e0af860"
         },
         {
           "path": "backend/src/test/java/com/personalos/knowledge/rag/AdvancedRagIntegrationTest.java",
@@ -1036,7 +1047,7 @@
       "parity_sha256": {
         "backend-go/internal/business/calendar/stream.go": "33dea6f6fc979630c9a62075accc930081d62652fba70da69d2e8c3c01ba4e91",
         "backend-go/internal/business/calendar/stream_test.go": "74649c6a2916953953a46900ee33b88f7e1c10cc1c8bcae9fcd168ece0005bb6",
-        "backend-go/internal/app/foundation.go": "eef6b062e349924d87e76ac575534b633755ec9ff3f11098b19612c90dd29c96",
+        "backend-go/internal/app/foundation.go": "fb7ccc604e1b7ba4bbf23d81655365c007af38e1f8db91d2ca52fbfcc45cbfae",
         "backend-go/internal/app/foundation_p5.go": "34f08f7d2c5290a1ddf62eff4bfaa1e9c3847c3f69a2e16638cf8a39c4b889c2",
         "backend-go/internal/app/foundation_postgres_integration_test.go": "10c5a539703854531882959b84a799cb432c4fb083de3540e02636dba5b88f10"
       },
@@ -1048,12 +1059,1098 @@
         "backend/src/test/java/com/personalos/support/ContainerContextLifecycleIntegrationTest.java",
         "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
         "backend-go/internal/business/calendar/stream_test.go",
-        "backend-go/internal/app/foundation_postgres_integration_test.go"
+        "backend-go/internal/app/foundation_postgres_integration_test.go",
+        "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
       "limitations": [
         "测试基础设施与提醒 SSE 停机顺序的增量验证，不覆盖所有远端服务或生产故障模式。",
         "不提高超时、不修改原覆盖率阈值，不改原冻结清单、42项迁移和五项发布门禁。",
-        "不继承其它迁移范围的完成声明。"
+        "不继承其它迁移范围的完成声明。",
+        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。"
+      ]
+    },
+    {
+      "id": "scope:task-workspace-candidate-20261106",
+      "status": "in_progress",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "summary": "登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。",
+      "files": [
+        {
+          "path": "backend-go/internal/business/dataimport/payload.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "c94e8a6cebd8decec0b61a680e30d5ed007c2405b60af56cabd3a2ecd6520649"
+        },
+        {
+          "path": "backend-go/internal/business/task/model.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "9ea4b8470205ee369c251d4b9f87c068d7ebed16fbc1a2656e3212f9b9a47829"
+        },
+        {
+          "path": "backend-go/internal/business/task/postgres.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "82f211cae23b57dfb01d851e81d314f4597b6f2d6029f3aae48186dab6c98618"
+        },
+        {
+          "path": "backend-go/internal/business/task/project_export.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "3bc593c9f12a3f2c660865d4f31e425d2b1fc95471b28ea5b93f753541f5a0bd"
+        },
+        {
+          "path": "backend-go/internal/business/task/service.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "d4ec567b6f1550129b9f9eeb507cce3c3db0bbbec414b4fc9b337fb30ddb232f"
+        },
+        {
+          "path": "backend-go/internal/business/task/workspace.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "50ba90787f3e7519408c0f7db6d2311bcd20686bd75d8875a4dd41f11f1b3630"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/export/ImportPayload.java",
+          "baseline_sha256": "9bd7e140359d9395fd137955508dcb1a5c0ba5ece9d008617971a23343f41bd8",
+          "candidate_sha256": "b5241cc4c4ed8c7f08d90b264fd9f7ba84be1ece06100cdac380a5b325f28d61"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/ProjectExportContributor.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "3139d6c451384b8499f17469c931f648b697a4aeeabc1150fdc013dc8e8a12eb"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/controller/TaskController.java",
+          "baseline_sha256": "ab00ba3996f45065df7be1998ff0eb79a6ab4e2345e6cc105ca1128b19afc5b6",
+          "candidate_sha256": "0f4c3540549c745d531659d94ef652722f99df51591484e0a68adc81e1fd8b68"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/controller/WorkspaceController.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "ab7657e04f3e23226994cb165824e7879c41f6af2a74511c63fe8c5283798d30"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/dto/CreateTaskRequest.java",
+          "baseline_sha256": "809bba510613ecbd7691c32a6248601a29cf04b71628ae6f07318fe193d6dfed",
+          "candidate_sha256": "98ec5f0589f6494e426f5d7ea1bf14c20303c4eb38319aeffbb03383f580f79e"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/dto/ProjectChange.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "58e51a0b9e27502ed7278e0bd3e8eda4368c9aed4ab765567744037f669d55db"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/dto/ProjectDto.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "4c21bbcdb6bb8d18b8d85cce9a877b10b157a0cb3dfc964b7f9e177ac371dc61"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/dto/TaskDto.java",
+          "baseline_sha256": "74e38b285efd5ec7e336da2405f8f44baec9e5ebe8441d19bb2f0197539fdba2",
+          "candidate_sha256": "a9126f46ced7aaea219eff0abcb83ad920d207d17bb26d4b36c5e537141d9dc4"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/dto/TaskQuery.java",
+          "baseline_sha256": "6239c408d116b973e3521ddc917a4bef09a1fe92661b7724c836fb1d448256f8",
+          "candidate_sha256": "879ac44e6ff2863dc1377438064e13775ec365bc4781c91162595dcfac341ecd"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/dto/UpdateTaskRequest.java",
+          "baseline_sha256": "7c3d27501babe8be7cb035d72fc00d23c3e47217e4eb91544b3848e8a08b14d9",
+          "candidate_sha256": "6471d39c6af6aeba7c0a47a5642af61d4f323ea8cc299db5accddda87da11e15"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/entity/TaskEntity.java",
+          "baseline_sha256": "1117a495a05c14c4f7d230a9084344892ccddb726b836827a27541573554b3b8",
+          "candidate_sha256": "312219925856322ba21266816d2c9ee93fc925cf379b7d49b79a072db1a7339b"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/repository/WorkspaceRepository.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "c9475d5a415e74bf4afa6aa30e24b8d93492bbf84958c84a7050df5e8b99ac91"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/service/TaskService.java",
+          "baseline_sha256": "e939d6ccf5b0a695ca709101525366f8023be15c223e5293f179f427f0cd5e43",
+          "candidate_sha256": "a3c53d3074a8612ad203aeef762ddb81659a48a4a47bf234544469c7644311b0"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/task/service/WorkspaceService.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "9be4c7808a0244ca83cf6d318a9624841b3c799b062956b6a9cefcc2cdc134c9"
+        },
+        {
+          "path": "backend/src/main/resources/db/migration/V43__task_workspace.sql",
+          "baseline_sha256": null,
+          "candidate_sha256": "694ffddcaea61dc94286149c790bc541557295b33d3f17b1676eab04edaf279d"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/task/TaskWorkspaceIntegrationTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "2a0aefee3af716854a8ede9066c5bd865a34d1d4cc14344945c43064f2dbae46"
+        },
+        {
+          "path": "frontend/src/api/tasks.ts",
+          "baseline_sha256": "cb2b77149e49955d29bf6d6311c1f1f76f32bdfd3fdce2f819c032f7e1df5d2b",
+          "candidate_sha256": "0994c57628dad5fb203a2b6529067f4f6bc335383c6addbccfa6c3e3cd047260"
+        },
+        {
+          "path": "frontend/src/api/workspace.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "7b37be84cd9882b3ef1e96e3ae226b19b391e726b35b02c2a3c3b081e45c0b59"
+        },
+        {
+          "path": "frontend/src/components/home/TodayWorkspace.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "daec1551026fa4073943fb3b5452954c2606f5dbae9daacc1b80484a1a1be00f"
+        },
+        {
+          "path": "frontend/src/components/task/ProjectManager.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "b234e1bea8d6543493a30a8c15e21f8b9f10047c85af7abd82e19c23bad25c52"
+        },
+        {
+          "path": "frontend/src/components/task/TaskBoardPanel.vue",
+          "baseline_sha256": "429e331afd537aa65812b04deea849939ce07dfd0bb176b23a09ff6dd0b04f37",
+          "candidate_sha256": "8ccbc7c2bdc7e1d871f4b859af807bbc015b9e29a57c57f1171d0fdc46ceebfa"
+        },
+        {
+          "path": "frontend/src/components/task/TaskCreateForm.vue",
+          "baseline_sha256": "020215836e505f91147758cd48720333cc2b6b02b443c9770a61b093d20dbb51",
+          "candidate_sha256": "051d2e096ebf15b64ede82188d9c0b419b71f75bd2884d8a366fb429935406f0"
+        },
+        {
+          "path": "frontend/src/components/task/TaskEditDialog.vue",
+          "baseline_sha256": "a9685fcdc8c71d20e6eccad971c1241b1f73fbcee2125435f8e6ed8316da8d4f",
+          "candidate_sha256": "628db03e38a6e38eee78e2ad2040078c2d3ce51076917690242d828e62503dba"
+        },
+        {
+          "path": "frontend/src/components/task/TaskOrganizationFields.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "5d6d33ed2e876568bdb467235b5a26bbb2378e993e854082657449d12b3ff739"
+        },
+        {
+          "path": "frontend/src/components/task/TaskTablePanel.vue",
+          "baseline_sha256": "dc002817f1e65867d276dd20280477906080c162e44da950b2a6ece3575f10db",
+          "candidate_sha256": "e5a535a9ce2c4470f68956905f8de410727c546b4a6abdd72e03e6bb0768f4d4"
+        },
+        {
+          "path": "frontend/src/lib/task-hierarchy.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "00fd248df179e1f6c6158a68450c944a3e67dd019585132ee28399aa1e0e10ee"
+        },
+        {
+          "path": "frontend/src/lib/today.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "0c3d247c6f5082dd3733d8e0d9e3c2784e24565cd4d77229e851dd84a226dfa6"
+        },
+        {
+          "path": "frontend/src/stores/task.ts",
+          "baseline_sha256": "c95b6799f24838b44e71d1625039c25e6b97961a3378fbd503421377d4a6f77a",
+          "candidate_sha256": "8d98c3a42eca74d553964dbab786de61fe227d49f32b1245f2d230153ccd1493"
+        },
+        {
+          "path": "frontend/src/views/TasksView.vue",
+          "baseline_sha256": "f8aab82a67678a3b186ebe0865d148442cc40efb1b734dd2ba61b1f3654454ed",
+          "candidate_sha256": "1cd26efbc6b3c76e07632944185ef442b855a10f26d28e001b761acb90a1a8cf"
+        },
+        {
+          "path": "frontend/test/component/today-workspace.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "ddb8545f108ba0807913952a519662b27389eeb72fc1edbee51fb8b6171572e0"
+        },
+        {
+          "path": "frontend/test/task-hierarchy.test.mjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "3564ab749cd3e854facbbd34d4a52e8f272627d91bbab4f6ff9fcb032e71e04d"
+        },
+        {
+          "path": "frontend/test/today.test.mjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "481eca04dc85c839195eec729bafd623c7339ef0b2d43124e8d9ab8a59439309"
+        },
+        {
+          "path": "scripts/workspace/WorkspaceFlyway.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "39d6ed332a3d7cd4ea24602da95f1d5baacec9665f8dfe6e005990f2bcb68aa2"
+        },
+        {
+          "path": "scripts/workspace/browser_checks.mjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "7a91f3b5f78611443db482ec9bb17806063eb4912a8fd1e7eeb9573535cda390"
+        },
+        {
+          "path": "scripts/workspace/ui_checks.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "c4f955f48ba2b2d7ce42c573aa5b353ff257f2a4f924023c45d55a4cd621dd8e"
+        },
+        {
+          "path": "specs/034-task-workspace/checklists/requirements.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "5b025ca377124d5549bdbdae202a6f1a365b9829ec60e27e289319b0d6a1841f"
+        },
+        {
+          "path": "specs/034-task-workspace/contracts/api.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "3b8d875bf9205df929f10ac87e68685dca474cd2617a706b2924f6ed5eb3bf52"
+        },
+        {
+          "path": "specs/034-task-workspace/data-model.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "85048096e75cb4f95573ddde78b2afc2de3b8be7db782dd5e056c5e6512eea92"
+        },
+        {
+          "path": "specs/034-task-workspace/plan.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "73c7405de456e0bd2dd058233341d04f1682449a5fa0679fd0476c7b1f20b408"
+        },
+        {
+          "path": "specs/034-task-workspace/quickstart.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "fdf49da635cb628852b294b71e912f9413fb7a24e1c40a4160935cabb11e8a9c"
+        },
+        {
+          "path": "specs/034-task-workspace/research.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "779d819a63253adc15645542d48c56378c1256cf9efaef4affb89929d0b99f5a"
+        },
+        {
+          "path": "specs/034-task-workspace/spec.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "130144a31d01b1d851fc8714380ebcda1764f8a093f01d7457b73115c0c54f86"
+        },
+        {
+          "path": "specs/034-task-workspace/tasks.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "838c4c318292c1f380e423c9c25dad40a19fd994e41c71bf528bd97ca406f0d5"
+        },
+        {
+          "path": "specs/034-task-workspace/validation.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "aa63b5f4abc4c316898b8cefa554dac6433a6636ab6aca52d4deb96b2826858c"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/task/service/WorkspaceService.java",
+          "backend/src/main/java/com/personalos/task/service/TaskService.java"
+        ],
+        "go": [
+          "backend-go/internal/business/task/workspace.go",
+          "backend-go/internal/business/task/service.go"
+        ]
+      },
+      "parity_sha256": {},
+      "evidence": [
+        "specs/033-go-rewrite/optimization-validation-20261106.md",
+        "specs/034-task-workspace/validation.md"
+      ],
+      "limitations": [
+        "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
+        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。"
+      ]
+    },
+    {
+      "id": "scope:safe-automation-candidate-20261106",
+      "status": "in_progress",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "summary": "登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。",
+      "files": [
+        {
+          "path": "backend-go/go.mod",
+          "baseline_sha256": null,
+          "candidate_sha256": "2b7345e0e4fced192dffdef78326fc6a4da82075987c4fd99507d51670d64f09"
+        },
+        {
+          "path": "backend-go/go.sum",
+          "baseline_sha256": null,
+          "candidate_sha256": "429336ea66b59afb921b9c81e06063c4cc745f85670e2e0c4931e8d4791e82e7"
+        },
+        {
+          "path": "backend-go/internal/app/foundation_p7.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "f91140172ebb4b8f24bac0a29b5b82dffe7e17f4be2607fcabd1a008fe997a9f"
+        },
+        {
+          "path": "backend-go/internal/business/calendar/exchange.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "6d09f5cd8da8ae14746a8c2f7732a64577cfe705cf674b21dd5722119ce81601"
+        },
+        {
+          "path": "backend-go/internal/business/calendar/exchange_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "1bc2e7fb7ed1b50bf226c68e5769c67ea0931eec353081266caf16292a65851b"
+        },
+        {
+          "path": "backend-go/internal/business/calendar/http.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "fda8137feb6da84d4e55e59afeb5be24189960c0d3ba0b3d918fa86517651ff5"
+        },
+        {
+          "path": "backend-go/internal/business/calendar/ics.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "13249a4fef3b12897dbca3dd1dff0c77b8169c9194494d1d2e7975ae2dd1c895"
+        },
+        {
+          "path": "backend-go/internal/business/calendar/ics_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "0513c37635a46c3d2badb326114ffd579b3c92613a55e854218ee519c96cf904"
+        },
+        {
+          "path": "backend-go/internal/business/calendar/push_browser_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "cf4fb74fb4e9ee9a258607b42134c379e971898cc8e59aa44b9b43c50c25e7a4"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/captures.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "1bd1b38b07552c52399ed0952c5fa9168af08a4675ec386a2c74e4158ebaca11"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/captures_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "71a3e3fac79a9133702c1b8cb3d77bc83e79c97c2b43c90404424178d5408b5e"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/web_capture.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "22928174947f6b926850df165764351500a35e95574fdc7416108d0151fefaf1"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/web_capture_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "651fd1b569ca2e6c1464034f47263b07967e95fc327beb5e0e7746b717e4395b"
+        },
+        {
+          "path": "backend-go/internal/business/maintenance/http.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "dd056b76246b12f89784029dfd8e8ac571becbf4c821d5872cb6743e581c0c1f"
+        },
+        {
+          "path": "backend-go/internal/business/maintenance/http_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "c73f875250839dc5c699fa4428abf6cda42dc5411d7faf7bfdc7f7c55efcf97d"
+        },
+        {
+          "path": "backend-go/internal/business/maintenance/maintenance_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "a32fb04cd23c233da2276d5c4847f2e24ec085d3b97024f40c4538f1b72fd051"
+        },
+        {
+          "path": "backend-go/internal/business/maintenance/service.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "015a6fb3dbdf8267e28db4dca846a7b222de8b649c4c4b51c137966678f2420e"
+        },
+        {
+          "path": "backend-go/internal/business/workflow/http.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "20e0a7631703c89ee065f62b214bb1e6d6ee0e1067e593aad86b0cceac40cd4d"
+        },
+        {
+          "path": "backend-go/internal/business/workflow/http_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "da2ee1c97f0c5f79c4e9bcdce01f8c37976648d96282aa167436d5601260674b"
+        },
+        {
+          "path": "backend-go/internal/business/workflow/review_fixes_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "25c3a77f6c34187846970101b3c8cbb60bf9ca6634483c1b8d6ba896f7c80d56"
+        },
+        {
+          "path": "backend-go/internal/business/workflow/service.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "a61030fccabaee01738e0653a68dbb89dad8c06aa6c9beb0515c0f6188b43b58"
+        },
+        {
+          "path": "backend-go/internal/business/workflow/workflow_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "a63f1b33e1a86a799b3931d12b265b3c78105228f6b08c3dab4c463649a1f69d"
+        },
+        {
+          "path": "backend-go/internal/platform/migration/catalog_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "468ea7548bd5ad6a65a1152ece334be9f1bcd10d3e5407dd0e84a04ff14755eb"
+        },
+        {
+          "path": "backend/pom.xml",
+          "baseline_sha256": "9a507857d5da3fd43f4d08f9f2c7017de4b0120a5457db6082984ef896d7f196",
+          "candidate_sha256": "f77c306ab6e3364f2ec561ce5b27f05b61d3465865d12c8028b5b1c8f299ccdd"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/calendar/controller/CalendarExchangeController.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "5d8b5697af70019ee8d5a79c030d74f946bc67dacd62832724d77b77053ddc92"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/calendar/service/CalendarExchangeService.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "6548ec474fd6159bf7c42752d06a818cac06daba394a1a2fef8e9519736d16a5"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/calendar/service/CalendarIcs.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "905fcf106d42672b3c78608772918281f5db4dccd35105b24c72ca192c645393"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/capture/KnowledgeCaptureController.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "1b7f68f44a5e141e02670d79a0cdcc5a1b92a4a9b4e863a03f8e94ac2dbef368"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/capture/KnowledgeCaptureService.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "a9d20fb5c2c1da71f71e55145a37319fb0361a17c888331f33acab8621b76ff8"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/capture/PublicWebFetcher.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "0a69c878c16d5ae354315318c6fe49a4e08660294a69fcfb14b124b487bd306f"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/maintenance/controller/MaintenanceController.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "0d5f567c3a8c88f92ae11b605f004c9f310c857d24d0dca5a592ba60733c4207"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/maintenance/service/MaintenanceService.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "644bd9d55ce4ba0780e92e84db391d3becad8a6890def72cf3602aed347b13c4"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/workflow/controller/WorkflowController.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "5547a0735c0846aa6a8d2be256cdce216b825dff203be57a322905aa5e7789b2"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/workflow/dto/WorkflowChange.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "c007f71f9351b37f1009fb923944cf7fab17e35a628c83fe126dd400bd8e338b"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/workflow/service/ReadOnlyReports.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "d66d9ad78c3e21a27d36f8d452236982b75ddd7a50d7502efae8bc6eaf882541"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/workflow/service/WorkflowService.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "929af3db7256e210f8c151506d4fca64902bfa35dcaf91621265abd22eb9b272"
+        },
+        {
+          "path": "backend/src/main/resources/db/migration/V44__calendar_exchange.sql",
+          "baseline_sha256": null,
+          "candidate_sha256": "bded1925987517e2a56889fb104f87b2a64feb6e6c399eb434ef8e996460499c"
+        },
+        {
+          "path": "backend/src/main/resources/db/migration/V45__knowledge_captures.sql",
+          "baseline_sha256": null,
+          "candidate_sha256": "4115455a2f881d4c6cd3d79902ed5d96353af53cb8eff3a29ffe02309eebf266"
+        },
+        {
+          "path": "backend/src/main/resources/db/migration/V46__readonly_workflows.sql",
+          "baseline_sha256": null,
+          "candidate_sha256": "1117619d1e13d0980e1eb2a449bb4475693407bae16f97e6c5e8911f7af27911"
+        },
+        {
+          "path": "backend/src/main/resources/db/migration/V47__maintenance_center.sql",
+          "baseline_sha256": null,
+          "candidate_sha256": "04aaf8795ecc0a7f37d9cd5765a59aaab8550b28e23b9bdf85940af14c5781b0"
+        },
+        {
+          "path": "backend/src/main/resources/db/migration/V48__preserve_workflow_due_period.sql",
+          "baseline_sha256": null,
+          "candidate_sha256": "aee08f742ccca454347776444bb5c5b3598789b4e71f157c1f69569545844526"
+        },
+        {
+          "path": "backend/src/main/resources/db/migration/V49__handle_maintenance_numeric_overflow.sql",
+          "baseline_sha256": null,
+          "candidate_sha256": "1b8982296883ceb1f9a541aa888405436b458c3b3b8569b79727649e2c1336f8"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/CalendarExchangeIntegrationTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "deded486254ee72201425e97d140bc7c67b451d4ac614c0a160f8b8a7067864f"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/CalendarIcsTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "93299d2c142f82cd400815e8779e783b49d43f74a6ef2175e09a08ac5ec9dfa6"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/capture/KnowledgeCaptureIntegrationTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "fc88f626b74b83a84f4712cba1091aad0bd844e130b04f53b0466d2355956392"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/capture/PublicWebFetcherTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "961d39ade4a8498b27b22ba43e52b7701b37849d97d119734a8dac4d6679fe73"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/maintenance/MaintenanceIntegrationTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "ff753d2a3a394af73ab9c4bb5d3c555d54e580247a07af8e0a0b234f51823208"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/workflow/WorkflowIntegrationTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "85072de8204c54cae644c74e0b13a1d344f0c56b1e3c9a62de3b285fb9ac93a2"
+        },
+        {
+          "path": "frontend/src/App.vue",
+          "baseline_sha256": "3d46f20fc1f3ec12d64724cd22c80c4619df014f9da8f192adffe9be6c34a462",
+          "candidate_sha256": "fb46aae9bd0e63502c22bd77b28493a30266c94d763d0c910c186606c891cc8c"
+        },
+        {
+          "path": "frontend/src/api/calendar.ts",
+          "baseline_sha256": "475127387c3a9e2ce2a99aeb9bbbfc3cf6218ae5b0ad97636d11832445807e8d",
+          "candidate_sha256": "9bfec6a18271d16b48e885bb65b9ec4a01e16e9c79c8fddee55fe1f6ec6bccd6"
+        },
+        {
+          "path": "frontend/src/api/knowledge-captures.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "ae4221305c486317ae1697376b2957acde5ad926ead49d6dde778f4d5a2fa7fd"
+        },
+        {
+          "path": "frontend/src/api/maintenance.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "540c364dfdef1038fea1abc999289e3875fe75f1cfad178906c08eea76d24ce3"
+        },
+        {
+          "path": "frontend/src/api/workflows.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "53262e3d5747f8c199f90d70799f4a5c94f9c10198cf0a8ffba8295c1d26e3cf"
+        },
+        {
+          "path": "frontend/src/components/calendar/CalendarExchange.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "e36cf8e5259a7e09878e202735a54c93b2dfb216b68624024697d224743a9f36"
+        },
+        {
+          "path": "frontend/src/components/calendar/CalendarNotifyBanner.vue",
+          "baseline_sha256": "12bead359d259792b363fdad88d78404a216abd68dac9b95c361cca36e69c7c2",
+          "candidate_sha256": "33d4ab0b10c3814e782ce30e5e9cb69ee13a3e9b99c2256aee4f6e55e8604bb4"
+        },
+        {
+          "path": "frontend/src/components/knowledge/KnowledgeCaptures.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "01a2e2597a64ff1847ffabb427ac0da0a884a24041593de7cd5edf1946ac45e6"
+        },
+        {
+          "path": "frontend/src/main.ts",
+          "baseline_sha256": "62c68356b0555fcae0c6acc45f20e353e9598ba8a657e8bf621f236292644585",
+          "candidate_sha256": "fa94ec52e1adc4c9fc983d82906a46faa87c4cf63e9cb53f72ca1f19a583bd03"
+        },
+        {
+          "path": "frontend/src/router/index.ts",
+          "baseline_sha256": "06a3d24b3ea8afefbc81b5166aa281acca968e8f849a6194dcac93c43d1b1d11",
+          "candidate_sha256": "616c48f2d85c0ee6a76e23d9768718f680a2f46530ce895b1d420df8446c1251"
+        },
+        {
+          "path": "frontend/src/views/MaintenanceView.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "247b4ae9237592f806e7d790bd89ebf79b1193dec02e52b6640ebc149d664140"
+        },
+        {
+          "path": "frontend/src/views/WorkflowsView.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "31491b8db7dacbfe7936db137eabff46aa8cf5ac263f05b0455482acf0dd874f"
+        },
+        {
+          "path": "scripts/automation/automation_ui.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "ca02c033e07d7f637c21e1b1c3e04586e342acd43b09b7f00f3a09f0568fa782"
+        },
+        {
+          "path": "scripts/automation/browser_checks.mjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "ca827bdd10b2fd67e042257fa86cb73eeb8ec1f92387912b6d61e47aa5ade09c"
+        },
+        {
+          "path": "specs/035-safe-automation/checklists/requirements.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "135002bf7961d83621cd4560b11b0cfda8bc89dd92be1a3c799bb4c5c36fac8d"
+        },
+        {
+          "path": "specs/035-safe-automation/contracts/api.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "2179f675a0d0eac8be1508dccda8b59629f16f22f42f9b5948ed5a6144626092"
+        },
+        {
+          "path": "specs/035-safe-automation/data-model.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "dab4f35d824f1b98fd3c3ba9711f77b695e844f2544067b0c9da70be2d0117cf"
+        },
+        {
+          "path": "specs/035-safe-automation/fixtures/capture-html.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "c1469a08d2cb9b1ec755a6c34b53d534cd61314458823af9b555b1e176f673ef"
+        },
+        {
+          "path": "specs/035-safe-automation/fixtures/capture-urls.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "756432c475683b5062b3b66315a283e128db97314759b4e8d12a94a9ab3a8e82"
+        },
+        {
+          "path": "specs/035-safe-automation/fixtures/maintenance-invalid-json.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "fafc47790cba49a8e809f0375f0c50c33c834958f35d4c7d47261bb84c99ce5d"
+        },
+        {
+          "path": "specs/035-safe-automation/fixtures/maintenance.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "46a766451dc5bc3f9aa06d9341aa512f9806178117b4f31d5c19bca2acd5fc7a"
+        },
+        {
+          "path": "specs/035-safe-automation/plan.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "c4d095ccb2a90d7ba511f6189a0cd524e11a41e6ef7a399092441b3d6d982186"
+        },
+        {
+          "path": "specs/035-safe-automation/quickstart.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "6c9387b4243e5511d7f2df7157cfba61e889b17d5d5142c5b5ba1651242c4cfb"
+        },
+        {
+          "path": "specs/035-safe-automation/research.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "4b71435e1da24069e004849c22a2772218e6f191a0a607b4a2960f837a3ad31b"
+        },
+        {
+          "path": "specs/035-safe-automation/spec.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "db158b9c088fc1a0ae41e0773252ce79b86d27080691d2f324fd57a50ec50b74"
+        },
+        {
+          "path": "specs/035-safe-automation/tasks.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "c2f3f35fe83ba660d02c0ea82ca2c1653b9b99fe4df87d37df1226ec7a594184"
+        },
+        {
+          "path": "specs/035-safe-automation/validation.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "19cdea8e22dacf1784b6fd87d4f2c979f0bb949e9be1eee6fb65857b5657f5ba"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/calendar/service/CalendarExchangeService.java",
+          "backend/src/main/java/com/personalos/knowledge/capture/KnowledgeCaptureService.java",
+          "backend/src/main/java/com/personalos/workflow/service/WorkflowService.java",
+          "backend/src/main/java/com/personalos/maintenance/service/MaintenanceService.java"
+        ],
+        "go": [
+          "backend-go/internal/business/calendar/exchange.go",
+          "backend-go/internal/business/knowledge/captures.go",
+          "backend-go/internal/business/workflow/service.go",
+          "backend-go/internal/business/maintenance/service.go"
+        ]
+      },
+      "parity_sha256": {},
+      "evidence": [
+        "specs/033-go-rewrite/optimization-validation-20261106.md",
+        "specs/035-safe-automation/validation.md"
+      ],
+      "limitations": [
+        "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
+        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。"
+      ]
+    },
+    {
+      "id": "scope:recovery-and-rag-followup-candidate-20261106",
+      "status": "in_progress",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "summary": "补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。",
+      "files": [
+        {
+          "path": "backend-go/internal/business/chat/prompt.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "0d66cd003347dbbba44524a22755c62da02254adc325be12e6b2f6cd86a2b4ae"
+        },
+        {
+          "path": "backend-go/internal/business/chat/recovery.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "8a38815c0fb6ce0ef64c18a9d1b223cc28793ec0a49f8352fb30f3c0472bc671"
+        },
+        {
+          "path": "backend-go/internal/business/chat/recovery_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "58523721a02e4fcb721da2a1cb889587d57592a60c13953fae1b616504228b8a"
+        },
+        {
+          "path": "backend-go/internal/business/chat/recovery_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "a2c377ffb26cd370fa6fc326389e61c095c508b1d088beea8248cdf18592cb49"
+        },
+        {
+          "path": "backend-go/internal/business/chat/runs.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "ca78ac6566cc6cae05aea8f9a8f2a8d2f95c03aab7773f23390c22268b25e17d"
+        },
+        {
+          "path": "backend-go/internal/business/chat/summary_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "ef5a834f5e0ec30f3388dd477e9f0e45d7c3b7cd53dcf09293134695c89c9d79"
+        },
+        {
+          "path": "backend-go/internal/business/context/schema_parity_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "8ec01753fcc59a356a161df98f70fe09c9c7737d75db74c50b32e878e71758c3"
+        },
+        {
+          "path": "backend-go/internal/business/context/testdata/java-tool-schemas.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "ef796ce8cf52be786ec017e466bb50a597152a42ac86c8554d77cf71cb437e55"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/governance.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "540715a5dce076048aaa298b25c5b8141e4039109881603d8e61bd047b2809f5"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/governance_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "d2337171bffc1d1e77a7e5adffc9608243db56790af3cfe6873e80b66b6f58e6"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/http.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "eabb7adbb71f83a5c6b422b19c18df6bafb9b909573764911ef3f544ed2e3423"
+        },
+        {
+          "path": "backend-go/internal/business/mcp/diagnostics.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "12e855a6e74ee8bc247eaafd6e9b60e3b5356ab841058782f3f99209b4d31f65"
+        },
+        {
+          "path": "backend-go/internal/business/mcp/diagnostics_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "f6f6c2d88b9208ca2c5639b2a40fdca5b114bcb7a5cfa57aed397b4f4e3cf43a"
+        },
+        {
+          "path": "backend-go/internal/business/mcp/registry_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "608ff2cf044e12a0da9f9899a13ff80a3d5b40c8f2e5fd0f237c4a50599cb1fe"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/controller/ChatRunController.java",
+          "baseline_sha256": "aaa74e7abb6370599888d385d0a9146b5ab773246fd5e59ec374d4f0227a13b2",
+          "candidate_sha256": "a8be8e8844a505f5038326d2a087838e9154e09a0e1b096084c88e9d524e838d"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/dto/ChatRunDto.java",
+          "baseline_sha256": "13b1dcb0e9894ca64148ed4f94d5832479b6a02a47b98c271deb0d818b2fe190",
+          "candidate_sha256": "72a6c6035dedc56dd7f43371eb8b1beadec10f6d8dff7cca0bad0375feaba498"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/dto/ChatSessionDto.java",
+          "baseline_sha256": "7b06bf609d70157f456042369e603f6a5acb39da16514acd9ab0e1759bc9931a",
+          "candidate_sha256": "2852c76857e906976811e34e7d554c75bcd5de0200b0e71f183db007ac34ee23"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/entity/ChatSessionEntity.java",
+          "baseline_sha256": "58f20fe09829d4d9822cf79699ddf83fae644c35c5261d44f77669c5d740cc3a",
+          "candidate_sha256": "6ab441833cf3135125e914262765e10f01d84f0f05126477f149188ebb53c76e"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/repository/ChatRunRepository.java",
+          "baseline_sha256": "a7ac41d08c1ed3610898d6fffff3716d7912b153e9459f0d67ad0e4fea4bdeb4",
+          "candidate_sha256": "ed209636727d837f904aec467059a6561188a9e5fb52ab5e3e02b8c9d3dec761"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/service/ChatFailureRecovery.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "d112cfe0af7a1958338cf286c1e22e40950b9b80f4cbe6bf8ba3505b7efd0441"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/service/ChatMessageService.java",
+          "baseline_sha256": "a823fa37fb6c722bf8c8278a619312d3ad16321c10ce4831a2bb15ddcefdd08e",
+          "candidate_sha256": "80e80ac7e8ceacff1ecfcbc2e9e3f8bebdf85e1d37c3810f61d041a6ea12c813"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/service/ChatRunService.java",
+          "baseline_sha256": "0302e1107a4dfd75b3c28c93193652cd80454322f1235ae06941e67b900ce0d8",
+          "candidate_sha256": "2c21d1ba5839ae82a93ef596d0be259bb8af57b8d84f8271a4f7ce823bde57c4"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/service/ChatSessionService.java",
+          "baseline_sha256": "e0ccc3c178ea626e85d3cc7844ae6956af08d3713e501b52a7ccb46f7aac8f98",
+          "candidate_sha256": "762f6f2487539252745817ce58ccb4533f144fc33b788b55f69edb91a13081cf"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/service/RunEmitter.java",
+          "baseline_sha256": "f8b0984079a291d7f551bbf19ab1edd84fe248cfadffd3cd67c4e11a9856ca88",
+          "candidate_sha256": "869aa5e59e1ef585664cd0b2b0c924ab3ed80ce349147237851a4f1deac7408e"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/common/ai/AiChatClientProvider.java",
+          "baseline_sha256": "a8d8ede02d393c9b10aafa0334d1f735b7a4a731c6c97a7d727f20c603680a4b",
+          "candidate_sha256": "17da2766cfb8164223d0064280bbe55a6cc5a3c618cb46fa37761e2b89815d96"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/common/ai/ToolResultPromptContributor.java",
+          "baseline_sha256": "1ba3c253a372b12ab483eca02238b142864d4e1b44116c960c4d55a85725064c",
+          "candidate_sha256": "4f8ebc313393ce4f2af44ab559d529cab500bb0634f646b7e889e6a6965f9bbb"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/common/confirmation/ConfirmationDto.java",
+          "baseline_sha256": "84bf9baaa1a8acdcad10a6015edcd32cc87e41be839c3a4e226c294f8631b34e",
+          "candidate_sha256": "d4cb9f4a47e2c2606a3a12bab550b5483736d962e04e0d22f5d831c5b19358c4"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/governance/KnowledgeGovernance.java",
+          "baseline_sha256": "3a1df0ff883a5c4f38448a8ef24361a18f3d79efe10b9bb5ca83e4aef355346f",
+          "candidate_sha256": "7aa01489fb7ce0cf9489711999b919c45dd71d44ad6bff6dd0f4f27374af1b92"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/rag/EvidenceReview.java",
+          "baseline_sha256": "d37a6ee7fc65279a0be32f4cb904da9bea0f814be177f6f40407510a5cac5a10",
+          "candidate_sha256": "e23a43fadd8cdcc66591f34ab4a219a07fec29b40f73ae4773305892b7e58cba"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/mcp/tool/McpCallDiagnostics.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "18666cedcef2cb0f78b5c3ead75ad71b37dd1b47c6264e7cbb2b3cb1f471d6ed"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/ChatFailureRecoveryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "5fe8dad0acd42fa606e5add9820b82d762343e40223e067c6d63f64f0b21555a"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
+          "baseline_sha256": "c2d0d6ae90132b56c3706bcf656d5b57c20436a8c41c2a29ce9a318efd160037",
+          "candidate_sha256": "5515ac5973fd84c71e21dbe01f191fbe31149e374c4d3e4c5e319242507f7e13"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/mcp/tool/McpCallDiagnosticsTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "e23a3a909f186802311dd06217ab8aed4def97c88fbf82497b57033f7303cffa"
+        },
+        {
+          "path": "frontend/src/components/chat/ChatRunNotice.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "c59893d265a33d920d0d6212d941f6b1f05e3df2fd2dfe656b9623bfcb4cde77"
+        },
+        {
+          "path": "frontend/src/components/chat/ChatTurnWarnings.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "a58edcf47d50c670ebbfc6df75f557332068ca120904b2da702077e008065df9"
+        },
+        {
+          "path": "frontend/src/components/knowledge/RagTrace.vue",
+          "baseline_sha256": "8c38d75a6b125535fd67815cf0aab81a6de31c69c0b637d00c73a5712465cfec",
+          "candidate_sha256": "91d57e4c15f5ca4320811ef1d835a929208b802b1b4c763abe81a3824a108874"
+        },
+        {
+          "path": "frontend/src/stores/ui.ts",
+          "baseline_sha256": "897c92e5fe93a4778dabbc761a212e6343c7f71e7f839f19e70af541829c4c32",
+          "candidate_sha256": "b2e375abe75c6473385deb820a19c175c69e01c1592f8392134a340b4301e0a0"
+        },
+        {
+          "path": "frontend/src/views/CalendarView.vue",
+          "baseline_sha256": "5f93963e3766bc9e215174aec9a97f0040d5b98b8acd0cfcd6f238745792f4c8",
+          "candidate_sha256": "8028b1e62b0389b5322043acb3eced451a2b9c07962b2c2af929924486aea051"
+        },
+        {
+          "path": "frontend/src/views/KnowledgeView.vue",
+          "baseline_sha256": "12eda767994e8702617bbd1a6115aaaec8849998f876c62a811e9879fd2ae5ad",
+          "candidate_sha256": "930bcc85cf10f864b2cc441d980afe05dfd83b3036a8c3b24ce6f26ffba0cf28"
+        },
+        {
+          "path": "frontend/src/views/LoginView.vue",
+          "baseline_sha256": "49e4b5fc11fb0434445b400171601e74510f3ef5a2207d118ee66c35dcdb2df1",
+          "candidate_sha256": "f4d39501df9969c2bd2dc292fa823ce2e513bbe28f06c9129195f5731561058a"
+        },
+        {
+          "path": "frontend/test/component/calendar-exchange.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "4ce7d488df920a3f164ab0b13739c6d16eb27fc9e21db220f6d0b9291a72770c"
+        },
+        {
+          "path": "frontend/test/component/chat-composer.test.ts",
+          "baseline_sha256": "24ad8a133b828ef8aeb0f232bf04b7a0872f0d5cb6cfaf426785e5ed0ea583e8",
+          "candidate_sha256": "ac000bcb32c4ba7508ba782c7c692433a9f4edfdc6c438cc68186aecdf4b1aa4"
+        },
+        {
+          "path": "frontend/test/component/chat-model-switch.test.ts",
+          "baseline_sha256": "f12c44b4abbc14e44076355f1abc012345a858320653049e06126c2edad9f34c",
+          "candidate_sha256": "a1abe69e59ca198d86a0ec995993502b36fd41b2c26961a784bec8816a2b0ae4"
+        },
+        {
+          "path": "frontend/test/component/chat-recovery-store.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "4eec85d14814a8a59fa57c9bcc7818682812dce8c9d0d6b165ac7375ef505bc1"
+        },
+        {
+          "path": "frontend/test/component/chat-recovery-ui.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "93b44643de511ac0b59e43e6784984a47d8ee2ebef8e3d5fd5047ef7da90186a"
+        },
+        {
+          "path": "frontend/test/component/chat-run-notice.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "c8216d76b626213b1eb34391ae3bedb987e0c406240d59c65d53b3e714d0e20c"
+        },
+        {
+          "path": "frontend/test/component/knowledge-rag.test.ts",
+          "baseline_sha256": "dde64999b0d63a1dd318e1b00f00aedb2f3d79b9981cfabbaac5dc34ff09d18d",
+          "candidate_sha256": "09b27f50c13335733cb574516e7e69736c378f88aa007a018181d3acba5fe6cc"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/chat/service/ChatFailureRecovery.java",
+          "backend/src/main/java/com/personalos/mcp/tool/McpCallDiagnostics.java",
+          "backend/src/main/java/com/personalos/knowledge/rag/EvidenceReview.java"
+        ],
+        "go": [
+          "backend-go/internal/business/chat/recovery.go",
+          "backend-go/internal/business/mcp/diagnostics.go",
+          "backend-go/internal/business/knowledge/rag.go"
+        ]
+      },
+      "parity_sha256": {
+        "backend-go/internal/business/knowledge/rag.go": "032204d876b4cd3559a76cb1693c2f82fcf9ad11f23ade1129ca6a64dc44cba9"
+      },
+      "evidence": [
+        "specs/033-go-rewrite/optimization-validation-20261106.md"
+      ],
+      "limitations": [
+        "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
+        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。"
+      ]
+    },
+    {
+      "id": "scope:write-negotiation-and-bounded-search-20261106",
+      "status": "in_progress",
+      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "summary": "写入前完成响应协商；SQL有界正文候选与Java批量加载；TLS夹具遵循证书配置；验证脚本发现JDK并加入CI；原SQL不可变且只允许登记追加版本。",
+      "files": [
+        {
+          "path": ".github/workflows/go.yml",
+          "baseline_sha256": null,
+          "candidate_sha256": "a2c9134600747d683eaa745b48b787c8151fe75980518704d8ffa67dba8e81d5"
+        },
+        {
+          "path": "backend-go/internal/business/exchange/http.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "9af3708142c0ecd47725da83c437bd7459887cc39825c17021af01565af69312"
+        },
+        {
+          "path": "backend-go/internal/business/exchange/http_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "76302a84e9625d35311e2ded861057108ff4f116248ee832b680e5011660dbdd"
+        },
+        {
+          "path": "backend-go/internal/business/search/contributors.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "a4b583f567722dadcf79768c634e36115ea761538ef3d47c9568b5ebb7ece59f"
+        },
+        {
+          "path": "backend-go/internal/business/search/knowledge_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "2a22e121996b9b9bd6a89f47d2753500e637eeaa3f806cd8e9aca04bff38e581"
+        },
+        {
+          "path": "backend-go/internal/business/task/accept_http_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "261b629bc64b0716ea0357b1fb2623726edf7db40c2aebc358b3332bb655a72f"
+        },
+        {
+          "path": "backend-go/internal/business/task/http.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "268bc51ad8e93cc3c7c6d9ec9959dc443ae2b808f313f67f35d14ea4ad267033"
+        },
+        {
+          "path": "backend-go/internal/business/task/workspace_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "d905965d5353f847ac8c49ef317d1ae5459b8b3d0c70af5efc89d95b03ba944f"
+        },
+        {
+          "path": "backend-go/internal/platform/testdb/testdb.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "b0dced568bad2c9cc1744bbc7b74bd17782baddb2f983382d4bc53e40f88017d"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/KnowledgeSearchContributor.java",
+          "baseline_sha256": "0d23c2463d207784e0761b8ae48ba0ca2e51a91da2fb8690974b55101eac1ac1",
+          "candidate_sha256": "f47a903ec21f53ead8a16d7cce01fe6d4789648968749d30d0837dea40774412"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java",
+          "baseline_sha256": "bd0e9e2d9a0613151e1c4046de7d883399129ef4b545f8798da046b2ece7b3ee",
+          "candidate_sha256": "f520c3fc4414ce352bd0d1b77e378951f47ed6cc7af3b34bc6960550ef6e2a45"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeSearchContributorTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "b9c2f3bcf4dd7069489a88125518db4a82ad2d8b7e5de516ba1e008524d5e95a"
+        },
+        {
+          "path": "scripts/automation/run_checks.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "98297d2608a8f356d0e501f3ef9e082d17ede1b9bf43914c3c5fc4297698eaf4"
+        },
+        {
+          "path": "scripts/migration/go_scope_changes.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "ae3d01fd691e44dfd92d05c946802330fb17e00db1c143eb32b4c55329989547"
+        },
+        {
+          "path": "scripts/migration/run_go_postgres_tests.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "92f8344659c9893811c5da4ad391e28fc846eaa1b4e037155a70770b72c37a5c"
+        },
+        {
+          "path": "scripts/migration/test_go_p8_inventory_progress.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "6d83bf1d525671c3e03f33173f36b5225c93b9c0af1491b8968d00fe49cd96e7"
+        },
+        {
+          "path": "scripts/migration/test_go_scope_changes.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "98c904d645132e8093dbb02083e7f36f6ae0c2d1619470d0293f3d941fbcf23c"
+        },
+        {
+          "path": "scripts/workspace/java_runtime.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "abdf978260e18034df533a22f9a6ef1f928928eca99c249d9b6653ba21bd15e1"
+        },
+        {
+          "path": "scripts/workspace/run_checks.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "087b441b2a5b8e03a7ff7a90d0b11edeaf3f8bb4f86fa3ef9dece8a64c1a5e07"
+        },
+        {
+          "path": "scripts/workspace/test_java_runtime.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "191fc4150c1fe579a5e902175ce28b50fe6cefbf96b5474baa752caa1a05b0cf"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/knowledge/KnowledgeSearchContributor.java",
+          "backend/src/main/java/com/personalos/knowledge/service/VectorStoreInspector.java",
+          "backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java"
+        ],
+        "go": [
+          "backend-go/internal/business/task/http.go",
+          "backend-go/internal/business/exchange/http.go",
+          "backend-go/internal/business/search/contributors.go",
+          "backend-go/internal/platform/testdb/testdb.go"
+        ]
+      },
+      "parity_sha256": {
+        "backend/src/test/java/com/personalos/common/search/GlobalSearchIntegrationTest.java": "7ffd174b63e3be8a81220e23adc122c3b4b59578202618640ce6a5be2ce923b4"
+      },
+      "evidence": [
+        "specs/033-go-rewrite/optimization-validation-20261106.md",
+        "backend-go/internal/business/task/accept_http_test.go",
+        "backend-go/internal/business/search/knowledge_integration_test.go",
+        "backend/src/test/java/com/personalos/knowledge/KnowledgeSearchContributorTest.java",
+        "scripts/migration/test_go_scope_changes.py",
+        "scripts/workspace/test_java_runtime.py"
+      ],
+      "limitations": [
+        "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
+        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。"
       ]
     }
   ]
