@@ -435,8 +435,10 @@ function switchView(next: 'table' | 'board'): void {
 
     <el-dialog
       v-model="createOpen"
+      class="task-create-dialog"
       title="新建任务"
-      width="min(760px, calc(100vw - 32px))"
+      width="min(640px, calc(100vw - 32px))"
+      align-center
       :close-on-click-modal="false"
       :close-on-press-escape="!creating"
       :show-close="!creating"
@@ -468,6 +470,12 @@ function switchView(next: 'table' | 'board'): void {
 </template>
 
 <style scoped>
+:global(html .el-dialog.task-create-dialog) {
+  align-self: center;
+  max-height: calc(100dvh - 32px);
+  margin: 16px auto;
+}
+
 .tasks {
   display: flex;
   flex-direction: column;

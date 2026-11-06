@@ -80,7 +80,7 @@ watch(
         />
       </el-select>
     </el-form-item>
-    <el-form-item label="父任务（可选，仅支持一级）">
+    <el-form-item label="父任务">
       <el-select
         v-model="model.parentTaskId"
         clearable
@@ -88,7 +88,8 @@ watch(
         remote
         :remote-method="searchParents"
         :loading="loading"
-        placeholder="输入标题搜索同项目父任务"
+        placeholder="搜索同项目的一级任务"
+        no-data-text="暂无可选的一级父任务"
         @visible-change="
           (visible: boolean) => {
             if (visible) searchParents()
@@ -100,11 +101,12 @@ watch(
       </el-select>
       <p v-if="error" role="alert">{{ error }} <el-button link @click="searchParents()">重试</el-button></p>
     </el-form-item>
-    <el-form-item label="重复规则">
+    <el-form-item label="重复规则" :class="{ 'task-organization__wide': model.recurrenceType === 'NONE' }">
       <el-select v-model="model.recurrenceType" :disabled="Boolean(model.parentTaskId)">
         <el-option v-for="rule in TASK_RECURRENCES" :key="rule.value" :value="rule.value" :label="rule.label" />
       </el-select>
     </el-form-item>
+    <p v-if="model.parentTaskId" class="task-organization__hint">子任务不支持重复规则。</p>
     <el-form-item v-if="model.recurrenceType !== 'NONE'" label="重复时区">
       <el-input v-model="model.recurrenceTimezone" maxlength="100" placeholder="例如 Asia/Shanghai" />
     </el-form-item>
@@ -122,6 +124,9 @@ watch(
 }
 .task-organization :deep(.el-select) {
   width: 100%;
+}
+.task-organization__wide {
+  grid-column: 1 / -1;
 }
 .task-organization :deep(.el-form-item) {
   display: flex;
