@@ -68,8 +68,8 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
-      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
+      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。",
       "files": [
         {
           "path": ".env.example",
@@ -79,7 +79,7 @@
         {
           "path": "backend-go/internal/app/foundation.go",
           "baseline_sha256": null,
-          "candidate_sha256": "fb7ccc604e1b7ba4bbf23d81655365c007af38e1f8db91d2ca52fbfcc45cbfae"
+          "candidate_sha256": "808651edbc8a0bdf966bbd8339a0771084976671ce3fd6bcc4cff1a7b3caab89"
         },
         {
           "path": "backend-go/internal/business/agent/knowledge.go",
@@ -134,7 +134,7 @@
         {
           "path": "backend-go/internal/business/chat/module.go",
           "baseline_sha256": null,
-          "candidate_sha256": "c257c73aaca377bde4e6f0ba21c8df06ed8dd473dce114c105267f68fc8a9da7"
+          "candidate_sha256": "d23c217b9a47c098a10d90b91d3c7696a7e8ac1407ea873612f500312e966862"
         },
         {
           "path": "backend-go/internal/business/chat/postgres.go",
@@ -149,7 +149,7 @@
         {
           "path": "backend-go/internal/business/chat/retrieval.go",
           "baseline_sha256": null,
-          "candidate_sha256": "dfbd7751c675904b33f2d49052215e2814d20dde621dd78b16c90dd4b745d8fd"
+          "candidate_sha256": "d1fe30824b0e91158571395c134e46d440fd482a97f212fe4764be36f8180fd7"
         },
         {
           "path": "backend-go/internal/business/chat/retrieval_test.go",
@@ -164,7 +164,7 @@
         {
           "path": "backend-go/internal/business/chat/stream.go",
           "baseline_sha256": null,
-          "candidate_sha256": "63d6f8efa053285edc14926847c016d0e9bd1815646bb239ae3b7189f022a970"
+          "candidate_sha256": "2c9b678b5e6e5f97b126438ce2fe0b70372fcd3fcbc8cb7ffcb5dfd2b3ebfb77"
         },
         {
           "path": "backend-go/internal/business/chat/turn_citations.go",
@@ -239,7 +239,7 @@
         {
           "path": "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java",
           "baseline_sha256": "400368d26cd5851759899b8d52896c1dd1cde9b5073df5eba8edf531b72456f6",
-          "candidate_sha256": "2f28955c7b483337cd70d7e35a69ba5c3fd74d188c5aae9f21f5b8a9c7c710b3"
+          "candidate_sha256": "69176203d9913c52e342006cc344c2d87aa784e6e2749c8b36dff52c927bab7a"
         },
         {
           "path": "backend/src/main/java/com/personalos/chat/service/ChatMarkdownExporter.java",
@@ -314,7 +314,7 @@
         {
           "path": "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java",
           "baseline_sha256": "ea576133d6dc71477ef3b101124cb25f349271f7ff430bccc863055507e57b56",
-          "candidate_sha256": "5a9b2cfd44da54235e8a2527f8317d1d8a201fde70ab55bb0727ec27b3741c88"
+          "candidate_sha256": "7618161cd5853e8703d73da970baa0ec217fe6ffd5eb6cf20de8c042551f389c"
         },
         {
           "path": "backend/src/test/java/com/personalos/chat/service/RetrievalDegradationTest.java",
@@ -359,22 +359,22 @@
         {
           "path": "frontend/src/components/MarkdownRenderer.vue",
           "baseline_sha256": "8e1b27305046e65f43077efe180ad663faf68e9e9bb4418ab4cd96ea9c2e475f",
-          "candidate_sha256": "6e80e0b566828e3b8f0308ac061dd54046850a67812fb715b9b6a4e36f61587e"
+          "candidate_sha256": "c6dbebcf06fc10025529a5f9bb502d6a2a972332af83f27b7b67ba7f2aac0b41"
         },
         {
           "path": "frontend/src/components/chat/ChatMessageItem.vue",
           "baseline_sha256": "627c7d3e01c4c456e1321c607a88d21ad59b249eb61393c571b5c4ec2f09a4d9",
-          "candidate_sha256": "47483fcc0c646d6e0db7e62ec29a0f1239a81f6208a273b3759df9aef8beabce"
+          "candidate_sha256": "e1b45627d81c9ade0a7e174159811a7bc32fe17133c7f925c2bfc0607cfaaff5"
         },
         {
           "path": "frontend/src/components/chat/ChatStreamingItem.vue",
           "baseline_sha256": "c271bd8b15c44497b3dcb21fd8d040ee79424283fb3b9557231e03ffa20eca34",
-          "candidate_sha256": "89ddff8d853fc61be87fc25bac94e7570640bc27240f50f664723dc7766d8ceb"
+          "candidate_sha256": "a57dd43877cb71650ec455305872a0ae4e3264b944cc270abc909a384e1b882f"
         },
         {
           "path": "frontend/src/components/knowledge/KnowledgeAskTab.vue",
           "baseline_sha256": "12da4ec0e9c0f4c3c461946448b156285c9c54cb614907f8f080d0fd82d4a9de",
-          "candidate_sha256": "1e03bf149d08abfb0fa4249bd539bb1faad01bbdd0e1fc5c747eefeb71945060"
+          "candidate_sha256": "f0f4096cba7a2b4662de0fe65fc01ae5abd0e6a9f646c217c095500fa826d10f"
         },
         {
           "path": "frontend/src/components/knowledge/KnowledgeHitList.vue",
@@ -389,22 +389,22 @@
         {
           "path": "frontend/src/lib/citations.ts",
           "baseline_sha256": null,
-          "candidate_sha256": "d4354d95b026b3349f26ddb0cb94f4cba53f990e0f9ee1f8a4561ca4ad0dd423"
+          "candidate_sha256": "26f08cf0e61c84634dde7826616d804f216556003c34a6a35a6b93e1a0ac1dd1"
         },
         {
           "path": "frontend/src/stores/chat.ts",
           "baseline_sha256": "c24e1e331377cd47b9053de0350a2b2c3579c272c016a1121bfb1823ae43719f",
-          "candidate_sha256": "bdcb87f93471d97253f37af91cc733951b6c68b289febf793a58a72ba1f954b6"
+          "candidate_sha256": "02b9385c224ec377d74eed39d1a761f9f44e2c0ac1c1ccf59f800d493c0544d4"
         },
         {
           "path": "frontend/src/types/api.ts",
           "baseline_sha256": "30214fee203c382860f16c6a31cd0827bb5b004b1638b0051fc6134f671de78a",
-          "candidate_sha256": "9d0444baa5d846757a6c3fe571e310b4bb4b779e9358bc8ecfd8e99eb0334ba1"
+          "candidate_sha256": "a0b4a092f55eda91562d99b0426b5a678dc960807e5e73d9271cd40bd3710ab7"
         },
         {
           "path": "frontend/src/views/ChatView.vue",
           "baseline_sha256": "96116adc1684fe6a0950ced4a9f8f9e1c0e7540377dcaf28161c8fa0ecbb6e47",
-          "candidate_sha256": "dd9188861c5f13f35ba118bc64ba2872cc4fdf030fcbc2f8325d36897a0a65a3"
+          "candidate_sha256": "055da32d156297f21475c662fb65bfb37beefb7d0f32b0bb2037f7288fc1df6a"
         },
         {
           "path": "frontend/test/chat-send-retry.test.mjs",
@@ -424,7 +424,7 @@
         {
           "path": "frontend/test/component/markdown-citations.test.ts",
           "baseline_sha256": null,
-          "candidate_sha256": "7226588bb0ceb64e447471af1030760142a4318c9dac3d89f14a6e9477e2a18b"
+          "candidate_sha256": "2561917bd9b3590244a709ae53a39092f5d61e7c3c067b8fb727fe7002ff3079"
         },
         {
           "path": "specs/019-knowledge-chat-settings/contracts/chat-knowledge-and-settings.md",
@@ -488,7 +488,8 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
       "limitations": [
         "Java 真实 HTTP + PostgreSQL 已验证检索故障 warning 后继续 delta/done、无 error 终态且降级轮引用为零；真实浏览器双端全流程回归仍待执行。",
@@ -556,8 +557,8 @@
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
-      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
+      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。",
       "files": [
         {
           "path": "backend-go/internal/app/foundation_p8_integration_test.go",
@@ -702,7 +703,7 @@
         {
           "path": "frontend/components.d.ts",
           "baseline_sha256": "16aab8913c34bc503798858a315e80311a892e948c0f2f6224cc0756a13154d1",
-          "candidate_sha256": "c2f57c8713d9360810bcf9989f9bdda8ccfd3c194353f3c04965308afb7eb10e"
+          "candidate_sha256": "c1b9cef820b0baff11616ae4bd8802c75e5db7c306e5aad21831ddb7aaf554b2"
         },
         {
           "path": "frontend/src/api/chat-tools.ts",
@@ -717,7 +718,7 @@
         {
           "path": "frontend/src/components/chat/ChatComposer.vue",
           "baseline_sha256": "f0efc62dfb185265e10906cc31d1715266bb71af09e06c99c6e8bc8483c1c464",
-          "candidate_sha256": "b4ec38cc2d7ea07609afa4416c90b083a01eed3461703f0ca67bc85e5d2345a6"
+          "candidate_sha256": "a6f3eb82e6bd5748df393c68e251fe5678ec871feafd935a099c62411a4e4eb1"
         },
         {
           "path": "frontend/src/lib/chat-commands.ts",
@@ -801,7 +802,8 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
       "limitations": [
         "已验证正式 filesystem MCP 2.1.0 的真实副作用与未知结果保护；不认证任意远端自身实现去重语义。",
@@ -817,8 +819,8 @@
     {
       "id": "scope:test-and-stream-shutdown-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
-      "summary": "Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
+      "summary": "Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。",
       "files": [
         {
           "path": "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
@@ -1056,7 +1058,7 @@
       "parity_sha256": {
         "backend-go/internal/business/calendar/stream.go": "33dea6f6fc979630c9a62075accc930081d62652fba70da69d2e8c3c01ba4e91",
         "backend-go/internal/business/calendar/stream_test.go": "74649c6a2916953953a46900ee33b88f7e1c10cc1c8bcae9fcd168ece0005bb6",
-        "backend-go/internal/app/foundation.go": "fb7ccc604e1b7ba4bbf23d81655365c007af38e1f8db91d2ca52fbfcc45cbfae",
+        "backend-go/internal/app/foundation.go": "808651edbc8a0bdf966bbd8339a0771084976671ce3fd6bcc4cff1a7b3caab89",
         "backend-go/internal/app/foundation_p5.go": "34f08f7d2c5290a1ddf62eff4bfaa1e9c3847c3f69a2e16638cf8a39c4b889c2",
         "backend-go/internal/app/foundation_postgres_integration_test.go": "10c5a539703854531882959b84a799cb432c4fb083de3540e02636dba5b88f10"
       },
@@ -1770,8 +1772,8 @@
     {
       "id": "scope:recovery-and-rag-followup-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
-      "summary": "补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
+      "summary": "补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。",
       "files": [
         {
           "path": "backend-go/internal/business/chat/prompt.go",
@@ -1931,7 +1933,7 @@
         {
           "path": "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
           "baseline_sha256": "c2d0d6ae90132b56c3706bcf656d5b57c20436a8c41c2a29ce9a318efd160037",
-          "candidate_sha256": "5515ac5973fd84c71e21dbe01f191fbe31149e374c4d3e4c5e319242507f7e13"
+          "candidate_sha256": "54d036af8f22fb12551f77be47093eac3166d78b033563c14db4d559f0f1de25"
         },
         {
           "path": "backend/src/test/java/com/personalos/mcp/tool/McpCallDiagnosticsTest.java",
@@ -1946,12 +1948,12 @@
         {
           "path": "frontend/src/components/chat/ChatTurnWarnings.vue",
           "baseline_sha256": null,
-          "candidate_sha256": "a58edcf47d50c670ebbfc6df75f557332068ca120904b2da702077e008065df9"
+          "candidate_sha256": "c6ba853ac7c6ef68ff9a8f4d819a610bbe6a63a113b4bd2f0f06ee6dc55f4444"
         },
         {
           "path": "frontend/src/components/knowledge/RagTrace.vue",
           "baseline_sha256": "8c38d75a6b125535fd67815cf0aab81a6de31c69c0b637d00c73a5712465cfec",
-          "candidate_sha256": "91d57e4c15f5ca4320811ef1d835a929208b802b1b4c763abe81a3824a108874"
+          "candidate_sha256": "75635fb57fcca2a45ca274e6d0320a52e9b4631a9568f3ec6ffff8569577f385"
         },
         {
           "path": "frontend/src/stores/ui.ts",
@@ -1996,7 +1998,7 @@
         {
           "path": "frontend/test/component/chat-recovery-ui.test.ts",
           "baseline_sha256": null,
-          "candidate_sha256": "93b44643de511ac0b59e43e6784984a47d8ee2ebef8e3d5fd5047ef7da90186a"
+          "candidate_sha256": "bbd2246b633999e66636d98890f4f5093f4a2416e2e75933e95a4f045cde6eed"
         },
         {
           "path": "frontend/test/component/chat-run-notice.test.ts",
@@ -2006,7 +2008,7 @@
         {
           "path": "frontend/test/component/knowledge-rag.test.ts",
           "baseline_sha256": "dde64999b0d63a1dd318e1b00f00aedb2f3d79b9981cfabbaac5dc34ff09d18d",
-          "candidate_sha256": "09b27f50c13335733cb574516e7e69736c378f88aa007a018181d3acba5fe6cc"
+          "candidate_sha256": "503eb309264bdf1d7fd69e9f254a573bb5a517c681aaebee2e1e67e15afb0d04"
         }
       ],
       "parity": {
@@ -2027,7 +2029,8 @@
       "evidence": [
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
@@ -2174,8 +2177,8 @@
     {
       "id": "scope:workspace-ui-consolidation-20261106",
       "status": "in_progress",
-      "source_commit": "b22631b79a961ba2e5fc803de723a972364b8fb2",
-      "summary": "036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
+      "summary": "036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。",
       "files": [
         {
           "path": "frontend/src/components/PageHeader.vue",
@@ -2295,7 +2298,7 @@
         {
           "path": "scripts/ui/browser-checks.mjs",
           "baseline_sha256": null,
-          "candidate_sha256": "ffa7307edee8a16cfd57238b3989e2ddb1eb5073cc6debccf85ad768c1fa3632"
+          "candidate_sha256": "baa6d29934a72b4921896be4c464402c58180a34fa763e196bfa1a421be66271"
         },
         {
           "path": "specs/036-workspace-ui/browser-report.json",
@@ -2365,13 +2368,145 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
       "limitations": [
         "Java/Go责任文件只是未修改的接口/业务依赖，哈希绑定不代表新增或完成双端行为验收。",
         "浏览器124张截图与交互使用合成API，不代表真实模型、生产数据库、外部通知或迁移发布批准。",
         "原冻结清单、原始V1–V42和五项发布门禁不变；本组保持in_progress，不继承历史verified状态。",
         "索引任务折叠后续仅验证前端交互；12张隔离模拟API截图不是完整Java/Go双端E2E，不升级发布门禁。"
+      ]
+    },
+    {
+      "id": "scope:chat-evidence-context-20261106",
+      "status": "in_progress",
+      "source_commit": "ea8118604c55488d7fdc9eb1007fd881d89e350a",
+      "summary": "037对话增强结合有界历史做只读检索路由，操作续改不被资料澄清短路；统一流式/完成来源入口、去重抽屉与检索过程，隐藏普通空来源。独立问答保持资料边界，保留真正冲突与降级说明。",
+      "files": [
+        {
+          "path": "backend-go/internal/business/chat/conversation_integration_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "f3896d7168533845e233785300fb4f9fa0050cc729901454696121af0db9d5fd"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/conversation.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "3926e17b1dadb049856b751df580d8eeca64708078f15f2ac2eb76871dc13882"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/conversation_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "5deaa5913371f4c8c059e552961fa8a85530ce695fc2bbe3758f0ea1606f48c0"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/chat/service/ChatPromptAssembler.java",
+          "baseline_sha256": "c49b681434b42a26fda6c7c1f5e58ce5b2e7264dc3cb650cb1d074ed19497ff0",
+          "candidate_sha256": "ced85e09db20d11733bea37ed89c7a072f70fb0437be02ca989e0689673101dd"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
+          "baseline_sha256": "eec047083a8a2af1dac273bb3ee640ca17de14545764cd2545c0f026aa4a3921",
+          "candidate_sha256": "cb89cfa642a5274984fe3a6f111d51b6c99a765c1812373b028ce46a4e77b475"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/spi/KnowledgeSearchPort.java",
+          "baseline_sha256": "64a0258f80d8dfbe57347a01abbb078ca46eb230b5c20be055102359d5b317f2",
+          "candidate_sha256": "a45b5927cc6d8e3b9a2acdf194a8486fc6d0f110b93b6b86861186a929a747f6"
+        },
+        {
+          "path": "frontend/src/components/chat/ChatSources.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "a89e8a85bfd5bfc4021ca51f06f93eec61de1faafd99dede3731f7e8d0ec175c"
+        },
+        {
+          "path": "frontend/src/lib/chat-retrieval.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "3af728900d7facfa90857a933d68c45b9949406f3ed64486c48b58c45e0a0c4b"
+        },
+        {
+          "path": "frontend/test/component/chat-retrieval-store.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "6713ff26a3c74b498c9246e369e210e0efb674a302b758a4b096d9abfeb5b479"
+        },
+        {
+          "path": "frontend/test/component/chat-sources.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "b49268b27383fe2224a297354beb9cef7f0f9a54f997650c0a84680f1b2b1c5f"
+        },
+        {
+          "path": "frontend/test/component/chat-streaming-item.test.ts",
+          "baseline_sha256": "6f300bec56159437a4f5dda5c5901d2d8f5fb6c8bc08e1ebcae3e8adafbbba45",
+          "candidate_sha256": "a04dd7d513a4f80b10dc34553ddf1d6e0b0687eda590db86694d59485be8218e"
+        },
+        {
+          "path": "specs/037-conversational-knowledge/browser-report.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "61c7332db1a787f2e6c3b453d29ae6f9a93a011bf7ef43e5b82dede65912a534"
+        },
+        {
+          "path": "specs/037-conversational-knowledge/plan.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "9b05f78124a821aa0ad08d12f964609f8c9c6a8d73c620ebc1ba37e630076f64"
+        },
+        {
+          "path": "specs/037-conversational-knowledge/spec.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "2c8d54393fc68d85069b8efcc03864454b5390e24136eaf33c206f211ce8be29"
+        },
+        {
+          "path": "specs/037-conversational-knowledge/tasks.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "446c29315d89b88a3c32bbcc3be30814527fb3267782775802228fc86a91b647"
+        },
+        {
+          "path": "specs/037-conversational-knowledge/validation.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "5e9db1737342ac458a0e45376db3060847ab5326acd16b95f1c989d66b96f1b7"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java",
+          "backend/src/main/java/com/personalos/chat/service/ChatPromptAssembler.java",
+          "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
+          "backend/src/main/java/com/personalos/knowledge/spi/KnowledgeSearchPort.java",
+          "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java",
+          "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java"
+        ],
+        "go": [
+          "backend-go/internal/business/knowledge/conversation.go",
+          "backend-go/internal/business/knowledge/conversation_test.go",
+          "backend-go/internal/business/chat/conversation_integration_test.go",
+          "backend-go/internal/business/chat/retrieval.go",
+          "backend-go/internal/business/chat/stream.go",
+          "backend-go/internal/business/chat/module.go",
+          "backend-go/internal/app/foundation.go"
+        ]
+      },
+      "parity_sha256": {
+        "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java": "69176203d9913c52e342006cc344c2d87aa784e6e2749c8b36dff52c927bab7a",
+        "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java": "7618161cd5853e8703d73da970baa0ec217fe6ffd5eb6cf20de8c042551f389c",
+        "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java": "54d036af8f22fb12551f77be47093eac3166d78b033563c14db4d559f0f1de25",
+        "backend-go/internal/business/chat/retrieval.go": "d1fe30824b0e91158571395c134e46d440fd482a97f212fe4764be36f8180fd7",
+        "backend-go/internal/business/chat/stream.go": "2c9b678b5e6e5f97b126438ce2fe0b70372fcd3fcbc8cb7ffcb5dfd2b3ebfb77",
+        "backend-go/internal/business/chat/module.go": "d23c217b9a47c098a10d90b91d3c7696a7e8ac1407ea873612f500312e966862",
+        "backend-go/internal/app/foundation.go": "808651edbc8a0bdf966bbd8339a0771084976671ce3fd6bcc4cff1a7b3caab89"
+      },
+      "evidence": [
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/037-conversational-knowledge/browser-report.json",
+        "frontend/test/component/chat-sources.test.ts",
+        "frontend/test/component/chat-retrieval-store.test.ts",
+        "backend-go/internal/business/knowledge/conversation_test.go",
+        "backend-go/internal/business/chat/conversation_integration_test.go",
+        "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
+        "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java"
+      ],
+      "limitations": [
+        "路由与多轮编排使用模拟模型；隔离数据库不代表真实模型质量或实际日程修改已验收。",
+        "24张隔离模拟API截图只验证前端交互与布局，不代表完整Java/Go双端真实服务E2E。",
+        "原冻结清单、全部既有SQL与五项发布门禁保持不变；本组与原组仍为in_progress。"
       ]
     }
   ]

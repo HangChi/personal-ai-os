@@ -2081,7 +2081,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthDisabledIntegrationTest.java": {
       "status": "in_progress",
@@ -2104,7 +2104,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/auth/AuthLockoutIntegrationTest.java": {
       "status": "in_progress",
@@ -2128,7 +2128,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/auth/SharedSessionConfig.java": {
       "status": "implemented",
@@ -2540,9 +2540,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/exception/BusinessException.java": {
       "status": "implemented",
@@ -3001,9 +3002,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationRegistry.java": {
       "status": "implemented",
@@ -3165,9 +3167,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/idempotency/OperationRecordEntity.java": {
       "status": "implemented",
@@ -3211,9 +3214,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/json/JsonCodec.java": {
       "status": "implemented",
@@ -6087,9 +6091,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/ContextWindowEvidence.java": {
       "status": "implemented",
@@ -6228,9 +6233,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/ChatMessageDto.java": {
       "status": "implemented",
@@ -6268,9 +6274,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/ChatSessionQuery.java": {
       "status": "implemented",
@@ -6393,9 +6400,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/entity/MessageRole.java": {
       "status": "implemented",
@@ -6522,9 +6530,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatMarkdownExporter.java": {
       "status": "in_progress",
@@ -6555,9 +6564,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatMessageService.java": {
       "status": "in_progress",
@@ -6577,9 +6587,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatSessionService.java": {
       "status": "in_progress",
@@ -6599,9 +6610,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "route:POST:/api/v1/chat/sessions:backend/src/main/java/com/personalos/chat/controller/ChatSessionController.java": {
       "status": "implemented",
@@ -7824,9 +7836,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/controller/UsageController.java": {
       "status": "implemented",
@@ -7866,9 +7879,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/ChatStreamEvents.java": {
       "status": "in_progress",
@@ -7895,9 +7909,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/dto/StreamChatRequest.java": {
       "status": "implemented",
@@ -7998,9 +8013,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/repository/TokenUsageRepository.java": {
       "status": "implemented",
@@ -8078,21 +8094,33 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatPromptAssembler.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/chat/prompt.go",
         "backend-go/internal/business/chat/prompt_test.go",
         "backend-go/internal/business/chat/context_integration_test.go",
         "backend-go/internal/business/context/token_test.go",
         "specs/033-go-rewrite/p4-completion.md",
-        "specs/033-go-rewrite/p4-test-mapping.md"
+        "specs/033-go-rewrite/p4-test-mapping.md",
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/037-conversational-knowledge/browser-report.json",
+        "frontend/test/component/chat-sources.test.ts",
+        "frontend/test/component/chat-retrieval-store.test.ts",
+        "backend-go/internal/business/knowledge/conversation_test.go",
+        "backend-go/internal/business/chat/conversation_integration_test.go",
+        "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
+        "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/033-go-rewrite/validation.md"
       ],
-      "note": "P4已装配：贡献顺序、时间/知识/附件与固定预算。显式事务/接口替代Spring/JPA内部交互；implemented不等于全量verified，实际验收及适用边界见收口报告。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-evidence-context-20261106：037对话增强结合有界历史做只读检索路由，操作续改不被资料澄清短路；统一流式/完成来源入口、去重抽屉与检索过程，隐藏普通空来源。独立问答保持资料边界，保留真正冲突与降级说明。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatRunService.java": {
       "status": "in_progress",
@@ -8108,9 +8136,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/ChatSummaryService.java": {
       "status": "implemented",
@@ -8149,9 +8178,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/RunEmitter.java": {
       "status": "in_progress",
@@ -8167,9 +8197,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/chat/service/RunEventBuffer.java": {
       "status": "implemented",
@@ -8503,9 +8534,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/ToolContributor.java": {
       "status": "implemented",
@@ -8536,9 +8568,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/ToolSchemaOverhead.java": {
       "status": "implemented",
@@ -8636,9 +8669,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/ai/tool/ToolProgress.java": {
       "status": "implemented",
@@ -8680,7 +8714,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/agent/audit/ToolInvocationAuditIntegrationTest.java": {
       "status": "in_progress",
@@ -8707,7 +8741,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/agent/plan/AgentPlanServiceTest.java": {
       "status": "implemented",
@@ -8778,7 +8812,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatApiIntegrationTest.java": {
       "status": "in_progress",
@@ -8809,7 +8843,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java": {
       "status": "in_progress",
@@ -8838,9 +8872,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatMessagePaginationIntegrationTest.java": {
       "status": "in_progress",
@@ -8867,7 +8902,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatRunIntegrationTest.java": {
       "status": "in_progress",
@@ -8891,7 +8926,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/ChatStreamTerminationIntegrationTest.java": {
       "status": "in_progress",
@@ -8915,7 +8950,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/RunEventBufferTest.java": {
       "status": "implemented",
@@ -8953,7 +8988,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/chat/controller/ChatContextControllerTest.java": {
       "status": "implemented",
@@ -9237,7 +9272,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/ai/ContextBudgetServiceTest.java": {
       "status": "implemented",
@@ -14819,7 +14854,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/calendar/tool/CalendarToolContributor.java": {
       "status": "implemented",
@@ -15126,7 +15161,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java": {
       "status": "in_progress",
@@ -15150,7 +15185,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java": {
       "status": "implemented",
@@ -15209,7 +15244,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/memory/MemoryEmbeddingBackfillTest.java": {
       "status": "implemented",
@@ -15247,7 +15282,7 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/memory/MemoryPropertiesTest.java": {
       "status": "implemented",
@@ -19061,7 +19096,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentPageOverflowIntegrationTest.java": {
       "status": "in_progress",
@@ -19089,7 +19124,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java": {
       "status": "in_progress",
@@ -19117,7 +19152,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java": {
       "status": "in_progress",
@@ -19145,7 +19180,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeMinLengthIntegrationTest.java": {
       "status": "in_progress",
@@ -19173,7 +19208,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/VectorStoreIndexMigrationTest.java": {
       "status": "in_progress",
@@ -19201,7 +19236,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/service/DocumentWriteLockTest.java": {
       "status": "implemented",
@@ -19783,7 +19818,7 @@
       "note": "T603/T607/T609：真实TLS PostgreSQL/Redis验证阈值、RRF/IDF、中文补召回、LIKE字面量、权威回表、20秒TTL/256KiB/generation/事务绕过/关闭/故障；固定Java 152查询及18组受控召回和引用逐项相等。受控向量不表示真实语义质量。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/spi/KnowledgeSearchPort.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/retrieval.go",
         "backend-go/internal/business/knowledge/cache.go",
@@ -19794,9 +19829,19 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/037-conversational-knowledge/browser-report.json",
+        "frontend/test/component/chat-sources.test.ts",
+        "frontend/test/component/chat-retrieval-store.test.ts",
+        "backend-go/internal/business/knowledge/conversation_test.go",
+        "backend-go/internal/business/chat/conversation_integration_test.go",
+        "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
+        "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T603/T607/T609：真实TLS PostgreSQL/Redis验证阈值、RRF/IDF、中文补召回、LIKE字面量、权威回表、20秒TTL/256KiB/generation/事务绕过/关闭/故障；固定Java 152查询及18组受控召回和引用逐项相等。受控向量不表示真实语义质量。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-evidence-context-20261106：037对话增强结合有界历史做只读检索路由，操作续改不被资料澄清短路；统一流式/完成来源入口、去重抽屉与检索过程，隐藏普通空来源。独立问答保持资料边界，保留真正冲突与降级说明。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/HybridSearchIntegrationTest.java": {
       "status": "in_progress",
@@ -19823,7 +19868,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/service/KeywordExtractorTest.java": {
       "status": "implemented",
@@ -20727,9 +20772,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeAskRequest.java": {
       "status": "implemented",
@@ -20777,9 +20823,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/dto/KnowledgeSearchRequest.java": {
       "status": "implemented",
@@ -20850,9 +20897,10 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/rag/RagModelGateway.java": {
       "status": "implemented",
@@ -20900,12 +20948,13 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "backend-go/internal/business/knowledge/rag.go",
         "backend-go/internal/business/knowledge/qa.go",
@@ -20917,9 +20966,19 @@
         "specs/033-go-rewrite/validation.md",
         "backend-go/internal/app/foundation_p6_integration_test.go",
         "specs/033-go-rewrite/p6-completion.md",
-        "specs/033-go-rewrite/p6-test-mapping.md"
+        "specs/033-go-rewrite/p6-test-mapping.md",
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/037-conversational-knowledge/browser-report.json",
+        "frontend/test/component/chat-sources.test.ts",
+        "frontend/test/component/chat-retrieval-store.test.ts",
+        "backend-go/internal/business/knowledge/conversation_test.go",
+        "backend-go/internal/business/chat/conversation_integration_test.go",
+        "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
+        "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java",
+        "specs/033-go-rewrite/p8-inventory-review.md",
+        "specs/033-go-rewrite/p8-completion.md"
       ],
-      "note": "T605：查询改写/融合/多样性/两种重排协议/证据/总预算；READY、CONFLICT、CLARIFY、UNVERIFIED及空库拒答，topK=1保留双方，实际编号引用；治理不可用保留证据并拒绝确定回答。无工具辅助模型的大小/队列/取消/关闭与视觉协议有回归。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-evidence-context-20261106：037对话增强结合有界历史做只读检索路由，操作续改不被资料澄清短路；统一流式/完成来源入口、去重抽屉与检索过程，隐藏普通空来源。独立问答保持资料边界，保留真正冲突与降级说明。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/service/KnowledgeQaService.java": {
       "status": "in_progress",
@@ -20950,9 +21009,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/KnowledgeRagIntegrationTest.java": {
       "status": "in_progress",
@@ -20983,9 +21043,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/rag/AdvancedRagIntegrationTest.java": {
       "status": "in_progress",
@@ -21013,7 +21074,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/rag/CrossEncoderRerankerTest.java": {
       "status": "implemented",
@@ -21067,9 +21128,10 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "hook:backend/src/main/java/com/personalos/knowledge/rag/CrossEncoderReranker.java:15:ConditionalOnProperty": {
       "status": "implemented",
@@ -21569,9 +21631,10 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/governance/SourceInfo.java": {
       "status": "implemented",
@@ -21608,7 +21671,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "hook:backend/src/main/java/com/personalos/knowledge/governance/IngestionReviewWorker.java:102:PreDestroy": {
       "status": "implemented",
@@ -21900,9 +21963,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/knowledge/RichDocumentIngestIntegrationTest.java": {
       "status": "in_progress",
@@ -21932,7 +21996,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "hook:backend/src/main/java/com/personalos/knowledge/config/KnowledgeProperties.java:21:ConfigurationProperties": {
       "status": "implemented",
@@ -22831,9 +22895,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/mcp/confirmation/McpConfirmationService.java": {
       "status": "implemented",
@@ -23087,9 +23152,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/mcp/tool/McpToolCallbackProvider.java": {
       "status": "implemented",
@@ -23172,7 +23238,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/search/SearchPatternsTest.java": {
       "status": "implemented",
@@ -23206,7 +23272,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/export/DataImportIntegrationTest.java": {
       "status": "in_progress",
@@ -23253,7 +23319,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/mcp/McpClientRegistryIntegrationTest.java": {
       "status": "implemented",
@@ -23298,9 +23364,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/mcp/McpDegradedStartupIntegrationTest.java": {
       "status": "in_progress",
@@ -23322,7 +23389,7 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/mcp/TestMcpServerMain.java": {
       "status": "implemented",
@@ -26076,7 +26143,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/api/ApiResponseTest.java": {
       "status": "implemented",
@@ -26116,7 +26183,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/document/PlainTextExtractorTest.java": {
       "status": "implemented",
@@ -26149,7 +26216,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/monitoring/MonitoringIntegrationTest.java": {
       "status": "in_progress",
@@ -26169,7 +26236,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/common/text/TextsTest.java": {
       "status": "implemented",
@@ -26221,7 +26288,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/support/InstantsTest.java": {
       "status": "implemented",
@@ -26255,7 +26322,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/task/TaskTagsIntegrationTest.java": {
       "status": "in_progress",
@@ -26276,7 +26343,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/test/java/com/personalos/task/TaskTagsTest.java": {
       "status": "implemented",
@@ -26310,7 +26377,7 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:test-and-stream-shutdown-20261106：Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:.claude/skills/speckit-analyze/SKILL.md": {
       "status": "implemented",
@@ -26464,9 +26531,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:.github/workflows/ci.yml": {
       "status": "implemented",
@@ -26886,9 +26954,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationDto.java": {
       "status": "in_progress",
@@ -26903,9 +26972,10 @@
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationEntity.java": {
       "status": "implemented",
@@ -27607,9 +27677,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:docs/operations.md": {
       "status": "implemented",
@@ -27766,9 +27837,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/env.d.ts": {
       "status": "implemented",
@@ -27944,9 +28016,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/api/chat.ts": {
       "status": "in_progress",
@@ -27969,9 +28042,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/api/confirmations.ts": {
       "status": "implemented",
@@ -28229,9 +28303,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/PageHeader.vue": {
       "status": "in_progress",
@@ -28250,9 +28325,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/StatusTag.vue": {
       "status": "implemented",
@@ -28293,9 +28369,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/calendar/CalendarDayList.vue": {
       "status": "implemented",
@@ -28408,9 +28485,10 @@
         "scripts/migration/run_retry_commands_browser.mjs",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:retry-safety-and-chat-commands-20261105：按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/chat/ChatConfirmationList.vue": {
       "status": "implemented",
@@ -28466,9 +28544,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/chat/ChatModelPicker.vue": {
       "status": "implemented",
@@ -28513,9 +28592,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/chat/ChatToolTrail.vue": {
       "status": "implemented",
@@ -28593,9 +28673,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeDocumentsTab.vue": {
       "status": "in_progress",
@@ -28614,9 +28695,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeGovernanceTab.vue": {
       "status": "in_progress",
@@ -28635,9 +28717,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeHitList.vue": {
       "status": "in_progress",
@@ -28660,9 +28743,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeSearchTab.vue": {
       "status": "in_progress",
@@ -28685,9 +28769,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/RagTrace.vue": {
       "status": "in_progress",
@@ -28699,9 +28784,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/McpSettingsPanel.vue": {
       "status": "in_progress",
@@ -28720,9 +28806,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/ModelProfileCard.vue": {
       "status": "implemented",
@@ -28752,9 +28839,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/ModelProfilesPanel.vue": {
       "status": "in_progress",
@@ -28773,9 +28861,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/ProviderPresetPicker.vue": {
       "status": "in_progress",
@@ -28794,9 +28883,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/task/TaskBoardPanel.vue": {
       "status": "in_progress",
@@ -29285,9 +29375,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/stores/knowledge.ts": {
       "status": "implemented",
@@ -29380,9 +29471,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/stores/usage.ts": {
       "status": "implemented",
@@ -29423,9 +29515,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/styles/theme.css": {
       "status": "implemented",
@@ -29470,9 +29563,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/types/usage.ts": {
       "status": "implemented",
@@ -29502,9 +29596,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/CalendarView.vue": {
       "status": "in_progress",
@@ -29516,9 +29611,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/ChatView.vue": {
       "status": "in_progress",
@@ -29541,9 +29637,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/HomeView.vue": {
       "status": "in_progress",
@@ -29572,9 +29669,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/LoginView.vue": {
       "status": "in_progress",
@@ -29586,9 +29684,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/MemoryView.vue": {
       "status": "in_progress",
@@ -29607,9 +29706,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/NotFoundView.vue": {
       "status": "implemented",
@@ -29639,9 +29739,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/SettingsView.vue": {
       "status": "in_progress",
@@ -29660,9 +29761,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/TasksView.vue": {
       "status": "in_progress",
@@ -29696,9 +29798,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/activity-store.test.mjs": {
       "status": "implemented",
@@ -29842,9 +29945,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/chat-store-rename.test.mjs": {
       "status": "implemented",
@@ -29878,9 +29982,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/chat-tool-history.test.mjs": {
       "status": "implemented",
@@ -29958,9 +30063,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/chat-confirmation-list.test.ts": {
       "status": "implemented",
@@ -30038,9 +30144,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/chat-runs.test.ts": {
       "status": "in_progress",
@@ -30063,9 +30170,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/chat-session-collapse.test.ts": {
       "status": "implemented",
@@ -30090,15 +30198,23 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/test/component/chat-streaming-item.test.ts": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/037-conversational-knowledge/browser-report.json",
+        "frontend/test/component/chat-sources.test.ts",
+        "frontend/test/component/chat-retrieval-store.test.ts",
+        "backend-go/internal/business/knowledge/conversation_test.go",
+        "backend-go/internal/business/chat/conversation_integration_test.go",
+        "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
+        "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-evidence-context-20261106：037对话增强结合有界历史做只读检索路由，操作续改不被资料澄清短路；统一流式/完成来源入口、去重抽屉与检索过程，隐藏普通空来源。独立问答保持资料边界，保留真正冲突与降级说明。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/chat-tool-trail.test.ts": {
       "status": "implemented",
@@ -30165,9 +30281,10 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:recovery-and-rag-followup-candidate-20261106：补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/model-profile-window.test.ts": {
       "status": "implemented",
@@ -30219,9 +30336,10 @@
         "frontend/test/component/settings-navigation.test.ts",
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
-        "specs/036-workspace-ui/index-jobs-browser-report.json"
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/setup.ts": {
       "status": "implemented",
@@ -33147,9 +33265,10 @@
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/037-conversational-knowledge/validation.md"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:chat-retrieval-and-citation-candidate-20261105：检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:specs/019-knowledge-chat-settings/data-model.md": {
       "status": "implemented",

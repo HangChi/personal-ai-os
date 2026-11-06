@@ -1106,8 +1106,8 @@
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatPromptAssembler.java",
       "path": "backend/src/main/java/com/personalos/chat/service/ChatPromptAssembler.java",
       "sha256": "c49b681434b42a26fda6c7c1f5e58ce5b2e7264dc3cb650cb1d074ed19497ff0",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/chat/service/ChatRunService.java",
@@ -2422,8 +2422,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
       "path": "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
       "sha256": "eec047083a8a2af1dac273bb3ee640ca17de14545764cd2545c0f026aa4a3921",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/reader/ChatClientVisionTextExtractor.java",
@@ -2576,8 +2576,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/spi/KnowledgeSearchPort.java",
       "path": "backend/src/main/java/com/personalos/knowledge/spi/KnowledgeSearchPort.java",
       "sha256": "64a0258f80d8dfbe57347a01abbb078ca46eb230b5c20be055102359d5b317f2",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitter.java",
@@ -5908,8 +5908,8 @@
       "id": "file:frontend/test/component/chat-streaming-item.test.ts",
       "path": "frontend/test/component/chat-streaming-item.test.ts",
       "sha256": "6f300bec56159437a4f5dda5c5901d2d8f5fb6c8bc08e1ebcae3e8adafbbba45",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/component/chat-tool-trail.test.ts",
@@ -7665,7 +7665,7 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
       "files": 72
     },
     {
@@ -7677,13 +7677,13 @@
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
       "files": 40
     },
     {
       "id": "scope:test-and-stream-shutdown-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
       "files": 43
     },
     {
@@ -7701,7 +7701,7 @@
     {
       "id": "scope:recovery-and-rag-followup-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
       "files": 47
     },
     {
@@ -7713,8 +7713,14 @@
     {
       "id": "scope:workspace-ui-consolidation-20261106",
       "status": "in_progress",
-      "source_commit": "b22631b79a961ba2e5fc803de723a972364b8fb2",
+      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
       "files": 31
+    },
+    {
+      "id": "scope:chat-evidence-context-20261106",
+      "status": "in_progress",
+      "source_commit": "ea8118604c55488d7fdc9eb1007fd881d89e350a",
+      "files": 16
     }
   ]
 }
