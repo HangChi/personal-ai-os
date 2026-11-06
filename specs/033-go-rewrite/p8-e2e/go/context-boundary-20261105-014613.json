@@ -1,0 +1,361 @@
+{
+  "backend": "go",
+  "result": "PASS",
+  "scope": "synthetic model, owned TLS database, unchanged Java baseline",
+  "original_e2e_approved": false,
+  "release_gates_changed": false,
+  "oversized_current_input": {
+    "error_code": 41301,
+    "done": false,
+    "delta": false,
+    "upstream_calls": 0,
+    "input_chars": 1811,
+    "input_sha256": "eb948519d4a591f7f8e3518500b7c325d0da310f7c8771b892956073b92dd067",
+    "original_case_outcome": "FAIL unchanged",
+    "original_failure": "第 0 轮应完成（裁剪生效，不应因超预算报错）",
+    "persisted_user_messages": 1,
+    "interruption_markers": 1,
+    "generated_assistant_messages": 0
+  },
+  "old_history_trimming": {
+    "persisted_user_messages": 7,
+    "upstream_user_messages": 2,
+    "removed_from_request": 5,
+    "current_input_sha256": "844a33ef5bbd89afb80bf993a26f628cbbabe3f6b2946c7788d16e78044e7a3c",
+    "persisted_history_unchanged": true,
+    "ordered_suffix": true,
+    "effective_budget": 6729,
+    "upstream_calls": 1,
+    "persisted_messages": 14,
+    "done": true,
+    "request_observation": {
+      "message_roles": [
+        "system",
+        "assistant",
+        "user",
+        "assistant",
+        "user"
+      ],
+      "user_sha256": [
+        "e121fbca587160c2a8817b78e725205da0b11fe766ae956f81ffdaae2be3c910",
+        "844a33ef5bbd89afb80bf993a26f628cbbabe3f6b2946c7788d16e78044e7a3c"
+      ],
+      "tools": 23,
+      "stream": true,
+      "messages": [
+        {
+          "role": "system",
+          "chars": 793,
+          "sha256": "905ec9b7a2ecf6e036195f49ece90894ac704d63e377b24e400a422ec53f78f0"
+        },
+        {
+          "role": "assistant",
+          "chars": 20,
+          "sha256": "451d5b634807b0b5ac8c2ca96b71e476f0e7d16e24708f6620f2c26e2de601c5"
+        },
+        {
+          "role": "user",
+          "chars": 1041,
+          "sha256": "e121fbca587160c2a8817b78e725205da0b11fe766ae956f81ffdaae2be3c910"
+        },
+        {
+          "role": "assistant",
+          "chars": 20,
+          "sha256": "451d5b634807b0b5ac8c2ca96b71e476f0e7d16e24708f6620f2c26e2de601c5"
+        },
+        {
+          "role": "user",
+          "chars": 35,
+          "sha256": "844a33ef5bbd89afb80bf993a26f628cbbabe3f6b2946c7788d16e78044e7a3c"
+        }
+      ],
+      "tool_definitions_sha256": "163a4e62a4b193437ee359c3b37f816e70b1cae0b11d1c925c410898484de061",
+      "tool_schemas": [
+        {
+          "name": "askUser",
+          "sha256": "963eb70ed43dd53310ddf550b21ed325f158bf741430f0f5d119179fd5eb1ffa",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "9e1e2d61bbbec0ab76140863da399ebd47b4e5ff1c41497b97a670aab64cb36f",
+          "description_sha256": "cbb32034ae345a1939e82efc6b7b9be2c0e77af5865b5d7b3e7a252adfd75667",
+          "strict": null
+        },
+        {
+          "name": "completePlanStep",
+          "sha256": "8e993a6f4f58be6d1af6c2ee013b5651f6aaed6f25c2a9a5c1a03248d67a8d22",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "1b8c958a6476d95b02c2c21149ddf6064e3f397d0ff4c7879d85ad96740b8ae8",
+          "description_sha256": "7079c4925a5bf534790913d517ffc3c64967f0e4454d5cf001ce0172905bdfdd",
+          "strict": null
+        },
+        {
+          "name": "createCalendarEvent",
+          "sha256": "e5ed65e9b2955afc9adc698ec514953f8db43719de5f0e458a610baf488654ae",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "beff331ef17ac50e0218ba8550cd049fee12e3207e009df83c93b5b942c4afef",
+          "description_sha256": "81c811fe48ed04f85d34288fd6ac37a0710f8952ce52d9ece3cf08ddf1322b56",
+          "strict": null
+        },
+        {
+          "name": "createPlan",
+          "sha256": "493092101ff4eeea8a3a48c4b76faa23ebc2b0dfdc4a22ed7b4df93592c2d48a",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "5b4969a431a6272ab5fa3597e288ac596f601cc690cbf99c349963695395d1fb",
+          "description_sha256": "b5e28d1ff0d908a2c0b05b4baf4e0580cecc806a8714f7a6cb6cfa0083f366eb",
+          "strict": null
+        },
+        {
+          "name": "createTask",
+          "sha256": "66ad7957551f32e2d8a777ca66e5a736543a922b43f9fa5d20867a692e68decb",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "ee9420e377af1d7ed2446a26e11bcdf90f823f15bac9a93df5fe102ab19dba85",
+          "description_sha256": "5e40716466c548966d5666ac08764d39a8fb80cee974418cddacfde28e435e1f",
+          "strict": null
+        },
+        {
+          "name": "deleteCalendarEvent",
+          "sha256": "e5a50669520bab7f814155f1ded159567d1a80869978f4bda7f0c3030bf99fad",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "d3054fdcfdb5137acd8dc5057aa00d606502b5d546e04349ea0f44c1fac52396",
+          "description_sha256": "05a1cbc8fd1f07e4aee85ba9d8c3205a7b4f3800293b31c4bd90e80aa40cf4d6",
+          "strict": null
+        },
+        {
+          "name": "deleteTask",
+          "sha256": "0feb20d73bf48a11a55123e43777d66e6db1a985c6e7ea6e0f0dfcf4e04f120b",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "93984488bc5705cde886ed6700656116debc4ea5f7a6fb35a60af64c1362d34b",
+          "description_sha256": "69d0e9cab71f441f1a8408b0987cf97aae5a9e5f22bf3f2459cc3cb42efc38e8",
+          "strict": null
+        },
+        {
+          "name": "failPlanStep",
+          "sha256": "ecc928f3d966480671cfa96e0a9b2732c94ffecbdd59cf5b94eebcb9f497baef",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "df4d52125fe83680f5acea40e0e8ebe1cc389ea44bed7c9a9887723f8685821a",
+          "description_sha256": "387531898fcb529e9c8d7834315f283f71df88d66cf4b7fe99ae3e8090cff241",
+          "strict": null
+        },
+        {
+          "name": "findCalendarEvents",
+          "sha256": "526e13b50d901220420550cc8b8a20a409346cc381408e3a60f33309d14cdbbc",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "3a9cc773b235518186a4230d58d6b6074075d18397b2f15830e0450650cd7cb0",
+          "description_sha256": "e0410b753bef11dee7cd2e12563d9a969524984d7375686e5c455a91c4aae8a3",
+          "strict": null
+        },
+        {
+          "name": "findDueReminders",
+          "sha256": "d79f2106c6a88d5b32c6669f33054ea2ebc32d85a567d6ff30e02ece60f071ee",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "7748f426b2807c5fbc7efb89ebad4eb194847214b6c14e65cba457c0af805422",
+          "description_sha256": "b6a072aaa318417989897e3697e755a4b9bcdab76bf0ff561ae89d13c1cc9862",
+          "strict": null
+        },
+        {
+          "name": "findTasks",
+          "sha256": "fa4004c525d92323527b6f50ae578dc3296e25d5573abfe45c76b7e3f28217ac",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "7df7230d846b41283424978674ac83f336a0f72a701bc880d5e5bd845d19529a",
+          "description_sha256": "ef6382c647088d518ae1b8657a0e9f6ddb9e44cdcb08611f52e4f1a561ae7981",
+          "strict": null
+        },
+        {
+          "name": "getPlan",
+          "sha256": "f03ca08207c1b74530f9f06e90d4a38366a1e65651a6ab9b89ee8f7ed3647626",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "7cce9970b1299f7789482edd63b456ed5edd6cb79dd6d9be98e076866db957e5",
+          "description_sha256": "208dfe30ccdb73e8620536ef3997cb00b4ee2b60f48c9dbcd87e7e1fd7b76b36",
+          "strict": null
+        },
+        {
+          "name": "getTask",
+          "sha256": "799e1f2b25c265da8dfa7a5c84fe1d49bd74ad977b3f30ddb6e987232c330b7d",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "60ebd0099a58faa88ccb31c46916a4dd6f0c454ea4f2d4686f5d556969c5217b",
+          "description_sha256": "e11acd2bff0c56a09394bfb96d47ab5eadb0db8d0a8882b6ef4966c3c0b90bb7",
+          "strict": null
+        },
+        {
+          "name": "markReminderRead",
+          "sha256": "8b8df28b9cb289079ade5f6d0a165d54ef510d98f12cabdc9528ad5bdbb13747",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "6f54df0627e9b5431aaa620bafcb08a45f08a21706521e5d153c76e525c946c8",
+          "description_sha256": "844bd131f5cd39eb08e59199d767499a78607cf5124928ad79444e177df31383",
+          "strict": null
+        },
+        {
+          "name": "revisePlan",
+          "sha256": "fb732a576ebcfedec10982ebc26b2bad45ffadf194f0d7867a7f996efcf133de",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "eeeca044ba4fb5e83f82733142a3be51da03ba67c98d5bfa40d88afa48bd7acc",
+          "description_sha256": "034f71d5c1f2ae4e9255f4faeda2cf4b56113cf9bb34b86144e2734e3018cabc",
+          "strict": null
+        },
+        {
+          "name": "saveMemory",
+          "sha256": "ecbe946c70a57037bec562065f47a50c29d928a4affdc02353541f9a323e93e2",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "bcd1a3f2e82d518c87f3ee29117b57260cd779da5daa49cf7e2697dfc816a3c7",
+          "description_sha256": "b15e6bbe5e96b5f8e2c18da94e44080c2c8de6cc8c5a41e4cc66f9e1a4043b92",
+          "strict": null
+        },
+        {
+          "name": "scheduleTask",
+          "sha256": "cf5b66fd3784cd1ba0dd40b714d1a3ffe549562f6612d37596faf8cf16bca8ae",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "a8c55eb522da37901c705e18ca0b4ed86979c296307962f0758564b0ca0ce50a",
+          "description_sha256": "ce3d742962c4aafebfacd3c6ef3add9eacb40763321acf3f09c8dd1489b62104",
+          "strict": null
+        },
+        {
+          "name": "searchKnowledge",
+          "sha256": "31ff343b3de3acf407a7a4c56f5a447d26ab6461e7ae4c870264e237fbd0f87c",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "755cabb5dcd0dfe4aa3c369c7be13cc79709551ccc1d62a0d90f3726f058aa17",
+          "description_sha256": "5877739cc01ea650f2b254aa32a469c2c5131f2f42a9a035669a167441a2fa07",
+          "strict": null
+        },
+        {
+          "name": "setTaskCompleted",
+          "sha256": "0fab8f135b6baf85671a7c91dfbb4fcf3cd79206ee6d4844c6b87968ffa6708c",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "5e80f98d25df21f11bd871eb2f07c477bbcaf62ea86d3b312d3c4e1821ecf0a0",
+          "description_sha256": "c44029204bdc3a14edb3f4858a72ae6436f242b9aa42498e968e5e4164ff5923",
+          "strict": null
+        },
+        {
+          "name": "setTaskPriority",
+          "sha256": "0ee18f38a9b945a91d799fbc28068cebb134d7c09b1159a88621bb81d0eb4f21",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "7e05786580de8b5aea961051a3156a4bf22f1be9bd618b126ec2c1208178ea9c",
+          "description_sha256": "d9a2d608964817a2ae02c3d730969f82a53b2ba755f607c31f2df46a28726ea4",
+          "strict": null
+        },
+        {
+          "name": "skipPlanStep",
+          "sha256": "2d2cdd479b5dba746df5ae7844ea1516149ded81e2bd728daf8caa6b61ac1191",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "0042ccb9a45825f16d44abe3f334572bdfc7512240357dc4e5ec159386b94b4f",
+          "description_sha256": "974ec2eed770e71f165010f4429a83a8b64f1f4b9faeca2a416742aebfe78bef",
+          "strict": null
+        },
+        {
+          "name": "startPlanStep",
+          "sha256": "374de8c3802853e229f8462dabd4843c86946a47b520d055492798fcaf742966",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "1a45a7263bd320a91ecd95a49899cd2aceb31960d335d868eba021c6f0b7cb96",
+          "description_sha256": "5c60fec5731a00b661ac571e79e47244872b4231daa9866f2cae689f9a84078a",
+          "strict": null
+        },
+        {
+          "name": "updateTaskDetails",
+          "sha256": "785afc6c0ceccbc3f1f12164805cbdfdc334aac3c8a0350ed4e2018b81ad11fc",
+          "present_fields": [
+            "name",
+            "description",
+            "parameters"
+          ],
+          "parameters_sha256": "cd1773975e7d47c233e0930226bedc17f9c451355f198d8d45f2c40841754e82",
+          "description_sha256": "f848d9f486c912d9d0469f82acf11e4bf84299a906127724acf2867a81d5b206",
+          "strict": null
+        }
+      ]
+    }
+  },
+  "restored_budget_recovery": {
+    "done": true,
+    "upstream_calls": 1,
+    "persisted_messages": 4,
+    "rejected_input_unchanged": true
+  },
+  "synthetic_model_requests": 8,
+  "cleanup_empty": true
+}

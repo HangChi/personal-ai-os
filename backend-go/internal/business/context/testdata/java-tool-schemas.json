@@ -1,0 +1,132 @@
+{
+  "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+  "sources_sha256": {
+    "backend/src/main/java/com/personalos/agent/tool/TaskTools.java": "3ef60f9beb7ada0929c29b55d1d66523ddca7a0f5e402ffeeb395c4e20e152a4",
+    "backend/src/main/java/com/personalos/agent/plan/tool/AgentPlanTools.java": "3b9a46c3d843cc470b65a6d85345eac7299ba6c2226aa745fc4b083f2cf3a794",
+    "backend/src/main/java/com/personalos/agent/interaction/tool/AgentUserTools.java": "44f202b874014c8c5f2d803e3752ac45a482bdede884c0303a91efa02dea32a8",
+    "backend/src/main/java/com/personalos/calendar/tool/CalendarTools.java": "36905e0f460211bdb6bc4878233a1a1a2e765a67fe511523c1784b38b6ccd05c",
+    "backend/src/main/java/com/personalos/memory/tool/MemoryTools.java": "e6295dbf72342fafdcba496fc5cd8a4783dad15998ffc0710e0c76bbee0c6662",
+    "backend/src/main/java/com/personalos/knowledge/tool/KnowledgeTools.java": "70eb72e84e8b423fda7ebeaed985a87762257384a49c47e27332111b2b91bde7",
+    "backend/src/main/java/com/personalos/common/ai/TokenEstimation.java": "40b7cf8711aaa83ca245b2205c1de92c442ccb901b9ceb9e6d2c2cca07f6c181",
+    "backend/src/main/java/com/personalos/common/ai/PromptTokenCounter.java": "f6fca4af90075130a32243cd537257328de7117d5515cffc3d73d2f59622a109",
+    "backend/src/main/java/com/personalos/common/ai/ContextBudgetService.java": "737a7f6c2b310a97176a4b4e10ffbd583f974d052f89ca1df1baac14359edc8f"
+  },
+  "tools": [
+    {
+      "name": "askUser",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"question\" : {\n      \"type\" : \"string\",\n      \"description\" : \"需要用户澄清的一个问题\"\n    },\n    \"options\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"type\" : \"object\",\n        \"properties\" : {\n          \"description\" : {\n            \"type\" : \"string\"\n          },\n          \"label\" : {\n            \"type\" : \"string\"\n          }\n        },\n        \"required\" : [ \"description\", \"label\" ],\n        \"additionalProperties\" : false\n      },\n      \"description\" : \"0到4个选项，label为选项名，description说明选择的影响\"\n    }\n  },\n  \"required\" : [ \"question\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 208
+    },
+    {
+      "name": "completePlanStep",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"seq\" : {\n      \"type\" : \"integer\",\n      \"description\" : \"步骤序号（从 1 开始）\"\n    },\n    \"summary\" : {\n      \"type\" : \"string\",\n      \"description\" : \"这一步的结论或产出；本步没有调用工具时必填\"\n    }\n  },\n  \"required\" : [ \"seq\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 135
+    },
+    {
+      "name": "createCalendarEvent",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"title\" : {\n      \"type\" : \"string\",\n      \"description\" : \"日程标题，1~200 字\"\n    },\n    \"startsAt\" : {\n      \"type\" : \"string\",\n      \"description\" : \"开始时间，ISO-8601，例如 2026-10-15T15:00:00Z 或 2026-10-15\"\n    },\n    \"endsAt\" : {\n      \"type\" : \"string\",\n      \"description\" : \"结束时间，ISO-8601，不得早于开始时间\"\n    },\n    \"location\" : {\n      \"type\" : \"string\",\n      \"description\" : \"地点，可省略\"\n    },\n    \"description\" : {\n      \"type\" : \"string\",\n      \"description\" : \"描述，可省略\"\n    },\n    \"allDay\" : {\n      \"type\" : \"boolean\",\n      \"description\" : \"是否全天日程，默认 false；为 true 时起止时间会被归一化到当天\"\n    },\n    \"recurrenceType\" : {\n      \"type\" : \"string\",\n      \"description\" : \"重复类型：NONE（默认）/ DAILY / WEEKLY / MONTHLY / WEEKDAYS\"\n    },\n    \"recurrenceUntil\" : {\n      \"type\" : \"string\",\n      \"description\" : \"重复截止时间，ISO-8601；省略表示无限重复\"\n    },\n    \"reminderLeadMinutes\" : {\n      \"type\" : \"integer\",\n      \"description\" : \"提前多少分钟提醒，默认 15，最大 10080\"\n    }\n  },\n  \"required\" : [ \"title\", \"startsAt\", \"endsAt\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 431
+    },
+    {
+      "name": "createPlan",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"goal\" : {\n      \"type\" : \"string\",\n      \"description\" : \"目标的一句话复述，例如：把本周所有未完成任务按优先级重排\"\n    },\n    \"steps\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"type\" : \"string\"\n      },\n      \"description\" : \"有序的步骤标题列表，2~12 步。每步应是一个可验证的动作，例如 [\\\"查询未完成任务\\\", \\\"按截止时间排序\\\", \\\"更新优先级\\\"]\"\n    }\n  },\n  \"required\" : [ \"goal\", \"steps\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 196
+    },
+    {
+      "name": "createTask",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"title\" : {\n      \"type\" : \"string\",\n      \"description\" : \"任务标题，1~200 字，例如：交周报\"\n    },\n    \"description\" : {\n      \"type\" : \"string\",\n      \"description\" : \"任务描述，可省略\"\n    },\n    \"priority\" : {\n      \"type\" : \"string\",\n      \"description\" : \"优先级，取值 LOW / MEDIUM / HIGH，省略则默认 MEDIUM\"\n    },\n    \"dueAt\" : {\n      \"type\" : \"string\",\n      \"description\" : \"截止时间，ISO-8601，例如 2026-10-17T10:00:00Z 或 2026-10-17，可省略\"\n    },\n    \"tags\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"type\" : \"string\"\n      },\n      \"description\" : \"标签，最多 5 个，例如 [\\\"工作\\\",\\\"本周\\\"]，可省略\"\n    }\n  },\n  \"required\" : [ \"title\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 290
+    },
+    {
+      "name": "deleteCalendarEvent",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"eventIds\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"type\" : \"string\"\n      },\n      \"description\" : \"要删除的日程 id 列表，1~50 个。可先调用 findCalendarEvents 获取 id。\"\n    }\n  },\n  \"required\" : [ \"eventIds\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 123
+    },
+    {
+      "name": "deleteTask",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"taskIds\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"type\" : \"string\"\n      },\n      \"description\" : \"要删除的任务 id 列表，1~50 个。可先调用 findTasks 获取 id。\"\n    }\n  },\n  \"required\" : [ \"taskIds\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 121
+    },
+    {
+      "name": "failPlanStep",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"seq\" : {\n      \"type\" : \"integer\",\n      \"description\" : \"步骤序号（从 1 开始）\"\n    },\n    \"reason\" : {\n      \"type\" : \"string\",\n      \"description\" : \"失败原因，例如：任务不存在 / 缺少必要参数 / 权限不足\"\n    }\n  },\n  \"required\" : [ \"seq\", \"reason\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 140
+    },
+    {
+      "name": "findCalendarEvents",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"from\" : {\n      \"type\" : \"string\",\n      \"description\" : \"区间起点，ISO-8601；省略表示从今天 00:00 开始\"\n    },\n    \"to\" : {\n      \"type\" : \"string\",\n      \"description\" : \"区间终点，ISO-8601；省略表示起点之后 7 天\"\n    },\n    \"limit\" : {\n      \"type\" : \"integer\",\n      \"description\" : \"返回条数上限，默认 100，最大 500\"\n    }\n  },\n  \"required\" : [ ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 181
+    },
+    {
+      "name": "findDueReminders",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"limit\" : {\n      \"type\" : \"integer\",\n      \"description\" : \"返回条数上限，默认 50\"\n    }\n  },\n  \"required\" : [ ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 84
+    },
+    {
+      "name": "findTasks",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"keyword\" : {\n      \"type\" : \"string\",\n      \"description\" : \"关键词，匹配标题或描述，可省略\"\n    },\n    \"status\" : {\n      \"type\" : \"string\",\n      \"description\" : \"状态筛选：TODO / DOING / DONE，可省略\"\n    },\n    \"tag\" : {\n      \"type\" : \"string\",\n      \"description\" : \"标签精确筛选，例如「工作」，可省略\"\n    },\n    \"limit\" : {\n      \"type\" : \"integer\",\n      \"description\" : \"返回条数上限，默认 20，最大 50\"\n    }\n  },\n  \"required\" : [ ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 209
+    },
+    {
+      "name": "getPlan",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : { },\n  \"required\" : [ ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 52
+    },
+    {
+      "name": "getTask",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"taskId\" : {\n      \"type\" : \"string\",\n      \"description\" : \"任务 id\"\n    }\n  },\n  \"required\" : [ \"taskId\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 81
+    },
+    {
+      "name": "markReminderRead",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"reminderId\" : {\n      \"type\" : \"string\",\n      \"description\" : \"提醒 id\"\n    }\n  },\n  \"required\" : [ \"reminderId\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 86
+    },
+    {
+      "name": "revisePlan",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"reason\" : {\n      \"type\" : \"string\",\n      \"description\" : \"为什么要换路线，例如：任务接口不可用，改为先导出再处理\"\n    },\n    \"steps\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"type\" : \"string\"\n      },\n      \"description\" : \"新的步骤标题列表，2~12 步\"\n    },\n    \"goal\" : {\n      \"type\" : \"string\",\n      \"description\" : \"新的目标复述；省略则沿用原目标\"\n    }\n  },\n  \"required\" : [ \"reason\", \"steps\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 200
+    },
+    {
+      "name": "saveMemory",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"content\" : {\n      \"type\" : \"string\",\n      \"description\" : \"要长期记住的内容，1~2000 字，写成一句完整、自足的陈述\"\n    }\n  },\n  \"required\" : [ \"content\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 109
+    },
+    {
+      "name": "scheduleTask",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"taskId\" : {\n      \"type\" : \"string\",\n      \"description\" : \"任务 id\"\n    },\n    \"dueAt\" : {\n      \"type\" : \"string\",\n      \"description\" : \"新的截止时间，ISO-8601；省略或留空表示清除截止时间\"\n    }\n  },\n  \"required\" : [ \"taskId\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 131
+    },
+    {
+      "name": "searchKnowledge",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"query\" : {\n      \"type\" : \"string\",\n      \"description\" : \"检索词或问题的关键词，1~500 字\"\n    },\n    \"topK\" : {\n      \"type\" : \"integer\",\n      \"description\" : \"返回条数，默认 4，上限 20\"\n    }\n  },\n  \"required\" : [ \"query\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 130
+    },
+    {
+      "name": "setTaskCompleted",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"taskId\" : {\n      \"type\" : \"string\",\n      \"description\" : \"任务 id\"\n    },\n    \"completed\" : {\n      \"type\" : \"boolean\",\n      \"description\" : \"true 表示标记完成，false 表示恢复\"\n    }\n  },\n  \"required\" : [ \"taskId\", \"completed\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 122
+    },
+    {
+      "name": "setTaskPriority",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"taskId\" : {\n      \"type\" : \"string\",\n      \"description\" : \"任务 id\"\n    },\n    \"priority\" : {\n      \"type\" : \"string\",\n      \"description\" : \"新的优先级，取值 LOW / MEDIUM / HIGH\"\n    }\n  },\n  \"required\" : [ \"taskId\", \"priority\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 121
+    },
+    {
+      "name": "skipPlanStep",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"seq\" : {\n      \"type\" : \"integer\",\n      \"description\" : \"步骤序号（从 1 开始）\"\n    },\n    \"reason\" : {\n      \"type\" : \"string\",\n      \"description\" : \"跳过原因，可省略\"\n    }\n  },\n  \"required\" : [ \"seq\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 125
+    },
+    {
+      "name": "startPlanStep",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"seq\" : {\n      \"type\" : \"integer\",\n      \"description\" : \"步骤序号（从 1 开始）\"\n    }\n  },\n  \"required\" : [ \"seq\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 92
+    },
+    {
+      "name": "updateTaskDetails",
+      "schema": "{\n  \"$schema\" : \"https://json-schema.org/draft/2020-12/schema\",\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"taskId\" : {\n      \"type\" : \"string\",\n      \"description\" : \"任务 id\"\n    },\n    \"title\" : {\n      \"type\" : \"string\",\n      \"description\" : \"新的标题，可省略\"\n    },\n    \"description\" : {\n      \"type\" : \"string\",\n      \"description\" : \"新的描述，可省略\"\n    },\n    \"tags\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"type\" : \"string\"\n      },\n      \"description\" : \"新的标签列表（整体替换，最多 5 个），可省略；传空数组表示清空\"\n    }\n  },\n  \"required\" : [ \"taskId\" ],\n  \"additionalProperties\" : false\n}",
+      "raw_tokens": 212
+    }
+  ],
+  "scope": "Raw Java callback schemas versus Go compact JSON; no provider usage claim."
+}

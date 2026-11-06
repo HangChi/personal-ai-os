@@ -1,0 +1,158 @@
+{
+  "backend": "java",
+  "result": "PASS",
+  "scope": "synthetic model, owned TLS database, unchanged Java baseline",
+  "original_e2e_approved": false,
+  "release_gates_changed": false,
+  "oversized_current_input": {
+    "error_code": 41301,
+    "done": false,
+    "delta": false,
+    "upstream_calls": 0,
+    "input_chars": 1811,
+    "input_sha256": "eb948519d4a591f7f8e3518500b7c325d0da310f7c8771b892956073b92dd067",
+    "original_case_outcome": "FAIL unchanged",
+    "original_failure": "第 0 轮应完成（裁剪生效，不应因超预算报错）",
+    "persisted_user_messages": 1,
+    "interruption_markers": 1,
+    "generated_assistant_messages": 0
+  },
+  "old_history_trimming": {
+    "persisted_user_messages": 7,
+    "upstream_user_messages": 1,
+    "removed_from_request": 6,
+    "current_input_sha256": "844a33ef5bbd89afb80bf993a26f628cbbabe3f6b2946c7788d16e78044e7a3c",
+    "persisted_history_unchanged": true,
+    "ordered_suffix": true,
+    "effective_budget": 6729,
+    "upstream_calls": 1,
+    "persisted_messages": 14,
+    "done": true,
+    "request_observation": {
+      "message_roles": [
+        "system",
+        "user"
+      ],
+      "user_sha256": [
+        "844a33ef5bbd89afb80bf993a26f628cbbabe3f6b2946c7788d16e78044e7a3c"
+      ],
+      "tools": 23,
+      "stream": true,
+      "messages": [
+        {
+          "role": "system",
+          "chars": 801,
+          "sha256": "a306f6fefe59f1eb4331f238da498f7f56e7b0515996401d5cc1eac19a1eb45f"
+        },
+        {
+          "role": "user",
+          "chars": 35,
+          "sha256": "844a33ef5bbd89afb80bf993a26f628cbbabe3f6b2946c7788d16e78044e7a3c"
+        }
+      ],
+      "tool_definitions_sha256": "b6694c38dd9257704f2bfe4c88272bdb8727fd0f4a94eed0be36572bf0f16952",
+      "tool_schemas": [
+        {
+          "name": "askUser",
+          "sha256": "60e37f25afc28c2beccda2d0be33ca036f4a051fb390d61cdea0fb6160a626ff"
+        },
+        {
+          "name": "completePlanStep",
+          "sha256": "d8967ed76562b045211e2a5b29320c21be0982e399ce7d3cf6843a662f80f5ad"
+        },
+        {
+          "name": "createPlan",
+          "sha256": "47c6fee24e85d6161bbbafe2c500c8cd28c0697967d0130b7f243963cfa0b605"
+        },
+        {
+          "name": "revisePlan",
+          "sha256": "46564ee10b6b0fdd63898c4c0da214827ac162f17071925899966ec3f662512f"
+        },
+        {
+          "name": "startPlanStep",
+          "sha256": "a1d57fb0b45ae854973da0883c6781366440049bc37817728d1629a9f7efb932"
+        },
+        {
+          "name": "failPlanStep",
+          "sha256": "f2a92c0d8c7f0a4138bb20a40ef86fe98384db338cff0d54469caf67f98f2554"
+        },
+        {
+          "name": "skipPlanStep",
+          "sha256": "d985ff0431d4a425c3283aad2b6e6df750adcde9ebaa865c199e3c7e2acce29f"
+        },
+        {
+          "name": "getPlan",
+          "sha256": "d062660041e6ac0cc0f310a841923b063ff3d19939c9e3a4971b04ea9a89dc26"
+        },
+        {
+          "name": "getTask",
+          "sha256": "1f5e757bda0a49d6bad0f7856c33732e061f1f69a5dde73b1e1b6709b4353751"
+        },
+        {
+          "name": "updateTaskDetails",
+          "sha256": "05af5913d123908104f9b9909df80e5f69d5de68ea5e9fe64fca2611b58f6699"
+        },
+        {
+          "name": "setTaskCompleted",
+          "sha256": "f8b173d066d3f8b22300cee810afb4b621cdf627af4f37a52f5a154ba4e25a37"
+        },
+        {
+          "name": "setTaskPriority",
+          "sha256": "b8b009ebe5ecdadcb9e50db2f941652636fda4243225169a209f3adf77b6dec8"
+        },
+        {
+          "name": "createTask",
+          "sha256": "42f603084d78b1e86315b09e215dec11911f9fd7ebcef728720401adc6bfb72b"
+        },
+        {
+          "name": "findTasks",
+          "sha256": "b01e5239072b9e8bc45178392cff1ba6abbf00c7d2cb522ddb6a9e426f4f9291"
+        },
+        {
+          "name": "deleteTask",
+          "sha256": "a2c4365ca5aed7baf5080ae23963b51d0f7ec87ef308b3823c82306d332c5133"
+        },
+        {
+          "name": "scheduleTask",
+          "sha256": "e840e9061cb3a13e7c0aabfcb221deae19803a60fb3963092ee4ee9c63bf4001"
+        },
+        {
+          "name": "createCalendarEvent",
+          "sha256": "3d93d23ad45095add5761609fd002aacd9b94ff57f730b53fbfaa51aa30964c6"
+        },
+        {
+          "name": "findCalendarEvents",
+          "sha256": "49a0fd8bd2cab90d9fe0d2e782d0aefa3f767877592ee69f3dcf409cec9e8755"
+        },
+        {
+          "name": "findDueReminders",
+          "sha256": "760869baac1173ec3f7730865141bfc802816c566145fb0c947d43c724855e6d"
+        },
+        {
+          "name": "markReminderRead",
+          "sha256": "5984c389bf2b7e4ec0360dac9f697f8e030ed5044297e8400768a16a3d72043c"
+        },
+        {
+          "name": "deleteCalendarEvent",
+          "sha256": "3f61acbc733c372e1603f0001a93dfe77220896d4529866717a72ecb60d5f955"
+        },
+        {
+          "name": "searchKnowledge",
+          "sha256": "8edf0003a66967698b079c086783c7ebe4cf4a1f33b1d8611955402a55f1bf9c"
+        },
+        {
+          "name": "saveMemory",
+          "sha256": "5929503543e1b5f2e95f2c8a3a117b9bfdaf3f93a573dbeb824383fbb9599c09"
+        }
+      ]
+    }
+  },
+  "restored_budget_recovery": {
+    "done": true,
+    "upstream_calls": 1,
+    "persisted_messages": 4,
+    "rejected_input_unchanged": true
+  },
+  "synthetic_model_requests": 8,
+  "cleanup_empty": true
+}
