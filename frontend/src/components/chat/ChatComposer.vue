@@ -804,7 +804,7 @@ onBeforeUnmount(() => {
 
 .chat-composer__topk :deep(.el-select__wrapper) {
   min-height: 26px;
-  padding: 0;
+  padding: 0 0 0 var(--os-space-1);
   box-shadow: none;
   background: transparent;
   font-size: var(--os-font-sm);
