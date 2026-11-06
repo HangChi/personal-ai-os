@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useRoute } from 'vue-router'
+const workspaceRoute = useRoute()
+
 /**
  * 对话页（阶段 20 重设计；2026-10-26 按职责拆分为子组件）。
  *
@@ -391,11 +394,22 @@ onMounted(async () => {
   // 不该拖住首屏会话的加载。失败由 store 自己记错，页面不额外提示。
   void modelProfileStore.load()
   await chatStore.loadSessions()
+  const requested = workspaceRoute?.query.conversationId
+  if (typeof requested === 'string' && requested) {
+    await chatStore.selectSession(requested)
+  }
   const first = sessions.value[0]
   if (!currentConversationId.value && first) {
     await chatStore.selectSession(first.conversationId)
   }
 })
+
+watch(
+  () => workspaceRoute?.query.conversationId,
+  (id) => {
+    if (typeof id === 'string' && id && id !== currentConversationId.value) void chatStore.selectSession(id)
+  },
+)
 
 /** 当前会话记录着的模型（null = 跟随生效配置的默认模型） */
 const sessionModel = computed(() => {

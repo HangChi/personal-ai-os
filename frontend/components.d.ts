@@ -107,6 +107,7 @@ declare module 'vue' {
     TaskOrganizationFields: typeof import('./src/components/task/TaskOrganizationFields.vue')['default']
     TaskTablePanel: typeof import('./src/components/task/TaskTablePanel.vue')['default']
     ThemeToggle: typeof import('./src/components/ThemeToggle.vue')['default']
+    TodayWorkspace: typeof import('./src/components/home/TodayWorkspace.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']

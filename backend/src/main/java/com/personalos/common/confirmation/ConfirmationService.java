@@ -272,6 +272,6 @@ public class ConfirmationService {
     private ConfirmationDto toDto(ConfirmationEntity entity) {
         return new ConfirmationDto(entity.getId(), entity.getToken(), entity.getAction().name(),
                 entity.getSummary(), entity.getAffectedCount(), entity.getStatus().name(),
-                entity.getExpiresAt(), entity.getCreatedAt());
+                entity.getExpiresAt(), entity.getCreatedAt(), entity.getConversationId());
     }
 }

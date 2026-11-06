@@ -46,18 +46,19 @@ type Record struct {
 	ResolvedAt                                  *time.Time
 }
 type DTO struct {
-	ID            string    `json:"id"`
-	Token         string    `json:"token"`
-	Action        Action    `json:"action"`
-	Summary       string    `json:"summary"`
-	AffectedCount int       `json:"affectedCount"`
-	Status        Status    `json:"status"`
-	ExpiresAt     time.Time `json:"expiresAt"`
-	CreatedAt     time.Time `json:"createdAt"`
+	ID             string    `json:"id"`
+	Token          string    `json:"token"`
+	Action         Action    `json:"action"`
+	Summary        string    `json:"summary"`
+	AffectedCount  int       `json:"affectedCount"`
+	Status         Status    `json:"status"`
+	ExpiresAt      time.Time `json:"expiresAt"`
+	CreatedAt      time.Time `json:"createdAt"`
+	ConversationID string    `json:"conversationId"`
 }
 
 func (r Record) DTO() DTO {
-	return DTO{r.ID, r.Token, r.Action, r.Summary, r.AffectedCount, r.Status, r.ExpiresAt, r.CreatedAt}
+	return DTO{r.ID, r.Token, r.Action, r.Summary, r.AffectedCount, r.Status, r.ExpiresAt, r.CreatedAt, r.ConversationID}
 }
 
 type Execution struct {

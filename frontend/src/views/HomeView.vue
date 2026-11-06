@@ -22,6 +22,8 @@ import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import TodayWorkspace from '@/components/home/TodayWorkspace.vue'
+
 import { downloadExport, importData } from '@/api/export'
 import { listOccurrences } from '@/api/calendar'
 import { confirmAction } from '@/lib/confirm-box'
@@ -326,6 +328,8 @@ const overviewLine = computed(() => {
         开始对话
       </el-button>
     </header>
+
+    <TodayWorkspace @tasks-changed="loadStat('pending')" />
 
     <!-- 统计卡行（FR-009）：单卡失败显示 —，不阻塞其他卡 -->
     <div class="home__stats">

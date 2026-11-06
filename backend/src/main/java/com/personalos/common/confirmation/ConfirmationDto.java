@@ -22,5 +22,8 @@ public record ConfirmationDto(UUID id,
                               int affectedCount,
                               String status,
                               Instant expiresAt,
-                              Instant createdAt) {
+                              Instant createdAt, String conversationId) {
+    public ConfirmationDto(UUID id,String token,String action,String summary,int affectedCount,String status,Instant expiresAt,Instant createdAt) {
+        this(id,token,action,summary,affectedCount,status,expiresAt,createdAt,null);
+    }
 }

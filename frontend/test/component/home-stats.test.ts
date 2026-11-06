@@ -35,7 +35,11 @@ async function open() {
   const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/', component: HomeView }] })
   await router.push('/')
   const wrapper = mount(HomeView, {
-    global: { plugins: [pinia, router], stubs: { PageHeader: true }, directives: { loading: () => {} } },
+    global: {
+      plugins: [pinia, router],
+      stubs: { PageHeader: true, TodayWorkspace: true },
+      directives: { loading: () => {} },
+    },
   })
   wrappers.push(wrapper)
   await flushPromises()
