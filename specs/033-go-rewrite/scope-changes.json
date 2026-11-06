@@ -68,8 +68,8 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
-      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
       "files": [
         {
           "path": ".env.example",
@@ -374,7 +374,7 @@
         {
           "path": "frontend/src/components/knowledge/KnowledgeAskTab.vue",
           "baseline_sha256": "12da4ec0e9c0f4c3c461946448b156285c9c54cb614907f8f080d0fd82d4a9de",
-          "candidate_sha256": "8f51641c92aedf00be7896cb97911c731fcf6720904b7b64effbf1c327c4869b"
+          "candidate_sha256": "1e03bf149d08abfb0fa4249bd539bb1faad01bbdd0e1fc5c747eefeb71945060"
         },
         {
           "path": "frontend/src/components/knowledge/KnowledgeHitList.vue",
@@ -384,7 +384,7 @@
         {
           "path": "frontend/src/components/knowledge/KnowledgeSearchTab.vue",
           "baseline_sha256": "7f24222423bb374efbeb0fa217682d17b1d52e61545eca54c08fcf6fef5d4205",
-          "candidate_sha256": "bfd475f215f318a488dd87fef536f7eff6836d39542a9f4ed47336c6b8f592a8"
+          "candidate_sha256": "66165ddc9747db86c3890e38413033def8413d047f1fb21acd83dc5136a3a144"
         },
         {
           "path": "frontend/src/lib/citations.ts",
@@ -404,7 +404,7 @@
         {
           "path": "frontend/src/views/ChatView.vue",
           "baseline_sha256": "96116adc1684fe6a0950ced4a9f8f9e1c0e7540377dcaf28161c8fa0ecbb6e47",
-          "candidate_sha256": "b1f4d49c357a67ee6cce5f406869ba9e05b325b9c167e1f39f4a436e4699e6a5"
+          "candidate_sha256": "dd9188861c5f13f35ba118bc64ba2872cc4fdf030fcbc2f8325d36897a0a65a3"
         },
         {
           "path": "frontend/test/chat-send-retry.test.mjs",
@@ -486,25 +486,28 @@
         "specs/033-go-rewrite/retry-command-validation-20261105.md",
         "specs/033-go-rewrite/retry-followup-validation-20261105.md",
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
-        "specs/033-go-rewrite/optimization-validation-20261106.md"
+        "specs/033-go-rewrite/optimization-validation-20261106.md",
+        "specs/036-workspace-ui/validation.md",
+        "specs/036-workspace-ui/browser-report.json"
       ],
       "limitations": [
         "Java 真实 HTTP + PostgreSQL 已验证检索故障 warning 后继续 delta/done、无 error 终态且降级轮引用为零；真实浏览器双端全流程回归仍待执行。",
         "既有联网 / MCP / citation audit 候选的真实服务与事实质量验收仍开放，不继承原迁移通过声明。",
-        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。"
+        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。",
+        "036仅调整前端与本地偏好；隔离浏览器使用模拟API，未重跑完整真实双端E2E，原未验收范围保持开放。"
       ],
       "parity_sha256": {}
     },
     {
       "id": "scope:dashboard-independent-statistics-20261105",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
-      "summary": "首页独立读取两端既有统计接口；筛选隔离、失败、零值、加载和重试组件回归已通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "summary": "首页独立读取两端既有统计接口；筛选隔离、失败、零值、加载和重试组件回归已通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
       "files": [
         {
           "path": "frontend/src/views/HomeView.vue",
           "baseline_sha256": "d10d9069a6075c84eacfa7b029b96b0b64d3a93cb7ab36a7b718f8687fef1bed",
-          "candidate_sha256": "6b4a3b75961351aa47b2f505a3a60c6f24ba11f2fa9b82b0d2f1bbd99f4461c6"
+          "candidate_sha256": "6e6e3b02e372a5e7bbe0e528d30e492dcc8328e164442f5ba54bff43d92528b2"
         },
         {
           "path": "frontend/test/component/home-stats.test.ts",
@@ -530,11 +533,14 @@
         "specs/033-go-rewrite/post-baseline-scope.md",
         "specs/033-go-rewrite/repair-validation-20261105.md",
         "frontend/test/component/home-stats.test.ts",
-        "specs/033-go-rewrite/optimization-validation-20261106.md"
+        "specs/033-go-rewrite/optimization-validation-20261106.md",
+        "specs/036-workspace-ui/validation.md",
+        "specs/036-workspace-ui/browser-report.json"
       ],
       "limitations": [
         "两端统计接口实现静态核对；真实 HTTP + 浏览器联调待执行。",
-        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。"
+        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。",
+        "036仅调整前端与本地偏好；隔离浏览器使用模拟API，未重跑完整真实双端E2E，原未验收范围保持开放。"
       ],
       "parity_sha256": {
         "backend/src/main/java/com/personalos/task/controller/TaskController.java": "0f4c3540549c745d531659d94ef652722f99df51591484e0a68adc81e1fd8b68",
@@ -550,8 +556,8 @@
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
-      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
       "files": [
         {
           "path": "backend-go/internal/app/foundation_p8_integration_test.go",
@@ -696,7 +702,7 @@
         {
           "path": "frontend/components.d.ts",
           "baseline_sha256": "16aab8913c34bc503798858a315e80311a892e948c0f2f6224cc0756a13154d1",
-          "candidate_sha256": "140c3e0f21344817e1368e91e6eddce01e7c8aaddb7648e057bae78d59663bfd"
+          "candidate_sha256": "c2f57c8713d9360810bcf9989f9bdda8ccfd3c194353f3c04965308afb7eb10e"
         },
         {
           "path": "frontend/src/api/chat-tools.ts",
@@ -793,7 +799,9 @@
         "scripts/migration/mcp_stdio_fault_proxy.py",
         "scripts/migration/run_retry_command_acceptance.py",
         "scripts/migration/run_retry_commands_browser.mjs",
-        "specs/033-go-rewrite/optimization-validation-20261106.md"
+        "specs/033-go-rewrite/optimization-validation-20261106.md",
+        "specs/036-workspace-ui/validation.md",
+        "specs/036-workspace-ui/browser-report.json"
       ],
       "limitations": [
         "已验证正式 filesystem MCP 2.1.0 的真实副作用与未知结果保护；不认证任意远端自身实现去重语义。",
@@ -801,7 +809,8 @@
         "MCP 结果未知时保留执行所有权，不能据此承诺任意远端恰好执行一次。",
         "前端标识保留仅覆盖当前标签页及刷新；新标识、改变参数或新会话属于新操作。成功回执清理会缩短历史去重范围。",
         "原五项发布门禁保持原状；本轮增量通过不代表完整迁移或发布批准。",
-        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。"
+        "本次重绑包含后续共享入口改动；旧证据不代表全部新候选行为已完成双端验收，状态继续in_progress。",
+        "036仅调整前端与本地偏好；隔离浏览器使用模拟API，未重跑完整真实双端E2E，原未验收范围保持开放。"
       ],
       "parity_sha256": {}
     },
@@ -1072,8 +1081,8 @@
     {
       "id": "scope:task-workspace-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
-      "summary": "登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "summary": "登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
       "files": [
         {
           "path": "backend-go/internal/business/dataimport/payload.go",
@@ -1203,7 +1212,7 @@
         {
           "path": "frontend/src/components/task/ProjectManager.vue",
           "baseline_sha256": null,
-          "candidate_sha256": "b234e1bea8d6543493a30a8c15e21f8b9f10047c85af7abd82e19c23bad25c52"
+          "candidate_sha256": "931962038a045d06d49769e0a3494dc9e4d9fe9e5452008c46b30eaebbb3a33c"
         },
         {
           "path": "frontend/src/components/task/TaskBoardPanel.vue",
@@ -1213,7 +1222,7 @@
         {
           "path": "frontend/src/components/task/TaskCreateForm.vue",
           "baseline_sha256": "020215836e505f91147758cd48720333cc2b6b02b443c9770a61b093d20dbb51",
-          "candidate_sha256": "051d2e096ebf15b64ede82188d9c0b419b71f75bd2884d8a366fb429935406f0"
+          "candidate_sha256": "3affa2eb018e3dc0e022786d90772309cfc57933cf92d3ff9f49785e625c6b47"
         },
         {
           "path": "frontend/src/components/task/TaskEditDialog.vue",
@@ -1248,7 +1257,7 @@
         {
           "path": "frontend/src/views/TasksView.vue",
           "baseline_sha256": "f8aab82a67678a3b186ebe0865d148442cc40efb1b734dd2ba61b1f3654454ed",
-          "candidate_sha256": "1cd26efbc6b3c76e07632944185ef442b855a10f26d28e001b761acb90a1a8cf"
+          "candidate_sha256": "63eb7e6484ba1f1d3556e8d6a6afbbc117c3687ca8a7aaf048d8abe4008608fb"
         },
         {
           "path": "frontend/test/component/today-workspace.test.ts",
@@ -1339,18 +1348,21 @@
       "parity_sha256": {},
       "evidence": [
         "specs/033-go-rewrite/optimization-validation-20261106.md",
-        "specs/034-task-workspace/validation.md"
+        "specs/034-task-workspace/validation.md",
+        "specs/036-workspace-ui/validation.md",
+        "specs/036-workspace-ui/browser-report.json"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
-        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。"
+        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。",
+        "036仅调整前端与本地偏好；隔离浏览器使用模拟API，未重跑完整真实双端E2E，原未验收范围保持开放。"
       ]
     },
     {
       "id": "scope:safe-automation-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
-      "summary": "登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "summary": "登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
       "files": [
         {
           "path": "backend-go/go.mod",
@@ -1595,7 +1607,7 @@
         {
           "path": "frontend/src/App.vue",
           "baseline_sha256": "3d46f20fc1f3ec12d64724cd22c80c4619df014f9da8f192adffe9be6c34a462",
-          "candidate_sha256": "fb46aae9bd0e63502c22bd77b28493a30266c94d763d0c910c186606c891cc8c"
+          "candidate_sha256": "6919b3fd0294a4c265d8600c3d724b3caf1b44fb7f6bbefdc6efba39af45faf3"
         },
         {
           "path": "frontend/src/api/calendar.ts",
@@ -1620,7 +1632,7 @@
         {
           "path": "frontend/src/components/calendar/CalendarExchange.vue",
           "baseline_sha256": null,
-          "candidate_sha256": "e36cf8e5259a7e09878e202735a54c93b2dfb216b68624024697d224743a9f36"
+          "candidate_sha256": "fdf4b2140084acab50a928e8af67d7e2e3cb571252ad0320bd341fba70d457f0"
         },
         {
           "path": "frontend/src/components/calendar/CalendarNotifyBanner.vue",
@@ -1630,7 +1642,7 @@
         {
           "path": "frontend/src/components/knowledge/KnowledgeCaptures.vue",
           "baseline_sha256": null,
-          "candidate_sha256": "01a2e2597a64ff1847ffabb427ac0da0a884a24041593de7cd5edf1946ac45e6"
+          "candidate_sha256": "dd51670c65b15d654df6dff48527172f50193cd33c74a590acb1540bc63bf158"
         },
         {
           "path": "frontend/src/main.ts",
@@ -1640,17 +1652,17 @@
         {
           "path": "frontend/src/router/index.ts",
           "baseline_sha256": "06a3d24b3ea8afefbc81b5166aa281acca968e8f849a6194dcac93c43d1b1d11",
-          "candidate_sha256": "616c48f2d85c0ee6a76e23d9768718f680a2f46530ce895b1d420df8446c1251"
+          "candidate_sha256": "ab0df5f79a226d213389af13aa92adfd012978e7999f856a6bfb909381a571d6"
         },
         {
           "path": "frontend/src/views/MaintenanceView.vue",
           "baseline_sha256": null,
-          "candidate_sha256": "247b4ae9237592f806e7d790bd89ebf79b1193dec02e52b6640ebc149d664140"
+          "candidate_sha256": "5254193aae3bc541cb5002400b7b45834c4ca6fb185067ca31f36f28b590a887"
         },
         {
           "path": "frontend/src/views/WorkflowsView.vue",
           "baseline_sha256": null,
-          "candidate_sha256": "31491b8db7dacbfe7936db137eabff46aa8cf5ac263f05b0455482acf0dd874f"
+          "candidate_sha256": "7dc1f9ff62aba92f489e0483314dd3c305aafdaa95a8efdb8e31e2da95ccfede"
         },
         {
           "path": "scripts/automation/automation_ui.py",
@@ -1745,18 +1757,21 @@
       "parity_sha256": {},
       "evidence": [
         "specs/033-go-rewrite/optimization-validation-20261106.md",
-        "specs/035-safe-automation/validation.md"
+        "specs/035-safe-automation/validation.md",
+        "specs/036-workspace-ui/validation.md",
+        "specs/036-workspace-ui/browser-report.json"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
-        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。"
+        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。",
+        "036仅调整前端与本地偏好；隔离浏览器使用模拟API，未重跑完整真实双端E2E，原未验收范围保持开放。"
       ]
     },
     {
       "id": "scope:recovery-and-rag-followup-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
-      "summary": "补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "summary": "补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
       "files": [
         {
           "path": "backend-go/internal/business/chat/prompt.go",
@@ -1941,22 +1956,22 @@
         {
           "path": "frontend/src/stores/ui.ts",
           "baseline_sha256": "897c92e5fe93a4778dabbc761a212e6343c7f71e7f839f19e70af541829c4c32",
-          "candidate_sha256": "b2e375abe75c6473385deb820a19c175c69e01c1592f8392134a340b4301e0a0"
+          "candidate_sha256": "a8c317ca84c48b102bb3d94bea7706eeee37f65aee05001165bf163e30c22641"
         },
         {
           "path": "frontend/src/views/CalendarView.vue",
           "baseline_sha256": "5f93963e3766bc9e215174aec9a97f0040d5b98b8acd0cfcd6f238745792f4c8",
-          "candidate_sha256": "8028b1e62b0389b5322043acb3eced451a2b9c07962b2c2af929924486aea051"
+          "candidate_sha256": "996cc614b4326f6b51414cde6340e5b68be51720b10f9da8e7947abe668b052f"
         },
         {
           "path": "frontend/src/views/KnowledgeView.vue",
           "baseline_sha256": "12eda767994e8702617bbd1a6115aaaec8849998f876c62a811e9879fd2ae5ad",
-          "candidate_sha256": "930bcc85cf10f864b2cc441d980afe05dfd83b3036a8c3b24ce6f26ffba0cf28"
+          "candidate_sha256": "5e8e68c21f516faaa1cb9261f3010f29d69ed776006148a43d6cfc2807823642"
         },
         {
           "path": "frontend/src/views/LoginView.vue",
           "baseline_sha256": "49e4b5fc11fb0434445b400171601e74510f3ef5a2207d118ee66c35dcdb2df1",
-          "candidate_sha256": "f4d39501df9969c2bd2dc292fa823ce2e513bbe28f06c9129195f5731561058a"
+          "candidate_sha256": "44fb9d90975fea835b75da2142bd6d131594a531263b2c36efed4c904f3a8621"
         },
         {
           "path": "frontend/test/component/calendar-exchange.test.ts",
@@ -2010,11 +2025,14 @@
         "backend-go/internal/business/knowledge/rag.go": "032204d876b4cd3559a76cb1693c2f82fcf9ad11f23ade1129ca6a64dc44cba9"
       },
       "evidence": [
-        "specs/033-go-rewrite/optimization-validation-20261106.md"
+        "specs/033-go-rewrite/optimization-validation-20261106.md",
+        "specs/036-workspace-ui/validation.md",
+        "specs/036-workspace-ui/browser-report.json"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
-        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。"
+        "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。",
+        "036仅调整前端与本地偏好；隔离浏览器使用模拟API，未重跑完整真实双端E2E，原未验收范围保持开放。"
       ]
     },
     {
@@ -2151,6 +2169,190 @@
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
         "冻结原基线与V1–V42保持不变；五项发布门禁与历史未完成问题继续开放。"
+      ]
+    },
+    {
+      "id": "scope:workspace-ui-consolidation-20261106",
+      "status": "in_progress",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "summary": "036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。",
+      "files": [
+        {
+          "path": "frontend/src/components/PageHeader.vue",
+          "baseline_sha256": "d1436c07c9cefad981b3e883cd4cf2ab3d8e5f9a00e5f2ac4734faff917789d3",
+          "candidate_sha256": "83af16ee3e24c142dc103d499c1a1146928361cefc839ef47ec32b3bdb8d44aa"
+        },
+        {
+          "path": "frontend/src/components/calendar/CalendarCreateForm.vue",
+          "baseline_sha256": "84732ac3fd7300014e060e75ba9293a99a7eb5fc8288800e7c35787c0c7cc9cf",
+          "candidate_sha256": "7779623de652929fbbe65b3c8483906d1d256711840ba24e5714dacdd23c7dfa"
+        },
+        {
+          "path": "frontend/src/components/knowledge/KnowledgeDocumentsTab.vue",
+          "baseline_sha256": "50b3fb633b57d0666578445b11d25ebd48127d50ba88476739396291bc065ca9",
+          "candidate_sha256": "ce5d5c687d1f5eaef14fd2e0cccf69460f6b674ad90a220aea0f0931d913ed20"
+        },
+        {
+          "path": "frontend/src/components/knowledge/KnowledgeGovernanceTab.vue",
+          "baseline_sha256": "994348d93b1368b3aea1bef563500b0f5c59dae5d0d6967074285a88b2fad254",
+          "candidate_sha256": "8d168b3a0abb4e8cf9384c6104f8e31cc12c83828935ad88c0034bb3771488e9"
+        },
+        {
+          "path": "frontend/src/components/settings/DataImportPanel.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "4216def961db45fb99d0485517761789ae967463ae09d1bbc0655c192eca021e"
+        },
+        {
+          "path": "frontend/src/components/settings/McpSettingsPanel.vue",
+          "baseline_sha256": "685093525f60c38a6928d0355c8690e290a2c064a1abfbde0a3c4d25d77a07df",
+          "candidate_sha256": "ad07cac0983c96b418422a6656a45c22572fdc1b4dcbaa191825feb9c4b7e85e"
+        },
+        {
+          "path": "frontend/src/components/settings/ModelProfileDialog.vue",
+          "baseline_sha256": "4c33b7106b916199ba8e3691e25dbb88d3d2d87d20cd7ce317ba0abda0d70192",
+          "candidate_sha256": "773b23595420712b30d5d215952f690f255dfd61148b0c98a035b52eee15b726"
+        },
+        {
+          "path": "frontend/src/components/settings/ModelProfilesPanel.vue",
+          "baseline_sha256": "971675a8470ff7f27fc7075191233deece8fa8759fb13a1420d7fe852628af9d",
+          "candidate_sha256": "4f1dc1bedbceae5594f25b31a23e0c1f471ad62a211d83a7a78412df8f4737fe"
+        },
+        {
+          "path": "frontend/src/components/settings/ProviderPresetPicker.vue",
+          "baseline_sha256": "fa6eb0ca2386f45acbfad379d6a456279c6a29bdc3c45ed13bbed50cc8a93c5a",
+          "candidate_sha256": "6f38d6b11d6f61c9ab6cfd63f874fcda85ad1dc3583d22cc16625a1856750e58"
+        },
+        {
+          "path": "frontend/src/lib/workspace-navigation.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "a8da3d62e4a6297b5e1f7e86e84f1d9eea101cbac4ba47977b17f096e7056174"
+        },
+        {
+          "path": "frontend/src/styles/main.css",
+          "baseline_sha256": "ed71ff078031bd4489867c2bd3bc3fe13cf133c3a3750813b675732530bb0598",
+          "candidate_sha256": "059c0aa08f34fe95737ee9bbac9535197ccc9affc86e32d32d98b02d77b6065d"
+        },
+        {
+          "path": "frontend/src/styles/workspace.css",
+          "baseline_sha256": null,
+          "candidate_sha256": "7d917a5eba96b23ab0fcc2c689b4fef16fa21bc6b505a3f3201c5ca3b464c391"
+        },
+        {
+          "path": "frontend/src/views/ActivityView.vue",
+          "baseline_sha256": "26cec62c1ade8f52f3e012d242a1a8300911ce011b8d984b85a6c0ac1abd390e",
+          "candidate_sha256": "044b43c0648970076a9dbbb0ff3a54debda220e16c8c33f665513dea3a2580aa"
+        },
+        {
+          "path": "frontend/src/views/MemoryView.vue",
+          "baseline_sha256": "98639b0a788f052704d88a76072a967e96f7e674e9d295b020c2858f6f99efd5",
+          "candidate_sha256": "a0a2ef0610b7eb38a5328eaa923b546618d92afcf31d91317107911876ede986"
+        },
+        {
+          "path": "frontend/src/views/RuntimeView.vue",
+          "baseline_sha256": null,
+          "candidate_sha256": "2dcc67138021b063b50a5904e5533110ac4aa4947058eb52e59c3c910685623b"
+        },
+        {
+          "path": "frontend/src/views/SearchView.vue",
+          "baseline_sha256": "3c7247e73b403d84c55145d5268ec0dd7a1c05d9bddd12fae084ba9a47b6c4d4",
+          "candidate_sha256": "31cef147d0dc36917603eb24a3fccc97c64138984c0bda42bedf5d7dd3b81be0"
+        },
+        {
+          "path": "frontend/src/views/SettingsView.vue",
+          "baseline_sha256": "d8559460e97d47b2045918b1aae4d16d376ade8d5cdddb6ee2b452fcacac8de6",
+          "candidate_sha256": "fd9271d985f0f95f5103396bffefbdef97974787496b7bff785e73f8f3fdf8e2"
+        },
+        {
+          "path": "frontend/src/views/UsageView.vue",
+          "baseline_sha256": "07209fea25beb0bc5239edab058002ad224a8816d55e51285b440d0df204c5e7",
+          "candidate_sha256": "dfdd54fa4346e42cc43df6ab406d3cd10e017a36080065aad9ef0fc70f61b088"
+        },
+        {
+          "path": "frontend/test/component/search-view.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "242a6a2a8a030fdc2c724f91722bc662a7b72161da420b2300022a2cb60978de"
+        },
+        {
+          "path": "frontend/test/component/settings-navigation.test.ts",
+          "baseline_sha256": "a5d0ce71be62eae7ebe9895e3a1da303c0fe1dfb43ad6961be52339d9789db2f",
+          "candidate_sha256": "c5887a26ee4295b735089ad40d00e922b4a693ea7c3388e78213db8b698e6670"
+        },
+        {
+          "path": "frontend/test/component/workflow-editor.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "1170b344ac571810aef73962773d7dcc6a1db91df4b0afd1bc57e7ae63151ec5"
+        },
+        {
+          "path": "frontend/test/component/workspace-navigation.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "4b7582d9e4afb4c0d98b76c845efa2e32023230d8eb96b13f8f00ba9df609d9e"
+        },
+        {
+          "path": "scripts/ui/browser-checks.mjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "56ca2a9cea4ed463d48c7cd09a3cc6e727bdee628db4b48b19553ba3dde6fd01"
+        },
+        {
+          "path": "specs/036-workspace-ui/browser-report.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "aa0cc537241a125107735f0f34e1c8d2a34ac901193ac8dea23e24725432103d"
+        },
+        {
+          "path": "specs/036-workspace-ui/plan.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "ce2de27835f9ab6e9fb7d3d498e65bc43b131ec857b1b3027f710747434173cf"
+        },
+        {
+          "path": "specs/036-workspace-ui/spec.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "9ac9c0e523f845a835cc82bd46b8d705830cadd6c6f3ca5bc3cbdd9564ece6e2"
+        },
+        {
+          "path": "specs/036-workspace-ui/tasks.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "a0a8951847f813cd626c2a55d6eb5658d13c2812e48f8d800e4de2e22ae87074"
+        },
+        {
+          "path": "specs/036-workspace-ui/validation.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "e7d16478bf9d6fba242a7929848f280d1b5483380dbde2f9a00a609cf7f4bd21"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/common/ai/config/ModelProfileService.java",
+          "backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java",
+          "backend/src/main/java/com/personalos/memory/service/MemoryService.java"
+        ],
+        "go": [
+          "backend-go/internal/business/model/read.go",
+          "backend-go/internal/business/model/write.go",
+          "backend-go/internal/business/knowledge/http.go",
+          "backend-go/internal/business/memory/http.go"
+        ]
+      },
+      "parity_sha256": {
+        "backend/src/main/java/com/personalos/common/ai/config/ModelProfileService.java": "71a1c9e83706cef2aacbbbc7f30b5ed440f23f3f26068c412a94c27c437cacd8",
+        "backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java": "0035b1bd41b96c2a0a40cf8dc4dc25161e28dfb2864f12b511a6a893321e85e1",
+        "backend/src/main/java/com/personalos/memory/service/MemoryService.java": "74856eedddb744ed62aa4c06bc8fff7d20e595769e91e52b1e0d1bad3f7c3896",
+        "backend-go/internal/business/model/read.go": "e041750568e5db986276e95f60c548d7965aba4772f12a7faddf8d30ba39cb34",
+        "backend-go/internal/business/model/write.go": "5da0d176b44ce598602d43184fb068a75964a6b97ec6224210f6e5b1f8c7fd31",
+        "backend-go/internal/business/knowledge/http.go": "eabb7adbb71f83a5c6b422b19c18df6bafb9b909573764911ef3f544ed2e3423",
+        "backend-go/internal/business/memory/http.go": "1664480a0cb83fb84b752de1bd07317ee9b83828d2db4b016687bb30400af27f"
+      },
+      "evidence": [
+        "specs/036-workspace-ui/validation.md",
+        "specs/036-workspace-ui/browser-report.json",
+        "scripts/ui/browser-checks.mjs",
+        "frontend/test/component/workspace-navigation.test.ts",
+        "frontend/test/component/workflow-editor.test.ts",
+        "frontend/test/component/search-view.test.ts",
+        "frontend/test/component/settings-navigation.test.ts"
+      ],
+      "limitations": [
+        "Java/Go责任文件只是未修改的接口/业务依赖，哈希绑定不代表新增或完成双端行为验收。",
+        "浏览器124张截图与交互使用合成API，不代表真实模型、生产数据库、外部通知或迁移发布批准。",
+        "原冻结清单、原始V1–V42和五项发布门禁不变；本组保持in_progress，不继承历史verified状态。"
       ]
     }
   ]

@@ -4977,8 +4977,8 @@
       "id": "file:frontend/src/components/PageHeader.vue",
       "path": "frontend/src/components/PageHeader.vue",
       "sha256": "d1436c07c9cefad981b3e883cd4cf2ab3d8e5f9a00e5f2ac4734faff917789d3",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/StatusTag.vue",
@@ -4998,8 +4998,8 @@
       "id": "file:frontend/src/components/calendar/CalendarCreateForm.vue",
       "path": "frontend/src/components/calendar/CalendarCreateForm.vue",
       "sha256": "84732ac3fd7300014e060e75ba9293a99a7eb5fc8288800e7c35787c0c7cc9cf",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/calendar/CalendarDayList.vue",
@@ -5152,15 +5152,15 @@
       "id": "file:frontend/src/components/knowledge/KnowledgeDocumentsTab.vue",
       "path": "frontend/src/components/knowledge/KnowledgeDocumentsTab.vue",
       "sha256": "50b3fb633b57d0666578445b11d25ebd48127d50ba88476739396291bc065ca9",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/knowledge/KnowledgeGovernanceTab.vue",
       "path": "frontend/src/components/knowledge/KnowledgeGovernanceTab.vue",
       "sha256": "994348d93b1368b3aea1bef563500b0f5c59dae5d0d6967074285a88b2fad254",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/knowledge/KnowledgeHitList.vue",
@@ -5187,8 +5187,8 @@
       "id": "file:frontend/src/components/settings/McpSettingsPanel.vue",
       "path": "frontend/src/components/settings/McpSettingsPanel.vue",
       "sha256": "685093525f60c38a6928d0355c8690e290a2c064a1abfbde0a3c4d25d77a07df",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/settings/ModelProfileCard.vue",
@@ -5201,22 +5201,22 @@
       "id": "file:frontend/src/components/settings/ModelProfileDialog.vue",
       "path": "frontend/src/components/settings/ModelProfileDialog.vue",
       "sha256": "4c33b7106b916199ba8e3691e25dbb88d3d2d87d20cd7ce317ba0abda0d70192",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/settings/ModelProfilesPanel.vue",
       "path": "frontend/src/components/settings/ModelProfilesPanel.vue",
       "sha256": "971675a8470ff7f27fc7075191233deece8fa8759fb13a1420d7fe852628af9d",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/settings/ProviderPresetPicker.vue",
       "path": "frontend/src/components/settings/ProviderPresetPicker.vue",
       "sha256": "fa6eb0ca2386f45acbfad379d6a456279c6a29bdc3c45ed13bbed50cc8a93c5a",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/components/task/TaskBoardPanel.vue",
@@ -5572,8 +5572,8 @@
       "id": "file:frontend/src/styles/main.css",
       "path": "frontend/src/styles/main.css",
       "sha256": "ed71ff078031bd4489867c2bd3bc3fe13cf133c3a3750813b675732530bb0598",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/styles/theme.css",
@@ -5607,8 +5607,8 @@
       "id": "file:frontend/src/views/ActivityView.vue",
       "path": "frontend/src/views/ActivityView.vue",
       "sha256": "26cec62c1ade8f52f3e012d242a1a8300911ce011b8d984b85a6c0ac1abd390e",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/CalendarView.vue",
@@ -5649,8 +5649,8 @@
       "id": "file:frontend/src/views/MemoryView.vue",
       "path": "frontend/src/views/MemoryView.vue",
       "sha256": "98639b0a788f052704d88a76072a967e96f7e674e9d295b020c2858f6f99efd5",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/NotFoundView.vue",
@@ -5663,15 +5663,15 @@
       "id": "file:frontend/src/views/SearchView.vue",
       "path": "frontend/src/views/SearchView.vue",
       "sha256": "3c7247e73b403d84c55145d5268ec0dd7a1c05d9bddd12fae084ba9a47b6c4d4",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/SettingsView.vue",
       "path": "frontend/src/views/SettingsView.vue",
       "sha256": "d8559460e97d47b2045918b1aae4d16d376ade8d5cdddb6ee2b452fcacac8de6",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/src/views/TasksView.vue",
@@ -5684,8 +5684,8 @@
       "id": "file:frontend/src/views/UsageView.vue",
       "path": "frontend/src/views/UsageView.vue",
       "sha256": "07209fea25beb0bc5239edab058002ad224a8816d55e51285b440d0df204c5e7",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/activity-store.test.mjs",
@@ -5978,8 +5978,8 @@
       "id": "file:frontend/test/component/settings-navigation.test.ts",
       "path": "frontend/test/component/settings-navigation.test.ts",
       "sha256": "a5d0ce71be62eae7ebe9895e3a1da303c0fe1dfb43ad6961be52339d9789db2f",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/component/setup.ts",
@@ -7665,19 +7665,19 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
       "files": 72
     },
     {
       "id": "scope:dashboard-independent-statistics-20261105",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
       "files": 2
     },
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
       "files": 40
     },
     {
@@ -7689,19 +7689,19 @@
     {
       "id": "scope:task-workspace-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
       "files": 50
     },
     {
       "id": "scope:safe-automation-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
       "files": 75
     },
     {
       "id": "scope:recovery-and-rag-followup-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
       "files": 47
     },
     {
@@ -7709,6 +7709,12 @@
       "status": "in_progress",
       "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
       "files": 20
+    },
+    {
+      "id": "scope:workspace-ui-consolidation-20261106",
+      "status": "in_progress",
+      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "files": 28
     }
   ]
 }
