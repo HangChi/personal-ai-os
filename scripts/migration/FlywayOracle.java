@@ -47,6 +47,8 @@ public final class FlywayOracle {
         var flyway = Flyway.configure().dataSource(source)
                 .locations("filesystem:" + Path.of(args[1]).toAbsolutePath())
                 .defaultSchema("public").baselineOnMigrate(true).cleanDisabled(true).load();
+        int expectedMigrations = flyway.info().pending().length;
+        if (expectedMigrations < 1) throw new IllegalStateException("临时库必须有待执行迁移");
         var start = new CountDownLatch(1);
         try (var workers = Executors.newFixedThreadPool(2)) {
             java.util.concurrent.Callable<Integer> migrate = () -> {
@@ -59,13 +61,13 @@ public final class FlywayOracle {
             var first = workers.submit(migrate);
             var second = workers.submit(migrate);
             start.countDown();
-            if (first.get(60, TimeUnit.SECONDS) + second.get(60, TimeUnit.SECONDS) != 42) {
-                throw new IllegalStateException("两个迁移执行器没有合计恰好执行42迁移");
+            if (first.get(60, TimeUnit.SECONDS) + second.get(60, TimeUnit.SECONDS) != expectedMigrations) {
+                throw new IllegalStateException("两个迁移执行器没有合计恰好执行" + expectedMigrations + "个待执行迁移");
             }
         }
         flyway.validate();
         if (flyway.migrate().migrationsExecuted != 0) throw new IllegalStateException("第二次执行未保持幂等");
-        System.out.println("真实 Flyway 双执行器锁竞争/合计42迁移/validate/再次零执行通过");
+        System.out.println("真实 Flyway 双执行器锁竞争/合计" + expectedMigrations + "迁移/validate/再次零执行通过");
         if ("disposable".equals(System.getenv("GO_TEST_FLYWAY_BASELINE"))) {
             // 自己新建的独立schema，预放V2表和虚构聊天数据，模拟没有Flyway历史的非空旧库。
             try (var connection = source.getConnection(); var statement = connection.createStatement()) {
@@ -79,10 +81,10 @@ public final class FlywayOracle {
                     .locations("filesystem:" + Path.of(args[1]).toAbsolutePath())
                     .schemas("go_flyway_baseline").defaultSchema("go_flyway_baseline")
                     .createSchemas(false).baselineOnMigrate(true).cleanDisabled(true).load();
-            if (baseline.migrate().migrationsExecuted != 41) throw new IllegalStateException("基线1后必须只执行V2至V42");
+            if (baseline.migrate().migrationsExecuted != expectedMigrations - 1) throw new IllegalStateException("基线1后必须恰好执行其余迁移");
             baseline.validate();
             if (baseline.migrate().migrationsExecuted != 0) throw new IllegalStateException("基线后重执行不为零");
-            System.out.println("真实Flyway非空旧schema baseline-on-migrate/41迁移/validate/二次零执行通过");
+            System.out.println("真实Flyway非空旧schema baseline-on-migrate/" + (expectedMigrations - 1) + "迁移/validate/二次零执行通过");
         }
     }
 }
