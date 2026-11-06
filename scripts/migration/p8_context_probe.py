@@ -1,5 +1,6 @@
 """Observe synthetic context boundaries without changing the frozen E2E assertions."""
 import hashlib
+import copy
 import json
 import threading
 import time
@@ -9,6 +10,10 @@ from p8_model_fixture import text_content
 
 def digest(text):
     return hashlib.sha256(text.encode()).hexdigest()
+
+
+def canonical_digest(value):
+    return digest(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
 
 
 class RequestObservations:
@@ -21,6 +26,17 @@ class RequestObservations:
         row = dict(message_roles=[message.get("role") for message in messages],
                    user_sha256=[digest(text_content(message)) for message in messages if message.get("role") == "user"],
                    tools=len(request.get("tools", [])), stream=request.get("stream") is True)
+        row["messages"] = [dict(role=message.get("role"), chars=len(text_content(message)),
+                                sha256=digest(text_content(message))) for message in messages]
+        row["tool_definitions_sha256"] = canonical_digest(request.get("tools", []))
+        row["tool_schemas"] = []
+        for tool in request.get("tools", []):
+            function = tool.get("function", {})
+            row["tool_schemas"].append(dict(name=function.get("name"), sha256=canonical_digest(function),
+                present_fields=[key for key in ("name", "description", "parameters", "strict") if key in function],
+                parameters_sha256=canonical_digest(function.get("parameters")),
+                description_sha256=canonical_digest(function.get("description")),
+                strict=function.get("strict") if type(function.get("strict")) is bool else None))
         with self.lock:
             if len(self.rows) >= 32:
                 raise AssertionError("Context probe exceeded its 32 synthetic request limit")
@@ -28,8 +44,7 @@ class RequestObservations:
 
     def snapshot(self):
         with self.lock:
-            return [dict(row, message_roles=list(row["message_roles"]),
-                         user_sha256=list(row["user_sha256"])) for row in self.rows]
+            return copy.deepcopy(self.rows)
 
 
 def require_rejection(stream, calls):
@@ -123,7 +138,7 @@ def verify_context_boundaries(suite, observations, backend):
             raise AssertionError("History trimming changed persisted message records")
         trimming = require_trimmed(calls[0], history, current, persisted)
         trimming.update(effective_budget=budget["budgetTokens"], upstream_calls=1,
-                        persisted_messages=14, done=True)
+                        persisted_messages=14, done=True, request_observation=calls[0])
 
         suite.ok(suite.put("/chat/context-budget", {"tokens": 32768}))
         before = len(observations.snapshot())

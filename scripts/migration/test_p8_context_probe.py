@@ -17,7 +17,11 @@ class ContextProbeTest(unittest.TestCase):
         self.assertNotIn("private", str(result))
         self.assertNotIn("synthetic input", str(result))
         result[0]["user_sha256"].append("mutation")
+        result[0]["messages"][0]["sha256"] = "mutation"
+        result[0]["tool_schemas"][0]["sha256"] = "mutation"
         self.assertEqual(len(observer.snapshot()[0]["user_sha256"]), 1)
+        self.assertEqual(observer.snapshot()[0]["messages"][0]["sha256"], digest("private system"))
+        self.assertNotEqual(observer.snapshot()[0]["tool_schemas"][0]["sha256"], "mutation")
         for _ in range(31):
             observer(request)
         with self.assertRaises(AssertionError):
@@ -32,6 +36,20 @@ class ContextProbeTest(unittest.TestCase):
                 require_rejection(types.SimpleNamespace(first=lambda name: wrong.get(name)), 0)
         with self.assertRaises(AssertionError):
             require_rejection(stream, 1)
+
+    def test_tool_metadata_separates_transport_flags_from_schema_and_description(self):
+        observer = RequestObservations()
+        function = dict(name="fixture", description="private description", parameters=dict(type="object"))
+        observer(dict(tools=[dict(type="function", function=function)]))
+        observer(dict(tools=[dict(type="function", function=dict(function, strict=False))]))
+        first, second = [row["tool_schemas"][0] for row in observer.snapshot()]
+        self.assertNotEqual(first["sha256"], second["sha256"])
+        self.assertEqual(first["parameters_sha256"], second["parameters_sha256"])
+        self.assertEqual(first["description_sha256"], second["description_sha256"])
+        self.assertNotIn("strict", first["present_fields"])
+        self.assertIn("strict", second["present_fields"])
+        self.assertIs(second["strict"], False)
+        self.assertNotIn("private description", str(observer.snapshot()))
 
     def test_trimming_requires_exact_current_input_order_and_persisted_history(self):
         history, current = ["oldest", "middle", "recent"], "current"
