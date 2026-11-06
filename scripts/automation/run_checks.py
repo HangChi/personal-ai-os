@@ -18,7 +18,11 @@ def run(cmd,**kw):
 
 def main():
     import argparse
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument("--ui",action="store_true");args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--ui",action="store_true")
+    parser.add_argument("--upgrade-from",type=int,help="在全新临时库先迁移到指定版本，再验证升级")
+    args=parser.parse_args()
+    if args.upgrade_from is not None and args.upgrade_from < 1:parser.error("升级起始版本必须为正整数")
     image='pgvector/pgvector:pg17'
     password=secrets.token_urlsafe(24)
     env={**os.environ,'POSTGRES_PASSWORD':password}
@@ -44,7 +48,9 @@ def main():
             _,_,jars=dependencies(Path.home()/'.m2/repository')
             cp=os.pathsep.join(map(str,jars))
             run([str(java_home/'bin/javac'),'-encoding','UTF-8','-cp',cp,'-d',temp,str(ROOT/'scripts/workspace/WorkspaceFlyway.java')],env=env)
-            run([str(java_home/'bin/java'),'-cp',temp+os.pathsep+cp,'WorkspaceFlyway',str(ROOT/'backend/src/main/resources/db/migration')],env=env)
+            migration_args=[str(java_home/'bin/java'),'-cp',temp+os.pathsep+cp,'WorkspaceFlyway',str(ROOT/'backend/src/main/resources/db/migration')]
+            if args.upgrade_from is not None:migration_args.append(str(args.upgrade_from))
+            run(migration_args,env=env)
         run(['go','test','-race','-count=1','-v','-tags=integration','-p','1','-run','TestCalendarExchange|TestCaptureAtomicVersions|TestReadOnlyWorkflows|TestMaintenanceCenter','./internal/business/workflow','./internal/business/calendar','./internal/business/knowledge','./internal/business/maintenance'],cwd=ROOT/'backend-go',env=env)
         if args.ui:
             from automation_ui import run as check_ui

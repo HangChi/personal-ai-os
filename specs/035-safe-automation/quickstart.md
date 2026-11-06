@@ -9,7 +9,7 @@
 
 ## 可复现的隔离检查
 - 先完成Java `JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home ./backend/mvnw -f backend/pom.xml -B --no-transfer-progress verify` 和前端 `npm --prefix frontend run build`。
-- 从仓库根目录运行 `python3 scripts/automation/run_checks.py --ui`。脚本自行创建无持久卷、随机本地端口的pgvector临时容器，回放/校验47个迁移，执行Go真实库race测试，再分别启动Java和Go临时服务验证相同前端。仅清理本次创建的容器与进程；需要本地Docker、JDK21、Go、Node和Playwright。
+- 从仓库根目录运行 `python3 scripts/automation/run_checks.py --ui`。脚本自行创建无持久卷、随机本地端口的pgvector临时容器，回放/校验49个迁移，执行Go真实库race测试，再分别启动Java和Go临时服务验证相同前端。仅清理本次创建的容器与进程；需要本地Docker、JDK21、Go、Node和Playwright。
 - 截图及浏览器结果位于 `.cache/automation-ui/{java,go}/`。浏览器禁止访问测试预览源以外的网络；网页索引测试使用注入的固定抓取/嵌入样本，不需要真实模型。
 - Go临时服务显式使用 `--foundation --p8` 加载新增功能；该检查不改变033发布门禁，也不表示允许替换现有Java服务。
 
@@ -19,3 +19,8 @@
 - 维护心跳默认启用，各角色独立续写；可用 `app.maintenance.heartbeat-enabled=false` 关闭。界面刷新展示采样时间，在线不代表所有业务成功。
 - 业务JSON备份包含项目/任务/日程/会话/记忆/知识分块，不包括附件、运行配置、队列、报告计划、网页正文历史。静态校验通过不等于能完整恢复；知识分块导入仍需要可用的嵌入模型。
 - 页面展示的backup/verify/drill命令不自动执行。外部填报的演练结果始终标记为「未独立验证」，完整备份包仍按既有CLI流程在随机独立库演练；本次没有执行真实完整备份恢复。
+
+## 复审回归
+- `python3 scripts/automation/run_checks.py --upgrade-from 47` 在全新临时库先应用V1..V47，再升级到V49并执行双端共用规则的Go集成测试；`python3 scripts/automation/run_checks.py --ui` 验证全新49迁移及Java/Go真实HTTP浏览器流程。脚本只操作自己创建的临时资源。
+- 冲突日期回归：`TZ=Asia/Shanghai npm --prefix frontend run test:component -- test/component/calendar-exchange.test.ts`；将TZ分别换成UTC、America/New_York复跑。覆盖凌晨、跨年和七天本地窗口。
+- 正常升级时由现有迁移流程应用V48/V49；本次不部署或自动修正历史报告、已采集正文与既有重复数据，无法可靠还原的来源路径不做猜测合并。
