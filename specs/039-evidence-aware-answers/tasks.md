@@ -24,7 +24,7 @@
 ## 验证与登记
 
 - [x] T010 执行 Java verify、Go 单测/race/受影响隔离集成、前端全套检查和浏览器视觉复核，记录 validation.md。
-- [ ] T011 按职责提交，更新 specs/033-go-rewrite/scope-changes.json 候选与责任锚点；运行迁移派生、185项脚本与冻结检查。
+- [x] T011 按职责提交，更新 specs/033-go-rewrite/scope-changes.json 候选与责任锚点；运行迁移派生、185项脚本与冻结检查。
 
 ## 依赖与执行
 
