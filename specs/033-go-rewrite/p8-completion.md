@@ -16,10 +16,39 @@
 | --- | --- |
 | T800 生产入口 | 私有CA/续期/重启已通过；还需受控公网域名、ACME/DNS挑战与实际续期证据，以及明确生产部署批准。prod拒绝/readyz503保留。 |
 | T801 告警通知 | 独立Alertmanager和本地HTTP接收端触发/重试/恢复已验证；真实渠道还需显式提供测试收件配置、发送授权与最终接收确认。六条规则单测不等于六种持续真实故障。 |
-| T801/T804 原评估 | 129题多阶段全执行：Go严格79/129、Java84/129；原项目Go31/36、Java30/36；Agent Go7/7、Java6/7；Go修复后无证据负例严格通过，Java旧失败保留。完整传统检索R@5同96.90%、各四miss；原严格/判平差异及同输入定位结果仍保留。需审查模型保护/降级、两条显式引用不匹配、历史身份、人工事实与真实存量，不解除质量门禁。 |
-| T802 浏览器验收 | 原E2E两端全84项同为81通过/1预算失败/1 saveMemory跳过/1工具超限观察；独立预算边界确认长当前输入本地拒绝、旧历史可裁剪且不删库、恢复可继续，原case仍FAIL。仍需原跳过/观察及预算契约审查，真实Push未送达，保留原30秒/15秒期限。 |
+| T801/T804 原评估 | 129题多阶段Go严格79/129、Java84/129；25题Java通过/Go失败已逐题记录9重排降级/9澄清/6冲突/1引用不一致，缺原始阶段响应，因果根因未证实。固定Java十场景回放修复evidence计数，三项安全差异保留。原项目Go31/36、Java30/36；Agent Go7/7、Java6/7；Go真实无证据负例严格通过。仍需事实/保护降级及真实存量审查，不解除质量门禁。 |
+| T802 浏览器验收 | 原E2E两端全84项同为81通过/1预算失败/1 saveMemory跳过/1工具超限观察。23工具参数/描述一致；schema格式差1350 token，历史USER 2/1条差异保留。Push正序两端FCM201，Java按时/Go晚到；反序两端均超时，未证明稳定按时送达或超时根因。原断言/30秒订阅及15秒送达期限不变，仍需预算契约/原跳过观察和通知链路审查。 |
 | T804/T805 存量与切换 | 合成Java备份→Go→Java回退已通过；新增5000任务/32并发每端10000次本机读取零失败，响应归一化一致且数据未变。仍需授权的真实备份副本及密钥/附件/S3恢复材料、生产目标负载与容量标准、待办及外部副作用清单；短时本机观测不批准生产容量。只在新隔离目标恢复，不能直接操作当前服务或重放未知TOOL。 |
 | T803/T806/T808 证据与批准 | 全清单处置已记录；五release_gates仍需逐项人工核验和用户验收。Java归档须在验收后另作明确决定；不自动推送、合并、生产部署或删除原实现。 |
+
+## T801u 逐题差异与固定Java管线回放
+
+在原完整批次上离线生成[p8-real-model-observations-20261105.json](p8-real-model-observations-20261105.json)，先验证原源SHA、129题顺序/标注、严格PASS条件、调用总数与停机证据，再逐条输出25道Java PASS/Go FAIL的原问题、可接受文档、两端阶段/状态/调用与引用校验元数据。index明确为1起，另保留0起source_index，未输出私有回答。分组为9条READY但rerank FALLBACK、9条零warning CLARIFY、6条零warning CONFLICT、1条显式引用不一致。它们是观察分组，不是已证实的代码回归；原批次没有保存各阶段结构化模型原始响应，独立调用/随机文档身份和共享治理状态的限制仍在。未重跑昂贵129题批次或改原断言。
+
+新增java_rag_pipeline_fixture.py从固定基线复制并哈希11个Java源，编译执行实际RagRetrievalPipeline/EvidenceReview，只替换召回和结构化模型边界，不访问数据库/网络/真实模型。十场景覆盖READY topK、冲突、澄清、空证据、不完整/重复重排、无依据冲突、部分改写及字符串编号；Go TestPipelineFixedJavaStageReplay逐项比较状态、查询、命中、warning、澄清和阶段计数。六场景先复现仅evidence输出数量不一致，修复为精审相关数，记录点移到展示topK/冲突过滤之前，与Java口径一致；不改变最终来源、状态或模型输出。红/绿日志保留为/tmp/personalos-p8-rag-stage-{red,green}-20261105.log。
+
+明确保留三项已有安全差异：零相关证据时Go为INSUFFICIENT且清空无依据澄清，Java可CLARIFY；非法rewrite列表Go整批拒绝，Java保留非法项前的合法项；rerank字符串编号Go拒绝并降级，Java可强制转换。夹具原Java预期不改，Go测试显式记录这些选择，不能用该差分宣布两端完全等价。生成器不带--write的漂移检查通过。
+
+## T802h 上下文计数与实际工具传输
+
+固定Java工具schema生成器编译九个基线源并记录实际23个本地聊天工具。Java原始schema文本估算合计3579 token，同内容JSON紧凑格式2229，格式贡献1350；Go对每条同一原始文本的计数与Java一致。TestFixedJavaToolSchemaCounts验证此事实，不把它当提供商实际usage或所有裁剪差异的完整归因。
+
+实际Spring AI 2.0.1 MessageChatMemoryAdvisor字节码确认先ChatMemory.get、合并历史，再add当前USER/TOOL，和Go先History后Append相同，未改stream业务顺序。增强观察器只记录角色/字符数/内容及schema组件SHA、结构字段名和布尔strict，不保存提示、描述或参数正文；deepcopy防快照互相修改。
+
+新[Go探针](p8-e2e/go/context-boundary-20261105-014613.json)和[Java探针](p8-e2e/java/context-boundary-20261105-014657.json)均在独立TLS库通过并清理。上游23个工具名称/参数JSON/描述SHA全部对应相同；Java多显式strict=false，Go省略。实际预算仍同6729、USER仍2/1条、当前输入SHA一致且完整、14条持久消息未变；原G4仍41301/FAIL，安全预算不为相同条数而改动。先前[Go](p8-e2e/go/context-boundary-20261105-013803.json)/[Java](p8-e2e/java/context-boundary-20261105-013831.json)仅整体工具SHA的诊断也原样保留。
+
+## T802i 同订阅Push传输与反向顺序对照
+
+chrome_p5_web_push.mjs新增显式--paired，使用同一新鲜私有Chrome profile、origin、瞬时VAPID和真实FCM订阅。Go调用实际NewPush选项与webpush发送，Java编译三个固定基线传输源再实际send；两端TTL3600、连接5秒/请求10秒、不跟随重定向，消息仅title/tag区分后端。未调用本地CDP替代真实发送。每端独立判定原15秒期限，前端按独立标识匹配，晚到不能串认另一端；单端失败继续尝试另一端。
+
+首轮[报告](p8-e2e/push-paired-transport-20261105.json)保留FAIL：Java夹具错误地把macOS /var到/private/var系统临时目录别名也当链接拒绝，Java未完成发送。已改为实际文件/父目录lstat及0600/0700检查，仍拒绝文件或直接父目录符号链接；离线编译和三项权限/目标/标识单测通过。没有改生产Java/Go传输。
+
+| 有效对照 | Go | 固定Java | 浏览器观察 |
+| --- | --- | --- | --- |
+| [Go先、Java后](p8-e2e/push-paired-transport-fixed-20261105.json) | FCM201；15秒未到，随后到达 | FCM201；期限内到达 | CONNECTING→WAITING_FOR_BACKOFF→CONNECTED，关闭时各一条真实回执，解密失败0 |
+| [Java先、Go后](p8-e2e/push-paired-reverse-20261105.json) | FCM201；15秒未到 | FCM201；15秒未到 | 全程未完成连接，截止WAITING_FOR_BACKOFF，无真实回执/解密失败 |
+
+整体两轮均FAIL，第一轮晚到Go不回填成按时通过。反向轮新增单调相对发送/判定/首次接收时间，失败时null；七项Node测试含独立标识和晚到不改变既有判定。每轮保留30秒订阅/3秒控制/15秒送达，不扩大期限、不循环重试挑绿；关闭本次Chrome/server并删除profile/密钥/订阅。已观察到两端真实消息均可解密，但样本和连接状态不足以确定超时根因或证明时延等价。此项只比传输，不覆盖完整调度/持久投递/原前端业务；稳定送达和T802父项仍开放。
 
 ## T801t 完整129题多阶段执行与独立复核
 

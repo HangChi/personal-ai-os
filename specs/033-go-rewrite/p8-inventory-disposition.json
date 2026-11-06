@@ -4774,7 +4774,7 @@
       "id": "file:frontend/public/sw.js",
       "path": "frontend/public/sw.js",
       "sha256": "1bfcaa7e1d02aabded3a0457f0313ac0b1e011a8713b0626938c8b5b7d2686ae",
-      "disposition": "real-push-unreceived",
+      "disposition": "real-push-deadline-open",
       "status": "in_progress"
     },
     {
@@ -5453,7 +5453,7 @@
       "id": "file:frontend/src/notifications/web-push.ts",
       "path": "frontend/src/notifications/web-push.ts",
       "sha256": "3e3ac8ef18a477af6202fdb9d9940b66071feee1b816cabcb05ba430eb7d470b",
-      "disposition": "real-push-unreceived",
+      "disposition": "real-push-deadline-open",
       "status": "in_progress"
     },
     {
@@ -6006,7 +6006,7 @@
       "id": "file:frontend/test/component/web-push.test.ts",
       "path": "frontend/test/component/web-push.test.ts",
       "sha256": "fe28e0b922bbd9f0b3569174bae108858e399d80fcc1277783be92e7d4826a09",
-      "disposition": "real-push-unreceived",
+      "disposition": "real-push-deadline-open",
       "status": "in_progress"
     },
     {
@@ -6139,7 +6139,7 @@
       "id": "file:frontend/test/service-worker.test.mjs",
       "path": "frontend/test/service-worker.test.mjs",
       "sha256": "2edf8e1f42130b52fb34689e40f53de4017a8eee67c3cf27d0fa29bfae999e8e",
-      "disposition": "real-push-unreceived",
+      "disposition": "real-push-deadline-open",
       "status": "in_progress"
     },
     {

@@ -27593,9 +27593,18 @@
         "specs/033-go-rewrite/p8-e2e/push-go-gcm.json",
         "specs/033-go-rewrite/p8-e2e/push-go-headed.json",
         "specs/033-go-rewrite/p8-e2e/push-go-headed-normalized.json",
-        "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json"
+        "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "scripts/migration/java_push_transport_fixture.py",
+        "scripts/migration/test_java_push_transport_fixture.py",
+        "scripts/migration/paired_push_observations.mjs",
+        "scripts/migration/test_paired_push_observations.mjs",
+        "backend-go/internal/business/calendar/push_browser_integration_test.go",
+        "specs/033-go-rewrite/p8-e2e/push-paired-transport-20261105.json",
+        "specs/033-go-rewrite/p8-e2e/push-paired-transport-fixed-20261105.json",
+        "specs/033-go-rewrite/p8-e2e/push-paired-reverse-20261105.json"
       ],
-      "note": "P8职责处置：原源码/单测保持；headless曾订阅超时，有界面新profile订阅/控制/FCM接受但原15秒无真实push。补齐Chromium已知状态白名单后，发送前CONNECTING、截止WAITING_FOR_BACKOFF；接收/解密失败0，TCP四端口可连不证明FCM登录，不推断或修改网络根因。synthetic控制不替代真实送达。"
+      "note": "P8职责处置：原源码/期限保持。旧Go冷profile订阅或15秒送达失败保留；新同订阅传输正序两端FCM201，Java按时/Go超时后真实解密到达，反序两端201但均15秒未到。夹具路径误拒绝首轮保留。独立标识不串认、晚到不改原失败；连接退避/顺序样本不足以确认超时根因。仅传输对照不含完整业务，稳定送达仍开放，synthetic控制不替代真实送达。"
     },
     "file:frontend/src/App.vue": {
       "status": "implemented",
@@ -28772,9 +28781,18 @@
         "specs/033-go-rewrite/p8-e2e/push-go-gcm.json",
         "specs/033-go-rewrite/p8-e2e/push-go-headed.json",
         "specs/033-go-rewrite/p8-e2e/push-go-headed-normalized.json",
-        "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json"
+        "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "scripts/migration/java_push_transport_fixture.py",
+        "scripts/migration/test_java_push_transport_fixture.py",
+        "scripts/migration/paired_push_observations.mjs",
+        "scripts/migration/test_paired_push_observations.mjs",
+        "backend-go/internal/business/calendar/push_browser_integration_test.go",
+        "specs/033-go-rewrite/p8-e2e/push-paired-transport-20261105.json",
+        "specs/033-go-rewrite/p8-e2e/push-paired-transport-fixed-20261105.json",
+        "specs/033-go-rewrite/p8-e2e/push-paired-reverse-20261105.json"
       ],
-      "note": "P8职责处置：原源码/单测保持；headless曾订阅超时，有界面新profile订阅/控制/FCM接受但原15秒无真实push。补齐Chromium已知状态白名单后，发送前CONNECTING、截止WAITING_FOR_BACKOFF；接收/解密失败0，TCP四端口可连不证明FCM登录，不推断或修改网络根因。synthetic控制不替代真实送达。"
+      "note": "P8职责处置：原源码/期限保持。旧Go冷profile订阅或15秒送达失败保留；新同订阅传输正序两端FCM201，Java按时/Go超时后真实解密到达，反序两端201但均15秒未到。夹具路径误拒绝首轮保留。独立标识不串认、晚到不改原失败；连接退避/顺序样本不足以确认超时根因。仅传输对照不含完整业务，稳定送达仍开放，synthetic控制不替代真实送达。"
     },
     "file:frontend/src/router/index.ts": {
       "status": "implemented",
@@ -29714,9 +29732,18 @@
         "specs/033-go-rewrite/p8-e2e/push-go-gcm.json",
         "specs/033-go-rewrite/p8-e2e/push-go-headed.json",
         "specs/033-go-rewrite/p8-e2e/push-go-headed-normalized.json",
-        "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json"
+        "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "scripts/migration/java_push_transport_fixture.py",
+        "scripts/migration/test_java_push_transport_fixture.py",
+        "scripts/migration/paired_push_observations.mjs",
+        "scripts/migration/test_paired_push_observations.mjs",
+        "backend-go/internal/business/calendar/push_browser_integration_test.go",
+        "specs/033-go-rewrite/p8-e2e/push-paired-transport-20261105.json",
+        "specs/033-go-rewrite/p8-e2e/push-paired-transport-fixed-20261105.json",
+        "specs/033-go-rewrite/p8-e2e/push-paired-reverse-20261105.json"
       ],
-      "note": "P8职责处置：原源码/单测保持；headless曾订阅超时，有界面新profile订阅/控制/FCM接受但原15秒无真实push。补齐Chromium已知状态白名单后，发送前CONNECTING、截止WAITING_FOR_BACKOFF；接收/解密失败0，TCP四端口可连不证明FCM登录，不推断或修改网络根因。synthetic控制不替代真实送达。"
+      "note": "P8职责处置：原源码/期限保持。旧Go冷profile订阅或15秒送达失败保留；新同订阅传输正序两端FCM201，Java按时/Go超时后真实解密到达，反序两端201但均15秒未到。夹具路径误拒绝首轮保留。独立标识不串认、晚到不改原失败；连接退避/顺序样本不足以确认超时根因。仅传输对照不含完整业务，稳定送达仍开放，synthetic控制不替代真实送达。"
     },
     "file:frontend/test/confirm.test.mjs": {
       "status": "implemented",
@@ -29927,9 +29954,18 @@
         "specs/033-go-rewrite/p8-e2e/push-go-gcm.json",
         "specs/033-go-rewrite/p8-e2e/push-go-headed.json",
         "specs/033-go-rewrite/p8-e2e/push-go-headed-normalized.json",
-        "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json"
+        "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json",
+        "scripts/migration/chrome_p5_web_push.mjs",
+        "scripts/migration/java_push_transport_fixture.py",
+        "scripts/migration/test_java_push_transport_fixture.py",
+        "scripts/migration/paired_push_observations.mjs",
+        "scripts/migration/test_paired_push_observations.mjs",
+        "backend-go/internal/business/calendar/push_browser_integration_test.go",
+        "specs/033-go-rewrite/p8-e2e/push-paired-transport-20261105.json",
+        "specs/033-go-rewrite/p8-e2e/push-paired-transport-fixed-20261105.json",
+        "specs/033-go-rewrite/p8-e2e/push-paired-reverse-20261105.json"
       ],
-      "note": "P8职责处置：原源码/单测保持；headless曾订阅超时，有界面新profile订阅/控制/FCM接受但原15秒无真实push。补齐Chromium已知状态白名单后，发送前CONNECTING、截止WAITING_FOR_BACKOFF；接收/解密失败0，TCP四端口可连不证明FCM登录，不推断或修改网络根因。synthetic控制不替代真实送达。"
+      "note": "P8职责处置：原源码/期限保持。旧Go冷profile订阅或15秒送达失败保留；新同订阅传输正序两端FCM201，Java按时/Go超时后真实解密到达，反序两端201但均15秒未到。夹具路径误拒绝首轮保留。独立标识不串认、晚到不改原失败；连接退避/顺序样本不足以确认超时根因。仅传输对照不含完整业务，稳定送达仍开放，synthetic控制不替代真实送达。"
     },
     "file:frontend/test/session-group.test.mjs": {
       "status": "implemented",
@@ -30245,9 +30281,13 @@
         "scripts/migration/p8_context_probe.py",
         "scripts/migration/test_p8_context_probe.py",
         "specs/033-go-rewrite/p8-e2e/go/context-boundary-20261104-225738.json",
-        "specs/033-go-rewrite/p8-e2e/java/context-boundary-20261104-225900.json"
+        "specs/033-go-rewrite/p8-e2e/java/context-boundary-20261104-225900.json",
+        "scripts/migration/java_context_schema_fixture.py",
+        "backend-go/internal/business/context/schema_parity_test.go",
+        "specs/033-go-rewrite/p8-e2e/go/context-boundary-20261105-014613.json",
+        "specs/033-go-rewrite/p8-e2e/java/context-boundary-20261105-014657.json"
       ],
-      "note": "P8职责处置：原断言保留：两端完整84项同为81通过/1预算失败/1原case跳过/1工具超限观察。独立边界确认长当前输入41301/零上游、旧历史裁剪不删库及恢复可继续；上游保留用户2/1条差异保留，原case仍FAIL，不替预算契约审查。"
+      "note": "P8职责处置：原断言保留：两端完整84项同为81通过/1预算失败/1原case跳过/1工具超限观察。独立边界确认长当前输入41301/零上游、旧历史裁剪不删库及恢复可继续；上游保留用户2/1条差异保留，原case仍FAIL，不替预算契约审查。23工具参数/描述一致，仅Java显式strict=false；原schema3579与紧凑2229差1350，同一文本计数一致，不冒称所有裁剪差异已完全归因。"
     },
     "file:scripts/e2e/reports/e2e-20261029-013844.json": {
       "status": "implemented",
@@ -30493,9 +30533,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/agent-eval.py": {
       "status": "in_progress",
@@ -30541,9 +30584,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/fetch-corpus-batch3.py": {
       "status": "in_progress",
@@ -30589,9 +30635,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/fetch-corpus-browser.js": {
       "status": "in_progress",
@@ -30637,9 +30686,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/fetch-corpus-juejin.py": {
       "status": "in_progress",
@@ -30685,9 +30737,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原提取器固定SHA复用；16篇直接抓取、6篇补取及4篇正常浏览器呈现DOM经来源收据/哈希校验后完整26篇已齐，全文仅私有目录，不冒充原始HTTP或历史快照。原fetch/main未操作；原查询/标注本来在仓库，不再缺10篇或45题材料。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原提取器固定SHA复用；16篇直接抓取、6篇补取及4篇正常浏览器呈现DOM经来源收据/哈希校验后完整26篇已齐，全文仅私有目录，不冒充原始HTTP或历史快照。原fetch/main未操作；原查询/标注本来在仓库，不再缺10篇或45题材料。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/noise-floor.py": {
       "status": "in_progress",
@@ -30737,9 +30792,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改，Go长文分批/Java默认EMBED元数据格式已修复。旧子集严格退化/原判平一致及全部失败报告保留，不与新全量混成一次通过。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改，Go长文分批/Java默认EMBED元数据格式已修复。旧子集严格退化/原判平一致及全部失败报告保留，不与新全量混成一次通过。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/queries.py": {
       "status": "in_progress",
@@ -30789,9 +30847,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改，Go长文分批/Java默认EMBED元数据格式已修复。旧子集严格退化/原判平一致及全部失败报告保留，不与新全量混成一次通过。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改，Go长文分批/Java默认EMBED元数据格式已修复。旧子集严格退化/原判平一致及全部失败报告保留，不与新全量混成一次通过。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/rag-live-cases.json": {
       "status": "in_progress",
@@ -30837,9 +30898,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/rag-live-conflicts.py": {
       "status": "in_progress",
@@ -30885,9 +30949,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/rag-live-eval.py": {
       "status": "in_progress",
@@ -30933,9 +31000,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/rag-live-ingestion.py": {
       "status": "in_progress",
@@ -30981,9 +31051,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/rebuild-corpus.py": {
       "status": "in_progress",
@@ -31033,9 +31106,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改，Go长文分批/Java默认EMBED元数据格式已修复。旧子集严格退化/原判平一致及全部失败报告保留，不与新全量混成一次通过。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改，Go长文分批/Java默认EMBED元数据格式已修复。旧子集严格退化/原判平一致及全部失败报告保留，不与新全量混成一次通过。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/retrieval-eval.py": {
       "status": "in_progress",
@@ -31085,9 +31161,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改，Go长文分批/Java默认EMBED元数据格式已修复。旧子集严格退化/原判平一致及全部失败报告保留，不与新全量混成一次通过。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原26标题/129查询及评估算法固定SHA不改，Go长文分批/Java默认EMBED元数据格式已修复。旧子集严格退化/原判平一致及全部失败报告保留，不与新全量混成一次通过。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/test_agent_eval.py": {
       "status": "in_progress",
@@ -31133,9 +31212,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:scripts/eval/to-markdown.py": {
       "status": "in_progress",
@@ -31181,9 +31263,12 @@
         "specs/033-go-rewrite/p8-original-agent-20261105-002638.json",
         "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
         "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
-        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json"
+        "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+        "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+        "scripts/migration/java_rag_pipeline_fixture.py",
+        "backend-go/internal/business/knowledge/rag_parity_test.go"
       ],
-      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
+      "note": "P8职责处置：原在线评估工具保留；各项完整执行记录不替代人工事实验收或发布批准。完整当前26篇/129原查询已在Java/Go各新TLS库真实模型执行，241向量预期输入SHA/两次传统问答持久引用/50噪声请求核验。R@5同96.90%、各四miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915，双向差异保留且质量未批准。后续129题多阶段全部执行，零缺材料/零排除/零未执行，Go严格79/129、Java84/129；Go92READY/20CLARIFY/14CONFLICT/2INSUFFICIENT/1UNVERIFIED，15题warning，Java33题warning，各一条显式引用不匹配。全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；原后台两政策110秒审查亦双端通过、零手工重试，开放冲突Go1/Java2差异保留，仅证明该场景。旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
     },
     "file:specs/001-project-skeleton/checklists/requirements.md": {
       "status": "implemented",

@@ -22,6 +22,8 @@
 
 报告[Go](go/context-boundary-20261104-225738.json)、[Java](java/context-boundary-20261104-225900.json)独立PASS且清理归零，各8次合成模型请求。观察器只记有界32次的角色/数量/内容SHA，不写原始提示或工具参数。保留上游历史条数差异，不宣称逐字上下文等价；这项不能将原E2E FAIL改为PASS或替代预算契约审查。
 
+2026-11-05进一步比对[Go](go/context-boundary-20261105-014613.json)/[Java](java/context-boundary-20261105-014657.json)实际模型请求：23个工具名称、参数结构和描述SHA全部相同，Java多显式strict=false。固定Java原始schema计3579 token，等价紧凑格式2229，差1350；同一原始文本Go/Java计数一致。SDK字节码确认两端均先读取历史再写当前消息，未改Go顺序/预算。探针仍USER 2/1条、完整当前输入/14条记录不变、原G4 FAIL保留；格式计数贡献不是所有裁剪差异的完整归因。
+
 ### 失败隔离与真实计划工具
 
 原G4小预算case的32768恢复语句位于首轮断言之后，失败时无法执行。迁移runner仅包装该case，在finally调用相同认证API恢复32768；不改原函数/断言/结果。五项单测覆盖成功/原失败/恢复失败/双失败/目标不唯一；恢复错误会导致runner失败且不掩盖原异常。真实两端全suite复跑仍记录G4 FAIL。
@@ -61,6 +63,16 @@ python3 scripts/migration/run_go_e2e_tests.py --backend java --mode context
 原suite存在已记录失败时runner退出非零；不掩盖门禁结果。所有fixture只清理本次创建的进程/数据库。
 
 ## Push 的控制测试与真实失败
+
+最新双端传输对照（2026-11-05）仍未批准稳定按时送达，旧失败见下。[正序](push-paired-transport-fixed-20261105.json)在同一新鲜profile/订阅先Go后Java，两端FCM201；Java在15秒内到达，Go在自己的15秒期限后也实际解密到达，关闭时各一条真实回执。原Go超时仍false，不能用晚到覆盖失败。[反向顺序](push-paired-reverse-20261105.json)两端同样201，但均15秒未到，截止仍WAITING_FOR_BACKOFF；记录相对发送/判定/首次接收时间。连接/顺序样本不足以确认具体根因，不能只据正序宣布Java传输更快或Go无法解密。
+
+显式--paired模式使用真实Go生产选项和固定Java三个传输源，按不同title/tag匹配接收；同一订阅且不重试，各端保留原15秒期限。七项Node单测包含晚到不串认及不改变此前判定，报告不含endpoint/keys。此模式不建业务库，只覆盖传输，不替代调度/持久化/原前端完整链路。每轮关闭本次Chrome/server并删除私有profile/密钥。
+
+[首轮夹具失败](push-paired-transport-20261105.json)也保留：Java错误地拒绝macOS系统临时目录别名而未发送；已修复为实际文件/父目录类型与0600/0700权限校验，仍拒绝直接符号链接。三项权限/目的地/标识单测与离线Java编译通过，不改生产传输源码。
+
+反向复验示例：node scripts/migration/chrome_p5_web_push.mjs --headed --paired --order java,go --report <新的报告路径>。正序默认--order go,java。每次只执行一次，不循环挑选通过结果。
+
+### 先前Go单端失败记录
 
 2026-11-05新增[push-go-handshake-20261105.json](push-go-handshake-20261105.json)进一步定位：保留30秒订阅/3秒控制/15秒送达期限，原白名单新增Chromium实际握手/退避/等待网络状态与发送前快照。实际CONNECTING→WAITING_FOR_BACKOFF，真实Go TLS库投递被FCM接受，控制成功但仍只有控制产生的1次pushEvents；接收/解密失败记录0、通知/Worker错误0，报告FAIL。5项Node测试通过，未知附加文本仍脱敏为OTHER。补充TCP只读检查mtalk.google.com的5228/5229/5230/443均建连；不证明Chrome的FCM登录/消息通道完成，不把未送达归因于已证实的防火墙或代理问题。全部临时Chrome/profile/密钥及本次库清理，真实送达继续开放。
 

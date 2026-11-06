@@ -40,7 +40,14 @@ class P8InventoryDispositionTest(unittest.TestCase):
             self.assertIn("specs/033-go-rewrite/p8-live-conflicts-java-20261104-234606.json", entry["evidence"])
             self.assertIn("specs/033-go-rewrite/p8-live-ingestion-review-go-20261104-234857.json", entry["evidence"])
             self.assertIn("开放冲突Go1/Java2差异保留", entry["note"])
+            self.assertIn("根因未证实", entry["note"])
+            self.assertIn("specs/033-go-rewrite/p8-real-model-observations-20261105.json", entry["evidence"])
             self.assertIn("specs/033-go-rewrite/p8-real-model-review.json", entry["evidence"])
+        push = after["items"]["file:frontend/public/sw.js"]
+        self.assertIn("Java按时/Go超时后真实解密到达", push["note"])
+        self.assertIn("稳定送达仍开放", push["note"])
+        self.assertIn("specs/033-go-rewrite/p8-e2e/push-paired-reverse-20261105.json", push["evidence"])
+        self.assertIn("1350", after["items"]["file:scripts/e2e/e2e_suite.py"]["note"])
         for group in ("java_test_cases", "tools"):
             for entry in self.inventory[group]:
                 self.assertEqual(after["items"].get(entry["id"]), self.progress["items"].get(entry["id"]), entry["id"])

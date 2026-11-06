@@ -762,6 +762,26 @@ T801f原评估四工具安全适配：固定哈希、显式语料预检和清库
 
 本批最终66项迁移Python单测通过（`/tmp/personalos-p8-python-eval-final.log`）；knowledge完整真实TLS PostgreSQL/pgvector/Flyway42回归race6.403s通过并清理（`/tmp/personalos-p8-knowledge-after-params.log`）。Go integration vet/build、1093文件基线/78配置/两派生映射和diff检查通过；未重复无关全项目长回归。`check-complete`实际退出1（`/tmp/personalos-p8-check-complete-https-eval.log`），2415implemented/23in_progress/零verified与五发布门禁不变。
 
+## P8确定性差异、上下文与Push配对（2026-11-05）
+
+T801u：实际固定Java管线十场景回放先复现Go evidence数量口径错误，修复为展示过滤前的精审相关数，不改变状态/最终来源。保留零证据、部分非法改写、字符串编号三项安全差异；生成器漂移检查通过。原129题离线逐题复核产生p8-real-model-observations-20261105.json，25题Java PASS/Go FAIL为9重排降级/9澄清/6冲突/1显式引用不一致，原始阶段响应缺失，根因未证实，未再次调用真实模型或重跑完整昂贵批次。
+
+T802h：工具schema生成器漂移检查通过，实际23工具Java原始文本3579/等价紧凑格式2229，格式贡献1350 token，同一文本两端计数一致。新双端真实TLS context探针均通过：23项名称/参数/描述SHA对应一致，仅Java显式strict=false；USER仍2/1条、当前完整/14条持久消息未变，原G4仍41301/FAIL。SDK字节码确认先读历史再写当前，未改Go顺序/预算；这不是裁剪差异的完整因果结论。
+
+T802i：同订阅正序与反向顺序两轮真实Push传输均保留FAIL。正序两端FCM201，Java15秒内送达、Go超时后送达；反序两端201但均未在15秒送达。独立标识和晚到时间不改变原判定，不据连接退避/顺序样本确定根因。夹具临时路径别名误拒绝首轮亦保留；修复后Java离线编译和三个权限/目标测试通过。只覆盖传输，不批准完整业务链路或稳定时延。
+
+本批验证：168项迁移Python测试通过（4.879s，/tmp/personalos-p8-python-20261105-evidence-final.log）；11项Node测试通过（含七项Push诊断/配对）；Go全包串行race退出0（app98.609s，/tmp/personalos-p8-go-race-20261105-final.log），普通/integration vet、build、mod verify通过。真实TLS knowledge全包race4.045s通过，原42迁移/双执行器/validate/再次零执行和清理通过（/tmp/personalos-p8-rag-tls-20261105-final.log）；Redis/Rabbit/OpenSearch三个缺独立设施用例和子进程helper显式SKIP，不计入本轮设施通过。
+
+原1093文件/104路由/27工具/95钩子/1119声明、78配置处置、144声明映射和全文件派生台账检查通过。逐项与HEAD对比2415 implemented/23 in_progress、零verified和五release_gates状态完全不变；check-complete实际退出1（/tmp/personalos-p8-check-complete-20261105-evidence-final.log），不把诊断完成当发布批准。任务标签Docker容器和本次Chrome进程均无残留；.specify/extensions.yml不存在，按已读实施skill跳过after_implement钩子。真实备份/恢复密钥与附件、生产负载/SLO、公网域名及真实通知接收配置仍未提供，未操作现有服务、部署或删除Java。详见p8-completion.md新增T801u/T802h/T802i。
+
+## 剩余改动提交时复核（2026-11-06）
+
+用户要求将剩余迁移改动一并分拆提交。本轮固定 Java 工具 schema 漂移检查通过（23 工具、3579 原始 token），固定 Java RAG 十场景漂移检查通过，Java Push 离线编译通过；Push 夹具 3 项 Python 测试、Push 诊断/配对 7 项 Node 测试通过。Go 上下文计数和 RAG 固定管线定向 race 测试通过；Push 集成包编译通过，但未提供一次性订阅，实际传输用例按原 guard 跳过。本轮未重新发送真实 Push 或调用真实模型。
+
+当前工作区执行 `test_go_p8_inventory_progress.py` 的 4 项测试未通过（2 failure、2 error），首先被 `backend-go/internal/business/dataimport/import.go` 的未登记候选哈希变化阻止；034 已修改该文件。将本批剩余改动覆盖到 034 前的 `bbfe980` 临时归档后复核，仍首先被 `backend-go/internal/business/chat/stream.go` 的候选哈希变化阻止，不能将问题全部归因于 034。临时归档已清理，未修改真实工作区源码或绕过检查。上述 2026-11-05 记录是当时执行证据，不代表当前重新通过冻结清单校验。
+
+本批提交前后逐项迁移状态一致：2331 implemented、107 in_progress、零 verified；五项 release_gates 与提交前完全相同。逐题观察记录绑定的源报告 SHA-256 校验通过，未改写原评估结果、`inventory.json` 或 `scope-changes.json`。后续如需重新验收当前候选，须单独登记和验证这些源文件增量；本次提交不宣称迁移完成或发布获批。
+
 ## P8真实评估与资源补验（2026-11-05）
 
 Go修复零相关证据误归CLARIFY，新增回归先复现后通过；完整26篇真实负例返回严格INSUFFICIENT、无回答/命中/引用、四阶段OK及三次前台chat，见`p8-eval-real-20261105-001920.json`。原Java失败保留。原项目18题基础/增强已双端各执行36行，Go严格31/36、Java30/36，全部预期来源召回但降级仍FAIL；Agent恢复原默认摘要并兼容SDK布尔流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留。新代理只验证真实工具/行为，本地SSE帧化不等于上游流式延迟验收。

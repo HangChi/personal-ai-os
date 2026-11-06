@@ -127,7 +127,11 @@ ASSETS = {
     "fixture": ("implemented", ["scripts/migration/p8_model_fixture.py", "scripts/migration/run_go_e2e_tests.py", "scripts/migration/run_go_cutover_tests.py"], "原模拟上游保留，Go隔离runner明确合成输入/模型；未连接用户模型。"),
     "manualSeed": ("implemented", ["scripts/migration/run_go_demo_seed_tests.py", "scripts/migration/test_go_demo_seed.py", "specs/033-go-rewrite/p8-demo-seed.json", "backend-go/docs/development.md"], "复用原七组配方，仅新随机TLS容器/空库/独立Go；认证CSRF、实际API/SQL回读、向量/状态/31天用量/审计及退出连接归零通过。禁止原main/reset，不操作现有库。"),
     "browser": ("implemented", ["specs/033-go-rewrite/p8-e2e/browser-go.json", "specs/033-go-rewrite/p8-e2e/README.md"], "保留原辅助工具；原前端全检查/真实Chrome10页三宽度与流程报告，不改前端源码。"),
-    "e2e": ("in_progress", ["scripts/migration/run_go_e2e_tests.py", "scripts/migration/test_go_e2e_isolation.py", "scripts/migration/p8_context_probe.py", "scripts/migration/test_p8_context_probe.py", "specs/033-go-rewrite/p8-e2e/go/context-boundary-20261104-225738.json", "specs/033-go-rewrite/p8-e2e/java/context-boundary-20261104-225900.json", "specs/033-go-rewrite/p8-e2e/README.md"], "原断言保留：两端完整84项同为81通过/1预算失败/1原case跳过/1工具超限观察。独立边界确认长当前输入41301/零上游、旧历史裁剪不删库及恢复可继续；上游保留用户2/1条差异保留，原case仍FAIL，不替预算契约审查。"),
+    "e2e": ("in_progress", ["scripts/migration/run_go_e2e_tests.py", "scripts/migration/test_go_e2e_isolation.py", "scripts/migration/p8_context_probe.py", "scripts/migration/test_p8_context_probe.py", "specs/033-go-rewrite/p8-e2e/go/context-boundary-20261104-225738.json", "specs/033-go-rewrite/p8-e2e/java/context-boundary-20261104-225900.json",
+        "scripts/migration/java_context_schema_fixture.py", "backend-go/internal/business/context/schema_parity_test.go",
+        "specs/033-go-rewrite/p8-e2e/go/context-boundary-20261105-014613.json",
+        "specs/033-go-rewrite/p8-e2e/java/context-boundary-20261105-014657.json",
+        "specs/033-go-rewrite/p8-e2e/README.md"], "原断言保留：两端完整84项同为81通过/1预算失败/1原case跳过/1工具超限观察。独立边界确认长当前输入41301/零上游、旧历史裁剪不删库及恢复可继续；上游保留用户2/1条差异保留，原case仍FAIL，不替预算契约审查。23工具参数/描述一致，仅Java显式strict=false；原schema3579与紧凑2229差1350，同一文本计数一致，不冒称所有裁剪差异已完全归因。"),
     "ci": ("implemented", [".github/workflows/go.yml", "backend-go/docs/development.md"], "原CI冻结，独立Go候选工作流及本地命令验证；未push/运行远端CI。"),
 }
 
@@ -154,7 +158,15 @@ def disposition(entry, old):
     if path in PRODUCTION:
         return "in_progress", "production-gate-open", ["backend-go/deploy/compose.prod.yml", "backend-go/deploy/Caddyfile.prod", "scripts/migration/p8_https_fixture.py", "specs/033-go-rewrite/p8-https.json"], "新随机项目私有CA验证可信HTTPS/拒绝未知CA与错误域名、安全Cookie/跳转端口、自动续期/重启保留；不等于公网ACME/生产批准，prod拒绝与readyz503保持。"
     if path in PUSH:
-        return "in_progress", "real-push-unreceived", ["specs/033-go-rewrite/p8-e2e/push-go.json", "specs/033-go-rewrite/p8-e2e/push-go-gcm.json", "specs/033-go-rewrite/p8-e2e/push-go-headed.json", "specs/033-go-rewrite/p8-e2e/push-go-headed-normalized.json", "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json", "specs/033-go-rewrite/p8-e2e/README.md"], "原源码/单测保持；headless曾订阅超时，有界面新profile订阅/控制/FCM接受但原15秒无真实push。补齐Chromium已知状态白名单后，发送前CONNECTING、截止WAITING_FOR_BACKOFF；接收/解密失败0，TCP四端口可连不证明FCM登录，不推断或修改网络根因。synthetic控制不替代真实送达。"
+        return "in_progress", "real-push-deadline-open", ["specs/033-go-rewrite/p8-e2e/push-go.json", "specs/033-go-rewrite/p8-e2e/push-go-gcm.json", "specs/033-go-rewrite/p8-e2e/push-go-headed.json", "specs/033-go-rewrite/p8-e2e/push-go-headed-normalized.json", "specs/033-go-rewrite/p8-e2e/push-go-handshake-20261105.json",
+            "scripts/migration/chrome_p5_web_push.mjs", "scripts/migration/java_push_transport_fixture.py",
+            "scripts/migration/test_java_push_transport_fixture.py", "scripts/migration/paired_push_observations.mjs",
+            "scripts/migration/test_paired_push_observations.mjs",
+            "backend-go/internal/business/calendar/push_browser_integration_test.go",
+            "specs/033-go-rewrite/p8-e2e/push-paired-transport-20261105.json",
+            "specs/033-go-rewrite/p8-e2e/push-paired-transport-fixed-20261105.json",
+            "specs/033-go-rewrite/p8-e2e/push-paired-reverse-20261105.json",
+            "specs/033-go-rewrite/p8-e2e/README.md"], "原源码/期限保持。旧Go冷profile订阅或15秒送达失败保留；新同订阅传输正序两端FCM201，Java按时/Go超时后真实解密到达，反序两端201但均15秒未到。夹具路径误拒绝首轮保留。独立标识不串认、晚到不改原失败；连接退避/顺序样本不足以确认超时根因。仅传输对照不含完整业务，稳定送达仍开放，synthetic控制不替代真实送达。"
     if path in OPERATIONS:
         status, evidence, note = ASSETS[OPERATIONS[path]]
         return status, "explicit-asset-adaptation", evidence, note
@@ -195,6 +207,9 @@ def disposition(entry, old):
                            "specs/033-go-rewrite/p8-original-agent-20261105-002744.json",
                            "specs/033-go-rewrite/p8-eval-real-20261105-000811.json",
                            "specs/033-go-rewrite/p8-real-model-review-20261105-000811.json",
+                           "specs/033-go-rewrite/p8-real-model-observations-20261105.json",
+                           "scripts/migration/java_rag_pipeline_fixture.py",
+                           "backend-go/internal/business/knowledge/rag_parity_test.go",
                            "specs/033-go-rewrite/p8-real-model-review.json"]
         negative_note = "旧无证据负例两端CLARIFY未满足严格INSUFFICIENT的FAIL保留。Go零相关资料优先返回INSUFFICIENT并清空无依据澄清，修复后完整26篇负例严格通过、空命中/引用、三次前台调用/四阶段OK；固定Java原行为不改。补充负例原查询执行0条，不替代事实质量验收。原项目18题基础/增强已各端执行36行，Go严格31/36、Java30/36；全部来源入前五但重排等降级保留。Agent恢复默认摘要/兼容SDK流选项后Go7/7、Java6/7，Java知识检索50203保护失败保留，不验证上游流式延迟。"
         full_note = (
@@ -205,6 +220,8 @@ def disposition(entry, old):
             "全部811embedding/976chat零上游失败/重试，连接归零并清理；独立复核不批准事实或发布。"
             "完整批次Go在零证据修复前编译，20条CLARIFY均有引用，修复后负例另验通过，不冒称完整批次已覆盖新二进制。"
             "每端共享治理状态及独立模型调用的限制保留，不删保护响应或降级凑绿。历史快照身份/人工事实/真实存量审查及五门禁仍开放。"
+            "25题Java通过/Go失败逐项观察为9重排降级/9澄清/6冲突/1引用不一致；原始阶段响应未采集，根因未证实。"
+            "固定Java十场景回放修复Go evidence展示过滤前计数，保留三项安全差异；不将确定性诊断修复当完整语义质量改善。"
             "补充同一新隔离索引/129个真实查询向量回放对照两端标题顺序及严格/判平名次全一致，索引哈希不变；"
             "该轮共同五miss，Go零新上游调用，不覆盖原独立调用结果或批准质量。"
             "原三条合成政策冲突/澄清在两端新TLS库/真实OpenSearch/真实模型全部通过，持久分块引用/每题三次chat核验；"
