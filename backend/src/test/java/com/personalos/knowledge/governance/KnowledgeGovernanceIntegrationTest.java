@@ -91,6 +91,21 @@ class KnowledgeGovernanceIntegrationTest extends ContainerContextTest {
             assertThat(db.queryForObject("SELECT next_attempt_at>now() FROM knowledge_review_job WHERE document_id=?",Boolean.class,a)).isTrue();
         } finally {worker.close();}
     }
+    @Test void storedConflictsAreScopedToRelevantChunksWithoutErasingOpenFindings() {
+        var h=hits();governance.record(List.of(disagreement(h)));
+        UUID redisId=documents.ingest("redis.md","Redis 缓存","商品缓存基础 TTL 为 720 秒，抖动为 0—180 秒，空值缓存为 90 秒。".getBytes(StandardCharsets.UTF_8)).id();
+        var redis=governance.enrich(List.of(new KnowledgeHitDto(redisId,"Redis 缓存","redis.md",0,vectors.chunksByDocumentId(redisId).getFirst(),.9))).getFirst();
+        var pool=new ArrayList<>(h);pool.add(redis);
+        var reviewed=governance.applyDecisions(new EvidenceReview.Review(List.of(redis),List.of(),""),pool,new ArrayList<>());
+        assertThat(reviewed.conflicts()).isEmpty();
+        assertThat(reviewed.relevant()).containsExactly(redis);
+        assertThat(governance.conflicts()).singleElement().extracting(KnowledgeGovernance.Conflict::status).isEqualTo("OPEN");
+        var empty=governance.applyDecisions(new EvidenceReview.Review(List.of(),List.of(),""),pool,new ArrayList<>());
+        assertThat(empty.conflicts()).isEmpty();assertThat(empty.relevant()).isEmpty();
+        var relevant=governance.applyDecisions(new EvidenceReview.Review(List.of(h.getFirst()),List.of(),""),pool,new ArrayList<>());
+        assertThat(relevant.conflicts()).hasSize(1);
+        assertThat(relevant.relevant()).containsExactlyElementsOf(h);
+    }
 
     @Test void backupRestoresKnowledgeSpaceAndEffectiveScope() {
         var space=governance.createSpace("恢复测试知识库");

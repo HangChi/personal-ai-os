@@ -111,6 +111,33 @@ func TestP6GovernanceSourceMetadataConflictAuditAndInvalidation(t *testing.T) {
 		t.Fatal(active, e)
 	}
 }
+func TestP6StoredConflictsAreScopedToRelevantChunks(t *testing.T) {
+	_, g, hits := fixtureGoverned(t)
+	ctx := context.Background()
+	if err := g.Record(ctx, []Disagreement{{hits[0], hits[1], "每周工作五天", "每周工作四天", "工作制度不同"}}); err != nil {
+		t.Fatal(err)
+	}
+	redis := Hit{DocumentID: "33333333-3333-4333-8333-333333333333", DocumentTitle: "Redis 缓存", Content: "商品缓存 TTL 为 720 秒。"}
+	pool := append(append([]Hit{}, hits...), redis)
+	warnings := []string{}
+	review, err := g.ApplyDecisions(ctx, Review{Relevant: []Hit{redis}}, pool, &warnings)
+	if err != nil || len(review.Conflicts) != 0 || len(review.Relevant) != 1 || review.Relevant[0].DocumentID != redis.DocumentID {
+		t.Fatal(review, err)
+	}
+	conflicts, err := g.Conflicts(ctx)
+	if err != nil || len(conflicts) != 1 || conflicts[0].Status != "OPEN" {
+		t.Fatal(conflicts, err)
+	}
+	review, err = g.ApplyDecisions(ctx, Review{Relevant: []Hit{}}, pool, &warnings)
+	if err != nil || len(review.Conflicts) != 0 || len(review.Relevant) != 0 {
+		t.Fatal(review, err)
+	}
+	review, err = g.ApplyDecisions(ctx, Review{Relevant: hits[:1]}, pool, &warnings)
+	if err != nil || len(review.Conflicts) != 1 || len(review.Relevant) != 2 {
+		t.Fatal(review, err)
+	}
+}
+
 func TestP6GovernanceRejectsForgedQuotesAndKeepBoth(t *testing.T) {
 	s, g, hits := fixtureGoverned(t)
 	ctx := context.Background()

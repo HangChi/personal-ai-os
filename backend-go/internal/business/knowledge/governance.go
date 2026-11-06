@@ -447,9 +447,18 @@ func (g *Governance) ApplyDecisions(ctx context.Context, review Review, pool []H
 		return review, e
 	}
 	current := append([]Disagreement{}, review.Conflicts...)
+	// Only restore known findings connected to a query-relevant chunk. Keep these
+	// anchors fixed so adding one finding cannot pull in unrelated conflict chains.
+	queryEvidence := map[string]bool{}
+	for _, h := range review.Relevant {
+		queryEvidence[hitKey(h)] = true
+	}
 	for _, c := range rows {
 		for _, a := range pool {
 			for _, b := range pool {
+				if !queryEvidence[hitKey(a)] && !queryEvidence[hitKey(b)] {
+					continue
+				}
 				if !matchesConflict(c, a, b, c.LeftQuote, c.RightQuote) || !strings.Contains(a.Content, c.LeftQuote) || !strings.Contains(b.Content, c.RightQuote) {
 					continue
 				}

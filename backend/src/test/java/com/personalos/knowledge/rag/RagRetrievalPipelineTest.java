@@ -43,6 +43,30 @@ class RagRetrievalPipelineTest {
         var result=pipeline.retrieve("问题",4);assertThat(result.status()).isEqualTo("READY");
         assertThat(result.hits()).containsExactly(a);assertThat(result.warnings()).anyMatch(w->w.contains("重排"));
     }
+    @Test void unrelatedConflictCannotBlockSupportedRedisEvidence() {
+        var redis=new KnowledgeHitDto(UUID.randomUUID(),"Redis 缓存","redis.md",0,"商品缓存 TTL 为 720 秒，抖动 0—180 秒，空值缓存 90 秒。",.9);
+        when(recall.candidates(anyString(),anyInt())).thenReturn(List.of(a,b,redis));
+        responses("{\"queries\":[]}","{\"order\":[1,2,3]}","""
+            {"evidence":[{"index":1,"grade":"IRRELEVANT"},{"index":2,"grade":"IRRELEVANT"},{"index":3,"grade":"SUPPORTED"}],
+             "conflicts":[{"left":1,"right":2,"leftQuote":"每天五百元","rightQuote":"每天八百元","reason":"差旅制度金额不同"}],
+             "clarification":""}
+            """);
+        var result=pipeline.retrieve("Redis 商品缓存 TTL 是多少？",1);
+        assertThat(result.status()).isEqualTo("READY");
+        assertThat(result.hits()).containsExactly(redis);
+        assertThat(result.disagreements()).isEmpty();
+    }
+    @Test void relevantConflictStillRetainsOpposingEvidenceEvenIfGradedIrrelevant() {
+        responses("{\"queries\":[]}","{\"order\":[1,2]}","""
+            {"evidence":[{"index":1,"grade":"SUPPORTED"},{"index":2,"grade":"IRRELEVANT"}],
+             "conflicts":[{"left":1,"right":2,"leftQuote":"每天五百元","rightQuote":"每天八百元"}],
+             "clarification":""}
+            """);
+        var result=pipeline.retrieve("住宿报销多少？",1);
+        assertThat(result.status()).isEqualTo("CONFLICT");
+        assertThat(result.hits()).containsExactly(a,b);
+        assertThat(result.guarded()).isTrue();
+    }
     @Test void fabricatedConflictQuoteIsRejectedAndGenerationIsGuarded() {
         responses("{\"queries\":[]}","{\"order\":[1,2]}","""
             {"evidence":[{"index":1,"grade":"SUPPORTED"},{"index":2,"grade":"SUPPORTED"}],

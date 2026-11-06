@@ -109,11 +109,14 @@ public class KnowledgeGovernance {
         var current=new ArrayList<>(review.conflicts());
         var byDocument=new HashMap<UUID,List<KnowledgeHitDto>>();
         pool.forEach(h->byDocument.computeIfAbsent(h.documentId(),key->new ArrayList<>()).add(h));
-        // Persisted open findings cannot disappear just because the latest model misses them.
+        var queryEvidence=review.relevant().stream().map(h->h.documentId()+":"+h.chunkIndex()).collect(java.util.stream.Collectors.toSet());
+        // Preserve known opposing evidence for relevant chunks, not every conflict in the recall pool.
+        // Keep the anchors fixed so restored findings cannot pull unrelated chains into the question.
         for(var row:db.queryForList("SELECT * FROM knowledge_conflict WHERE status IN ('OPEN','RESOLVED') ORDER BY created_at DESC LIMIT 1000")) {
             UUID l=(UUID)row.get("left_id"),r=(UUID)row.get("right_id");
             if(!byDocument.containsKey(l)||!byDocument.containsKey(r))continue;
             for(var a:byDocument.get(l))for(var b:byDocument.get(r)) {
+                if(!queryEvidence.contains(a.documentId()+":"+a.chunkIndex()) && !queryEvidence.contains(b.documentId()+":"+b.chunkIndex()))continue;
                 if(a.source()==null||b.source()==null||a.source().revision()!=((Number)row.get("left_revision")).longValue()
                     ||b.source().revision()!=((Number)row.get("right_revision")).longValue()
                     ||!a.content().contains((String)row.get("left_quote"))||!b.content().contains((String)row.get("right_quote")))continue;

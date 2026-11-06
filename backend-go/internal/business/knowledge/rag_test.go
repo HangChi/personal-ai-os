@@ -69,6 +69,29 @@ func TestEvidenceReviewCoverageGroundingPeriodsAndClarification(t *testing.T) {
 		t.Fatal(review, e)
 	}
 }
+func TestEvidenceReviewScopesConflictsToTheQuestion(t *testing.T) {
+	hits := append(twoHits(), Hit{DocumentID: "33333333-3333-4333-8333-333333333333", DocumentTitle: "Redis 缓存", Content: "商品缓存 TTL 为 720 秒，抖动 0—180 秒，空值缓存 90 秒。"})
+	raw := []byte(`{"evidence":[{"index":1,"grade":"IRRELEVANT"},{"index":2,"grade":"IRRELEVANT"},{"index":3,"grade":"SUPPORTED"}],"conflicts":[{"left":1,"right":2,"leftQuote":"每周工作五天","rightQuote":"每周工作四天"}],"clarification":""}`)
+	review, err := ParseReview(raw, hits)
+	if err != nil || len(review.Conflicts) != 0 || len(review.Relevant) != 1 || review.Relevant[0].DocumentID != hits[2].DocumentID {
+		t.Fatal(review, err)
+	}
+	until, from := "2025-12-31", "2026-01-01"
+	hits[0].Source = &SourceInfo{EffectiveUntil: &until}
+	hits[1].Source = &SourceInfo{EffectiveFrom: &from}
+	review, err = ParseReview(raw, hits)
+	if err != nil || review.Clarification != "" {
+		t.Fatal(review, err)
+	}
+	hits[0].Source = nil
+	hits[1].Source = nil
+	raw = []byte(strings.Replace(string(raw), `"index":1,"grade":"IRRELEVANT"`, `"index":1,"grade":"SUPPORTED"`, 1))
+	review, err = ParseReview(raw, hits)
+	if err != nil || len(review.Conflicts) != 1 || len(review.Relevant) != 3 {
+		t.Fatal(review, err)
+	}
+}
+
 func TestPipelineReadyConflictTopOneFallbackAndNoContent(t *testing.T) {
 	for _, status := range []string{"READY", "CONFLICT", "CLARIFY", "UNVERIFIED"} {
 		t.Run(status, func(t *testing.T) {
