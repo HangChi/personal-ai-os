@@ -55,6 +55,10 @@ public class ChatSessionEntity {
     @Column(name = "chat_model", length = 120)
     private String chatModel;
 
+    @Column(name="read_only_report",nullable=false)
+    private boolean readOnlyReport;
+    public boolean isReadOnlyReport() { return readOnlyReport; }
+
     /** 供 JPA 使用 */
     protected ChatSessionEntity() {
     }

@@ -36,7 +36,7 @@ public class DirectToolController {
     @PostMapping("/sessions/{conversationId}/tools")
     public ApiResponse<DirectToolService.Execution> execute(@PathVariable String conversationId,
             @RequestHeader("Idempotency-Key") String key, @Valid @RequestBody Request request) {
-        sessions.requireSession(conversationId);
+        sessions.assertWritable(conversationId);
         try (var lease = coordination.acquire("chat-session:" + conversationId, 1)) {
             if (lease == null) throw new BusinessException(ErrorCode.BUSINESS_CONFLICT, "该会话正在执行，请先停止任务再运行快捷操作");
             return ApiResponse.ok(tools.execute(conversationId, key, request.tool(), request.arguments(), () -> {

@@ -215,6 +215,7 @@ public class DataImportService {
                     .setParameter(4, ts(session.updatedAt() == null ? session.createdAt() : session.updatedAt()))
                     .executeUpdate();
             messages += importMessages(session.conversationId(), entry.messages());
+            if(Boolean.TRUE.equals(session.readOnlyReport())) entityManager.createNativeQuery("UPDATE chat_session SET read_only_report=true WHERE conversation_id=?1").setParameter(1,session.conversationId()).executeUpdate();
         }
         return messages;
     }

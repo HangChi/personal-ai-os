@@ -54,6 +54,33 @@ try{
  await page.setViewportSize({width:390,height:844})
  await page.screenshot({path:join(output,'captures-mobile.png'),fullPage:true})
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'采集页移动端不应横向溢出')
+ await page.setViewportSize({width:1365,height:1000})
+ await page.goto(origin+'/workflows',{waitUntil:'networkidle'})
+ await page.getByLabel('计划名称',{exact:true}).fill('浏览器晨报')
+ await page.getByRole('button',{name:'保存计划',exact:true}).click()
+ const workflow=page.locator('.workflow-row').filter({has:page.getByText('浏览器晨报',{exact:true})})
+ await workflow.getByText('已禁用',{exact:true}).waitFor()
+ await workflow.getByRole('button',{name:'立即生成',exact:true}).click()
+ await page.getByText('执行历史 · 浏览器晨报',{exact:false}).waitFor()
+ for(let n=0;n<15;n++){
+  await page.getByRole('button',{name:'刷新历史',exact:true}).click()
+  if(await page.getByRole('link',{name:'查看只读报告会话',exact:true}).count())break
+  await page.waitForTimeout(500)
+ }
+ await page.getByRole('link',{name:'查看只读报告会话',exact:true}).waitFor()
+ await page.getByText('模型调用 0',{exact:false}).waitFor()
+ await page.screenshot({path:join(output,'workflows-desktop.png'),fullPage:true})
+ await workflow.getByRole('button',{name:'启用',exact:true}).click()
+ await workflow.getByText('已启用',{exact:true}).waitFor()
+ await workflow.getByRole('button',{name:'禁用',exact:true}).click()
+ await workflow.getByText('已禁用',{exact:true}).waitFor()
+ await page.setViewportSize({width:390,height:844})
+ await page.screenshot({path:join(output,'workflows-mobile.png'),fullPage:true})
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'工作流移动端不应横向溢出')
+ await page.getByRole('link',{name:'查看只读报告会话',exact:true}).click()
+ await page.getByText('报告会话只读，请新建对话',{exact:true}).waitFor()
+ assert.equal(await page.locator('.chat-composer').count(),0)
+ report.checks.push('计划默认禁用、手动生成、真实调度、历史、零模型调用、启停、只读会话、390px布局')
  assert.deepEqual(report.errors,[])
  report.result='PASS'
 }finally{

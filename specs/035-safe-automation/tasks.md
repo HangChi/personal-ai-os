@@ -12,9 +12,9 @@
 - [X] T008 [US2] 在 V45__knowledge_captures.sql 与两端采集/索引任务接入来源去重、成功才推进的正文版本和历史
 - [X] T009 [US2] 在 frontend/src/components/knowledge/KnowledgeCaptures.vue 添加采集/刷新/版本及状态，完成检查后提交
 ## US1 定时只读报告
-- [ ] T010 [US1] 在 V46__readonly_workflows.sql 与两端workflow模块实现定义、时区调度、唯一期次、租约、每日预算及「最多3次」重试测试
-- [ ] T011 [US1] 在两端chat恢复入口持久隔离只读工作流Run，生成固定只读报告并记录「零模型调用」，max_items「1..100」、max_output_chars「1000..20000」、max_runs_per_day「1..24」
-- [ ] T012 [US1] 在 frontend/src/views/WorkflowsView.vue 增加计划/启停/手动执行/重试/历史，完成检查后提交
+- [X] T010 [US1] 在 V46__readonly_workflows.sql 与两端workflow模块实现定义、时区调度、唯一期次、租约、每日预算及「最多3次」重试测试
+- [X] T011 [US1] 在两端chat恢复入口持久隔离只读工作流Run，生成固定只读报告并记录「零模型调用」，max_items「1..100」、max_output_chars「1000..20000」、max_runs_per_day「1..24」
+- [X] T012 [US1] 在 frontend/src/views/WorkflowsView.vue 增加计划/启停/手动执行/重试/历史，完成检查后提交
 ## US4 维护恢复
 - [ ] T013 [US4] 在 V47__maintenance_center.sql 与两端maintenance模块添加真实心跳（「90秒」失联）、失败队列/待处理Run聚合和有界查询
 - [ ] T014 [US4] 在两端maintenance模块实现「最多20MiB」业务备份纯校验与历史、外部演练报告（明确非独立验证），补充业务零写入测试

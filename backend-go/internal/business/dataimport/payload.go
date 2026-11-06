@@ -45,6 +45,7 @@ type Session struct {
 	Messages []*Message   `json:"messages"`
 }
 type SessionMeta struct {
+	ReadOnlyReport bool       `json:"readOnlyReport"`
 	ConversationID string     `json:"conversationId"`
 	Title          string     `json:"title"`
 	CreatedAt      *time.Time `json:"createdAt"`

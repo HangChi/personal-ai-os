@@ -45,7 +45,7 @@ def main():
             cp=os.pathsep.join(map(str,jars))
             run([str(java_home/'bin/javac'),'-encoding','UTF-8','-cp',cp,'-d',temp,str(ROOT/'scripts/workspace/WorkspaceFlyway.java')],env=env)
             run([str(java_home/'bin/java'),'-cp',temp+os.pathsep+cp,'WorkspaceFlyway',str(ROOT/'backend/src/main/resources/db/migration')],env=env)
-        run(['go','test','-race','-count=1','-v','-tags=integration','-p','1','-run','TestCalendarExchange|TestCaptureAtomicVersions','./internal/business/calendar','./internal/business/knowledge'],cwd=ROOT/'backend-go',env=env)
+        run(['go','test','-race','-count=1','-v','-tags=integration','-p','1','-run','TestCalendarExchange|TestCaptureAtomicVersions|TestReadOnlyWorkflows','./internal/business/workflow','./internal/business/calendar','./internal/business/knowledge'],cwd=ROOT/'backend-go',env=env)
         if args.ui:
             from automation_ui import run as check_ui
             check_ui(env)

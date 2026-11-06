@@ -41,6 +41,7 @@ export interface PageDto<T> {
 
 /** 会话视图，对应后端 ChatSessionDto */
 export interface ChatSession {
+  readOnlyReport?: boolean
   conversationId: string
   title: string
   createdAt: string

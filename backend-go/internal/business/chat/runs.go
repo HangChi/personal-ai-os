@@ -180,11 +180,15 @@ func (s *Runs) mutate(ctx context.Context, conversation string, fn func(*sql.Tx)
 			return e
 		}
 		var id string
-		if e := tx.QueryRowContext(ctx, `SELECT conversation_id FROM chat_session WHERE conversation_id=$1 FOR UPDATE`, conversation).Scan(&id); e != nil {
+		var readOnly bool
+		if e := tx.QueryRowContext(ctx, `SELECT conversation_id,read_only_report FROM chat_session WHERE conversation_id=$1 FOR UPDATE`, conversation).Scan(&id, &readOnly); e != nil {
 			if errors.Is(e, sql.ErrNoRows) {
 				return notFound(conversation)
 			}
 			return e
+		}
+		if readOnly {
+			return api.NewBusinessError(api.BusinessConflict, "报告会话只读，请新建对话")
 		}
 		return fn(tx)
 	})
@@ -1025,7 +1029,7 @@ func (s *Runs) Recover(ctx context.Context) error {
 	}
 	var candidates [][2]string
 	err := s.Pool.WithConn(ctx, func(c *sql.Conn) error {
-		rows, e := c.QueryContext(ctx, `SELECT id,conversation_id FROM chat_run WHERE status='RUNNING' OR (status='WAITING_USER' AND NOT EXISTS(SELECT 1 FROM agent_question WHERE run_id=chat_run.id AND status='PENDING'))`)
+		rows, e := c.QueryContext(ctx, `SELECT id,conversation_id FROM chat_run WHERE origin='CHAT' AND (status='RUNNING' OR (status='WAITING_USER' AND NOT EXISTS(SELECT 1 FROM agent_question WHERE run_id=chat_run.id AND status='PENDING')))`)
 		if e != nil {
 			return e
 		}
@@ -1130,7 +1134,7 @@ func (s *Runs) Dispatch(ctx context.Context) error {
 	type item struct{ id, conversation, status string }
 	items := []item{}
 	err := s.Pool.WithConn(ctx, func(c *sql.Conn) error {
-		rows, e := c.QueryContext(ctx, `SELECT r.id,r.conversation_id,r.status FROM chat_run r WHERE r.status IN ('INTERRUPTED','COMPLETED') AND NOT EXISTS(SELECT 1 FROM chat_run newer WHERE newer.conversation_id=r.conversation_id AND (newer.created_at,newer.id)>(r.created_at,r.id))`)
+		rows, e := c.QueryContext(ctx, `SELECT r.id,r.conversation_id,r.status FROM chat_run r WHERE r.origin='CHAT' AND r.status IN ('INTERRUPTED','COMPLETED') AND NOT EXISTS(SELECT 1 FROM chat_run newer WHERE newer.conversation_id=r.conversation_id AND (newer.created_at,newer.id)>(r.created_at,r.id))`)
 		if e != nil {
 			return e
 		}

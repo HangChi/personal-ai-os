@@ -217,6 +217,7 @@ public class ChatCompletionService {
                             List<ChatAttachmentDto> requestAttachments, RunEmitter background) {
         String requestId = MDC.get(RequestIdFilter.MDC_KEY);
         ChatSessionEntity session = sessionService.requireSession(conversationId);
+        if(session.isReadOnlyReport()) throw new BusinessException(ErrorCode.BUSINESS_CONFLICT,"报告会话只读，请新建对话");
         // 会话级选模型（V23）：会话自己选过就用它的，否则沿用生效配置的默认模型。
         // 取到的模型实例必须与客户端**配对使用** —— applyThinkingOptions 要按
         // 这个模型的默认选项合并，拿错模型会让请求里带着另一个模型的名字（静默）。

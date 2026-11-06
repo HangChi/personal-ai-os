@@ -17,7 +17,8 @@ public record ChatSessionDto(String conversationId,
                              Instant createdAt,
                              Instant updatedAt,
                              long messageCount,
-                             String chatModel) {
+                             String chatModel, @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT) boolean readOnlyReport) {
+    public ChatSessionDto(String conversationId,String title,Instant createdAt,Instant updatedAt,long messageCount,String chatModel) { this(conversationId,title,createdAt,updatedAt,messageCount,chatModel,false); }
 
     /**
      * 兼容构造器：不带模型的旧调用点。

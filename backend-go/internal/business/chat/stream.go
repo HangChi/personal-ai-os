@@ -77,6 +77,9 @@ func (e *Engine) Prepare(ctx context.Context, id string, request StreamRequest) 
 	if err != nil {
 		return
 	}
+	if p.Session.ReadOnlyReport {
+		return p, api.NewBusinessError(api.BusinessConflict, "报告会话只读，请新建对话")
+	}
 	p.Client, p.Epoch, err = e.Runtime.TargetSnapshot(ctx, value(p.Session.ChatModel))
 	if err != nil {
 		return

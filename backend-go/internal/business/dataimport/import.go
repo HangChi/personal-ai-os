@@ -220,6 +220,11 @@ func importSessions(ctx context.Context, tx *sql.Tx, sessions []*Session) (int, 
 			sequence = seq + 1
 			count++
 		}
+		if s.ReadOnlyReport {
+			if _, e := tx.ExecContext(ctx, "UPDATE chat_session SET read_only_report=true WHERE conversation_id=$1", s.ConversationID); e != nil {
+				return 0, e
+			}
+		}
 	}
 	return count, nil
 }

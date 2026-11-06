@@ -37,8 +37,8 @@ public class ChatRunRepository {
                 Boolean.class, conversationId));
     }
     public List<Run> recoveryCandidates() {
-        return jdbc.query("select r.* from chat_run r where r.status='RUNNING' or (r.status='WAITING_USER' and not exists "
-                + "(select 1 from agent_question q where q.run_id=r.id and q.status='PENDING'))",
+        return jdbc.query("select r.* from chat_run r where r.origin='CHAT' and (r.status='RUNNING' or (r.status='WAITING_USER' and not exists "
+                + "(select 1 from agent_question q where q.run_id=r.id and q.status='PENDING')))",
                 (rs, n) -> new Run(rs.getString("id"), rs.getString("conversation_id"), rs.getString("request"), rs.getString("status")));
     }
     public List<Run> running() {

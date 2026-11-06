@@ -82,6 +82,7 @@ public class ChatMessageService {
         if (fromSequenceNo <= 0) {
             throw new BusinessException(ErrorCode.VALIDATION_FAILED, "fromSequenceNo 必须为正整数");
         }
+        sessionService.assertWritable(conversationId);
         // 附件快照必须在删记录之前取（审查 P3）：删完就找不到这些 id，磁盘文件会永久残留。
         // 与 ChatSessionService.delete 同一套「先取快照、事务提交后删文件」的纪律。
         List<ChatAttachmentDto> doomedAttachments = parseAttachments(

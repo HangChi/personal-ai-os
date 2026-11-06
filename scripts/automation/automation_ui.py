@@ -21,7 +21,7 @@ def run(env):
             SPRING_DATASOURCE_USERNAME='go_fixture',SPRING_DATASOURCE_PASSWORD=env['GO_TEST_POSTGRES_PASSWORD'])
         log=open(folder/'backend.log','w')
         process=subprocess.Popen([str(Path(env['JAVA_HOME'])/'bin/java'),'-Dapp.dotenv.enabled=false','-cp',str(ROOT/'backend/target/classes')+os.pathsep+cpfile.read_text().strip(),
-            'com.personalos.PersonalOsApplication','--server.address=127.0.0.1',f'--server.port={port}','--spring.ai.model.chat=none',
+            'com.personalos.PersonalOsApplication','--spring.flyway.locations=filesystem:'+str(ROOT/'backend/src/main/resources/db/migration'),'--server.address=127.0.0.1',f'--server.port={port}','--spring.ai.model.chat=none',
             '--app.calendar.scan-enabled=false','--app.knowledge.jobs.enabled=false','--app.knowledge.rag.ingestion-review-enabled=false'],cwd=temp,env=runtime,stdout=log,stderr=subprocess.STDOUT)
         try:
             deadline=time.monotonic()+60

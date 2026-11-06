@@ -68,6 +68,16 @@ func (s *Service) Create(ctx context.Context, title *string) (result SessionDTO,
 	}
 	return
 }
+func (s *Service) EnsureWritable(ctx context.Context, id string) error {
+	v, e := s.Require(ctx, id)
+	if e != nil {
+		return e
+	}
+	if v.ReadOnlyReport {
+		return api.NewBusinessError(api.BusinessConflict, "报告会话只读，请新建对话")
+	}
+	return nil
+}
 func (s *Service) Require(ctx context.Context, id string) (result Session, err error) {
 	if err = ValidateConversationID(id); err != nil {
 		return
@@ -228,6 +238,9 @@ func (s *Service) Rewind(ctx context.Context, id string, from int) (count int, e
 		r, e := tx.Session(ctx, id, true)
 		if e != nil {
 			return e
+		}
+		if r.ReadOnlyReport {
+			return api.NewBusinessError(api.BusinessConflict, "报告会话只读，请新建对话")
 		}
 		files, e = tx.AttachmentSnapshots(ctx, id, &from)
 		if e != nil {

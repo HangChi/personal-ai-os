@@ -225,7 +225,7 @@ func (h *ModuleHTTP) directTool(w http.ResponseWriter, r *http.Request, conversa
 	if decoder.Decode(&arguments) != nil || arguments == nil {
 		return invalid("arguments 必须是 JSON 对象")
 	}
-	if _, e = h.module.Service.Require(r.Context(), conversation); e != nil {
+	if e = h.module.Service.EnsureWritable(r.Context(), conversation); e != nil {
 		return e
 	}
 	lease, e := h.coordinator.Acquire(r.Context(), "chat-session:"+conversation, 1)

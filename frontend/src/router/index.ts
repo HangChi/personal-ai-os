@@ -44,6 +44,12 @@ const router = createRouter({
       meta: { title: '日程' },
     },
     {
+      path: '/workflows',
+      name: 'workflows',
+      component: () => import('@/views/WorkflowsView.vue'),
+      meta: { title: '定时报告' },
+    },
+    {
       path: '/memory',
       name: 'memory',
       component: () => import('@/views/MemoryView.vue'),

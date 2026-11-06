@@ -20,6 +20,7 @@ var asciiWhitespace = regexp.MustCompile(`[\t\n\v\f\r ]+`)
 
 // Session 的摘要是内部状态；对外只返回 SessionDTO。
 type Session struct {
+	ReadOnlyReport        bool
 	ConversationID, Title string
 	CreatedAt, UpdatedAt  time.Time
 	ChatModel, Summary    *string
@@ -27,6 +28,7 @@ type Session struct {
 	MessageCount          int64
 }
 type SessionDTO struct {
+	ReadOnlyReport bool      `json:"readOnlyReport,omitempty"`
 	ConversationID string    `json:"conversationId"`
 	Title          string    `json:"title"`
 	CreatedAt      time.Time `json:"createdAt"`
@@ -36,7 +38,7 @@ type SessionDTO struct {
 }
 
 func (s Session) DTO() SessionDTO {
-	return SessionDTO{s.ConversationID, s.Title, s.CreatedAt, s.UpdatedAt, s.MessageCount, s.ChatModel}
+	return SessionDTO{s.ReadOnlyReport, s.ConversationID, s.Title, s.CreatedAt, s.UpdatedAt, s.MessageCount, s.ChatModel}
 }
 
 type Attachment struct {

@@ -87,6 +87,7 @@ const navGroups = [
       { index: '/tasks', label: '任务', icon: Tickets },
       { index: '/knowledge', label: '知识库', icon: Reading },
       { index: '/calendar', label: '日程', icon: Calendar },
+      { index: '/workflows', label: '定时报告', icon: DataLine },
     ],
   },
   {

@@ -40,7 +40,8 @@ public record ImportPayload(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record SessionMeta(String conversationId, String title, Instant createdAt, Instant updatedAt) {
+    public record SessionMeta(String conversationId, String title, Instant createdAt, Instant updatedAt,Boolean readOnlyReport) {
+        public SessionMeta(String id,String title,Instant createdAt,Instant updatedAt) {this(id,title,createdAt,updatedAt,null);}
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

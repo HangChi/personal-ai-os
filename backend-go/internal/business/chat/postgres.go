@@ -46,12 +46,12 @@ func (s *PostgresStore) Transact(ctx context.Context, readOnly bool, action func
 	})
 }
 
-const sessionColumns = `s.conversation_id,s.title,s.created_at,s.updated_at,s.chat_model,s.context_summary,s.summary_upto_seq`
+const sessionColumns = `s.conversation_id,s.title,s.created_at,s.updated_at,s.chat_model,s.context_summary,s.summary_upto_seq,s.read_only_report`
 
 type scanner interface{ Scan(...any) error }
 
 func scanSession(row scanner, s *Session) error {
-	return row.Scan(&s.ConversationID, &s.Title, &s.CreatedAt, &s.UpdatedAt, &s.ChatModel, &s.Summary, &s.SummaryUptoSeq, &s.MessageCount)
+	return row.Scan(&s.ConversationID, &s.Title, &s.CreatedAt, &s.UpdatedAt, &s.ChatModel, &s.Summary, &s.SummaryUptoSeq, &s.ReadOnlyReport, &s.MessageCount)
 }
 func (t *postgresTx) Session(ctx context.Context, id string, lock bool) (s Session, err error) {
 	query := `SELECT ` + sessionColumns + `,(SELECT count(*) FROM chat_message m WHERE m.conversation_id=s.conversation_id) FROM chat_session s WHERE s.conversation_id=$1`

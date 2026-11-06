@@ -19,6 +19,7 @@ import (
 	"personal-ai-os/backend-go/internal/business/mcp"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/business/task"
+	"personal-ai-os/backend-go/internal/business/workflow"
 	"personal-ai-os/backend-go/internal/platform/auth"
 	"personal-ai-os/backend-go/internal/platform/config"
 	"personal-ai-os/backend-go/internal/platform/coordination"
@@ -87,6 +88,7 @@ type Foundation struct {
 	p6               *knowledge.Module
 	mcp              *mcp.Registry
 	retention        *maintenance.Worker
+	workflowStop     func()
 	containerNetwork bool
 }
 
@@ -508,6 +510,19 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if options.EnableP7 {
 		options.Business = f.p7Route(tasks, p5, personalMCP, name, version, logger, options.Business)
 	}
+	var workflows *workflow.Service
+	if options.EnableP8 {
+		workflows = &workflow.Service{Pool: pool, Calendar: p5.events}
+		previous := options.Business
+		handler := workflows.Handler(logger)
+		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if workflow.OwnsPath(r.URL.Path) {
+				handler.ServeHTTP(w, r)
+				return
+			}
+			previous.ServeHTTP(w, r)
+		})
+	}
 	var actuator http.Handler
 	if !settings.Monitoring {
 		actuator = newActuatorHandler(actuatorProperties, snapshot, metrics, logger)
@@ -529,6 +544,17 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 		f.retention, err = maintenance.Start(f.ctx, retention, maintenance.NewPostgresStore(f.pool), logger)
 		if err != nil {
 			return nil, err
+		}
+	}
+	if workflows != nil && settings.Role.Allows("review") {
+		value, found, e := properties.Get("app.workflows.enabled")
+		if e != nil {
+			return nil, e
+		}
+		if !found || value == "true" {
+			f.workflowStop = workflows.Start(f.ctx, logger)
+		} else if value != "false" {
+			return nil, errors.New("app.workflows.enabled必须为true或false")
 		}
 	}
 	return f, nil
@@ -580,6 +606,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 		f.closing = true
 		f.mu.Unlock()
 		go func() {
+			if f.workflowStop != nil {
+				f.workflowStop()
+			}
 			if f.retention != nil {
 				f.retention.Close()
 			}

@@ -52,7 +52,7 @@ public class ChatRunService {
     }
 
     public synchronized ChatRunDto start(String conversationId, String key, StreamChatRequest request) {
-        sessions.requireSession(conversationId);
+        sessions.assertWritable(conversationId);
         String id = key == null || key.isBlank() ? UUID.randomUUID().toString() : key;
         if (id.length() > 64) throw conflict("执行标识过长");
         var previous = repository.find(conversationId, id);
@@ -95,6 +95,7 @@ public class ChatRunService {
     }
 
     private ChatRunDto resumeWithInput(String conversationId, String id, String userInput, boolean summaryOnly) {
+        sessions.assertWritable(conversationId);
         var run = require(conversationId, id);
         if ("RUNNING".equals(run.status())) return snapshot(run, 0);
         if ("COMPLETED".equals(run.status())) throw conflict("任务已完成");
@@ -122,6 +123,7 @@ public class ChatRunService {
 
     /** 人工决定已由确认服务执行；只结束等待，不再向原任务发送续跑消息。 */
     public synchronized ChatRunDto finishConfirmations(String conversationId, String id) {
+        sessions.assertWritable(conversationId);
         var run = require(conversationId, id);
         if ("COMPLETED".equals(run.status())) return get(conversationId, id, 0);
         if (!"WAITING_CONFIRMATION".equals(run.status())) throw conflict("当前任务未在等待人工确认");
@@ -177,6 +179,7 @@ public class ChatRunService {
     }
 
     public synchronized ChatRunDto answer(String conversationId, String id, String questionId, String answer) {
+        sessions.assertWritable(conversationId);
         var run = require(conversationId, id);
         if ("RUNNING".equals(run.status()) && interactions.pendingQuestion(id) != null) throw conflict("正在保存进度，请稍候再回答");
         interactions.answer(id, questionId, answer);
@@ -192,6 +195,7 @@ public class ChatRunService {
     }
 
     public synchronized ChatRunDto followup(String conversationId, String id, String key, String mode, StreamChatRequest request) {
+        sessions.assertWritable(conversationId);
         var run = require(conversationId, id);
         if ("STEER".equals(mode) && repository.runningFor(conversationId) && !"RUNNING".equals(run.status())) {
             throw conflict("当前已切换到其他任务，请重新选择要引导的任务");
@@ -222,6 +226,7 @@ public class ChatRunService {
     }
 
     public synchronized ChatRunDto steerFollowup(String conversationId, String id, String inputId) {
+        sessions.assertWritable(conversationId);
         require(conversationId, id);
         var target = repository.active(conversationId).orElseGet(() -> repository.latest(conversationId).orElseThrow());
         if (!"RUNNING".equals(target.status()) && repository.uncertain(target.id())) throw conflict("当前任务有执行结果未核实的操作，请先核对再引导");

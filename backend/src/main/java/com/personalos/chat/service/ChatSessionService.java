@@ -340,9 +340,10 @@ public class ChatSessionService {
                 : oneLine.substring(0, AUTO_TITLE_MAX_LENGTH);
     }
 
+    public void assertWritable(String id) { if(requireSession(id).isReadOnlyReport()) throw new BusinessException(ErrorCode.BUSINESS_CONFLICT,"报告会话只读，请新建对话"); }
     private ChatSessionDto toDto(ChatSessionEntity entity, long messageCount) {
         return new ChatSessionDto(entity.getConversationId(), entity.getTitle(),
                 entity.getCreatedAt(), entity.getUpdatedAt(), messageCount,
-                entity.getChatModel());
+                entity.getChatModel(),entity.isReadOnlyReport());
     }
 }

@@ -413,6 +413,10 @@ watch(
 )
 
 /** 当前会话记录着的模型（null = 跟随生效配置的默认模型） */
+const readOnlyReport = computed(
+  () => sessions.value.find((item) => item.conversationId === currentConversationId.value)?.readOnlyReport === true,
+)
+
 const sessionModel = computed(() => {
   const current = sessions.value.find((item) => item.conversationId === currentConversationId.value)
   return current?.chatModel ?? null
@@ -920,7 +924,9 @@ async function jumpToMatch(step: number): Promise<void> {
           @steer="chatStore.steerFollowup($event)"
         />
         <!-- ============ 停靠输入区 ============ -->
+        <el-alert v-if="readOnlyReport" title="报告会话只读，请新建对话" type="info" :closable="false" show-icon />
         <ChatCommandPanel
+          v-if="!readOnlyReport"
           :view="commandView"
           :tools="commandsStore.catalog"
           :loading="commandsStore.catalogLoading"
@@ -931,6 +937,7 @@ async function jumpToMatch(step: number): Promise<void> {
           @reload="commandsStore.loadCatalog()"
         />
         <ChatComposer
+          v-if="!readOnlyReport"
           v-model="draft"
           :draft-key="currentDraft.key"
           :streaming="streaming"
