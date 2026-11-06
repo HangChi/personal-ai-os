@@ -25,6 +25,7 @@ import ChatUserQuestion from '@/components/chat/ChatUserQuestion.vue'
 import ChatFollowupQueue from '@/components/chat/ChatFollowupQueue.vue'
 import ChatComposer from '@/components/chat/ChatComposer.vue'
 import ChatRunNotice from '@/components/chat/ChatRunNotice.vue'
+import ChatTurnWarnings from '@/components/chat/ChatTurnWarnings.vue'
 import ChatCommandPanel from '@/components/chat/ChatCommandPanel.vue'
 import { useChatCommandsStore } from '@/stores/chat-commands'
 import { isCommandInput, parseChatCommand } from '@/lib/chat-commands'
@@ -834,15 +835,6 @@ async function jumpToMatch(step: number): Promise<void> {
           @scroll.passive="updateScrollPosition"
         >
           <el-alert v-if="error" class="chat__error" type="error" :closable="false" show-icon :title="error" />
-          <el-alert
-            v-for="warning in warnings"
-            :key="warning.code + warning.message"
-            class="chat__error"
-            type="warning"
-            :closable="false"
-            show-icon
-            :title="warning.message"
-          />
 
           <!-- 执行计划（阶段 22）：这一轮多步任务做到哪了。无计划时组件自身不渲染 -->
           <ChatPlanPanel :conversation-id="currentConversationId" :streaming="streaming" />
@@ -887,6 +879,7 @@ async function jumpToMatch(step: number): Promise<void> {
             :activities="liveActivities"
             :reconnecting="reconnecting"
           />
+          <ChatTurnWarnings :warnings="warnings" :busy="streaming" />
           <ChatRunNotice
             v-if="
               !streaming &&

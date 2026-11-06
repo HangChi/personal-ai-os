@@ -6,6 +6,20 @@ const props = defineProps<{ run: ChatRun; busy?: boolean }>()
 defineEmits<{ resume: []; summarize: [] }>()
 const disconnected = computed(() => props.run.status === 'RUNNING')
 const uncertain = computed(() => !disconnected.value && props.run.recoveryMode === 'SUMMARY_ONLY')
+const recovered = computed(() => {
+  let value = false
+  for (const event of props.run.events) {
+    if (event.name === 'reset') value = false
+    if (event.name === 'warning') {
+      try {
+        if (JSON.parse(event.payload).code === 'AGENT_RECOVERY') value = true
+      } catch {
+        /* Older malformed notices must not hide recovery actions. */
+      }
+    }
+  }
+  return value
+})
 const title = computed(() =>
   disconnected.value ? '连接已断开，任务仍在后台执行' : uncertain.value ? '工具执行结果待核实' : '任务已暂停',
 )
@@ -13,7 +27,9 @@ const description = computed(() =>
   disconnected.value
     ? '重新连接可以查看最新进度，不会重新提交任务。'
     : uncertain.value
-      ? '部分工具未返回确定结果，已暂停自动执行。可先整理已有结果，不会再次调用工具。'
+      ? recovered.value
+        ? '已有结果已在上方整理。部分操作仍需核实，可查看活动记录；其他问题可以继续发送。'
+        : '部分工具未返回确定结果，已暂停自动执行。可先整理已有结果，不会再次调用工具。'
       : '进度已保存。若工具连续失败或达到执行上限，可先检查工具配置，也可以整理已有结果。',
 )
 </script>
@@ -27,15 +43,10 @@ const description = computed(() =>
     </div>
     <div class="run-notice__actions">
       <router-link v-if="uncertain" to="/activity" class="run-notice__link">查看活动记录</router-link>
-      <el-button v-if="!uncertain" :icon="RefreshRight" :loading="busy" @click="$emit('resume')">
+      <el-button v-if="!uncertain" text size="small" :icon="RefreshRight" :loading="busy" @click="$emit('resume')">
         {{ disconnected ? '重新连接' : '继续任务' }}
       </el-button>
-      <el-button
-        v-if="!disconnected"
-        :type="uncertain ? 'primary' : 'default'"
-        :loading="busy"
-        @click="$emit('summarize')"
-      >
+      <el-button v-if="!disconnected && !recovered" text size="small" :loading="busy" @click="$emit('summarize')">
         整理已有结果
       </el-button>
     </div>
@@ -47,10 +58,8 @@ const description = computed(() =>
   display: flex;
   align-items: flex-start;
   gap: var(--os-space-3);
-  padding: var(--os-space-4);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: var(--os-radius-md);
-  background: var(--el-fill-color-light);
+  padding-block: var(--os-space-3);
+  border-top: 1px solid var(--el-border-color-light);
 }
 .run-notice__icon {
   margin-top: 3px;
@@ -67,7 +76,7 @@ const description = computed(() =>
   color: var(--el-text-color-primary);
 }
 .run-notice__description {
-  margin: var(--os-space-2) 0 0;
+  margin: var(--os-space-1) 0 0;
   color: var(--el-text-color-regular);
   font-size: var(--os-font-sm);
   line-height: 1.6;
