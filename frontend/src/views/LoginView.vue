@@ -66,11 +66,19 @@ async function submit(): Promise<void> {
         </div>
       </div>
 
-      <h1 class="login__heading">登录</h1>
+      <h1 class="login__heading">登录工作区</h1>
+      <p class="login__intro">继续管理你的对话、资料与日常计划。</p>
 
       <el-form class="login__form" label-position="top" size="large" @submit.prevent="submit">
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="username" autocomplete="username" placeholder="请输入用户名">
+          <el-input
+            v-model="username"
+            :disabled="loading"
+            autofocus
+            aria-label="用户名"
+            autocomplete="username"
+            placeholder="请输入用户名"
+          >
             <template #prefix>
               <el-icon><User /></el-icon>
             </template>
@@ -79,6 +87,8 @@ async function submit(): Promise<void> {
         <el-form-item label="密码" prop="password">
           <el-input
             v-model="password"
+            :disabled="loading"
+            aria-label="密码"
             type="password"
             show-password
             autocomplete="current-password"
@@ -94,7 +104,15 @@ async function submit(): Promise<void> {
 
         <!-- native-type="submit" 单独驱动表单提交；不再绑 @click ——
              两者并存会一次点击发两次登录请求（审查 P2） -->
-        <el-button class="login__submit" type="primary" :loading="loading" native-type="submit"> 登录 </el-button>
+        <el-button
+          class="login__submit"
+          type="primary"
+          :loading="loading"
+          :disabled="!username.trim() || !password"
+          native-type="submit"
+        >
+          登录
+        </el-button>
       </el-form>
     </el-card>
   </div>
@@ -210,5 +228,11 @@ async function submit(): Promise<void> {
   height: 42px;
   margin-top: var(--os-space-2);
   font-size: var(--os-font-md);
+}
+.login__intro {
+  margin: calc(-1 * var(--os-space-2)) 0 var(--os-space-5);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
+  line-height: 1.65;
 }
 </style>

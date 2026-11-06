@@ -6,6 +6,7 @@
  * 滚动过去」这条跨组件链路。具体的通知条、到点提醒、新建表单、月网格、列表、编辑弹窗
  * 各自成组件（`components/calendar/`）。
  */
+import { Plus, Tools } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref } from 'vue'
@@ -113,10 +114,14 @@ async function goToday(): Promise<void> {
   await loadMonth()
 }
 
+const createOpen = ref(false)
+const toolsOpen = ref(false)
 const createForm = ref<InstanceType<typeof CalendarCreateForm> | null>(null)
 
 /** 点格子空白处：预填新建表单并滚过去，省掉「再选一次日期」 */
-function startCreateOn(date: Date): void {
+async function startCreateOn(date: Date): Promise<void> {
+  createOpen.value = true
+  await nextTick()
   const now = new Date()
   const isToday = date.toDateString() === now.toDateString()
   const start = new Date(date)
@@ -124,10 +129,6 @@ function startCreateOn(date: Date): void {
   const end = new Date(start.getTime() + 60 * 60 * 1000)
 
   createForm.value?.fillSlot(start, end)
-
-  void nextTick(() => {
-    document.querySelector('.cal-create')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  })
 }
 
 async function handleCreate(payload: CreateEventPayload): Promise<void> {
@@ -135,6 +136,7 @@ async function handleCreate(payload: CreateEventPayload): Promise<void> {
   if (ok) {
     ElMessage.success('已创建日程')
     createForm.value?.reset()
+    createOpen.value = false
   }
 }
 
@@ -232,12 +234,9 @@ async function acknowledgeAll(): Promise<void> {
 
 <template>
   <div class="calendar">
-    <PageHeader size="page" title="日程">
-      <CalendarNotifyBanner
-        :permission="notificationPermission"
-        :requesting="requestingPermission"
-        @enable="enableNotifications"
-      />
+    <PageHeader size="page" title="日程" description="安排时间、检查冲突，及时处理重要提醒。">
+      <el-button :icon="Tools" @click="toolsOpen = true">日历工具</el-button>
+      <el-button type="primary" :icon="Plus" @click="createOpen = true">新建日程</el-button>
     </PageHeader>
 
     <CalendarDueReminders
@@ -248,14 +247,14 @@ async function acknowledgeAll(): Promise<void> {
       @acknowledge-all="acknowledgeAll"
     />
 
-    <CalendarExchange @imported="calendarStore.loadOccurrences()" />
-
-    <CalendarCreateForm
-      ref="createForm"
-      :default-lead="settingsStore.settings.reminderLead"
-      :creating="creating"
-      @create="handleCreate"
-    />
+    <div class="calendar__notifications">
+      <CalendarNotifyBanner
+        :permission="notificationPermission"
+        :requesting="requestingPermission"
+        @enable="enableNotifications"
+      />
+      <router-link to="/settings?section=calendar">提醒设置</router-link>
+    </div>
 
     <el-alert v-if="error" type="error" :closable="false" show-icon :title="error" />
 
@@ -311,6 +310,33 @@ async function acknowledgeAll(): Promise<void> {
       />
     </el-card>
 
+    <el-dialog
+      v-model="createOpen"
+      title="新建日程"
+      width="min(760px, calc(100vw - 32px))"
+      :close-on-click-modal="false"
+      :close-on-press-escape="!creating"
+      :show-close="!creating"
+      @opened="createForm?.focus()"
+    >
+      <CalendarCreateForm
+        ref="createForm"
+        embedded
+        :default-lead="settingsStore.settings.reminderLead"
+        :creating="creating"
+        @create="handleCreate"
+        @cancel="createOpen = false"
+      />
+      <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
+    </el-dialog>
+    <el-dialog
+      v-model="toolsOpen"
+      title="日历工具"
+      width="min(820px, calc(100vw - 32px))"
+      :close-on-click-modal="false"
+    >
+      <CalendarExchange @imported="calendarStore.loadOccurrences()" />
+    </el-dialog>
     <CalendarEditDialog v-model:visible="editing" :event="editOriginal" :saving="editSaving" @submit="submitEdit" />
   </div>
 </template>
@@ -372,5 +398,20 @@ async function acknowledgeAll(): Promise<void> {
   .calendar__header > .el-button.el-button--small {
     min-height: 32px;
   }
+}
+.calendar__notifications {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-3);
+  flex-wrap: wrap;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+.calendar__notifications :deep(.cal-notify) {
+  margin-left: 0;
+  justify-content: flex-start;
+}
+.calendar__notifications a {
+  margin-left: auto;
 }
 </style>

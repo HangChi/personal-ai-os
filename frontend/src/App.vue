@@ -18,13 +18,11 @@ import {
   Expand,
   Fold,
   HomeFilled,
-  Memo,
   Reading,
   Search,
   Setting,
   SwitchButton,
   Tickets,
-  TrendCharts,
   User,
 } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
@@ -94,10 +92,7 @@ const navGroups = [
     key: 'system',
     label: '系统',
     items: [
-      { index: '/memory', label: '记忆', icon: Memo },
-      { index: '/activity', label: '活动', icon: DataLine },
-      { index: '/usage', label: '用量', icon: TrendCharts },
-      { index: '/maintenance', label: '维护与恢复', icon: Setting },
+      { index: '/activity', label: '运行中心', icon: DataLine },
       { index: '/settings', label: '设置', icon: Setting },
     ],
   },
@@ -282,6 +277,7 @@ async function handleLogout(): Promise<void> {
       { 'app-shell--fixed': route.meta.fullWidth, 'app-shell--settings': route.name === 'settings' },
     ]"
   >
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
     <ReminderNotifications v-if="!isLoginPage" />
     <!-- 侧栏：宽屏主导航；登录页不渲染 -->
     <el-aside v-if="!isLoginPage" class="app-shell__aside" :width="asideWidth">
@@ -373,7 +369,7 @@ async function handleLogout(): Promise<void> {
             <el-icon :size="18"><Expand v-if="navCollapsed" /><Fold v-else /></el-icon>
           </el-button>
 
-          <div class="app-shell__header-spacer" />
+          <div class="app-shell__location">{{ route.meta.title }}</div>
 
           <!-- 搜索：胶囊形 + 右侧快捷键提示（改造前是裸 el-input，看不出可 Ctrl K） -->
           <div class="app-shell__search">
@@ -382,6 +378,7 @@ async function handleLogout(): Promise<void> {
               v-model="searchKeyword"
               class="app-shell__search-input"
               clearable
+              aria-label="全局搜索"
               placeholder="搜索任务、对话、日程…"
               :prefix-icon="Search"
               @keydown.enter="runGlobalSearch"
@@ -417,7 +414,11 @@ async function handleLogout(): Promise<void> {
         </template>
       </el-header>
 
-      <el-main :class="['app-shell__main', { 'app-shell__main--wide': route.meta.fullWidth }]">
+      <el-main
+        id="main-content"
+        tabindex="-1"
+        :class="['app-shell__main', { 'app-shell__main--wide': route.meta.fullWidth }]"
+      >
         <router-view v-slot="{ Component }">
           <transition name="page" mode="out-in">
             <component :is="Component" />
@@ -753,6 +754,14 @@ html.os-resizing .app-shell__aside {
   background: color-mix(in srgb, var(--el-bg-color) 88%, transparent);
 }
 
+.app-shell__location {
+  flex: 1;
+  min-width: 0;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
+  padding-left: var(--os-space-3);
+}
+
 .app-shell__header-spacer {
   flex: 1;
 }
@@ -969,6 +978,9 @@ html.os-resizing .app-shell__aside {
  * 品牌标题隐藏（抽屉里有全称），搜索框收缩。
  */
 @media (max-width: 768px) {
+  .app-shell__location {
+    display: none;
+  }
   .app-shell__aside {
     display: none;
   }

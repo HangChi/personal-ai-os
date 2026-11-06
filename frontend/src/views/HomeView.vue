@@ -17,16 +17,13 @@ import {
   Tickets,
   WarningFilled,
 } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import TodayWorkspace from '@/components/home/TodayWorkspace.vue'
 
-import { downloadExport, importData } from '@/api/export'
 import { listOccurrences } from '@/api/calendar'
-import { confirmAction } from '@/lib/confirm-box'
 import { useAppStore } from '@/stores/app'
 import { listDocuments } from '@/api/knowledge'
 import { listMemories } from '@/api/memory'
@@ -162,117 +159,43 @@ onMounted(() => {
 /** 状态标签颜色：UP 走成功色，其余走危险色 */
 const tagType = computed<'success' | 'danger'>(() => (health.value?.status === 'UP' ? 'success' : 'danger'))
 
-/** 依赖分量颜色：UP/CONFIGURED 成功，NOT_CONFIGURED 信息（可选依赖未装配），DOWN 危险 */
-function componentTagType(value: string): 'success' | 'info' | 'danger' {
-  if (value === 'UP' || value === 'CONFIGURED') return 'success'
-  if (value === 'NOT_CONFIGURED') return 'info'
-  return 'danger'
-}
-
-/** 导出是页面级的一次性动作，不进 store（没有任何其它页面需要它） */
-const exporting = ref(false)
-const exportError = ref<string | null>(null)
-
-/** 导入同理：一次性动作，且只在空库上有意义 */
-const importing = ref(false)
-const importInput = ref<HTMLInputElement | null>(null)
-
-/**
- * 导入：选文件 → 二次确认 → 提交。
- *
- * <p>确认弹窗里必须写明「只支持空库」：这是用户最容易误解的一步 ——
- * 他们看到「导入」会以为可以合并，而服务端会直接拒绝。与其等提交后报错，
- * 不如在点下去之前就说清楚。
- */
-async function handleImportFile(event: Event): Promise<void> {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  // 立刻清空，否则连续两次选同一个文件不会触发 change
-  input.value = ''
-  if (!file) {
-    return
-  }
-  // 导入不是删除，确认键不该用危险色 —— 满屏红色确认键会让真正的删除失去分量，
-  // 所以走 confirmAction（同骨架、主色键）而不是 confirmDanger。
-  const ok = await confirmAction({
-    title: '确认导入',
-    message: `将把「${file.name}」里的数据写入当前数据库。\n\n导入只支持空库：库里已有数据时会被拒绝，不会覆盖或合并。`,
-    confirmText: '开始导入',
-  })
-  if (!ok) {
-    return
-  }
-
-  importing.value = true
-  try {
-    const result = await importData(await file.text())
-    ElMessage.success(
-      `导入完成：${result.sessions} 会话 / ${result.messages} 消息 / ` +
-        `${result.tasks} 任务 / ${result.calendarEvents} 日程 / ` +
-        `${result.memories} 记忆 / ${result.documents} 文档`,
-    )
-    for (const note of result.notes ?? []) {
-      ElMessage.info(note)
-    }
-    // 导入后各页的缓存全是旧的，直接重载最省事也最不易错
-    window.location.reload()
-  } catch (cause) {
-    ElMessage.error(cause instanceof Error ? cause.message : '导入失败，请稍后重试')
-  } finally {
-    importing.value = false
-  }
-}
-
-async function handleExport(): Promise<void> {
-  exporting.value = true
-  exportError.value = null
-  try {
-    const filename = await downloadExport()
-    ElMessage.success(`已导出 ${filename}`)
-  } catch (cause) {
-    exportError.value = cause instanceof Error ? cause.message : '导出失败，请稍后重试'
-  } finally {
-    exporting.value = false
-  }
-}
-
 /** 能力卡片：图标 + 标题 + 一句说明，点击进对应模块 */
 const capabilities = [
   {
     route: '/chat',
     icon: ChatDotRound,
     title: '对话',
-    description: '多轮上下文、SSE 流式输出、Markdown 渲染、工具调用轨迹',
+    description: '随时提问，继续推进正在处理的事',
   },
   {
     route: '/tasks',
     icon: Tickets,
     title: '任务',
-    description: '自然语言增删改查、标签归类、看板视图、批量操作',
+    description: '按项目与优先级推进待办事项',
   },
   {
     route: '/knowledge',
     icon: Notebook,
     title: '知识库',
-    description: '上传文档建立向量索引，问答附带引用来源',
+    description: '收集资料、检索答案与管理长期记忆',
   },
   {
     route: '/calendar',
     icon: Calendar,
     title: '日程与提醒',
-    description: '重复规则、到点提醒（浏览器通知 + 站内提示）',
+    description: '安排时间，接收重要事项提醒',
   },
   {
-    route: '/memory',
-    icon: Memo,
-    title: '长期记忆',
-    description: '在对话里说「记住…」即跨会话生效，可在此管理',
+    route: '/workflows',
+    icon: Document,
+    title: '定时报告',
+    description: '定期汇总晨报、周报与资料巡检',
   },
   {
     route: '/activity',
     icon: DataLine,
-    title: '活动',
-    description: '工具调用记录',
+    title: '运行中心',
+    description: '回看工具执行结果与模型用量',
   },
 ]
 
@@ -381,74 +304,20 @@ const overviewLine = computed(() => {
       </div>
     </el-card>
 
-    <el-card shadow="never">
-      <template #header>
-        <PageHeader title="后端连通性">
-          <el-button :loading="healthLoading" @click="appStore.loadHealth()">刷新</el-button>
-        </PageHeader>
-      </template>
-
-      <el-alert
-        v-if="healthError"
-        type="error"
-        :closable="false"
-        show-icon
-        title="无法连接后端服务"
-        :description="healthError"
-      />
-
-      <el-descriptions v-else-if="health" :column="1" border>
-        <el-descriptions-item label="状态">
-          <el-tag :type="tagType">{{ health.status }}</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="应用">{{ health.application }}</el-descriptions-item>
-        <el-descriptions-item label="版本">{{ health.version }}</el-descriptions-item>
-        <el-descriptions-item label="服务端时间">{{ health.timestamp }}</el-descriptions-item>
-        <el-descriptions-item v-if="health.components" label="依赖">
-          <!--
-            用容器 gap 而不是每个 tag 的 `style="margin-right: 6px"`：
-            内联裸值既不能随主题/密度调整，也会在最后一个 tag 右边留一段
-            无主的空隙（与单元格内边距叠加后右边界不齐）。
-          -->
-          <div class="home__health-tags">
-            <el-tag v-for="(value, key) in health.components" :key="key" :type="componentTagType(value)" size="small">
-              {{ key }}: {{ value }}
-            </el-tag>
-          </div>
-        </el-descriptions-item>
-      </el-descriptions>
-
-      <el-skeleton v-else :rows="4" animated />
-    </el-card>
-
-    <el-card shadow="never">
-      <template #header>
-        <PageHeader title="数据备份">
-          <el-button type="primary" :loading="exporting" @click="handleExport">导出数据</el-button>
-          <el-button :loading="importing" @click="importInput?.click()">导入数据</el-button>
-          <!-- 隐藏的文件选择器：不用 el-upload，它自带的行为（自动上传、列表）在这里都是负担 -->
-          <input
-            ref="importInput"
-            type="file"
-            accept=".json,application/json"
-            class="home__file-input"
-            @change="handleImportFile"
-          />
-        </PageHeader>
-      </template>
-
-      <p class="home__hint home__hint--top">备份不含原始文档；导入仅支持空库。</p>
-
-      <el-alert
-        v-if="exportError"
-        class="home__export-error"
-        type="error"
-        :closable="false"
-        show-icon
-        title="导出失败"
-        :description="exportError"
-      />
-    </el-card>
+    <div class="home__system-strip">
+      <span v-if="healthError" role="status">服务暂时不可用</span
+      ><span v-else
+        ><el-tag :type="tagType" size="small" effect="plain">{{
+          health?.status === 'UP' ? '服务正常' : healthLoading ? '检查服务中' : '待检查'
+        }}</el-tag
+        ><span v-if="health?.version">版本 {{ health.version }}</span></span
+      >
+      <div>
+        <el-button text :loading="healthLoading" @click="appStore.loadHealth()">刷新状态</el-button
+        ><el-button text @click="router.push('/settings?section=data')">数据与维护</el-button
+        ><el-button text @click="router.push('/settings?section=about')">系统详情</el-button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -600,19 +469,6 @@ const overviewLine = computed(() => {
   font-weight: 500;
 }
 
-/* ---- 后端依赖标签 ---- */
-
-/*
- * 依赖状态标签：一行放不下时换行，间距交给 gap。
- * 改造前是给每个 tag 内联 `margin-right: 6px`，最后一个 tag 右边会多出
- * 一段与内边距叠加的空隙，右侧边界看着不齐；裸值也不受 token 管理。
- */
-.home__health-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--os-space-1);
-}
-
 /* ---- 能力卡片网格 ---- */
 
 .home__capabilities {
@@ -682,26 +538,6 @@ const overviewLine = computed(() => {
   line-height: 1.6;
 }
 
-.home__hint {
-  margin: var(--os-space-4) 0 0;
-  padding-top: var(--os-space-3);
-  border-top: 1px dashed var(--el-border-color-lighter);
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
-  line-height: 1.7;
-}
-
-/* 卡片开头的说明段：它后面紧跟 el-alert，不需要那条虚线上边框 */
-.home__hint--top {
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
-}
-
-.home__export-error {
-  margin-top: var(--os-space-3);
-}
-
 /* 窄屏：统计卡 2 列、能力卡 1 列（FR-014） */
 @media (max-width: 900px) {
   .home__hero-title {
@@ -723,8 +559,25 @@ const overviewLine = computed(() => {
     grid-template-columns: 1fr;
   }
 }
-/* 隐藏的文件选择器：只由「导入数据」按钮 click() 触发，不占版面 */
-.home__file-input {
-  display: none;
+.home__system-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--os-space-3);
+  padding: var(--os-space-3) 0;
+  border-top: 1px solid var(--el-border-color-lighter);
+  font-size: var(--os-font-xs);
+  color: var(--el-text-color-secondary);
+}
+.home__system-strip > span,
+.home__system-strip > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--os-space-2);
+}
+.home__system-strip :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

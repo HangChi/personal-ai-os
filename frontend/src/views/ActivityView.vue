@@ -1,4 +1,5 @@
 <script setup lang="ts">
+withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 
@@ -79,14 +80,24 @@ function handleOutcome(value: string): void {
 
 <template>
   <div class="activity">
-    <PageHeader size="page" title="活动" />
+    <PageHeader
+      :size="embedded ? 'card' : 'page'"
+      title="工具调用记录"
+      description="按执行结果筛选，或切换时间线回顾助手的操作。"
+    />
 
     <el-card class="activity__card" shadow="never">
       <template #header>
         <div class="activity__card-header">
-          <span class="activity__card-title">工具调用记录</span>
+          <span class="activity__card-title">执行明细</span>
           <div class="activity__filters">
-            <el-select :model-value="outcome ?? 'ALL'" size="small" class="activity__filter" @change="handleOutcome">
+            <el-select
+              aria-label="按执行结果筛选"
+              :model-value="outcome ?? 'ALL'"
+              size="small"
+              class="activity__filter"
+              @change="handleOutcome"
+            >
               <el-option label="全部结果" value="ALL" />
               <el-option
                 v-for="option in OUTCOME_OPTIONS"
@@ -96,7 +107,7 @@ function handleOutcome(value: string): void {
               />
             </el-select>
             <!-- 时间线视图（T036）：审计记录按天分组，比平铺表格更适合「回顾哪天发生了什么」 -->
-            <el-radio-group v-model="viewMode" size="small" class="activity__view-switch">
+            <el-radio-group v-model="viewMode" aria-label="活动视图" size="small" class="activity__view-switch">
               <el-radio-button value="table">表格</el-radio-button>
               <el-radio-button value="timeline">时间线</el-radio-button>
             </el-radio-group>

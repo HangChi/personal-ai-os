@@ -1,4 +1,5 @@
 <script setup lang="ts">
+withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
 /**
  * 用量统计页（清单第 7 项）。
  *
@@ -135,8 +136,12 @@ function labelX(index: number): number {
 
 <template>
   <div class="usage">
-    <PageHeader size="page" title="用量">
-      <el-radio-group :model-value="days" size="small" @change="handleRangeChange">
+    <PageHeader
+      :size="embedded ? 'card' : 'page'"
+      title="模型用量"
+      description="查看输入、输出与趋势，估算数据会单独标记。"
+    >
+      <el-radio-group aria-label="用量统计时间范围" :model-value="days" size="small" @change="handleRangeChange">
         <el-radio-button v-for="option in RANGE_OPTIONS" :key="option.value" :value="option.value">
           {{ option.label }}
         </el-radio-button>
@@ -145,7 +150,9 @@ function labelX(index: number): number {
       <el-button :icon="Refresh" :loading="loading" @click="store.load()">刷新</el-button>
     </PageHeader>
 
-    <el-alert v-if="error" type="error" :closable="false" show-icon title="无法加载用量统计" :description="error" />
+    <el-alert v-if="error" type="error" :closable="false" show-icon title="无法加载用量统计" :description="error"
+      ><el-button @click="store.load()">重新加载</el-button></el-alert
+    >
 
     <template v-else>
       <el-skeleton v-if="loading && !stats" :rows="4" animated />

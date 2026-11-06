@@ -1,0 +1,135 @@
+/* 工作区布局规范：沿用主题语义色，仅调整结构、操作层级和可达性。 */
+.os-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--os-space-5);
+  min-width: 0;
+}
+
+.os-module-tabs {
+  min-width: 0;
+}
+
+.os-module-tabs > .el-tabs__header {
+  margin-bottom: var(--os-space-5);
+  padding: var(--os-space-1) var(--os-space-2);
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--os-radius-lg);
+}
+
+.os-module-tabs > .el-tabs__header .el-tabs__nav-wrap::after,
+.os-module-tabs > .el-tabs__header .el-tabs__active-bar {
+  display: none;
+}
+
+.os-module-tabs > .el-tabs__header .el-tabs__item {
+  height: 38px;
+  padding: 0 var(--os-space-4) !important;
+  border-radius: var(--os-radius-md);
+  font-size: var(--os-font-sm);
+}
+
+.os-module-tabs > .el-tabs__header .el-tabs__item.is-active {
+  background: var(--el-color-primary-light-9);
+  font-weight: 600;
+}
+
+.os-module-tabs > .el-tabs__content {
+  overflow: visible;
+}
+
+.os-disclosure {
+  padding: var(--os-space-4);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--os-radius-md);
+  background: var(--el-bg-color);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-sm);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.os-disclosure > summary {
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+  font-weight: 500;
+  min-height: 24px;
+}
+
+.os-disclosure[open] > summary {
+  margin-bottom: var(--os-space-3);
+}
+
+html .el-card.os-form-card--embedded {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.os-form-card--embedded > .el-card__body {
+  padding: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--os-space-2);
+  left: var(--os-space-2);
+  z-index: 4000;
+  transform: translateY(-150%);
+  padding: var(--os-space-3) var(--os-space-4);
+  border-radius: var(--os-radius-md);
+  background: var(--el-bg-color);
+  color: var(--el-color-primary);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* 文件选择器始终保留原生键盘行为，按钮沿用现有主题。 */
+input[type='file']::file-selector-button {
+  margin-right: var(--os-space-2);
+  padding: 6px 10px;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--os-radius-sm);
+  background: var(--el-fill-color-blank);
+  color: var(--el-text-color-regular);
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .os-page {
+    gap: var(--os-space-4);
+  }
+  .os-module-tabs > .el-tabs__header {
+    margin-bottom: var(--os-space-4);
+  }
+  .os-module-tabs > .el-tabs__header .el-tabs__item {
+    padding: 0 var(--os-space-3) !important;
+  }
+  html .el-dialog {
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+  html .el-message-box {
+    max-width: calc(100vw - 32px);
+  }
+}
+
+@media (pointer: coarse) {
+  html .el-button:not(.is-link) {
+    min-height: 40px;
+  }
+  html .el-button.is-circle {
+    width: 40px;
+    height: 40px;
+  }
+  html .el-button.is-link {
+    min-height: 36px;
+    min-width: 32px;
+  }
+}

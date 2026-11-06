@@ -28,7 +28,9 @@ withDefaults(
 <template>
   <div :class="['page-header', `page-header--${size}`]">
     <div class="page-header__text">
-      <h2 class="page-header__title">{{ title }}</h2>
+      <component :is="size === 'page' ? 'h1' : size === 'section' ? 'h3' : 'h2'" class="page-header__title">{{
+        title
+      }}</component>
       <p v-if="description" class="page-header__description">{{ description }}</p>
     </div>
     <div v-if="$slots.default" class="page-header__actions">

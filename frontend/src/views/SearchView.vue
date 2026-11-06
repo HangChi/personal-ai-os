@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import PageHeader from '@/components/PageHeader.vue'
 import { highlightSegments } from '@/lib/highlight-text'
@@ -14,6 +14,21 @@ import { routeForHit } from '@/lib/search-routes'
  */
 const searchStore = useSearchStore()
 const route = useRoute()
+const router = useRouter()
+const queryDraft = ref('')
+watch(
+  () => route.query.q,
+  (value) => {
+    queryDraft.value = typeof value === 'string' ? value : ''
+  },
+  { immediate: true },
+)
+function submitSearch(): void {
+  const query = queryDraft.value.trim()
+  if (!query || searchStore.loading) return
+  if (route.query.q === query) void searchStore.search(query)
+  else void router.push({ query: { ...route.query, q: query } })
+}
 
 /** 标题：有词时带上关键词，否则是页面名 */
 const pageTitle = computed(() => (searchStore.keyword ? `「${searchStore.keyword}」` : '全局搜索'))
@@ -38,13 +53,25 @@ watch(
   <div class="search-page">
     <PageHeader size="page" :title="pageTitle" :description="pageDescription" />
 
+    <form class="search-page__form" @submit.prevent="submitSearch">
+      <el-input
+        v-model="queryDraft"
+        aria-label="搜索全部模块"
+        clearable
+        placeholder="搜索任务、对话、资料、日程与记忆"
+      /><el-button type="primary" native-type="submit" :loading="searchStore.loading" :disabled="!queryDraft.trim()"
+        >搜索</el-button
+      >
+    </form>
     <el-card shadow="never">
       <el-alert v-if="searchStore.error" type="error" :closable="false" show-icon :title="searchStore.error" />
 
       <!-- 三种空态要分开：没搜 / 搜了没有 / 正在搜 -->
-      <el-empty v-if="!searchStore.keyword" description="在顶部搜索框输入关键词开始搜索" :image-size="70" />
+      <el-empty v-if="!searchStore.keyword" description="输入关键词，在整个工作区中查找" :image-size="70" />
       <el-empty
-        v-else-if="searchStore.searched && searchStore.groups.length === 0 && !searchStore.loading"
+        v-else-if="
+          !searchStore.error && searchStore.searched && searchStore.groups.length === 0 && !searchStore.loading
+        "
         :description="`没有找到与「${searchStore.keyword}」相关的内容`"
         :image-size="70"
       />
@@ -204,5 +231,13 @@ watch(
   .search-page__hit-subtitle {
     white-space: normal;
   }
+}
+.search-page__form {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+}
+.search-page__form :deep(.el-input) {
+  min-width: 0;
 }
 </style>

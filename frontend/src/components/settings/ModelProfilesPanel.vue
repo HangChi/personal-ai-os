@@ -144,8 +144,13 @@ function blockedReason(id: string): string | null {
 <template>
   <section class="model-profiles">
     <header class="model-profiles__head">
+      <p class="model-profiles__summary">
+        {{ store.profiles.length }} 套配置<span v-if="store.activeProfile">
+          · 当前使用 {{ store.activeProfile.name }}</span
+        ><small>新配置保存后可单独启用，连接测试会发送少量真实请求，可能计费。</small>
+      </p>
       <div class="model-profiles__head-actions">
-        <el-tooltip content="测试当前配置" placement="top">
+        <el-tooltip content="测试当前生效配置，会发送真实模型请求，可能计费" placement="top">
           <el-button :loading="testing" :disabled="store.isEmpty" @click="handleTest">
             <el-icon><VideoPlay /></el-icon>
             测试连通性
@@ -312,5 +317,20 @@ function blockedReason(id: string): string | null {
   gap: var(--os-space-2);
   font-size: var(--os-font-sm);
   color: var(--el-text-color-regular);
+}
+.model-profiles__summary {
+  margin: 0;
+  line-height: 1.65;
+  color: var(--el-text-color-regular);
+  font-size: var(--os-font-sm);
+}
+.model-profiles__summary small {
+  display: block;
+  margin-top: var(--os-space-1);
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+.model-profiles__head-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

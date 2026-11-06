@@ -64,8 +64,8 @@ async function inspect(): Promise<void> {
 }
 </script>
 <template>
-  <el-card shadow="never" class="exchange">
-    <template #header>日历互通与冲突</template>
+  <el-card shadow="never" class="exchange os-form-card--embedded">
+    <h2 class="exchange__heading">导入与导出</h2>
     <p class="hint">
       先预览再确认，按 UID 跳过已有日程。支持每日、每周、工作日及 1–28
       日每月重复；复杂规则、提醒组件和未来夏令时重复会明确拒绝。最多 1MiB / 200 条。
@@ -80,7 +80,13 @@ async function inspect(): Promise<void> {
           @change="choose"
       /></label>
       <el-button :disabled="busy" @click="download">导出 ICS</el-button>
-      <label>冲突起始日 <input v-model="from" aria-label="冲突起始日" type="date" /></label>
+    </div>
+    <div class="exchange__divider">
+      <h2 class="exchange__heading">检查时间冲突</h2>
+      <p class="hint">选择起始日期，检查未来 7 天的重叠安排。</p>
+    </div>
+    <div class="actions">
+      <label>起始日期 <input v-model="from" aria-label="冲突起始日" type="date" /></label>
       <el-button :loading="busy" @click="inspect">检查未来 7 天冲突</el-button>
     </div>
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
@@ -145,5 +151,25 @@ input {
 li {
   overflow-wrap: anywhere;
   margin-block: var(--os-space-2);
+}
+.exchange__heading {
+  margin: 0 0 var(--os-space-3);
+  font-size: var(--os-font-lg);
+  font-weight: 600;
+}
+.exchange__divider {
+  border-top: 1px solid var(--el-border-color-lighter);
+  padding-top: var(--os-space-5);
+  margin-top: var(--os-space-5);
+}
+.actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+.actions input[type='date'] {
+  padding: 7px 10px;
+  border: 1px solid var(--el-border-color);
+  border-radius: var(--os-radius-sm);
+  color: var(--el-text-color-primary);
+  background: var(--el-fill-color-blank);
 }
 </style>

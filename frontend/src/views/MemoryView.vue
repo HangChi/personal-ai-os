@@ -1,4 +1,5 @@
 <script setup lang="ts">
+withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
 import { Plus, Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
@@ -123,7 +124,11 @@ function formatTime(value: string): string {
 
 <template>
   <div class="memory-page">
-    <PageHeader size="page" title="长期记忆">
+    <PageHeader
+      :size="embedded ? 'card' : 'page'"
+      title="长期记忆"
+      description="管理会影响后续对话的偏好、事实与常驻记忆。"
+    >
       <el-button type="primary" @click="openCreate">
         <el-icon><Plus /></el-icon>
         新增记忆
@@ -139,7 +144,13 @@ function formatTime(value: string): string {
               {{ filteredMemories.length }} / {{ memories.length }}
             </el-tag>
           </div>
-          <el-input v-model="memoryKeyword" class="memory__search" clearable placeholder="搜索记忆内容">
+          <el-input
+            v-model="memoryKeyword"
+            class="memory__search"
+            clearable
+            aria-label="搜索记忆内容"
+            placeholder="搜索记忆内容"
+          >
             <template #prefix>
               <el-icon><Search /></el-icon>
             </template>

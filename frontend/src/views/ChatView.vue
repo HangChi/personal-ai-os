@@ -12,7 +12,7 @@ const workspaceRoute = useRoute()
  * <p>布局：全高对话列——消息区撑满可滚动，输入区停靠底部（不再有断裂空白带）。
  * 阶段 19 功能全保留：知识库增强（会话级开关）、引用区、工具轨迹、待确认。
  */
-import { ArrowDown, ArrowUp, Search } from '@element-plus/icons-vue'
+import { ArrowDown, ArrowUp, Search, Tickets, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
@@ -48,7 +48,20 @@ import {
 } from '@/stores/ui'
 import type { ChatAttachment, ChatMessage, ChatSession, TaskConfirmation } from '@/types/api'
 
+const narrowChat = ref(window.innerWidth <= 900)
+const mobileSessionsOpen = ref(false)
+function updateChatViewport(): void {
+  narrowChat.value = window.innerWidth <= 900
+}
+onMounted(() => window.addEventListener('resize', updateChatViewport))
+onBeforeUnmount(() => window.removeEventListener('resize', updateChatViewport))
 const chatStore = useChatStore()
+watch(
+  () => chatStore.currentConversationId,
+  () => {
+    mobileSessionsOpen.value = false
+  },
+)
 const commandsStore = useChatCommandsStore()
 const commandView = ref<'help' | 'tools' | null>(null)
 const commandSubmitting = ref(false)
@@ -536,6 +549,14 @@ async function handleEditFollowup(id: string, content: string, done: (success: b
   done(await chatStore.editFollowup(id, content))
 }
 
+function createFromMobile(): void {
+  mobileSessionsOpen.value = false
+  void handleNewSession()
+}
+function selectFromMobile(id: string): void {
+  mobileSessionsOpen.value = false
+  void chatStore.selectSession(id)
+}
 async function handleNewSession(): Promise<void> {
   await chatStore.createSession()
 }
@@ -689,7 +710,7 @@ async function jumpToMatch(step: number): Promise<void> {
 <template>
   <div class="chat" :style="{ '--os-session-panel': `${sessionPanelWidth}px` }">
     <!-- ============ 会话列表 ============ -->
-    <div class="chat__sessions-wrap">
+    <div v-show="!narrowChat" class="chat__sessions-wrap">
       <ChatSessionList
         v-model:keyword="sessionKeyword"
         :sessions="sessions"
@@ -727,12 +748,46 @@ async function jumpToMatch(step: number): Promise<void> {
       />
     </div>
 
+    <el-drawer
+      v-if="narrowChat"
+      v-model="mobileSessionsOpen"
+      title="会话列表"
+      direction="ltr"
+      size="min(340px, 92vw)"
+      class="chat-session-drawer"
+    >
+      <ChatSessionList
+        v-model:keyword="sessionKeyword"
+        :sessions="sessions"
+        :current-id="currentConversationId"
+        :total="sessionsTotal"
+        :page="sessionsPage"
+        :size="sessionsSize"
+        :loading="loadingSessions"
+        @refresh="chatStore.loadSessions()"
+        @create="createFromMobile"
+        @select="selectFromMobile"
+        @rename="handleRename"
+        @remove="handleRemove"
+        @export="handleExportSession"
+        @search="chatStore.searchSessions()"
+        @page-change="chatStore.goToSessionPage($event)"
+      />
+    </el-drawer>
+
     <!-- ============ 主对话列（全高） ============ -->
     <el-card class="chat__main" shadow="never">
       <template #header>
         <div class="chat__main-header">
           <div class="chat__main-heading">
-            <span class="chat__main-title" :title="currentTitle">{{ currentTitle }}</span>
+            <el-button
+              v-if="narrowChat"
+              text
+              :icon="Tickets"
+              aria-label="打开会话列表"
+              @click="mobileSessionsOpen = true"
+            />
+            <h1 class="chat__main-title" :title="currentTitle">{{ currentTitle }}</h1>
             <span class="chat__main-meta">
               {{ hasOlderMessages ? `已加载 ${messages.length} 条` : `${messages.length} 条消息` }}
             </span>
@@ -754,6 +809,7 @@ async function jumpToMatch(step: number): Promise<void> {
             -->
           </div>
           <div class="chat__header-actions">
+            <el-button v-if="narrowChat" text :icon="Plus" aria-label="新建会话" @click="handleNewSession" />
             <div class="chat__scroll-nav" role="group" aria-label="消息滚动">
               <button
                 type="button"
@@ -1075,6 +1131,7 @@ html.os-resizing .chat {
 }
 
 .chat__main-title {
+  margin: 0;
   font-size: var(--os-font-md);
   font-weight: 500;
   overflow: hidden;
@@ -1146,7 +1203,7 @@ html.os-resizing .chat {
 @media (max-width: 900px) {
   .chat {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(100px, 16dvh) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
     /*
      * 窄屏没有过渡：这里列宽固定 `1fr`（单列上下堆叠），
      * 折叠与否都不改变布局方向 —— 留着过渡只会在切态时让整页闪一下。
@@ -1301,5 +1358,13 @@ html.os-resizing .chat {
   outline: 2px solid var(--el-color-primary-light-5);
   outline-offset: 4px;
   border-radius: var(--os-radius-sm);
+}
+:global(.chat-session-drawer .el-drawer__body) {
+  padding: 0 var(--os-space-3) var(--os-space-3);
+  overflow: hidden;
+}
+:global(.chat-session-drawer .chat-sessions) {
+  height: 100%;
+  box-shadow: none;
 }
 </style>

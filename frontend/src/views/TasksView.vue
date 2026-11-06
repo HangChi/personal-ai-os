@@ -9,9 +9,10 @@
  *
  * <p>具体渲染在 `components/task/`：新建表单、表格、看板、编辑弹窗各一个组件。
  */
+import { Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
 import { getTask } from '@/api/tasks'
@@ -90,6 +91,7 @@ watch(
 
 const createForm = ref<InstanceType<typeof TaskCreateForm> | null>(null)
 const creating = ref(false)
+const createOpen = ref(false)
 
 const statusOptions: Array<{ label: string; value: TaskStatus | '' }> = [
   { label: '全部', value: '' },
@@ -112,6 +114,7 @@ async function handleCreate(payload: CreateTaskPayload): Promise<void> {
     // 失败时不清空输入：用户刚填的内容不该因为一次网络抖动就没了
     if (!error.value) {
       createForm.value?.reset()
+      createOpen.value = false
     }
   } finally {
     creating.value = false
@@ -137,9 +140,22 @@ watch(
   },
   { immediate: true },
 )
-function startSubtask(task: TaskItem): void {
+async function startSubtask(task: TaskItem): Promise<void> {
+  createOpen.value = true
+  await nextTick()
   createForm.value?.startSubtask(task)
-  document.querySelector('.task-create')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+}
+
+const hasListFilters = computed(() =>
+  Boolean(projectFilter.value || parentFilter.value || statusFilter.value || tagFilter.value || keyword.value.trim()),
+)
+function clearListFilters(): void {
+  parentFilter.value = ''
+  projectFilter.value = ''
+  statusFilter.value = ''
+  tagFilter.value = ''
+  keyword.value = ''
+  void taskStore.reload()
 }
 function clearAgenda(): void {
   void router.replace({ path: '/tasks', query: { ...route.query, agenda: undefined } })
@@ -276,26 +292,18 @@ function switchView(next: 'table' | 'board'): void {
 
 <template>
   <div class="tasks">
-    <PageHeader size="page" title="任务" />
+    <PageHeader size="page" title="任务" description="将计划拆成可执行的事项，按项目、标签或看板推进。"
+      ><el-button type="primary" :icon="Plus" @click="createOpen = true">新建任务</el-button></PageHeader
+    >
 
     <ProjectManager :projects="projects" :error="projectError" :loading="projectLoading" @refresh="loadProjects" />
-
-    <TaskCreateForm
-      ref="createForm"
-      :tags="tags"
-      :projects="projects"
-      :pending-count="pendingCount"
-      :overdue-count="overdueCount"
-      :creating="creating"
-      @create="handleCreate"
-    />
 
     <el-card class="tasks__list-card" shadow="never">
       <template #header>
         <PageHeader title="任务列表">
           <template #default>
             <div class="tasks__view-switch">
-              <el-radio-group :model-value="tasksView" size="small" @change="switchView">
+              <el-radio-group aria-label="任务视图" :model-value="tasksView" size="small" @change="switchView">
                 <el-radio-button value="table">表格</el-radio-button>
                 <el-radio-button value="board">看板</el-radio-button>
               </el-radio-group>
@@ -307,6 +315,7 @@ function switchView(next: 'table' | 'board'): void {
             v-model="projectFilter"
             clearable
             class="tasks__filter"
+            aria-label="按项目筛选任务"
             placeholder="全部项目"
             @change="changeProjectFilter"
           >
@@ -319,7 +328,13 @@ function switchView(next: 'table' | 'board'): void {
           </el-select>
           <!-- 空串表示「全部」，Element Plus 会把它当作未选择而显示英文 placeholder，
                所以必须显式给中文 placeholder，否则界面里冒出一个 "Select" -->
-          <el-select v-model="statusFilter" class="tasks__filter" placeholder="全部" @change="taskStore.reload()">
+          <el-select
+            v-model="statusFilter"
+            class="tasks__filter"
+            aria-label="按状态筛选任务"
+            placeholder="全部"
+            @change="taskStore.reload()"
+          >
             <el-option
               v-for="option in statusOptions"
               :key="option.value"
@@ -331,6 +346,7 @@ function switchView(next: 'table' | 'board'): void {
             v-model="tagFilter"
             class="tasks__filter tasks__filter-tag"
             clearable
+            aria-label="按标签筛选任务"
             placeholder="按标签筛选"
             @change="taskStore.reload()"
           >
@@ -340,11 +356,13 @@ function switchView(next: 'table' | 'board'): void {
             v-model="keyword"
             class="tasks__filter"
             clearable
+            aria-label="搜索任务"
             placeholder="按标题/描述搜索"
             @keydown.enter="taskStore.reload()"
             @clear="taskStore.reload()"
           />
-          <el-button :loading="loading" @click="taskStore.load()">刷新</el-button>
+          <el-button :loading="loading" @click="taskStore.reload()">搜索</el-button>
+          <el-button v-if="hasListFilters" text @click="clearListFilters">清除筛选</el-button>
         </FilterBar>
       </template>
 
@@ -414,6 +432,29 @@ function switchView(next: 'table' | 'board'): void {
       -->
       <AppPagination :total="total" :page="page" :size="size" @change="(next: number) => taskStore.goToPage(next)" />
     </el-card>
+
+    <el-dialog
+      v-model="createOpen"
+      title="新建任务"
+      width="min(760px, calc(100vw - 32px))"
+      :close-on-click-modal="false"
+      :close-on-press-escape="!creating"
+      :show-close="!creating"
+      @opened="createForm?.focus()"
+    >
+      <TaskCreateForm
+        ref="createForm"
+        embedded
+        :tags="tags"
+        :projects="projects"
+        :pending-count="pendingCount"
+        :overdue-count="overdueCount"
+        :creating="creating"
+        @create="handleCreate"
+        @cancel="createOpen = false"
+      />
+      <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
+    </el-dialog>
 
     <TaskEditDialog
       v-model:visible="editing"

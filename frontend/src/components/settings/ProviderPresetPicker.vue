@@ -32,6 +32,7 @@ function vendorOf(preset: ProviderPreset): string {
     <el-input
       v-model="keyword"
       class="preset-picker__search"
+      aria-label="搜索供应商预设"
       placeholder="搜索供应商名称、域名或模型名"
       clearable
       :prefix-icon="Search"
@@ -78,8 +79,8 @@ function vendorOf(preset: ProviderPreset): string {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--os-space-2);
 }
 
@@ -146,5 +147,10 @@ function vendorOf(preset: ProviderPreset): string {
   font-size: var(--os-font-xs);
   color: var(--el-text-color-secondary);
   line-height: 1.5;
+}
+@media (max-width: 700px) {
+  .preset-picker__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 </style>

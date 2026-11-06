@@ -1,3 +1,4 @@
+import { legacyWorkspaceRoutes } from '@/lib/workspace-navigation'
 import { createRouter, createWebHistory } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
@@ -11,6 +12,14 @@ import { useAuthStore } from '@/stores/auth'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    ...legacyWorkspaceRoutes.map(({ path, name, redirect }) => ({
+      path,
+      name,
+      redirect: (to: { query: Record<string, unknown> }) => ({
+        path: redirect.path,
+        query: { ...to.query, ...redirect.query },
+      }),
+    })),
     {
       path: '/',
       name: 'home',
@@ -49,30 +58,14 @@ const router = createRouter({
       component: () => import('@/views/WorkflowsView.vue'),
       meta: { title: '定时报告' },
     },
-    {
-      path: '/memory',
-      name: 'memory',
-      component: () => import('@/views/MemoryView.vue'),
-      meta: { title: '记忆' },
-    },
+
     {
       path: '/activity',
       name: 'activity',
-      component: () => import('@/views/ActivityView.vue'),
-      meta: { title: '活动' },
+      component: () => import('@/views/RuntimeView.vue'),
+      meta: { title: '运行中心' },
     },
-    {
-      path: '/usage',
-      name: 'usage',
-      component: () => import('@/views/UsageView.vue'),
-      meta: { title: '用量' },
-    },
-    {
-      path: '/maintenance',
-      name: 'maintenance',
-      component: () => import('@/views/MaintenanceView.vue'),
-      meta: { title: '维护与恢复' },
-    },
+
     {
       path: '/settings',
       name: 'settings',

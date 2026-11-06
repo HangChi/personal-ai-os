@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PageHeader from '@/components/PageHeader.vue'
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
@@ -104,6 +105,9 @@ onMounted(load)
 </script>
 <template>
   <section class="governance" aria-label="资料治理">
+    <PageHeader title="资料治理" description="补全资料的来源和适用范围，核对不同版本之间的分歧。"
+      ><el-button :loading="loading" @click="load">刷新状态</el-button></PageHeader
+    >
     <el-alert
       type="info"
       :closable="false"
@@ -111,11 +115,10 @@ onMounted(load)
       description="保留不同来源，补全版本、对象和有效期。相关候选审查完成不代表穷尽所有冲突；模型只提出线索，人工决定需填写依据。最多展示最近 500 份资料和 200 条分歧。"
     />
     <el-alert v-if="error" type="error" :closable="false" :title="error" show-icon />
-    <div class="governance__actions">
-      <el-button :loading="loading" @click="load">刷新治理状态</el-button>
+    <form class="governance__actions" @submit.prevent="addSpace">
       <el-input v-model="spaceName" aria-label="新知识库名称" placeholder="新知识库名称" maxlength="120" />
-      <el-button :loading="saving" @click="addSpace">新建知识库</el-button>
-    </div>
+      <el-button native-type="submit" :loading="saving" :disabled="!spaceName.trim()">新建知识库</el-button>
+    </form>
     <el-table :data="sources" empty-text="暂无资料，请先上传文档" aria-label="资料来源列表">
       <el-table-column prop="title" label="资料" min-width="150" />
       <el-table-column prop="source.spaceName" label="知识库" min-width="110" />
@@ -206,6 +209,7 @@ onMounted(load)
 </template>
 <style scoped>
 .governance {
+  font-size: var(--os-font-md);
   display: flex;
   flex-direction: column;
   gap: var(--os-space-3);
@@ -241,5 +245,19 @@ select {
   border: 1px solid var(--el-border-color);
   border-radius: var(--os-radius-sm);
   padding-inline: var(--os-space-2);
+}
+.governance__actions {
+  padding: var(--os-space-4);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--os-radius-md);
+  background: var(--el-bg-color);
+  align-items: center;
+}
+.governance__actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+.governance > h3 {
+  margin: var(--os-space-3) 0 0;
+  font-size: var(--os-font-lg);
 }
 </style>

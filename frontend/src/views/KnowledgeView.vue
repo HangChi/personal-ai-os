@@ -1,13 +1,8 @@
 <script setup lang="ts">
-/**
- * 知识库页（阶段 18 改造，User Story 7；2026-10-26 拆分为三个 Tab 组件）。
- *
- * <p>本文件只剩 Tab 容器：文档 / 检索 / 问答三块各自成组件，
- * 各自持有自己的输入状态（检索词、问题），互不影响。
- *
- * <p>Tab 选择持久化到 localStorage（个人习惯，不进 URL——不可分享的状态没有 query 价值）。
- */
-import { storeToRefs } from 'pinia'
+/** 资料与长期记忆共用工作区入口，具体位置可复制、刷新与回退。 */
+import { computed, defineAsyncComponent, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { isKnowledgeTab, type KnowledgeTab } from '@/lib/workspace-navigation'
 
 import KnowledgeCaptures from '@/components/knowledge/KnowledgeCaptures.vue'
 import KnowledgeGovernanceTab from '@/components/knowledge/KnowledgeGovernanceTab.vue'
@@ -18,21 +13,46 @@ import PageHeader from '@/components/PageHeader.vue'
 import { useUiStore } from '@/stores/ui'
 
 const uiStore = useUiStore()
-const { knowledgeTab } = storeToRefs(uiStore)
+const MemoryView = defineAsyncComponent(() => import('@/views/MemoryView.vue'))
+const route = useRoute()
+const router = useRouter()
+// 将本地起始页固定到首次历史记录，返回时不会被后来选择的标签覆盖。
+watch(
+  [() => route.path, () => route.query.tab],
+  ([path, tab]) => {
+    if (path === '/knowledge' && !isKnowledgeTab(tab)) {
+      void router.replace({ query: { ...route.query, tab: uiStore.knowledgeTab } })
+    }
+  },
+  { immediate: true },
+)
+const knowledgeTab = computed<KnowledgeTab>({
+  get: () => (isKnowledgeTab(route.query.tab) ? route.query.tab : uiStore.knowledgeTab),
+  set: (tab) => {
+    void router.push({ query: { ...route.query, tab } })
+  },
+})
+watch(
+  knowledgeTab,
+  (tab) => {
+    uiStore.knowledgeTab = tab
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
   <div class="knowledge">
-    <PageHeader size="page" title="知识库" />
+    <PageHeader size="page" title="知识库" description="收集资料、检索答案，在同一处管理助手的长期记忆。" />
 
-    <el-tabs v-model="knowledgeTab" class="knowledge__tabs">
-      <el-tab-pane label="文档" name="documents">
+    <el-tabs v-model="knowledgeTab" class="knowledge__tabs os-module-tabs">
+      <el-tab-pane label="文档" name="documents" lazy>
         <KnowledgeDocumentsTab />
       </el-tab-pane>
-      <el-tab-pane label="检索" name="search">
+      <el-tab-pane label="检索" name="search" lazy>
         <KnowledgeSearchTab />
       </el-tab-pane>
-      <el-tab-pane label="问答" name="ask">
+      <el-tab-pane label="问答" name="ask" lazy>
         <KnowledgeAskTab />
       </el-tab-pane>
       <el-tab-pane label="网页采集" name="captures" lazy
@@ -41,6 +61,7 @@ const { knowledgeTab } = storeToRefs(uiStore)
       <el-tab-pane label="资料治理" name="governance" lazy>
         <KnowledgeGovernanceTab v-if="knowledgeTab === 'governance'" />
       </el-tab-pane>
+      <el-tab-pane label="长期记忆" name="memory" lazy><MemoryView embedded /></el-tab-pane>
     </el-tabs>
   </div>
 </template>

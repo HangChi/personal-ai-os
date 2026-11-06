@@ -19,6 +19,7 @@ import type { TaskPriority } from '@/types/api'
 
 const props = defineProps<{
   /** 已有标签，供下拉选择 */
+  embedded?: boolean
   projects?: ProjectItem[]
   tags: string[]
   /** 待办/逾期统计，显示在卡片头部 */
@@ -30,6 +31,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'create', payload: CreateTaskPayload): void
+  (e: 'cancel'): void
 }>()
 
 const organization = ref<TaskOrganization>({
@@ -88,12 +90,15 @@ function startSubtask(task: import('@/types/api').TaskItem): void {
   reset()
   organization.value = { ...organization.value, projectId: task.projectId ?? '', parentTaskId: task.id }
 }
-defineExpose({ reset, startSubtask })
+function focus(): void {
+  document.getElementById(`${formId}-title`)?.focus()
+}
+defineExpose({ reset, startSubtask, focus })
 </script>
 
 <template>
-  <el-card shadow="never">
-    <template #header>
+  <el-card shadow="never" :class="{ 'os-form-card--embedded': embedded }">
+    <template v-if="!embedded" #header>
       <PageHeader title="新建任务">
         <template #default>
           <span class="task-create__stats">
@@ -160,9 +165,12 @@ defineExpose({ reset, startSubtask })
 
       <div class="task-create__footer">
         <span class="task-create__hint">填写标题后即可创建任务</span>
-        <el-button type="primary" native-type="submit" :icon="Plus" :loading="creating" :disabled="!title.trim()">
-          新建任务
-        </el-button>
+        <div class="task-create__actions">
+          <el-button v-if="embedded" :disabled="creating" @click="emit('cancel')">取消</el-button
+          ><el-button type="primary" native-type="submit" :icon="Plus" :loading="creating" :disabled="!title.trim()">
+            新建任务
+          </el-button>
+        </div>
       </div>
     </el-form>
   </el-card>
@@ -257,5 +265,13 @@ defineExpose({ reset, startSubtask })
   .task-create__footer > .el-button {
     width: 100%;
   }
+}
+.task-create__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+}
+.task-create__actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

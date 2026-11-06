@@ -539,6 +539,8 @@ defineExpose({ finish })
     :title="isEdit ? '编辑模型配置' : '添加模型配置'"
     width="min(840px, calc(100vw - 32px))"
     :close-on-click-modal="false"
+    :close-on-press-escape="!submitting"
+    :show-close="!submitting"
     append-to-body
   >
     <template #header>
@@ -550,7 +552,7 @@ defineExpose({ finish })
         <span v-if="current?.active" class="profile-dialog__active">当前使用中</span>
       </div>
     </template>
-    <div class="profile-form">
+    <div class="profile-form" :aria-busy="submitting">
       <section class="profile-form__section" aria-labelledby="profile-connection-heading">
         <div class="profile-form__section-heading">
           <h3 id="profile-connection-heading">连接配置</h3>
@@ -579,7 +581,7 @@ defineExpose({ finish })
                 <el-icon class="profile-form__hint-icon"><QuestionFilled /></el-icon>
               </el-tooltip>
             </span>
-            <el-select v-model="form.protocol">
+            <el-select v-model="form.protocol" aria-label="模型列表协议">
               <el-option
                 v-for="option in PROTOCOL_OPTIONS"
                 :key="option.value"
@@ -789,6 +791,7 @@ defineExpose({ finish })
             <el-select
               v-if="chatModelOptions.length > 0"
               v-model="chatModelDraft"
+              aria-label="添加对话模型"
               class="profile-form__model-select"
               filterable
               allow-create
@@ -802,6 +805,7 @@ defineExpose({ finish })
             <el-input
               v-else
               v-model="chatModelDraft"
+              aria-label="添加对话模型"
               placeholder="输入模型名，如 qwen3.8-flash"
               clearable
               :maxlength="MODEL_NAME_MAX"
@@ -899,6 +903,7 @@ defineExpose({ finish })
               <el-select
                 v-if="embeddingModelOptions.length > 0"
                 v-model="embeddingModelDraft"
+                aria-label="添加嵌入模型"
                 class="profile-form__model-select"
                 filterable
                 allow-create
@@ -912,6 +917,7 @@ defineExpose({ finish })
               <el-input
                 v-else
                 v-model="embeddingModelDraft"
+                aria-label="添加嵌入模型"
                 placeholder="输入嵌入模型名"
                 clearable
                 :maxlength="MODEL_NAME_MAX"
@@ -969,6 +975,7 @@ defineExpose({ finish })
               <el-select
                 v-if="audioModelOptions.length > 0"
                 v-model="audioModelDraft"
+                aria-label="添加语音模型"
                 class="profile-form__model-select"
                 filterable
                 allow-create
@@ -982,6 +989,7 @@ defineExpose({ finish })
               <el-input
                 v-else
                 v-model="audioModelDraft"
+                aria-label="添加语音模型"
                 placeholder="输入语音模型名"
                 clearable
                 :maxlength="MODEL_NAME_MAX"

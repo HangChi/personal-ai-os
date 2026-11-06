@@ -16,6 +16,7 @@ import type { RecurrenceType } from '@/types/api'
 
 const props = defineProps<{
   /** 默认提前提醒分钟数（取设置页偏好） */
+  embedded?: boolean
   defaultLead: number
   creating: boolean
 }>()
@@ -34,6 +35,7 @@ const emit = defineEmits<{
       reminderLeadMinutes: number
     },
   ): void
+  (e: 'cancel'): void
 }>()
 
 const title = ref('')
@@ -89,12 +91,15 @@ function reset(): void {
   allDay.value = false
 }
 
-defineExpose({ fillSlot, reset })
+function focus(): void {
+  document.getElementById(`${formId}-title`)?.focus()
+}
+defineExpose({ fillSlot, reset, focus })
 </script>
 
 <template>
-  <el-card class="cal-create-panel" shadow="never">
-    <template #header>
+  <el-card class="cal-create-panel" :class="{ 'os-form-card--embedded': embedded }" shadow="never">
+    <template v-if="!embedded" #header>
       <div class="cal-create-panel__heading">
         <el-icon aria-hidden="true"><Calendar /></el-icon>
         <h2>新建日程</h2>
@@ -171,16 +176,19 @@ defineExpose({ fillSlot, reset })
           <el-input-number :id="`${formId}-lead`" v-model="leadMinutes" size="small" :min="0" :max="10080" :step="5" />
           <span class="cal-create__unit">分钟</span>
         </div>
-        <el-button
-          type="primary"
-          size="small"
-          native-type="submit"
-          :icon="Plus"
-          :loading="creating"
-          :disabled="creating"
-        >
-          创建日程
-        </el-button>
+        <div class="cal-create__actions">
+          <el-button v-if="embedded" :disabled="creating" @click="emit('cancel')">取消</el-button>
+          <el-button
+            type="primary"
+            size="small"
+            native-type="submit"
+            :icon="Plus"
+            :loading="creating"
+            :disabled="creating"
+          >
+            创建日程
+          </el-button>
+        </div>
       </div>
     </el-form>
   </el-card>
@@ -316,5 +324,13 @@ defineExpose({ fillSlot, reset })
   .cal-create__footer > .el-button {
     width: 100%;
   }
+}
+.cal-create__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+}
+.cal-create__actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

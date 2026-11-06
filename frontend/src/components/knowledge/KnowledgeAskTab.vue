@@ -13,13 +13,14 @@ import RagTrace from '@/components/knowledge/RagTrace.vue'
 import KnowledgeHitList from '@/components/knowledge/KnowledgeHitList.vue'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import { useSettingsStore } from '@/stores/settings'
 import { useKnowledgeStore } from '@/stores/knowledge'
 
 const knowledgeStore = useKnowledgeStore()
 const { answer, asking, askError } = storeToRefs(knowledgeStore)
 
 const question = ref('')
-const askTopK = ref(4)
+const askTopK = ref(useSettingsStore().settings.knowledgeTopK)
 const claimStatus = { SUPPORTED: '证据支持', PARTIAL: '部分支持', UNSUPPORTED: '证据不足' }
 
 async function handleAsk(): Promise<void> {
@@ -35,19 +36,19 @@ async function handleAsk(): Promise<void> {
 <template>
   <el-card shadow="never">
     <template #header>
-      <PageHeader title="问答" />
+      <PageHeader title="基于资料提问" description="从资料中寻找证据，回答会附带可核对的来源。" />
     </template>
 
-    <div class="ka__query">
+    <form class="ka__query" @submit.prevent="handleAsk">
       <el-input
         v-model="question"
+        aria-label="知识库问题"
         placeholder="基于知识库提问，例如：支持哪些隔离级别？"
         maxlength="500"
-        @keydown.enter="handleAsk"
       />
-      <el-input-number v-model="askTopK" :min="1" :max="20" class="ka__topk" />
-      <el-button type="primary" :loading="asking" @click="handleAsk">提问</el-button>
-    </div>
+      <el-input-number v-model="askTopK" aria-label="检索片段条数" :min="1" :max="20" class="ka__topk" />
+      <el-button type="primary" native-type="submit" :loading="asking" :disabled="!question.trim()">提问</el-button>
+    </form>
 
     <!-- 提问失败必须显式提示（审查 #17）：改造前这里什么都不渲染，转圈结束页面纹丝不动，
          用户分不清是「失败」还是「没结果」 -->
@@ -131,5 +132,16 @@ async function handleAsk(): Promise<void> {
   cursor: pointer;
   font-size: var(--os-font-xs);
   color: var(--el-text-color-secondary);
+}
+@media (max-width: 600px) {
+  .ka__query {
+    flex-wrap: wrap;
+  }
+  .ka__query > :deep(.el-input) {
+    flex: 1 1 100%;
+  }
+  .ka__query > :deep(.el-button) {
+    flex: 1;
+  }
 }
 </style>

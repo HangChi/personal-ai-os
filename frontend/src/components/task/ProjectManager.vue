@@ -110,6 +110,7 @@ async function archive(project: ProjectItem): Promise<void> {
   flex-wrap: wrap;
 }
 .project-manager__hint {
+  margin-left: var(--os-space-2);
   color: var(--el-text-color-secondary);
   font-size: var(--os-font-xs);
 }
@@ -117,5 +118,13 @@ async function archive(project: ProjectItem): Promise<void> {
   display: grid;
   gap: var(--os-space-4);
   margin-top: var(--os-space-4);
+}
+.project-manager__body :deep(.el-form) {
+  padding: var(--os-space-4);
+  background: var(--el-fill-color-lighter);
+  border-radius: var(--os-radius-md);
+}
+.project-manager__body :deep(.el-table) {
+  min-width: 0;
 }
 </style>

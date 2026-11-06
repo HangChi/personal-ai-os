@@ -101,7 +101,10 @@ async function copyEndpoint(): Promise<void> {
 <template>
   <div class="mcp-settings">
     <header class="mcp-settings__toolbar">
-      <h2>MCP</h2>
+      <div>
+        <h2>MCP 连接与工具</h2>
+        <p class="mcp-settings__intro">检查外部服务连接，查看可用工具和自动执行范围。</p>
+      </div>
       <el-button :icon="Refresh" :loading="loading || personalLoading" :disabled="busy" @click="store.refresh()">
         刷新状态
       </el-button>
@@ -680,5 +683,16 @@ async function copyEndpoint(): Promise<void> {
   .mcp-settings__endpoint {
     gap: var(--os-space-2);
   }
+}
+.mcp-settings__intro {
+  margin: 6px 0 0;
+  max-width: 52ch;
+  font-size: var(--os-font-sm);
+  line-height: 1.65;
+  color: var(--el-text-color-secondary);
+}
+.mcp-settings__toolbar {
+  flex-wrap: wrap;
+  gap: var(--os-space-3);
 }
 </style>

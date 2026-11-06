@@ -1,6 +1,8 @@
 <script setup lang="ts">
+withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import DataImportPanel from '@/components/settings/DataImportPanel.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { downloadExport } from '@/api/export'
 import {
@@ -12,6 +14,7 @@ import {
   type MaintenanceItem,
 } from '@/api/maintenance'
 const data = ref<MaintenanceSnapshot | null>(null)
+const activeTab = ref('backup')
 const current = ref<MaintenanceCheck | null>(null)
 const busy = ref(false)
 const error = ref('')
@@ -132,166 +135,182 @@ onMounted(() => {
 </script>
 <template>
   <div class="maintenance">
-    <PageHeader size="page" title="维护与恢复" description="检查运行状态，保留校验与演练记录"
+    <PageHeader :size="embedded ? 'card' : 'page'" title="维护与恢复" description="检查运行状态，保留校验与演练记录"
       ><el-button :loading="busy" @click="action(load)">刷新维护状态</el-button></PageHeader
     >
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
-    <el-card shadow="never">
-      <template #header>业务备份与静态校验</template>
-      <p>
-        业务 JSON
-        包含项目、任务、日程、会话、记忆和知识分块；不含附件、配置、运行队列、定时计划或网页版本历史。完整迁移请使用数据库与附件备份包。
-      </p>
-      <div class="actions">
-        <el-button type="primary" :loading="busy" @click="backup">下载业务备份</el-button
-        ><label class="file-control"
-          >选择 JSON 校验<input
-            aria-label="选择业务备份校验"
-            type="file"
-            accept=".json,application/json"
-            :disabled="busy"
-            @change="verify"
-        /></label>
-      </div>
-      <p class="hint">
-        最多
-        20MiB；仅检查格式、类型、标识与引用关系，不导入数据、不调用模型。静态通过不等于恢复成功；知识分块实际恢复仍需嵌入模型。单类最多
-        10000 条、消息和分块各最多 50000 条，问题最多展示 100 项。
-      </p>
-      <div v-if="current" class="check-result" role="status">
-        <strong>{{ statuses[current.status] ?? current.status }}</strong>
-        <p>{{ when(current.createdAt) }}</p>
-        <p class="digest">
-          输入内容摘要：<code>{{ current.digest }}</code>
-        </p>
-        <p v-if="current.counts">
-          记录数：{{
-            Object.entries(current.counts)
-              .map(([key, value]) => `${key} ${value}`)
-              .join(' · ')
-          }}
-        </p>
-        <ul v-if="current.issues?.length">
-          <li v-for="(issue, i) in current.issues" :key="i">{{ issue }}</li>
-        </ul>
-        <p v-if="current.truncated">问题已达到展示上限，尚有其他记录未继续检查。</p>
-        <p v-if="current.source === 'EXTERNAL'">
-          {{ current.tool }} · {{ current.outcome === 'PASSED' ? '报告为通过' : '报告为失败' }} ·
-          {{ current.summary }}（外部填报，未独立验证）
-        </p>
-      </div>
-    </el-card>
-    <el-card v-if="data" shadow="never">
-      <template #header>运行进程心跳 · {{ data.heartbeats.total }} 个实例</template>
-      <p class="hint">
-        每 30 秒更新，90 秒未续写显示失联。这里显示进程所属角色，在线不代表所有任务都成功。数据时间：{{
-          when(data.generatedAt)
-        }}。
-      </p>
-      <el-empty v-if="!data.heartbeats.items.length" description="尚未收到心跳，请确认维护心跳已启用" />
-      <p v-if="data.heartbeats.total > data.heartbeats.items.length">
-        展示最近 {{ data.heartbeats.items.length }} 个实例。
-      </p>
-      <article v-for="row in data.heartbeats.items" :key="row.instanceId" class="maintenance-row heartbeat-row">
-        <div class="actions">
-          <strong>{{ row.backend }} · {{ roleNames[row.role] ?? row.role }}</strong
-          ><el-tag :type="row.status === 'ACTIVE' ? 'success' : 'danger'">{{
-            row.status === 'ACTIVE' ? '在线' : '已失联'
-          }}</el-tag>
-        </div>
-        <p>最近心跳 {{ when(row.lastSeenAt) }} · 启动 {{ when(row.startedAt) }}</p>
-        <code>{{ row.instanceId }}</code>
-      </article>
-    </el-card>
-    <div class="queue-grid">
-      <el-card v-for="queue in queues" :key="queue.title" shadow="never">
-        <template #header
-          ><div class="actions">
-            <strong>{{ queue.title }}</strong
-            ><el-tag :type="queue.items.total ? 'warning' : 'info'">{{ queue.items.total }}</el-tag>
-          </div></template
-        >
-        <p class="hint">{{ queue.description }}</p>
-        <el-empty v-if="!queue.items.items.length" description="当前没有记录" :image-size="48" />
-        <p v-if="queue.items.total > queue.items.items.length">展示最近 {{ queue.items.items.length }} 条。</p>
-        <article v-for="row in queue.items.items" :key="row.id" class="maintenance-row">
-          <div>{{ row.name ?? row.title ?? row.kind ?? row.id }}</div>
+    <el-tabs v-model="activeTab" class="os-module-tabs maintenance__tabs">
+      <el-tab-pane label="备份与校验" name="backup">
+        <el-card shadow="never">
+          <template #header>业务备份与静态校验</template>
           <p>
-            {{ statuses[row.status] ?? row.status
-            }}{{ row.attempts !== undefined ? ` · 已尝试 ${row.attempts} 次` : '' }} · {{ when(row.updatedAt) }}
+            业务 JSON
+            包含项目、任务、日程、会话、记忆和知识分块；不含附件、配置、运行队列、定时计划或网页版本历史。完整迁移请使用数据库与附件备份包。
           </p>
-          <p v-if="row.error">{{ row.error }}</p>
-          <router-link :to="link(row, queue.to)">查看与处理</router-link>
-        </article>
-        <router-link :to="queue.to">打开相关页面</router-link>
-      </el-card>
-    </div>
-    <el-card shadow="never">
-      <template #header>数据库与附件恢复演练</template>
-      <p>
-        在受控维护窗口使用既有 CLI
-        创建、验证备份包，并在随机命名的独立数据库中演练恢复。网页只保存外部报告，不执行恢复。
-      </p>
-      <pre>
+          <div class="actions">
+            <el-button type="primary" :loading="busy" @click="backup">下载业务备份</el-button
+            ><label class="file-control"
+              >选择 JSON 校验<input
+                aria-label="选择业务备份校验"
+                type="file"
+                accept=".json,application/json"
+                :disabled="busy"
+                @change="verify"
+            /></label>
+          </div>
+          <p class="hint">
+            最多
+            20MiB；仅检查格式、类型、标识与引用关系，不导入数据、不调用模型。静态通过不等于恢复成功；知识分块实际恢复仍需嵌入模型。单类最多
+            10000 条、消息和分块各最多 50000 条，问题最多展示 100 项。
+          </p>
+          <div v-if="current" class="check-result" role="status">
+            <strong>{{ statuses[current.status] ?? current.status }}</strong>
+            <p>{{ when(current.createdAt) }}</p>
+            <p class="digest">
+              输入内容摘要：<code>{{ current.digest }}</code>
+            </p>
+            <p v-if="current.counts">
+              记录数：{{
+                Object.entries(current.counts)
+                  .map(([key, value]) => `${key} ${value}`)
+                  .join(' · ')
+              }}
+            </p>
+            <ul v-if="current.issues?.length">
+              <li v-for="(issue, i) in current.issues" :key="i">{{ issue }}</li>
+            </ul>
+            <p v-if="current.truncated">问题已达到展示上限，尚有其他记录未继续检查。</p>
+            <p v-if="current.source === 'EXTERNAL'">
+              {{ current.tool }} · {{ current.outcome === 'PASSED' ? '报告为通过' : '报告为失败' }} ·
+              {{ current.summary }}（外部填报，未独立验证）
+            </p>
+          </div>
+        </el-card>
+        <DataImportPanel />
+      </el-tab-pane>
+      <el-tab-pane label="运行健康" name="status">
+        <el-card v-if="data" shadow="never">
+          <template #header>运行进程心跳 · {{ data.heartbeats.total }} 个实例</template>
+          <p class="hint">
+            每 30 秒更新，90 秒未续写显示失联。这里显示进程所属角色，在线不代表所有任务都成功。数据时间：{{
+              when(data.generatedAt)
+            }}。
+          </p>
+          <el-empty v-if="!data.heartbeats.items.length" description="尚未收到心跳，请确认维护心跳已启用" />
+          <p v-if="data.heartbeats.total > data.heartbeats.items.length">
+            展示最近 {{ data.heartbeats.items.length }} 个实例。
+          </p>
+          <article v-for="row in data.heartbeats.items" :key="row.instanceId" class="maintenance-row heartbeat-row">
+            <div class="actions">
+              <strong>{{ row.backend }} · {{ roleNames[row.role] ?? row.role }}</strong
+              ><el-tag :type="row.status === 'ACTIVE' ? 'success' : 'danger'">{{
+                row.status === 'ACTIVE' ? '在线' : '已失联'
+              }}</el-tag>
+            </div>
+            <p>最近心跳 {{ when(row.lastSeenAt) }} · 启动 {{ when(row.startedAt) }}</p>
+            <code>{{ row.instanceId }}</code>
+          </article>
+        </el-card>
+        <div class="queue-grid">
+          <el-card v-for="queue in queues" :key="queue.title" shadow="never">
+            <template #header
+              ><div class="actions">
+                <strong>{{ queue.title }}</strong
+                ><el-tag :type="queue.items.total ? 'warning' : 'info'">{{ queue.items.total }}</el-tag>
+              </div></template
+            >
+            <p class="hint">{{ queue.description }}</p>
+            <el-empty v-if="!queue.items.items.length" description="当前没有记录" :image-size="48" />
+            <p v-if="queue.items.total > queue.items.items.length">展示最近 {{ queue.items.items.length }} 条。</p>
+            <article v-for="row in queue.items.items" :key="row.id" class="maintenance-row">
+              <div>{{ row.name ?? row.title ?? row.kind ?? row.id }}</div>
+              <p>
+                {{ statuses[row.status] ?? row.status
+                }}{{ row.attempts !== undefined ? ` · 已尝试 ${row.attempts} 次` : '' }} · {{ when(row.updatedAt) }}
+              </p>
+              <p v-if="row.error">{{ row.error }}</p>
+              <router-link :to="link(row, queue.to)">查看与处理</router-link>
+            </article>
+            <router-link :to="queue.to">打开相关页面</router-link>
+          </el-card>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane label="恢复演练" name="drill">
+        <el-card shadow="never">
+          <template #header>数据库与附件恢复演练</template>
+          <p>
+            在受控维护窗口使用既有 CLI
+            创建、验证备份包，并在随机命名的独立数据库中演练恢复。网页只保存外部报告，不执行恢复。
+          </p>
+          <pre>
 python3 scripts/dev/backup.py backup
 python3 scripts/dev/backup.py verify &lt;备份文件&gt;
 python3 scripts/dev/backup.py drill &lt;备份文件&gt;</pre>
-      <form class="drill-form" @submit.prevent="saveDrill">
-        <label>工具<el-input v-model="drill.tool" aria-label="演练工具" maxlength="80" /></label>
-        <label
-          >完成时间<input v-model="drill.completedAt" aria-label="演练完成时间" type="datetime-local" required
-        /></label>
-        <label
-          >CLI 报告结果<el-select v-model="drill.outcome" aria-label="CLI 报告结果"
-            ><el-option label="报告为通过" value="PASSED" /><el-option label="报告为失败" value="FAILED" /></el-select
-        ></label>
-        <label class="wide"
-          >报告摘要<el-input
-            v-model="drill.summary"
-            aria-label="外部演练摘要"
-            type="textarea"
-            :rows="3"
-            maxlength="2000"
-            placeholder="填写执行环境、检查范围和实际结果"
-        /></label>
-        <label class="wide"
-          >备份包 SHA-256（可选）<el-input v-model="drill.artifactDigest" aria-label="备份包摘要" maxlength="64"
-        /></label>
-        <div class="wide actions">
-          <el-button native-type="submit" :loading="busy" :disabled="!drill.summary.trim() || !drill.tool.trim()"
-            >记录外部报告</el-button
-          ><span class="hint">始终标记为外部记录，未独立验证</span>
-        </div>
-      </form>
-    </el-card>
-    <el-card v-if="data" shadow="never">
-      <template #header>校验与外部报告历史 · {{ data.checks.total }} 条</template>
-      <p class="hint">保留最近 200 条摘要，展示最近 20 条；原始备份文件不落库。</p>
-      <el-empty v-if="!data.checks.items.length" description="选择一份业务 JSON 开始校验" />
-      <article v-for="row in data.checks.items" :key="row.id" class="maintenance-row">
-        <div class="actions">
-          <strong>{{ row.kind === 'BUSINESS_JSON' ? '业务 JSON' : '外部演练报告' }}</strong
-          ><el-tag :type="row.status === 'VALID' ? 'success' : row.status === 'INVALID' ? 'danger' : 'warning'">{{
-            statuses[row.status] ?? row.status
-          }}</el-tag>
-        </div>
-        <p>{{ when(row.createdAt) }}</p>
-        <code>{{ row.digest }}</code>
-        <details>
-          <summary>查看记录详情</summary>
-          <p v-if="row.summary">{{ row.tool }} · {{ row.outcome }} · {{ row.summary }} · {{ when(row.completedAt) }}</p>
-          <p v-if="row.counts">{{ row.counts }}</p>
-          <ul v-if="row.issues?.length">
-            <li v-for="(issue, i) in row.issues" :key="i">{{ issue }}</li>
-          </ul>
-          <p v-if="row.truncated">问题超过展示上限。</p>
-        </details>
-      </article>
-    </el-card>
+          <form class="drill-form" @submit.prevent="saveDrill">
+            <label>工具<el-input v-model="drill.tool" aria-label="演练工具" maxlength="80" /></label>
+            <label
+              >完成时间<input v-model="drill.completedAt" aria-label="演练完成时间" type="datetime-local" required
+            /></label>
+            <label
+              >CLI 报告结果<el-select v-model="drill.outcome" aria-label="CLI 报告结果"
+                ><el-option label="报告为通过" value="PASSED" /><el-option
+                  label="报告为失败"
+                  value="FAILED" /></el-select
+            ></label>
+            <label class="wide"
+              >报告摘要<el-input
+                v-model="drill.summary"
+                aria-label="外部演练摘要"
+                type="textarea"
+                :rows="3"
+                maxlength="2000"
+                placeholder="填写执行环境、检查范围和实际结果"
+            /></label>
+            <label class="wide"
+              >备份包 SHA-256（可选）<el-input v-model="drill.artifactDigest" aria-label="备份包摘要" maxlength="64"
+            /></label>
+            <div class="wide actions">
+              <el-button native-type="submit" :loading="busy" :disabled="!drill.summary.trim() || !drill.tool.trim()"
+                >记录外部报告</el-button
+              ><span class="hint">始终标记为外部记录，未独立验证</span>
+            </div>
+          </form>
+        </el-card>
+      </el-tab-pane>
+      <el-tab-pane label="校验历史" name="history">
+        <el-card v-if="data" shadow="never">
+          <template #header>校验与外部报告历史 · {{ data.checks.total }} 条</template>
+          <p class="hint">保留最近 200 条摘要，展示最近 20 条；原始备份文件不落库。</p>
+          <el-empty v-if="!data.checks.items.length" description="选择一份业务 JSON 开始校验" />
+          <article v-for="row in data.checks.items" :key="row.id" class="maintenance-row">
+            <div class="actions">
+              <strong>{{ row.kind === 'BUSINESS_JSON' ? '业务 JSON' : '外部演练报告' }}</strong
+              ><el-tag :type="row.status === 'VALID' ? 'success' : row.status === 'INVALID' ? 'danger' : 'warning'">{{
+                statuses[row.status] ?? row.status
+              }}</el-tag>
+            </div>
+            <p>{{ when(row.createdAt) }}</p>
+            <code>{{ row.digest }}</code>
+            <details>
+              <summary>查看记录详情</summary>
+              <p v-if="row.summary">
+                {{ row.tool }} · {{ row.outcome }} · {{ row.summary }} · {{ when(row.completedAt) }}
+              </p>
+              <p v-if="row.counts">{{ row.counts }}</p>
+              <ul v-if="row.issues?.length">
+                <li v-for="(issue, i) in row.issues" :key="i">{{ issue }}</li>
+              </ul>
+              <p v-if="row.truncated">问题超过展示上限。</p>
+            </details>
+          </article>
+        </el-card>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 <style scoped>
 .maintenance {
+  font-size: var(--os-font-md);
   display: grid;
   gap: var(--os-space-4);
   min-width: 0;
@@ -380,5 +399,16 @@ summary {
   .drill-form {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+.maintenance__tabs :deep(.el-tab-pane) {
+  display: grid;
+  gap: var(--os-space-4);
+}
+.maintenance :deep(.el-card__header) {
+  font-weight: 600;
+  font-size: var(--os-font-md);
+}
+.maintenance :deep(.el-card__body > p:first-child) {
+  margin-top: 0;
 }
 </style>

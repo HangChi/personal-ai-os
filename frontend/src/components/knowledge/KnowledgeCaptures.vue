@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { ElMessage } from 'element-plus'
 import {
   listCaptures,
@@ -10,6 +11,7 @@ import {
   type CaptureVersion,
 } from '@/api/knowledge-captures'
 const url = ref('')
+const historyOpen = ref(false)
 const items = ref<Capture[]>([])
 const total = ref(0)
 const busy = ref(false)
@@ -64,6 +66,7 @@ async function versions(row: Capture): Promise<void> {
     historyTotal.value = result.total
     selected.value = result.items[0] ?? null
     source.value = row.url
+    historyOpen.value = true
   })
 }
 onMounted(() => {
@@ -73,11 +76,12 @@ onMounted(() => {
 <template>
   <div class="captures">
     <el-card shadow="never">
-      <template #header>公开网页采集</template>
-      <p class="hint">
-        支持 UTF-8 网页与纯文本，最多 1MiB / 15 秒。禁止内网、重定向和登录态；URL
-        路径请使用百分号编码。新内容索引成功后才切换当前版本，失败保留旧资料。
-      </p>
+      <template #header><PageHeader title="采集网页" description="将公开网页收进知识库，保留来源与版本。" /></template>
+      <p class="hint">支持公开网页与纯文本，最多 1MiB；索引成功才更新当前版本，失败会保留旧资料。</p>
+      <details class="os-disclosure">
+        <summary>采集限制与链接格式</summary>
+        <p>仅支持 UTF-8，15 秒超时；禁止内网、重定向和登录态。URL 路径请使用百分号编码。</p>
+      </details>
       <form class="capture-form" @submit.prevent="capture">
         <el-input
           v-model="url"
@@ -91,7 +95,8 @@ onMounted(() => {
     <el-card shadow="never">
       <template #header
         ><div class="actions">
-          <span>来源与版本 · {{ total }} 条</span><el-button :loading="busy" @click="action(load)">刷新状态</el-button>
+          <h2 class="capture-title">来源与版本 · {{ total }} 条</h2>
+          <el-button :loading="busy" @click="action(load)">刷新状态</el-button>
         </div></template
       >
       <el-empty v-if="!items.length" description="还没有网页来源" />
@@ -109,26 +114,30 @@ onMounted(() => {
         </div>
       </article>
     </el-card>
-    <el-card v-if="selected" shadow="never">
-      <template #header>正文历史 · {{ source }}</template>
-      <p>保留 {{ historyTotal }} 个版本，展示最近 {{ history.length }} 个。失败版本不会成为当前资料。</p>
-      <div class="actions">
-        <el-button
-          v-for="version in history"
-          :key="version.version"
-          :type="selected.version === version.version ? 'primary' : 'default'"
-          @click="selected = version"
-          >版本 {{ version.version }} · {{ names[version.status] ?? version.status }}</el-button
-        >
-      </div>
-      <p>{{ selected.title }} · {{ selected.capturedAt }}</p>
-      <p class="hash">SHA-256：{{ selected.hash }}</p>
-      <pre>{{ selected.content }}</pre>
-    </el-card>
+    <el-drawer v-model="historyOpen" title="网页版本历史" size="min(720px, 100vw)">
+      <template v-if="selected"
+        ><p class="hash">{{ source }}</p>
+        <p>保留 {{ historyTotal }} 个版本，展示最近 {{ history.length }} 个。失败版本不会成为当前资料。</p>
+        <div class="actions">
+          <el-button
+            v-for="version in history"
+            :key="version.version"
+            :type="selected.version === version.version ? 'primary' : 'default'"
+            @click="selected = version"
+            >版本 {{ version.version }} · {{ names[version.status] ?? version.status }}</el-button
+          >
+        </div>
+        <p>{{ selected.title }} · {{ selected.capturedAt }}</p>
+        <p class="hash">SHA-256：{{ selected.hash }}</p>
+        <pre>{{ selected.content }}</pre>
+      </template>
+      <el-empty v-else description="尚无版本记录" />
+    </el-drawer>
   </div>
 </template>
 <style scoped>
 .captures {
+  font-size: var(--os-font-md);
   display: grid;
   gap: var(--os-space-4);
   min-width: 0;
@@ -170,5 +179,15 @@ pre {
   overflow: auto;
   font: inherit;
   line-height: 1.7;
+}
+.capture-title {
+  margin: 0;
+  font-size: var(--os-font-lg);
+}
+.capture-form {
+  margin-top: var(--os-space-4);
+}
+.actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

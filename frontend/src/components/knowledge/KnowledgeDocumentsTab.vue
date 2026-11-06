@@ -6,6 +6,7 @@
  * 点击选择、拖拽投放、以及两者的公共校验。校验刻意只写一份 ——
  * 拖拽与点击走同一个 `selectFile`，避免「拖进来能传、点进来不能传」这类不一致。
  */
+import { UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { onMounted, onUnmounted, ref } from 'vue'
@@ -16,6 +17,7 @@ import { confirmDanger } from '@/lib/confirm-box'
 import { formatBytes, formatDateTime } from '@/lib/format'
 import { useKnowledgeStore } from '@/stores/knowledge'
 
+const uploadOpen = ref(false)
 const knowledgeStore = useKnowledgeStore()
 const {
   documents,
@@ -90,6 +92,7 @@ async function handleUpload(): Promise<void> {
   const ok = await knowledgeStore.upload(selectedFile.value, uploadTitle.value)
   if (ok) {
     ElMessage.success('已加入后台索引队列，可以离开此页面')
+    uploadOpen.value = false
     selectedFile.value = null
     uploadTitle.value = ''
     if (fileInput.value) {
@@ -207,32 +210,6 @@ function onDrop(event: DragEvent): void {
 
 <template>
   <div class="kd">
-    <el-card shadow="never">
-      <template #header>
-        <PageHeader title="上传文档" description="Markdown / TXT / PDF / Word / 图片" />
-      </template>
-
-      <!-- 拖拽区：整块都是投放目标；点击「选择文件」走原路径 -->
-      <div
-        class="kd__dropzone"
-        :class="{ 'kd__dropzone--active': dragging }"
-        @dragover="onDragOver"
-        @dragenter="onDragEnter"
-        @dragleave="onDragLeave"
-        @drop="onDrop"
-      >
-        <input ref="fileInput" class="kd__file-input" type="file" :accept="ACCEPT" @change="onFileChange" />
-        <el-button @click="pickFile">选择文件</el-button>
-        <span class="kd__filename">
-          {{ selectedFile ? selectedFile.name : '未选择文件（也可直接拖到这里）' }}
-        </span>
-        <el-input v-model="uploadTitle" class="kd__title" placeholder="文档标题（可选）" />
-        <el-button type="primary" :loading="uploading" @click="handleUpload">提交后台索引</el-button>
-      </div>
-
-      <p class="kd__hint">单文件最大 5 MiB；扫描版 PDF 暂不支持。</p>
-    </el-card>
-
     <el-alert v-if="error" type="error" :closable="false" show-icon :title="error" />
 
     <el-card v-if="indexJobs.length || jobsError" shadow="never" aria-label="后台索引任务">
@@ -272,11 +249,13 @@ function onDrop(event: DragEvent): void {
                 v-model="keyword"
                 class="kd__filter"
                 clearable
+                aria-label="搜索知识文档"
                 placeholder="按标题 / 文件名搜索"
                 @keydown.enter="knowledgeStore.searchDocuments()"
                 @clear="knowledgeStore.searchDocuments()"
               />
-              <el-button :loading="loadingDocuments" @click="knowledgeStore.loadDocuments()">刷新</el-button>
+              <el-button :loading="loadingDocuments" @click="knowledgeStore.searchDocuments()">搜索 / 刷新</el-button>
+              <el-button type="primary" :icon="UploadFilled" @click="uploadOpen = true">上传文档</el-button>
             </div>
           </template>
         </PageHeader>
@@ -367,6 +346,46 @@ function onDrop(event: DragEvent): void {
         @change="(next: number) => knowledgeStore.goToPage(next)"
       />
     </el-card>
+    <el-dialog
+      v-model="uploadOpen"
+      title="上传文档"
+      width="min(660px, calc(100vw - 32px))"
+      :close-on-click-modal="false"
+      :close-on-press-escape="!uploading"
+      :show-close="!uploading"
+    >
+      <el-card shadow="never" class="os-form-card--embedded">
+        <p class="kd__hint">支持 Markdown、TXT、PDF、Word 与图片；提交后后台建立索引。</p>
+
+        <!-- 拖拽区：整块都是投放目标；点击「选择文件」走原路径 -->
+        <div
+          class="kd__dropzone"
+          :class="{ 'kd__dropzone--active': dragging }"
+          @dragover="onDragOver"
+          @dragenter="onDragEnter"
+          @dragleave="onDragLeave"
+          @drop="onDrop"
+        >
+          <input ref="fileInput" class="kd__file-input" type="file" :accept="ACCEPT" @change="onFileChange" />
+          <el-button @click="pickFile">选择文件</el-button>
+          <span class="kd__filename">
+            {{ selectedFile ? selectedFile.name : '未选择文件（也可直接拖到这里）' }}
+          </span>
+          <el-input
+            v-model="uploadTitle"
+            aria-label="文档标题（可选）"
+            class="kd__title"
+            placeholder="文档标题（可选）"
+          />
+          <el-button type="primary" :loading="uploading" :disabled="!selectedFile" @click="handleUpload"
+            >提交后台索引</el-button
+          >
+        </div>
+
+        <p class="kd__hint">单文件最大 5 MiB；扫描版 PDF 暂不支持。</p>
+      </el-card>
+      <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
+    </el-dialog>
   </div>
 </template>
 

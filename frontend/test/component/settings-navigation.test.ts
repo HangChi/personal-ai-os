@@ -3,6 +3,7 @@ import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { defineComponent, onMounted, ref } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import { useUiStore } from '@/stores/ui'
 import { useSettingsStore } from '@/stores/settings'
 import SettingsView from '@/views/SettingsView.vue'
 
@@ -34,8 +35,7 @@ async function open(url = '/settings?section=mcp&source=test') {
     attachTo: document.body,
     global: {
       plugins: [createPinia(), router],
-      components: { ModelProfilesPanel: modelPanel },
-      stubs: { McpSettingsPanel: cachedPanel('mcp'), PageHeader: true },
+      stubs: { ModelProfilesPanel: modelPanel, McpSettingsPanel: cachedPanel('mcp'), PageHeader: true },
     },
   })
   wrappers.push(wrapper)
@@ -46,7 +46,7 @@ async function open(url = '/settings?section=mcp&source=test') {
 async function select(wrapper: VueWrapper, label: string) {
   await wrapper
     .findAll('.settings__nav-item')
-    .find((button) => button.text() === label)!
+    .find((button) => button.find('.settings__nav-label').text() === label)!
     .trigger('click')
   await flushPromises()
 }
@@ -80,11 +80,11 @@ describe('设置分组切换', () => {
   })
   it('URL 切换同步导航和可见内容，未知分组回到模型配置', async () => {
     const { wrapper, router } = await open('/settings?section=unknown')
-    expect(wrapper.find('.settings__nav-item[aria-current="page"]').text()).toBe('模型配置')
+    expect(wrapper.find('.settings__nav-item[aria-current="page"] .settings__nav-label').text()).toBe('模型配置')
     expect(mounts).toEqual({ model: 1, mcp: 0 })
     await router.replace('/settings?section=calendar')
     await flushPromises()
-    expect(wrapper.find('.settings__nav-item[aria-current="page"]').text()).toBe('日程')
+    expect(wrapper.find('.settings__nav-item[aria-current="page"] .settings__nav-label').text()).toBe('日程')
     expect(wrapper.find('.settings__panel[aria-label="日程"]').isVisible()).toBe(true)
     expect(wrapper.find('.settings__panel[aria-label="模型配置"]').isVisible()).toBe(false)
   })
@@ -99,5 +99,33 @@ describe('设置分组切换', () => {
     expect(localStorage.getItem('os.settings.followupMode')).toBe('STEER')
     const reopened = await open('/settings?section=chat')
     expect((reopened.wrapper.get('input[value="STEER"]').element as HTMLInputElement).checked).toBe(true)
+  })
+  it('工作区偏好立即生效并持久化，默认知识页支持长期记忆', async () => {
+    const { wrapper } = await open('/settings?section=workspace')
+    const panel = wrapper.get('.settings__panel[aria-label="工作区"]')
+    await panel.get('input[value="board"]').setValue(true)
+    const ui = useUiStore()
+    expect(ui.tasksView).toBe('board')
+    expect(localStorage.getItem('os.tasks.view')).toBe('board')
+    const select = panel.findComponent({ name: 'ElSelect' })
+    select.vm.$emit('update:modelValue', 'memory')
+    await flushPromises()
+    expect(ui.knowledgeTab).toBe('memory')
+    expect(localStorage.getItem('os.knowledge.tab')).toBe('memory')
+    const width = panel.findComponent({ name: 'ElInputNumber' })
+    width.vm.$emit('update:modelValue', 330)
+    await flushPromises()
+    expect(ui.sessionPanelWidth).toBe(330)
+    expect(localStorage.getItem('os.chat.sessionPanel.width')).toBe('330')
+  })
+  it('提醒快捷选项保存实际默认值，不修改已有日程', async () => {
+    const { wrapper } = await open('/settings?section=calendar')
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === '30 分钟')!
+      .trigger('click')
+    await flushPromises()
+    expect(useSettingsStore().settings.reminderLead).toBe(30)
+    expect(localStorage.getItem('os.settings.reminderLead')).toBe('30')
   })
 })

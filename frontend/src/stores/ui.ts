@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
+import { isKnowledgeTab, type KnowledgeTab } from '@/lib/workspace-navigation'
 import { parseStoredSidebarWidth, SIDEBAR_WIDTH_STORAGE_KEY } from '@/lib/sidebar'
 import {
   normalizePreference,
@@ -30,17 +31,8 @@ export const useUiStore = defineStore('ui', () => {
   /** 任务页视图（C-05 / FR-010）：table | board */
   const tasksView = ref<'table' | 'board'>(localStorage.getItem('os.tasks.view') === 'board' ? 'board' : 'table')
   /** 知识库 Tab（T026）：documents | search | ask */
-  const knowledgeTab = ref<'documents' | 'search' | 'ask' | 'governance' | 'captures'>(
-    localStorage.getItem('os.knowledge.tab') === 'search'
-      ? 'search'
-      : localStorage.getItem('os.knowledge.tab') === 'ask'
-        ? 'ask'
-        : localStorage.getItem('os.knowledge.tab') === 'governance'
-          ? 'governance'
-          : localStorage.getItem('os.knowledge.tab') === 'captures'
-            ? 'captures'
-            : 'documents',
-  )
+  const storedKnowledgeTab = localStorage.getItem('os.knowledge.tab')
+  const knowledgeTab = ref<KnowledgeTab>(isKnowledgeTab(storedKnowledgeTab) ? storedKnowledgeTab : 'documents')
 
   /** 侧栏导航折叠（阶段 18 追加）：true = 纯图标模式，localStorage 持久化 */
   const navCollapsed = ref(localStorage.getItem('os.nav.collapsed') === '1')
