@@ -98,6 +98,11 @@ const chatCitation = {
   content: '正式员工住宿限额为每天五百元。',
 }
 function chatCitations() {
+  if (chatMode === 'conflict') return [
+    chatCitation,
+    { ...chatCitation, index: 2, documentId: 'doc-2', documentTitle: '差旅报销制度 · 研发部门执行口径（待核对）', content: '正式员工住宿限额为每天八百元。' },
+    { ...chatCitation, index: 3, chunkIndex: 1, content: '报销需附有效发票。' },
+  ]
   return chatMode === 'sources'
     ? [
         chatCitation,
@@ -123,13 +128,16 @@ function chatRetrieval() {
         outputCount: chatCitations().length,
       },
     ],
-    status: chatMode === 'guarded' ? 'CLARIFY' : chatMode === 'empty' ? 'INSUFFICIENT' : 'READY',
+    status: chatMode === 'conflict' ? 'CONFLICT' : chatMode === 'guarded' ? 'CLARIFY' : chatMode === 'empty' ? 'INSUFFICIENT' : 'READY',
     warnings: [],
-    disagreements: [],
+    disagreements: chatMode === 'conflict' ? [{
+      left: chatCitations()[0], right: chatCitations()[1], leftQuote: '住宿限额为每天五百元', rightQuote: '住宿限额为每天八百元', reason: '同一费用项目的住宿限额不同，需核对适用范围',
+    }] : [],
     clarification: chatMode === 'guarded' ? '请确认适用部门和制度版本。' : '',
   }
 }
 function chatAnswer() {
+  if (chatMode === 'conflict') return '**可确认的内容**\n\n报销需附有效发票 [3]。\n\n**来源分歧**\n\n住宿限额分别为每天五百元 [1] 和八百元 [2]，该项暂不能确定唯一结论。'
   return chatMode === 'sources'
     ? '试用期住宿限额为每天 **五百元**，与正式员工相同 [1]。报销时需要提供有效发票 [2]。'
     : chatMode === 'guarded'
@@ -646,10 +654,10 @@ try {
   if (chatSourcesOnly) {
     for (const theme of ['light', 'dark']) {
       await page.addInitScript((value) => localStorage.setItem('os.theme', value), theme)
-      for (const width of [1440, 390]) {
+      for (const width of [1440, 768, 390, 320]) {
         await page.setViewportSize({
           width,
-          height: width === 390 ? 844 : 1000,
+          height: width === 320 ? 568 : width === 390 ? 844 : 1000,
         })
         const shot = async (name) => {
           const file = `chat-${name}-${theme}-${width}.png`
@@ -710,9 +718,39 @@ try {
         await page.locator('.rag-trace summary').click()
         await page.getByText('请确认适用部门和制度版本。', { exact: true }).waitFor()
         await shot('guarded')
+        await page.keyboard.press('Escape')
+        await drawer.waitFor({ state: 'hidden' })
+        chatMode = 'conflict'
+        await page.reload({ waitUntil: 'networkidle' })
+        const conflictTrigger = page.locator('.chat-sources__trigger')
+        await conflictTrigger.waitFor()
+        assert.ok((await conflictTrigger.innerText()).includes('1 处分歧'))
+        await conflictTrigger.focus()
+        await page.keyboard.press('Space')
+        await drawer.waitFor()
+        const comparison = drawer.locator('.rag-disagreements')
+        assert.equal(await comparison.count(), 1)
+        assert.equal(await comparison.locator('blockquote').count(), 2)
+        assert.equal(await comparison.locator('details').count(), 0)
+        assert.equal(await drawer.locator('.rag-trace').getAttribute('open'), null)
+        assert.ok((await comparison.innerText()).includes('住宿限额为每天五百元'))
+        assert.ok((await comparison.innerText()).includes('住宿限额为每天八百元'))
+        assert.equal(await comparison.locator('a').getAttribute('href'), '/knowledge?tab=governance')
+        const comparisonBox = await comparison.boundingBox()
+        const firstSourceBox = await drawer.locator('.chat-sources__source').first().boundingBox()
+        assert.ok(comparisonBox.y < firstSourceBox.y, '分歧对照必须在来源列表之前')
+        assert.equal(await drawer.evaluate(el => el.scrollWidth <= el.clientWidth + 1), true)
+        await shot('conflict')
+        await comparison.locator('cite button').nth(1).click()
+        assert.equal(await drawer.locator('details[data-citation-index="2"]').getAttribute('open'), '')
+        assert.equal(await drawer.locator('details[data-citation-index="2"] summary').evaluate(el => el === document.activeElement), true)
+        await shot('conflict-source')
+        await page.keyboard.press('Escape')
+        await drawer.waitFor({ state: 'hidden' })
+        await page.waitForFunction(() => document.activeElement?.classList.contains('chat-sources__trigger'))
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
         report.checks.push(
-          `${theme}/${width}: 流式到完成来源固定归属、文档去重、键盘抽屉/焦点恢复、片段与过程、内联预览、空结果隐藏、真实澄清可查、无横向溢出`,
+          `${theme}/${width}: 流式到完成来源固定归属、文档去重、键盘抽屉/焦点恢复、片段与过程、内联预览、空结果隐藏、真实澄清可查、分歧顶部对照/来源定位/数量、无横向溢出`,
         )
       }
     }

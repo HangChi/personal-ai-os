@@ -98,6 +98,7 @@ declare module 'vue' {
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     ProjectManager: typeof import('./src/components/task/ProjectManager.vue')['default']
     ProviderPresetPicker: typeof import('./src/components/settings/ProviderPresetPicker.vue')['default']
+    RagDisagreements: typeof import('./src/components/knowledge/RagDisagreements.vue')['default']
     RagTrace: typeof import('./src/components/knowledge/RagTrace.vue')['default']
     ReminderNotice: typeof import('./src/components/calendar/ReminderNotice.vue')['default']
     ReminderNotifications: typeof import('./src/components/calendar/ReminderNotifications.vue')['default']

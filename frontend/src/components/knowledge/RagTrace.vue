@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { ArrowRight, CircleCheck, InfoFilled, Warning } from '@element-plus/icons-vue'
 import type { KnowledgeHit, RagRetrieval } from '@/types/api'
+import RagDisagreements from './RagDisagreements.vue'
 
 const props = defineProps<{ retrieval?: RagRetrieval | null; embedded?: boolean }>()
 const guardedClass = 'rag-trace--guarded'
@@ -10,6 +11,7 @@ const names: Record<string, string> = {
   rewrite: '查询改写',
   rerank: '候选重排',
   evidence: '证据精审',
+  answer: '逐项作答与核对',
 }
 const states: Record<string, string> = {
   READY: '已找到可用证据',
@@ -64,24 +66,11 @@ function sourceMeta(hit: KnowledgeHit) {
       <el-icon class="rag-trace__chevron" aria-hidden="true"><ArrowRight /></el-icon>
     </summary>
     <div class="rag-trace__body">
-      <div v-if="warnings.length || retrieval.clarification" class="rag-trace__notices">
-        <p v-if="retrieval.clarification">{{ retrieval.clarification }}</p>
+      <div v-if="warnings.length || (!embedded && retrieval.clarification)" class="rag-trace__notices">
+        <p v-if="!embedded && retrieval.clarification">{{ retrieval.clarification }}</p>
         <p v-for="warning in warnings" :key="warning">{{ warning }}</p>
       </div>
-      <section v-if="retrieval.disagreements.length" class="rag-trace__section">
-        <h4>来源分歧</h4>
-        <article v-for="(conflict, index) in retrieval.disagreements" :key="index" class="rag-trace__conflict">
-          <p v-if="conflict.reason">{{ conflict.reason }}</p>
-          <blockquote>
-            <cite>{{ conflict.left.documentTitle }}</cite
-            >{{ conflict.leftQuote }}
-          </blockquote>
-          <blockquote>
-            <cite>{{ conflict.right.documentTitle }}</cite
-            >{{ conflict.rightQuote }}
-          </blockquote>
-        </article>
-      </section>
+      <RagDisagreements v-if="!embedded" :disagreements="retrieval.disagreements" />
       <section class="rag-trace__section">
         <h4>检索过程</h4>
         <ol class="rag-trace__stages">

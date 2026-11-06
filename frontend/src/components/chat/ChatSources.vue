@@ -2,11 +2,22 @@
 import { computed, ref } from 'vue'
 import { ArrowRight, Document, InfoFilled } from '@element-plus/icons-vue'
 import RagTrace from '@/components/knowledge/RagTrace.vue'
+import RagDisagreements from '@/components/knowledge/RagDisagreements.vue'
 import { safeCitationUrl, type InlineCitation } from '@/lib/citations'
 import type { RagRetrieval } from '@/types/api'
 
 const props = defineProps<{ citations?: readonly InlineCitation[]; retrieval?: RagRetrieval | null }>()
 const open = ref(false)
+const drawerContent = ref<HTMLElement>()
+function selectSource(index: number) {
+  if (!Number.isInteger(index) || index < 1) return
+  const excerpt = drawerContent.value?.querySelector<HTMLDetailsElement>(`details[data-citation-index="${index}"]`)
+  if (!excerpt) return
+  excerpt.open = true
+  excerpt.scrollIntoView?.({ block: 'nearest' })
+  excerpt.querySelector('summary')?.focus({ preventScroll: true })
+}
+const conflictCount = computed(() => props.retrieval?.disagreements.length ?? 0)
 const guarded = computed(() => ['CONFLICT', 'CLARIFY', 'UNVERIFIED'].includes(props.retrieval?.status ?? ''))
 const hasNotice = computed(
   () =>
@@ -50,18 +61,32 @@ const groups = computed(() => {
     >
       <el-icon aria-hidden="true"><Document v-if="groups.length" /><InfoFilled v-else /></el-icon>
       <span>{{ groups.length ? `${groups.length} 个来源` : '检索说明' }}</span>
-      <span v-if="groups.length && hasNotice" class="chat-sources__notice">{{ guarded ? '需核对' : '有说明' }}</span>
+      <span v-if="conflictCount" class="chat-sources__notice">{{ conflictCount }} 处分歧</span>
+      <span v-else-if="groups.length && hasNotice" class="chat-sources__notice">{{
+        guarded ? '需核对' : '有说明'
+      }}</span>
       <el-icon aria-hidden="true"><ArrowRight /></el-icon>
     </button>
     <el-drawer v-model="open" title="来源与检索" size="min(440px, 100vw)" append-to-body destroy-on-close>
-      <div class="chat-sources__drawer">
+      <div ref="drawerContent" class="chat-sources__drawer">
+        <RagDisagreements
+          :disagreements="retrieval?.disagreements ?? []"
+          :citations="citations"
+          @select-source="selectSource"
+        />
+        <p v-if="retrieval?.clarification" class="chat-sources__clarification">{{ retrieval.clarification }}</p>
         <section v-for="(group, index) in groups" :key="index" class="chat-sources__source">
           <h3>
             <a v-if="group.url" :href="group.url" target="_blank" rel="noopener noreferrer">{{ group.title }} ↗</a>
             <span v-else>{{ group.title }}</span>
           </h3>
           <p v-if="group.meta" class="chat-sources__meta">{{ group.meta }}</p>
-          <details v-for="citation in group.citations" :key="citation.index" class="chat-sources__excerpt">
+          <details
+            v-for="citation in group.citations"
+            :key="citation.index"
+            class="chat-sources__excerpt"
+            :data-citation-index="citation.index"
+          >
             <summary>
               [{{ citation.index }}] {{ citation.url ? '网页摘录' : `片段 ${citation.chunkIndex + 1}` }}
             </summary>
@@ -107,6 +132,11 @@ const groups = computed(() => {
 }
 .chat-sources__drawer {
   overflow-wrap: anywhere;
+}
+.chat-sources__clarification {
+  margin: 0 0 var(--os-space-4);
+  font-size: var(--os-font-sm);
+  line-height: 1.7;
 }
 .chat-sources__source + .chat-sources__source {
   margin-top: var(--os-space-5);

@@ -4,7 +4,7 @@ import ChatSources from '@/components/chat/ChatSources.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
 import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
 import { bindReplyRetrieval, restoreReplyRetrieval } from '@/lib/chat-retrieval'
-import type { ChatCitation, ChatMessage, RagRetrieval } from '@/types/api'
+import type { ChatCitation, ChatMessage, RagRetrieval, KnowledgeHit } from '@/types/api'
 
 const citation: ChatCitation = {
   index: 1,
@@ -37,6 +37,44 @@ afterEach(() => {
 })
 
 describe('统一来源入口', () => {
+  it('来源分歧直接展示在抽屉顶部，不在检索过程重复，并保留实际编号和治理入口', async () => {
+    const left: KnowledgeHit = { ...citation, score: 0.9, matchedBy: 'VECTOR', source: null }
+    const right: KnowledgeHit = { ...left, documentId: 'b', documentTitle: '另一版差旅制度', content: '限额为八百元' }
+    const wrapper = mount(ChatSources, {
+      attachTo: document.body,
+      props: {
+        citations: [
+          { ...citation, index: 7 },
+          { ...citation, index: 12, documentId: 'b', documentTitle: right.documentTitle, content: right.content },
+        ],
+        retrieval: {
+          ...retrieval,
+          status: 'CONFLICT',
+          hits: [left, right],
+          disagreements: [
+            { left, right, leftQuote: '限额为五百元', rightQuote: '限额为八百元', reason: '同一费用标准不同' },
+          ],
+        },
+      },
+    })
+    expect(wrapper.get('button').text()).toContain('2 个来源1 处分歧')
+    await wrapper.get('button').trigger('click')
+    await flushPromises()
+    const drawer = document.querySelector('.chat-sources__drawer')!
+    const conflicts = drawer.querySelector('.rag-disagreements')!
+    expect(drawer.querySelectorAll('.rag-disagreements')).toHaveLength(1)
+    expect(conflicts.closest('details')).toBeNull()
+    expect(conflicts.textContent).toContain('[7] 差旅制度')
+    expect(conflicts.textContent).toContain('[12] 另一版差旅制度')
+    expect(conflicts.textContent).toContain('限额为五百元')
+    expect(conflicts.querySelector('a')?.getAttribute('href')).toBe('/knowledge?tab=governance')
+    expect(
+      conflicts.compareDocumentPosition(drawer.querySelector('.chat-sources__source')!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(drawer.querySelector('.rag-trace')?.hasAttribute('open')).toBe(false)
+    wrapper.unmount()
+  })
   it('普通零命中不显示空卡片，真实澄清即使没有阶段也可查看', async () => {
     const wrapper = mount(ChatSources, {
       props: { citations: [], retrieval: { ...retrieval, status: 'INSUFFICIENT' } },

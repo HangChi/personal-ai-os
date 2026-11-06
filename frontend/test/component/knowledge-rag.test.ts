@@ -115,10 +115,9 @@ describe('RAG 证据与治理界面', () => {
     expect(wrapper.get('summary').text()).toContain('2 篇来源')
     expect(wrapper.get('.rag-trace__notices').text()).toContain('请确认适用日期')
     expect(wrapper.get('.rag-trace__conflict').text()).toContain('同一费用限额不同')
-    expect(wrapper.findAll('blockquote').map((quote) => quote.text())).toEqual([
-      '差旅制度每天五百元',
-      '新差旅制度每天八百元',
-    ])
+    expect(wrapper.findAll('blockquote cite').map((quote) => quote.text())).toEqual(['差旅制度', '新差旅制度'])
+    expect(wrapper.findAll('blockquote p').map((quote) => quote.text())).toEqual(['每天五百元', '每天八百元'])
+    expect(wrapper.get('blockquote small').text()).toContain('2026版 · 研发部')
     expect(wrapper.findAll('.rag-trace__sources li')).toHaveLength(2)
     wrapper.unmount()
   })
