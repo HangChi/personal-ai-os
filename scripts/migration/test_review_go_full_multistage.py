@@ -88,6 +88,41 @@ class MultistageReviewTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.review(report)
 
+    def test_java_only_passes_keep_original_indices_and_observed_groups(self):
+        backend = self.report["backends"]["go"]
+        backend.update(result="FAIL", multistage_passed=124, multistage_failed=5)
+        self.report["result"] = "FAIL"
+        rows = backend["multistage_cases"]
+        for row in rows[:5]:
+            row.update(result="FAIL", failure="retained original failure")
+        rows[0]["stages"][2]["status"] = "FALLBACK"
+        rows[1].update(retrieval_status="CLARIFY", answered=False)
+        rows[2].update(retrieval_status="CONFLICT", answered=False)
+        rows[3]["answer"]["explicit_marks_match"] = False
+        rows[4]["answer"]["acceptable_document_cited"] = False
+        rows[3]["answer"]["text"] = "private answer must not be copied"
+        result = self.review()["java_pass_go_fail"]
+        self.assertEqual([row["index"] for row in result["cases"]], [1, 2, 3, 4, 5])
+        self.assertEqual([row["source_index"] for row in result["cases"]], [0, 1, 2, 3, 4])
+        self.assertEqual(result["group_counts"], dict(rerank_fallback_ready=1, clarify_without_warning=1,
+            conflict_without_warning=1, explicit_citation_mismatch=1, other_observed_failure=1))
+        self.assertEqual(result["cases"][0]["observations"]["go"]["failure"], "retained original failure")
+        self.assertTrue(all(not row["root_cause_verified"] for row in result["cases"]))
+        self.assertFalse(result["raw_stage_responses_available"])
+        self.assertNotIn("private answer", str(result))
+
+    def test_failed_citation_check_without_answer_metadata_is_still_explicit(self):
+        self.report["result"] = "FAIL"
+        backend = self.report["backends"]["go"]
+        backend.update(result="FAIL", multistage_passed=128, multistage_failed=1)
+        row = backend["multistage_cases"][27]
+        row.update(result="FAIL", failure="Real answer citation marks differ from actual citation records")
+        row.pop("answer")
+        result = self.review()["java_pass_go_fail"]
+        self.assertEqual(result["group_counts"], dict(explicit_citation_mismatch=1))
+        self.assertEqual(result["cases"][0]["index"], 28)
+        self.assertEqual(result["cases"][0]["observations"]["go"]["citation_checks"], {})
+
 
 if __name__ == "__main__":
     unittest.main()

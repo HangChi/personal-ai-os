@@ -11,6 +11,42 @@ from run_go_eval_tests import query_subset
 from run_go_real_eval_tests import SPEC, comparison, metrics
 
 
+def observed_failure(row):
+    if (row.get("retrieval_status") == "READY" and any(
+            stage.get("name") == "rerank" and stage.get("status") == "FALLBACK"
+            for stage in row.get("stages", []))):
+        return "rerank_fallback_ready"
+    if row.get("retrieval_status") in ("CLARIFY", "CONFLICT") and row.get("warning_count") == 0:
+        return row["retrieval_status"].lower() + "_without_warning"
+    if (row.get("answer", {}).get("explicit_marks_match") is False
+            or row.get("failure") == "Real answer citation marks differ from actual citation records"):
+        return "explicit_citation_mismatch"
+    return "other_observed_failure"
+
+
+def paired_failure_observations(report):
+    rows = []
+    for index, (go, java) in enumerate(zip(report["backends"]["go"]["multistage_cases"],
+                                         report["backends"]["java"]["multistage_cases"]), 1):
+        if (go["result"], java["result"]) != ("FAIL", "PASS"):
+            continue
+        observations = {}
+        for name, row in (("go", go), ("java", java)):
+            observations[name] = {key: row[key] for key in ("result", "retrieval_status", "answered",
+                "warning_count", "actual_chat_calls", "stages", "failure") if key in row}
+            observations[name]["citation_checks"] = {key: row.get("answer", {})[key] for key in (
+                "explicit_marks_match", "citation_chunks_match_database", "acceptable_document_cited")
+                if key in row.get("answer", {})}
+        rows.append(dict(index=index, source_index=index - 1, question=go["question"],
+            acceptable_documents=go["acceptable_documents"], observed_group=observed_failure(go),
+            observations=observations, root_cause_verified=False))
+    return dict(index_base=1, cases=rows, group_counts=dict(Counter(row["observed_group"] for row in rows)),
+        raw_stage_responses_available=False, root_cause_verified=False,
+        limits="Groups describe recorded outcomes, not code regressions or model-stage root causes. "
+               "Raw structured stage responses were not captured; independent model calls, random document identities "
+               "and per-backend governance state prevent causal attribution. Original assertions remain unchanged.")
+
+
 def review_multistage(report, raw, path):
     if (report.get("result") not in ("PASS", "FAIL") or report.get("synthetic_model") is not False
             or report.get("configured_real_model_used") is not True
@@ -72,6 +108,7 @@ def review_multistage(report, raw, path):
         source_sha256=hashlib.sha256(raw).hexdigest(), documents=documents, queries_per_backend=len(annotations),
         model=report["model"], backends=summaries, factual_quality_manually_approved=False,
         paired_strict_outcomes=[dict(go=go, java=java, cases=count) for (go, java), count in sorted(paired.items())],
+        java_pass_go_fail=paired_failure_observations(report),
         release_gate_approved=False, semantic_quality_verified=False, historical_corpus_identity_verified=False,
         limits="Every original case retained in its original order, including guarded and degraded responses. "
                "Independent model calls and shared per-backend governance state are not isolated per-question experiments. "
