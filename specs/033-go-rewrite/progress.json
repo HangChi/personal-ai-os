@@ -3027,9 +3027,11 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/task/service/TaskService.java": {
       "status": "in_progress",
@@ -3044,9 +3046,11 @@
         "specs/033-go-rewrite/p8-completion.md",
         "specs/033-go-rewrite/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/task/repository/TaskRepository.java": {
       "status": "implemented",
@@ -3078,9 +3082,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/task/TaskExportContributor.java": {
       "status": "implemented",
@@ -22751,9 +22757,11 @@
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/mcp/client/McpClientRegistry.java": {
       "status": "implemented",
@@ -26903,9 +26911,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/035-safe-automation/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/common/confirmation/ConfirmationAction.java": {
       "status": "implemented",
@@ -27177,9 +27187,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/task/dto/DeletionAck.java": {
       "status": "implemented",
@@ -27209,9 +27221,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/task/dto/TaskQuery.java": {
       "status": "in_progress",
@@ -27227,9 +27241,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/task/dto/TaskStatsDto.java": {
       "status": "implemented",
@@ -27259,9 +27275,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/task/entity/TaskPriority.java": {
       "status": "implemented",
@@ -27954,9 +27972,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/035-safe-automation/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/api/activity.ts": {
       "status": "implemented",
@@ -27991,9 +28011,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/035-safe-automation/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/api/chat-runs.ts": {
       "status": "in_progress",
@@ -28212,9 +28234,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/api/usage.ts": {
       "status": "implemented",
@@ -28326,9 +28350,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/StatusTag.vue": {
       "status": "implemented",
@@ -28370,9 +28396,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/calendar/CalendarDayList.vue": {
       "status": "implemented",
@@ -28429,9 +28457,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/035-safe-automation/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/calendar/ReminderNotice.vue": {
       "status": "implemented",
@@ -28696,9 +28726,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeGovernanceTab.vue": {
       "status": "in_progress",
@@ -28718,9 +28750,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeHitList.vue": {
       "status": "in_progress",
@@ -28807,9 +28841,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/ModelProfileCard.vue": {
       "status": "implemented",
@@ -28840,9 +28876,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/ModelProfilesPanel.vue": {
       "status": "in_progress",
@@ -28862,9 +28900,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/ProviderPresetPicker.vue": {
       "status": "in_progress",
@@ -28884,9 +28924,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/task/TaskBoardPanel.vue": {
       "status": "in_progress",
@@ -28899,9 +28941,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/task/TaskCreateForm.vue": {
       "status": "in_progress",
@@ -28914,9 +28958,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/task/TaskEditDialog.vue": {
       "status": "in_progress",
@@ -28929,9 +28975,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/task/TaskTablePanel.vue": {
       "status": "in_progress",
@@ -28944,9 +28992,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/lib/board.ts": {
       "status": "implemented",
@@ -29234,9 +29284,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/035-safe-automation/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/notifications/permission.ts": {
       "status": "implemented",
@@ -29306,9 +29358,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/035-safe-automation/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:safe-automation-candidate-20261106：登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/stores/activity.ts": {
       "status": "implemented",
@@ -29457,9 +29511,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/stores/ui.ts": {
       "status": "in_progress",
@@ -29516,9 +29572,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/styles/theme.css": {
       "status": "implemented",
@@ -29597,9 +29655,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/CalendarView.vue": {
       "status": "in_progress",
@@ -29707,9 +29767,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/NotFoundView.vue": {
       "status": "implemented",
@@ -29740,9 +29802,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/SettingsView.vue": {
       "status": "in_progress",
@@ -29762,9 +29826,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/TasksView.vue": {
       "status": "in_progress",
@@ -29777,9 +29843,11 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:task-workspace-candidate-20261106：登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/UsageView.vue": {
       "status": "in_progress",
@@ -29799,9 +29867,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/activity-store.test.mjs": {
       "status": "implemented",
@@ -30337,9 +30407,11 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/setup.ts": {
       "status": "implemented",
@@ -30364,15 +30436,28 @@
       "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
     },
     "file:frontend/test/component/task-create-form.test.ts": {
-      "status": "implemented",
+      "status": "in_progress",
       "evidence": [
         "specs/033-go-rewrite/p8-e2e/browser-go.json",
         "specs/033-go-rewrite/p8-e2e/README.md",
         "specs/033-go-rewrite/validation.md",
         "specs/033-go-rewrite/p8-inventory-review.md",
-        "specs/033-go-rewrite/p8-completion.md"
+        "specs/033-go-rewrite/p8-completion.md",
+        "specs/036-workspace-ui/validation.md",
+        "specs/036-workspace-ui/browser-report.json",
+        "scripts/ui/browser-checks.mjs",
+        "frontend/test/component/workspace-navigation.test.ts",
+        "frontend/test/component/workflow-editor.test.ts",
+        "frontend/test/component/search-view.test.ts",
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json",
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
-      "note": "P8职责处置：原前端逐文件SHA不变；lint/format/type-check/1151逻辑/串行195组件/build及真实Chrome报告。预算同基线失败/原跳过/真实Push另列，不据此宣布全部E2E通过。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/web-push.test.ts": {
       "status": "in_progress",

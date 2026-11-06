@@ -5999,8 +5999,8 @@
       "id": "file:frontend/test/component/task-create-form.test.ts",
       "path": "frontend/test/component/task-create-form.test.ts",
       "sha256": "fcaaacee03efc99bbfede8484007eb0d566970590db06184929dcfad60a66270",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/test/component/web-push.test.ts",
@@ -7689,13 +7689,13 @@
     {
       "id": "scope:task-workspace-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
       "files": 50
     },
     {
       "id": "scope:safe-automation-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
       "files": 75
     },
     {
@@ -7713,8 +7713,8 @@
     {
       "id": "scope:workspace-ui-consolidation-20261106",
       "status": "in_progress",
-      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
-      "files": 31
+      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
+      "files": 37
     },
     {
       "id": "scope:chat-evidence-context-20261106",

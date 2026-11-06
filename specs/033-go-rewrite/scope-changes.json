@@ -1083,8 +1083,8 @@
     {
       "id": "scope:task-workspace-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
-      "summary": "登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
+      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
+      "summary": "登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。",
       "files": [
         {
           "path": "backend-go/internal/business/dataimport/payload.go",
@@ -1224,7 +1224,7 @@
         {
           "path": "frontend/src/components/task/TaskCreateForm.vue",
           "baseline_sha256": "020215836e505f91147758cd48720333cc2b6b02b443c9770a61b093d20dbb51",
-          "candidate_sha256": "3affa2eb018e3dc0e022786d90772309cfc57933cf92d3ff9f49785e625c6b47"
+          "candidate_sha256": "2c37517755b599b5c351ff626b606f8b3ab5979f1f767ae8d918484bab69bfa9"
         },
         {
           "path": "frontend/src/components/task/TaskEditDialog.vue",
@@ -1234,7 +1234,7 @@
         {
           "path": "frontend/src/components/task/TaskOrganizationFields.vue",
           "baseline_sha256": null,
-          "candidate_sha256": "5d6d33ed2e876568bdb467235b5a26bbb2378e993e854082657449d12b3ff739"
+          "candidate_sha256": "b84feff6249b43e70dce8b11c68961dd9e4c3cde6472189d0f3193c8e6b89a9c"
         },
         {
           "path": "frontend/src/components/task/TaskTablePanel.vue",
@@ -1259,7 +1259,7 @@
         {
           "path": "frontend/src/views/TasksView.vue",
           "baseline_sha256": "f8aab82a67678a3b186ebe0865d148442cc40efb1b734dd2ba61b1f3654454ed",
-          "candidate_sha256": "63eb7e6484ba1f1d3556e8d6a6afbbc117c3687ca8a7aaf048d8abe4008608fb"
+          "candidate_sha256": "6b290a2f17133f7bd2f1c2fcde2955714a3a043fbbf943d029db7b0f9b8af8cb"
         },
         {
           "path": "frontend/test/component/today-workspace.test.ts",
@@ -1352,7 +1352,9 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/034-task-workspace/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
@@ -1363,8 +1365,8 @@
     {
       "id": "scope:safe-automation-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
-      "summary": "登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
+      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
+      "summary": "登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。",
       "files": [
         {
           "path": "backend-go/go.mod",
@@ -1609,7 +1611,7 @@
         {
           "path": "frontend/src/App.vue",
           "baseline_sha256": "3d46f20fc1f3ec12d64724cd22c80c4619df014f9da8f192adffe9be6c34a462",
-          "candidate_sha256": "6919b3fd0294a4c265d8600c3d724b3caf1b44fb7f6bbefdc6efba39af45faf3"
+          "candidate_sha256": "9d8db0b47987cd262a5f0954c93cb75e913b7db36f1894725bb48887c64e5c21"
         },
         {
           "path": "frontend/src/api/calendar.ts",
@@ -1761,7 +1763,9 @@
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/035-safe-automation/validation.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
@@ -2177,8 +2181,8 @@
     {
       "id": "scope:workspace-ui-consolidation-20261106",
       "status": "in_progress",
-      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
-      "summary": "036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。",
+      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
+      "summary": "036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。",
       "files": [
         {
           "path": "frontend/src/components/PageHeader.vue",
@@ -2298,7 +2302,7 @@
         {
           "path": "scripts/ui/browser-checks.mjs",
           "baseline_sha256": null,
-          "candidate_sha256": "baa6d29934a72b4921896be4c464402c58180a34fa763e196bfa1a421be66271"
+          "candidate_sha256": "f9a9928820f7caa6419dd786c2e18b3c24f451433b9cb16ab9d1e17b1a19853a"
         },
         {
           "path": "specs/036-workspace-ui/browser-report.json",
@@ -2334,6 +2338,36 @@
           "path": "specs/036-workspace-ui/validation.md",
           "baseline_sha256": null,
           "candidate_sha256": "e7d16478bf9d6fba242a7929848f280d1b5483380dbde2f9a00a609cf7f4bd21"
+        },
+        {
+          "path": "frontend/test/component/task-create-form.test.ts",
+          "baseline_sha256": "fcaaacee03efc99bbfede8484007eb0d566970590db06184929dcfad60a66270",
+          "candidate_sha256": "71a75abf3f05ec986fad16a232f8278731c66d084d3d6ab0015fe234e8a8eb92"
+        },
+        {
+          "path": "specs/038-task-create-layout/browser-report.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "87013d0bbeb80f908ed283c80143b31c9a15f3613cdec86037ea1354a4739cd6"
+        },
+        {
+          "path": "specs/038-task-create-layout/plan.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "d0a5e876018fd02cee17a5ab0249ae9709893c8bedc0c109e052c56eeead62e8"
+        },
+        {
+          "path": "specs/038-task-create-layout/spec.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "8aa1ca469c2e9f7aa835785828a1ef04f23a4cb078213f9b0a12be8ed991a8e2"
+        },
+        {
+          "path": "specs/038-task-create-layout/tasks.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "e250433b1c33fa4602efb5224a57977a21a36b2d54f623ae3f84c6d19b70dde1"
+        },
+        {
+          "path": "specs/038-task-create-layout/validation.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "665c02c5a698b5f59f20e40407cf8e796689bb5ba672904efa317b3a78a44801"
         }
       ],
       "parity": {
@@ -2369,7 +2403,9 @@
         "frontend/test/component/knowledge-jobs-panel.test.ts",
         "specs/036-workspace-ui/index-jobs-validation.md",
         "specs/036-workspace-ui/index-jobs-browser-report.json",
-        "specs/037-conversational-knowledge/validation.md"
+        "specs/037-conversational-knowledge/validation.md",
+        "specs/038-task-create-layout/validation.md",
+        "specs/038-task-create-layout/browser-report.json"
       ],
       "limitations": [
         "Java/Go责任文件只是未修改的接口/业务依赖，哈希绑定不代表新增或完成双端行为验收。",
