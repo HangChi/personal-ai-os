@@ -16,9 +16,9 @@
 - [X] T011 [US1] 在两端chat恢复入口持久隔离只读工作流Run，生成固定只读报告并记录「零模型调用」，max_items「1..100」、max_output_chars「1000..20000」、max_runs_per_day「1..24」
 - [X] T012 [US1] 在 frontend/src/views/WorkflowsView.vue 增加计划/启停/手动执行/重试/历史，完成检查后提交
 ## US4 维护恢复
-- [ ] T013 [US4] 在 V47__maintenance_center.sql 与两端maintenance模块添加真实心跳（「90秒」失联）、失败队列/待处理Run聚合和有界查询
-- [ ] T014 [US4] 在两端maintenance模块实现「最多20MiB」业务备份纯校验与历史、外部演练报告（明确非独立验证），补充业务零写入测试
-- [ ] T015 [US4] 在 frontend/src/views/MaintenanceView.vue 集中显示备份、校验、心跳、失败任务和既有独立库恢复演练指引，完成检查后提交
+- [X] T013 [US4] 在 V47__maintenance_center.sql 与两端maintenance模块添加真实心跳（「90秒」失联）、失败队列/待处理Run聚合和有界查询
+- [X] T014 [US4] 在两端maintenance模块实现「最多20MiB」业务备份纯校验与历史、外部演练报告（明确非独立验证），补充业务零写入测试
+- [X] T015 [US4] 在 frontend/src/views/MaintenanceView.vue 集中显示备份、校验、心跳、失败任务和既有独立库恢复演练指引，完成检查后提交
 ## Final validation
 - [ ] T016 执行Java verify、Go race/vet/build、前端全检查、隔离数据库/浏览器并记录 specs/035-safe-automation/validation.md，提交最终验证
 

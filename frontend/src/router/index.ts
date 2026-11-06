@@ -68,6 +68,12 @@ const router = createRouter({
       meta: { title: '用量' },
     },
     {
+      path: '/maintenance',
+      name: 'maintenance',
+      component: () => import('@/views/MaintenanceView.vue'),
+      meta: { title: '维护与恢复' },
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: () => import('@/views/SettingsView.vue'),

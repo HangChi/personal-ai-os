@@ -16,6 +16,7 @@ import (
 	"personal-ai-os/backend-go/internal/business/confirmation"
 	"personal-ai-os/backend-go/internal/business/idempotency"
 	"personal-ai-os/backend-go/internal/business/knowledge"
+	ops "personal-ai-os/backend-go/internal/business/maintenance"
 	"personal-ai-os/backend-go/internal/business/mcp"
 	"personal-ai-os/backend-go/internal/business/model"
 	"personal-ai-os/backend-go/internal/business/task"
@@ -89,6 +90,7 @@ type Foundation struct {
 	mcp              *mcp.Registry
 	retention        *maintenance.Worker
 	workflowStop     func()
+	maintenanceStop  func()
 	containerNetwork bool
 }
 
@@ -510,12 +512,22 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 	if options.EnableP7 {
 		options.Business = f.p7Route(tasks, p5, personalMCP, name, version, logger, options.Business)
 	}
+	var operations *ops.Service
 	var workflows *workflow.Service
 	if options.EnableP8 {
+		operations, err = ops.NewService(pool, settings.Role)
+		if err != nil {
+			return nil, err
+		}
 		workflows = &workflow.Service{Pool: pool, Calendar: p5.events}
 		previous := options.Business
 		handler := workflows.Handler(logger)
+		opsHandler := operations.Handler(logger)
 		options.Business = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if ops.OwnsPath(r.URL.Path) {
+				opsHandler.ServeHTTP(w, r)
+				return
+			}
 			if workflow.OwnsPath(r.URL.Path) {
 				handler.ServeHTTP(w, r)
 				return
@@ -555,6 +567,17 @@ func OpenFoundation(ctx context.Context, properties *config.Properties, options 
 			f.workflowStop = workflows.Start(f.ctx, logger)
 		} else if value != "false" {
 			return nil, errors.New("app.workflows.enabled必须为true或false")
+		}
+	}
+	if operations != nil {
+		value, found, e := properties.Get("app.maintenance.heartbeat-enabled")
+		if e != nil {
+			return nil, e
+		}
+		if !found || value == "true" {
+			f.maintenanceStop = operations.Start(f.ctx, logger)
+		} else if value != "false" {
+			return nil, errors.New("app.maintenance.heartbeat-enabled必须为true或false")
 		}
 	}
 	return f, nil
@@ -606,6 +629,9 @@ func (f *Foundation) Close(ctx context.Context) error {
 		f.closing = true
 		f.mu.Unlock()
 		go func() {
+			if f.maintenanceStop != nil {
+				f.maintenanceStop()
+			}
 			if f.workflowStop != nil {
 				f.workflowStop()
 			}

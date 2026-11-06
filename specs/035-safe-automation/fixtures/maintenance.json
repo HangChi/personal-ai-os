@@ -1,0 +1,3070 @@
+[
+  {
+    "name": "完整样例含归档项目和只读会话",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "VALID",
+    "issue": null
+  },
+  {
+    "name": "未知扩展字段兼容",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ],
+      "future": {
+        "unknown": true
+      }
+    },
+    "status": "VALID",
+    "issue": null
+  },
+  {
+    "name": "空助手消息可保留",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "VALID",
+    "issue": null
+  },
+  {
+    "name": "版本必须为字符串1",
+    "payload": {
+      "formatVersion": 1,
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "formatVersion"
+  },
+  {
+    "name": "数组不能为null",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": null,
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "tasks"
+  },
+  {
+    "name": "数组元素不能为null",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        },
+        null
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "tasks"
+  },
+  {
+    "name": "归档状态类型",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": "true"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "archived"
+  },
+  {
+    "name": "任务状态枚举",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "UNKNOWN",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "status"
+  },
+  {
+    "name": "大小写UUID重复",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "重复"
+  },
+  {
+    "name": "悬空项目",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000999",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "项目引用"
+  },
+  {
+    "name": "自引用父任务",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "不能循环"
+  },
+  {
+    "name": "父子任务循环",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC",
+          "parentTaskId": "00000000-0000-0000-0000-000000000003"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "不能循环"
+  },
+  {
+    "name": "父子项目不同",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": null,
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "项目或完成状态"
+  },
+  {
+    "name": "已完成父任务仍有未完成子任务",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "DONE",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC",
+          "completedAt": "2026-11-06T00:00:00Z"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "项目或完成状态"
+  },
+  {
+    "name": "周期任务缺截止时间",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002",
+          "recurrenceType": "DAILY"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "截止时间"
+  },
+  {
+    "name": "无效周期时区",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "Invalid/Zone"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "周期时区"
+  },
+  {
+    "name": "锚定日越界",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC",
+          "recurrenceAnchorDay": 32
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "锚定日"
+  },
+  {
+    "name": "锚定日不是数字",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC",
+          "recurrenceAnchorDay": "bad"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "recurrenceAnchorDay"
+  },
+  {
+    "name": "标签过长",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC",
+          "tags": [
+            "xxxxxxxxxxxxxxxxxxxxx"
+          ]
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "标签"
+  },
+  {
+    "name": "时间字段不能用数字",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": 1,
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "startsAt"
+  },
+  {
+    "name": "日程时间倒置",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-05T00:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "结束时间"
+  },
+  {
+    "name": "重复截止倒置",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE",
+          "recurrenceUntil": "2026-11-01T00:00:00Z"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "重复截止"
+  },
+  {
+    "name": "悬空记忆取代引用",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000999"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "取代引用"
+  },
+  {
+    "name": "记忆循环",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000005"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "取代链循环"
+  },
+  {
+    "name": "记忆重复正文",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "旧记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "重复正文"
+  },
+  {
+    "name": "文档分块数不符",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 2
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "chunkCount"
+  },
+  {
+    "name": "分块类型错误",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            {}
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "分块应为"
+  },
+  {
+    "name": "资料有效日期倒置",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2025-01-01"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "有效日期"
+  },
+  {
+    "name": "资料状态错误",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "BAD",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "lifecycle"
+  },
+  {
+    "name": "消息角色错误",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "SYSTEM",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "role"
+  },
+  {
+    "name": "消息序号重复",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            },
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "消息序号"
+  },
+  {
+    "name": "会话标识错误",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "bad/id",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": "conversationId"
+  },
+  {
+    "name": "消息数组类型错误",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": {}
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ]
+    },
+    "status": "INVALID",
+    "issue": ".messages"
+  },
+  {
+    "name": "声明数量不符",
+    "payload": {
+      "formatVersion": "1",
+      "projects": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "归档项目",
+          "archived": true
+        }
+      ],
+      "tasks": [
+        {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "title": "父任务",
+          "status": "TODO",
+          "priority": "MEDIUM",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "recurrenceType": "NONE",
+          "recurrenceTimezone": "UTC"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "title": "子任务",
+          "status": "TODO",
+          "priority": "LOW",
+          "projectId": "00000000-0000-0000-0000-000000000001",
+          "parentTaskId": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "calendarEvents": [
+        {
+          "id": "00000000-0000-0000-0000-000000000004",
+          "title": "日程",
+          "startsAt": "2026-11-06T01:00:00Z",
+          "endsAt": "2026-11-06T02:00:00Z",
+          "recurrenceType": "NONE"
+        }
+      ],
+      "memories": [
+        {
+          "id": "00000000-0000-0000-0000-000000000005",
+          "content": "旧记忆",
+          "supersededBy": "00000000-0000-0000-0000-000000000006"
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "content": "新记忆"
+        }
+      ],
+      "sessions": [
+        {
+          "session": {
+            "conversationId": "report-fixture",
+            "title": "只读报告",
+            "createdAt": "2026-11-06T00:00:00Z",
+            "readOnlyReport": true
+          },
+          "messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "报告正文",
+              "sequenceNo": 1
+            }
+          ]
+        }
+      ],
+      "knowledgeDocuments": [
+        {
+          "document": {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "知识资料",
+            "filename": "test.txt",
+            "chunkCount": 1
+          },
+          "chunks": [
+            "资料分块"
+          ],
+          "source": {
+            "spaceName": "默认知识库",
+            "lifecycle": "ACTIVE",
+            "effectiveFrom": "2026-01-01",
+            "effectiveUntil": "2026-12-31"
+          }
+        }
+      ],
+      "counts": {
+        "tasks": 900
+      }
+    },
+    "status": "INVALID",
+    "issue": "counts"
+  }
+]

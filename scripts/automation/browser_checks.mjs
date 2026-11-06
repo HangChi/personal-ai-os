@@ -4,7 +4,8 @@ import { existsSync,writeFileSync } from 'node:fs'
 import { join,dirname,resolve } from 'node:path'
 import { fileURLToPath,pathToFileURL } from 'node:url'
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..')
-const [backend,output,emptyEnv]=process.argv.slice(2)
+const [backend,output,emptyEnv,label="JAVA"]=process.argv.slice(2)
+const workflowName=`浏览器晨报 · ${label}`
 assert.equal(new URL(backend).hostname,'127.0.0.1')
 const require=createRequire(import.meta.url)
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE??join(process.env.HOME,'.workbuddy/binaries/node/workspace/node_modules/playwright'))
@@ -21,7 +22,7 @@ try{
  const page=await context.newPage();page.setDefaultTimeout(15000)
  page.on('pageerror',(e)=>report.errors.push(String(e)))
  await page.goto(origin+'/calendar',{waitUntil:'networkidle'})
- const ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:browser-035\r\nSUMMARY:互通浏览器测试\r\nDTSTART:20261106T010000Z\r\nDTEND:20261106T020000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n'
+ const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:browser-035-${label}\r\nSUMMARY:互通浏览器测试\r\nDTSTART:20261106T010000Z\r\nDTEND:20261106T020000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`
  await page.getByLabel('导入 ICS 文件',{exact:true}).setInputFiles({name:'test.ics',mimeType:'text/calendar',buffer:Buffer.from(ics)})
  await page.getByText('预览 1 条，其中 0 条已存在。',{exact:false}).waitFor()
  await page.getByRole('button',{name:'确认导入',exact:true}).click()
@@ -56,12 +57,12 @@ try{
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'采集页移动端不应横向溢出')
  await page.setViewportSize({width:1365,height:1000})
  await page.goto(origin+'/workflows',{waitUntil:'networkidle'})
- await page.getByLabel('计划名称',{exact:true}).fill('浏览器晨报')
+ await page.getByLabel('计划名称',{exact:true}).fill(workflowName)
  await page.getByRole('button',{name:'保存计划',exact:true}).click()
- const workflow=page.locator('.workflow-row').filter({has:page.getByText('浏览器晨报',{exact:true})})
+ const workflow=page.locator('.workflow-row').filter({has:page.getByText(workflowName,{exact:true})})
  await workflow.getByText('已禁用',{exact:true}).waitFor()
  await workflow.getByRole('button',{name:'立即生成',exact:true}).click()
- await page.getByText('执行历史 · 浏览器晨报',{exact:false}).waitFor()
+ await page.getByText(`执行历史 · ${workflowName}`,{exact:false}).waitFor()
  for(let n=0;n<15;n++){
   await page.getByRole('button',{name:'刷新历史',exact:true}).click()
   if(await page.getByRole('link',{name:'查看只读报告会话',exact:true}).count())break
@@ -81,6 +82,32 @@ try{
  await page.getByText('报告会话只读，请新建对话',{exact:true}).waitFor()
  assert.equal(await page.locator('.chat-composer').count(),0)
  report.checks.push('计划默认禁用、手动生成、真实调度、历史、零模型调用、启停、只读会话、390px布局')
+ await page.setViewportSize({width:1365,height:1000})
+ await page.goto(origin+'/maintenance',{waitUntil:'networkidle'})
+ await page.getByText('已失联',{exact:true}).waitFor()
+ await page.getByRole('heading',{name:'维护与恢复',exact:true}).waitFor()
+ await page.getByText('索引失败',{exact:true}).waitFor()
+ const backupDownload=page.waitForEvent('download')
+ await page.getByRole('button',{name:'下载业务备份',exact:true}).click()
+ assert.match((await backupDownload).suggestedFilename(),/^personal-ai-os-export-.*\.json$/)
+ const backupResponse=await page.request.get(origin+'/api/v1/export')
+ assert.equal(backupResponse.status(),200)
+ const backupBytes=await backupResponse.body()
+ await page.getByLabel('选择业务备份校验',{exact:true}).setInputFiles({name:'business.json',mimeType:'application/json',buffer:backupBytes})
+ await page.locator('.check-result').getByText('静态校验通过',{exact:true}).waitFor()
+ await page.getByLabel('选择业务备份校验',{exact:true}).setInputFiles({name:'oversize.json',mimeType:'application/json',buffer:Buffer.alloc(20*1024*1024+1)})
+ await page.getByText('业务 JSON 最多 20MiB',{exact:true}).waitFor()
+ assert.equal(await page.locator('.check-result').count(),0,'超大文件不能继续显示上次校验通过')
+ await page.getByLabel('选择业务备份校验',{exact:true}).setInputFiles({name:'broken.json',mimeType:'application/json',buffer:Buffer.from('broken')})
+ await page.locator('.check-result').getByText('校验未通过',{exact:true}).waitFor()
+ await page.getByLabel('外部演练摘要',{exact:true}).fill('浏览器测试：人工填报的外部结果')
+ await page.getByRole('button',{name:'记录外部报告',exact:true}).click()
+ await page.locator('.check-result').getByText('外部记录 · 未独立验证',{exact:true}).waitFor()
+ await page.screenshot({path:join(output,'maintenance-desktop.png'),fullPage:true})
+ await page.setViewportSize({width:390,height:844})
+ await page.screenshot({path:join(output,'maintenance-mobile.png'),fullPage:true})
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'维护页移动端不应横向溢出')
+ report.checks.push(`${label}真实HTTP：心跳、失联、失败队列、下载业务备份、成功/损坏校验、外部报告标签、390px布局`)
  assert.deepEqual(report.errors,[])
  report.result='PASS'
 }finally{
