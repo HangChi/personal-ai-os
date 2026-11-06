@@ -7,3 +7,5 @@
 - Decision: Worker独立心跳表；任务租约不当作进程存活。完整恢复只由既有 CLI在独立随机库执行，中心展示指引与外部报告，不把JSON校验当恢复成功。Rationale: 不给服务额外系统权限。
 - Existing anchors: ChatRunService/ChatRunRepository、chat/runs.go；KnowledgeIndexJobs/knowledge/jobs.go；scripts/dev/backup.py restore_drill；runtime_lease为租约而非心跳。
 - No unresolved clarification; no new external service, provider or real-user data accessed during development.
+
+- 实施确认：HttpClient5 5.6.4；Go x/net/html v0.62.0（官方模块代理实际发布于2026-10-27，Go1.26最低版本，兼容仓库Go1.27）。仅直接声明解析所需模块，不升级其它依赖。网页仅接受UTF-8、标准80/443端口，禁用内容压缩。并发4、总体15秒、DNS结果绑定连接；版本推进使用共享数据库触发器，沿用原索引事务。

@@ -8,9 +8,9 @@
 - [X] T005 [US3] 在 V44__calendar_exchange.sql 与两端calendar Service实现预览摘要、原子导入/UID去重、导出、半开区间冲突查询
 - [X] T006 [US3] 在 frontend/src/components/calendar/CalendarExchange.vue 实现文件预览/确认/导出/冲突，完成双端和UI检查后提交
 ## US2 URL采集
-- [ ] T007 [US2] 在两端knowledge模块添加安全抓取/HTML提取器及测试，正文「最多1MiB」、URL「最多2048字符」，拒绝私网/重绑定/重定向
-- [ ] T008 [US2] 在 V45__knowledge_captures.sql 与两端采集/索引任务接入来源去重、成功才推进的正文版本和历史
-- [ ] T009 [US2] 在 frontend/src/components/knowledge/KnowledgeCaptures.vue 添加采集/刷新/版本及状态，完成检查后提交
+- [X] T007 [US2] 在两端knowledge模块添加安全抓取/HTML提取器及测试，正文「最多1MiB」、URL「最多2048字符」，拒绝私网/重绑定/重定向
+- [X] T008 [US2] 在 V45__knowledge_captures.sql 与两端采集/索引任务接入来源去重、成功才推进的正文版本和历史
+- [X] T009 [US2] 在 frontend/src/components/knowledge/KnowledgeCaptures.vue 添加采集/刷新/版本及状态，完成检查后提交
 ## US1 定时只读报告
 - [ ] T010 [US1] 在 V46__readonly_workflows.sql 与两端workflow模块实现定义、时区调度、唯一期次、租约、每日预算及「最多3次」重试测试
 - [ ] T011 [US1] 在两端chat恢复入口持久隔离只读工作流Run，生成固定只读报告并记录「零模型调用」，max_items「1..100」、max_output_chars「1000..20000」、max_runs_per_day「1..24」

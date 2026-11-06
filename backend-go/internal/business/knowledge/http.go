@@ -46,6 +46,9 @@ func (h *HTTP) Handler(logger *slog.Logger) http.Handler {
 	}, logger)
 }
 func (h *HTTP) serve(w http.ResponseWriter, r *http.Request) (int, any, error) {
+	if r.URL.Path == basePath+"/captures" || strings.HasPrefix(r.URL.Path, basePath+"/captures/") {
+		return h.serveCaptures(w, r)
+	}
 	ctx := r.Context()
 	path := strings.TrimPrefix(r.URL.Path, basePath)
 	method := r.Method

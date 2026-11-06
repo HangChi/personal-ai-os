@@ -88,13 +88,13 @@ func TestCatalogMatchesAllBaselineSQLHashes(t *testing.T) {
 			expected[strings.TrimPrefix(file.Path, prefix)] = file.SHA256
 		}
 	}
-	if len(entries) != 44 || len(expected) != 42 {
+	if len(entries) != 45 || len(expected) != 42 {
 		t.Fatalf("原42迁移与034追加迁移不能遗漏：actual=%d baseline=%d", len(entries), len(expected))
 	}
 	for _, entry := range entries {
 		// 034 开始允许追加产品迁移；原42个文件仍必须逐字匹配固定基线。
 		if _, baseline := expected[entry.Name]; !baseline {
-			if entry.Name != "V43__task_workspace.sql" && entry.Name != "V44__calendar_exchange.sql" {
+			if entry.Name != "V43__task_workspace.sql" && entry.Name != "V44__calendar_exchange.sql" && entry.Name != "V45__knowledge_captures.sql" {
 				t.Errorf("未经本阶段审查的新迁移：%s", entry.Name)
 			}
 			continue

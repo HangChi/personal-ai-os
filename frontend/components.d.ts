@@ -85,6 +85,7 @@ declare module 'vue' {
     EmptyState: typeof import('./src/components/EmptyState.vue')['default']
     FilterBar: typeof import('./src/components/FilterBar.vue')['default']
     KnowledgeAskTab: typeof import('./src/components/knowledge/KnowledgeAskTab.vue')['default']
+    KnowledgeCaptures: typeof import('./src/components/knowledge/KnowledgeCaptures.vue')['default']
     KnowledgeDocumentsTab: typeof import('./src/components/knowledge/KnowledgeDocumentsTab.vue')['default']
     KnowledgeGovernanceTab: typeof import('./src/components/knowledge/KnowledgeGovernanceTab.vue')['default']
     KnowledgeHitList: typeof import('./src/components/knowledge/KnowledgeHitList.vue')['default']
