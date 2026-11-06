@@ -17,6 +17,7 @@ declare module 'vue' {
     CalendarDayList: typeof import('./src/components/calendar/CalendarDayList.vue')['default']
     CalendarDueReminders: typeof import('./src/components/calendar/CalendarDueReminders.vue')['default']
     CalendarEditDialog: typeof import('./src/components/calendar/CalendarEditDialog.vue')['default']
+    CalendarExchange: typeof import('./src/components/calendar/CalendarExchange.vue')['default']
     CalendarMonthGrid: typeof import('./src/components/calendar/CalendarMonthGrid.vue')['default']
     CalendarNotifyBanner: typeof import('./src/components/calendar/CalendarNotifyBanner.vue')['default']
     ChatCommandPanel: typeof import('./src/components/chat/ChatCommandPanel.vue')['default']

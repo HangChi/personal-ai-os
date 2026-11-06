@@ -10,6 +10,7 @@ import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, ref } from 'vue'
 
+import CalendarExchange from '@/components/calendar/CalendarExchange.vue'
 import CalendarCreateForm from '@/components/calendar/CalendarCreateForm.vue'
 import CalendarDayList from '@/components/calendar/CalendarDayList.vue'
 import CalendarDueReminders from '@/components/calendar/CalendarDueReminders.vue'
@@ -246,6 +247,8 @@ async function acknowledgeAll(): Promise<void> {
       @acknowledge="acknowledge"
       @acknowledge-all="acknowledgeAll"
     />
+
+    <CalendarExchange @imported="calendarStore.loadOccurrences()" />
 
     <CalendarCreateForm
       ref="createForm"

@@ -23,6 +23,9 @@ func OwnsEventPath(path string) bool {
 
 func (s *Events) Handler(logger *slog.Logger) http.Handler {
 	return web.HandleErrors(func(w http.ResponseWriter, r *http.Request) error {
+		if r.URL.Path == eventPath+"/ics" {
+			return s.exportICS(w, r)
+		}
 		media, ok := web.SelectJSONMediaType(r.Header.Get("Accept"), []string{"application/json", "application/*+json"})
 		if !ok {
 			return web.NotAcceptable()
@@ -48,6 +51,9 @@ func (s *Events) Handler(logger *slog.Logger) http.Handler {
 }
 
 func (s *Events) serve(w http.ResponseWriter, r *http.Request) (any, int, error) {
+	if r.URL.Path == eventPath+"/ics/preview" || r.URL.Path == eventPath+"/ics/import" || r.URL.Path == eventPath+"/conflicts" {
+		return s.serveExchange(w, r)
+	}
 	ctx := r.Context()
 	if r.URL.Path == eventPath {
 		switch r.Method {

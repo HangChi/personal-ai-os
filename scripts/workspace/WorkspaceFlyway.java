@@ -11,7 +11,9 @@ public final class WorkspaceFlyway {
             .locations("filesystem:"+args[0]).load();
         var result=flyway.migrate();
         flyway.validate();
-        if(result.migrationsExecuted!=43 || flyway.migrate().migrationsExecuted!=0) throw new AssertionError("期望全新库43迁移且再次执行为0");
-        System.out.println("034 独立 Flyway 43 迁移、validate、幂等重放通过");
+        long expected;
+        try(var files=java.nio.file.Files.list(java.nio.file.Path.of(args[0]))) { expected=files.filter(p->p.getFileName().toString().matches("V[0-9]+__.*\\.sql")).count(); } catch(java.io.IOException ex) { throw new IllegalStateException(ex); }
+        if(result.migrationsExecuted!=expected || flyway.migrate().migrationsExecuted!=0) throw new AssertionError("期望全新库全部迁移且再次执行为0");
+        System.out.println("功能独立 Flyway 全部迁移、validate、幂等重放通过");
     }
 }

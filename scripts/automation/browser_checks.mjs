@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict'
+import { createRequire } from 'node:module'
+import { existsSync,writeFileSync } from 'node:fs'
+import { join,dirname,resolve } from 'node:path'
+import { fileURLToPath,pathToFileURL } from 'node:url'
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..')
+const [backend,output,emptyEnv]=process.argv.slice(2)
+assert.equal(new URL(backend).hostname,'127.0.0.1')
+const require=createRequire(import.meta.url)
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE??join(process.env.HOME,'.workbuddy/binaries/node/workspace/node_modules/playwright'))
+const {preview}=await import(pathToFileURL(join(root,'frontend/node_modules/vite/dist/node/index.js')))
+const server=await preview({root:join(root,'frontend'),configFile:false,envDir:emptyEnv,preview:{host:'127.0.0.1',port:0,proxy:{'/api':{target:backend}}}})
+const origin=`http://127.0.0.1:${server.httpServer.address().port}`
+const executable=[1243,1234].map((v)=>join(process.env.HOME,`Library/Caches/ms-playwright/chromium_headless_shell-${v}/chrome-headless-shell-mac-arm64/chrome-headless-shell`)).find(existsSync)
+let browser
+const report={result:'FAIL',checks:[],errors:[]}
+try{
+ browser=await chromium.launch(executable?{executablePath:executable}:{channel:'chrome'})
+ const context=await browser.newContext({viewport:{width:1365,height:1000},locale:'zh-CN',timezoneId:'Asia/Shanghai'})
+ await context.route('**/*',(route)=>new URL(route.request().url()).origin===origin?route.continue():route.abort())
+ const page=await context.newPage();page.setDefaultTimeout(15000)
+ page.on('pageerror',(e)=>report.errors.push(String(e)))
+ await page.goto(origin+'/calendar',{waitUntil:'networkidle'})
+ const ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:browser-035\r\nSUMMARY:互通浏览器测试\r\nDTSTART:20261106T010000Z\r\nDTEND:20261106T020000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n'
+ await page.getByLabel('导入 ICS 文件',{exact:true}).setInputFiles({name:'test.ics',mimeType:'text/calendar',buffer:Buffer.from(ics)})
+ await page.getByText('预览 1 条，其中 0 条已存在。',{exact:false}).waitFor()
+ await page.getByRole('button',{name:'确认导入',exact:true}).click()
+ await page.getByText('已导入 1 条，跳过已存在 0 条',{exact:true}).waitFor()
+ await page.getByLabel('导入 ICS 文件',{exact:true}).setInputFiles({name:'test.ics',mimeType:'text/calendar',buffer:Buffer.from(ics)})
+ await page.getByText('预览 1 条，其中 1 条已存在。',{exact:false}).waitFor()
+ await page.getByLabel('冲突起始日',{exact:true}).fill('2040-11-06')
+ await page.getByRole('button',{name:'检查未来 7 天冲突',exact:true}).click()
+ await page.getByText('共 0 组冲突',{exact:false}).waitFor()
+ const download=page.waitForEvent('download')
+ await page.getByRole('button',{name:'导出 ICS',exact:true}).click()
+ assert.equal((await download).suggestedFilename(),'personal-ai-os.ics')
+ report.checks.push('ICS预览、确认、UID去重、文件导出、冲突查询')
+ await page.screenshot({path:join(output,'calendar-desktop.png'),fullPage:true})
+ await page.setViewportSize({width:390,height:844})
+ await page.screenshot({path:join(output,'calendar-mobile.png'),fullPage:true})
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'移动端不应横向溢出')
+ report.checks.push('日历互通390px布局')
+ assert.deepEqual(report.errors,[])
+ report.result='PASS'
+}finally{
+ writeFileSync(join(output,'report.json'),JSON.stringify(report,null,2))
+ await browser?.close();await new Promise((r)=>server.httpServer.close(r))
+}
+console.log(JSON.stringify(report))

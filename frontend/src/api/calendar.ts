@@ -67,3 +67,23 @@ export interface DeleteEventResult {
 export function deleteEvent(id: string): Promise<DeleteEventResult> {
   return requestData<DeleteEventResult>({ url: `/calendar/events/${id}`, method: 'delete' })
 }
+
+export interface IcsPreview {
+  digest: string
+  events: { uid: string; event: CreateEventPayload }[]
+  duplicateCount: number
+}
+export interface CalendarConflicts {
+  items: { first: CalendarOccurrence; second: CalendarOccurrence }[]
+  total: number
+  truncated: boolean
+}
+export function previewIcs(content: string): Promise<IcsPreview> {
+  return requestData({ url: '/calendar/events/ics/preview', method: 'post', data: { content } })
+}
+export function importIcs(content: string, digest: string): Promise<{ created: number; skipped: number }> {
+  return requestData({ url: '/calendar/events/ics/import', method: 'post', data: { content, digest } })
+}
+export function calendarConflicts(from: string, to: string): Promise<CalendarConflicts> {
+  return requestData({ url: '/calendar/events/conflicts', method: 'get', params: { from, to } })
+}

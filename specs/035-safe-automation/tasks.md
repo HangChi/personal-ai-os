@@ -4,9 +4,9 @@
 - [X] T002 完成 specs/035-safe-automation/{plan,research,data-model,quickstart}.md 与 contracts/api.md 并提交
 - [X] T003 在 specs/035-safe-automation/tasks.md 明确独立切片及验证边界并提交
 ## US3 日历互通（独立先交付）
-- [ ] T004 [US3] 在两端 calendar 模块添加严格ICS codec和测试；文件「最多1MiB/200事件」、UID「最多512字符」，拒绝不能无损映射的规则
-- [ ] T005 [US3] 在 V44__calendar_exchange.sql 与两端calendar Service实现预览摘要、原子导入/UID去重、导出、半开区间冲突查询
-- [ ] T006 [US3] 在 frontend/src/components/calendar/CalendarExchange.vue 实现文件预览/确认/导出/冲突，完成双端和UI检查后提交
+- [X] T004 [US3] 在两端 calendar 模块添加严格ICS codec和测试；文件「最多1MiB/200事件」、UID「最多512字符」，拒绝不能无损映射的规则
+- [X] T005 [US3] 在 V44__calendar_exchange.sql 与两端calendar Service实现预览摘要、原子导入/UID去重、导出、半开区间冲突查询
+- [X] T006 [US3] 在 frontend/src/components/calendar/CalendarExchange.vue 实现文件预览/确认/导出/冲突，完成双端和UI检查后提交
 ## US2 URL采集
 - [ ] T007 [US2] 在两端knowledge模块添加安全抓取/HTML提取器及测试，正文「最多1MiB」、URL「最多2048字符」，拒绝私网/重绑定/重定向
 - [ ] T008 [US2] 在 V45__knowledge_captures.sql 与两端采集/索引任务接入来源去重、成功才推进的正文版本和历史
