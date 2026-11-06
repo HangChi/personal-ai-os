@@ -12,6 +12,11 @@ const baseline = process.argv.includes('--baseline')
 const interactionsOnly = process.argv.includes('--interactions-only')
 const indexJobsOnly = process.argv.includes('--index-jobs-only')
 const chatSourcesOnly = process.argv.includes('--chat-sources-only')
+const taskCreateOnly = process.argv.includes('--task-create-only')
+let holdTaskCreate = false
+let finishTaskCreate
+let failTaskCreate = false
+const taskCreateRequests = []
 let chatMode = 'sources'
 let chatRunning = false
 let finishChatStream
@@ -237,6 +242,8 @@ function fixture(path, method, body, url) {
   if (path === '/tasks/stats') return { pending: 3, overdue: 1 }
   if (path === '/tasks/tags') return ['工作', '个人']
   if (path === '/tasks/task-1') return task
+  if (taskCreateOnly && path === '/tasks' && method === 'POST')
+    return { ...task, ...JSON.parse(body), id: 'task-created' }
   if (path === '/tasks')
     return list([
       task,
@@ -494,6 +501,13 @@ try {
     if (url.origin !== origin) return route.abort()
     if (!url.pathname.startsWith('/api/')) return route.continue()
     const path = url.pathname.replace('/api/v1', '')
+    if (taskCreateOnly && path === '/tasks' && request.method() === 'POST') {
+      taskCreateRequests.push(request.postDataJSON())
+      if (holdTaskCreate)
+        await new Promise((resolve) => {
+          finishTaskCreate = resolve
+        })
+    }
     if (chatSourcesOnly && path.endsWith('/sources-run/events')) {
       if (chatRunning)
         await new Promise((resolve) => {
@@ -508,9 +522,11 @@ try {
     if (
       (apiMode === 'error' && path === '/tasks') ||
       (apiMode === 'jobs-error' && path === '/knowledge/jobs') ||
+      (failTaskCreate && path === '/tasks' && request.method() === 'POST') ||
       (failWorkflowSave && path === '/workflows' && request.method() === 'POST')
     ) {
       failWorkflowSave = false
+      failTaskCreate = false
       return route.fulfill({
         status: 503,
         contentType: 'application/json',
@@ -568,7 +584,7 @@ try {
     ['captures', '/knowledge?tab=captures'],
     ['governance', '/knowledge?tab=governance'],
   ]
-  if (!baseline && !chatSourcesOnly) {
+  if (!baseline && !chatSourcesOnly && !taskCreateOnly) {
     for (const theme of ['light', 'dark']) {
       await page.addInitScript((value) => localStorage.setItem('os.theme', value), theme)
       for (const width of [1440, 390]) {
@@ -702,7 +718,187 @@ try {
     }
     assert.deepEqual([...misses], [], '未覆盖的模拟 API')
   }
-  for (const theme of interactionsOnly || indexJobsOnly || chatSourcesOnly
+  if (taskCreateOnly) {
+    // 仅合成任务与本机预览；触屏上下文同时检查手机控件热区。
+    for (const theme of ['light', 'dark']) {
+      for (const width of [1440, 768, 390, 320]) {
+        const mobile = width <= 390
+        const taskContext = await browser.newContext({
+          viewport: { width, height: width === 320 ? 568 : mobile ? 844 : 1000 },
+          isMobile: mobile,
+          hasTouch: mobile,
+          locale: 'zh-CN',
+          timezoneId: 'Asia/Shanghai',
+          serviceWorkers: 'block',
+        })
+        await taskContext.route('**/*', routeRequest)
+        await taskContext.addInitScript((value) => localStorage.setItem('os.theme', value), theme)
+        const taskPage = await taskContext.newPage()
+        taskPage.on('pageerror', (error) => report.errors.push(error.message))
+        taskPage.on('console', (message) => {
+          if (/Failed to resolve component|Unhandled error during/.test(message.text()))
+            report.errors.push(message.text())
+        })
+        taskPage.setDefaultTimeout(10000)
+        await taskPage.goto(origin + '/tasks', { waitUntil: 'networkidle' })
+        const shot = async (state) => {
+          const file = `task-create-${theme}-${width}-${state}.png`
+          await taskPage.screenshot({ path: join(output, file), animations: 'disabled' })
+          report.screenshots.push(file)
+          assert.equal(await taskPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+        }
+        const search = taskPage.getByRole('textbox', { name: '全局搜索', exact: true })
+        const searchStyle = await taskPage.locator('.app-shell__search .el-input__wrapper').evaluate((el) => ({
+          radius: parseFloat(getComputedStyle(el).borderTopLeftRadius),
+          height: el.getBoundingClientRect().height,
+        }))
+        assert.equal(searchStyle.radius, 8, '顶部搜索沿用中号圆角')
+        assert.ok(searchStyle.radius < searchStyle.height / 2, '顶部搜索应为圆角矩形')
+        await taskPage.keyboard.press('Control+k')
+        assert.equal(await search.evaluate((el) => el === document.activeElement), true)
+        await search.fill('项目')
+        await taskPage.locator('.app-shell__search .el-input__clear').click()
+        assert.equal(await search.inputValue(), '')
+        await search.fill('项目')
+        await search.press('Enter')
+        await taskPage.waitForURL('**/search?q=*')
+        assert.equal(new URL(taskPage.url()).searchParams.get('q'), '项目')
+        await search.fill('')
+        await taskPage.goto(origin + '/tasks', { waitUntil: 'networkidle' })
+        await shot('header')
+        const open = taskPage.locator('.page-header__actions').getByRole('button', { name: '新建任务', exact: true })
+        await open.click()
+        const dialog = taskPage.getByRole('dialog', { name: '新建任务', exact: true })
+        const title = dialog.getByLabel('任务标题', { exact: true })
+        const create = dialog.getByRole('button', { name: '新建任务', exact: true })
+        const cancel = dialog.getByRole('button', { name: '取消', exact: true })
+        const details = dialog.locator('details')
+        const summary = details.locator('summary')
+        await taskPage.waitForFunction(() => document.activeElement?.id.endsWith('-title'))
+        assert.equal(await details.evaluate((el) => el.open), false)
+        assert.equal(await create.isDisabled(), true)
+        await title.fill('   ')
+        assert.equal(await create.isDisabled(), true)
+        await title.fill('准备季度复盘')
+        await shot('default')
+        await taskPage.waitForFunction(() => {
+          const rect = document.querySelector('.task-create-dialog')?.getBoundingClientRect()
+          return rect && rect.height < 700 && rect.y >= 15
+        })
+        const rects = await dialog.locator('.task-create__field').evaluateAll((fields) =>
+          fields.map((el) => {
+            const r = el.getBoundingClientRect()
+            return { x: r.x, y: r.y, width: r.width }
+          }),
+        )
+        if (width > 600) {
+          assert.equal(rects[1].y, rects[2].y, '截止时间和优先级同排')
+          assert.equal(rects[0].width, rects[3].width, '标题与标签同宽')
+        } else {
+          assert.ok(rects[2].y > rects[1].y && rects[3].y > rects[2].y, '手机字段单列')
+          assert.equal(
+            await create.evaluate((el) => el.getBoundingClientRect().height >= 44),
+            true,
+            '手机主按钮至少44px',
+          )
+          assert.equal(
+            await title.evaluate((el) => el.closest('.el-input__wrapper').getBoundingClientRect().height >= 44),
+            true,
+          )
+        }
+        await summary.focus()
+        await summary.press('Enter')
+        await dialog.getByRole('combobox', { name: '所属项目', exact: true }).waitFor({ state: 'visible' })
+        assert.equal(await details.evaluate((el) => el.open), true)
+        await dialog.getByRole('combobox', { name: '所属项目', exact: true }).focus()
+        await taskPage.keyboard.press('Enter')
+        await taskPage.getByRole('option', { name: '工作计划', exact: true }).click()
+        await dialog.getByRole('combobox', { name: '重复规则', exact: true }).focus()
+        await taskPage.keyboard.press('Enter')
+        await taskPage.getByRole('option', { name: '每周', exact: true }).click()
+        await dialog.getByLabel('重复时区', { exact: true }).fill('Asia/Shanghai')
+        await shot('expanded')
+        await summary.click()
+        assert.match(await summary.textContent(), /工作计划 · 每周/)
+        await cancel.click()
+        await dialog.waitFor({ state: 'hidden' })
+        await open.click()
+        assert.equal(await title.inputValue(), '准备季度复盘')
+        const count = taskCreateRequests.length
+        await create.click()
+        await taskPage.getByText('周期任务请先设置截止时间', { exact: true }).waitFor()
+        assert.equal(taskCreateRequests.length, count)
+        await taskPage.waitForFunction(() => document.activeElement?.id.endsWith('-due'))
+        const due = dialog.getByLabel('截止时间', { exact: true })
+        await due.fill('2026-11-09 18:00')
+        await due.press('Enter')
+        await title.click()
+        assert.equal(await due.inputValue(), '2026-11-09 18:00')
+        // 真实打开日期面板，检查窄屏弹层不越出视口。
+        await due.click()
+        const picker = taskPage.locator('.el-picker-panel:visible')
+        await picker.waitFor()
+        await taskPage.waitForFunction(() => {
+          const rect = document.querySelector('.task-create-date-picker .el-picker-panel')?.getBoundingClientRect()
+          return rect && rect.x >= -1 && rect.right <= innerWidth + 1 && rect.y >= -1 && rect.bottom <= innerHeight + 1
+        })
+        const pickerRect = await picker.boundingBox()
+        assert.ok(pickerRect.x >= -1 && pickerRect.x + pickerRect.width <= width + 1, '日期面板横向可达')
+        assert.ok(
+          pickerRect.y >= -1 && pickerRect.y + pickerRect.height <= taskPage.viewportSize().height + 1,
+          '日期面板纵向可达',
+        )
+        await shot('date-picker')
+        await picker.locator('.el-picker-panel__footer .el-button').last().click()
+        failTaskCreate = true
+        await create.click()
+        await dialog.getByRole('alert').filter({ hasText: '模拟连接暂不可用' }).waitFor()
+        assert.equal(await title.inputValue(), '准备季度复盘')
+        await shot('error')
+        holdTaskCreate = true
+        const pendingCount = taskCreateRequests.length
+        const pendingRequest = taskPage.waitForRequest(
+          (request) => request.method() === 'POST' && new URL(request.url()).pathname.endsWith('/tasks'),
+        )
+        await create.click()
+        await pendingRequest
+        await taskPage.waitForFunction(() => document.querySelector('.task-create__footer .is-loading'))
+        assert.equal(await cancel.isDisabled(), true)
+        assert.equal(await title.isDisabled(), true)
+        await taskPage.keyboard.press('Escape')
+        assert.equal(await dialog.isVisible(), true)
+        assert.equal(taskCreateRequests.length, pendingCount + 1)
+        assert.deepEqual(taskCreateRequests.at(-1), {
+          projectId: 'project-1',
+          recurrenceType: 'WEEKLY',
+          recurrenceTimezone: 'Asia/Shanghai',
+          title: '准备季度复盘',
+          priority: 'MEDIUM',
+          dueAt: '2026-11-09T10:00:00.000Z',
+          tags: [],
+        })
+        holdTaskCreate = false
+        finishTaskCreate()
+        await dialog.waitFor({ state: 'hidden' })
+        await open.click()
+        assert.equal(await title.inputValue(), '')
+        assert.equal(await details.evaluate((el) => el.open), false)
+        await cancel.click()
+        await dialog.waitFor({ state: 'hidden' })
+        await taskPage.getByRole('button', { name: '添加子任务', exact: true }).first().click()
+        await dialog.locator('.task-organization .el-select__selected-item').filter({ hasText: task.title }).waitFor()
+        assert.equal(await details.evaluate((el) => el.open), true)
+        assert.equal(await dialog.getByRole('combobox', { name: '重复规则', exact: true }).isDisabled(), true)
+        await shot('subtask')
+        report.checks.push(
+          `${theme}/${width}: 顶栏圆角/快捷键/清空/搜索、字段对齐、触屏热区、键盘折叠与摘要、取消草稿、重复校验/日期面板、失败保值、提交中保护/正确请求、重置与子任务展开`,
+        )
+        await taskContext.close()
+      }
+    }
+    assert.deepEqual([...misses], [], '未覆盖的模拟 API')
+  }
+  for (const theme of interactionsOnly || indexJobsOnly || chatSourcesOnly || taskCreateOnly
     ? []
     : baseline
       ? ['light']
@@ -755,7 +951,7 @@ try {
     }
   }
 
-  if (!baseline && !indexJobsOnly && !chatSourcesOnly) {
+  if (!baseline && !indexJobsOnly && !chatSourcesOnly && !taskCreateOnly) {
     async function shot(name) {
       await page.screenshot({
         path: join(output, `${name}.png`),
