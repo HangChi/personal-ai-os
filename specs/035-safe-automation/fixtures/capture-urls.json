@@ -1,0 +1,17 @@
+[
+  {"raw":"HTTPS://Example.COM:443/a/../b#frag","canonical":"https://example.com/b"},
+  {"raw":"https://example.com/a//b","canonical":"https://example.com/a//b"},
+  {"raw":"https://example.com//a///b/","canonical":"https://example.com//a///b/"},
+  {"raw":"https://example.com/../b","canonical":"https://example.com/b"},
+  {"raw":"https://example.com/../../b","canonical":"https://example.com/b"},
+  {"raw":"https://example.com/a//../b","canonical":"https://example.com/a/b"},
+  {"raw":"https://example.com/a/..//b","canonical":"https://example.com//b"},
+  {"raw":"https://example.com/a/.","canonical":"https://example.com/a/"},
+  {"raw":"https://example.com/a/..","canonical":"https://example.com/"},
+  {"raw":"https://example.com/..","canonical":"https://example.com/"},
+  {"raw":"https://example.com/a//.","canonical":"https://example.com/a//"},
+  {"raw":"https://example.com/%2e/%2E%2e/a%2Fb","canonical":"https://example.com/%2e/%2E%2e/a%2Fb"},
+  {"raw":"https://example.com/a/../b?x=/../a//b&x=%2e#fragment","canonical":"https://example.com/b?x=/../a//b&x=%2e"},
+  {"raw":"http://EXAMPLE.com.:80?","canonical":"http://example.com/?"},
+  {"raw":"https://example.com","canonical":"https://example.com/"}
+]

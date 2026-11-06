@@ -26,14 +26,27 @@ public class PublicWebFetcher {
     public static URI canonical(String raw) {
         try {
             if(raw==null || raw.length()>2048 || raw.chars().anyMatch(c->Character.isISOControl(c)||c>127)) throw invalid("URL 无效或超过 2048 字符");
-            URI u=new URI(raw.strip()).normalize(); String scheme=u.getScheme()==null?"":u.getScheme().toLowerCase(Locale.ROOT);
+            URI u=new URI(raw.strip()); String scheme=u.getScheme()==null?"":u.getScheme().toLowerCase(Locale.ROOT);
             String host=u.getHost(); int port=u.getPort();
             if(!Set.of("http","https").contains(scheme)||host==null||u.getRawUserInfo()!=null||port!=-1&&port!=(scheme.equals("https")?443:80)) throw invalid("仅支持无凭据、标准端口的公开 HTTP(S) URL");
             host=host.toLowerCase(Locale.ROOT); if(host.endsWith(".")) host=host.substring(0,host.length()-1);
             if(host.equals("localhost")||host.endsWith(".localhost")||host.endsWith(".local")||host.endsWith(".internal")||!host.contains(".")||host.contains(":")||host.contains("[")) throw invalid("禁止本机或内部地址");
-            String path=u.getRawPath(); if(path==null||path.isEmpty())path="/";
+            String path=canonicalPath(u.getRawPath());
             return URI.create(scheme+"://"+host+path+(u.getRawQuery()==null?"":"?"+u.getRawQuery()));
         } catch(URISyntaxException|IllegalArgumentException ex) { throw invalid("URL 格式不正确"); }
+    }
+    private static String canonicalPath(String path) {
+        if(path==null||path.isEmpty())return "/";
+        // 仅移除字面点段，保留重复斜杠、百分号编码及末尾斜杠的路径语义。
+        List<String> segments=new ArrayList<>();
+        String[] parts=path.split("/",-1);
+        for(int i=1;i<parts.length;i++) {
+            String part=parts[i];
+            if(part.equals("..")) { if(!segments.isEmpty())segments.removeLast(); }
+            else if(!part.equals(".")) { segments.add(part);continue; }
+            if(i==parts.length-1)segments.add("");
+        }
+        return "/"+String.join("/",segments);
     }
     public static boolean publicAddress(InetAddress address) {
         byte[] b=address.getAddress();
@@ -90,7 +103,14 @@ public class PublicWebFetcher {
             public void handleStartTag(HTML.Tag tag,MutableAttributeSet attrs,int pos) {String t=tag.toString();if(Set.of("script","style","noscript","iframe","object","template").contains(t))blocked++;if(tag==HTML.Tag.TITLE)inTitle=true;if(blocked==0&&tag.isBlock())body.append('\n');}
             public void handleEndTag(HTML.Tag tag,int pos) {if(Set.of("script","style","noscript","iframe","object","template").contains(tag.toString())&&blocked>0)blocked--;if(tag==HTML.Tag.TITLE)inTitle=false;if(blocked==0&&tag.isBlock())body.append('\n');}
             public void handleText(char[] data,int pos) {if(blocked==0){if(inTitle)title.append(data);else body.append(data).append(' ');}}
-            public void handleSimpleTag(HTML.Tag tag,MutableAttributeSet attrs,int pos) {if(blocked==0&&tag==HTML.Tag.BR)body.append('\n');}
+            public void handleSimpleTag(HTML.Tag tag,MutableAttributeSet attrs,int pos) {
+                // Swing 将 template/iframe 等未知容器的开始和结束都作为 simpleTag 回调。
+                if(Set.of("script","style","noscript","iframe","object","template").contains(tag.toString())) {
+                    if(attrs.isDefined(HTML.Attribute.ENDTAG)) { if(blocked>0)blocked--; }
+                    else blocked++;
+                }
+                if(blocked==0&&tag==HTML.Tag.BR)body.append('\n');
+            }
         },true); else body.append(source);
         String text=body.toString().replace('\u0000',' ').replaceAll("[\\t\\x0B\\f ]+"," ").replaceAll(" *\\n *","\n").replaceAll("\\n{3,}","\n\n").strip();
         if(text.isEmpty()||text.getBytes(StandardCharsets.UTF_8).length>1_048_576)throw invalid("提取正文为空或超过1MiB");

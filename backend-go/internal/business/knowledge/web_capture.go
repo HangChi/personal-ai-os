@@ -43,34 +43,38 @@ func CanonicalURL(raw string) (string, error) {
 	if u.Path == "" {
 		u.Path = "/"
 	}
-	// 与Java URI.normalize一致，仅折叠字面 . 和 ..，不解码百分号路径。
-	parts := strings.Split(u.EscapedPath(), "/")
-	stack := []string{}
-	for _, p := range parts {
-		if p == "." {
-			continue
-		}
-		if p == ".." {
-			if len(stack) > 0 {
-				stack = stack[:len(stack)-1]
-			}
-			continue
-		}
-		stack = append(stack, p)
-	}
-	path := strings.Join(stack, "/")
-	if strings.HasSuffix(u.EscapedPath(), "/.") || strings.HasSuffix(u.EscapedPath(), "/..") {
-		path += "/"
-	}
-	if path == "" {
-		path = "/"
-	}
+	path := canonicalPath(u.EscapedPath())
 	u.RawPath = path
 	u.Path, e = url.PathUnescape(path)
 	if e != nil {
 		return "", invalid("URL 路径无效")
 	}
 	return u.String(), nil
+}
+
+func canonicalPath(path string) string {
+	if path == "" {
+		return "/"
+	}
+	// 仅移除字面点段，保留重复斜杠、百分号编码及末尾斜杠的路径语义。
+	parts := strings.Split(path, "/")[1:]
+	segments := make([]string, 0, len(parts))
+	for i, part := range parts {
+		switch part {
+		case "..":
+			if len(segments) > 0 {
+				segments = segments[:len(segments)-1]
+			}
+		case ".":
+		default:
+			segments = append(segments, part)
+			continue
+		}
+		if i == len(parts)-1 {
+			segments = append(segments, "")
+		}
+	}
+	return "/" + strings.Join(segments, "/")
 }
 
 var blockedNetworks = []netip.Prefix{

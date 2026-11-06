@@ -2,10 +2,67 @@ package knowledge
 
 import (
 	"context"
+	"encoding/json"
 	"net/netip"
+	"os"
 	"strings"
 	"testing"
 )
+
+func TestSharedCanonicalPathFixtures(t *testing.T) {
+	raw, err := os.ReadFile("../../../../specs/035-safe-automation/fixtures/capture-urls.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixtures []struct{ Raw, Canonical string }
+	if err := json.Unmarshal(raw, &fixtures); err != nil {
+		t.Fatal(err)
+	}
+	for _, fixture := range fixtures {
+		t.Run(fixture.Raw, func(t *testing.T) {
+			got, err := CanonicalURL(fixture.Raw)
+			if err != nil || got != fixture.Canonical {
+				t.Fatalf("got %q, %v; want %q", got, err, fixture.Canonical)
+			}
+			again, err := CanonicalURL(got)
+			if err != nil || again != got {
+				t.Fatalf("canonicalization is not idempotent: %q, %v", again, err)
+			}
+		})
+	}
+}
+
+func TestSharedHiddenHTMLFixtures(t *testing.T) {
+	raw, err := os.ReadFile("../../../../specs/035-safe-automation/fixtures/capture-html.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixtures []struct {
+		Name, HTML, Title  string
+		Contains, Excludes []string
+	}
+	if err := json.Unmarshal(raw, &fixtures); err != nil {
+		t.Fatal(err)
+	}
+	for _, fixture := range fixtures {
+		t.Run(fixture.Name, func(t *testing.T) {
+			page, err := ExtractWebPage("https://example.com/", fixture.HTML, true)
+			if err != nil || page.Title != fixture.Title {
+				t.Fatal(page, err)
+			}
+			for _, text := range fixture.Contains {
+				if !strings.Contains(page.Content, text) {
+					t.Fatalf("missing %q: %s", text, page.Content)
+				}
+			}
+			for _, text := range fixture.Excludes {
+				if strings.Contains(page.Content, text) {
+					t.Fatalf("leaked %q: %s", text, page.Content)
+				}
+			}
+		})
+	}
+}
 
 func TestPublicCaptureURLAndAddress(t *testing.T) {
 	got, e := CanonicalURL("HTTPS://Example.COM:443/a/../b#frag")

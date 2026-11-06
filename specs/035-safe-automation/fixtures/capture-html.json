@@ -1,0 +1,8 @@
+[
+  {"name":"template容器","html":"<html><head><title>模板过滤</title></head><body><p>可见前</p><template>隐藏文本</template><p>可见后</p></body></html>","title":"模板过滤","contains":["可见前","可见后"],"excludes":["隐藏文本"]},
+  {"name":"嵌套template及普通块","html":"<html><head><title>模板过滤</title></head><body><p>可见前</p><template><div>隐藏外层<template><p>隐藏内层</p></template>隐藏结尾</div></template><p>可见后</p></body></html>","title":"模板过滤","contains":["可见前","可见后"],"excludes":["隐藏外层","隐藏内层","隐藏结尾"]},
+  {"name":"模板内脚本及样式","html":"<html><head><title>模板过滤</title></head><body><p>可见前</p><template><script>hiddenScript()</script><style>.hiddenStyle{}</style><p>隐藏模板</p></template><p>可见后</p></body></html>","title":"模板过滤","contains":["可见前","可见后"],"excludes":["hiddenScript","hiddenStyle","隐藏模板"]},
+  {"name":"iframe及object容器","html":"<html><head><title>模板过滤</title></head><body><p>可见前</p><iframe>隐藏框架</iframe><object><div>隐藏对象</div></object><p>可见后</p></body></html>","title":"模板过滤","contains":["可见前","可见后"],"excludes":["隐藏框架","隐藏对象"]},
+  {"name":"noscript容器","html":"<html><head><title>模板过滤</title></head><body><p>可见前</p><noscript><div>隐藏降级</div></noscript><p>可见后</p></body></html>","title":"模板过滤","contains":["可见前","可见后"],"excludes":["隐藏降级"]},
+  {"name":"标题中的实体及大小写容器","html":"<html><head><title>A &amp; B</title></head><body><p>可见前</p><TEMPLATE><p>隐藏模板</p></TEMPLATE><p>可见后</p></body></html>","title":"A & B","contains":["可见前","可见后"],"excludes":["隐藏模板"]}
+]
