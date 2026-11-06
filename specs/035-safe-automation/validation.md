@@ -30,3 +30,9 @@
 - 前端type-check/lint/format、1174逻辑断言、263组件测试和生产build通过。小修后再次通过类型/格式/构建与双端浏览器：新选择超大文件时清除旧校验通过提示。
 - `python3 scripts/automation/run_checks.py --ui`全新47迁移回放、validate、幂等回放及四模块Go真实库race通过。同一浏览器脚本分别连接Java和Go真实HTTP服务，验证ICS/采集/报告/维护主流程、业务备份下载、合法/破损校验、超大文件旧结果清除、失败队列和外部报告标签，390px无横向溢出、无页面JS错误；检查桌面/移动截图。
 - 所有数据库与进程均为本次创建的临时资源并已清理；未读取.env、访问用户运行库、调用真实模型、重启或部署用户服务。未执行真实完整备份包恢复演练；静态校验和人工填报的外部演练记录均不能作为实际恢复成功证据。
+
+## 最终交付核对
+- 四片分别提交：日历`bc01d95`、网页采集`5abd1d7`、定时报告`4f47c84`、维护中心`0b79d00`，均包含Java/Go对应实现与共享前端。
+- 最终回归使用47个迁移的全新隔离库，两种后端分别通过相同浏览器主流程；新增迁移仅V44..V47，原V1..V43保持不变。033规格与API冻结oracle没有改写，Go原有候选版发布门禁继续有效；本次验证不等于Go生产替代验收。
+- Java最终日志`.cache/035-maintenance-java.log`；Go为`.cache/035-maintenance-go-{race,vet,build}.log`；前端为`.cache/035-maintenance-frontend-tests.log`及`.cache/035-maintenance-build.log`；隔离验证为`.cache/035-maintenance-ui.log`与`.cache/automation-ui/{java,go}/report.json`。这些是本地运行产物，不作为冻结证据提交。
+- 本次范围不包含RSS/目录同步、外部日历账户同步、任意可写Agent定时工作流；网页外站成功抓取/真实模型索引及完整备份包恢复仍需在受控环境另行验收。没有推送或部署。

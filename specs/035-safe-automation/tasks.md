@@ -20,7 +20,7 @@
 - [X] T014 [US4] 在两端maintenance模块实现「最多20MiB」业务备份纯校验与历史、外部演练报告（明确非独立验证），补充业务零写入测试
 - [X] T015 [US4] 在 frontend/src/views/MaintenanceView.vue 集中显示备份、校验、心跳、失败任务和既有独立库恢复演练指引，完成检查后提交
 ## Final validation
-- [ ] T016 执行Java verify、Go race/vet/build、前端全检查、隔离数据库/浏览器并记录 specs/035-safe-automation/validation.md，提交最终验证
+- [X] T016 执行Java verify、Go race/vet/build、前端全检查、隔离数据库/浏览器并记录 specs/035-safe-automation/validation.md，提交最终验证
 
 依赖：T001→T002→T003；T004→T005→T006；T007→T008→T009；T010→T011→T012；T013→T014→T015；各切片→T016。
 并行机会：仅互不依赖文件的只读研究/检查；实现依功能串行，避免迁移号/共享路由冲突。先完成日历再采集、工作流和维护，每片独立提交；后端两种实现与共享前端一同验证，不部署。

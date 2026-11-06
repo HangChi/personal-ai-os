@@ -9,3 +9,6 @@
 - No unresolved clarification; no new external service, provider or real-user data accessed during development.
 
 - 实施确认：HttpClient5 5.6.4；Go x/net/html v0.62.0（官方模块代理实际发布于2026-10-27，Go1.26最低版本，兼容仓库Go1.27）。仅直接声明解析所需模块，不升级其它依赖。网页仅接受UTF-8、标准80/443端口，禁用内容压缩。并发4、总体15秒、DNS结果绑定连接；版本推进使用共享数据库触发器，沿用原索引事务。
+- 实施确认：两端共用 V47 的 PostgreSQL 纯校验函数，避免 Java/Go 在类型、枚举、引用及循环规则上分歧；34组共同样例同时运行。纯规则函数可在只读事务执行，Service仅另外保存校验摘要；不复用有写入及嵌入模型副作用的业务导入器。
+- 实施确认：维护接口按原始UTF-8字节计算SHA-256；业务JSON上限20MiB，外部报告16KiB，并发校验最多2个，处理15秒/SQL10秒超时。不保存上传原文；最近200条摘要、界面最近20条。心跳每30秒续写、90秒失联、7天过期清理；在线只表示进程续写正常，不代替任务成功指标。
+- 实施确认：确定性报告输出写入独立只读会话并生成已完成的READONLY_WORKFLOW Run。会话持久标记及SQL防护阻止后续转为普通可写Agent；业务JSON导入导出保留标记，普通会话不增加false字段，033冻结oracle不修改。

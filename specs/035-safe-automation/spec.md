@@ -2,7 +2,7 @@
 
 **Feature Branch**: `go`（沿用现有分支）
 **Created**: 2026-11-06
-**Status**: Ready for planning
+**Status**: Implemented and verified（限定范围见 validation.md）
 **Input**: 继续完成只读定时工作流、资料采集更新、日历互通和维护恢复中心；双版本对应实现，及时分批提交。
 
 ## User Scenarios & Testing
