@@ -320,3 +320,44 @@ python3 scripts/eval/rag-live-eval.py restart-enhanced --jar /修订包.jar
 ```bash
 python3 scripts/eval/rag-live-ingestion.py
 ```
+
+## Java / Go 同语料 RAGAS 对比（2026-11-06）
+
+完整实测结果见 [Java / Go RAG 评测报告](../../docs/rag-evaluation-20261106.md)。
+
+`ragas-compare.py` 使用当前编译产物，在独立数据库和 OpenSearch 索引中比较两个后端。
+复用现有文档、分块、向量与模型配置，不清空正式库；运行结束停止评测实例并删除自己的数据库和索引。
+本轮使用 100 份文档、468 个分块，40 题中 34 题有答案、6 题验证资料缺失时的拒答。
+`ragas-comparison-cases.json` 的参考答案带来源和证据锚点，采集前校验本地语料的 SHA-256。
+语料为本地索引卡和虚构场景，不复用上面的 129 题旧正文基线。
+
+指标包括文档去重后的 Hit@1/3/5、MRR、所有标注来源覆盖率、字面关键点覆盖、引用标记及分块一致性、
+负例拒答、各阶段降级和端到端 P50/P95。RAGAS 0.4.3 另外计算 Faithfulness、Factual Correctness（F1）、
+Context Precision 和 Context Recall；每项保留有效样本数，配对 bootstrap 估计 Go 减 Java 的 95% 区间。
+字面关键点仅用于排查，引用一致性只证明可追溯，均不能代替语义正确性。
+
+~~~bash
+uv venv --python 3.12 .cache/ragas-venv
+uv pip install --python .cache/ragas-venv/bin/python -r scripts/eval/requirements-ragas.txt
+
+# 先按本机 JDK / Go 配置编译当前代码，再显式选择产物。
+RAGAS_DO_NOT_TRACK=true .cache/ragas-venv/bin/python scripts/eval/ragas-compare.py collect \
+  --java-jar backend/target/personal-ai-os-backend-0.1.0-SNAPSHOT.jar \
+  --go-binary .cache/ragas-go-current \
+  --corpus-dir .cache/manual-corpus-20261106/documents \
+  --output .cache/ragas-comparison-new-run
+
+# 采集完成后再调用裁判，防止评测流量影响延迟；产生真实模型调用费用。
+RAGAS_DO_NOT_TRACK=true .cache/ragas-venv/bin/python scripts/eval/ragas-compare.py judge \
+  --output .cache/ragas-comparison-new-run --concurrency 4
+.cache/ragas-venv/bin/python scripts/eval/ragas-compare.py summarize \
+  --output .cache/ragas-comparison-new-run
+python3 -m unittest discover -s scripts/eval -p test_ragas_compare.py -v
+~~~
+
+输出包括语料清单、产物及语料哈希、原始回答与检索 trace、逐题逐项 RAGAS 分数、Token usage 和汇总 JSON。
+不保存 API key；原始证据仍包含文档内容，应按私有数据保管。`collect` 不会覆盖已有回答目录；
+同模型的 `judge` 可重跑以补齐失败分数，`summarize` 无模型调用。默认裁判与回答使用同一模型，
+存在自评偏差；仅一轮、少量问题不能证明语言实现本身优劣，也不构成并发吞吐压测。
+本轮还记录到一次正确来源回答被事实 F1 低估的现象；报告保留首次有效分数和单独复核，
+不能将该分数直接解释成“答对题目的比例”。

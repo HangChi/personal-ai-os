@@ -1,0 +1,6 @@
+# RAGAS 0.4.3 imports VertexAI from langchain-community's pre-0.4 layout.
+ragas==0.4.3
+langchain-community==0.3.31
+langchain-openai==0.3.35
+openai==2.54.0
+httpx==0.28.1
