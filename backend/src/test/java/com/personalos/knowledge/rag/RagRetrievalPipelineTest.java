@@ -140,4 +140,34 @@ class RagRetrievalPipelineTest {
         var result=pipeline.retrieve("问题",1);assertThat(result.status()).isEqualTo("CLARIFY");assertThat(result.disagreements()).isEmpty();
         assertThat(result.hits()).hasSize(2);
     }
+    @Test void partialAnswerRetainsOtherEvidenceAndUsesOriginalConversationQuestion() {
+        var redis=new KnowledgeHitDto(UUID.randomUUID(),"缓存规范","redis.md",0,"商品缓存 TTL 为 720 秒。",.9);
+        when(recall.candidates(anyString(),anyInt())).thenReturn(List.of(a,b,redis));
+        String original="那两个报销标准呢，顺便说明缓存 TTL";
+        when(model.call(anyString(),anyString(),anyLong())).thenAnswer(call->{
+            String rules=call.getArgument(0);
+            if(rules.startsWith("判断本轮"))return json.readTree("{\"retrieve\":true,\"query\":\"报销标准与商品缓存 TTL\"}");
+            if(rules.contains("queries"))return json.readTree("{\"queries\":[]}");
+            if(rules.contains("order"))return json.readTree("{\"order\":[1,2,3]}");
+            if(rules.startsWith("将 question")) {
+                var payload=json.readTree((String)call.getArgument(1));
+                assertThat(payload.path("question").asString()).isEqualTo(original);
+                assertThat(payload.path("retrievalQueries").toString()).contains("报销标准与商品缓存 TTL");
+                assertThat(payload.has("history")).isFalse();
+                return json.readTree("""
+                    {"parts":[{"topic":"缓存 TTL","status":"SUPPORTED","text":"商品缓存 TTL 为 720 秒。","evidence":[{"index":3,"quote":"商品缓存 TTL 为 720 秒"}]}]}
+                    """);
+            }
+            if(rules.startsWith("独立核对"))return json.readTree("{\"complete\":true,\"conflictsRespected\":true,\"parts\":[{\"index\":1,\"supported\":true}]}");
+            return json.readTree("""
+                {"evidence":[{"index":1,"grade":"SUPPORTED"},{"index":2,"grade":"SUPPORTED"},{"index":3,"grade":"SUPPORTED"}],
+                 "conflicts":[{"left":1,"right":2,"leftQuote":"每天五百元","rightQuote":"每天八百元","reason":"金额不同"}],"clarification":""}
+                """);
+        });
+        var r=pipeline.retrieveForConversation(original,1,List.of());
+        assertThat(r.hits()).containsExactly(a,b,redis);
+        assertThat(r.guarded()).isTrue();assertThat(r.preparedAnswer()).isNotBlank();
+        assertThat(r.guardedAnswer()).contains("可确认的内容","720 秒。 [3]","每天五百元","每天八百元");
+        assertThat(r.stages().getLast().status()).isEqualTo("OK");
+    }
 }

@@ -136,6 +136,17 @@ func TestP6StoredConflictsAreScopedToRelevantChunks(t *testing.T) {
 	if err != nil || len(review.Conflicts) != 1 || len(review.Relevant) != 2 {
 		t.Fatal(review, err)
 	}
+	m := structuredFunc(func(context.Context, string, any, time.Duration) (json.RawMessage, error) {
+		return json.RawMessage(`{"conflicts":[{"index":1,"relevant":false,"reason":"本轮只问另一事实"}]}`), nil
+	})
+	scoped, err := scopeRestoredConflicts(ctx, m, "仅问另一事实", Review{Relevant: hits[:1]}, review, 4*time.Second)
+	if err != nil || len(scoped.Conflicts) != 0 || len(scoped.Relevant) != 1 {
+		t.Fatal(scoped, err)
+	}
+	conflicts, err = g.Conflicts(ctx)
+	if err != nil || len(conflicts) != 1 || conflicts[0].Status != "OPEN" {
+		t.Fatal("scope changed stored governance", conflicts, err)
+	}
 }
 
 func TestP6GovernanceRejectsForgedQuotesAndKeepBoth(t *testing.T) {

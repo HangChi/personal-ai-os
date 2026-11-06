@@ -126,7 +126,11 @@ func TestPipelineReadyConflictTopOneFallbackAndNoContent(t *testing.T) {
 			p := &Pipeline{Recall: recall, Model: m, Review: &EvidenceReviewer{m}, Enabled: true, TopK: 4}
 			one := 1
 			r, e := p.Retrieve(context.Background(), "制度", &one)
-			if e != nil || r.Status != status || calls != 3 || recall.calls != 2 {
+			wantCalls := 3
+			if status == "CONFLICT" || status == "CLARIFY" {
+				wantCalls = 4
+			}
+			if e != nil || r.Status != status || calls != wantCalls || recall.calls != 2 {
 				t.Fatal(r, e, calls, recall.calls)
 			}
 			if status == "READY" && len(r.Hits) != 1 {

@@ -69,16 +69,16 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         String standalone = route.path("query").asString().strip();
         if (standalone.length() > 2000 || (retrieve && standalone.isBlank()) || (!retrieve && !standalone.isEmpty()))
             throw new IllegalArgumentException("Invalid conversation retrieval query");
-        return retrieve ? retrieveWithin(standalone, topK, deadline) : RagResult.legacy(List.of(), query);
+        return retrieve ? retrieveWithin(standalone, topK, deadline, query) : RagResult.legacy(List.of(), query);
     }
 
     @Override public RagResult retrieve(String query,Integer topK) {
         if(query==null || query.isBlank() || query.length()>2000) throw new BusinessException(ErrorCode.VALIDATION_FAILED,"查询不能为空且不能超过 2000 字符");
         if(!enabled) return RagResult.legacy(recall.search(query,topK),query);
         long deadline=System.nanoTime()+TimeUnit.MILLISECONDS.toNanos(budget);
-        return retrieveWithin(query, topK, deadline);
+        return retrieveWithin(query, topK, deadline, query);
     }
-    private RagResult retrieveWithin(String query, Integer topK, long deadline) {
+    private RagResult retrieveWithin(String query, Integer topK, long deadline, String answerQuestion) {
         if (System.nanoTime() >= deadline) throw new IllegalStateException("Retrieval budget exhausted");
         var stages=new ArrayList<RagResult.Stage>(); var warnings=new ArrayList<String>();
         var queries=new LinkedHashSet<String>(); queries.add(query.strip());
@@ -124,19 +124,28 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         String status="UNVERIFIED",clarification=""; List<RagResult.Disagreement> conflicts=List.of(); List<KnowledgeHitDto> selected=pool;
         try {
             var assessed=review.review(query,pool,remaining(deadline,evidenceTimeout));conflicts=assessed.conflicts();clarification=assessed.clarification();
-            if(governance!=null) {assessed=governance.applyDecisions(assessed,pool,warnings);governance.record(assessed.conflicts());}
+            if(governance!=null) {
+                var original=assessed;
+                assessed=governance.applyDecisions(assessed,pool,warnings);
+                assessed=review.scopeRestored(answerQuestion+"\n独立检索问题："+query,original,assessed,remaining(deadline,4000));
+                governance.record(assessed.conflicts());
+            }
             conflicts=assessed.conflicts();
             selected=assessed.relevant();status=!conflicts.isEmpty()?"CONFLICT":!clarification.isBlank()?"CLARIFY":selected.isEmpty()?"INSUFFICIENT":"READY";
             stage(stages,"evidence",start,pool.size(),selected.size(),"OK");
         } catch(RuntimeException ex){warnings.add("证据精审未完成，展示来源并暂停确定作答");stage(stages,"evidence",start,pool.size(),pool.size(),"FALLBACK");}
         if(status.equals("READY")) selected=diverse(selected,properties.normalizeTopK(topK),2);
-        else if(status.equals("CONFLICT")) {
-            var keep=new LinkedHashSet<KnowledgeHitDto>();for(var c:conflicts){keep.add(c.left());keep.add(c.right());} selected=List.copyOf(keep);
-        }
         meters.counter("personalos.knowledge.rag.results","status",status).increment();
         var scores=new LinkedHashMap<String,RagResult.RankingScores>();
         for(var hit:selected)scores.put(key(hit),new RagResult.RankingScores(rrf.getOrDefault(key(hit),0.0),rerankScores.get(key(hit))));
-        return new RagResult(selected,List.copyOf(queries),List.copyOf(stages),List.copyOf(warnings),status,conflicts,clarification,Map.copyOf(scores));
+        var result=new RagResult(selected,List.copyOf(queries),List.copyOf(stages),List.copyOf(warnings),status,conflicts,clarification,Map.copyOf(scores));
+        if(Set.of("CONFLICT","CLARIFY").contains(status) && !selected.isEmpty()) {
+            start=System.nanoTime();
+            String answer=new EvidenceAnswer(model,json).prepare(answerQuestion,result,remaining(deadline,8000));
+            stage(stages,"answer",start,selected.size(),answer.isBlank()?0:1,answer.isBlank()?"FALLBACK":"OK");
+            return new RagResult(selected,result.queries(),List.copyOf(stages),result.warnings(),status,conflicts,clarification,result.rankingScores(),answer);
+        }
+        return result;
     }
     private static long remaining(long deadline){return remaining(deadline,8000);}
     private static long remaining(long deadline,long maximum){return Math.min(maximum,TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime()));}

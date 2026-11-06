@@ -105,6 +105,13 @@ class KnowledgeGovernanceIntegrationTest extends ContainerContextTest {
         var relevant=governance.applyDecisions(new EvidenceReview.Review(List.of(h.getFirst()),List.of(),""),pool,new ArrayList<>());
         assertThat(relevant.conflicts()).hasSize(1);
         assertThat(relevant.relevant()).containsExactlyElementsOf(h);
+        var gateway=mock(RagModelGateway.class);var json=new tools.jackson.databind.ObjectMapper();
+        when(gateway.call(anyString(),anyString(),anyLong())).thenReturn(json.readTree("""
+            {"conflicts":[{"index":1,"relevant":false,"reason":"本轮只问适用范围，不问金额"}]}
+            """));
+        var scoped=new EvidenceReview(gateway,json).scopeRestored("适用于国内差旅吗？",new EvidenceReview.Review(List.of(h.getFirst()),List.of(),""),relevant,4000);
+        assertThat(scoped.conflicts()).isEmpty();assertThat(scoped.relevant()).containsExactly(h.getFirst());
+        assertThat(governance.conflicts()).singleElement().extracting(KnowledgeGovernance.Conflict::status).isEqualTo("OPEN");
     }
 
     @Test void backupRestoresKnowledgeSpaceAndEffectiveScope() {

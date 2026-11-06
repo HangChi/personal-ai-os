@@ -33,14 +33,15 @@ type Disagreement struct {
 	Reason     string `json:"reason"`
 }
 type RagResult struct {
-	Hits          []Hit                    `json:"hits"`
-	Queries       []string                 `json:"queries"`
-	Stages        []Stage                  `json:"stages"`
-	Warnings      []string                 `json:"warnings"`
-	Status        string                   `json:"status"`
-	Disagreements []Disagreement           `json:"disagreements"`
-	Clarification string                   `json:"clarification"`
-	RankingScores map[string]RankingScores `json:"rankingScores"`
+	Hits           []Hit                    `json:"hits"`
+	Queries        []string                 `json:"queries"`
+	Stages         []Stage                  `json:"stages"`
+	Warnings       []string                 `json:"warnings"`
+	Status         string                   `json:"status"`
+	Disagreements  []Disagreement           `json:"disagreements"`
+	Clarification  string                   `json:"clarification"`
+	RankingScores  map[string]RankingScores `json:"rankingScores"`
+	PreparedAnswer string                   `json:"-"`
 }
 
 func legacy(hits []Hit, q string) RagResult {
@@ -48,27 +49,33 @@ func legacy(hits []Hit, q string) RagResult {
 	if len(hits) == 0 {
 		status = "INSUFFICIENT"
 	}
-	return RagResult{hits, []string{q}, []Stage{}, []string{}, status, []Disagreement{}, "", map[string]RankingScores{}}
+	return RagResult{Hits: hits, Queries: []string{q}, Stages: []Stage{}, Warnings: []string{}, Status: status, Disagreements: []Disagreement{}, RankingScores: map[string]RankingScores{}}
 }
 func (r RagResult) Guarded() bool { return r.Status != "READY" && r.Status != "INSUFFICIENT" }
 func (r RagResult) GuardedAnswer() string {
-	text := "本次证据核对未完成，暂不生成确定结论。\n"
+	if r.PreparedAnswer != "" {
+		return r.PreparedAnswer
+	}
+	text := "本次证据核对未完成，暂不生成确定结论。\n\n"
 	if r.Status == "CONFLICT" {
-		text = "资料之间存在待核实的不同说法，不能据此选定唯一答案。\n"
+		text = "部分事项存在来源分歧，以下是具体对照。\n\n"
 	} else if r.Status == "CLARIFY" {
-		text = "现有资料的适用条件不同，需要先澄清问题。\n"
+		text = "部分事项的适用条件尚不明确。\n\n"
 	}
 	var b strings.Builder
 	b.WriteString(text)
-	for i, h := range r.Hits {
-		fmt.Fprintf(&b, "\n[%d] %s\n", i+1, h.DocumentTitle)
+	if r.Status == "CONFLICT" && len(r.Disagreements) > 0 {
+		b.WriteString(r.disagreementText())
+	} else if len(r.Hits) > 0 {
+		b.WriteString("可核对的来源：\n")
+		for i, h := range r.Hits {
+			fmt.Fprintf(&b, "\n[%d] %s", i+1, safeAnswerText(h.DocumentTitle))
+		}
 	}
 	if strip(r.Clarification) != "" {
-		b.WriteString("\n" + r.Clarification)
-	} else {
-		b.WriteString("\n请补充适用对象、时间或制度版本，或到资料治理中核对来源。")
+		b.WriteString("\n\n" + safeAnswerText(r.Clarification))
 	}
-	return b.String()
+	return strings.TrimRight(b.String(), " \t\r\n")
 }
 
 type KnowledgeSearchPort interface {
@@ -280,6 +287,9 @@ type Pipeline struct {
 }
 
 func (p *Pipeline) Retrieve(parent context.Context, q string, topK *int) (RagResult, error) {
+	return p.retrieve(parent, q, q, topK)
+}
+func (p *Pipeline) retrieve(parent context.Context, q, answerQuestion string, topK *int) (RagResult, error) {
 	if strip(q) == "" || chars(q) > 2000 {
 		return RagResult{}, api.NewBusinessError(api.ValidationFailed, "查询不能为空且不能超过 2000 字符")
 	}
@@ -457,7 +467,11 @@ func (p *Pipeline) Retrieve(parent context.Context, q string, topK *int) (RagRes
 	result.Status = "UNVERIFIED"
 	result.Hits = pool
 	if e == nil && p.Governance != nil {
+		original := assessed
 		assessed, e = p.Governance.ApplyDecisions(ctx, assessed, pool, &result.Warnings)
+		if e == nil {
+			assessed, e = scopeRestoredConflicts(ctx, p.Model, answerQuestion+"\n独立检索问题："+q, original, assessed, remaining(4*time.Second))
+		}
 		if e == nil {
 			e = p.Governance.Record(ctx, assessed.Conflicts)
 		}
@@ -473,16 +487,6 @@ func (p *Pipeline) Retrieve(parent context.Context, q string, topK *int) (RagRes
 		switch {
 		case len(assessed.Conflicts) > 0:
 			result.Status = "CONFLICT"
-			seen := map[string]bool{}
-			result.Hits = []Hit{}
-			for _, c := range assessed.Conflicts {
-				for _, h := range []Hit{c.Left, c.Right} {
-					if !seen[hitKey(h)] {
-						seen[hitKey(h)] = true
-						result.Hits = append(result.Hits, h)
-					}
-				}
-			}
 		case len(assessed.Relevant) == 0:
 			result.Status = "INSUFFICIENT"
 			result.Clarification = ""
@@ -506,6 +510,15 @@ func (p *Pipeline) Retrieve(parent context.Context, q string, topK *int) (RagRes
 			score = &n
 		}
 		result.RankingScores[hitKey(h)] = RankingScores{ranks[hitKey(h)], score}
+	}
+	if (result.Status == "CONFLICT" || result.Status == "CLARIFY") && len(result.Hits) > 0 {
+		start = time.Now()
+		result.PreparedAnswer = prepareEvidenceAnswer(ctx, p.Model, answerQuestion, result, remaining(8*time.Second))
+		state, count := "OK", 1
+		if result.PreparedAnswer == "" {
+			state, count = "FALLBACK", 0
+		}
+		stage("answer", state, start, len(result.Hits), count)
 	}
 	if p.Stats != nil {
 		p.Stats.Count("rag.results", result.Status)

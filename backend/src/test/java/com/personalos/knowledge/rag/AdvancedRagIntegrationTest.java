@@ -74,11 +74,15 @@ class AdvancedRagIntegrationTest extends ContainerContextTest {
         String quote2=hits.get(1).content().contains("五百")?"每天五百元":"每天八百元";
         model.enqueueText(json.writeValueAsString(Map.of("evidence",List.of(Map.of("index",1,"grade","SUPPORTED"),Map.of("index",2,"grade","SUPPORTED")),
             "conflicts",List.of(Map.of("left",1,"right",2,"leftQuote",quote1,"rightQuote",quote2,"reason","同范围报销金额不同")),"clarification","请说明适用部门和日期")));
+        model.enqueueText("{}"); // 逐项生成结构无效时必须回退具体原文，不能放行模型内容。
         var answer=qa.ask("住宿报销标准",1);
         assertThat(answer.answered()).isFalse();assertThat(answer.retrieval().status()).isEqualTo("CONFLICT");
         assertThat(answer.citations()).hasSize(2);assertThat(answer.citations()).extracting(c->c.documentId()).containsExactlyInAnyOrder(a,b);
-        assertThat(answer.answer()).contains("不同说法","部门和日期");
-        assertThat(model.receivedInstructions()).hasSize(3);
+        assertThat(answer.answer()).contains("来源分歧","同范围报销金额不同",quote1,quote2,"部门和日期");
+        assertThat(answer.retrieval().stages()).anySatisfy(stage->{
+            assertThat(stage.name()).isEqualTo("answer");assertThat(stage.status()).isEqualTo("FALLBACK");
+        });
+        assertThat(model.receivedInstructions()).hasSize(4);
         assertThat(db.queryForObject("SELECT count(*) FROM knowledge_conflict WHERE status='OPEN'",Integer.class)).isEqualTo(1);
         documents.delete(a);
         assertThat(recall.candidates("住宿报销标准",40)).noneMatch(hit->hit.documentId().equals(a));

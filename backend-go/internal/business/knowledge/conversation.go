@@ -73,5 +73,5 @@ func (p *Pipeline) RetrieveConversation(parent context.Context, query string, hi
 	if ctx.Err() != nil {
 		return RagResult{}, ctx.Err()
 	}
-	return p.Retrieve(ctx, q, topK)
+	return p.retrieve(ctx, q, query, topK)
 }

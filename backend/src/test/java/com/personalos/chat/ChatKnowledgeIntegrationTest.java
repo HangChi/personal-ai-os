@@ -85,6 +85,7 @@ class ChatKnowledgeIntegrationTest extends ContainerContextTest {
                 new KnowledgeHitDto(DOC_B, "隔离级别", "iso.md", 2, HIT_B_CONTENT, 0.83, MatchedBy.KEYWORD));
 
         private volatile boolean guarded;
+        private volatile String preparedAnswer="";
         private volatile boolean skipConversationRetrieval;
         private volatile List<ConversationMessage> lastHistory = List.of();
         private volatile boolean failNext;
@@ -106,7 +107,7 @@ class ChatKnowledgeIntegrationTest extends ContainerContextTest {
         public com.personalos.knowledge.rag.RagResult retrieve(String query,Integer topK) {
             var hits=search(query,topK);
             if(!guarded)return com.personalos.knowledge.rag.RagResult.legacy(hits,query);
-            return new com.personalos.knowledge.rag.RagResult(hits,List.of(query),List.of(),List.of(),"CONFLICT",List.of(),"请说明适用日期");
+            return new com.personalos.knowledge.rag.RagResult(hits,List.of(query),List.of(),List.of(),"CONFLICT",List.of(),"请说明适用日期").withPreparedAnswer(preparedAnswer);
         }
         @Override
         public com.personalos.knowledge.rag.RagResult retrieveForConversation(String query, Integer topK, List<ConversationMessage> history) {
@@ -123,6 +124,7 @@ class ChatKnowledgeIntegrationTest extends ContainerContextTest {
 
         void reset() {
             this.guarded = false;
+            this.preparedAnswer = "";
             this.skipConversationRetrieval = false;
             this.lastHistory = List.of();
             this.failNext = false;
@@ -395,10 +397,21 @@ class ChatKnowledgeIntegrationTest extends ContainerContextTest {
         String conversationId=createSession();searchStub.guarded=true;
         var events=streamEvents(conversationId,"{\"content\":\"标准是多少\",\"useKnowledge\":true}");
         assertThat(events).extracting(SseEvent::name).contains("rag","delta","done");
-        assertThat(events.stream().filter(e->e.name().equals("done")).findFirst().orElseThrow().data()).contains("不同说法","适用日期");
+        assertThat(events.stream().filter(e->e.name().equals("done")).findFirst().orElseThrow().data()).contains("来源分歧","适用日期");
         assertThat(stub.receivedInstructions).isEmpty();
         assertThat(messageRepository.findByConversationIdOrderBySequenceNoAsc(conversationId)).hasSize(2);
         assertThat(citationCountOf(conversationId)).isEqualTo(2);
+    }
+    @Test void verifiedPartialAnswerUsesProtectedStreamAndPersistsCitations() throws Exception {
+        String id=createSession();searchStub.guarded=true;
+        searchStub.preparedAnswer="可确认的资料内容 [1]。尚有适用范围分歧 [2]。";
+        var events=streamEvents(id,"{\"content\":\"分别解释已确认与有分歧的内容\",\"useKnowledge\":true}");
+        assertThat(events.stream().filter(e->e.name().equals("done")).findFirst().orElseThrow().data()).contains(searchStub.preparedAnswer);
+        assertThat(stub.receivedInstructions).isEmpty();
+        var messages=messageRepository.findByConversationIdOrderBySequenceNoAsc(id);
+        assertThat(messages).hasSize(2);assertThat(messages.getLast().getContent()).isEqualTo(searchStub.preparedAnswer);
+        assertThat(citationCountOf(id)).isEqualTo(2);
+        assertThat(events.stream().filter(e->e.name().equals("rag")).findFirst().orElseThrow().data()).doesNotContain("preparedAnswer");
     }
 
     private String createSession() throws Exception {

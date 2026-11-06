@@ -1,0 +1,1731 @@
+{
+  "question": "总结草稿、附件、晚到回复隔离，并给出人工测试步骤。",
+  "hits": [
+    {
+      "documentId": "11111111-1111-4111-8111-111111111111",
+      "documentTitle": "会话草稿规范",
+      "filename": "draft.md",
+      "chunkIndex": 0,
+      "content": "会话 A 的草稿保留在 A。切换会话时附件保留。😀😀😀😀😀",
+      "score": 0.9
+    },
+    {
+      "documentId": "22222222-2222-4222-8222-222222222222",
+      "documentTitle": "附件旧规范",
+      "filename": "attachments.md",
+      "chunkIndex": 0,
+      "content": "切换会话时附件会清空。",
+      "score": 0.8
+    },
+    {
+      "documentId": "33333333-3333-4333-8333-333333333333",
+      "documentTitle": "回复隔离规范",
+      "filename": "replies.md",
+      "chunkIndex": 0,
+      "content": "晚到回复只写回原会话。测试场景可使用两个会话。",
+      "score": 0.7
+    }
+  ],
+  "disagreements": [
+    {
+      "left": {
+        "documentId": "11111111-1111-4111-8111-111111111111",
+        "documentTitle": "会话草稿规范",
+        "filename": "draft.md",
+        "chunkIndex": 0,
+        "content": "会话 A 的草稿保留在 A。切换会话时附件保留。😀😀😀😀😀",
+        "score": 0.9
+      },
+      "right": {
+        "documentId": "22222222-2222-4222-8222-222222222222",
+        "documentTitle": "附件旧规范",
+        "filename": "attachments.md",
+        "chunkIndex": 0,
+        "content": "切换会话时附件会清空。",
+        "score": 0.8
+      },
+      "leftQuote": "切换会话时附件保留",
+      "rightQuote": "切换会话时附件会清空",
+      "reason": "切换会话后附件的处理不同"
+    }
+  ],
+  "cases": [
+    {
+      "name": "partial_conflict_with_test_suggestions",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": true,
+      "expectedAnswer": "**可确认的内容**\n\n**草稿隔离**\n会话 A 的草稿只在 A 保留。 [1]\n\n**晚到回复**\n晚到回复写回原会话。 [3]\n\n**建议的人工验证**\n\n**切换测试**\n在 A 输入草稿并切换到 B，检查两边输入框。 [1]\n\n**尚不能确定**\n\n**附件行为**\n现有资料不足以确定这一项。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "fabricated_quote",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "草稿会自动发送给所有人"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "out_of_range_citation",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 99,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "string_citation_index",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": "1",
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "model_inserts_citation",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "草稿自动发送 [99]",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "missing_support",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": []
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "unresolved_invents_fact",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "附件肯定清空",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "verification_rejects_claim",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": false
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "verification_incomplete",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": false,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "verification_selects_side",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": false,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "verification_omits_part",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "verification_string_boolean",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": "true",
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "verification_duplicate_part",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "unicode_quote_requires_four_codepoints",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "😀😀😀"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "unicode_four_codepoints_are_supported",
+      "plan": {
+        "parts": [
+          {
+            "topic": "Unicode 原文",
+            "status": "SUPPORTED",
+            "text": "😀😀😀😀",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "😀😀😀😀"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": true,
+      "expectedAnswer": "**可确认的内容**\n\n**Unicode 原文**\n😀😀😀😀 [1]\n\n**晚到回复**\n晚到回复写回原会话。 [3]\n\n**建议的人工验证**\n\n**切换测试**\n在 A 输入草稿并切换到 B，检查两边输入框。 [1]\n\n**尚不能确定**\n\n**附件行为**\n现有资料不足以确定这一项。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "topic_over_eighty_codepoints",
+      "plan": {
+        "parts": [
+          {
+            "topic": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "empty_supported_text",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "null_evidence",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": null
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "floating_citation_index",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1.0,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "duplicate_references",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              },
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "too_many_parts",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          },
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          },
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "body_over_twelve_hundred_codepoints",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1,
+            "supported": true
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    },
+    {
+      "name": "verification_missing_supported",
+      "plan": {
+        "parts": [
+          {
+            "topic": "草稿隔离",
+            "status": "SUPPORTED",
+            "text": "会话 A 的草稿只在 A 保留。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "晚到回复",
+            "status": "SUPPORTED",
+            "text": "晚到回复写回原会话。",
+            "evidence": [
+              {
+                "index": 3,
+                "quote": "晚到回复只写回原会话"
+              }
+            ]
+          },
+          {
+            "topic": "切换测试",
+            "status": "SUGGESTION",
+            "text": "在 A 输入草稿并切换到 B，检查两边输入框。",
+            "evidence": [
+              {
+                "index": 1,
+                "quote": "会话 A 的草稿保留在 A"
+              }
+            ]
+          },
+          {
+            "topic": "附件行为",
+            "status": "UNRESOLVED",
+            "text": "",
+            "evidence": []
+          }
+        ]
+      },
+      "verification": {
+        "complete": true,
+        "conflictsRespected": true,
+        "parts": [
+          {
+            "index": 1
+          },
+          {
+            "index": 2,
+            "supported": true
+          },
+          {
+            "index": 3,
+            "supported": true
+          },
+          {
+            "index": 4,
+            "supported": true
+          }
+        ]
+      },
+      "prepared": false,
+      "expectedAnswer": "部分事项存在来源分歧，以下是具体对照。\n\n**来源分歧**\n\n**分歧 1：切换会话后附件的处理不同**\n> [1] 会话草稿规范：切换会话时附件保留\n>\n> [2] 附件旧规范：切换会话时附件会清空\n\n该项暂不能确定唯一结论。"
+    }
+  ]
+}
