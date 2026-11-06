@@ -2174,8 +2174,8 @@
     {
       "id": "scope:workspace-ui-consolidation-20261106",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
-      "summary": "036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。",
+      "source_commit": "b22631b79a961ba2e5fc803de723a972364b8fb2",
+      "summary": "036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。",
       "files": [
         {
           "path": "frontend/src/components/PageHeader.vue",
@@ -2190,7 +2190,7 @@
         {
           "path": "frontend/src/components/knowledge/KnowledgeDocumentsTab.vue",
           "baseline_sha256": "50b3fb633b57d0666578445b11d25ebd48127d50ba88476739396291bc065ca9",
-          "candidate_sha256": "ce5d5c687d1f5eaef14fd2e0cccf69460f6b674ad90a220aea0f0931d913ed20"
+          "candidate_sha256": "1c62b31db05053df7df0c89d88a012c84e83a0dbff6820e260b25ad865dbdb59"
         },
         {
           "path": "frontend/src/components/knowledge/KnowledgeGovernanceTab.vue",
@@ -2268,6 +2268,11 @@
           "candidate_sha256": "dfdd54fa4346e42cc43df6ab406d3cd10e017a36080065aad9ef0fc70f61b088"
         },
         {
+          "path": "frontend/test/component/knowledge-jobs-panel.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "3cde7ab6427a982d917a1cda74ca2f69c7fbf05f952cd3aa022eaa9f462df4b7"
+        },
+        {
           "path": "frontend/test/component/search-view.test.ts",
           "baseline_sha256": null,
           "candidate_sha256": "242a6a2a8a030fdc2c724f91722bc662a7b72161da420b2300022a2cb60978de"
@@ -2290,7 +2295,7 @@
         {
           "path": "scripts/ui/browser-checks.mjs",
           "baseline_sha256": null,
-          "candidate_sha256": "56ca2a9cea4ed463d48c7cd09a3cc6e727bdee628db4b48b19553ba3dde6fd01"
+          "candidate_sha256": "ffa7307edee8a16cfd57238b3989e2ddb1eb5073cc6debccf85ad768c1fa3632"
         },
         {
           "path": "specs/036-workspace-ui/browser-report.json",
@@ -2298,19 +2303,29 @@
           "candidate_sha256": "aa0cc537241a125107735f0f34e1c8d2a34ac901193ac8dea23e24725432103d"
         },
         {
+          "path": "specs/036-workspace-ui/index-jobs-browser-report.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "3428abf65e5ed565439b1ea15a149e321cd928f6821108b4e3869e68a59f2835"
+        },
+        {
+          "path": "specs/036-workspace-ui/index-jobs-validation.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "95e189db785dd60c41ca882a1159e9cfc1a1b73e7ce4e626e9a2f1fe07c6a690"
+        },
+        {
           "path": "specs/036-workspace-ui/plan.md",
           "baseline_sha256": null,
-          "candidate_sha256": "ce2de27835f9ab6e9fb7d3d498e65bc43b131ec857b1b3027f710747434173cf"
+          "candidate_sha256": "bb472869c78cf59c7769906df648933efbfd941f7fbe7e8e0dd430bd18e7c3f8"
         },
         {
           "path": "specs/036-workspace-ui/spec.md",
           "baseline_sha256": null,
-          "candidate_sha256": "9ac9c0e523f845a835cc82bd46b8d705830cadd6c6f3ca5bc3cbdd9564ece6e2"
+          "candidate_sha256": "8bbb6f4b1e361a1343a4bd294ca6f571aaab80cf8d4d66741ca6ef9aee85a96e"
         },
         {
           "path": "specs/036-workspace-ui/tasks.md",
           "baseline_sha256": null,
-          "candidate_sha256": "a0a8951847f813cd626c2a55d6eb5658d13c2812e48f8d800e4de2e22ae87074"
+          "candidate_sha256": "421eee861fbf0de03fc2aa06185cb2145fe339d953dac9ba86a791b5fca735c1"
         },
         {
           "path": "specs/036-workspace-ui/validation.md",
@@ -2347,12 +2362,16 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
       "limitations": [
         "Java/Go责任文件只是未修改的接口/业务依赖，哈希绑定不代表新增或完成双端行为验收。",
         "浏览器124张截图与交互使用合成API，不代表真实模型、生产数据库、外部通知或迁移发布批准。",
-        "原冻结清单、原始V1–V42和五项发布门禁不变；本组保持in_progress，不继承历史verified状态。"
+        "原冻结清单、原始V1–V42和五项发布门禁不变；本组保持in_progress，不继承历史verified状态。",
+        "索引任务折叠后续仅验证前端交互；12张隔离模拟API截图不是完整Java/Go双端E2E，不升级发布门禁。"
       ]
     }
   ]

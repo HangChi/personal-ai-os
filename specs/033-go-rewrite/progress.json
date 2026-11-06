@@ -28247,9 +28247,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/StatusTag.vue": {
       "status": "implemented",
@@ -28287,9 +28290,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/calendar/CalendarDayList.vue": {
       "status": "implemented",
@@ -28605,9 +28611,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeGovernanceTab.vue": {
       "status": "in_progress",
@@ -28623,9 +28632,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/knowledge/KnowledgeHitList.vue": {
       "status": "in_progress",
@@ -28705,9 +28717,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/ModelProfileCard.vue": {
       "status": "implemented",
@@ -28734,9 +28749,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/ModelProfilesPanel.vue": {
       "status": "in_progress",
@@ -28752,9 +28770,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/settings/ProviderPresetPicker.vue": {
       "status": "in_progress",
@@ -28770,9 +28791,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/components/task/TaskBoardPanel.vue": {
       "status": "in_progress",
@@ -29396,9 +29420,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/styles/theme.css": {
       "status": "implemented",
@@ -29472,9 +29499,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/CalendarView.vue": {
       "status": "in_progress",
@@ -29574,9 +29604,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/NotFoundView.vue": {
       "status": "implemented",
@@ -29603,9 +29636,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/SettingsView.vue": {
       "status": "in_progress",
@@ -29621,9 +29657,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/src/views/TasksView.vue": {
       "status": "in_progress",
@@ -29654,9 +29693,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/activity-store.test.mjs": {
       "status": "implemented",
@@ -30174,9 +30216,12 @@
         "frontend/test/component/workspace-navigation.test.ts",
         "frontend/test/component/workflow-editor.test.ts",
         "frontend/test/component/search-view.test.ts",
-        "frontend/test/component/settings-navigation.test.ts"
+        "frontend/test/component/settings-navigation.test.ts",
+        "frontend/test/component/knowledge-jobs-panel.test.ts",
+        "specs/036-workspace-ui/index-jobs-validation.md",
+        "specs/036-workspace-ui/index-jobs-browser-report.json"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:workspace-ui-consolidation-20261106：036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:frontend/test/component/setup.ts": {
       "status": "implemented",

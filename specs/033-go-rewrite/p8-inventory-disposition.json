@@ -7713,8 +7713,8 @@
     {
       "id": "scope:workspace-ui-consolidation-20261106",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
-      "files": 28
+      "source_commit": "b22631b79a961ba2e5fc803de723a972364b8fb2",
+      "files": 31
     }
   ]
 }
