@@ -79,6 +79,29 @@ func TestMaintenanceCenter(t *testing.T) {
 			t.Fatal(v, e)
 		}
 	}
+	invalidRaw, e := os.ReadFile("../../../../specs/035-safe-automation/fixtures/maintenance-invalid-json.json")
+	if e != nil {
+		t.Fatal(e)
+	}
+	var invalidJSON []struct{ Name, Content string }
+	if e = json.Unmarshal(invalidRaw, &invalidJSON); e != nil {
+		t.Fatal(e)
+	}
+	for _, fixture := range invalidJSON {
+		t.Run(fixture.Name, func(t *testing.T) {
+			v, e := s.Verify(ctx, []byte(fixture.Content))
+			if e != nil || v["status"] != "INVALID" {
+				t.Fatal(v, e)
+			}
+			digest := sha256.Sum256([]byte(fixture.Content))
+			if v["digest"] != hex.EncodeToString(digest[:]) {
+				t.Fatal("digest changed")
+			}
+			if _, e := s.Drill(ctx, []byte(fixture.Content)); e == nil || !strings.Contains(e.Error(), "外部报告") {
+				t.Fatal("invalid drill was not rejected as validation", e)
+			}
+		})
+	}
 	if _, e = s.Verify(ctx, make([]byte, MaxBytes+1)); e == nil {
 		t.Fatal("oversized backup")
 	}

@@ -1,0 +1,9 @@
+[
+  {"name":"破损JSON","content":"broken"},
+  {"name":"转义NUL","content":"{\"x\":\"\\u0000\"}"},
+  {"name":"超大正指数","content":"{\"formatVersion\":\"1\",\"n\":1e1000000}"},
+  {"name":"超大负数","content":"{\"formatVersion\":\"1\",\"n\":-1e1000000}"},
+  {"name":"超小指数","content":"{\"formatVersion\":\"1\",\"n\":1e-1000000}"},
+  {"name":"指数整数溢出","content":"{\"formatVersion\":\"1\",\"n\":1e2147483648}"},
+  {"name":"嵌套数值溢出","content":"{\"formatVersion\":\"1\",\"extra\":[{\"n\":1e1000000}]}"}
+]

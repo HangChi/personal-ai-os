@@ -38,6 +38,8 @@ class MaintenanceIntegrationTest extends ContainerContextTest {
   jdbc.execute("INSERT INTO task(title) VALUES('业务保持不变')");String before=jdbc.queryForObject("SELECT jsonb_agg(to_jsonb(t))::text FROM task t",String.class);
   var cases=json.fromJson(Files.readString(Path.of("..","specs","035-safe-automation","fixtures","maintenance.json")),List.class);
   for(Object value:cases){var fixture=(Map<String,Object>)value;String raw=json.toJson(fixture.get("payload"));var result=service.verify(bytes(raw));assertThat(result.get("status")).as((String)fixture.get("name")).isEqualTo(fixture.get("status"));if(fixture.get("issue")!=null)assertThat(json.toJson(result.get("issues"))).contains((String)fixture.get("issue"));assertThat(result.get("digest")).isEqualTo(JsonCodec.sha256Hex(raw));}
+  var invalidJson=json.fromJson(Files.readString(Path.of("..","specs","035-safe-automation","fixtures","maintenance-invalid-json.json")),List.class);
+  for(Object value:invalidJson){var fixture=(Map<String,Object>)value;String raw=(String)fixture.get("content");var result=service.verify(bytes(raw));assertThat(result.get("status")).as((String)fixture.get("name")).isEqualTo("INVALID");assertThat(result.get("digest")).isEqualTo(JsonCodec.sha256Hex(raw));assertThatThrownBy(()->service.drill(bytes(raw))).hasMessageContaining("外部报告");}
   for(var invalid:List.of(bytes("broken"),new byte[]{(byte)255},bytes("{\"x\":\"\\u0000\"}"),bytes("[]"),new byte[]{0}))assertThat(service.verify(invalid).get("status")).isEqualTo("INVALID");
   assertThatThrownBy(()->service.verify(new byte[MaintenanceService.MAX_BYTES+1])).hasMessageContaining("大小上限");
   assertThat(jdbc.queryForObject("SELECT jsonb_agg(to_jsonb(t))::text FROM task t",String.class)).isEqualTo(before);
