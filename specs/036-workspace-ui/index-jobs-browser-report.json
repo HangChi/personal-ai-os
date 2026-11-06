@@ -1,0 +1,26 @@
+{
+  "result": "PASS",
+  "mode": "mock-api",
+  "checks": [
+    "light/1440: 索引任务默认折叠、状态摘要、键盘展开收起、独立刷新、错误可见与空任务隐藏",
+    "light/390: 索引任务默认折叠、状态摘要、键盘展开收起、独立刷新、错误可见与空任务隐藏",
+    "dark/1440: 索引任务默认折叠、状态摘要、键盘展开收起、独立刷新、错误可见与空任务隐藏",
+    "dark/390: 索引任务默认折叠、状态摘要、键盘展开收起、独立刷新、错误可见与空任务隐藏"
+  ],
+  "errors": [],
+  "misses": [],
+  "screenshots": [
+    "index-jobs-collapsed-light-1440.png",
+    "index-jobs-expanded-light-1440.png",
+    "index-jobs-error-light-1440.png",
+    "index-jobs-collapsed-light-390.png",
+    "index-jobs-expanded-light-390.png",
+    "index-jobs-error-light-390.png",
+    "index-jobs-collapsed-dark-1440.png",
+    "index-jobs-expanded-dark-1440.png",
+    "index-jobs-error-dark-1440.png",
+    "index-jobs-collapsed-dark-390.png",
+    "index-jobs-expanded-dark-390.png",
+    "index-jobs-error-dark-390.png"
+  ]
+}

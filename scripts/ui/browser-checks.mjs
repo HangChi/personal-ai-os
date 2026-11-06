@@ -10,6 +10,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const output = resolve(process.argv[2] ?? '/tmp/personalos-ui-review')
 const baseline = process.argv.includes('--baseline')
 const interactionsOnly = process.argv.includes('--interactions-only')
+const indexJobsOnly = process.argv.includes('--index-jobs-only')
+let showIndexJobs = false
 let apiMode = 'normal'
 let failWorkflowSave = false
 mkdirSync(output, { recursive: true })
@@ -157,7 +159,20 @@ function fixture(path, method, body, url) {
       },
     ])
   if (/knowledge.*(sources|spaces|conflicts)/.test(path)) return []
-  if (path === '/knowledge/jobs') return []
+  if (path === '/knowledge/jobs')
+    return showIndexJobs
+      ? ['PENDING', 'RUNNING', 'FAILED', 'SUCCEEDED'].map((status, index) => ({
+          id: `job-${index}`,
+          documentId: `doc-${index}`,
+          replacing: false,
+          filename: `项目协作资料-${index}.md`,
+          status,
+          attempts: status === 'FAILED' ? 2 : 1,
+          progress: status === 'SUCCEEDED' ? 100 : 35,
+          stage: status === 'FAILED' ? '索引失败' : '处理文档',
+          error: status === 'FAILED' ? '请检查文件或模型配置，再重新提交' : null,
+        }))
+      : []
   if (/knowledge.*index/.test(path)) return list([])
   if (path === '/calendar/events') return list([])
   if (path === '/workspace/runs') return list([])
@@ -351,6 +366,7 @@ try {
     const path = url.pathname.replace('/api/v1', '')
     if (
       (apiMode === 'error' && path === '/tasks') ||
+      (apiMode === 'jobs-error' && path === '/knowledge/jobs') ||
       (failWorkflowSave && path === '/workflows' && request.method() === 'POST')
     ) {
       failWorkflowSave = false
@@ -411,7 +427,64 @@ try {
     ['captures', '/knowledge?tab=captures'],
     ['governance', '/knowledge?tab=governance'],
   ]
-  for (const theme of interactionsOnly ? [] : baseline ? ['light'] : ['light', 'dark']) {
+  if (!baseline) {
+    for (const theme of ['light', 'dark']) {
+      await page.addInitScript((value) => localStorage.setItem('os.theme', value), theme)
+      for (const width of [1440, 390]) {
+        showIndexJobs = true
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 })
+        await page.goto(origin + '/knowledge?tab=documents', { waitUntil: 'networkidle' })
+        const panel = page.locator('.job-card')
+        const toggle = panel.getByRole('button', { name: '后台索引任务，展开详情', exact: true })
+        await toggle.waitFor()
+        assert.equal(await toggle.getAttribute('aria-expanded'), 'false')
+        assert.equal(await panel.getByRole('status').textContent(), '共 4 项 · 2 项进行中 · 1 项失败 · 1 项已完成')
+        assert.equal(await panel.locator('.index-jobs').isVisible(), false)
+        assert.equal(await panel.locator('.el-card__body').evaluate((el) => el.getBoundingClientRect().height), 0)
+        const snapshot = async (state) => {
+          const file = `index-jobs-${state}-${theme}-${width}.png`
+          await page.screenshot({ path: join(output, file), fullPage: true, animations: 'disabled' })
+          report.screenshots.push(file)
+          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+        }
+        await snapshot('collapsed')
+        await toggle.focus()
+        await page.keyboard.press('Enter')
+        const expanded = panel.getByRole('button', { name: '后台索引任务，收起详情', exact: true })
+        assert.equal(await expanded.getAttribute('aria-expanded'), 'true')
+        assert.equal(await panel.locator('.index-jobs').isVisible(), true)
+        assert.equal(await panel.locator('.index-jobs li').count(), 4)
+        assert.match(await panel.locator('.job-error').textContent(), /请检查文件或模型配置/)
+        await snapshot('expanded')
+        const refresh = panel.getByRole('button', { name: '刷新进度', exact: true })
+        const refreshJobs = async () => {
+          const response = page.waitForResponse((res) => res.url().endsWith('/api/v1/knowledge/jobs'))
+          await refresh.click()
+          await response
+          await page.waitForFunction(() => !document.querySelector('.job-card .el-button.is-loading'))
+        }
+        await refreshJobs()
+        assert.equal(await expanded.getAttribute('aria-expanded'), 'true')
+        await expanded.focus()
+        await page.keyboard.press('Space')
+        await refreshJobs()
+        assert.equal(await toggle.getAttribute('aria-expanded'), 'false')
+        apiMode = 'jobs-error'
+        await refreshJobs()
+        await panel.locator('.job-feedback').getByRole('alert').waitFor()
+        assert.equal(await toggle.getAttribute('aria-expanded'), 'false')
+        assert.equal(await panel.locator('.index-jobs').isVisible(), false)
+        await snapshot('error')
+        apiMode = 'normal'
+        showIndexJobs = false
+        await refreshJobs()
+        await panel.waitFor({ state: 'hidden' })
+        report.checks.push(`${theme}/${width}: 索引任务默认折叠、状态摘要、键盘展开收起、独立刷新、错误可见与空任务隐藏`)
+      }
+    }
+    assert.deepEqual([...misses], [], '未覆盖的模拟 API')
+  }
+  for (const theme of interactionsOnly || indexJobsOnly ? [] : baseline ? ['light'] : ['light', 'dark']) {
     await page.addInitScript((value) => localStorage.setItem('os.theme', value), theme)
     for (const width of baseline ? [1440] : [1440, 390]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 })
@@ -460,7 +533,7 @@ try {
     }
   }
 
-  if (!baseline) {
+  if (!baseline && !indexJobsOnly) {
     async function shot(name) {
       await page.screenshot({
         path: join(output, `${name}.png`),

@@ -6,10 +6,10 @@
  * 点击选择、拖拽投放、以及两者的公共校验。校验刻意只写一份 ——
  * 拖拽与点击走同一个 `selectFile`，避免「拖进来能传、点进来不能传」这类不一致。
  */
-import { UploadFilled } from '@element-plus/icons-vue'
+import { ArrowRight, UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useId } from 'vue'
 
 import AppPagination from '@/components/AppPagination.vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -37,6 +37,22 @@ const {
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFile = ref<File | null>(null)
 const uploadTitle = ref('')
+const jobsExpanded = ref(false)
+const jobDetailsId = useId()
+const jobSummary = computed(() => {
+  if (!indexJobs.value.length) return '暂未获取任务'
+  const active = indexJobs.value.filter((job) => job.status === 'PENDING' || job.status === 'RUNNING').length
+  const failed = indexJobs.value.filter((job) => job.status === 'FAILED').length
+  const succeeded = indexJobs.value.filter((job) => job.status === 'SUCCEEDED').length
+  return [
+    `共 ${indexJobs.value.length} 项`,
+    active ? `${active} 项进行中` : '',
+    failed ? `${failed} 项失败` : '',
+    succeeded ? `${succeeded} 项已完成` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
+})
 
 const ACCEPT = '.md,.markdown,.txt,.pdf,.docx,.png,.jpg,.jpeg,.webp,.gif'
 const MAX_BYTES = 5 * 1024 * 1024
@@ -212,32 +228,59 @@ function onDrop(event: DragEvent): void {
   <div class="kd">
     <el-alert v-if="error" type="error" :closable="false" show-icon :title="error" />
 
-    <el-card v-if="indexJobs.length || jobsError" shadow="never" aria-label="后台索引任务">
+    <el-card
+      v-if="indexJobs.length || jobsError"
+      class="job-card"
+      :class="{ 'job-card--collapsed': !jobsExpanded && !jobsError }"
+      :body-style="{ padding: '0' }"
+      shadow="never"
+      aria-label="后台索引任务"
+    >
       <template #header>
         <div class="job-header">
-          <span>后台索引任务</span>
+          <div class="job-overview">
+            <button
+              type="button"
+              class="job-toggle"
+              :aria-expanded="jobsExpanded"
+              :aria-controls="jobDetailsId"
+              :aria-label="`后台索引任务，${jobsExpanded ? '收起详情' : '展开详情'}`"
+              @click="jobsExpanded = !jobsExpanded"
+            >
+              <el-icon class="job-chevron" :class="{ 'job-chevron--expanded': jobsExpanded }" aria-hidden="true">
+                <ArrowRight />
+              </el-icon>
+              <span>后台索引任务</span>
+              <span class="job-toggle-label">{{ jobsExpanded ? '收起详情' : '展开详情' }}</span>
+            </button>
+            <p class="job-summary" role="status" aria-atomic="true">{{ jobSummary }}</p>
+          </div>
           <el-button :loading="loadingJobs" @click="knowledgeStore.loadJobs()">刷新进度</el-button>
         </div>
       </template>
-      <el-alert v-if="jobsError" type="warning" :title="jobsError" :closable="false" show-icon />
-      <p class="job-hint">离开页面后任务继续执行；失败后请检查文件或模型配置，再重新提交。</p>
-      <ul class="index-jobs" aria-live="polite" aria-relevant="text additions">
-        <li v-for="job in indexJobs" :key="job.id">
-          <div class="job-header">
-            <span class="job-filename">{{ job.filename }}</span>
-            <span
-              >{{ job.stage }}<template v-if="job.attempts > 1"> · 第 {{ job.attempts }} 次尝试</template></span
-            >
-          </div>
-          <el-progress
-            :percentage="job.progress"
-            :show-text="false"
-            :status="job.status === 'FAILED' ? 'exception' : job.status === 'SUCCEEDED' ? 'success' : undefined"
-            :aria-label="`${job.filename}：${job.stage}`"
-          />
-          <p v-if="job.status === 'FAILED'" class="job-error">{{ job.error }}</p>
-        </li>
-      </ul>
+      <div v-if="jobsError" class="job-feedback">
+        <el-alert type="warning" :title="jobsError" :closable="false" show-icon />
+      </div>
+      <div v-show="jobsExpanded" :id="jobDetailsId" class="job-details">
+        <p class="job-hint">离开页面后任务继续执行；失败后请检查文件或模型配置，再重新提交。</p>
+        <ul class="index-jobs" aria-live="polite" aria-relevant="text additions">
+          <li v-for="job in indexJobs" :key="job.id">
+            <div class="job-header">
+              <span class="job-filename">{{ job.filename }}</span>
+              <span
+                >{{ job.stage }}<template v-if="job.attempts > 1"> · 第 {{ job.attempts }} 次尝试</template></span
+              >
+            </div>
+            <el-progress
+              :percentage="job.progress"
+              :show-text="false"
+              :status="job.status === 'FAILED' ? 'exception' : job.status === 'SUCCEEDED' ? 'success' : undefined"
+              :aria-label="`${job.filename}：${job.stage}`"
+            />
+            <p v-if="job.status === 'FAILED'" class="job-error">{{ job.error }}</p>
+          </li>
+        </ul>
+      </div>
     </el-card>
 
     <el-card shadow="never">
@@ -478,6 +521,48 @@ function onDrop(event: DragEvent): void {
 </style>
 
 <style scoped>
+.job-card--collapsed :deep(.el-card__header) {
+  border-bottom: 0;
+}
+.job-overview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--os-space-1) var(--os-space-4);
+  min-width: 0;
+}
+.job-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.job-toggle-label,
+.job-summary {
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+.job-summary {
+  margin: 0;
+}
+.job-chevron {
+  transition: transform var(--os-duration-fast) var(--os-ease);
+}
+.job-chevron--expanded {
+  transform: rotate(90deg);
+}
+.job-details {
+  padding: var(--el-card-padding);
+}
+.job-feedback {
+  margin: var(--el-card-padding);
+}
 .job-header {
   display: flex;
   align-items: center;
@@ -491,7 +576,7 @@ function onDrop(event: DragEvent): void {
 }
 .job-hint {
   color: var(--el-text-color-secondary);
-  margin-bottom: 16px;
+  margin: 0 0 16px;
 }
 .index-jobs {
   list-style: none;
@@ -506,5 +591,24 @@ function onDrop(event: DragEvent): void {
 .job-error {
   color: var(--el-color-danger);
   margin-top: 8px;
+}
+@media (max-width: 600px) {
+  .job-card :deep(.el-card__header) > .job-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--os-space-1) var(--os-space-2);
+  }
+  .job-overview {
+    display: contents;
+  }
+  .job-summary {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .job-chevron {
+    transition: none;
+  }
 }
 </style>
