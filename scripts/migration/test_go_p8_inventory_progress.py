@@ -9,6 +9,8 @@ class P8InventoryDispositionTest(unittest.TestCase):
     def setUp(self):
         self.inventory = json.loads((subject.SPEC / "inventory.json").read_text())
         self.progress = json.loads((subject.SPEC / "progress.json").read_text())
+        scope = json.loads((subject.SPEC / "scope-changes.json").read_text())
+        self.amended = {entry["path"]: change["status"] for change in scope["changes"] for entry in change["files"]}
 
     def test_every_file_is_disposed_but_blocked_work_and_gates_stay_open(self):
         after, audit = subject.apply(self.inventory, self.progress)
@@ -54,7 +56,7 @@ class P8InventoryDispositionTest(unittest.TestCase):
         for entry in self.inventory["files"]:
             before = self.progress["items"].get(entry["id"], {})
             if before.get("status") == "verified":
-                self.assertEqual(after["items"][entry["id"]]["status"], "verified")
+                self.assertEqual(after["items"][entry["id"]]["status"], self.amended.get(entry["path"], "verified"))
         again, audit2 = subject.apply(self.inventory, after)
         self.assertEqual(after, again)
         self.assertEqual(audit, audit2)
@@ -78,7 +80,8 @@ class P8InventoryDispositionTest(unittest.TestCase):
         self.assertEqual(after["release_gates"], progress["release_gates"])
 
     def test_unreviewed_java_code_does_not_inherit_a_category_wide_pass(self):
-        path = "backend/src/main/java/com/personalos/task/service/TaskService.java"
+        path = "backend/src/main/java/com/personalos/agent/audit/ToolInvocationController.java"
+        self.assertNotIn(path, self.amended)
         progress = copy.deepcopy(self.progress)
         progress["items"].pop("file:" + path, None)
         with self.assertRaisesRegex(ValueError, "Unreviewed Java responsibility"):

@@ -43,6 +43,10 @@ func (h *HTTP) serve(w http.ResponseWriter, r *http.Request) error {
 		if e != nil || media != "application/json" {
 			return errors.New("请求媒体类型不受支持")
 		}
+		media, ok := web.SelectJSONMediaType(r.Header.Get("Accept"), []string{"application/json", "application/*+json"})
+		if !ok {
+			return web.NotAcceptable()
+		}
 		if r.ContentLength > dataimport.MaxBytes {
 			return api.NewBusinessError(api.ValidationFailed, "文件过大，上限 20MB")
 		}
@@ -53,10 +57,6 @@ func (h *HTTP) serve(w http.ResponseWriter, r *http.Request) error {
 		result, e := h.Import.Import(r.Context(), raw)
 		if e != nil {
 			return e
-		}
-		media, ok := web.SelectJSONMediaType(r.Header.Get("Accept"), []string{"application/json", "application/*+json"})
-		if !ok {
-			return web.NotAcceptable()
 		}
 		return api.WriteControllerMediaJSON(w, 200, api.OK(result), media)
 	default:

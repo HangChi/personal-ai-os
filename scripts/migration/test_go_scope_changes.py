@@ -74,6 +74,51 @@ class ScopeChangesTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "SQL migrations cannot be amended"):
             self.validate()
 
+    def add_migration(self, name, baseline=False):
+        data = b"SELECT 1;\n" if baseline else b"SELECT 2;\n"
+        path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        if baseline:
+            self.inventory["files"].append({"id": "file:" + name, "path": name, "sha256": self.sha(data)})
+        else:
+            self.data[name] = data
+            self.change["files"].append({"path": name, "baseline_sha256": None, "candidate_sha256": self.sha(data)})
+
+    def test_only_appended_sql_versions_can_be_registered(self):
+        original = "backend/src/main/resources/db/migration/V42__original.sql"
+        appended = "backend/src/main/resources/db/migration/V43__workspace.sql"
+        self.add_migration(original, baseline=True)
+        self.add_migration(appended)
+        self.assertIn(appended, self.validate())
+        (self.root / appended).write_bytes(b"unreviewed")
+        with self.assertRaisesRegex(ValueError, "candidate file drift"):
+            self.validate()
+
+    def test_duplicate_appended_migration_versions_fail_closed(self):
+        self.add_migration("backend/src/main/resources/db/migration/V42__original.sql", baseline=True)
+        self.add_migration("backend/src/main/resources/db/migration/V43__workspace.sql")
+        self.add_migration("backend/src/main/resources/db/migration/V43__duplicate.sql")
+        with self.assertRaisesRegex(ValueError, "Duplicate appended SQL migration version"):
+            self.validate()
+
+    def test_old_versions_and_nonstandard_migration_paths_stay_rejected(self):
+        self.add_migration("backend/src/main/resources/db/migration/V42__original.sql", baseline=True)
+        for suffix in ("V41__changed.sql", "V42__renamed.sql", "V043__workspace.sql", "nested/V43__workspace.sql", "V43__nested/workspace.sql", "R__repeat.sql"):
+            with self.subTest(path=suffix):
+                self.add_migration("backend/src/main/resources/db/migration/" + suffix)
+                with self.assertRaisesRegex(ValueError, "append-only"):
+                    self.validate()
+                self.change["files"].pop()
+
+    def test_original_sql_stays_immutable_even_with_matching_source_hash(self):
+        name = "backend/src/main/resources/db/migration/V42__original.sql"
+        self.add_migration(name, baseline=True)
+        self.add_migration(name)
+        self.change["files"][-1]["baseline_sha256"] = self.inventory["files"][-1]["sha256"]
+        with self.assertRaisesRegex(ValueError, "Original SQL migrations cannot be amended"):
+            self.validate()
+
     def test_new_java_file_requires_both_backends_and_content_binding(self):
         self.change["parity"]["go"] = []
         with self.assertRaisesRegex(ValueError, "both backend"):

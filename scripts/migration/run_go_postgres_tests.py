@@ -26,7 +26,7 @@ def capture(command, **kwargs):
     return subprocess.run(command, text=True, capture_output=True, check=True, timeout=120, **kwargs).stdout.strip()
 
 
-BUSINESS_PACKAGES = {"idempotency", "confirmation", "task", "model", "chat", "calendar", "knowledge"}
+BUSINESS_PACKAGES = {"idempotency", "confirmation", "task", "model", "chat", "calendar", "knowledge", "workflow", "maintenance", "search"}
 PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", *sorted(BUSINESS_PACKAGES), "app", "command"]
 
 

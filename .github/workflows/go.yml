@@ -3,9 +3,9 @@ name: Go Candidate
 on:
   push:
     branches: [go]
-    paths: ['backend/**', 'backend-go/**', 'frontend/**', 'scripts/migration/**', 'specs/033-go-rewrite/**', '.github/workflows/go.yml', '.env.example', 'docs/mcp.md']
+    paths: ['backend/**', 'backend-go/**', 'frontend/**', 'scripts/migration/**', 'scripts/workspace/**', 'scripts/automation/**', 'specs/033-go-rewrite/**', 'specs/034-task-workspace/**', 'specs/035-safe-automation/**', '.github/workflows/go.yml', '.env.example', 'docs/mcp.md']
   pull_request:
-    paths: ['backend/**', 'backend-go/**', 'frontend/**', 'scripts/migration/**', 'specs/033-go-rewrite/**', '.github/workflows/go.yml', '.env.example', 'docs/mcp.md']
+    paths: ['backend/**', 'backend-go/**', 'frontend/**', 'scripts/migration/**', 'scripts/workspace/**', 'scripts/automation/**', 'specs/033-go-rewrite/**', 'specs/034-task-workspace/**', 'specs/035-safe-automation/**', '.github/workflows/go.yml', '.env.example', 'docs/mcp.md']
   workflow_dispatch:
 
 permissions:
@@ -66,6 +66,7 @@ jobs:
           set -o pipefail
           python3 -m unittest discover -s scripts/migration -p 'test_*.py' 2>&1 | tee "$RUNNER_TEMP/go-reports/scripts.log"
           node --test scripts/migration/test_chrome_push_diagnostics.mjs scripts/migration/test_real_model_transport.mjs
+          python3 -m unittest discover -s scripts/workspace -p 'test_*.py'
           python3 scripts/migration/go_inventory.py check
           python3 scripts/migration/go_config_disposition.py
           python3 scripts/migration/go_p8_test_progress.py
@@ -77,6 +78,12 @@ jobs:
           set -o pipefail
           python3 scripts/migration/run_go_postgres_tests.py --tls --package task --package confirmation 2>&1 | tee "$RUNNER_TEMP/go-reports/postgres-business.log"
           python3 scripts/migration/run_go_postgres_tests.py --tls --package app --run '^TestP8' 2>&1 | tee "$RUNNER_TEMP/go-reports/postgres-p8.log"
+      - name: Workspace and automation database coverage
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 scripts/migration/run_go_postgres_tests.py --tls --package calendar --package knowledge --package workflow --package maintenance --package search --run '^Test(CalendarExchange|CaptureAtomicVersions|ReadOnlyWorkflows|MaintenanceCenter|KnowledgeBody)' 2>&1 | tee "$RUNNER_TEMP/go-reports/postgres-features.log"
+          python3 scripts/automation/run_checks.py --upgrade-from 42 2>&1 | tee "$RUNNER_TEMP/go-reports/automation-upgrade.log"
       - name: Unchanged demo recipe on a disposable Go fixture
         shell: bash
         run: |

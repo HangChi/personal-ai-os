@@ -136,7 +136,11 @@ func knowledgeQuery(ctx context.Context, tx *sql.Tx, table, k string, n int) ([]
 	if e != nil || len(hits) >= n {
 		return hits, e
 	}
-	// Join UUID as text: malformed external metadata must not abort other valid documents.
-	more, e := hitRows(ctx, tx, fmt.Sprintf(`SELECT 'document',d.id::text,d.title,d.filename||' · '||d.chunk_count::text||' 个分块','正文' FROM knowledge_document d WHERE EXISTS(SELECT 1 FROM %s v WHERE v.metadata->>'document_id'=d.id::text AND v.content ILIKE $1 ESCAPE '\') ORDER BY d.id LIMIT $2`, table), Pattern(k), n)
+	// 先排除元数据命中，再按剩余名额截断；脏元数据与孤立分块不占用名额。
+	seen := make([]string, 0, len(hits))
+	for _, hit := range hits {
+		seen = append(seen, hit.ID)
+	}
+	more, e := hitRows(ctx, tx, fmt.Sprintf(`SELECT 'document',d.id::text,d.title,d.filename||' · '||d.chunk_count::text||' 个分块','正文' FROM knowledge_document d WHERE NOT (d.id::text = ANY($3::text[])) AND EXISTS(SELECT 1 FROM %s v WHERE v.metadata->>'document_id'=d.id::text AND v.content ILIKE $1 ESCAPE '\') ORDER BY d.id LIMIT $2`, table), Pattern(k), n-len(hits), seen)
 	return supplement(hits, more, n), e
 }

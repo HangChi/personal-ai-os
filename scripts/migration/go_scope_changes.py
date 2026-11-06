@@ -33,7 +33,10 @@ def validate(inventory, scope, root, read_revision):
     if scope.get("schema_version") != 1 or scope.get("baseline_commit") != inventory["baseline_commit"]:
         raise ValueError("Scope baseline/schema mismatch")
     baseline = {entry["path"]: entry["sha256"] for entry in inventory["files"]}
-    seen, ids = {}, set()
+    migration_prefix = "backend/src/main/resources/db/migration/"
+    migration_pattern = re.compile(re.escape(migration_prefix) + r"V([1-9][0-9]*)__[^/]+\.sql")
+    frozen_versions = [int(match[1]) for path in baseline if (match := migration_pattern.fullmatch(path))]
+    seen, ids, appended_versions = {}, set(), set()
     for change in scope.get("changes", []):
         identity = change.get("id", "")
         if not re.fullmatch(r"scope:[a-z0-9-]+", identity) or identity in ids:
@@ -57,8 +60,15 @@ def validate(inventory, scope, root, read_revision):
             name = entry["path"]
             if name in seen:
                 raise ValueError("Duplicate scope file: " + name)
-            if name.startswith("backend/src/main/resources/db/migration/"):
-                raise ValueError("Original SQL migrations cannot be amended: " + name)
+            if name.startswith(migration_prefix):
+                # 原迁移永远不可改；增量只允许追加高于冻结版本的标准Flyway脚本。
+                candidate = migration_pattern.fullmatch(name)
+                if name in baseline or not frozen_versions or not candidate or int(candidate[1]) <= max(frozen_versions):
+                    raise ValueError("Original SQL migrations cannot be amended; append-only versions required: " + name)
+                version = int(candidate[1])
+                if version in appended_versions:
+                    raise ValueError("Duplicate appended SQL migration version: " + str(version))
+                appended_versions.add(version)
             if entry.get("baseline_sha256") != baseline.get(name):
                 raise ValueError("Baseline file drift: " + name)
             expected = entry.get("candidate_sha256", "")

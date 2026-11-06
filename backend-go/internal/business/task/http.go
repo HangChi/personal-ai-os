@@ -90,6 +90,9 @@ func (h *HTTP) serve(w http.ResponseWriter, r *http.Request) error {
 			default:
 				return web.NotFound()
 			}
+			if err := requireJSONAccept(r); err != nil {
+				return err
+			}
 			task, err := h.Tasks.SetCompleted(r.Context(), id, completed)
 			if err != nil {
 				return taskError(err)
@@ -144,6 +147,12 @@ func (h *HTTP) serve(w http.ResponseWriter, r *http.Request) error {
 		if token == nil || strip(*token) == "" {
 			return web.ValidationFailure([]web.Violation{{Field: "token", Message: "确认令牌不能为空"}})
 		}
+		if parts[1] != "confirm" && parts[1] != "cancel" {
+			return web.NotFound()
+		}
+		if err := requireJSONAccept(r); err != nil {
+			return err
+		}
 		switch parts[1] {
 		case "confirm":
 			value, err := h.Confirmations.Confirm(r.Context(), parts[0], *token)
@@ -162,6 +171,13 @@ func (h *HTTP) serve(w http.ResponseWriter, r *http.Request) error {
 	}
 	return web.NotFound()
 }
+func requireJSONAccept(r *http.Request) error {
+	if _, ok := web.SelectJSONMediaType(r.Header.Get("Accept"), []string{"application/json", "application/*+json"}); !ok {
+		return web.NotAcceptable()
+	}
+	return nil
+}
+
 func respond(w http.ResponseWriter, r *http.Request, status int, data any) error {
 	media, ok := web.SelectJSONMediaType(r.Header.Get("Accept"), []string{"application/json", "application/*+json"})
 	if !ok {
@@ -351,6 +367,10 @@ func (h *HTTP) delete(w http.ResponseWriter, r *http.Request, id string) error {
 	return respond(w, r, http.StatusOK, value)
 }
 func (h *HTTP) idempotent(r *http.Request, operation string, body any, action func(context.Context) (any, error)) (any, error) {
+	// 协商失败不得执行写操作，也不得占用幂等键。
+	if err := requireJSONAccept(r); err != nil {
+		return nil, err
+	}
 	raw := r.Header.Get("Idempotency-Key")
 	if strings.TrimSpace(raw) == "" {
 		return action(r.Context())

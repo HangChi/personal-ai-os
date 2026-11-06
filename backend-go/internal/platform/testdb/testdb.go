@@ -28,7 +28,8 @@ func OpenWithConnector(t *testing.T, wrap func(driver.Connector) driver.Connecto
 	opts.Database = os.Getenv("GO_TEST_POSTGRES_DB")
 	opts.Username = os.Getenv("GO_TEST_POSTGRES_USER")
 	opts.Password = os.Getenv("GO_TEST_POSTGRES_PASSWORD")
-	opts.SSLMode = "disable"
+	opts.SSLMode = os.Getenv("GO_TEST_POSTGRES_SSL_MODE")
+	opts.RootCert = os.Getenv("GO_TEST_POSTGRES_ROOT_CERT")
 	if opts.Host != "127.0.0.1" || opts.Database != "personalos_go_test" || opts.Username != "go_fixture" {
 		t.Fatal("仅允许临时测试库")
 	}

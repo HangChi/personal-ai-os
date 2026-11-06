@@ -12,6 +12,7 @@ ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts/workspace'))
 sys.path.insert(0,str(ROOT/'scripts/migration'))
 from java_flyway_fixture import dependencies
+from java_runtime import java_commands
 
 def run(cmd,**kw):
     return subprocess.run(cmd,check=True,text=True,**kw)
@@ -42,13 +43,12 @@ def main():
         env={**os.environ,'GO_TEST_POSTGRES':'disposable','GO_TEST_FLYWAY':'disposable',
             'GO_TEST_POSTGRES_HOST':'127.0.0.1','GO_TEST_POSTGRES_PORT':port,'GO_TEST_POSTGRES_USER':'go_fixture',
             'GO_TEST_POSTGRES_DB':'personalos_go_test','GO_TEST_POSTGRES_PASSWORD':password,'GO_TEST_POSTGRES_SSL_MODE':'disable'}
-        java_home=Path('/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home')
-        env['JAVA_HOME']=str(java_home);env['PATH']=str(java_home/'bin')+os.pathsep+env['PATH']
+        java, javac = java_commands(env)
         with tempfile.TemporaryDirectory(prefix='personalos-workspace-java-') as temp:
             _,_,jars=dependencies(Path.home()/'.m2/repository')
             cp=os.pathsep.join(map(str,jars))
-            run([str(java_home/'bin/javac'),'-encoding','UTF-8','-cp',cp,'-d',temp,str(ROOT/'scripts/workspace/WorkspaceFlyway.java')],env=env)
-            migration_args=[str(java_home/'bin/java'),'-cp',temp+os.pathsep+cp,'WorkspaceFlyway',str(ROOT/'backend/src/main/resources/db/migration')]
+            run([javac,'-encoding','UTF-8','-cp',cp,'-d',temp,str(ROOT/'scripts/workspace/WorkspaceFlyway.java')],env=env)
+            migration_args=[java,'-cp',temp+os.pathsep+cp,'WorkspaceFlyway',str(ROOT/'backend/src/main/resources/db/migration')]
             if args.upgrade_from is not None:migration_args.append(str(args.upgrade_from))
             run(migration_args,env=env)
         run(['go','test','-race','-count=1','-v','-tags=integration','-p','1','-run','TestCalendarExchange|TestCaptureAtomicVersions|TestReadOnlyWorkflows|TestMaintenanceCenter','./internal/business/workflow','./internal/business/calendar','./internal/business/knowledge','./internal/business/maintenance'],cwd=ROOT/'backend-go',env=env)

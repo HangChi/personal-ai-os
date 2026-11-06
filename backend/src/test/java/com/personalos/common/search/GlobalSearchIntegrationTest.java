@@ -5,6 +5,9 @@ import com.personalos.support.ContainerContextTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.personalos.knowledge.service.KnowledgeDocumentService;
+import com.personalos.knowledge.service.VectorStoreInspector;
+import java.util.UUID;
+import java.util.Set;
 import com.personalos.support.DeterministicEmbeddingModel;
 import com.personalos.support.HttpTestClient;
 import java.net.URLEncoder;
@@ -87,15 +90,18 @@ class GlobalSearchIntegrationTest extends ContainerContextTest {
     private final HttpTestClient http;
     private final JdbcTemplate jdbcTemplate;
     private final KnowledgeDocumentService documentService;
+    private final VectorStoreInspector inspector;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     GlobalSearchIntegrationTest(@Value("${local.server.port}") int port,
                                 JdbcTemplate jdbcTemplate,
-                                KnowledgeDocumentService documentService) {
+                                KnowledgeDocumentService documentService,
+                                VectorStoreInspector inspector) {
         this.http = new HttpTestClient(port);
         this.jdbcTemplate = jdbcTemplate;
         this.documentService = documentService;
+        this.inspector = inspector;
     }
 
     @BeforeEach
@@ -315,6 +321,55 @@ class GlobalSearchIntegrationTest extends ContainerContextTest {
         assertThat(chatGroup).isNotNull();
         assertThat(chatGroup.path("hits")).hasSize(1);
         assertThat(chatGroup.path("hits").get(0).path("title").asString()).isEqualTo("含百分号的会话");
+    }
+
+    @Test
+    @DisplayName("正文候选在SQL中按剩余名额截断，排除元数据命中、脏ID、孤立分块并去重")
+    void shouldBoundKnowledgeBodyCandidates() throws Exception {
+        for (int i = 1; i <= 8; i++) {
+            UUID id = UUID.fromString("00000000-0000-0000-0000-%012d".formatted(i));
+            seedSearchDocument(id, i == 1 ? "needle metadata" : "ordinary", "needle");
+            insertSearchChunk(id.toString(), "needle");
+        }
+        insertSearchChunk("not-uuid", "needle");
+        insertSearchChunk("00000000-0000-0000-0000-000000000099", "needle");
+        insertSearchChunk(null, "needle");
+        UUID metadataId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        assertThat(inspector.findDocumentIdsByContent("needle", 2, Set.of(metadataId)))
+                .containsExactly(UUID.fromString("00000000-0000-0000-0000-000000000002"),
+                        UUID.fromString("00000000-0000-0000-0000-000000000003"));
+        assertThat(inspector.findDocumentIdsByContent("needle", 0, Set.of())).isEmpty();
+        JsonNode hits = findGroup(search("needle", "&limit=3"), "知识库").path("hits");
+        assertThat(hits).hasSize(3);
+        assertThat(hits.findValues("matchedField").stream().map(JsonNode::asString).toList())
+                .containsExactly("标题", "正文", "正文");
+        assertThat(hits.findValues("id")).doesNotHaveDuplicates();
+    }
+
+    @Test
+    @DisplayName("知识库正文按字面匹配百分号、下划线和反斜杠")
+    void shouldEscapeKnowledgeBodyWildcards() throws Exception {
+        String[] contents = {"100%", "a_b", "c:\\tmp", "ordinary"};
+        String[] keywords = {"%", "_", "\\"};
+        for (int i = 0; i < contents.length; i++) {
+            seedSearchDocument(UUID.fromString("00000000-0000-0000-0000-%012d".formatted(i + 1)), "ordinary", contents[i]);
+        }
+        for (int i = 0; i < keywords.length; i++) {
+            JsonNode hits = findGroup(search(keywords[i], "&limit=5"), "知识库").path("hits");
+            assertThat(hits).hasSize(1);
+            assertThat(hits.get(0).path("id").asString())
+                    .isEqualTo("00000000-0000-0000-0000-%012d".formatted(i + 1));
+        }
+    }
+
+    private void seedSearchDocument(UUID id, String title, String content) {
+        jdbcTemplate.update("INSERT INTO knowledge_document(id,title,filename,content_type,size_bytes,char_count,chunk_count)"
+                + " VALUES(?,?,'fixture.md','text/plain',1,1,2)", id, title);
+        insertSearchChunk(id.toString(), content);
+    }
+
+    private void insertSearchChunk(String id, String content) {
+        jdbcTemplate.update("INSERT INTO vector_store(content,metadata) VALUES(?,json_build_object('document_id',?::text))", content, id);
     }
 
     @Test

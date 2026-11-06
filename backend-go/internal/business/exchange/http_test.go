@@ -56,3 +56,17 @@ func TestP7ExportHEADAndNegotiation(t *testing.T) {
 		t.Fatal(w.Code, w.Body.String())
 	}
 }
+
+func TestImportAcceptBeforeReadingOrWriting(t *testing.T) {
+	// 未装配导入服务：若进入导入路径，测试会收到500而非406。
+	h := (&HTTP{}).Handler(slog.New(slog.NewTextHandler(io.Discard, nil)))
+	body := &countedBody{}
+	r := httptest.NewRequest("POST", "/api/v1/import", body)
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Accept", "text/plain")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	if w.Code != 406 || body.reads != 0 {
+		t.Fatalf("status=%d reads=%d body=%s", w.Code, body.reads, w.Body.String())
+	}
+}

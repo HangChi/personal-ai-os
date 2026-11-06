@@ -3,13 +3,11 @@ package com.personalos.knowledge.service;
 import com.personalos.common.search.SearchPatterns;
 import com.personalos.knowledge.config.KnowledgeProperties;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -25,8 +23,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class VectorStoreInspector {
-
-    private static final Logger log = LoggerFactory.getLogger(VectorStoreInspector.class);
 
     /** 表名/schema 会拼进 SQL，因此必须限制字符集（虽然来自配置而非用户输入，仍按不可信处理） */
     private static final Pattern SAFE_IDENTIFIER = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
@@ -93,23 +89,23 @@ public class VectorStoreInspector {
      * <p>{@code ESCAPE '\'} 是必需的：关键词里的 {@code %} / {@code _} 必须按字面匹配，
      * 否则搜 {@code 100%} 会命中「100 之后任意字符」。
      *
-     * <p>解析不出 UUID 的行直接跳过：宁可少一条，也不让整个搜索因为一条脏数据失败。
+     * <p>先限定真实文档并排除已有命中，再在 SQL 中截断；脏元数据与孤立分块不占用名额。
      */
-    public List<UUID> findDocumentIdsByContent(String keyword) {
-        String sql = "SELECT DISTINCT metadata->>'document_id' FROM " + qualifiedTable()
-                + " WHERE content ILIKE ? ESCAPE '\\'";
-        List<UUID> result = new ArrayList<>();
-        for (String raw : jdbcTemplate.queryForList(sql, String.class, SearchPatterns.likePattern(keyword))) {
-            if (raw == null) {
-                continue;
-            }
-            try {
-                result.add(UUID.fromString(raw));
-            } catch (IllegalArgumentException ex) {
-                log.debug("跳过无法解析的 document_id：{}", raw);
-            }
+    public List<UUID> findDocumentIdsByContent(String keyword, int limit, Collection<UUID> excludedIds) {
+        if (limit <= 0) {
+            return List.of();
         }
-        return result;
+        String sql = "SELECT d.id FROM knowledge_document d WHERE EXISTS (SELECT 1 FROM " + qualifiedTable()
+                + " v WHERE v.metadata->>'document_id' = d.id::text AND v.content ILIKE ? ESCAPE '\\')";
+        List<Object> parameters = new ArrayList<>();
+        parameters.add(SearchPatterns.likePattern(keyword));
+        if (!excludedIds.isEmpty()) {
+            sql += " AND d.id NOT IN (" + String.join(",", java.util.Collections.nCopies(excludedIds.size(), "?")) + ")";
+            parameters.addAll(excludedIds);
+        }
+        sql += " ORDER BY d.id LIMIT ?";
+        parameters.add(limit);
+        return jdbcTemplate.queryForList(sql, UUID.class, parameters.toArray());
     }
 
     /**

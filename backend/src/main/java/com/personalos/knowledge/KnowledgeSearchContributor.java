@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -48,6 +50,9 @@ public class KnowledgeSearchContributor implements SearchContributor {
     @Override
     @Transactional(readOnly = true)
     public List<SearchHit> search(String keyword, int limit) {
+        if (limit <= 0) {
+            return List.of();
+        }
         String pattern = SearchPatterns.likePattern(keyword);
         String needle = keyword.toLowerCase(Locale.ROOT);
         List<SearchHit> hits = new ArrayList<>();
@@ -65,14 +70,17 @@ public class KnowledgeSearchContributor implements SearchContributor {
                 });
 
         if (hits.size() < limit) {
-            for (UUID documentId : inspector.findDocumentIdsByContent(keyword)) {
-                if (hits.size() >= limit || seen.contains(documentId)) {
-                    continue;
+            List<UUID> ids = inspector.findDocumentIdsByContent(keyword, limit - hits.size(), seen);
+            if (!ids.isEmpty()) {
+                // 批量加载实体后恢复 SQL 的候选顺序，避免正文命中逐条查询。
+                var documents = repository.findAllById(ids).stream()
+                        .collect(Collectors.toMap(KnowledgeDocumentEntity::getId, Function.identity()));
+                for (UUID id : ids) {
+                    KnowledgeDocumentEntity document = documents.get(id);
+                    if (document != null) {
+                        hits.add(toHit(document, "正文"));
+                    }
                 }
-                repository.findById(documentId).ifPresent(document -> {
-                    seen.add(document.getId());
-                    hits.add(toHit(document, "正文"));
-                });
             }
         }
         return hits;
