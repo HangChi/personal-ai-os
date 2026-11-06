@@ -57,9 +57,69 @@ describe('RAG 证据与治理界面', () => {
   it('核对未完成时展示降级和过程，不显示事实认证', () => {
     const wrapper = mount(RagTrace, { props: { retrieval } })
     expect(wrapper.text()).toContain('证据核对未完成')
+    expect(wrapper.get('details').attributes('open')).toBeUndefined()
+    expect(wrapper.get('summary').text()).toContain('1 篇来源 · 1 条提示')
+    expect(wrapper.get('summary').text()).not.toContain('证据精审未完成')
+    expect(wrapper.find('.el-alert').exists()).toBe(false)
+    expect(wrapper.get('.rag-trace__notices').text()).toContain('证据精审未完成')
     expect(wrapper.text()).toContain('已降级')
     expect(wrapper.text()).toContain('住宿限额')
     expect(wrapper.text()).toContain('研发部')
+    wrapper.unmount()
+  })
+  it('合并同文档分块与重复提示，区分无结果和降级，省略空元数据', async () => {
+    const wrapper = mount(RagTrace, {
+      props: {
+        retrieval: {
+          ...retrieval,
+          hits: [hit, { ...hit, chunkIndex: 1 }],
+          warnings: ['证据精审未完成', '证据精审未完成', ''],
+          stages: [{ ...retrieval.stages[0]!, status: 'EMPTY' }],
+        },
+      },
+    })
+    expect(wrapper.get('summary').text()).toContain('1 篇来源 · 1 条提示')
+    expect(wrapper.findAll('.rag-trace__sources li')).toHaveLength(1)
+    expect(wrapper.findAll('.rag-trace__notices p')).toHaveLength(1)
+    expect(wrapper.text()).toContain('无结果')
+    expect(wrapper.text()).not.toContain('已降级')
+    expect(wrapper.text()).not.toContain('未填写')
+    await wrapper.setProps({ retrieval: { ...retrieval, status: 'READY', warnings: [] } })
+    expect(wrapper.get('summary').text()).toContain('已找到可用证据')
+    expect(wrapper.get('summary').text()).not.toContain('条提示')
+    expect(wrapper.find('.rag-trace__hint').exists()).toBe(false)
+    wrapper.unmount()
+  })
+  it('冲突详情展示具体分歧和双方原文，来源无元数据仍可查看', () => {
+    const right: KnowledgeHit = {
+      ...hit,
+      documentId: 'b',
+      documentTitle: '新差旅制度',
+      content: '每天八百元',
+      source: null,
+    }
+    const wrapper = mount(RagTrace, {
+      props: {
+        retrieval: {
+          ...retrieval,
+          status: 'CONFLICT',
+          hits: [hit, right],
+          clarification: '请确认适用日期',
+          disagreements: [
+            { left: hit, right, leftQuote: '每天五百元', rightQuote: '每天八百元', reason: '同一费用限额不同' },
+          ],
+        },
+      },
+    })
+    expect(wrapper.get('summary').text()).toContain('来源存在分歧')
+    expect(wrapper.get('summary').text()).toContain('2 篇来源')
+    expect(wrapper.get('.rag-trace__notices').text()).toContain('请确认适用日期')
+    expect(wrapper.get('.rag-trace__conflict').text()).toContain('同一费用限额不同')
+    expect(wrapper.findAll('blockquote').map((quote) => quote.text())).toEqual([
+      '差旅制度每天五百元',
+      '新差旅制度每天八百元',
+    ])
+    expect(wrapper.findAll('.rag-trace__sources li')).toHaveLength(2)
     wrapper.unmount()
   })
   it('有冲突引用时不把 answered=false 显示为空知识库', () => {
