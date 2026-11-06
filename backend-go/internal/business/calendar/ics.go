@@ -305,7 +305,7 @@ func icsRecurrence(rule Recurrence, start time.Time, zone *time.Location) error 
 func icsEscape(s string) string {
 	return strings.NewReplacer("\\", "\\\\", "\r", "", "\n", "\\n", ";", "\\;", ",", "\\,").Replace(s)
 }
-func writeICS(events []Event, zone *time.Location) (string, error) {
+func writeICS(events []Event, zone *time.Location, sourceUIDs map[string]string) (string, error) {
 	if len(events) > 10000 {
 		return "", icsError("导出最多 10000 个日程")
 	}
@@ -315,7 +315,11 @@ func writeICS(events []Event, zone *time.Location) (string, error) {
 		if err := icsRecurrence(e.RecurrenceType, e.StartsAt, zone); err != nil {
 			return "", err
 		}
-		lines = append(lines, "BEGIN:VEVENT", "UID:"+e.ID+"@personal-ai-os", "DTSTAMP:"+e.CreatedAt.UTC().Format("20060102T150405Z"))
+		uid, ok := sourceUIDs[e.ID]
+		if !ok {
+			uid = e.ID + "@personal-ai-os"
+		}
+		lines = append(lines, "BEGIN:VEVENT", "UID:"+uid, "DTSTAMP:"+e.CreatedAt.UTC().Format("20060102T150405Z"))
 		for i, t := range []time.Time{e.StartsAt, e.EndsAt} {
 			key := []string{"DTSTART", "DTEND"}[i]
 			if e.AllDay {

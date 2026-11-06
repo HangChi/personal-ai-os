@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"personal-ai-os/backend-go/internal/platform/config"
 	"personal-ai-os/backend-go/internal/platform/testdb"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -67,13 +68,12 @@ func TestCalendarExchange(t *testing.T) {
 	if e != nil || preview.DuplicateCount != 1 {
 		t.Fatal(preview, e)
 	}
-	definitions, e := s.definitions(ctx)
+	exported, e := s.ExportICS(ctx)
 	if e != nil {
 		t.Fatal(e)
 	}
-	exported, e := writeICS(definitions, zone)
-	if e != nil {
-		t.Fatal(e)
+	if !strings.Contains(exported, "UID:test-1\r\n") {
+		t.Fatal("export lost source UID", exported)
 	}
 	v, e := s.ImportICS(ctx, exported, icsDigest(exported))
 	if e != nil || v.Skipped != 1 {
@@ -93,5 +93,63 @@ func TestCalendarExchange(t *testing.T) {
 	}
 	if raw.(map[string]any)["total"] != 1 {
 		t.Fatal(raw)
+	}
+}
+
+func TestCalendarExchangeSourceUIDRoundTrip(t *testing.T) {
+	ctx := context.Background()
+	pool := testdb.Open(t)
+	zone, _ := time.LoadLocation("Asia/Shanghai")
+	s := NewEvents(pool, config.CalendarProperties{}, zone)
+	exec := func(query string) {
+		t.Helper()
+		if err := pool.WithConn(ctx, func(c *sql.Conn) error { _, err := c.ExecContext(ctx, query); return err }); err != nil {
+			t.Fatal(err)
+		}
+	}
+	exec("TRUNCATE calendar_event CASCADE")
+	uid := "来源-" + strings.Repeat("x", 100) + "@calendar.example"
+	text := strings.Replace(icsFixture(""), "UID:test-1", "UID:"+uid, 1)
+	if _, err := s.ImportICS(ctx, text, icsDigest(text)); err != nil {
+		t.Fatal(err)
+	}
+	exec("INSERT INTO calendar_event(title,starts_at,ends_at) VALUES('本地日程','2026-11-06T03:00Z','2026-11-06T04:00Z')")
+	var local string
+	if err := pool.WithConn(ctx, func(c *sql.Conn) error {
+		return c.QueryRowContext(ctx, "SELECT id::text FROM calendar_event WHERE title='本地日程'").Scan(&local)
+	}); err != nil {
+		t.Fatal(err)
+	}
+	check := func(text string) {
+		t.Helper()
+		entries, err := parseICS(text, zone)
+		if err != nil || len(entries) != 2 {
+			t.Fatal(entries, err)
+		}
+		seen := map[string]bool{}
+		for _, entry := range entries {
+			seen[entry.UID] = true
+		}
+		if !seen[uid] || !seen[local+"@personal-ai-os"] {
+			t.Fatal("UID changed", seen)
+		}
+	}
+	exported, err := s.ExportICS(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	check(exported)
+	// 空库模拟另一实例，本地ID不同，来源UID仍须保持稳定。
+	exec("TRUNCATE calendar_event CASCADE")
+	if imported, err := s.ImportICS(ctx, exported, icsDigest(exported)); err != nil || imported.Created != 2 {
+		t.Fatal(imported, err)
+	}
+	returned, err := s.ExportICS(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	check(returned)
+	if imported, err := s.ImportICS(ctx, returned, icsDigest(returned)); err != nil || imported.Skipped != 2 {
+		t.Fatal(imported, err)
 	}
 }

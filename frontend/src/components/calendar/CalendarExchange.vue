@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus'
 import { calendarConflicts, importIcs, previewIcs, type IcsPreview, type CalendarConflicts } from '@/api/calendar'
 import { http } from '@/api/http'
 import { triggerBlobDownload } from '@/api/export'
+import { localDayKey } from '@/lib/calendar-dates'
 
 const emit = defineEmits<{ imported: [] }>()
 const content = ref('')
@@ -11,9 +12,7 @@ const preview = ref<IcsPreview | null>(null)
 const busy = ref(false)
 const error = ref('')
 const conflicts = ref<CalendarConflicts | null>(null)
-const day = new Date()
-day.setHours(0, 0, 0, 0)
-const from = ref(day.toISOString().slice(0, 10))
+const from = ref(localDayKey(new Date().toISOString()))
 const dateText = (s: string): string => new Date(s).toLocaleString()
 async function perform(action: () => Promise<void>): Promise<void> {
   busy.value = true

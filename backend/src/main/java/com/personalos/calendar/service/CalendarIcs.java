@@ -136,11 +136,14 @@ public final class CalendarIcs {
         return out.toString();
     }
     public static String write(List<CalendarEventDto> events,ZoneId zone) {
+        return write(events,zone,Map.of());
+    }
+    public static String write(List<CalendarEventDto> events,ZoneId zone,Map<UUID,String> sourceUids) {
         if(events.size()>10_000) throw invalid("导出最多 10000 个日程");
         List<String> lines=new ArrayList<>(List.of("BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Personal AI OS//Calendar//ZH","CALSCALE:GREGORIAN"));
         for(var e:events) {
             validateRecurrence(e.recurrenceType(),e.startsAt(),zone);
-            lines.add("BEGIN:VEVENT"); lines.add("UID:"+e.id()+"@personal-ai-os");
+            lines.add("BEGIN:VEVENT"); lines.add("UID:"+sourceUids.getOrDefault(e.id(),e.id()+"@personal-ai-os"));
             lines.add("DTSTAMP:"+LOCAL.format(e.createdAt().atOffset(ZoneOffset.UTC))+"Z");
             for(boolean start:List.of(true,false)) {
                 Instant t=start?e.startsAt():e.endsAt(); String key=start?"DTSTART":"DTEND";

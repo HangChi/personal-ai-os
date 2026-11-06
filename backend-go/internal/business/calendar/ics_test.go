@@ -33,7 +33,7 @@ func TestICSRoundTrip(t *testing.T) {
 	end := start.Add(24 * time.Hour)
 	description := "a\nb,;\\"
 	event := Event{ID: "00000000-0000-4000-8000-000000000001", Title: strings.Repeat("资料", 50), Description: &description, AllDay: true, StartsAt: start, EndsAt: end, RecurrenceType: None, CreatedAt: start}
-	text, e := writeICS([]Event{event}, zone)
+	text, e := writeICS([]Event{event}, zone, nil)
 	if e != nil {
 		t.Fatal(e)
 	}

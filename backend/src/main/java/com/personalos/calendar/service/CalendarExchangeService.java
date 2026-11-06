@@ -56,7 +56,12 @@ public class CalendarExchangeService {
         return new Imported(created,skipped);
     }
     @Transactional(readOnly=true)
-    public String exportCalendar() { bounded(); return CalendarIcs.write(events.listAll(),zone); }
+    public String exportCalendar() {
+        bounded();
+        Map<UUID,String> sourceUids=new HashMap<>();
+        jdbc.query("SELECT event_id,uid FROM calendar_ics_identity",(org.springframework.jdbc.core.RowCallbackHandler)r->sourceUids.put(r.getObject(1,UUID.class),r.getString(2)));
+        return CalendarIcs.write(events.listAll(),zone,sourceUids);
+    }
     private void bounded() { if(jdbc.queryForObject("SELECT count(*) FROM calendar_event",Long.class)>10000) throw new BusinessException(ErrorCode.VALIDATION_FAILED,"日程超过 10000 条"); }
     @Transactional(readOnly=true)
     public Conflicts conflicts(Instant from,Instant to) {

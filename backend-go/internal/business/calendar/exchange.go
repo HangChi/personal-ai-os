@@ -215,15 +215,37 @@ func (s *Events) serveExchange(w http.ResponseWriter, r *http.Request) (any, int
 	value, e := s.ImportICS(r.Context(), request.Content, request.Digest)
 	return value, 200, e
 }
+func (s *Events) ExportICS(ctx context.Context) (string, error) {
+	items, e := s.definitions(ctx)
+	if e != nil {
+		return "", e
+	}
+	sourceUIDs := make(map[string]string)
+	e = s.pool.WithConn(ctx, func(c *sql.Conn) error {
+		rows, err := c.QueryContext(ctx, "SELECT event_id::text,uid FROM calendar_ics_identity")
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var id, uid string
+			if err := rows.Scan(&id, &uid); err != nil {
+				return err
+			}
+			sourceUIDs[id] = uid
+		}
+		return rows.Err()
+	})
+	if e != nil {
+		return "", e
+	}
+	return writeICS(items, s.zone, sourceUIDs)
+}
 func (s *Events) exportICS(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "GET" && r.Method != "HEAD" {
 		return web.MethodNotSupported(r.Method, []string{"GET"})
 	}
-	items, e := s.definitions(r.Context())
-	if e != nil {
-		return e
-	}
-	text, e := writeICS(items, s.zone)
+	text, e := s.ExportICS(r.Context())
 	if e != nil {
 		return e
 	}
