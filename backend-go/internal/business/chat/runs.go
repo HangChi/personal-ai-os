@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"personal-ai-os/backend-go/internal/business/agent"
@@ -643,6 +644,9 @@ func (s *Runs) launch(source context.Context, id string, p PreparedTurn, recover
 			}
 			return s.Interactions.Checkpoint(ctx, id)
 		}
+		var recovered atomic.Bool
+		p.recovered = &recovered
+		p.receipts = func(ctx context.Context) (string, error) { return s.receipts(ctx, id) }
 		var err error
 		if recovery != "" {
 			message := "正在恢复执行，已成功的相同写操作将复用结果"
@@ -677,8 +681,17 @@ func (s *Runs) launch(source context.Context, id string, p PreparedTurn, recover
 			if e := tx.SQL().QueryRowContext(finishCtx, `SELECT EXISTS(SELECT 1 FROM agent_plan WHERE conversation_id=$1 AND status='ACTIVE')`, p.Session.ConversationID).Scan(&unfinished); e != nil {
 				return e
 			}
-			if unfinished {
+			if unfinished && !recovered.Load() {
 				status = "INTERRUPTED"
+			}
+			if recovered.Load() {
+				var uncertain bool
+				if e := tx.SQL().QueryRowContext(finishCtx, "SELECT EXISTS(SELECT 1 FROM operation_record WHERE turn_id=$1 AND outcome IN ('IN_PROGRESS','FAILED'))", id).Scan(&uncertain); e != nil {
+					return e
+				}
+				if uncertain {
+					status = "INTERRUPTED"
+				}
 			}
 			if pending {
 				status = "WAITING_CONFIRMATION"

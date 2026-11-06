@@ -45,16 +45,30 @@ class ChatRunIntegrationTest extends ContainerContextTest {
     @Autowired com.personalos.common.ai.tool.ToolExecutor tools;
     @Autowired com.personalos.common.web.ModelConcurrencyGate gate;
     @Autowired Model model;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
     static class Model implements ChatModel {
         volatile boolean hold;
         volatile boolean unsolicitedTool;
         volatile Prompt lastPrompt;
+        final java.util.concurrent.atomic.AtomicBoolean failBudget = new java.util.concurrent.atomic.AtomicBoolean();
+        volatile String createThenFail;
+        final AtomicInteger toolRounds = new AtomicInteger();
         final AtomicInteger streams = new AtomicInteger();
         @Override public ChatResponse call(Prompt prompt) { return response("完成"); }
         @Override public ChatOptions getOptions() { return org.springframework.ai.model.tool.ToolCallingChatOptions.builder().build(); }
         @Override public Flux<ChatResponse> stream(Prompt prompt) {
             lastPrompt = prompt;
             streams.incrementAndGet();
+            if (createThenFail != null && prompt.getOptions() instanceof org.springframework.ai.model.tool.ToolCallingChatOptions options
+                    && options.getToolContext()!=null && options.getToolContext().containsKey(com.personalos.common.ai.ToolContextKeys.EXECUTION_BUDGET)) {
+                if (toolRounds.incrementAndGet()==1) return Flux.just(new ChatResponse(List.of(new Generation(AssistantMessage.builder()
+                        .content("").toolCalls(List.of(new AssistantMessage.ToolCall("once","function","createTask",
+                                "{\"title\":\"" + createThenFail + "\"}"))).build(),
+                        org.springframework.ai.chat.metadata.ChatGenerationMetadata.builder().finishReason("tool_calls").build()))));
+                return Flux.error(new com.personalos.common.exception.BusinessException(com.personalos.common.api.ErrorCode.AGENT_EXECUTION_LIMIT));
+            }
+            if (failBudget.compareAndSet(true, false))
+                return Flux.error(new com.personalos.common.exception.BusinessException(com.personalos.common.api.ErrorCode.AGENT_EXECUTION_LIMIT));
             if (hold) return Flux.never();
             if (unsolicitedTool) return Flux.just(new ChatResponse(List.of(new Generation(AssistantMessage.builder()
                     .content("").toolCalls(List.of(new AssistantMessage.ToolCall("forbidden", "function", "createTask", "{}"))).build(),
@@ -156,6 +170,48 @@ class ChatRunIntegrationTest extends ContainerContextTest {
         plans.createPlan(conversation, "整理任务", List.of("查找任务", "整理结果"));
         var run = runs.start(conversation, UUID.randomUUID().toString(), request());
         assertThat(awaitFinished(conversation, run.id()).status()).isEqualTo("INTERRUPTED");
+    }
+    @Test void executionFailureAutomaticallyClosesWithAnAnswerWithoutResumingTools() throws Exception {
+        String conversation = sessions.create("自动收尾").conversationId();
+        plans.createPlan(conversation, "原计划", List.of("查询", "整理"));
+        model.failBudget.set(true);
+        int before = model.streams.get();
+        var run = runs.start(conversation, UUID.randomUUID().toString(), request());
+        var done = awaitFinished(conversation, run.id());
+        assertThat(done.status()).isEqualTo("COMPLETED");
+        assertThat(done.events()).extracting(ChatRunDto.Event::name).contains("warning","delta","done").doesNotContain("error","reset");
+        assertThat(done.events()).anyMatch(event -> event.payload().contains("AGENT_RECOVERY"));
+        assertThat(model.streams.get()-before).isEqualTo(2);
+        assertThat(model.lastPrompt.getContents()).contains("不调用工具","计划未完成");
+        assertThat(repository.unfinishedPlan(conversation)).isTrue();
+        var options=(org.springframework.ai.model.tool.ToolCallingChatOptions)model.lastPrompt.getOptions();
+        assertThat(options.getToolCallbacks()).isNullOrEmpty();
+    }
+    @Test void automaticClosingDoesNotClearUnknownWriteProtection() throws Exception {
+        String conversation = sessions.create("自动收尾仍保留未知写保护").conversationId();
+        String id=UUID.randomUUID().toString();
+        operations.saveAndFlush(new OperationRecordEntity("unknown-"+id,OperationSource.TOOL,
+                "externalWrite","digest",conversation,id,Instant.now()));
+        model.failBudget.set(true);
+        runs.start(conversation,id,request());
+        var done=awaitFinished(conversation,id);
+        assertThat(done.status()).isEqualTo("INTERRUPTED");
+        assertThat(done.recoveryMode()).isEqualTo("SUMMARY_ONLY");
+        assertThat(done.events()).extracting(ChatRunDto.Event::name).contains("warning","done").doesNotContain("error");
+        assertThatThrownBy(()->runs.resume(conversation,id)).hasMessageContaining("尚未核实");
+    }
+    @Test void automaticClosingNeverReplaysAnAlreadySuccessfulWrite() throws Exception {
+        String conversation=sessions.create("写入后的自动收尾").conversationId();
+        String title="recovery-once-"+UUID.randomUUID();
+        model.createThenFail=title;model.toolRounds.set(0);
+        try {
+            var run=runs.start(conversation,UUID.randomUUID().toString(),request());
+            var done=awaitFinished(conversation,run.id());
+            assertThat(done.status()).isEqualTo("COMPLETED");
+            assertThat(model.toolRounds.get()).isEqualTo(2);
+            assertThat(jdbc.queryForObject("select count(*) from task where title=?",Integer.class,title)).isEqualTo(1);
+            assertThat(done.events()).extracting(ChatRunDto.Event::name).contains("warning","done").doesNotContain("error");
+        } finally {model.createThenFail=null;}
     }
     @Test void resumingAnOldTaskCannotOverlapAnotherTaskInTheSameConversation() throws Exception {
         String conversation = sessions.create("会话互斥").conversationId();

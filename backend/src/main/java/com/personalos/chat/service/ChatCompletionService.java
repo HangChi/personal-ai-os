@@ -127,6 +127,7 @@ public class ChatCompletionService {
     private final com.personalos.common.ai.AgentExecutionProperties agentProperties;
 
     private final WebSearchTools webSearch;
+    private final ChatFailureRecovery failureRecovery;
 
     private final ConcurrentHashMap<String, Boolean> activeStreams = new ConcurrentHashMap<>();
 
@@ -141,7 +142,9 @@ public class ChatCompletionService {
                                  @Value("${app.chat.stream-timeout:120s}") Duration baseStreamTimeout,
                                  TokenUsageRecorder usageRecorder,
                                  com.personalos.common.ai.AgentExecutionProperties agentProperties,
-                                 WebSearchTools webSearch) {
+                                 WebSearchTools webSearch,
+                                 ChatFailureRecovery failureRecovery) {
+        this.failureRecovery = failureRecovery;
         this.agentProperties = agentProperties;
         this.webSearch = webSearch;
         this.aiProvider = aiProvider;
@@ -403,6 +406,15 @@ public class ChatCompletionService {
                         }
                         return response;
                     });
+        }).onErrorResume(error -> {
+            ErrorCode code = classify(error);
+            if (background == null || summaryOnly || background.stopped() || terminated.get()
+                    || com.personalos.common.ai.AgentControlSignal.causedBy(error)
+                    || !ChatFailureRecovery.eligible(code)) return Flux.error(error);
+            log.warn("执行降级为只读收尾 conversationId={} code={}", conversationId, code, error);
+            background.recovered(true);
+            send(emitter, "warning", new ChatStreamEvents.Warning("AGENT_RECOVERY", ChatFailureRecovery.NOTICE));
+            return failureRecovery.recover(target, turnId, userContent, fullContent.toString(), code);
         }).subscribeOn(Schedulers.boundedElastic());
 
         // 本轮用量：只有流的最后一个块带 usage（OpenAI 协议的 choices 为空块），
@@ -439,6 +451,20 @@ public class ChatCompletionService {
             }
             metricOutcome.set(errorCode == ErrorCode.AI_TIMEOUT ? "timeout" : notifyClient ? "error" : "cancelled");
             stopProcessing.run();
+            if (notifyClient && background != null && !summaryOnly && !background.stopped()
+                    && ChatFailureRecovery.eligible(errorCode)) {
+                background.recovered(true);
+                String suffix = (fullContent.isEmpty() ? "" : "\n\n") + failureRecovery.deterministic(turnId);
+                fullContent.append(suffix);
+                finisher.recordYieldedReply(conversationId, fullContent.toString(), hitsRef.get(), turnCitations.snapshot());
+                finisher.attachAttachments(conversationId, requestAttachments);
+                send(emitter, "warning", new ChatStreamEvents.Warning("AGENT_RECOVERY", ChatFailureRecovery.NOTICE));
+                send(emitter, EVENT_DELTA, new ChatStreamEvents.Delta(suffix));
+                closeStream.run();
+                send(emitter, EVENT_DONE, new ChatStreamEvents.Done(conversationId, fullContent.toString(), 0));
+                emitter.complete();
+                return;
+            }
             finisher.recordInterruptedReply(conversationId, fullContent.toString(), errorCode, hitsRef.get(), turnCitations.snapshot());
             closeStream.run();
             if (notifyClient) {
@@ -549,10 +575,12 @@ public class ChatCompletionService {
                     // 而是**每条正常结束的对话都会在超时时限之后刷一条假的「流式对话超时」警告**
                     // （2026-10-27 真机日志实测踩到）。虚假告警会让真超时被淹没。
                     heartbeatScheduler.stop(watchdogRef.get());
-                    metricOutcome.set("success");
+                    metricOutcome.set(background != null && background.recovered() ? "recovered" : "success");
                     // 引用挂载必须**先于** done 事件（2026-10-26 调整）：
                     // 客户端一收到 done 就可能认为本轮全部结束并去查库，
                     // 此时引用还没提交就会看到 0 条。详见 ChatTurnFinisher 的类注释。
+                    if (background != null && background.recovered())
+                        finisher.recordYieldedReply(conversationId, fullContent.toString(), hitsRef.get(), turnCitations.snapshot());
                     finisher.attachCitations(conversationId, hitsRef.get(), turnCitations.snapshot());
                     // 附件与引用同一时机：都属于「用户消息的可追溯信息」，
                     // 客户端收到 done 后可能立刻重拉消息列表，晚一步写就等于「附件丢了」。
@@ -575,7 +603,8 @@ public class ChatCompletionService {
                     metrics.usage(usage);
 
                     // done 之后：摘要刷新、轮末钩子（都只影响下一轮或仅用于展示）
-                    if(!summaryOnly && (ragRef.get()==null || !ragRef.get().guarded())) finisher.afterDone(conversationId, userContent, reply);
+                    if(!summaryOnly && (background == null || !background.recovered())
+                            && (ragRef.get()==null || !ragRef.get().guarded())) finisher.afterDone(conversationId, userContent, reply);
                 }));
         subscriptionRef.set(subscription);
         // 订阅返回前就已被终止（上面任一路径抢先）：这里补一次 dispose，

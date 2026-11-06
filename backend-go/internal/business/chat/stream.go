@@ -31,6 +31,8 @@ type PreparedTurn struct {
 	Request       StreamRequest
 	clientContext context.Context
 	summaryOnly   bool
+	receipts      func(context.Context) (string, error)
+	recovered     *atomic.Bool
 }
 type RetrievedEvidence struct {
 	Citations []Citation
@@ -112,6 +114,9 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 		e.Metrics.Active.Add(-1)
 		e.Metrics.DurationNanos.Add(uint64(time.Since(started)))
 		outcome := "success"
+		if p.recovered != nil && p.recovered.Load() {
+			outcome = "recovered"
+		}
 		if runErr != nil {
 			switch {
 			case errors.Is(runErr, agent.ErrYield):
@@ -158,6 +163,40 @@ func (e *Engine) Run(ctx context.Context, p PreparedTurn, turnID, recovery strin
 		// Durable runs have no clientContext and retain their interrupted checkpoint.
 		if p.clientContext != nil && p.clientContext.Err() != nil {
 			return
+		}
+		if !p.summaryOnly && p.receipts != nil && userSaved && recoveryEligible(runErr) {
+			if e.Logger != nil {
+				e.Logger.WarnContext(ctx, "执行降级为只读收尾", "turnId", turnID)
+			}
+			suffix := e.recoverAnswer(ctx, p, full.String())
+			if errors.Is(ctx.Err(), context.Canceled) {
+				runErr = ctx.Err()
+			} else {
+				if full.Len() > 0 {
+					suffix = "\n\n" + suffix
+				}
+				full.WriteString(suffix)
+				cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+				err := e.completeWithCitations(cleanup, p.Session.ConversationID, full.String(), sources.citations)
+				cancel()
+				if err == nil {
+					if p.recovered != nil {
+						p.recovered.Store(true)
+					}
+					err = publish("warning", map[string]string{"code": "AGENT_RECOVERY", "message": recoveryNotice})
+					if err == nil {
+						err = publish("delta", map[string]string{"content": suffix})
+					}
+					if err == nil {
+						err = publish("done", map[string]any{"conversationId": p.Session.ConversationID, "content": full.String(), "promptTokens": 0})
+					}
+					userSaved = false
+					runErr = err
+					if err == nil {
+						return
+					}
+				}
+			}
 		}
 		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 		defer cancel()

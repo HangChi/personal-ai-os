@@ -246,7 +246,7 @@ public class ChatRunService {
         }
     }
 
-    private synchronized void finish(ChatRunRepository.Run run, boolean yielded) {
+    private synchronized void finish(ChatRunRepository.Run run, boolean yielded, boolean recovered) {
         workers.remove(run.id());
         if (interactions.pendingQuestion(run.id()) != null) {
             repository.transition(run.id(), "RUNNING", "WAITING_USER");
@@ -258,7 +258,8 @@ public class ChatRunService {
             if (!repository.uncertain(run.id())) resume(run.conversationId(), run.id());
         } else {
             String status = repository.pending(run.conversationId()) ? "WAITING_CONFIRMATION"
-                    : yielded || repository.unfinishedPlan(run.conversationId()) ? "INTERRUPTED" : "COMPLETED";
+                    : yielded || (recovered ? repository.uncertain(run.id()) : repository.unfinishedPlan(run.conversationId()))
+                    ? "INTERRUPTED" : "COMPLETED";
             repository.transition(run.id(), "RUNNING", status);
             if ("COMPLETED".equals(status)) {
                 try { dispatchQueued(run.conversationId()); }
@@ -291,7 +292,7 @@ public class ChatRunService {
                 if (summaryOnly) {
                     workers.remove(run.id());
                     repository.transition(run.id(), "RUNNING", "INTERRUPTED");
-                } else finish(run, "yield".equals(name));
+                } else finish(run, "yield".equals(name), current != null && current.recovered());
             } else if ("error".equals(name)) {
                 lease.close();
                 repository.transition(run.id(), "RUNNING", "INTERRUPTED");
