@@ -1,0 +1,100 @@
+{
+  "date": "2026-11-04T17:48:05.485Z",
+  "result": "FAIL",
+  "stage": "PAIRED_COMPLETE",
+  "platformAccepted": true,
+  "browserMode": "headed",
+  "subscriptionDeadlineMs": 30000,
+  "controlDeadlineMs": 3000,
+  "realPushDelivered": false,
+  "realDeliveryDeadlineMs": 15000,
+  "controlReceived": true,
+  "pushEvents": 3,
+  "notificationErrors": 0,
+  "workerErrors": 0,
+  "gcmRecordingStarted": true,
+  "gcmBeforeSend": {
+    "available": true,
+    "connectionState": "CONNECTING",
+    "recording": true,
+    "connectionLogRows": 0,
+    "receivedLogRows": 0,
+    "decryptionFailureRows": 0
+  },
+  "gcm": {
+    "available": true,
+    "connectionState": "CONNECTED",
+    "recording": true,
+    "connectionLogRows": 4,
+    "receivedLogRows": 2,
+    "decryptionFailureRows": 0
+  },
+  "mode": "paired-transport",
+  "backendOrder": [
+    "go",
+    "java"
+  ],
+  "backends": {
+    "go": {
+      "senderCompleted": true,
+      "platformStatus": 201,
+      "platformAccepted": true,
+      "realPushDelivered": false,
+      "realDeliveryDeadlineMs": 15000,
+      "gcmBeforeSend": {
+        "available": true,
+        "connectionState": "CONNECTING",
+        "recording": true,
+        "connectionLogRows": 0,
+        "receivedLogRows": 0,
+        "decryptionFailureRows": 0
+      },
+      "gcmAfterDeadline": {
+        "available": true,
+        "connectionState": "WAITING_FOR_BACKOFF",
+        "recording": true,
+        "connectionLogRows": 2,
+        "receivedLogRows": 0,
+        "decryptionFailureRows": 0
+      }
+    },
+    "java": {
+      "senderCompleted": true,
+      "platformStatus": 201,
+      "platformAccepted": true,
+      "javaSource": {
+        "baseline_commit": "cb5d694d62fa93742b5789b97273e76d931ce335",
+        "sources_sha256": {
+          "backend/src/main/java/com/personalos/calendar/push/PushTransport.java": "d8eea993a3395df317c805252b02ad6d6fc10ab6a98b35ffe38e284614f6d711",
+          "backend/src/main/java/com/personalos/calendar/push/WebPushSettings.java": "3ed98e0b28a23da817d4b049d8217d457c2b6ad424581483781b7e973d436a68",
+          "backend/src/main/java/com/personalos/calendar/push/WebPushTransport.java": "0e438f52db54b1fdeee6d3d8034d53a8740d0c7c618732dca5fb117a0c607f0d"
+        }
+      },
+      "realPushDelivered": true,
+      "realDeliveryDeadlineMs": 15000,
+      "gcmBeforeSend": {
+        "available": true,
+        "connectionState": "WAITING_FOR_BACKOFF",
+        "recording": true,
+        "connectionLogRows": 2,
+        "receivedLogRows": 0,
+        "decryptionFailureRows": 0
+      },
+      "gcmAfterDeadline": {
+        "available": true,
+        "connectionState": "CONNECTED",
+        "recording": true,
+        "connectionLogRows": 4,
+        "receivedLogRows": 2,
+        "decryptionFailureRows": 0
+      }
+    }
+  },
+  "receiptsAtClose": {
+    "go": 1,
+    "java": 1
+  },
+  "sameBrowserSubscription": true,
+  "scope": "Real production transports using one fresh profile, subscription and network. Excludes application scheduling, database state and full business equivalence.",
+  "controlScope": "CDP synthetic push bypasses FCM and encryption; it verifies only the disposable worker and callback."
+}

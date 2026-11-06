@@ -8,8 +8,14 @@ import { once } from 'node:events'
 import { parseArgs } from 'node:util'
 import { setTimeout as timeout } from 'node:timers/promises'
 import { chromeLaunchArgs, gcmSnapshot } from './chrome_push_diagnostics.mjs'
+import { pairedReceipts } from './paired_push_observations.mjs'
+const {values: arguments_} = parseArgs({options: {report: {type: 'string'}, headed: {type: 'boolean', default: false},
+  paired: {type: 'boolean', default: false}, order: {type: 'string', default: 'go,java'}}})
+if (!['go,java', 'java,go'].includes(arguments_.order)) throw new Error('Order must be go,java or java,go')
+const backendOrder = arguments_.order.split(',')
 const dir = await mkdtemp(join(tmpdir(), 'personalos-p5-chrome-'))
-const {values: arguments_} = parseArgs({options: {report: {type: 'string'}, headed: {type: 'boolean', default: false}}})
+const paired = pairedReceipts()
+const backendResults = {}
 let receive
 const received = new Promise(resolve => { receive = resolve })
 let controlReceive
@@ -26,6 +32,7 @@ const server = createServer((req, res) => {
     req.on('data', chunk => { data += chunk })
     req.on('end', () => {
       if (data === 'P5 browser delivery fixture') receive()
+      if (arguments_.paired) paired.record(data)
       if (data === 'P8 local control fixture') {
         diagnostics.controlReceived = true
         controlReceive()
@@ -74,6 +81,37 @@ async function gcmCall(method, params = {}) {
     call(method, params, gcmSession),
     delay(6000, false).then(() => { throw new Error('Disposable GCM diagnostics timed out') }),
   ])
+}
+async function snapshotGcm() {
+  if (!gcmSession) return {available: false}
+  try {
+    const snapshot = await gcmCall('Runtime.evaluate', {awaitPromise: true, returnByValue: true,
+      expression: '(async () => { document.getElementById("refresh")?.click(); await new Promise(r => setTimeout(r, 150)); return (' + gcmSnapshot.toString() + ')(document); })()'})
+    return snapshot.result?.value ?? {available: false}
+  } catch { return {available: false} }
+}
+async function sendTransport(name, fixture) {
+  const command = name === 'go' ? 'go' : 'python3'
+  const args = name === 'go'
+    ? ['test', '-tags=integration', './internal/business/calendar', '-run', '^TestP8BrowserPushTransport$', '-count=1', '-v']
+    : ['scripts/migration/java_push_transport_fixture.py', '--fixture', fixture]
+  const child = spawn(command, args, {
+    cwd: name === 'go' ? new URL('../../backend-go/', import.meta.url) : new URL('../../', import.meta.url),
+    env: {...process.env, GO_TEST_P8_PUSH_FIXTURE: fixture}, stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  let stdout = ''
+  child.stdout.setEncoding('utf8')
+  child.stdout.on('data', value => { stdout += value })
+  child.stderr.resume()
+  const timer = setTimeout(() => child.kill(), 120000)
+  try {
+    const [code] = await once(child, 'exit')
+    const status = stdout.match(/^P8_PUSH_STATUS ([0-9]{3})$/m)
+    const source = stdout.match(/^P8_PUSH_SOURCE (.+)$/m)
+    return {senderCompleted: code === 0, platformStatus: status ? Number(status[1]) : null,
+      platformAccepted: code === 0 && status !== null && Number(status[1]) >= 200 && Number(status[1]) < 300,
+      ...(source ? {javaSource: JSON.parse(source[1])} : {})}
+  } finally { clearTimeout(timer) }
 }
 try {
   let port
@@ -164,21 +202,44 @@ try {
   const fixture = join(dir, 'subscription.json')
   console.log('Chrome subscription host:', new URL(subscription.endpoint).hostname)
   await writeFile(fixture, JSON.stringify({publicKey, privateKey, subscription}), {mode: 0o600})
-  stage = 'SEND'
-  const tests = spawn('python3', ['scripts/migration/run_go_postgres_tests.py', '--package', 'app',
-    '--tls', '--run', '^TestP5BrowserWebPush$'], {
-    env: {...process.env, GO_TEST_REMINDER_BROWSER_SUBSCRIPTION: fixture},
-    stdio: 'inherit',
-  })
-  const [status] = await once(tests, 'exit')
-  if (status !== 0) throw new Error('Chrome subscription/delivery integration failed')
-  accepted = true
-  stage = 'DELIVERY'
-  const gotPush = await Promise.race([received.then(() => true), delay(15000).then(() => false)])
-  if (!gotPush) throw new Error('FCM accepted the notification, but Chrome did not receive it in time')
-  delivered = true
-  stage = 'COMPLETE'
-  console.log('Chrome service worker decrypted and received the reminder')
+  if (arguments_.paired) {
+    for (const name of backendOrder) {
+      stage = name.toUpperCase() + '_SEND'
+      await writeFile(fixture, JSON.stringify({publicKey, privateKey, subscription, marker: paired.marker(name)}), {mode: 0o600})
+      const gcmBeforeSend = await snapshotGcm()
+      const sendStartedMs = paired.elapsed()
+      let result
+      try { result = await sendTransport(name, fixture) }
+      catch { result = {senderCompleted: false, platformStatus: null, platformAccepted: false} }
+      const senderCompletedMs = paired.elapsed()
+      stage = name.toUpperCase() + '_DELIVERY'
+      const realPushDelivered = await Promise.race([paired.received(name).then(() => true), delay(15000).then(() => false)])
+      backendResults[name] = {...result, realPushDelivered, realDeliveryDeadlineMs: 15000,
+        sendStartedMs, senderCompletedMs, deliveryDecisionMs: paired.elapsed(),
+        gcmBeforeSend, gcmAfterDeadline: await snapshotGcm()}
+      console.log('Paired transport:', name, 'accepted:', result.platformAccepted, 'delivered:', realPushDelivered)
+    }
+    accepted = Object.values(backendResults).every(result => result.platformAccepted)
+    delivered = Object.values(backendResults).every(result => result.platformAccepted && result.realPushDelivered)
+    stage = 'PAIRED_COMPLETE'
+    if (!delivered) process.exitCode = 1
+  } else {
+    stage = 'SEND'
+    const tests = spawn('python3', ['scripts/migration/run_go_postgres_tests.py', '--package', 'app',
+      '--tls', '--run', '^TestP5BrowserWebPush$'], {
+      env: {...process.env, GO_TEST_REMINDER_BROWSER_SUBSCRIPTION: fixture},
+      stdio: 'inherit',
+    })
+    const [status] = await once(tests, 'exit')
+    if (status !== 0) throw new Error('Chrome subscription/delivery integration failed')
+    accepted = true
+    stage = 'DELIVERY'
+    const gotPush = await Promise.race([received.then(() => true), delay(15000).then(() => false)])
+    if (!gotPush) throw new Error('FCM accepted the notification, but Chrome did not receive it in time')
+    delivered = true
+    stage = 'COMPLETE'
+    console.log('Chrome service worker decrypted and received the reminder')
+  }
 } finally {
   if (gcmSession) {
     try {
@@ -205,6 +266,10 @@ try {
     date: new Date().toISOString(), result: delivered ? 'PASS' : 'FAIL', stage, platformAccepted: accepted,
     browserMode: arguments_.headed ? 'headed' : 'headless', subscriptionDeadlineMs: 30000, controlDeadlineMs: 3000,
     realPushDelivered: delivered, realDeliveryDeadlineMs: 15000, ...diagnostics,
+    ...(arguments_.paired ? {mode: 'paired-transport', backendOrder, backends: backendResults,
+      receiptsAtClose: paired.counts(), firstReceiptElapsedMs: paired.firstReceiptMs(),
+      sameBrowserSubscription: stage === 'PAIRED_COMPLETE',
+      scope: 'Real production transports using one fresh profile, subscription and network. Excludes application scheduling, database state and full business equivalence.'} : {}),
     controlScope: 'CDP synthetic push bypasses FCM and encryption; it verifies only the disposable worker and callback.',
   }, null, 2) + '\n')
 }
