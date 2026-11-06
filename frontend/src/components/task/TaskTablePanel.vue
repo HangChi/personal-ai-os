@@ -5,6 +5,8 @@
  * <p>只负责渲染与转发操作：选中行由 v-model 式事件交给父组件，
  * 因为批量操作栏在父层，需要同时知道「选了哪些」。
  */
+import type { ProjectItem } from '@/api/workspace'
+import { recurrenceLabel } from '@/lib/today'
 import { ref } from 'vue'
 
 import StatusTag from '@/components/StatusTag.vue'
@@ -13,11 +15,14 @@ import type { TaskItem } from '@/types/api'
 
 defineProps<{
   /** 已按截止时间升序排好的任务 */
+  projects?: ProjectItem[]
   tasks: TaskItem[]
   loading: boolean
 }>()
 
 const emit = defineEmits<{
+  (e: 'subtask', task: TaskItem): void
+  (e: 'children', task: TaskItem): void
   (e: 'toggle', task: TaskItem): void
   (e: 'edit', task: TaskItem): void
   (e: 'remove', task: TaskItem): void
@@ -85,10 +90,23 @@ function rememberTruncation(event: MouseEvent): void {
               {{ row.title }}
             </span>
           </el-tooltip>
+          <el-tag v-if="row.parentTaskId" size="small" type="info">子任务</el-tag>
+          <el-tag v-if="row.recurrenceType && row.recurrenceType !== 'NONE'" size="small">{{
+            recurrenceLabel(row.recurrenceType)
+          }}</el-tag>
           <el-tag v-if="row.overdue" type="danger" size="small" effect="plain">逾期</el-tag>
           <el-tag v-for="tag in row.tags" :key="tag" class="task-table__tag" size="small" effect="plain">
             {{ tag }}
           </el-tag>
+        </div>
+        <div class="task-table__organization">
+          <span v-if="row.projectId">{{ projects?.find((p) => p.id === row.projectId)?.name ?? '所属项目' }}</span>
+          <template v-if="!row.parentTaskId && (!row.recurrenceType || row.recurrenceType === 'NONE')">
+            <el-button v-if="row.status !== 'DONE'" link size="small" @click="emit('subtask', row)"
+              >添加子任务</el-button
+            >
+            <el-button link size="small" @click="emit('children', row)">查看子任务</el-button>
+          </template>
         </div>
         <!--
           描述单行截断 + 悬停看全文。
@@ -147,6 +165,15 @@ function rememberTruncation(event: MouseEvent): void {
  * 行高被抬到 60px 以上 —— 而标签只有零星几个字。改成同排后，
  * 有标签的任务也只比无标签的高一点，行高基本恒定。
  */
+.task-table__organization {
+  display: flex;
+  align-items: center;
+  gap: var(--os-space-2);
+  flex-wrap: wrap;
+  color: var(--el-text-color-secondary);
+  font-size: var(--os-font-xs);
+}
+
 .task-table__title {
   display: flex;
   align-items: center;

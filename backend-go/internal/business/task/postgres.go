@@ -20,17 +20,17 @@ func NewPostgresStore(pool *database.Pool) (*PostgresStore, error) {
 	return &PostgresStore{pool}, nil
 }
 
-const columns = `id::text,title,description,status,priority,due_at,completed_at,previous_status,created_at,updated_at`
+const columns = `id::text,title,description,status,priority,due_at,completed_at,previous_status,created_at,updated_at,project_id::text,parent_task_id::text,recurrence_type,recurrence_timezone,recurrence_anchor_day,recurrence_generated`
 
 type scanner interface{ Scan(...any) error }
 
 func scan(row scanner, r *Task) error {
-	return row.Scan(&r.ID, &r.Title, &r.Description, &r.Status, &r.Priority, &r.DueAt, &r.CompletedAt, &r.PreviousStatus, &r.CreatedAt, &r.UpdatedAt)
+	return row.Scan(&r.ID, &r.Title, &r.Description, &r.Status, &r.Priority, &r.DueAt, &r.CompletedAt, &r.PreviousStatus, &r.CreatedAt, &r.UpdatedAt, &r.ProjectID, &r.ParentTaskID, &r.RecurrenceType, &r.RecurrenceTimezone, &r.RecurrenceAnchorDay, &r.RecurrenceGenerated)
 }
 func (s *PostgresStore) Insert(ctx context.Context, r Task) (Task, error) {
 	tags := r.Tags
 	err := s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
-		if err := scan(tx.QueryRowContext(ctx, `INSERT INTO task(title,description,status,priority,due_at,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING `+columns, r.Title, r.Description, r.Status, r.Priority, r.DueAt, r.CreatedAt, r.UpdatedAt), &r); err != nil {
+		if err := scan(tx.QueryRowContext(ctx, `INSERT INTO task(title,description,status,priority,due_at,created_at,updated_at,project_id,parent_task_id,recurrence_type,recurrence_timezone) VALUES($1,$2,$3,$4,$5,$6,$7,$8::uuid,$9::uuid,$10,$11) RETURNING `+columns, r.Title, r.Description, r.Status, r.Priority, r.DueAt, r.CreatedAt, r.UpdatedAt, r.ProjectID, r.ParentTaskID, r.RecurrenceType, r.RecurrenceTimezone), &r); err != nil {
 			return err
 		}
 		r.Tags = tags
@@ -53,7 +53,7 @@ func (s *PostgresStore) Get(ctx context.Context, id string) (r Task, found bool,
 func (s *PostgresStore) Update(ctx context.Context, r Task) (Task, error) {
 	tags := r.Tags
 	err := s.pool.WithTx(ctx, sql.TxOptions{}, func(tx *sql.Tx) error {
-		if err := scan(tx.QueryRowContext(ctx, `UPDATE task SET title=$2,description=$3,status=$4,priority=$5,due_at=$6,completed_at=$7,previous_status=$8,updated_at=$9 WHERE id=$1::uuid RETURNING `+columns, r.ID, r.Title, r.Description, r.Status, r.Priority, r.DueAt, r.CompletedAt, r.PreviousStatus, r.UpdatedAt), &r); err != nil {
+		if err := scan(tx.QueryRowContext(ctx, `UPDATE task SET title=$2,description=$3,status=$4,priority=$5,due_at=$6,completed_at=$7,previous_status=$8,updated_at=$9,project_id=$10::uuid,parent_task_id=$11::uuid,recurrence_type=$12,recurrence_timezone=$13 WHERE id=$1::uuid RETURNING `+columns, r.ID, r.Title, r.Description, r.Status, r.Priority, r.DueAt, r.CompletedAt, r.PreviousStatus, r.UpdatedAt, r.ProjectID, r.ParentTaskID, r.RecurrenceType, r.RecurrenceTimezone), &r); err != nil {
 			return err
 		}
 		r.Tags = tags
@@ -89,7 +89,7 @@ func (s *PostgresStore) Delete(ctx context.Context, id string) (bool, error) {
 func (s *PostgresStore) Search(ctx context.Context, q Query) (Page, error) {
 	q = q.Normalize()
 	p := Page{Page: q.Page, Size: q.Size, Items: make([]Task, 0)}
-	where := ` WHERE ($1::text IS NULL OR status=$1) AND ($2::text='' OR lower(title) LIKE $2 ESCAPE '\' OR lower(coalesce(description,'')) LIKE $2 ESCAPE '\') AND ($3::text='' OR EXISTS(SELECT 1 FROM task_tag tt WHERE tt.task_id=task.id AND tt.tag=$3))`
+	where := ` WHERE ($1::text IS NULL OR status=$1) AND ($2::text='' OR lower(title) LIKE $2 ESCAPE '\' OR lower(coalesce(description,'')) LIKE $2 ESCAPE '\') AND ($3::text='' OR EXISTS(SELECT 1 FROM task_tag tt WHERE tt.task_id=task.id AND tt.tag=$3)) AND ($4::uuid IS NULL OR project_id=$4::uuid) AND ($5::uuid IS NULL OR parent_task_id=$5::uuid) AND (NOT $6::boolean OR status<>'DONE') AND ($7::timestamptz IS NULL OR due_at>=$7) AND ($8::timestamptz IS NULL OR due_at<$8)`
 	var status any
 	if q.Status != nil {
 		status = *q.Status
@@ -99,7 +99,7 @@ func (s *PostgresStore) Search(ctx context.Context, q Query) (Page, error) {
 		escaped := strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(strings.ToLower(strings.TrimSpace(q.Keyword)))
 		pattern = "%" + escaped + "%"
 	}
-	args := []any{status, pattern, q.Tag}
+	args := []any{status, pattern, q.Tag, nullableID(q.ProjectID), nullableID(q.ParentTaskID), q.Incomplete, q.DueFrom, q.DueBefore}
 	err := s.pool.WithConn(ctx, func(c *sql.Conn) error {
 		if err := c.QueryRowContext(ctx, `SELECT count(*) FROM task`+where, args...).Scan(&p.Total); err != nil {
 			return err
@@ -108,7 +108,7 @@ func (s *PostgresStore) Search(ctx context.Context, q Query) (Page, error) {
 		if offset > 2147483647 {
 			return nil
 		}
-		rows, err := c.QueryContext(ctx, `SELECT `+columns+` FROM task`+where+` ORDER BY CASE WHEN status='DONE' THEN 1 ELSE 0 END, CASE WHEN due_at IS NULL THEN 1 ELSE 0 END,due_at ASC,created_at DESC,id ASC LIMIT $4 OFFSET $5`, append(args, q.Size, offset)...)
+		rows, err := c.QueryContext(ctx, `SELECT `+columns+` FROM task`+where+` ORDER BY CASE WHEN status='DONE' THEN 1 ELSE 0 END, CASE WHEN due_at IS NULL THEN 1 ELSE 0 END,due_at ASC,created_at DESC,id ASC LIMIT $9 OFFSET $10`, append(args, q.Size, offset)...)
 		if err != nil {
 			return err
 		}

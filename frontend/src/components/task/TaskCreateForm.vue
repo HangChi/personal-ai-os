@@ -9,12 +9,17 @@ import { Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { ref, useId } from 'vue'
 
+import TaskOrganizationFields from '@/components/task/TaskOrganizationFields.vue'
+import type { TaskOrganization } from '@/components/task/TaskOrganizationFields.vue'
+import type { ProjectItem } from '@/api/workspace'
+import type { CreateTaskPayload } from '@/api/tasks'
 import PageHeader from '@/components/PageHeader.vue'
 import { PRIORITY_OPTIONS } from '@/lib/task-meta'
 import type { TaskPriority } from '@/types/api'
 
 const props = defineProps<{
   /** 已有标签，供下拉选择 */
+  projects?: ProjectItem[]
   tags: string[]
   /** 待办/逾期统计，显示在卡片头部 */
   pendingCount: number
@@ -24,9 +29,15 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'create', payload: { title: string; priority: TaskPriority; dueAt: string | undefined; tags: string[] }): void
+  (e: 'create', payload: CreateTaskPayload): void
 }>()
 
+const organization = ref<TaskOrganization>({
+  projectId: '',
+  parentTaskId: '',
+  recurrenceType: 'NONE',
+  recurrenceTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+})
 const title = ref('')
 const priority = ref<TaskPriority>('MEDIUM')
 const dueDate = ref<Date | null>(null)
@@ -44,7 +55,16 @@ function submit(): void {
     ElMessage.warning('请先填写任务标题')
     return
   }
+  if (organization.value.recurrenceType !== 'NONE' && !dueDate.value) {
+    ElMessage.warning('周期任务请先设置截止时间')
+    return
+  }
   emit('create', {
+    ...(organization.value.projectId ? { projectId: organization.value.projectId } : {}),
+    ...(organization.value.parentTaskId ? { parentTaskId: organization.value.parentTaskId } : {}),
+    ...(organization.value.recurrenceType !== 'NONE'
+      ? { recurrenceType: organization.value.recurrenceType, recurrenceTimezone: organization.value.recurrenceTimezone }
+      : {}),
     title: trimmed,
     priority: priority.value,
     dueAt: dueDate.value?.toISOString(),
@@ -61,9 +81,14 @@ function reset(): void {
   dueDate.value = null
   priority.value = 'MEDIUM'
   pickedTags.value = []
+  organization.value = { ...organization.value, parentTaskId: '', recurrenceType: 'NONE' }
 }
 
-defineExpose({ reset })
+function startSubtask(task: import('@/types/api').TaskItem): void {
+  reset()
+  organization.value = { ...organization.value, projectId: task.projectId ?? '', parentTaskId: task.id }
+}
+defineExpose({ reset, startSubtask })
 </script>
 
 <template>
@@ -131,6 +156,8 @@ defineExpose({ reset })
         />
       </div>
 
+      <TaskOrganizationFields v-model="organization" :projects="projects ?? []" class="task-create__organization" />
+
       <div class="task-create__footer">
         <span class="task-create__hint">填写标题后即可创建任务</span>
         <el-button type="primary" native-type="submit" :icon="Plus" :loading="creating" :disabled="!title.trim()">
@@ -186,6 +213,10 @@ defineExpose({ reset })
 .task-create :deep(.el-date-editor.el-input) {
   width: 100%;
   min-width: 0;
+}
+
+.task-create__organization {
+  grid-column: 1 / -1;
 }
 
 .task-create__footer {

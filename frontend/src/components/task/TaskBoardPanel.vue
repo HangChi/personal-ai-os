@@ -5,6 +5,8 @@
  * <p>三列（待办 / 进行中 / 已完成），空列有空态。**不做拖拽**：
  * 移动状态要走编辑弹窗或「完成」按钮，避免误拖改状态却没有撤销入口。
  */
+import type { ProjectItem } from '@/api/workspace'
+import { recurrenceLabel } from '@/lib/today'
 import { computed } from 'vue'
 
 import EmptyState from '@/components/EmptyState.vue'
@@ -14,6 +16,7 @@ import { PRIORITY_MAP, formatTaskDateTime, isDone } from '@/lib/task-meta'
 import type { TaskItem } from '@/types/api'
 
 const props = defineProps<{
+  projects?: ProjectItem[]
   tasks: TaskItem[]
   loading: boolean
   /**
@@ -27,6 +30,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  (e: 'subtask', task: TaskItem): void
+  (e: 'children', task: TaskItem): void
   (e: 'toggle', task: TaskItem): void
   (e: 'edit', task: TaskItem): void
   (e: 'remove', task: TaskItem): void
@@ -65,6 +70,13 @@ const moreCount = computed(() => {
           </div>
           <div v-if="task.description" class="task-board__card-description">{{ task.description }}</div>
           <div class="task-board__card-meta">
+            <el-tag v-if="task.projectId" size="small" type="info">{{
+              projects?.find((p) => p.id === task.projectId)?.name ?? '所属项目'
+            }}</el-tag>
+            <el-tag v-if="task.parentTaskId" size="small" type="info">子任务</el-tag>
+            <el-tag v-if="task.recurrenceType && task.recurrenceType !== 'NONE'" size="small">{{
+              recurrenceLabel(task.recurrenceType)
+            }}</el-tag>
             <StatusTag :status="task.priority" :map="PRIORITY_MAP" />
             <span class="task-board__card-due">{{ formatTaskDateTime(task.dueAt) }}</span>
             <el-tag v-if="task.overdue" type="danger" size="small" effect="plain">逾期</el-tag>
@@ -77,6 +89,12 @@ const moreCount = computed(() => {
               {{ isDone(task) ? '恢复' : '完成' }}
             </el-button>
             <el-button link type="primary" size="small" @click="emit('edit', task)">编辑</el-button>
+            <template v-if="!task.parentTaskId && (!task.recurrenceType || task.recurrenceType === 'NONE')">
+              <el-button v-if="task.status !== 'DONE'" link size="small" @click="emit('subtask', task)"
+                >添加子任务</el-button
+              >
+              <el-button link size="small" @click="emit('children', task)">查看子任务</el-button>
+            </template>
             <el-button link type="danger" size="small" @click="emit('remove', task)">删除</el-button>
           </div>
         </li>
@@ -209,6 +227,7 @@ const moreCount = computed(() => {
 
 .task-board__card-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--os-space-1);
   margin-top: var(--os-space-1);
 }

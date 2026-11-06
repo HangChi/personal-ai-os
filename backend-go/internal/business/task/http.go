@@ -39,6 +39,9 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 func (h *HTTP) serve(w http.ResponseWriter, r *http.Request) error {
 	path := r.URL.Path
+	if path == "/api/v1/projects" || strings.HasPrefix(path, "/api/v1/projects/") || path == "/api/v1/workspace/runs" {
+		return h.workspaceHTTP(w, r)
+	}
 	if path == "/api/v1/tasks" {
 		switch r.Method {
 		case http.MethodGet, http.MethodHead:
@@ -172,6 +175,9 @@ func respond(w http.ResponseWriter, r *http.Request, status int, data any) error
 	return api.WriteControllerMediaJSON(w, status, api.OK(data), media)
 }
 func taskError(err error) error {
+	if e := workspaceError(err); e != nil {
+		return e
+	}
 	var validation *ValidationError
 	if errors.As(err, &validation) {
 		return api.NewBusinessError(api.ValidationFailed, validation.Message)
@@ -213,7 +219,29 @@ func (h *HTTP) list(w http.ResponseWriter, r *http.Request) error {
 		}
 		status = &v
 	}
-	result, err := h.Tasks.Search(r.Context(), Query{Status: status, Keyword: query.Get("keyword"), Tag: query.Get("tag"), Page: page, Size: size})
+	q := Query{Status: status, Keyword: query.Get("keyword"), Tag: query.Get("tag"), Page: page, Size: size, ProjectID: query.Get("projectId"), ParentTaskID: query.Get("parentTaskId")}
+	for _, id := range []string{q.ProjectID, q.ParentTaskID} {
+		if id != "" && !uuidPattern.MatchString(id) {
+			return web.InvalidParameter("projectId/parentTaskId")
+		}
+	}
+	if raw := query.Get("incomplete"); raw != "" {
+		v, e := strconv.ParseBool(raw)
+		if e != nil {
+			return web.InvalidParameter("incomplete")
+		}
+		q.Incomplete = v
+	}
+	for name, dest := range map[string]**time.Time{"dueFrom": &q.DueFrom, "dueBefore": &q.DueBefore} {
+		if raw := query.Get(name); raw != "" {
+			v, e := time.Parse(time.RFC3339Nano, raw)
+			if e != nil {
+				return web.InvalidParameter(name)
+			}
+			*dest = &v
+		}
+	}
+	result, err := h.Tasks.Search(r.Context(), q)
 	if err != nil {
 		return err
 	}
@@ -226,7 +254,7 @@ func (h *HTTP) list(w http.ResponseWriter, r *http.Request) error {
 }
 func (h *HTTP) create(w http.ResponseWriter, r *http.Request) error {
 	var body CreateRequest
-	if err := decodeTaskJSON(w, r, &body, []string{"title", "description", "priority", "dueAt", "tags"}); err != nil {
+	if err := decodeTaskJSON(w, r, &body, []string{"title", "description", "priority", "dueAt", "tags", "projectId", "parentTaskId", "recurrenceType", "recurrenceTimezone"}); err != nil {
 		return err
 	}
 	value, err := h.idempotent(r, "POST /api/v1/tasks", body, func(ctx context.Context) (any, error) {
@@ -243,7 +271,7 @@ func (h *HTTP) create(w http.ResponseWriter, r *http.Request) error {
 }
 func (h *HTTP) update(w http.ResponseWriter, r *http.Request, id string) error {
 	var body UpdateRequest
-	if err := decodeTaskJSON(w, r, &body, []string{"title", "description", "priority", "dueAt", "clearDueAt", "status", "tags"}); err != nil {
+	if err := decodeTaskJSON(w, r, &body, []string{"title", "description", "priority", "dueAt", "clearDueAt", "status", "tags", "projectId", "parentTaskId", "recurrenceType", "recurrenceTimezone", "clearProject", "clearParent"}); err != nil {
 		return err
 	}
 	value, err := h.idempotent(r, "PATCH /api/v1/tasks/"+id, body, func(ctx context.Context) (any, error) {

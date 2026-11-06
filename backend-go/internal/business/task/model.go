@@ -36,31 +36,41 @@ func strip(s string) string    { return strings.TrimFunc(s, javaSpace) }
 func utf16Length(s string) int { return len(utf16.Encode([]rune(s))) }
 
 type Task struct {
-	ID, Title            string
-	Description          *string
-	Status               Status
-	Priority             Priority
-	DueAt, CompletedAt   *time.Time
-	PreviousStatus       *Status
-	CreatedAt, UpdatedAt time.Time
-	Tags                 []string
+	ID, Title                          string
+	Description                        *string
+	Status                             Status
+	Priority                           Priority
+	DueAt, CompletedAt                 *time.Time
+	PreviousStatus                     *Status
+	CreatedAt, UpdatedAt               time.Time
+	Tags                               []string
+	ProjectID, ParentTaskID            *string
+	RecurrenceType, RecurrenceTimezone string
+	RecurrenceAnchorDay                *int
+	RecurrenceGenerated                bool
 }
 type DTO struct {
-	ID          string     `json:"id"`
-	Title       string     `json:"title"`
-	Description *string    `json:"description"`
-	Status      Status     `json:"status"`
-	Priority    Priority   `json:"priority"`
-	Tags        []string   `json:"tags"`
-	DueAt       *time.Time `json:"dueAt"`
-	CompletedAt *time.Time `json:"completedAt"`
-	CreatedAt   time.Time  `json:"createdAt"`
-	UpdatedAt   time.Time  `json:"updatedAt"`
-	Overdue     bool       `json:"overdue"`
+	ID                  string     `json:"id"`
+	Title               string     `json:"title"`
+	Description         *string    `json:"description"`
+	Status              Status     `json:"status"`
+	Priority            Priority   `json:"priority"`
+	Tags                []string   `json:"tags"`
+	DueAt               *time.Time `json:"dueAt"`
+	CompletedAt         *time.Time `json:"completedAt"`
+	CreatedAt           time.Time  `json:"createdAt"`
+	UpdatedAt           time.Time  `json:"updatedAt"`
+	Overdue             bool       `json:"overdue"`
+	ProjectID           *string    `json:"projectId"`
+	ParentTaskID        *string    `json:"parentTaskId"`
+	RecurrenceType      string     `json:"recurrenceType"`
+	RecurrenceTimezone  string     `json:"recurrenceTimezone"`
+	RecurrenceAnchorDay *int       `json:"recurrenceAnchorDay"`
+	RecurrenceGenerated bool       `json:"recurrenceGenerated"`
 }
 
 func (t Task) DTO(now time.Time) DTO {
-	return DTO{t.ID, t.Title, t.Description, t.Status, t.Priority, append([]string{}, t.Tags...), t.DueAt, t.CompletedAt, t.CreatedAt, t.UpdatedAt, t.Overdue(now)}
+	return DTO{t.ID, t.Title, t.Description, t.Status, t.Priority, append([]string{}, t.Tags...), t.DueAt, t.CompletedAt, t.CreatedAt, t.UpdatedAt, t.Overdue(now), t.ProjectID, t.ParentTaskID, t.RecurrenceType, t.RecurrenceTimezone, t.RecurrenceAnchorDay, t.RecurrenceGenerated}
 }
 
 func (t *Task) SetStatus(status Status, now time.Time) error {
@@ -104,27 +114,40 @@ func (t Task) Overdue(now time.Time) bool {
 }
 
 type CreateRequest struct {
-	Title       string     `json:"title"`
-	Description *string    `json:"description"`
-	Priority    *Priority  `json:"priority"`
-	DueAt       *time.Time `json:"dueAt"`
-	Tags        []string   `json:"tags"`
+	Title              string     `json:"title"`
+	Description        *string    `json:"description"`
+	Priority           *Priority  `json:"priority"`
+	DueAt              *time.Time `json:"dueAt"`
+	Tags               []string   `json:"tags"`
+	ProjectID          *string    `json:"projectId,omitempty"`
+	ParentTaskID       *string    `json:"parentTaskId,omitempty"`
+	RecurrenceType     *string    `json:"recurrenceType,omitempty"`
+	RecurrenceTimezone *string    `json:"recurrenceTimezone,omitempty"`
 }
 
 // UpdateRequest 保留 Java Boolean 的 null/false/true，避免省略字段改变已有幂等摘要。
 type UpdateRequest struct {
-	Title       *string    `json:"title"`
-	Description *string    `json:"description"`
-	Priority    *Priority  `json:"priority"`
-	DueAt       *time.Time `json:"dueAt"`
-	ClearDueAt  *bool      `json:"clearDueAt"`
-	Status      *Status    `json:"status"`
-	Tags        *[]string  `json:"tags"`
+	Title              *string    `json:"title"`
+	Description        *string    `json:"description"`
+	Priority           *Priority  `json:"priority"`
+	DueAt              *time.Time `json:"dueAt"`
+	ClearDueAt         *bool      `json:"clearDueAt"`
+	Status             *Status    `json:"status"`
+	Tags               *[]string  `json:"tags"`
+	ProjectID          *string    `json:"projectId,omitempty"`
+	ParentTaskID       *string    `json:"parentTaskId,omitempty"`
+	RecurrenceType     *string    `json:"recurrenceType,omitempty"`
+	RecurrenceTimezone *string    `json:"recurrenceTimezone,omitempty"`
+	ClearProject       *bool      `json:"clearProject,omitempty"`
+	ClearParent        *bool      `json:"clearParent,omitempty"`
 }
 type Query struct {
-	Status       *Status
-	Keyword, Tag string
-	Page, Size   int
+	Status                  *Status
+	Keyword, Tag            string
+	Page, Size              int
+	ProjectID, ParentTaskID string
+	Incomplete              bool
+	DueFrom, DueBefore      *time.Time
 }
 
 func (q Query) Normalize() Query {

@@ -82,7 +82,7 @@ public class DataImportService {
 
     /** 空库校验覆盖的表；顺序只影响报错文案 */
     private static final List<String> GUARDED_TABLES = List.of(
-            "knowledge_index_job", "chat_session", "chat_message", "task", "task_tag", "calendar_event",
+            "project", "knowledge_index_job", "chat_session", "chat_message", "task", "task_tag", "calendar_event",
             "memory", "knowledge_document", "confirmation", "operation_record");
 
     private final EntityManager entityManager;
@@ -137,7 +137,10 @@ public class DataImportService {
         requireEmptyDatabase();
 
         int messages = importSessions(payload.sessions());
+        importProjects(payload.projects());
         int tasks = importTasks(payload.tasks());
+        if(payload.projects()!=null) for(var project:payload.projects()) if(Boolean.TRUE.equals(project.archived()))
+            entityManager.createNativeQuery("update project set archived=true where id=?1").setParameter(1,project.id()).executeUpdate();
         int events = importCalendar(payload.calendarEvents());
         int memories = importMemories(payload.memories());
         DocStats docs = importDocuments(documents);
@@ -249,6 +252,17 @@ public class DataImportService {
         return imported;
     }
 
+    private void importProjects(List<ImportPayload.ProjectPayload> projects) {
+        if(projects==null) return;
+        for(var p:projects) {
+            if(p==null || p.id()==null || isBlank(p.name())) throw new BusinessException(ErrorCode.VALIDATION_FAILED,"备份项目缺少有效标识或名称");
+            Instant created=p.createdAt()==null?Instant.now():p.createdAt();
+            entityManager.createNativeQuery("insert into project(id,name,description,created_at,updated_at) values(?1,?2,?3,?4,?5)")
+                .setParameter(1,p.id()).setParameter(2,p.name().strip()).setParameter(3,p.description())
+                .setParameter(4,ts(created)).setParameter(5,ts(p.updatedAt()==null?created:p.updatedAt())).executeUpdate();
+        }
+    }
+
     private int importTasks(List<ImportPayload.TaskPayload> tasks) {
         if (tasks == null) {
             return 0;
@@ -267,8 +281,8 @@ public class DataImportService {
             Instant createdAt = task.createdAt() == null ? Instant.now() : task.createdAt();
             entityManager.createNativeQuery(
                             "insert into task (id, title, description, status, priority, due_at, completed_at, "
-                                    + "created_at, updated_at, previous_status) "
-                                    + "values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)")
+                                    + "created_at, updated_at, previous_status,project_id,recurrence_type,recurrence_timezone,recurrence_anchor_day,recurrence_generated) "
+                                    + "values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10,?11,?12,?13,?14,?15)")
                     .setParameter(1, task.id())
                     .setParameter(2, task.title())
                     .setParameter(3, task.description())
@@ -279,10 +293,18 @@ public class DataImportService {
                     .setParameter(8, ts(createdAt))
                     .setParameter(9, ts(task.updatedAt() == null ? createdAt : task.updatedAt()))
                     .setParameter(10, previousStatus)
+                    .setParameter(11,task.projectId())
+                    .setParameter(12,task.recurrenceType()==null?"NONE":task.recurrenceType())
+                    .setParameter(13,task.recurrenceTimezone()==null?"UTC":task.recurrenceTimezone())
+                    .setParameter(14,task.recurrenceAnchorDay())
+                    .setParameter(15,Boolean.TRUE.equals(task.recurrenceGenerated()))
                     .executeUpdate();
             importTags(task.id(), task.tags());
             imported++;
         }
+        for(var task:tasks) if(task!=null && task.id()!=null && !isBlank(task.title()) && task.parentTaskId()!=null)
+            entityManager.createNativeQuery("update task set parent_task_id=?2 where id=?1")
+                .setParameter(1,task.id()).setParameter(2,task.parentTaskId()).executeUpdate();
         return imported;
     }
 

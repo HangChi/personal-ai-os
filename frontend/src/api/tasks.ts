@@ -1,5 +1,5 @@
 import { requestData } from '@/api/http'
-import type { PageDto, TaskItem, TaskPriority, TaskStatus } from '@/types/api'
+import type { PageDto, TaskItem, TaskPriority, TaskStatus, TaskRecurrence } from '@/types/api'
 
 /**
  * 任务接口客户端。
@@ -8,6 +8,11 @@ import type { PageDto, TaskItem, TaskPriority, TaskStatus } from '@/types/api'
  * 服务端只会执行一次，并返回与首次一致的响应。
  */
 export interface TaskListFilter {
+  projectId?: string
+  parentTaskId?: string
+  incomplete?: boolean
+  dueFrom?: string
+  dueBefore?: string
   status?: TaskStatus
   keyword?: string
   /** 标签精确筛选（阶段 14） */
@@ -18,6 +23,10 @@ export interface TaskListFilter {
 }
 
 export interface CreateTaskPayload {
+  projectId?: string
+  parentTaskId?: string
+  recurrenceType?: TaskRecurrence
+  recurrenceTimezone?: string
   title: string
   description?: string
   priority?: TaskPriority
@@ -26,6 +35,12 @@ export interface CreateTaskPayload {
 }
 
 export interface UpdateTaskPayload {
+  clearProject?: boolean
+  clearParent?: boolean
+  projectId?: string
+  parentTaskId?: string
+  recurrenceType?: TaskRecurrence
+  recurrenceTimezone?: string
   title?: string
   description?: string
   priority?: TaskPriority

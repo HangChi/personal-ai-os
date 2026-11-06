@@ -29,5 +29,12 @@ public record TaskDto(UUID id,
                       Instant completedAt,
                       Instant createdAt,
                       Instant updatedAt,
-                      boolean overdue) {
+                      boolean overdue,
+                      UUID projectId, UUID parentTaskId, String recurrenceType, String recurrenceTimezone,
+                      Integer recurrenceAnchorDay, boolean recurrenceGenerated) {
+    public TaskDto(UUID id,String title,String description,String status,String priority,List<String> tags,
+            Instant dueAt,Instant completedAt,Instant createdAt,Instant updatedAt,boolean overdue) {
+        this(id,title,description,status,priority,tags,dueAt,completedAt,createdAt,updatedAt,overdue,
+             null,null,"NONE","UTC",null,false);
+    }
 }

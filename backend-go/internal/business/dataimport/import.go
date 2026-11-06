@@ -25,7 +25,7 @@ import (
 
 const MaxBytes = 20 << 20
 
-var guarded = []string{"knowledge_index_job", "chat_session", "chat_message", "task", "task_tag", "calendar_event", "memory", "knowledge_document", "confirmation", "operation_record"}
+var guarded = []string{"project", "knowledge_index_job", "chat_session", "chat_message", "task", "task_tag", "calendar_event", "memory", "knowledge_document", "confirmation", "operation_record"}
 
 type Result struct {
 	Sessions       int      `json:"sessions"`
@@ -118,7 +118,13 @@ func (s *Service) Import(ctx context.Context, raw []byte) (Result, error) {
 		if result.Messages, e = importSessions(ctx, tx, p.Sessions); e != nil {
 			return e
 		}
+		if e = importProjects(ctx, tx, p.Projects); e != nil {
+			return e
+		}
 		if result.Tasks, e = importTasks(ctx, tx, p.Tasks); e != nil {
+			return e
+		}
+		if e = archiveImportedProjects(ctx, tx, p.Projects); e != nil {
 			return e
 		}
 		if result.CalendarEvents, e = importCalendar(ctx, tx, p.CalendarEvents); e != nil {
@@ -236,7 +242,7 @@ func importTasks(ctx context.Context, tx *sql.Tx, tasks []*Task) (int, error) {
 				previous = &v
 			}
 		}
-		if _, e := tx.ExecContext(ctx, `INSERT INTO task(id,title,description,status,priority,due_at,completed_at,created_at,updated_at,previous_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, string(*t.ID), t.Title, t.Description, status, priority, t.DueAt, t.CompletedAt, created, fallbackAt(t.UpdatedAt, created), previous); e != nil {
+		if _, e := tx.ExecContext(ctx, `INSERT INTO task(id,title,description,status,priority,due_at,completed_at,created_at,updated_at,previous_status,project_id,recurrence_type,recurrence_timezone,recurrence_anchor_day,recurrence_generated) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::uuid,$12,$13,$14,$15)`, string(*t.ID), t.Title, t.Description, status, priority, t.DueAt, t.CompletedAt, created, fallbackAt(t.UpdatedAt, created), previous, t.ProjectID, defaultString(t.RecurrenceType, "NONE"), defaultString(t.RecurrenceTimezone, "UTC"), t.RecurrenceAnchorDay, t.RecurrenceGenerated); e != nil {
 			return 0, e
 		}
 		index := 0
@@ -250,6 +256,13 @@ func importTasks(ctx context.Context, tx *sql.Tx, tasks []*Task) (int, error) {
 			index++
 		}
 		count++
+	}
+	for _, t := range tasks {
+		if t != nil && t.ID != nil && strings.TrimSpace(t.Title) != "" && t.ParentTaskID != nil {
+			if _, e := tx.ExecContext(ctx, `UPDATE task SET parent_task_id=$2::uuid WHERE id=$1::uuid`, string(*t.ID), string(*t.ParentTaskID)); e != nil {
+				return 0, e
+			}
+		}
 	}
 	return count, nil
 }
@@ -303,4 +316,33 @@ func importMemories(ctx context.Context, tx *sql.Tx, memories []*Memory) (int, e
 		}
 	}
 	return count, nil
+}
+
+func defaultString(v *string, fallback string) string {
+	if v == nil {
+		return fallback
+	}
+	return *v
+}
+func importProjects(ctx context.Context, tx *sql.Tx, projects []*Project) error {
+	for _, p := range projects {
+		if p == nil || p.ID == nil || strings.TrimSpace(p.Name) == "" {
+			return invalid("备份项目缺少有效标识或名称")
+		}
+		created := fallbackAt(p.CreatedAt, time.Now().UTC())
+		if _, e := tx.ExecContext(ctx, `INSERT INTO project(id,name,description,created_at,updated_at) VALUES($1::uuid,$2,$3,$4,$5)`, string(*p.ID), strings.TrimSpace(p.Name), p.Description, created, fallbackAt(p.UpdatedAt, created)); e != nil {
+			return e
+		}
+	}
+	return nil
+}
+func archiveImportedProjects(ctx context.Context, tx *sql.Tx, projects []*Project) error {
+	for _, p := range projects {
+		if p != nil && p.ID != nil && p.Archived {
+			if _, e := tx.ExecContext(ctx, `UPDATE project SET archived=true WHERE id=$1::uuid`, string(*p.ID)); e != nil {
+				return e
+			}
+		}
+	}
+	return nil
 }

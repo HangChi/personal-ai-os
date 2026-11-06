@@ -25,7 +25,15 @@ public record ImportPayload(
         List<TaskPayload> tasks,
         List<CalendarPayload> calendarEvents,
         List<MemoryPayload> memories,
-        List<DocumentPayload> knowledgeDocuments) {
+        List<DocumentPayload> knowledgeDocuments,
+        List<ProjectPayload> projects) {
+    public ImportPayload(String formatVersion,List<SessionPayload> sessions,List<TaskPayload> tasks,
+        List<CalendarPayload> calendarEvents,List<MemoryPayload> memories,List<DocumentPayload> knowledgeDocuments) {
+        this(formatVersion,sessions,tasks,calendarEvents,memories,knowledgeDocuments,null);
+    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record ProjectPayload(UUID id,String name,String description,Boolean archived,Instant createdAt,Instant updatedAt) {}
+
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record SessionPayload(SessionMeta session, List<MessagePayload> messages) {
@@ -44,7 +52,13 @@ public record ImportPayload(
                               List<String> tags, Instant dueAt, Instant completedAt,
                               Instant createdAt, Instant updatedAt,
                               // 旧版导出文件里没有这一列，Jackson 会给 null —— 与「历史数据」语义一致
-                              String previousStatus) {
+                              String previousStatus,
+                              UUID projectId,UUID parentTaskId,String recurrenceType,String recurrenceTimezone,
+                              Integer recurrenceAnchorDay,Boolean recurrenceGenerated) {
+        public TaskPayload(UUID id,String title,String description,String status,String priority,List<String> tags,
+            Instant dueAt,Instant completedAt,Instant createdAt,Instant updatedAt,String previousStatus) {
+            this(id,title,description,status,priority,tags,dueAt,completedAt,createdAt,updatedAt,previousStatus,null,null,null,null,null,null);
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

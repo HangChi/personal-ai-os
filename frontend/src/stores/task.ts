@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { localDayWindow } from '@/lib/today'
+import { childFirstBatches } from '@/lib/task-hierarchy'
 
 import {
   createTask as createTaskApi,
@@ -29,6 +31,9 @@ export const useTaskStore = defineStore('task', () => {
   const keyword = ref('')
   /** 标签筛选（空串 = 不限） */
   const tagFilter = ref('')
+  const projectFilter = ref('')
+  const parentFilter = ref('')
+  const agendaFilter = ref<'' | 'today' | 'overdue'>('')
   /** 已用过的标签（去重有序），供筛选下拉使用 */
   const tags = ref<string[]>([])
 
@@ -61,9 +66,18 @@ export const useTaskStore = defineStore('task', () => {
     error.value = null
     try {
       const result = await listTasks({
+        incomplete: agendaFilter.value ? true : undefined,
+        dueFrom: agendaFilter.value === 'today' ? localDayWindow().from : undefined,
+        dueBefore: agendaFilter.value
+          ? agendaFilter.value === 'today'
+            ? localDayWindow().before
+            : localDayWindow().from
+          : undefined,
         status: statusFilter.value || undefined,
         keyword: keyword.value.trim() || undefined,
         tag: tagFilter.value || undefined,
+        projectId: projectFilter.value || undefined,
+        parentTaskId: parentFilter.value || undefined,
         page: page.value,
         size: size.value,
       })
@@ -106,10 +120,16 @@ export const useTaskStore = defineStore('task', () => {
     await load()
   }
 
-  async function create(title: string, priority: TaskPriority, dueAt?: string, tagsValue?: string[]): Promise<void> {
+  async function create(
+    title: string,
+    priority: TaskPriority,
+    dueAt?: string,
+    tagsValue?: string[],
+    extra: Partial<import('@/api/tasks').CreateTaskPayload> = {},
+  ): Promise<void> {
     error.value = null
     try {
-      await createTaskApi({ title, priority, dueAt, tags: tagsValue })
+      await createTaskApi({ ...extra, title, priority, dueAt, tags: tagsValue })
       await load()
       await refreshTags()
       await loadStats()
@@ -172,7 +192,7 @@ export const useTaskStore = defineStore('task', () => {
   /**
    * 批量完成（阶段 18，contracts C-05）。
    *
-   * 逐条调用、互不影响：单条失败不影响其他条，也不回滚已成功的行
+   * 子任务先于父任务执行；同一层逐条调用、互不影响：单条失败不影响其他条，也不回滚已成功的行
    * （接口无跨行事务，回滚需要逆向请求，超出纯前端边界）。
    * 返回值让调用方能报告「成功 X 条，失败 Y 条」——store 的 remove /
    * toggleCompleted 自己吞错误，allSettled 看它们永远 fulfilled，数不出失败。
@@ -180,16 +200,17 @@ export const useTaskStore = defineStore('task', () => {
   async function batchComplete(ids: string[]): Promise<{ succeeded: number; failed: number }> {
     let succeeded = 0
     let failed = 0
-    await Promise.allSettled(
-      ids.map(async (id) => {
-        try {
-          await completeTaskApi(id)
-          succeeded += 1
-        } catch {
-          failed += 1
-        }
-      }),
-    )
+    for (const batch of childFirstBatches(ids, tasks.value))
+      await Promise.allSettled(
+        batch.map(async (id) => {
+          try {
+            await completeTaskApi(id)
+            succeeded += 1
+          } catch {
+            failed += 1
+          }
+        }),
+      )
     await load()
     await loadStats()
     return { succeeded, failed }
@@ -199,16 +220,17 @@ export const useTaskStore = defineStore('task', () => {
   async function batchDelete(ids: string[]): Promise<{ succeeded: number; failed: number }> {
     let succeeded = 0
     let failed = 0
-    await Promise.allSettled(
-      ids.map(async (id) => {
-        try {
-          await deleteTaskApi(id)
-          succeeded += 1
-        } catch {
-          failed += 1
-        }
-      }),
-    )
+    for (const batch of childFirstBatches(ids, tasks.value))
+      await Promise.allSettled(
+        batch.map(async (id) => {
+          try {
+            await deleteTaskApi(id)
+            succeeded += 1
+          } catch {
+            failed += 1
+          }
+        }),
+      )
     await load()
     await refreshTags()
     await loadStats()
@@ -225,6 +247,9 @@ export const useTaskStore = defineStore('task', () => {
     statusFilter,
     keyword,
     tagFilter,
+    projectFilter,
+    parentFilter,
+    agendaFilter,
     tags,
     pendingCount,
     overdueCount,

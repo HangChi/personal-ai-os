@@ -20,7 +20,7 @@ func (f *Foundation) p7Route(tasks *task.Service, p5 *foundationP5, personal mcp
 	status := &mcp.HTTP{Registry: f.mcp, Personal: personal, Protocol: protocol}
 	mcpHandler := status.Handler(logger)
 	searches := (&search.Service{Contributors: search.Contributors(f.pool, tasks, f.p6.Store), Logger: logger}).Handler(logger)
-	exports := &dataexport.Service{Pool: f.pool, Name: name, Version: version, Contributors: []dataexport.Contributor{task.ExportContributor{}, chat.ExportContributor{}, calendar.ExportContributor{}, memory.ExportContributor{}, knowledge.ExportContributor{Store: f.p6.Store}}}
+	exports := &dataexport.Service{Pool: f.pool, Name: name, Version: version, Contributors: []dataexport.Contributor{task.ExportContributor{}, task.ProjectExportContributor{}, chat.ExportContributor{}, calendar.ExportContributor{}, memory.ExportContributor{}, knowledge.ExportContributor{Store: f.p6.Store}}}
 	transfers := (&exchange.HTTP{Export: exports, Import: &dataimport.Service{Pool: f.pool, Knowledge: f.p6.Store}}).Handler(logger)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {

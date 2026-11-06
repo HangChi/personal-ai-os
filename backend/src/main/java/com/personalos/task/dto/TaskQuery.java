@@ -15,7 +15,12 @@ import com.personalos.task.entity.TaskStatus;
  * @param page    页码，从 0 开始；负值收敛为 0
  * @param size    每页条数；非正收敛为默认值，超过硬上限收敛为上限
  */
-public record TaskQuery(TaskStatus status, String keyword, String tag, int page, int size) {
+public record TaskQuery(TaskStatus status, String keyword, String tag, int page, int size,
+        java.util.UUID projectId, java.util.UUID parentTaskId, Boolean incomplete,
+        java.time.Instant dueFrom, java.time.Instant dueBefore) {
+    public TaskQuery(TaskStatus status,String keyword,String tag,int page,int size) {
+        this(status,keyword,tag,page,size,null,null,null,null,null);
+    }
 
     public static final int DEFAULT_SIZE = 20;
     public static final int MAX_SIZE = 100;

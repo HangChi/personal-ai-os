@@ -42,5 +42,12 @@ public record UpdateTaskRequest(
 
         TaskStatus status,
 
-        List<String> tags) {
+        List<String> tags,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) java.util.UUID projectId, @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) java.util.UUID parentTaskId,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) String recurrenceType, @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) String recurrenceTimezone,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Boolean clearProject, @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Boolean clearParent) {
+    public UpdateTaskRequest(String title, String description, TaskPriority priority, Instant dueAt,
+            Boolean clearDueAt, TaskStatus status, List<String> tags) {
+        this(title,description,priority,dueAt,clearDueAt,status,tags,null,null,null,null,null,null);
+    }
 }

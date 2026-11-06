@@ -28,5 +28,10 @@ public record CreateTaskRequest(
 
         Instant dueAt,
 
-        List<String> tags) {
+        List<String> tags,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) java.util.UUID projectId, @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) java.util.UUID parentTaskId,
+        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) String recurrenceType, @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) String recurrenceTimezone) {
+    public CreateTaskRequest(String title, String description, TaskPriority priority, Instant dueAt, List<String> tags) {
+        this(title, description, priority, dueAt, tags, null, null, null, null);
+    }
 }

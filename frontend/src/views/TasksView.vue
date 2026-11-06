@@ -11,8 +11,14 @@
  */
 import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
+import { useRoute, useRouter } from 'vue-router'
+import { getTask } from '@/api/tasks'
+import { listProjects } from '@/api/workspace'
+import type { ProjectItem } from '@/api/workspace'
+import type { CreateTaskPayload } from '@/api/tasks'
+import ProjectManager from '@/components/task/ProjectManager.vue'
 import AppPagination from '@/components/AppPagination.vue'
 import FilterBar from '@/components/FilterBar.vue'
 import PageHeader from '@/components/PageHeader.vue'
@@ -25,13 +31,62 @@ import { confirmDanger } from '@/lib/confirm-box'
 import { useTaskStore } from '@/stores/task'
 import { useUiStore } from '@/stores/ui'
 import type { UpdateTaskPayload } from '@/api/tasks'
-import type { TaskItem, TaskPriority, TaskStatus } from '@/types/api'
+import type { TaskItem, TaskStatus } from '@/types/api'
 
+const route = useRoute()
+const router = useRouter()
+const projects = ref<ProjectItem[]>([])
+const projectLoading = ref(false)
+const projectError = ref('')
+let projectSequence = 0
+async function loadProjects(): Promise<void> {
+  const seq = ++projectSequence
+  projectLoading.value = true
+  projectError.value = ''
+  try {
+    const result = await listProjects()
+    if (seq === projectSequence) projects.value = result
+  } catch (cause) {
+    if (seq === projectSequence) projectError.value = cause instanceof Error ? cause.message : '项目加载失败'
+  } finally {
+    if (seq === projectSequence) projectLoading.value = false
+  }
+}
 const taskStore = useTaskStore()
 const uiStore = useUiStore()
-const { tasks, loading, error, statusFilter, keyword, tagFilter, tags, pendingCount, overdueCount, total, page, size } =
-  storeToRefs(taskStore)
+const {
+  tasks,
+  loading,
+  error,
+  statusFilter,
+  keyword,
+  tagFilter,
+  projectFilter,
+  parentFilter,
+  agendaFilter,
+  tags,
+  pendingCount,
+  overdueCount,
+  total,
+  page,
+  size,
+} = storeToRefs(taskStore)
 const { tasksView } = storeToRefs(uiStore)
+watch(
+  () => route?.query.agenda,
+  (value) => {
+    agendaFilter.value = value === 'today' || value === 'overdue' ? value : ''
+    if (agendaFilter.value) {
+      statusFilter.value = ''
+      keyword.value = ''
+      tagFilter.value = ''
+      projectFilter.value = ''
+      parentFilter.value = ''
+    }
+    void taskStore.reload()
+  },
+  { immediate: true },
+)
 
 const createForm = ref<InstanceType<typeof TaskCreateForm> | null>(null)
 const creating = ref(false)
@@ -44,20 +99,16 @@ const statusOptions: Array<{ label: string; value: TaskStatus | '' }> = [
 ]
 
 onMounted(() => {
-  void taskStore.load()
+  void loadProjects()
+
   void taskStore.refreshTags()
   void taskStore.loadStats()
 })
 
-async function handleCreate(payload: {
-  title: string
-  priority: TaskPriority
-  dueAt: string | undefined
-  tags: string[]
-}): Promise<void> {
+async function handleCreate(payload: CreateTaskPayload): Promise<void> {
   creating.value = true
   try {
-    await taskStore.create(payload.title, payload.priority, payload.dueAt, payload.tags)
+    await taskStore.create(payload.title, payload.priority ?? 'MEDIUM', payload.dueAt, payload.tags, payload)
     // 失败时不清空输入：用户刚填的内容不该因为一次网络抖动就没了
     if (!error.value) {
       createForm.value?.reset()
@@ -71,6 +122,40 @@ const editing = ref(false)
 const editSaving = ref(false)
 /** 正在编辑的任务快照：弹窗据此判断截止时间是否被主动清空 */
 const editTarget = ref<TaskItem | null>(null)
+let navigationSequence = 0
+watch(
+  () => route.query.task,
+  async (id) => {
+    const seq = ++navigationSequence
+    if (typeof id !== 'string') return
+    try {
+      const task = await getTask(id)
+      if (seq === navigationSequence) openEdit(task)
+    } catch (cause) {
+      ElMessage.error(cause instanceof Error ? cause.message : '任务已不存在或无法加载')
+    }
+  },
+  { immediate: true },
+)
+function startSubtask(task: TaskItem): void {
+  createForm.value?.startSubtask(task)
+  document.querySelector('.task-create')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+}
+function clearAgenda(): void {
+  void router.replace({ path: '/tasks', query: { ...route.query, agenda: undefined } })
+}
+function clearParentFilter(): void {
+  parentFilter.value = ''
+  void taskStore.reload()
+}
+function changeProjectFilter(): void {
+  parentFilter.value = ''
+  void taskStore.reload()
+}
+function showChildren(task: TaskItem): void {
+  parentFilter.value = task.id
+  void taskStore.reload()
+}
 
 function openEdit(task: TaskItem): void {
   editTarget.value = task
@@ -193,9 +278,12 @@ function switchView(next: 'table' | 'board'): void {
   <div class="tasks">
     <PageHeader size="page" title="任务" />
 
+    <ProjectManager :projects="projects" :error="projectError" :loading="projectLoading" @refresh="loadProjects" />
+
     <TaskCreateForm
       ref="createForm"
       :tags="tags"
+      :projects="projects"
       :pending-count="pendingCount"
       :overdue-count="overdueCount"
       :creating="creating"
@@ -215,6 +303,20 @@ function switchView(next: 'table' | 'board'): void {
           </template>
         </PageHeader>
         <FilterBar class="tasks__filters">
+          <el-select
+            v-model="projectFilter"
+            clearable
+            class="tasks__filter"
+            placeholder="全部项目"
+            @change="changeProjectFilter"
+          >
+            <el-option
+              v-for="project in projects"
+              :key="project.id"
+              :value="project.id"
+              :label="project.name + (project.archived ? '（已归档）' : '')"
+            />
+          </el-select>
           <!-- 空串表示「全部」，Element Plus 会把它当作未选择而显示英文 placeholder，
                所以必须显式给中文 placeholder，否则界面里冒出一个 "Select" -->
           <el-select v-model="statusFilter" class="tasks__filter" placeholder="全部" @change="taskStore.reload()">
@@ -246,6 +348,17 @@ function switchView(next: 'table' | 'board'): void {
         </FilterBar>
       </template>
 
+      <el-alert
+        v-if="agendaFilter"
+        type="info"
+        :closable="false"
+        :title="agendaFilter === 'today' ? '当前显示今日到期的未完成任务' : '当前显示往日逾期未完成任务'"
+      >
+        <el-button link @click="clearAgenda">显示全部日期</el-button>
+      </el-alert>
+      <el-alert v-if="parentFilter" type="info" :closable="false" title="当前只显示此父任务的子任务">
+        <el-button link @click="clearParentFilter">返回全部任务</el-button>
+      </el-alert>
       <el-alert v-if="error" class="tasks__error" type="error" :closable="false" show-icon :title="error" />
 
       <!--
@@ -269,9 +382,12 @@ function switchView(next: 'table' | 'board'): void {
         v-if="tasksView === 'table'"
         :tasks="sortedTasks"
         :loading="loading"
+        :projects="projects"
         @toggle="handleToggle"
         @edit="openEdit"
         @remove="handleDelete"
+        @subtask="startSubtask"
+        @children="showChildren"
         @selection-change="(rows: TaskItem[]) => (selection = rows)"
       />
 
@@ -281,6 +397,9 @@ function switchView(next: 'table' | 'board'): void {
         :tasks="sortedTasks"
         :loading="loading"
         :total="total"
+        :projects="projects"
+        @subtask="startSubtask"
+        @children="showChildren"
         @toggle="handleToggle"
         @edit="openEdit"
         @remove="handleDelete"
@@ -299,6 +418,7 @@ function switchView(next: 'table' | 'board'): void {
     <TaskEditDialog
       v-model:visible="editing"
       :task="editTarget"
+      :projects="projects"
       :tags="tags"
       :saving="editSaving"
       @submit="submitEdit"

@@ -32,6 +32,7 @@ func parseUUID(s string) (string, bool) {
 }
 
 type Payload struct {
+	Projects       []*Project                  `json:"projects"`
 	FormatVersion  *string                     `json:"formatVersion"`
 	Sessions       []*Session                  `json:"sessions"`
 	Tasks          []*Task                     `json:"tasks"`
@@ -55,18 +56,32 @@ type Message struct {
 	SequenceNo *int       `json:"sequenceNo"`
 	CreatedAt  *time.Time `json:"createdAt"`
 }
+type Project struct {
+	ID          *UUID      `json:"id"`
+	Name        string     `json:"name"`
+	Description *string    `json:"description"`
+	Archived    bool       `json:"archived"`
+	CreatedAt   *time.Time `json:"createdAt"`
+	UpdatedAt   *time.Time `json:"updatedAt"`
+}
 type Task struct {
-	ID             *UUID      `json:"id"`
-	Title          string     `json:"title"`
-	Description    *string    `json:"description"`
-	Status         string     `json:"status"`
-	Priority       string     `json:"priority"`
-	Tags           []string   `json:"tags"`
-	DueAt          *time.Time `json:"dueAt"`
-	CompletedAt    *time.Time `json:"completedAt"`
-	CreatedAt      *time.Time `json:"createdAt"`
-	UpdatedAt      *time.Time `json:"updatedAt"`
-	PreviousStatus string     `json:"previousStatus"`
+	ProjectID           *UUID      `json:"projectId"`
+	ParentTaskID        *UUID      `json:"parentTaskId"`
+	RecurrenceType      *string    `json:"recurrenceType"`
+	RecurrenceTimezone  *string    `json:"recurrenceTimezone"`
+	RecurrenceAnchorDay *int       `json:"recurrenceAnchorDay"`
+	RecurrenceGenerated bool       `json:"recurrenceGenerated"`
+	ID                  *UUID      `json:"id"`
+	Title               string     `json:"title"`
+	Description         *string    `json:"description"`
+	Status              string     `json:"status"`
+	Priority            string     `json:"priority"`
+	Tags                []string   `json:"tags"`
+	DueAt               *time.Time `json:"dueAt"`
+	CompletedAt         *time.Time `json:"completedAt"`
+	CreatedAt           *time.Time `json:"createdAt"`
+	UpdatedAt           *time.Time `json:"updatedAt"`
+	PreviousStatus      string     `json:"previousStatus"`
 }
 type Calendar struct {
 	ID              *UUID      `json:"id"`

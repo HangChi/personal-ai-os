@@ -65,7 +65,17 @@ func (s *Service) Create(ctx context.Context, r CreateRequest) (Task, error) {
 	if err != nil {
 		return Task{}, err
 	}
-	return s.store.Insert(ctx, Task{Title: title, Description: description, Status: Todo, Priority: priority, DueAt: r.DueAt, CreatedAt: now, UpdatedAt: now, Tags: tags})
+	t := Task{Title: title, Description: description, Status: Todo, Priority: priority, DueAt: r.DueAt, CreatedAt: now, UpdatedAt: now, Tags: tags, ProjectID: r.ProjectID, ParentTaskID: r.ParentTaskID, RecurrenceType: "NONE", RecurrenceTimezone: "UTC"}
+	if r.RecurrenceType != nil {
+		t.RecurrenceType = *r.RecurrenceType
+	}
+	if r.RecurrenceTimezone != nil {
+		t.RecurrenceTimezone = *r.RecurrenceTimezone
+	}
+	if err := validateWorkspace(t); err != nil {
+		return Task{}, err
+	}
+	return s.store.Insert(ctx, t)
 }
 func (s *Service) Get(ctx context.Context, id string) (Task, error) {
 	r, found, err := s.store.Get(ctx, id)
@@ -116,6 +126,25 @@ func (s *Service) Update(ctx context.Context, id string, change UpdateRequest) (
 		if err != nil {
 			return Task{}, err
 		}
+	}
+	if change.ProjectID != nil {
+		r.ProjectID = change.ProjectID
+	} else if change.ClearProject != nil && *change.ClearProject {
+		r.ProjectID = nil
+	}
+	if change.ParentTaskID != nil {
+		r.ParentTaskID = change.ParentTaskID
+	} else if change.ClearParent != nil && *change.ClearParent {
+		r.ParentTaskID = nil
+	}
+	if change.RecurrenceType != nil {
+		r.RecurrenceType = *change.RecurrenceType
+	}
+	if change.RecurrenceTimezone != nil {
+		r.RecurrenceTimezone = *change.RecurrenceTimezone
+	}
+	if err := validateWorkspace(r); err != nil {
+		return Task{}, err
 	}
 	r.UpdatedAt = now
 	return s.store.Update(ctx, r)

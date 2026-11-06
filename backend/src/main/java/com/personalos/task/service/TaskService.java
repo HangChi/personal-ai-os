@@ -84,7 +84,13 @@ public class TaskService {
 
         TaskEntity task = new TaskEntity(title, description, priority, request.dueAt(), Instant.now());
         task.setTags(TaskTags.normalize(request.tags()));
+        task.setProjectId(request.projectId());
+        task.setParentTaskId(request.parentTaskId());
+        if(request.recurrenceType()!=null) task.setRecurrenceType(request.recurrenceType());
+        if(request.recurrenceTimezone()!=null) task.setRecurrenceTimezone(request.recurrenceTimezone());
+        validateWorkspace(task);
         TaskEntity saved = taskRepository.save(task);
+        taskRepository.flush();
         log.info("创建任务 id={} title={}", saved.getId(), saved.getTitle());
         return toDto(saved, Instant.now());
     }
@@ -246,8 +252,17 @@ public class TaskService {
             task.setTags(TaskTags.normalize(request.tags()));
         }
 
+        if(request.projectId()!=null) task.setProjectId(request.projectId());
+        else if(Boolean.TRUE.equals(request.clearProject())) task.setProjectId(null);
+        if(request.parentTaskId()!=null) task.setParentTaskId(request.parentTaskId());
+        else if(Boolean.TRUE.equals(request.clearParent())) task.setParentTaskId(null);
+        if(request.recurrenceType()!=null) task.setRecurrenceType(request.recurrenceType());
+        if(request.recurrenceTimezone()!=null) task.setRecurrenceTimezone(request.recurrenceTimezone());
+        validateWorkspace(task);
         task.touch(now);
-        return toDto(taskRepository.save(task), now);
+        TaskEntity saved=taskRepository.save(task);
+        taskRepository.flush();
+        return toDto(saved, now);
     }
 
     /**
@@ -266,7 +281,9 @@ public class TaskService {
         task.setStatus(target, now);
         task.touch(now);
         log.info("任务完成状态变更 id={} completed={} 目标状态={}", id, completed, target);
-        return toDto(taskRepository.save(task), now);
+        TaskEntity saved=taskRepository.save(task);
+        taskRepository.flush();
+        return toDto(saved, now);
     }
 
     /**
@@ -280,7 +297,9 @@ public class TaskService {
         Instant now = Instant.now();
         task.setDueAt(dueAt);
         task.touch(now);
-        return toDto(taskRepository.save(task), now);
+        TaskEntity saved=taskRepository.save(task);
+        taskRepository.flush();
+        return toDto(saved, now);
     }
 
     /**
@@ -292,7 +311,9 @@ public class TaskService {
         Instant now = Instant.now();
         task.setPriority(priority);
         task.touch(now);
-        return toDto(taskRepository.save(task), now);
+        TaskEntity saved=taskRepository.save(task);
+        taskRepository.flush();
+        return toDto(saved, now);
     }
 
     @Transactional
@@ -390,6 +411,11 @@ public class TaskService {
                         builder.like(builder.lower(builder.coalesce(root.get("description"), "")),
                                 pattern, SearchPatterns.ESCAPE)));
             }
+            if(query.projectId()!=null) predicates.add(builder.equal(root.get("projectId"),query.projectId()));
+            if(query.parentTaskId()!=null) predicates.add(builder.equal(root.get("parentTaskId"),query.parentTaskId()));
+            if(Boolean.TRUE.equals(query.incomplete())) predicates.add(builder.notEqual(root.get("status"),TaskStatus.DONE));
+            if(query.dueFrom()!=null) predicates.add(builder.greaterThanOrEqualTo(root.get("dueAt"),query.dueFrom()));
+            if(query.dueBefore()!=null) predicates.add(builder.lessThan(root.get("dueAt"),query.dueBefore()));
             if (query.tag() != null) {
                 // join 到 element collection：同一任务里同一个标签只会存一条，
                 // 因此 equal 条件最多命中一行，不会让结果集出现重复任务
@@ -397,6 +423,15 @@ public class TaskService {
             }
             return builder.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private static void validateWorkspace(TaskEntity task) {
+        if(!java.util.Set.of("NONE","DAILY","WEEKDAYS","WEEKLY","MONTHLY").contains(task.getRecurrenceType()))
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED,"周期规则无效");
+        try { java.time.ZoneId.of(task.getRecurrenceTimezone()); }
+        catch(java.time.DateTimeException ex) { throw new BusinessException(ErrorCode.VALIDATION_FAILED,"周期任务时区无效"); }
+        if(!"NONE".equals(task.getRecurrenceType()) && (task.getDueAt()==null || task.getParentTaskId()!=null))
+            throw new BusinessException(ErrorCode.VALIDATION_FAILED,"周期任务必须设置截止时间，且不能同时是子任务");
     }
 
     private TaskDto toDto(TaskEntity task, Instant now) {
@@ -414,7 +449,8 @@ public class TaskService {
                 task.getCompletedAt(),
                 task.getCreatedAt(),
                 task.getUpdatedAt(),
-                overdue);
+                overdue, task.getProjectId(),task.getParentTaskId(),task.getRecurrenceType(),
+                task.getRecurrenceTimezone(),task.getRecurrenceAnchorDay(),task.isRecurrenceGenerated());
     }
 
     /**

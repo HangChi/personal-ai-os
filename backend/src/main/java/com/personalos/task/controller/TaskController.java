@@ -90,8 +90,16 @@ public class TaskController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ApiResponse.ok(taskService.search(new TaskQuery(status, keyword, tag, page, size)));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required=false) UUID projectId, @RequestParam(required=false) UUID parentTaskId,
+            @RequestParam(required=false) Boolean incomplete,
+            @RequestParam(required=false) java.time.Instant dueFrom,
+            @RequestParam(required=false) java.time.Instant dueBefore) {
+        return ApiResponse.ok(taskService.search(new TaskQuery(status, keyword, tag, page, size,projectId,parentTaskId,incomplete,dueFrom,dueBefore)));
+    }
+
+    public ApiResponse<PageDto<TaskDto>> list(TaskStatus status,String keyword,String tag,int page,int size) {
+        return list(status,keyword,tag,page,size,null,null,null,null,null);
     }
 
     /**

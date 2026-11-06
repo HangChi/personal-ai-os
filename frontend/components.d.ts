@@ -93,6 +93,7 @@ declare module 'vue' {
     ModelProfileDialog: typeof import('./src/components/settings/ModelProfileDialog.vue')['default']
     ModelProfilesPanel: typeof import('./src/components/settings/ModelProfilesPanel.vue')['default']
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
+    ProjectManager: typeof import('./src/components/task/ProjectManager.vue')['default']
     ProviderPresetPicker: typeof import('./src/components/settings/ProviderPresetPicker.vue')['default']
     RagTrace: typeof import('./src/components/knowledge/RagTrace.vue')['default']
     ReminderNotice: typeof import('./src/components/calendar/ReminderNotice.vue')['default']
@@ -103,6 +104,7 @@ declare module 'vue' {
     TaskBoardPanel: typeof import('./src/components/task/TaskBoardPanel.vue')['default']
     TaskCreateForm: typeof import('./src/components/task/TaskCreateForm.vue')['default']
     TaskEditDialog: typeof import('./src/components/task/TaskEditDialog.vue')['default']
+    TaskOrganizationFields: typeof import('./src/components/task/TaskOrganizationFields.vue')['default']
     TaskTablePanel: typeof import('./src/components/task/TaskTablePanel.vue')['default']
     ThemeToggle: typeof import('./src/components/ThemeToggle.vue')['default']
   }

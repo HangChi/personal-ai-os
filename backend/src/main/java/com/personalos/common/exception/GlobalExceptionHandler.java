@@ -252,6 +252,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        Throwable cause=ex.getMostSpecificCause();
+        if(cause instanceof java.sql.SQLException pg && "23514".equals(pg.getSQLState())
+                && pg.getMessage()!=null && pg.getMessage().startsWith("ERROR: workspace:")) {
+            return ResponseEntity.status(ErrorCode.VALIDATION_FAILED.getHttpStatus()).contentType(MediaType.APPLICATION_JSON)
+                .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED,pg.getMessage().substring("ERROR: workspace:".length()).split("\n",2)[0]));
+        }
         log.warn("数据库约束冲突: {}", ex.getMostSpecificCause().getMessage());
         return ResponseEntity.status(ErrorCode.BUSINESS_CONFLICT.getHttpStatus())
                 .contentType(MediaType.APPLICATION_JSON)

@@ -91,6 +91,32 @@ public class TaskEntity {
     @Column(name = "tag", length = 20, nullable = false)
     private List<String> tags = new ArrayList<>();
 
+    @Column(name="project_id")
+    private UUID projectId;
+    @Column(name="parent_task_id")
+    private UUID parentTaskId;
+    @Column(name="recurrence_type", nullable=false, length=16)
+    private String recurrenceType = "NONE";
+    @Column(name="recurrence_timezone", nullable=false, length=100)
+    private String recurrenceTimezone = "UTC";
+    @org.hibernate.annotations.Generated(event={org.hibernate.generator.EventType.INSERT,org.hibernate.generator.EventType.UPDATE})
+    @Column(name="recurrence_anchor_day",insertable=false,updatable=false)
+    private Integer recurrenceAnchorDay;
+    @org.hibernate.annotations.Generated(event={org.hibernate.generator.EventType.INSERT,org.hibernate.generator.EventType.UPDATE})
+    @Column(name="recurrence_generated",insertable=false,updatable=false,nullable=false)
+    private boolean recurrenceGenerated;
+
+    public UUID getProjectId(){return projectId;}
+    public UUID getParentTaskId(){return parentTaskId;}
+    public String getRecurrenceType(){return recurrenceType;}
+    public String getRecurrenceTimezone(){return recurrenceTimezone;}
+    public Integer getRecurrenceAnchorDay(){return recurrenceAnchorDay;}
+    public boolean isRecurrenceGenerated(){return recurrenceGenerated;}
+    public void setProjectId(UUID value){projectId=value;}
+    public void setParentTaskId(UUID value){parentTaskId=value;}
+    public void setRecurrenceType(String value){recurrenceType=value;}
+    public void setRecurrenceTimezone(String value){recurrenceTimezone=value;}
+
     /** 供 JPA 使用 */
     protected TaskEntity() {
     }

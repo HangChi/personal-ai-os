@@ -18,7 +18,7 @@ import './styles/hljs-dark.css'
  *
  * unplugin-vue-components 的按需样式注入**只认模板里出现的组件标签**：
  * 它在编译期把 `import { ElButton } from 'element-plus'` 改写成
- * `... + element-plus/es/components/button/style/css`。而 `ElMessageBox`
+ * `... + element-plus/es/components/button/style/css`。而 `ElMessage`、`ElMessageBox`
  * 与 `ElNotification` 从不作为标签出现（只被 `ElMessageBox.confirm(...)`
  * 这类函数调用），编译器看不见它们 → 样式一份都不会被注入。
  *
@@ -30,9 +30,10 @@ import './styles/hljs-dark.css'
  *
  * 必须在 theme.css **之前**导入：我们那几条 `.os-confirm ...` 规则要覆盖它。
  */
+import 'element-plus/theme-chalk/el-message.css'
 import 'element-plus/theme-chalk/el-message-box.css'
 import 'element-plus/theme-chalk/el-notification.css'
-// theme.css 必须在 EP 两份样式之后：它覆盖 EP 的主色/圆角/字体变量与组件内部 px
+// theme.css 必须在 EP 三份样式之后：它覆盖 EP 的主色/圆角/字体变量与组件内部 px
 // 实现，放在前面会被 EP 自身规则盖掉（阶段 23）
 import './styles/theme.css'
 import './styles/main.css'

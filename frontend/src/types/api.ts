@@ -162,7 +162,15 @@ export type TaskStatus = 'TODO' | 'DOING' | 'DONE'
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH'
 
 /** 任务视图，对应后端 TaskDto */
+export type TaskRecurrence = 'NONE' | 'DAILY' | 'WEEKDAYS' | 'WEEKLY' | 'MONTHLY'
+
 export interface TaskItem {
+  projectId?: string | null
+  parentTaskId?: string | null
+  recurrenceType?: TaskRecurrence
+  recurrenceTimezone?: string
+  recurrenceAnchorDay?: number | null
+  recurrenceGenerated?: boolean
   id: string
   title: string
   description: string | null
@@ -180,6 +188,7 @@ export interface TaskItem {
 
 /** 待人工确认的操作，对应后端 TaskConfirmationDto */
 export interface TaskConfirmation {
+  conversationId?: string | null
   id: string
   /** 一次性确认令牌 */
   token: string

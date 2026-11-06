@@ -6,6 +6,9 @@
  * **截止时间原本有没有值**（决定发 `clearDueAt` 还是 `dueAt`），
  * 这个信息只在弹窗生命周期内有效，留在父组件里反而要额外维护一份副本。
  */
+import TaskOrganizationFields from '@/components/task/TaskOrganizationFields.vue'
+import type { TaskOrganization } from '@/components/task/TaskOrganizationFields.vue'
+import type { ProjectItem } from '@/api/workspace'
 import { ref, watch } from 'vue'
 
 import { PRIORITY_OPTIONS } from '@/lib/task-meta'
@@ -18,6 +21,7 @@ const props = defineProps<{
   /** 正在编辑的任务；null 表示无 */
   task: TaskItem | null
   /** 已有标签，供下拉选择 */
+  projects?: ProjectItem[]
   tags: string[]
   saving: boolean
 }>()
@@ -26,6 +30,13 @@ const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void
   (e: 'submit', payload: UpdateTaskPayload): void
 }>()
+
+const organization = ref<TaskOrganization>({
+  projectId: '',
+  parentTaskId: '',
+  recurrenceType: 'NONE',
+  recurrenceTimezone: 'UTC',
+})
 
 const form = ref<{
   title: string
@@ -44,6 +55,12 @@ watch(
     // 引用没变、watch 不触发，表单会残留上次未保存的修改。加 visible 保证每次打开都重置。
     if (!task || !visible) {
       return
+    }
+    organization.value = {
+      projectId: task.projectId ?? '',
+      parentTaskId: task.parentTaskId ?? '',
+      recurrenceType: task.recurrenceType ?? 'NONE',
+      recurrenceTimezone: task.recurrenceTimezone ?? 'UTC',
     }
     form.value = {
       title: task.title,
@@ -65,6 +82,11 @@ function submit(): void {
   // 描述始终提交（空串表示清空）——若用 `|| undefined`，用户就永远清不掉已有描述
   // 标签同理：数组本身能表达「清空」（`[]`），所以也始终提交
   const payload: UpdateTaskPayload = {
+    ...organization.value,
+    projectId: organization.value.projectId || undefined,
+    parentTaskId: organization.value.parentTaskId || undefined,
+    clearProject: !organization.value.projectId && Boolean(original.projectId),
+    clearParent: !organization.value.parentTaskId && Boolean(original.parentTaskId),
     title: form.value.title.trim(),
     description: form.value.description.trim(),
     priority: form.value.priority,
@@ -92,6 +114,12 @@ function submit(): void {
     :close-on-press-escape="!saving"
     @update:model-value="(value: boolean) => emit('update:visible', value)"
   >
+    <el-alert
+      v-if="task?.recurrenceGenerated"
+      title="本期已生成下一期；恢复本期不会撤销或重复生成。要停止重复，请修改未完成的下一期规则。"
+      type="info"
+      :closable="false"
+    />
     <el-form label-position="top" :disabled="saving">
       <el-form-item label="标题" required>
         <el-input v-model="form.title" maxlength="200" placeholder="任务标题" />
@@ -119,6 +147,7 @@ function submit(): void {
       <el-form-item label="截止时间">
         <el-date-picker v-model="form.dueAt" type="datetime" placeholder="留空即清除截止时间" />
       </el-form-item>
+      <TaskOrganizationFields v-model="organization" :projects="projects ?? []" :task-id="task?.id" />
       <el-form-item label="标签">
         <el-select
           v-model="form.tags"
