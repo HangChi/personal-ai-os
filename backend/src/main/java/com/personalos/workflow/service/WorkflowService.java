@@ -7,6 +7,7 @@ import com.personalos.common.config.RuntimeRole;
 import java.time.*;
 import java.util.*;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -38,14 +39,20 @@ public class WorkflowService {
   return get(key);
  });}
  private Execution mapExecution(java.sql.ResultSet r)throws java.sql.SQLException{
-  UUID id=r.getObject("id",UUID.class);var history=jdbc.query("SELECT attempt,status,started_at::text,finished_at::text,error FROM workflow_attempt WHERE execution_id=? ORDER BY attempt",(rs,n)->new Attempt(rs.getInt(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5)),id);
-  return new Execution(id,r.getObject("workflow_id",UUID.class),r.getObject("scheduled_for",OffsetDateTime.class).toInstant().toString(),r.getString("source"),r.getString("status"),r.getInt("attempts"),r.getInt("model_calls"),r.getString("report"),r.getString("error"),r.getString("run_id"),r.getString("conversation_id"),history);
+  return new Execution(r.getObject("id",UUID.class),r.getObject("workflow_id",UUID.class),r.getObject("scheduled_for",OffsetDateTime.class).toInstant().toString(),r.getString("source"),r.getString("status"),r.getInt("attempts"),r.getInt("model_calls"),r.getString("report"),r.getString("error"),r.getString("run_id"),r.getString("conversation_id"),new ArrayList<>());
+ }
+ private List<Execution> withHistory(List<Execution> items){
+  if(items.isEmpty())return items;
+  Map<UUID,List<Attempt>> histories=new HashMap<>();
+  for(var item:items)histories.put(item.id(),item.history());
+  new NamedParameterJdbcTemplate(jdbc).query("SELECT execution_id,attempt,status,started_at::text,finished_at::text,error FROM workflow_attempt WHERE execution_id IN (:ids) ORDER BY execution_id,attempt",Map.of("ids",items.stream().map(Execution::id).toList()),(org.springframework.jdbc.core.RowCallbackHandler)r->histories.get(r.getObject(1,UUID.class)).add(new Attempt(r.getInt(2),r.getString(3),r.getString(4),r.getString(5),r.getString(6))));
+  return items;
  }
  private static final String EXEC="SELECT e.*,r.conversation_id FROM workflow_execution e LEFT JOIN chat_run r ON r.id=e.run_id";
- public Execution execution(UUID id){return jdbc.query(EXEC+" WHERE e.id=?",(r,n)->mapExecution(r),id).stream().findFirst().orElseThrow(()->new ResourceNotFoundException("执行记录不存在"));}
+ public Execution execution(UUID id){return withHistory(jdbc.query(EXEC+" WHERE e.id=?",(r,n)->mapExecution(r),id)).stream().findFirst().orElseThrow(()->new ResourceNotFoundException("执行记录不存在"));}
  public Execution run(UUID id){get(id);UUID execution=jdbc.queryForObject("SELECT enqueue_workflow(?,true)",UUID.class,id);return execution(execution);}
  public Execution retry(UUID id){return tx.execute(status->{var rows=jdbc.queryForList("SELECT status,attempts FROM workflow_execution WHERE id=? FOR UPDATE",id);if(rows.isEmpty())throw new ResourceNotFoundException("执行记录不存在");var row=rows.getFirst();if(!row.get("status").equals("FAILED")||((Number)row.get("attempts")).intValue()>=3)throw new BusinessException(ErrorCode.BUSINESS_CONFLICT,"仅能重试未达到3次上限的失败期次");jdbc.update("UPDATE workflow_execution SET status='PENDING',source='MANUAL',error=NULL,available_at=now(),updated_at=now() WHERE id=?",id);return execution(id);});}
- public Map<String,Object> history(UUID id){get(id);return Map.of("items",jdbc.query(EXEC+" WHERE workflow_id=? ORDER BY e.created_at DESC LIMIT 50",(r,n)->mapExecution(r),id),"total",jdbc.queryForObject("SELECT count(*) FROM workflow_execution WHERE workflow_id=?",Long.class,id));}
+ public Map<String,Object> history(UUID id){get(id);return Map.of("items",withHistory(jdbc.query(EXEC+" WHERE workflow_id=? ORDER BY e.created_at DESC,e.id DESC LIMIT 50",(r,n)->mapExecution(r),id)),"total",jdbc.queryForObject("SELECT count(*) FROM workflow_execution WHERE workflow_id=?",Long.class,id));}
  public void dispatchDue(){jdbc.execute("SELECT dispatch_workflows()");}
  public boolean runNext(){
   record Claim(UUID id,UUID token,String definition,Instant scheduled){}

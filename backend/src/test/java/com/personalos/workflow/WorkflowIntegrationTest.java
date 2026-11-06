@@ -32,6 +32,71 @@ class WorkflowIntegrationTest extends ContainerContextTest {
  @Autowired WorkflowIntegrationTest(WorkflowService s,JdbcTemplate j,ReadOnlyReports r,ChatSessionService cs,ChatRunService cr,ChatMessageService cm,DataExportService de,DataImportService di,JsonCodec jc){service=s;jdbc=j;reports=r;sessions=cs;runs=cr;messages=cm;exporter=de;importer=di;json=jc;}
  @BeforeEach void clean(){jdbc.execute("TRUNCATE workflow,chat_session,task,calendar_event,knowledge_document,knowledge_capture CASCADE");}
  private WorkflowChange change(String name,String kind,Boolean enabled,Integer quota){return new WorkflowChange(name,kind,null,null,null,enabled,quota,null,null);}
+ @Test void nonSchedulingEditsPreserveDuePeriodAndEnableRecalculates(){
+  var d=service.save(null,change("到期计划",null,true,null));
+  jdbc.update("UPDATE workflow SET next_run_at=now()-interval '1 hour' WHERE id=?",d.id());
+  String due=service.get(d.id()).nextRunAt();
+  var edits=List.of(change("仅改名",null,null,null),new WorkflowChange(null,null,null,null,null,null,12,10,2000),new WorkflowChange("重复保存",d.kind(),d.timezone(),d.localTime(),d.weekday(),true,12,10,2000));
+  for(var edit:edits)assertThat(service.save(d.id(),edit).nextRunAt()).isEqualTo(due);
+  service.dispatchDue();service.dispatchDue();
+  assertThat(jdbc.queryForObject("SELECT scheduled_for FROM workflow_execution WHERE workflow_id=?",OffsetDateTime.class,d.id()).toInstant()).isEqualTo(Instant.parse(due));
+  assertThat(service.history(d.id()).get("total")).isEqualTo(1L);
+  assertThat(Instant.parse(service.get(d.id()).nextRunAt())).isAfter(Instant.now());
+  jdbc.update("UPDATE workflow SET next_run_at=now()-interval '1 hour' WHERE id=?",d.id());due=service.get(d.id()).nextRunAt();
+  assertThat(service.save(d.id(),change(null,null,false,null)).nextRunAt()).isEqualTo(due);
+  assertThat(Instant.parse(service.save(d.id(),change(null,null,true,null)).nextRunAt())).isAfter(Instant.now());
+  for(var edit:List.of(new WorkflowChange(null,null,null,"10:30",null,null,null,null,null),new WorkflowChange(null,null,"UTC",null,null,null,null,null,null),change(null,"WEEKLY_REVIEW",null,null),new WorkflowChange(null,null,null,null,2,null,null,null,null))){
+   jdbc.update("UPDATE workflow SET next_run_at=now()-interval '1 hour' WHERE id=?",d.id());
+   assertThat(Instant.parse(service.save(d.id(),edit).nextRunAt())).isAfter(Instant.now());
+  }
+ }
+ @Test void reportsReservePrioritySectionsAndReuseUnusedSlots(){
+  jdbc.execute("INSERT INTO knowledge_document(title,filename,content_type,size_bytes,char_count) SELECT '普通资料'||i,'fixture.txt','text/plain',1,1 FROM generate_series(1,30)i");
+  jdbc.execute("INSERT INTO knowledge_capture(canonical_url,last_error,last_checked_at) VALUES('https://example.com/failed','失败采集样例',now()-interval '10 days')");
+  var knowledge=new ReadOnlyReports.Snapshot("巡检","KNOWLEDGE_REVIEW","UTC",30,20000);
+  String report=reports.generate(knowledge,Instant.now());
+  assertThat(report.lines().filter(v->v.startsWith("• ")).count()).isEqualTo(30);
+  assertThat(report.lines().filter(v->v.startsWith("• 资料：")).count()).isEqualTo(29);
+  assertThat(report).contains("失败采集样例","达到数据项上限");
+  jdbc.execute("INSERT INTO knowledge_capture(canonical_url,pending_job_id,last_checked_at) SELECT 'https://example.com/pending/'||i,gen_random_uuid(),now() FROM generate_series(1,35)i");
+  report=reports.generate(knowledge,Instant.now());
+  assertThat(report.lines().filter(v->v.startsWith("• 采集：")).count()).isEqualTo(15);
+  assertThat(report.lines().filter(v->v.startsWith("• 资料：")).count()).isEqualTo(15);
+  assertThat(report).contains("失败采集样例");
+  report=reports.generate(new ReadOnlyReports.Snapshot("巡检","KNOWLEDGE_REVIEW","UTC",1,20000),Instant.now());
+  assertThat(report).contains("失败采集样例").doesNotContain("• 资料：","正在索引");
+  Instant day=LocalDate.of(2026,11,6).atStartOfDay(ZoneOffset.UTC).toInstant();
+  jdbc.execute("INSERT INTO task(title,due_at) SELECT '晨报任务'||i,'2026-11-06T01:00Z'::timestamptz FROM generate_series(1,30)i");
+  jdbc.execute("INSERT INTO task(title,status,completed_at) SELECT '周报任务'||i,'DONE','2026-11-05T01:00Z'::timestamptz FROM generate_series(1,30)i");
+  jdbc.execute("INSERT INTO calendar_event(title,starts_at,ends_at) SELECT '晨报日程'||i,'2026-11-06T02:00Z'::timestamptz,'2026-11-06T03:00Z'::timestamptz FROM generate_series(1,4)i UNION ALL SELECT '周报日程'||i,'2026-11-05T02:00Z'::timestamptz,'2026-11-05T03:00Z'::timestamptz FROM generate_series(1,4)i");
+  for(String kind:List.of("MORNING_BRIEF","WEEKLY_REVIEW")){
+   report=reports.generate(new ReadOnlyReports.Snapshot("报告",kind,"UTC",4,20000),day);
+   assertThat(report.lines().filter(v->v.startsWith("• 日程：")).count()).isEqualTo(2);
+   assertThat(report.lines().filter(v->v.startsWith("• 待办：")||v.startsWith("• 已完成：")).count()).isEqualTo(2);
+   report=reports.generate(new ReadOnlyReports.Snapshot("报告",kind,"UTC",1,20000),day);
+   assertThat(report.lines().filter(v->v.startsWith("• ")).toList()).singleElement().asString().startsWith("• 日程：");
+  }
+  jdbc.execute("TRUNCATE calendar_event CASCADE");
+  report=reports.generate(new ReadOnlyReports.Snapshot("报告","MORNING_BRIEF","UTC",4,20000),day);
+  assertThat(report.lines().filter(v->v.startsWith("• 待办：")).count()).isEqualTo(4);
+ }
+ @SuppressWarnings("unchecked")
+ @Test void fiftyExecutionHistoriesUseFourQueriesAndKeepAttemptsOrdered(){
+  var d=service.save(null,change("历史查询",null,null,null));
+  var count=new java.util.concurrent.atomic.AtomicInteger();
+  var source=java.util.Objects.requireNonNull(jdbc.getDataSource());
+  var countedJdbc=new JdbcTemplate(source){
+   @Override public <T> T query(org.springframework.jdbc.core.PreparedStatementCreator creator,org.springframework.jdbc.core.PreparedStatementSetter setter,org.springframework.jdbc.core.ResultSetExtractor<T> extractor){count.incrementAndGet();return super.query(creator,setter,extractor);}
+  };
+  var counted=new WorkflowService(countedJdbc,new org.springframework.jdbc.datasource.DataSourceTransactionManager(source),json,reports,new com.personalos.common.config.RuntimeRole("review"),false);
+  assertThat((List<?>)counted.history(d.id()).get("items")).isEmpty();assertThat(count.get()).isEqualTo(3);count.set(0);
+  jdbc.update("INSERT INTO workflow_execution(workflow_id,scheduled_for,source,definition,status,attempts,created_at) SELECT id,'2026-01-01'::timestamptz+i*interval '1 minute','MANUAL',to_jsonb(w),'FAILED',i%4,'2026-01-01'::timestamptz+i*interval '1 minute' FROM workflow w CROSS JOIN generate_series(1,51)i WHERE id=?",d.id());
+  jdbc.execute("INSERT INTO workflow_attempt(execution_id,attempt,status,error) SELECT e.id,a,'FAILED',e.id::text||'/'||a FROM workflow_execution e CROSS JOIN LATERAL generate_series(1,e.attempts)a ORDER BY a DESC");
+  var page=counted.history(d.id());assertThat(count.get()).isEqualTo(4);assertThat(page.get("total")).isEqualTo(51L);
+  var items=(List<WorkflowService.Execution>)page.get("items");assertThat(items).hasSize(50);
+  for(var item:items){assertThat(item.history()).hasSize(item.attempts());for(int i=0;i<item.history().size();i++){assertThat(item.history().get(i).attempt()).isEqualTo(i+1);assertThat(item.history().get(i).error()).isEqualTo(item.id()+"/"+(i+1));}}
+  count.set(0);var single=counted.execution(items.getFirst().id());assertThat(count.get()).isEqualTo(2);assertThat(single.history()).isEqualTo(items.getFirst().history());
+ }
  @Test void manualDedupReportRunReadOnlyAndBusinessBackup()throws Exception{
   var controller=new WorkflowController(service);var d=controller.create(change("每日晨报",null,null,24)).data();assertThat(d.enabled()).isFalse();service.dispatchDue();assertThat(jdbc.queryForObject("SELECT count(*) FROM workflow_execution",Integer.class)).isZero();
   UUID id;try(var pool=Executors.newFixedThreadPool(2)){var a=pool.submit(()->service.run(d.id()));var b=pool.submit(()->service.run(d.id()));id=a.get().id();assertThat(b.get().id()).isEqualTo(id);}

@@ -207,19 +207,30 @@ func scanExecution(r scanner) (v Execution, e error) {
 	e = r.Scan(&v.ID, &v.WorkflowID, &v.ScheduledFor, &v.Source, &v.Status, &v.Attempts, &v.ModelCalls, &v.Report, &v.Error, &v.RunID, &v.ConversationID)
 	return
 }
-func (s *Service) withHistory(ctx context.Context, v *Execution) error {
+func (s *Service) withHistory(ctx context.Context, items []Execution) error {
+	if len(items) == 0 {
+		return nil
+	}
+	ids := make([]string, len(items))
+	byID := make(map[string]int, len(items))
+	for i := range items {
+		ids[i] = items[i].ID
+		byID[items[i].ID] = i
+	}
 	return s.Pool.WithConn(ctx, func(c *sql.Conn) error {
-		rows, e := c.QueryContext(ctx, "SELECT attempt,status,started_at,finished_at,error FROM workflow_attempt WHERE execution_id=$1 ORDER BY attempt", v.ID)
+		rows, e := c.QueryContext(ctx, "SELECT execution_id::text,attempt,status,started_at,finished_at,error FROM workflow_attempt WHERE execution_id=ANY($1::uuid[]) ORDER BY execution_id,attempt", ids)
 		if e != nil {
 			return e
 		}
 		defer rows.Close()
 		for rows.Next() {
+			var id string
 			var a Attempt
-			if e := rows.Scan(&a.Attempt, &a.Status, &a.StartedAt, &a.FinishedAt, &a.Error); e != nil {
+			if e := rows.Scan(&id, &a.Attempt, &a.Status, &a.StartedAt, &a.FinishedAt, &a.Error); e != nil {
 				return e
 			}
-			v.History = append(v.History, a)
+			i := byID[id]
+			items[i].History = append(items[i].History, a)
 		}
 		return rows.Err()
 	})
@@ -233,7 +244,9 @@ func (s *Service) Execution(ctx context.Context, id string) (v Execution, e erro
 		return v, missing()
 	}
 	if e == nil {
-		e = s.withHistory(ctx, &v)
+		items := []Execution{v}
+		e = s.withHistory(ctx, items)
+		v = items[0]
 	}
 	return
 }
@@ -280,7 +293,7 @@ func (s *Service) History(ctx context.Context, id string) (any, error) {
 		if e := c.QueryRowContext(ctx, "SELECT count(*) FROM workflow_execution WHERE workflow_id=$1", id).Scan(&total); e != nil {
 			return e
 		}
-		rows, e := c.QueryContext(ctx, executionColumns+" WHERE e.workflow_id=$1 ORDER BY e.created_at DESC LIMIT 50", id)
+		rows, e := c.QueryContext(ctx, executionColumns+" WHERE e.workflow_id=$1 ORDER BY e.created_at DESC,e.id DESC LIMIT 50", id)
 		if e != nil {
 			return e
 		}
@@ -295,11 +308,7 @@ func (s *Service) History(ctx context.Context, id string) (any, error) {
 		return rows.Err()
 	})
 	if e == nil {
-		for i := range items {
-			if e = s.withHistory(ctx, &items[i]); e != nil {
-				break
-			}
-		}
+		e = s.withHistory(ctx, items)
 	}
 	return map[string]any{"items": items, "total": total}, e
 }
@@ -374,7 +383,7 @@ func (s *Service) Report(ctx context.Context, d Snapshot, scheduled time.Time) (
 		from, to = day.AddDate(0, 0, -7), day
 	}
 	lines := []string{d.Name + "（固定只读报告）", fmt.Sprintf("时区：%s；范围：[%s, %s)", d.Timezone, from.UTC().Format(time.RFC3339), to.UTC().Format(time.RFC3339)), fmt.Sprintf("零模型调用、零工具调用；数据项上限 %d，输出字符上限 %d", d.MaxItems, d.MaxOutputChars)}
-	items := []string{}
+	priority, secondary := []string{}, []string{}
 	query := func(sqlText, prefix string, args ...any) error {
 		return s.Pool.WithConn(ctx, func(c *sql.Conn) error {
 			rows, e := c.QueryContext(ctx, sqlText, args...)
@@ -388,7 +397,7 @@ func (s *Service) Report(ctx context.Context, d Snapshot, scheduled time.Time) (
 				if e := rows.Scan(&name, &at); e != nil {
 					return e
 				}
-				items = append(items, prefix+name+" · "+at.UTC().Format(time.RFC3339))
+				secondary = append(secondary, prefix+name+" · "+at.UTC().Format(time.RFC3339))
 			}
 			return rows.Err()
 		})
@@ -398,7 +407,7 @@ func (s *Service) Report(ctx context.Context, d Snapshot, scheduled time.Time) (
 		e = query("SELECT title,created_at FROM knowledge_document ORDER BY created_at DESC,id LIMIT $1", "资料：", d.MaxItems+1)
 		if e == nil {
 			e = s.Pool.WithConn(ctx, func(c *sql.Conn) error {
-				rows, e := c.QueryContext(ctx, "SELECT canonical_url,coalesce(last_error,'正在索引') FROM knowledge_capture WHERE last_error IS NOT NULL OR pending_job_id IS NOT NULL ORDER BY last_checked_at DESC LIMIT $1", d.MaxItems+1)
+				rows, e := c.QueryContext(ctx, "SELECT canonical_url,coalesce(last_error,'正在索引') FROM knowledge_capture WHERE last_error IS NOT NULL OR pending_job_id IS NOT NULL ORDER BY (last_error IS NOT NULL) DESC,last_checked_at DESC NULLS LAST,id LIMIT $1", d.MaxItems+1)
 				if e != nil {
 					return e
 				}
@@ -408,11 +417,12 @@ func (s *Service) Report(ctx context.Context, d Snapshot, scheduled time.Time) (
 					if e := rows.Scan(&url, &status); e != nil {
 						return e
 					}
-					items = append(items, "采集："+url+" · "+status)
+					priority = append(priority, "采集："+url+" · "+status)
 				}
 				return rows.Err()
 			})
 		}
+		lines = append(lines, "按采集状态、资料分区轮流展示，采集失败优先；空余名额自动补足。")
 	} else {
 		if weekly {
 			e = query("SELECT title,completed_at FROM task WHERE status='DONE' AND completed_at>=$1 AND completed_at<$2 ORDER BY completed_at,id LIMIT $3", "已完成：", from, to, d.MaxItems+1)
@@ -425,7 +435,7 @@ func (s *Service) Report(ctx context.Context, d Snapshot, scheduled time.Time) (
 			if e == nil {
 				for _, v := range page.Items {
 					if v.StartsAt.Before(to) {
-						items = append(items, "日程："+v.Title+" · "+v.StartsAt.In(zone).Format(time.RFC3339)+" — "+v.EndsAt.In(zone).Format(time.RFC3339))
+						priority = append(priority, "日程："+v.Title+" · "+v.StartsAt.In(zone).Format(time.RFC3339)+" — "+v.EndsAt.In(zone).Format(time.RFC3339))
 					}
 				}
 				if page.Total > int64(len(page.Items)) {
@@ -433,20 +443,26 @@ func (s *Service) Report(ctx context.Context, d Snapshot, scheduled time.Time) (
 				}
 			}
 		}
+		lines = append(lines, "按日程、任务分区轮流展示，日程优先；空余名额自动补足。")
 	}
 	if e != nil {
 		return "", e
 	}
-	if len(items) == 0 {
+	if len(priority) == 0 && len(secondary) == 0 {
 		lines = append(lines, "该范围暂无匹配记录。")
 	}
-	for i, item := range items {
-		if i >= d.MaxItems {
-			break
+	shown := 0
+	for i := 0; i < max(len(priority), len(secondary)) && shown < d.MaxItems; i++ {
+		if i < len(priority) && shown < d.MaxItems {
+			lines = append(lines, "• "+priority[i])
+			shown++
 		}
-		lines = append(lines, "• "+item)
+		if i < len(secondary) && shown < d.MaxItems {
+			lines = append(lines, "• "+secondary[i])
+			shown++
+		}
 	}
-	if len(items) > d.MaxItems {
+	if len(priority)+len(secondary) > d.MaxItems {
 		lines = append(lines, "[达到数据项上限，部分记录未展示]")
 	}
 	report := strings.Join(lines, "\n")
