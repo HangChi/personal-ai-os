@@ -42,6 +42,7 @@ import type {
 import type { ThinkingLevel } from '@/lib/settings'
 import { useModelProfileStore } from '@/stores/model-profile'
 import { budgetPresetsFor } from '@/lib/context-meter'
+import { bindReplyRetrieval, restoreReplyRetrieval } from '@/lib/chat-retrieval'
 
 /**
  * 首屏与每次「加载更早」的消息条数（阶段 21）。
@@ -312,6 +313,7 @@ export const useChatStore = defineStore('chat', () => {
         if (reqSeq !== sessionReqSeq) return
         activeRun.value = run
         restoreWarnings(run)
+        if (run && run.status !== 'RUNNING') restoreReplyRetrieval(run, messages.value)
         if (run?.status === 'RUNNING') void trackRun(run)
       } catch {
         /* 执行记录查询失败不清空已加载的消息 */
@@ -384,7 +386,8 @@ export const useChatStore = defineStore('chat', () => {
     }
     const oldestTailSeq = tail.length > 0 ? tail[0].sequenceNo : Number.POSITIVE_INFINITY
     const kept = messages.value.filter((message) => message.sequenceNo < oldestTailSeq)
-    messages.value = [...kept, ...tail]
+    const retrievals = new Map(messages.value.map((message) => [message.id, message.retrieval]))
+    messages.value = [...kept, ...tail.map((message) => ({ ...message, retrieval: retrievals.get(message.id) }))]
     if (kept.length === 0) {
       hasOlderMessages.value = tail.length === MESSAGE_PAGE_SIZE
     }
@@ -651,6 +654,8 @@ export const useChatStore = defineStore('chat', () => {
 
   async function trackRun(run: ChatRun): Promise<void> {
     const conversationId = run.conversationId
+    const sessionSeq = sessionReqSeq
+    let completedContent: string | null = null
     const controller = new AbortController()
     abortController = controller
     activeRun.value = run
@@ -658,6 +663,8 @@ export const useChatStore = defineStore('chat', () => {
     streaming.value = true
     reconnecting.value = false
     streamingContent.value = ''
+    liveRag.value = null
+    liveCitations.value = []
     liveActivities.value = []
     try {
       await followRun(
@@ -670,6 +677,7 @@ export const useChatStore = defineStore('chat', () => {
             reconnecting.value = value
           },
           onReset: () => {
+            completedContent = null
             streamingContent.value = ''
             liveActivities.value = []
             error.value = null
@@ -695,6 +703,7 @@ export const useChatStore = defineStore('chat', () => {
             streamingContent.value += chunk
           },
           onDone: (_content, context) => {
+            completedContent = _content
             if (context) contextUsage.value = { ...contextUsage.value, promptTokens: context.promptTokens }
           },
           onError: (message) => {
@@ -714,15 +723,21 @@ export const useChatStore = defineStore('chat', () => {
         retrievalState.value = 'idle'
         try {
           await refreshTail(conversationId)
-          streamingContent.value = ''
+          if (sessionSeq === sessionReqSeq && currentConversationId.value === conversationId) {
+            bindReplyRetrieval(messages.value, liveRag.value, completedContent)
+            streamingContent.value = ''
+            liveRag.value = null
+            liveCitations.value = []
+          }
         } catch {
           /* 保留已收到的内容，刷新后可重新读取执行记录 */
         }
         await Promise.all([loadSessions(), refreshContextUsage(), loadConfirmations(), loadToolTrail()])
         try {
           const next = await latestRun(conversationId)
-          if (currentConversationId.value === conversationId && next) {
+          if (sessionSeq === sessionReqSeq && currentConversationId.value === conversationId && next) {
             activeRun.value = next
+            if (next.id === run.id && next.status !== 'RUNNING') restoreReplyRetrieval(next, messages.value)
             if (next.id !== run.id && next.status === 'RUNNING') void trackRun(next)
           }
         } catch {

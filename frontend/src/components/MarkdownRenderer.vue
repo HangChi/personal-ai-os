@@ -85,6 +85,8 @@ const props = defineProps<{
   content: string
   /** 流式输出中：显示打字光标 */
   streaming?: boolean
+  /** 父组件已有统一来源入口时，省略无内联编号的备用来源行。 */
+  hideSourceList?: boolean
   citations?: readonly InlineCitation[]
 }>()
 
@@ -254,7 +256,7 @@ function toggleExpand(): void {
       -->
       <!-- eslint-disable-next-line vue/no-v-html -- 内容已过 DOMPurify 消毒（C-01） -->
       <div class="md__html" v-html="sanitizedHtml"></div>
-      <div v-if="!streaming && sources.size && !rendered.inlineCount" class="md-source-list">
+      <div v-if="!hideSourceList && !streaming && sources.size && !rendered.inlineCount" class="md-source-list">
         <span>本轮检索来源</span>
         <button
           v-for="source in sources.values()"

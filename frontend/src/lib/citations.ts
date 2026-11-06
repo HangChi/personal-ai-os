@@ -1,5 +1,6 @@
 export interface InlineCitation {
   index: number
+  documentId?: string
   documentTitle: string
   filename: string
   chunkIndex: number

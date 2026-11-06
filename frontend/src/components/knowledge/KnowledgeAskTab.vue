@@ -9,8 +9,7 @@ import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 
-import RagTrace from '@/components/knowledge/RagTrace.vue'
-import KnowledgeHitList from '@/components/knowledge/KnowledgeHitList.vue'
+import ChatSources from '@/components/chat/ChatSources.vue'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { useSettingsStore } from '@/stores/settings'
@@ -36,7 +35,7 @@ async function handleAsk(): Promise<void> {
 <template>
   <el-card shadow="never">
     <template #header>
-      <PageHeader title="基于资料提问" description="从资料中寻找证据，回答会附带可核对的来源。" />
+      <PageHeader title="基于资料提问" />
     </template>
 
     <form class="ka__query" @submit.prevent="handleAsk">
@@ -63,17 +62,21 @@ async function handleAsk(): Promise<void> {
     />
 
     <template v-if="answer">
-      <RagTrace :retrieval="answer.retrieval" />
       <el-alert
-        v-if="!answer.answered && !answer.citations.length"
+        v-if="
+          !answer.answered &&
+          !answer.citations.length &&
+          (!answer.retrieval || answer.retrieval.status === 'INSUFFICIENT')
+        "
         type="info"
         :closable="false"
         show-icon
         title="知识库中没有找到相关内容"
-        description="未调用模型生成回答，以避免编造。"
       />
       <template v-else>
-        <div class="ka__answer"><MarkdownRenderer :content="answer.answer" :citations="answer.citations" /></div>
+        <div class="ka__answer">
+          <MarkdownRenderer :content="answer.answer" :citations="answer.citations" hide-source-list />
+        </div>
         <details v-if="answer.citationAudit" class="ka__citations">
           <summary class="ka__citations-title">
             模型逐条核对（{{
@@ -88,11 +91,8 @@ async function handleAsk(): Promise<void> {
           </ul>
           <p v-else>本轮未获得可核对的结论记录。</p>
         </details>
-        <details v-if="answer.citations.length" class="ka__citations">
-          <summary class="ka__citations-title">引用来源（{{ answer.citations.length }}）</summary>
-          <KnowledgeHitList :items="answer.citations" indexed bordered />
-        </details>
       </template>
+      <ChatSources :citations="answer.citations" :retrieval="answer.retrieval" />
     </template>
   </el-card>
 </template>

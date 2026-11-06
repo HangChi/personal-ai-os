@@ -30,7 +30,6 @@ import ChatCommandPanel from '@/components/chat/ChatCommandPanel.vue'
 import { useChatCommandsStore } from '@/stores/chat-commands'
 import { isCommandInput, parseChatCommand } from '@/lib/chat-commands'
 import ChatConfirmationList from '@/components/chat/ChatConfirmationList.vue'
-import RagTrace from '@/components/knowledge/RagTrace.vue'
 import ChatMessageItem from '@/components/chat/ChatMessageItem.vue'
 import ChatSessionList from '@/components/chat/ChatSessionList.vue'
 import ChatStreamingItem from '@/components/chat/ChatStreamingItem.vue'
@@ -390,12 +389,6 @@ const topK = computed({
 const retrievalHint = computed(() => {
   if (retrievalState.value === 'searching') {
     return '正在检索知识库…'
-  }
-  if (retrievalState.value === 'done' && liveCitations.value.length === 0) {
-    return '未找到相关依据'
-  }
-  if (retrievalState.value === 'done') {
-    return `已找到 ${liveCitations.value.length} 条依据`
   }
   return null
 })
@@ -928,13 +921,12 @@ async function jumpToMatch(step: number): Promise<void> {
             @submit-edit="submitMessageEdit"
           />
 
-          <RagTrace :retrieval="liveRag" />
-
           <!-- 流式中的助手消息 -->
           <ChatStreamingItem
             v-if="streaming || streamingContent"
             :content="streamingContent"
             :citations="liveCitations"
+            :retrieval="liveRag"
             :hint="retrievalHint"
             :activities="liveActivities"
             :reconnecting="reconnecting"

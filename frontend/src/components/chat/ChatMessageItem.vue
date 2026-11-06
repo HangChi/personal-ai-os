@@ -5,8 +5,7 @@
  * <p>助手消息去气泡（头像 + 内容直排），用户消息右对齐主色气泡；
  * 时间与复制按钮默认隐藏、悬停浮现（FR-003：不抢版面）。
  *
- * <p>引用区（阶段 19）随消息走：引用是这条回答的一部分，
- * 拆成独立组件反而要在父层再拼一次编号。
+ * <p>来源与检索信息随消息展示，流式和完成态复用同一入口。
  */
 /*
  * 图标必须逐个显式 import。
@@ -21,7 +20,7 @@ import { CopyDocument, Document, EditPen, RefreshRight, User } from '@element-pl
 import { computed, nextTick, ref, watch } from 'vue'
 
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
-import { safeCitationUrl } from '@/lib/citations'
+import ChatSources from '@/components/chat/ChatSources.vue'
 import { relativeTime } from '@/lib/relative-time'
 import { confirmationFeedback } from '@/lib/chat-tool-history'
 import ChatToolTrail from '@/components/chat/ChatToolTrail.vue'
@@ -110,38 +109,10 @@ function submitEdit(): void {
         <p v-if="approvalFeedback" class="chat-msg__approval-feedback" role="status">{{ approvalFeedback }}</p>
 
         <div class="chat-msg__bubble chat-msg__bubble--assistant">
-          <MarkdownRenderer :content="message.content" :citations="message.citations" />
+          <MarkdownRenderer :content="message.content" :citations="message.citations" hide-source-list />
         </div>
 
-        <!-- 引用区（阶段 19） -->
-        <div v-if="message.citations.length > 0" class="chat-msg__citations">
-          <el-collapse>
-            <el-collapse-item>
-              <template #title>
-                <span class="chat-msg__citations-title">引用来源（{{ message.citations.length }}）</span>
-              </template>
-              <div v-for="citation in message.citations" :key="citation.index" class="chat-msg__citation">
-                <div class="chat-msg__citation-head">
-                  <span class="chat-msg__citation-source">
-                    [{{ citation.index }}]
-                    <a
-                      v-if="safeCitationUrl(citation.url)"
-                      :href="safeCitationUrl(citation.url)?.href"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      >{{ citation.documentTitle }} ↗</a
-                    >
-                    <template v-else>{{ citation.documentTitle }}</template>
-                    <span class="chat-msg__citation-meta">
-                      {{ citation.filename }}<template v-if="!citation.url"> · #{{ citation.chunkIndex + 1 }}</template>
-                    </span>
-                  </span>
-                </div>
-                <div class="chat-msg__citation-content">{{ citation.content }}</div>
-              </div>
-            </el-collapse-item>
-          </el-collapse>
-        </div>
+        <ChatSources :citations="message.citations" :retrieval="message.retrieval" />
         <!-- 悬停操作行 -->
         <div class="chat-msg__actions">
           <span class="chat-msg__time">{{ relativeTime(message.createdAt) }}</span>
@@ -672,53 +643,6 @@ html.dark .chat-msg__bubble--user :deep(.md__body) {
 }
 
 /* ---- 引用区（阶段 19，随新布局收紧） ---- */
-
-.chat-msg__citations {
-  margin-top: var(--os-space-3);
-}
-
-.chat-msg__citations-title {
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
-}
-
-.chat-msg__citation {
-  padding: var(--os-space-1) 0 var(--os-space-1) 10px;
-  border-left: 3px solid var(--el-color-primary-light-5);
-}
-
-.chat-msg__citation + .chat-msg__citation {
-  margin-top: var(--os-space-2);
-}
-
-.chat-msg__citation-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--os-space-2);
-}
-
-.chat-msg__citation-source {
-  font-size: var(--os-font-xs);
-  font-weight: 500;
-}
-
-.chat-msg__citation-meta {
-  margin-left: var(--os-space-1);
-  color: var(--el-text-color-secondary);
-  font-weight: 400;
-}
-
-.chat-msg__citation-content {
-  margin-top: var(--os-space-1);
-  color: var(--el-text-color-secondary);
-  font-size: var(--os-font-xs);
-  line-height: 1.5;
-  max-height: 120px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
 
 @media (max-width: 900px) {
   .chat-msg__content--user {

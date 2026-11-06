@@ -84,3 +84,17 @@ it('labels an unknown number and offers retrieved sources without implying a cla
   expect(document.body.querySelector('.md-source')?.textContent).toContain('可核对的制度原文')
   wrapper.unmount()
 })
+
+it('统一来源入口存在时省略备用来源行，保留内联编号预览', async () => {
+  const wrapper = mount(MarkdownRenderer, {
+    props: {
+      content: '没有编号的回复',
+      hideSourceList: true,
+      citations: [{ index: 1, documentTitle: '制度', filename: 'policy.md', chunkIndex: 0, content: '原文' }],
+    },
+  })
+  expect(wrapper.find('.md-source-list').exists()).toBe(false)
+  await wrapper.setProps({ content: '有依据的回复 [1]' })
+  expect(wrapper.findAll('.md-citation')).toHaveLength(1)
+  wrapper.unmount()
+})

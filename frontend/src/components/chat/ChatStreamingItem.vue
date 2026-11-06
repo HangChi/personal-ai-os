@@ -1,14 +1,9 @@
 <script setup lang="ts">
-/**
- * 流式中的助手消息（从 ChatView 拆出，2026-10-26）。
- *
- * <p>首 token 之前显示三点打字动画，并附带检索状态文字（阶段 19 的状态机）：
- * 「正在检索知识库…」/「已找到 N 条依据」/「未找到相关依据」。
- * 有内容后就换成 Markdown 渲染，状态文字降到内容下方 ——
- * 位置变化是刻意的：它不该继续占据首屏的视觉焦点。
- */
+/** 流式回复：来源始终放在正文下方，与完成态一致。 */
 import { onBeforeUnmount, ref, watch } from 'vue'
 
+import ChatSources from '@/components/chat/ChatSources.vue'
+import type { RagRetrieval } from '@/types/api'
 import ChatExecutionTrail from '@/components/chat/ChatExecutionTrail.vue'
 import type { RunActivity } from '@/api/chat-runs'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
@@ -20,6 +15,7 @@ const props = defineProps<{
   content: string
   /** 检索状态提示；null 表示没有提示可显示 */
   hint: string | null
+  retrieval?: RagRetrieval | null
   citations?: readonly InlineCitation[]
   activities?: RunActivity[]
   reconnecting?: boolean
@@ -87,12 +83,11 @@ onBeforeUnmount(() => {
             但没人读它 —— 于是每个 delta 都触发一次完整重解析，节流形同虚设，
             而 lint / vue-tsc 都不会报（ref 被写就算「已使用」）。
           -->
-          <MarkdownRenderer :content="renderedContent" :citations="citations" streaming />
+          <MarkdownRenderer :content="renderedContent" :citations="citations" hide-source-list streaming />
         </div>
-        <div class="chat-streaming__hint chat-streaming__hint--below" role="status">
-          {{ hint || (content ? '正在生成回答' : '正在处理请求') }}
-        </div>
+        <div v-if="hint" class="chat-streaming__hint chat-streaming__hint--below" role="status">{{ hint }}</div>
       </template>
+      <ChatSources :citations="citations" :retrieval="retrieval" />
     </div>
   </div>
 </template>

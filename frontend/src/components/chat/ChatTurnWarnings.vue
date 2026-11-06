@@ -8,7 +8,6 @@ defineProps<{ warnings: StreamWarning[]; busy?: boolean }>()
     <summary>
       <el-icon aria-hidden="true"><InfoFilled /></el-icon>
       <span>{{ warnings.length }} 条执行提示</span>
-      <span class="turn-warnings__hint">{{ busy ? '正在继续处理' : '查看本轮处理说明' }}</span>
       <el-icon class="turn-warnings__chevron" aria-hidden="true"><ArrowRight /></el-icon>
     </summary>
     <ul>

@@ -250,10 +250,8 @@ const thinkingTooltip = computed(
   () => `思考程度：${THINKING_LABELS[props.thinkingLevel]} — ${THINKING_HINTS[props.thinkingLevel]}`,
 )
 
-/** 开启知识库时提示回答将使用检索内容。 */
-const inputPlaceholder = computed(() =>
-  props.streaming ? '补充要求或输入下一条问题…' : props.knowledgeOn ? '输入消息，将基于知识库回答' : '输入消息',
-)
+/** 知识增强按需检索，不改变连续对话的语义。 */
+const inputPlaceholder = computed(() => (props.streaming ? '补充要求或输入下一条问题…' : '输入消息'))
 
 /**
  * 字数是否逼近上限（≥90% 转预警色）。
@@ -474,7 +472,7 @@ onBeforeUnmount(() => {
             <button
               type="button"
               class="chat-composer__chip-trigger"
-              :title="knowledgeOn ? '点击关闭知识库增强' : '开启后每条消息先检索知识库再回答'"
+              :title="knowledgeOn ? '点击关闭知识库增强' : '回答时按需参考知识库'"
               :aria-pressed="knowledgeOn"
               aria-label="知识库增强"
               @click="emit('toggle-knowledge', !knowledgeOn)"

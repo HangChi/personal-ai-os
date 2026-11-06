@@ -134,7 +134,23 @@ describe('RAG 证据与治理界面', () => {
     }
     const wrapper = mount(KnowledgeAskTab, { global: { plugins: [pinia] } })
     expect(wrapper.text()).toContain('存在不同说法')
-    expect(wrapper.text()).toContain('引用来源（1）')
+    expect(wrapper.text()).toContain('1 个来源')
+    expect(wrapper.text()).not.toContain('知识库中没有找到相关内容')
+    wrapper.unmount()
+  })
+  it('零来源澄清仍展示真实问题，不误报为空知识库', () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    useKnowledgeStore().answer = {
+      question: '哪一版制度',
+      answer: '请确认适用部门和制度版本。',
+      answered: false,
+      citations: [],
+      retrieval: { ...retrieval, status: 'CLARIFY', hits: [], clarification: '请确认适用部门和制度版本。' },
+    }
+    const wrapper = mount(KnowledgeAskTab, { global: { plugins: [pinia] } })
+    expect(wrapper.text()).toContain('请确认适用部门和制度版本。')
+    expect(wrapper.text()).toContain('检索说明')
     expect(wrapper.text()).not.toContain('知识库中没有找到相关内容')
     wrapper.unmount()
   })

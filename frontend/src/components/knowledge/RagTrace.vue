@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { ArrowRight, CircleCheck, InfoFilled, Warning } from '@element-plus/icons-vue'
 import type { KnowledgeHit, RagRetrieval } from '@/types/api'
 
-const props = defineProps<{ retrieval?: RagRetrieval | null }>()
+const props = defineProps<{ retrieval?: RagRetrieval | null; embedded?: boolean }>()
 const guardedClass = 'rag-trace--guarded'
 const names: Record<string, string> = {
   recall: '候选召回',
@@ -48,16 +48,20 @@ function sourceMeta(hit: KnowledgeHit) {
 </script>
 
 <template>
-  <details v-if="retrieval?.stages.length" class="rag-trace" :class="guarded ? guardedClass : null">
+  <details
+    v-if="retrieval && (retrieval.stages.length || guarded || warnings.length || retrieval.clarification)"
+    class="rag-trace"
+    :class="guarded ? guardedClass : null"
+  >
     <summary class="rag-trace__summary">
       <el-icon class="rag-trace__status-icon" aria-hidden="true"><component :is="statusIcon" /></el-icon>
       <span class="rag-trace__status" role="status">{{ states[retrieval.status] ?? retrieval.status }}</span>
-      <span class="rag-trace__counts">
-        {{ sources.length }} 篇来源<span v-if="warnings.length"> · {{ warnings.length }} 条提示</span>
+      <span v-if="!embedded && (sources.length || warnings.length)" class="rag-trace__counts">
+        <template v-if="sources.length">{{ sources.length }} 篇来源</template
+        ><span v-if="warnings.length">{{ sources.length ? ' · ' : '' }}{{ warnings.length }} 条提示</span>
       </span>
       <span class="rag-trace__action">检索详情</span>
       <el-icon class="rag-trace__chevron" aria-hidden="true"><ArrowRight /></el-icon>
-      <span v-if="guarded" class="rag-trace__hint">本轮暂未生成确定结论，可展开查看原因与来源。</span>
     </summary>
     <div class="rag-trace__body">
       <div v-if="warnings.length || retrieval.clarification" class="rag-trace__notices">
@@ -93,7 +97,7 @@ function sourceMeta(hit: KnowledgeHit) {
         </ol>
         <p class="rag-trace__queries">检索问题：{{ retrieval.queries.join('；') }}</p>
       </section>
-      <section v-if="sources.length" class="rag-trace__section">
+      <section v-if="sources.length && !embedded" class="rag-trace__section">
         <h4>适用来源</h4>
         <ul class="rag-trace__sources">
           <li v-for="hit in sources" :key="hit.documentId">

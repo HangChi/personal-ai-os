@@ -152,6 +152,8 @@ export interface ChatMessage {
   createdAt: string
   /** 知识库引用快照（阶段 19）：仅助手消息可能非空；用户消息恒为空数组 */
   citations: ChatCitation[]
+  /** 运行期按回复绑定的检索过程；不写入消息 API。 */
+  retrieval?: RagRetrieval | null
   /** 附件名片（阶段 22）：仅用户消息可能有；用户消息恒为空数组 */
   attachments: ChatAttachment[]
 }

@@ -11,6 +11,10 @@ const output = resolve(process.argv[2] ?? '/tmp/personalos-ui-review')
 const baseline = process.argv.includes('--baseline')
 const interactionsOnly = process.argv.includes('--interactions-only')
 const indexJobsOnly = process.argv.includes('--index-jobs-only')
+const chatSourcesOnly = process.argv.includes('--chat-sources-only')
+let chatMode = 'sources'
+let chatRunning = false
+let finishChatStream
 let showIndexJobs = false
 let apiMode = 'normal'
 let failWorkflowSave = false
@@ -79,7 +83,133 @@ const memory = {
 }
 let savedWorkflows = [workflow]
 const misses = new Set()
+// 对话专项只使用合成消息，流式连接由测试主动完成，不访问业务服务。
+const chatCitation = {
+  index: 1,
+  documentId: 'doc-1',
+  documentTitle: '差旅报销制度',
+  filename: '差旅制度-2026.md',
+  chunkIndex: 0,
+  content: '正式员工住宿限额为每天五百元。',
+}
+function chatCitations() {
+  return chatMode === 'sources'
+    ? [
+        chatCitation,
+        {
+          ...chatCitation,
+          index: 2,
+          chunkIndex: 1,
+          content: '试用期按相同标准执行，报销需附有效发票。',
+        },
+      ]
+    : []
+}
+function chatRetrieval() {
+  return {
+    hits: chatCitations(),
+    queries: ['试用期住宿报销标准'],
+    stages: [
+      {
+        name: 'recall',
+        status: 'OK',
+        durationMs: 30,
+        inputCount: 1,
+        outputCount: chatCitations().length,
+      },
+    ],
+    status: chatMode === 'guarded' ? 'CLARIFY' : chatMode === 'empty' ? 'INSUFFICIENT' : 'READY',
+    warnings: [],
+    disagreements: [],
+    clarification: chatMode === 'guarded' ? '请确认适用部门和制度版本。' : '',
+  }
+}
+function chatAnswer() {
+  return chatMode === 'sources'
+    ? '试用期住宿限额为每天 **五百元**，与正式员工相同 [1]。报销时需要提供有效发票 [2]。'
+    : chatMode === 'guarded'
+      ? '请先确认适用部门和制度版本。'
+      : '收到，继续使用本次对话的上下文。'
+}
+function chatRun() {
+  const events = [
+    { id: 1, name: 'rag', payload: JSON.stringify(chatRetrieval()) },
+    {
+      id: 2,
+      name: 'citations',
+      payload: JSON.stringify({ citations: chatCitations() }),
+    },
+    {
+      id: 3,
+      name: 'delta',
+      payload: JSON.stringify({ content: chatAnswer() }),
+    },
+  ]
+  if (!chatRunning)
+    events.push({
+      id: 4,
+      name: 'done',
+      payload: JSON.stringify({ content: chatAnswer(), promptTokens: 100 }),
+    })
+  return {
+    id: 'sources-run',
+    conversationId: 'source-chat',
+    status: chatRunning ? 'RUNNING' : 'COMPLETED',
+    events,
+  }
+}
+function chatFixture(path) {
+  if (path === '/chat/sessions' || path === '/chat/sessions/search')
+    return list([
+      {
+        conversationId: 'source-chat',
+        title: '差旅制度与连续追问',
+        createdAt: now,
+        updatedAt: now,
+        messageCount: 2,
+        chatModel: null,
+      },
+    ])
+  if (path.endsWith('/messages')) {
+    const user = {
+      id: 1,
+      role: 'USER',
+      content: '那试用期的住宿报销标准呢？',
+      sequenceNo: 1,
+      createdAt: now,
+      citations: [],
+      attachments: [],
+    }
+    return chatRunning
+      ? [user]
+      : [
+          user,
+          {
+            ...user,
+            id: 2,
+            role: 'ASSISTANT',
+            content: chatAnswer(),
+            sequenceNo: 2,
+            citations: chatCitations(),
+          },
+        ]
+  }
+  if (path.endsWith('/runs/latest')) return chatRun()
+  if (path === '/chat/sessions/source-chat/context')
+    return {
+      promptTokens: 100,
+      budgetTokens: 32000,
+      contextWindow: 128000,
+      estimated: true,
+    }
+  if (path === '/conversations/source-chat/plan') return null
+  if (path === '/agent/tool-invocations') return list([])
+}
 function fixture(path, method, body, url) {
+  if (chatSourcesOnly) {
+    const chat = chatFixture(path)
+    if (chat !== undefined) return chat
+  }
   if (path === '/auth/me') return { authEnabled: apiMode === 'login', username: null }
   if (path === '/auth/csrf') return { token: 'ui-fixture', headerName: 'X-CSRF-TOKEN' }
   if (path === '/health')
@@ -364,6 +494,17 @@ try {
     if (url.origin !== origin) return route.abort()
     if (!url.pathname.startsWith('/api/')) return route.continue()
     const path = url.pathname.replace('/api/v1', '')
+    if (chatSourcesOnly && path.endsWith('/sources-run/events')) {
+      if (chatRunning)
+        await new Promise((resolve) => {
+          finishChatStream = resolve
+        })
+      return route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        body: `event: run\ndata: ${JSON.stringify(chatRun())}\n\n`,
+      })
+    }
     if (
       (apiMode === 'error' && path === '/tasks') ||
       (apiMode === 'jobs-error' && path === '/knowledge/jobs') ||
@@ -427,7 +568,7 @@ try {
     ['captures', '/knowledge?tab=captures'],
     ['governance', '/knowledge?tab=governance'],
   ]
-  if (!baseline) {
+  if (!baseline && !chatSourcesOnly) {
     for (const theme of ['light', 'dark']) {
       await page.addInitScript((value) => localStorage.setItem('os.theme', value), theme)
       for (const width of [1440, 390]) {
@@ -479,12 +620,93 @@ try {
         showIndexJobs = false
         await refreshJobs()
         await panel.waitFor({ state: 'hidden' })
-        report.checks.push(`${theme}/${width}: 索引任务默认折叠、状态摘要、键盘展开收起、独立刷新、错误可见与空任务隐藏`)
+        report.checks.push(
+          `${theme}/${width}: 索引任务默认折叠、状态摘要、键盘展开收起、独立刷新、错误可见与空任务隐藏`,
+        )
       }
     }
     assert.deepEqual([...misses], [], '未覆盖的模拟 API')
   }
-  for (const theme of interactionsOnly || indexJobsOnly ? [] : baseline ? ['light'] : ['light', 'dark']) {
+  if (chatSourcesOnly) {
+    for (const theme of ['light', 'dark']) {
+      await page.addInitScript((value) => localStorage.setItem('os.theme', value), theme)
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({
+          width,
+          height: width === 390 ? 844 : 1000,
+        })
+        const shot = async (name) => {
+          const file = `chat-${name}-${theme}-${width}.png`
+          await page.screenshot({
+            path: join(output, file),
+            fullPage: true,
+            animations: 'disabled',
+          })
+          report.screenshots.push(file)
+        }
+        chatMode = 'sources'
+        chatRunning = true
+        await page.goto(origin + '/chat', { waitUntil: 'domcontentloaded' })
+        const streamSources = page.locator('.chat-streaming .chat-sources__trigger')
+        await streamSources.waitFor()
+        assert.equal(await streamSources.innerText(), '1 个来源')
+        assert.equal(await page.locator('.chat__messages > .rag-trace').count(), 0)
+        const before = await page.locator('.chat-streaming__bubble').boundingBox()
+        const footer = await streamSources.boundingBox()
+        assert.ok(footer.y >= before.y + before.height, '流式来源必须在正文后')
+        await shot('streaming')
+        await page.waitForFunction(() => document.querySelector('.chat-streaming .md-citation'))
+        chatRunning = false
+        assert.equal(typeof finishChatStream, 'function')
+        finishChatStream()
+        await page.locator('.chat-streaming').waitFor({ state: 'hidden' })
+        const doneSources = page.locator('.chat-msg--assistant .chat-sources__trigger')
+        await doneSources.waitFor()
+        assert.equal(await doneSources.innerText(), '1 个来源')
+        assert.equal(await page.locator('.chat-sources__trigger').count(), 1)
+        await shot('complete')
+        await doneSources.focus()
+        await page.keyboard.press('Enter')
+        const drawer = page.getByRole('dialog', { name: '来源与检索' })
+        await drawer.waitFor()
+        assert.equal(await drawer.locator('.chat-sources__source').count(), 1)
+        assert.equal(await drawer.locator('.chat-sources__excerpt').count(), 2)
+        await drawer.locator('.chat-sources__excerpt summary').first().click()
+        await drawer.locator('.rag-trace summary').click()
+        await shot('sources')
+        const drawerBox = await drawer.boundingBox()
+        assert.ok(drawerBox.x >= -1 && drawerBox.x + drawerBox.width <= width + 1)
+        await page.keyboard.press('Escape')
+        await drawer.waitFor({ state: 'hidden' })
+        await page.waitForFunction(() => document.activeElement?.classList.contains('chat-sources__trigger'))
+        await page.locator('.chat-msg--assistant .md-citation').first().click()
+        await page.locator('.md-source').waitFor()
+        await shot('inline-preview')
+        await page.keyboard.press('Escape')
+        chatMode = 'empty'
+        await page.reload({ waitUntil: 'networkidle' })
+        assert.equal(await page.locator('.chat-sources__trigger').count(), 0)
+        assert.equal(await page.getByText('0 篇来源').count(), 0)
+        await shot('empty')
+        chatMode = 'guarded'
+        await page.reload({ waitUntil: 'networkidle' })
+        await page.getByRole('button', { name: '检索说明', exact: true }).click()
+        await page.locator('.rag-trace summary').click()
+        await page.getByText('请确认适用部门和制度版本。', { exact: true }).waitFor()
+        await shot('guarded')
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+        report.checks.push(
+          `${theme}/${width}: 流式到完成来源固定归属、文档去重、键盘抽屉/焦点恢复、片段与过程、内联预览、空结果隐藏、真实澄清可查、无横向溢出`,
+        )
+      }
+    }
+    assert.deepEqual([...misses], [], '未覆盖的模拟 API')
+  }
+  for (const theme of interactionsOnly || indexJobsOnly || chatSourcesOnly
+    ? []
+    : baseline
+      ? ['light']
+      : ['light', 'dark']) {
     await page.addInitScript((value) => localStorage.setItem('os.theme', value), theme)
     for (const width of baseline ? [1440] : [1440, 390]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 })
@@ -533,7 +755,7 @@ try {
     }
   }
 
-  if (!baseline && !indexJobsOnly) {
+  if (!baseline && !indexJobsOnly && !chatSourcesOnly) {
     async function shot(name) {
       await page.screenshot({
         path: join(output, `${name}.png`),

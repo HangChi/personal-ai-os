@@ -30,6 +30,7 @@ declare module 'vue' {
     ChatPlanPanel: typeof import('./src/components/ChatPlanPanel.vue')['default']
     ChatRunNotice: typeof import('./src/components/chat/ChatRunNotice.vue')['default']
     ChatSessionList: typeof import('./src/components/chat/ChatSessionList.vue')['default']
+    ChatSources: typeof import('./src/components/chat/ChatSources.vue')['default']
     ChatStreamingItem: typeof import('./src/components/chat/ChatStreamingItem.vue')['default']
     ChatToolTrail: typeof import('./src/components/chat/ChatToolTrail.vue')['default']
     ChatTurnWarnings: typeof import('./src/components/chat/ChatTurnWarnings.vue')['default']

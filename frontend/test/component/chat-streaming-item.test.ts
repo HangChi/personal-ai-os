@@ -87,13 +87,13 @@ describe('ChatStreamingItem 渲染节流', () => {
     expect(wrapper.find('.md-stub').exists()).toBe(false)
   })
 
-  it('回复区在首 token 前后持续显示状态，有检索提示时展示实际阶段', async () => {
+  it('首 token 后仅显示实际检索进度，不重复提示正在生成', async () => {
     const wrapper = mountWith('')
     expect(wrapper.get('[role="status"]').text()).toBe('正在处理请求')
     await wrapper.setProps({ content: '正在回答', hint: '正在检索知识库…' })
     expect(wrapper.get('[role="status"]').text()).toBe('正在检索知识库…')
     await wrapper.setProps({ hint: null })
-    expect(wrapper.get('[role="status"]').text()).toBe('正在生成回答')
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
     wrapper.unmount()
   })
 })
