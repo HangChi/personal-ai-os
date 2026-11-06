@@ -7665,7 +7665,7 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
+      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
       "files": 72
     },
     {
@@ -7677,13 +7677,13 @@
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
+      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
       "files": 40
     },
     {
       "id": "scope:test-and-stream-shutdown-20261106",
       "status": "in_progress",
-      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
+      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
       "files": 43
     },
     {
@@ -7701,8 +7701,8 @@
     {
       "id": "scope:recovery-and-rag-followup-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "405962e527a7c8d15f79158be30b374cf58c0c71",
-      "files": 47
+      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
+      "files": 50
     },
     {
       "id": "scope:write-negotiation-and-bounded-search-20261106",
@@ -7713,14 +7713,14 @@
     {
       "id": "scope:workspace-ui-consolidation-20261106",
       "status": "in_progress",
-      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
+      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
       "files": 37
     },
     {
       "id": "scope:chat-evidence-context-20261106",
       "status": "in_progress",
-      "source_commit": "ea8118604c55488d7fdc9eb1007fd881d89e350a",
-      "files": 16
+      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
+      "files": 35
     }
   ]
 }
