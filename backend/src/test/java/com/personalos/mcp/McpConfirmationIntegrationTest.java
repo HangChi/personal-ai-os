@@ -214,7 +214,10 @@ class McpConfirmationIntegrationTest extends ContainerContextTest {
         // 缺 required 参数 text：server 报参数错误
         String result = find(provider, "mcp_test_echo").call("{}", null);
 
-        assertThat(result).contains("ERROR").contains("执行结果未确认").doesNotContain("目标未变更");
+        assertThat(result).contains("ERROR", "执行结果未确认", "mcpError", "text").doesNotContain("目标未变更");
+        assertThat(registry.isAvailable("test")).isTrue();
+        assertThat(find(provider, "mcp_test_echo").call("{\"text\":\"valid-after-error\"}", null))
+                .contains("OK", "echo:valid-after-error");
     }
 
     @Test

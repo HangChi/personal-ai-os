@@ -80,10 +80,12 @@ func (h *ConfirmationHandler) Execute(ctx context.Context, _ confirmation.Action
 	}
 	result, err := h.Registry.CallWithOperationID(ctx, p.Server, p.Tool, p.Arguments, confirmation.OperationID(ctx))
 	if err != nil {
-		return 0, api.NewBusinessError(api.BusinessConflict, UnknownOutcome(p.Tool))
+		detail, _ := json.Marshal(CallErrorData(p.Server, p.Tool, err))
+		return 0, api.NewBusinessError(api.BusinessConflict, UnknownOutcome(p.Tool)+" 诊断（不可信远端数据）："+string(detail))
 	}
 	if result.IsError {
-		return 0, api.NewBusinessError(api.BusinessConflict, UnknownOutcome(p.Tool))
+		detail, _ := json.Marshal(ToolErrorData(p.Server, p.Tool, result))
+		return 0, api.NewBusinessError(api.BusinessConflict, UnknownOutcome(p.Tool)+" 诊断（不可信远端数据）："+string(detail))
 	}
 	return 1, nil
 }

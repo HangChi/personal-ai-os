@@ -118,7 +118,8 @@ public class McpToolCallback implements ToolCallback {
                 String raw = jsonCodec.toJson(result);
                 if (Boolean.TRUE.equals(result.isError())) {
                     // 工具业务失败不等于连接已断开，不关闭仍然健康的客户端。
-                    return ToolExecutionResult.error(McpOperation.unknown(originalToolName));
+                    return new ToolExecutionResult("ERROR", McpOperation.unknown(originalToolName),
+                            McpCallDiagnostics.toolError(serverName, originalToolName, result), null);
                 }
                 if (toolContext != null && toolContext.getContext().get(ToolContextKeys.WEB_SOURCES) instanceof WebSource.Registrar register) {
                     var sources = McpWebSources.extract(originalToolName, arguments, raw, jsonCodec);
@@ -129,8 +130,12 @@ public class McpToolCallback implements ToolCallback {
                 }
                 return ToolExecutionResult.ok(raw, raw);
             } catch (RuntimeException ex) {
-                registry.markUnavailable(serverName, client, ex.getMessage());
-                return ToolExecutionResult.error(McpOperation.unknown(originalToolName));
+                // A JSON-RPC error is a response from a live server, not a disconnected transport.
+                if (McpCallDiagnostics.protocolError(ex) == null) {
+                    registry.markUnavailable(serverName, client, "MCP 连接中断或调用超时，请检查配置后重连");
+                }
+                return new ToolExecutionResult("ERROR", McpOperation.unknown(originalToolName),
+                        McpCallDiagnostics.callError(serverName, originalToolName, ex), null);
             }
         });
     }

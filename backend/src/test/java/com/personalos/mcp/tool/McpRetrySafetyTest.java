@@ -12,6 +12,7 @@ import com.personalos.common.json.JsonCodec;
 import com.personalos.mcp.client.McpClientRegistry;
 import com.personalos.mcp.confirmation.McpConfirmationService;
 import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.spec.McpError;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,5 +67,17 @@ class McpRetrySafetyTest {
         assertThat(callback.call("{}", next)).contains("执行结果未确认").doesNotContain("目标未变更");
         assertThat(callback.call("{}", next)).contains("REJECTED");
         assertThat(quantity).hasValue(1);
+
+        // A protocol validation error must not disconnect every tool on this server.
+        when(client.callTool(any(McpSchema.CallToolRequest.class))).thenThrow(
+                new McpError(new McpSchema.JSONRPCResponse.JSONRPCError(-32602, "Invalid arguments: path is required")));
+        var invalid = new ToolContext(Map.of(ToolContextKeys.CONVERSATION_ID, "c", ToolContextKeys.TURN_ID, "invalid"));
+        assertThat(callback.call("{}", invalid)).contains("PROTOCOL_ERROR", "path is required");
+        verify(registry, never()).markUnavailable(any(), any(McpSyncClient.class), any());
+
+        doReturn(McpSchema.CallToolResult.builder().addTextContent("available-after-rejection").build())
+                .when(client).callTool(any(McpSchema.CallToolRequest.class));
+        var corrected = new ToolContext(Map.of(ToolContextKeys.CONVERSATION_ID, "c", ToolContextKeys.TURN_ID, "corrected"));
+        assertThat(callback.call("{\"path\":\"/sandbox\"}", corrected)).contains("OK", "available-after-rejection");
     }
 }

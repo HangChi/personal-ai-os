@@ -302,12 +302,14 @@ func (r *Registry) CallWithOperationID(parent context.Context, server, tool stri
 	}
 	result, err := session.CallTool(ctx, &sdk.CallToolParams{Name: tool, Arguments: args, Meta: meta})
 	if err != nil {
-		if parent.Err() == nil {
-			r.markUnavailable(server, session)
-		}
 		if parent.Err() != nil {
 			return nil, parent.Err()
 		}
+		// A JSON-RPC rejection proves the server answered; keep the connection usable.
+		if protocol := protocolCallError(err); protocol != nil {
+			return nil, protocol
+		}
+		r.markUnavailable(server, session)
 		return nil, errors.New("MCP server 连接失败，请重连后重试")
 	}
 	raw, err := json.Marshal(result)

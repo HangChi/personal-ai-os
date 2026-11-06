@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"fmt"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 	"io"
 	"log/slog"
@@ -11,6 +12,7 @@ import (
 	"personal-ai-os/backend-go/internal/business/idempotency"
 	"personal-ai-os/backend-go/internal/business/mcp"
 	"personal-ai-os/backend-go/internal/business/model"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -178,6 +180,9 @@ func TestMCPAutoDecrementReplaysAcrossFreshBudgetsAndReorderedArguments(t *testi
 	if err != nil || failed.Status != "ERROR" || failed.Message != mcp.UnknownOutcome("decrement") {
 		t.Fatal(failed, err)
 	}
+	if failed.Data == nil || !strings.Contains(fmt.Sprint(failed.Data), "TOOL_ERROR") {
+		t.Fatal("remote error was discarded", failed)
+	}
 	if identity := <-identities; identity == "" {
 		t.Fatal("failed call omitted identity")
 	}
@@ -196,7 +201,7 @@ func TestMCPAutoDecrementReplaysAcrossFreshBudgetsAndReorderedArguments(t *testi
 		t.Fatal(err)
 	}
 	_, err = confirms.Confirm(context.Background(), dto.ID, dto.Token)
-	if err == nil || err.Error() != mcp.UnknownOutcome("decrement") {
+	if err == nil || !strings.Contains(err.Error(), mcp.UnknownOutcome("decrement")) || !strings.Contains(err.Error(), "TOOL_ERROR") {
 		t.Fatal(err)
 	}
 	if identity := <-identities; identity != "confirmation:"+dto.ID {

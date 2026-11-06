@@ -37,14 +37,14 @@ func MCPBindings(registry *mcp.Registry, confirms *confirmation.Service) []Defin
 				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 					return Result{}, err
 				}
-				return Result{Status: "ERROR", Message: mcp.UnknownOutcome(tool.Original)}, nil
+				return Result{Status: "ERROR", Message: mcp.UnknownOutcome(tool.Original), Data: mcp.CallErrorData(tool.Server, tool.Original, err)}, nil
 			}
 			raw, err := json.Marshal(result)
 			if err != nil {
 				return Result{}, err
 			}
 			if result.IsError {
-				return Result{Status: "ERROR", Message: mcp.UnknownOutcome(tool.Original)}, nil
+				return Result{Status: "ERROR", Message: mcp.UnknownOutcome(tool.Original), Data: mcp.ToolErrorData(tool.Server, tool.Original, result)}, nil
 			}
 			if t.AddWebSources != nil {
 				if sources := mcpWebSources(tool.Original, args, result); len(sources) > 0 {

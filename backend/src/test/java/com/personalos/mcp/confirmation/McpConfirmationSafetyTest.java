@@ -9,6 +9,7 @@ import com.personalos.common.json.JsonCodec;
 import com.personalos.mcp.client.McpClientRegistry;
 import com.personalos.mcp.tool.McpOperation;
 import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.spec.McpError;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,12 @@ class McpConfirmationSafetyTest {
         verify(client).callTool(request.capture());
         assertThat(request.getValue().meta()).containsEntry(McpOperation.META_KEY, "confirmation:one");
         assertThat(request.getValue().arguments()).containsEntry("quantity", 1);
-        when(client.callTool(any(McpSchema.CallToolRequest.class))).thenThrow(new IllegalStateException("connection reset"));
+        when(client.callTool(any(McpSchema.CallToolRequest.class))).thenThrow(
+                new McpError(new McpSchema.JSONRPCResponse.JSONRPCError(-32602, "Invalid arguments: quantity is required")));
+        assertThatThrownBy(() -> handler.execute(ConfirmationAction.MCP_TOOL_CALL, payload, "confirmation:invalid"))
+                .hasMessageContaining("PROTOCOL_ERROR").hasMessageContaining("quantity is required");
+        verify(registry, never()).markUnavailable(any(), any(McpSyncClient.class), any());
+        doThrow(new IllegalStateException("connection reset")).when(client).callTool(any(McpSchema.CallToolRequest.class));
         assertThatThrownBy(() -> handler.execute(ConfirmationAction.MCP_TOOL_CALL, payload, "confirmation:two"))
                 .hasMessageContaining("执行结果未确认").hasMessageNotContaining("重连后重试");
     }

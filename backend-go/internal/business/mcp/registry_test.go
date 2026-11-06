@@ -135,6 +135,28 @@ func TestP7NamesPolicyAndSchema(t *testing.T) {
 	}
 }
 
+func TestMCPProtocolRejectionKeepsOtherToolsUsable(t *testing.T) {
+	server := testServer()
+	upstream := httptest.NewServer(sdk.NewStreamableHTTPHandler(func(*http.Request) *sdk.Server { return server }, &sdk.StreamableHTTPOptions{Stateless: true, JSONResponse: true}))
+	defer upstream.Close()
+	r, err := OpenRegistry(context.Background(), Options{Enabled: true, Name: "test", Version: "1", Servers: map[string]ServerConfig{
+		"remote": {Endpoint: upstream.URL, Timeout: time.Second},
+	}}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+	_, err = r.Call(context.Background(), "remote", "missing-tool", map[string]any{})
+	data, _ := json.Marshal(CallErrorData("remote", "missing-tool", err))
+	if err == nil || !strings.Contains(string(data), "PROTOCOL_ERROR") || !r.Statuses()[0].Available {
+		t.Fatal("protocol rejection disconnected live server", err, string(data), r.Statuses())
+	}
+	result, err := r.Call(context.Background(), "remote", "echo", map[string]any{"text": "valid-after-error"})
+	if err != nil || result.IsError || !r.Statuses()[0].Available {
+		t.Fatal("valid tool could not run after rejection", result, err)
+	}
+}
+
 func TestP7RealStdioLifecycleAndFailureIsolation(t *testing.T) {
 	bin, err := os.Executable()
 	if err != nil {
