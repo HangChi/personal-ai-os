@@ -16,7 +16,7 @@ docker compose --env-file /dev/null -f backend-go/deploy/compose.yml config --qu
 
 `GO_POSTGRES_TLS_DIR`仅包含服务端`server.crt/server.key`；`GO_POSTGRES_CA`指向CA证书。CA私钥不得挂载。证书SAN必须包含Compose内的`postgres`名称。PostgreSQL启动时复制服务端材料到临时目录并收紧密钥权限；Go和迁移器都使用`verify-full`，不能为解决连接问题关闭校验。
 
-一次性`migrate`服务使用Flyway12.4.0，先migrate再validate，禁止自动baseline。该固定官方镜像只有amd64，已显式声明platform，ARM宿主需Docker仿真支持；不能静默改版本/历史执行器。Go镜像只读校验原42条SQL/history，绝不执行repair或伪造历史。首次启动前人工核对独立项目名（默认`personal-ai-os-go-candidate`）及新卷；禁止让Java与Go同时写同一库。
+一次性`migrate`服务使用Flyway12.4.0，先migrate再validate，禁止自动baseline。该固定官方镜像只有amd64，已显式声明platform，ARM宿主需Docker仿真支持；不能静默改版本/历史执行器。Go镜像只读校验共享目录当前V1–V49 SQL/history（固定V1–V42是历史oracle），绝不执行repair或伪造历史。首次启动前人工核对独立项目名（默认`personal-ai-os-go-candidate`）及新卷；禁止让Java与Go同时写同一库。
 
 镜像UID/GID10001、只读根文件系统、cap-drop ALL、no-new-privileges；可写范围仅临时目录和附件卷。Poppler来自Debian并保留发行版许可证。容器健康检查查询私有管理health；Worker业务端口对API/livez/readyz均404，不能以此判Worker死亡。
 

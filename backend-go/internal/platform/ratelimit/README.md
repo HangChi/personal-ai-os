@@ -1,5 +1,7 @@
 # 模型请求限流（P1 子集）
 
+> 本页记录模块契约及分阶段验证范围。当前启动/模块组合见[Go 文档中心](../../../docs/README.md)，两版最新能力与差异见[双端说明](../../../../docs/backend-parity.md)；下文固定基线、测试数和 P1/P3 等范围不是当前全产品或生产批准。
+
 来源为固定 Java 基线的 `RateLimitProperties`、`TokenBucketRateLimiter`、`DatabaseCoordination.consume`、`ModelRequestPaths` 和 `RateLimitFilter`。已接显式Foundation；默认诊断不连接共享存储，`/readyz` 仍为 503。
 
 ## 本地与共享桶

@@ -1,5 +1,7 @@
 # 认证迁移边界
 
+> 本页记录模块契约及分阶段验证范围。当前启动/模块组合见[Go 文档中心](../../../docs/README.md)，两版最新能力与差异见[双端说明](../../../../docs/backend-parity.md)；下文固定基线、测试数和 P1/P3 等范围不是当前全产品或生产批准。
+
 `Service` 对齐固定 Java 的 `AuthProperties`/`AuthService`：默认用户名 admin、BCrypt 2a/cost10、Java 空白规则、null/空输入区别和连续失败锁定。构造请从 `DefaultOptions()` 开始；关闭认证仍检查失败阈值和锁定时长。密码由调用方提供，Service 不保存 Options 或明文，只保留私有哈希，格式化不输出凭据。
 
 `Verify` 的用户名和密码用 `*string` 表达 Java null。锁定阈值那次返回失败，下一次非 null 校验返回 `*LockedError`，HTTP 层应转为 42900。用户名错误仍检查密码。互斥锁将检查与计数串行化，避免并发越过阈值；锁定状态仍为每进程，与 Java 一致。Go `time.Duration` 的可表示范围小于 Java，绑定层不得静默溢出。

@@ -1,5 +1,7 @@
 # 依赖健康报告（P1 子集）
 
+> 本页记录模块契约及分阶段验证范围。当前启动/模块组合见[Go 文档中心](../../../docs/README.md)，两版最新能力与差异见[双端说明](../../../../docs/backend-parity.md)；下文固定基线、测试数和 P1/P3 等范围不是当前全产品或生产批准。
+
 移植原 HealthService/HealthStatusDto/HealthController 的状态规则：数据库实际 `SELECT 1` 成功为 UP、失败为 DOWN；模型只询问显式注入的本地配置状态，CONFIGURED/NOT_CONFIGURED 不改变整体状态，不发起模型请求。每次报告产生 UTC 时间、独立 components 对象与应用名/版本。
 
 `New` 必须显式提供元信息/正探测期限、Probe、模型状态回调和日志；不会自行加载配置或连接服务。`NewPostgresProbe` 复用调用方 Pool、受限获取连接并执行 SELECT 1，不访问业务表、不执行 DDL。Probe 必须支持 context，父请求较早的取消/期限优先；不创建超时后遗留的探测 goroutine。数据库错误不抛到响应，不输出驱动消息/凭据，日志保留安全请求 ID。

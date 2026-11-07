@@ -1,18 +1,27 @@
 # 运维手册
 
-> 当前本机的宿主机 JAR 部署已统一为 `personal-ai-os` Docker 分组，使用
-> `./scripts/dev/local-stack.sh` 管理。下文独立 Compose 文件用于其他部署方式；
-> 已完成统一部署时不要再分别启动旧的中间件、监控和本地前端项目。
+> 本页主要描述 Java 主后端。Go 候选使用[独立部署指南](../backend-go/deploy/README.md)，仍有生产门禁；共用配置见[配置指南](configuration.md)。已有本机部署可使用 `local-stack.sh`，其 2026-11-02 切换记录在文末，不假定新 clone 已具备原外部卷。
 
 ## 生产部署
 
-生产环境使用独立的 Compose 文件和卷，避免把本地数据库迁移成生产数据库：
+生产环境使用独立的 Compose 文件和卷，避免把本地数据库迁移成生产数据库。
+
+当前安全链读取 `server.servlet.session.cookie.secure`，而原 YAML/Compose 的 `SESSION_COOKIE_SECURE` 绑定在另一个 `spring.servlet...` 路径；只设置别名可能被启动守卫拒绝。先创建不含密钥的本地叠加文件 `compose.production.local.yml`，显式设置 canonical 环境属性：
+
+```yaml
+services:
+  backend:
+    environment:
+      SERVER_SERVLET_SESSION_COOKIE_SECURE: "true"
+```
+
+然后执行（下文生产命令均带此叠加）：
 
 ```bash
 cp .env.production.example .env.production
 # 编辑 .env.production：DOMAIN、ACME_EMAIL、POSTGRES_PASSWORD、AUTH_PASSWORD
-docker compose -f compose.production.yml config --quiet
-docker compose -f compose.production.yml up -d --build
+docker compose --env-file .env.production -f compose.production.yml -f compose.production.local.yml config --quiet
+docker compose --env-file .env.production -f compose.production.yml -f compose.production.local.yml up -d --build
 ```
 
 `compose.production.yml` 只把 80/443 发布给 Caddy。PostgreSQL、后端和前端只在内部网络通信；
@@ -42,14 +51,14 @@ docker compose --profile app up -d --build
 不加 `--profile app` 时只启动数据库 —— 日常开发仍用本机跑前后端，行为与之前一致。
 
 **为什么前端容器不需要重新构建就能换域名**：前端访问的是相对路径 `/api/v1`，
-后端地址由 nginx 决定。换域名只改 `nginx.conf` 里的 `proxy_pass`。
+后端地址由 nginx 决定。后端目标变化时才改 nginx 的 `proxy_pass`；仅更换公网域名时调整入口反代/DNS/证书。
 
-### 1.2 手动跑（不用 Docker）
+### 1.2 宿主机跑前后端（Docker 仅运行数据库）
 
 ```bash
 docker compose up -d                       # 只要数据库
-cd backend && ./mvnw spring-boot:run       # 后端 :8080
-cd frontend && npm run build               # 产物在 dist/，交给任意静态服务器
+(cd backend && ./mvnw spring-boot:run)      # 后端 :8080，单独终端
+(cd frontend && npm ci && npm run build)  # 另一个终端，产物交静态服务器
 ```
 
 ### 1.3 ⚠️ 对公网开放前必须做的事
@@ -95,7 +104,7 @@ grep '79a2d36c4d99' backend.log
 
 备份包含完整数据库（含模型配置、用量和审计）以及聊天附件；界面 JSON 导出只包含业务数据，不替代完整备份。工具不执行 `.env` 中的 shell 代码，不把密钥写入日志或元数据。需要 Python 3.9+、Docker；无需宿主机安装 PostgreSQL。
 
-在无写入的维护窗口执行：本地运行时先停止后端；Compose 部署执行 `docker compose stop backend`，备份后再 `docker compose start backend`。数据库快照本身由 pg_dump 保证，但数据库与附件跨资源一致需要暂停应用写入；脚本不会擅自停服务。
+在无写入的维护窗口执行：先停止入口写入及全部 API/index/review/delivery/combined 角色；单后端 Compose 可用 `docker compose stop backend`。生产命令须带同一 env-file/Compose 组合；备份后按原角色恢复。数据库快照本身由 pg_dump 保证，但数据库与附件跨资源一致需要暂停应用写入；脚本不会擅自停服务。
 
 ```bash
 ./scripts/dev/backup-db.sh
@@ -128,7 +137,7 @@ python3 scripts/dev/backup.py drill backups/具体文件.tar.age --identity /安
 
 ### 3.2 实际恢复
 
-先成功执行 `verify` 和 `drill`。停止后端，另存当前状态，解开经过验证的包；加密包先使用 `age --decrypt -i /安全位置/identity.txt -o /tmp/backup.tar 备份.tar.age` 解密。实际恢复会替换数据，应由维护者针对选定的备份和目标库执行。
+先成功执行 `verify` 和 `drill`。停止入口与全部 Worker，另存当前状态，解开经过验证的包；加密包先使用 `age --decrypt -i /安全位置/identity.txt -o /tmp/backup.tar 备份.tar.age` 解密。实际恢复会替换数据，应由维护者针对选定的备份和目标库执行。
 
 ```bash
 mkdir -m 700 /tmp/paios-restore
@@ -165,36 +174,34 @@ Flyway **社区版不提供 undo**（`flyway undo` 是付费功能）。因此�
 - `DROP COLUMN` / `ALTER TYPE` 已经执行、且旧代码仍在使用它
 - 数据被误删
 
-步骤见 3.2。**恢复前先 `docker compose stop backend`**，否则恢复过程中新写入
+步骤见 3.2。**恢复前先停止入口与全部 Worker（单体 Compose 才仅需 stop backend）**，否则恢复过程中新写入
 的数据会与快照冲突。
 
 ### 4.3 迁移失败卡住启动时
 
-Flyway 会在 `flyway_schema_history` 里留下一条 `success = false` 的记录，
-此后每次启动都报 `Found failed migration`。
+PostgreSQL 事务性 DDL 失败通常会回滚本次迁移，不一定留下失败历史；非事务步骤、部分对象或 checksum 错误需要分别诊断。
 
 ```bash
-# 1. 先确认失败的迁移到底执行到哪一步（不要盲目 repair）
+# 只读核对历史；替换为实际部署容器/账号/库
 docker exec personal-ai-os-postgres psql -U personalos -d personal_ai_os \
-  -c "select version, description, success from flyway_schema_history order by installed_rank desc limit 3;"
-
-# 2. 如果确认那次迁移没有留下半成品对象，清掉失败记录后重启
-docker exec personal-ai-os-postgres psql -U personalos -d personal_ai_os \
-  -c "delete from flyway_schema_history where success = false;"
-
-# 3. 如果留下了半成品（表建了一半），先手工清理干净再重复第 2 步
+  -c "select version, description, success from flyway_schema_history order by installed_rank desc limit 10;"
 ```
 
-**永远不要**在失败记录还在时直接改迁移文件内容 —— Flyway 会校验 checksum，
-改完启动报 `Migration checksum mismatch`，问题更大。要么前进（新增一个修正迁移），
-要么按上面的步骤回到干净状态。
+先备份、查看失败 SQL/实际 DDL、锁与 checksum，再在隔离恢复库重现。不要直接删除历史行、伪造 success 或修改已发布迁移；需要 repair 时必须由迁移维护者确认具体历史/对象状态后受控执行，并保留证据。Go 不提供 repair，不能用只读历史校验代替修复。优先新增前向修正或恢复到已验证备份。
 
 ### 4.4 当前迁移链
 
-`V1` 扩展 → `V2` 对话 → `V3` 任务/确认/操作记录 → `V4` 知识库（含 HNSW 索引）
-→ `V5` 泛化确认表 → `V6` 改主键 → `V7` 日程 → `V8` MCP 动作 → `V9` 记忆
-→ `V10` 任务标签 → `V11` 引用快照 → `V12` 会话摘要 → `V13` 记忆来源
-→ `V14` 消息附件。
+唯一来源为 [Java migration 目录](../backend/src/main/resources/db/migration)，当前 **V1–V49**：
+
+| 范围 | 主要内容 |
+| --- | --- |
+| V1–V14 | 扩展、对话、任务/确认、知识向量、日程、记忆、引用/摘要与附件 |
+| V15–V26 | 用量、确认失败、记忆去重、模型配置/档案/音频/窗口与记忆分层 |
+| V27–V34 | 计划、Push、密钥、保留索引、上下文预算、持久 Run/澄清/索引任务 |
+| V35–V42 | 搜索投影、来源治理、跨进程协调、Worker 唤醒、投影租约、Webhook/广播、候选代数 |
+| V43–V49 | 任务工作区、ICS、网页采集、只读工作流、维护、期次保持及数字溢出边界 |
+
+Go 固定 V1–V42 oracle 与当前目录不同，详见[双端迁移说明](backend-parity.md)。
 
 已应用的迁移**只追加、绝不改写**。需要改结构时新增一个迁移。
 
@@ -207,9 +214,9 @@ docker exec personal-ai-os-postgres psql -U personalos -d personal_ai_os \
 | 前端 502 | 后端是否在 `:8080`；`docker compose ps` 看 backend 是否 unhealthy |
 | 对话「永远转圈」 | `personalos.chat.streams.active` 是否 >0 不降；反向代理是否关掉了 buffering |
 | 流中途断开 | 代理的 `proxy_read_timeout` 是否 > 120s；本应用每 15s 发心跳，收不到心跳就是链路断了 |
-| 请求 429 | 模型调用限流（默认 60 次/分钟）。批量导入时 `APP_RATE_LIMIT_ENABLED=false` |
+| 请求 429 | 模型调用限流（默认 60 次/分钟）。检查全局频率/并发与后台配额，降低导入并发，不直接关闭保护 |
 | 启动报数据库连接失败 | 容器内要用 `POSTGRES_HOST=postgres`、端口 `5432`；宿主机才是 `localhost:55432` |
-| 启动报 `AI_NOT_CONFIGURED` | `AI_CHAT_PROVIDER` 未设；只想关聊天就设 `none`（但**不能**把 `AI_EMBEDDING_PROVIDER` 设为 none，向量库需要它） |
+| 启动报 `AI_NOT_CONFIGURED` | 检查聊天有效配置；`AI_CHAT_PROVIDER=none` 关闭聊天，嵌入仍须独立配置，知识摄入/检索需要它 |
 
 
 ## 6. 数据保留与模型密钥
@@ -248,10 +255,10 @@ Micrometer `/actuator/metrics` 新增：
 
 ## 9. 可选历史监控
 
-生产环境叠加监控配置（在 `.env` 或 shell 设置 `GRAFANA_ADMIN_PASSWORD`，不要提交密码）：
+生产环境叠加监控配置（在 `.env.production` 或 shell 设置 `GRAFANA_ADMIN_PASSWORD`，不要提交密码）：
 
 ```bash
-docker compose -f compose.production.yml -f compose.monitoring.yml up -d --build
+docker compose --env-file .env.production -f compose.production.yml -f compose.production.local.yml -f compose.monitoring.yml up -d --build
 ```
 
 Grafana 位于 `http://127.0.0.1:3000`，默认用户 admin，密码取环境变量；远程访问可使用 SSH 隧道。
@@ -288,7 +295,7 @@ Prometheus 每 15 秒从 backend:9091 采集，数据最多保留 15 天或约 2
 - `POST /api/v1/knowledge/jobs`：multipart `file`、可选 `title`、替换时传 `documentId`；返回 202。
   `Idempotency-Key` 是 UUID，相同键和相同文件只建立一项任务，不同内容返回冲突。
 - `GET /api/v1/knowledge/jobs` 和 `GET /api/v1/knowledge/jobs/{id}`：查询阶段、状态与尝试次数。
-- 最多 20 项待处理任务、单实例最多 2 个索引 worker，并受全局模型并发上限和令牌桶约束。
+- 最多 20 项待处理任务、combined 最多 2 个并行索引，专用 index 进程通常 1 个，并受全局模型并发上限和令牌桶约束。
 - 60 秒租约，每 10 秒续期；进程异常后新实例重新领取过期任务。最终提交校验领取令牌与租约，旧 worker 无权回写。
 - 连接或写入故障最多尝试 3 次，间隔至少 5 秒；文件验证错误直接失败。失败信息不包含上游原始报文。
 - 文件输入临时保存在数据库，成功或最终失败后清除；终态任务记录保留 7 天。数据库备份会包含尚未处理的输入。
@@ -365,6 +372,8 @@ PostgreSQL 保存原文与向量，触发器在同一业务事务写 chunk outbo
 
 ## RAG 管线与资料冲突治理
 
+算法的权威说明见[RAG 总览](rag.md)、[摄入/切块](rag-ingestion.md)和[检索/证据](rag-retrieval.md)；以下侧重运行配置与治理。
+
 默认启用 `app.knowledge.rag.enabled`：保留原问题，再生成至多两个改写；每路最多 40 个候选，RRF 融合后重排，
 对多来源片段精审，再截取最终结果。辅助调用使用当前配置的无工具模型，不读对话历史；两条工作线程、四项等待上限，
 改写和重排单次最多 8 秒，证据精审默认最多 12 秒（`RAG_EVIDENCE_TIMEOUT_MS`），辅助阶段共享默认 20 秒预算。没有资料时不调用生成模型。关闭该配置可回到原检索行为。
@@ -400,7 +409,7 @@ OpenSearch 每次启用启动会重新排队当前片段，避免新索引或恢
 发布包放入 `.cache/local-runtime/releases/`，日志和非敏感进程状态保存在 `.cache/local-runtime/`。
 先完成构建，再停止后端进行数据库与附件一致备份、verify/drill，最后启动新包。
 原 `backend/target/` JAR 保留；回退时停止新进程，指定原 JAR 并传 `--without-integrations`。
-工具只按 PID 和 JAR 身份停止本项目进程，不强制杀死停止超时的进程。
+这些脚本含本机 JDK 路径等机器假设，其他环境先核对脚本或使用标准 Compose。工具只按 PID 和 JAR 身份停止本项目进程，不强制杀死停止超时的进程。
 
 百炼原生重排支持 `RAG_RERANKER_PROTOCOL=dashscope`；请求采用 input/parameters，
 结果取 output.results。`cohere` 仍为兼容默认协议。模型和可用性以实际服务端响应为准。
@@ -418,9 +427,9 @@ OpenSearch 每次启用启动会重新排队当前片段，避免新索引或恢
 恢复出的 `uploads/` 可按原流程放回本地目录，应用优先读取这些文件，无需先向 S3 重传。
 只读快照支持静态凭据和 AWS 环境临时凭据；仅配置 IAM 角色而无可读备份凭据时会明确失败，不能静默漏掉对象。
 
-### 当前本机统一 Docker 分组
+### 已有本机统一 Docker 分组（2026-11-02 部署记录）
 
-完成分组合并后，统一使用以下入口管理 8 个服务，不再分别运行旧的三个独立项目：
+以下步骤只适用于已完成当次迁移、拥有相应 external 卷与私有配置的环境。新环境先用标准 Compose；不要为匹配旧机器状态创建空卷。完成分组合并后，可使用以下入口管理当时的 8 个服务，不再分别运行旧的三个独立项目：
 
 ```bash
 ./scripts/dev/local-stack.sh ps
@@ -438,7 +447,7 @@ OpenSearch 每次启用启动会重新排队当前片段，避免新索引或恢
 切换前暂停应用写入，执行完整备份和恢复演练；停旧容器后才可启动新分组，避免端口冲突或同时挂载数据库。
 确认数据、认证和历史指标正常后，删除旧项目的已停止容器和空网络；不要删除数据卷。
 
-统一迁移已于 2026-11-02 完成：当前为 `personal-ai-os / running(8)`，原数据库容器未重建，
+以下为 2026-11-02 当次核验记录，不是本文维护时重新检查的服务状态：当时为 `personal-ai-os / running(8)`，原数据库容器未重建，
 业务行数、全部持久卷、RabbitMQ 节点及持久消息、Redis 数据、OpenSearch 集群及文档、S3 附件、
 Grafana 看板身份和 Prometheus 历史均通过切换前后核验；临时验证资源已清理。
 备份与原容器配置清单保存在 `backups/compose-unification-20261102-143134-00f085/`，

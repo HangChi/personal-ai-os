@@ -1,4 +1,6 @@
-# 独立 worker 与提醒广播
+# 独立 Worker 与提醒广播
+
+本文以 Java 运行脚本为例，Go 使用其[候选部署指南](../backend-go/deploy/README.md)。角色与恢复共性见[架构](architecture.md)，Agent 任务见[执行链路](agent-runtime.md)。
 
 默认启动使用 combined 角色。独立运行时，API 接收业务请求，index 解析文档并生成向量，review 审查资料冲突，delivery 执行搜索投影和通知投递。各进程使用同一个发布 JAR 和 PostgreSQL。模型并发和限流使用数据库协调，配置的总并发大于 1 时至少为 API 保留一个并发位。
 
@@ -9,10 +11,10 @@
 | review | 18084 | 18094 |
 | delivery | 18085 | 18095 |
 
-worker 绑定回环地址，业务入口返回 404。管理端口提供健康检查和 Prometheus 指标。每个 worker 使用独立 JVM 与连接池。API 副本各自管理浏览器会话，负载均衡时需维持会话亲和。
+worker 绑定回环地址，业务入口返回 404。管理端口提供健康检查和 Prometheus 指标。每个 worker 使用独立 JVM 与连接池。默认本地会话需要负载均衡亲和；也可显式配置[Redis 共享会话](redis-extensions.md)，统一命名空间并重新登录。共享模式不需要用本地会话亲和弥补身份隔离。
 
 1. 构建发布 JAR，并在切换前备份数据库和附件。
-2. 用同一 JAR 启动 API 和 worker。启动 API 时 Flyway 应用 V37–V41。
+2. 用同一 JAR 启动 API 和 worker。由独占的 Java/Flyway 步骤迁移当前 V1–V49 并校验，再启动相同版本角色；Go 只读校验。
 3. 检查角色状态与管理端口，再提交索引任务。
 
 ```bash
@@ -40,7 +42,7 @@ Webhook 请求包含 `event=reminder.due`、投递 ID、提醒 ID、标题、来
 
 运行记录可查看 `.cache/local-runtime/workers/` 下各角色日志和进程状态。主要指标包括 `personalos_work_signals_total`、`personalos_knowledge_jobs_active`、`personalos_knowledge_search_projections_total`、`personalos_reminders_webhook_deliveries_total` 和 `personalos_reminders_broadcast_received_total`。
 
-## 验证记录
+## 验证记录（2026-11-03，历史范围）
 
 2026-11-03 在隔离数据库、RabbitMQ 虚拟主机和 OpenSearch 索引上运行了两个 API 实例及三个 worker。模型请求由本地模拟端点响应，Webhook 由本地接收器验签。
 
@@ -51,4 +53,4 @@ Webhook 请求包含 `event=reminder.due`、投递 ID、提醒 ID、标题、来
 - 全量后端回归通过 1135 项测试，覆盖率门禁通过。Surefire 在测试完成后的退出阶段超时回收测试 JVM，构建结果为成功。
 - 临时进程、数据库、虚拟主机和搜索索引已清理。
 
-本机已验证发布包位于 `.cache/local-runtime/releases/backend-workers-f801edf.jar`。现有实例切换时使用上面的独立运行命令。
+当次验证包为 `.cache/local-runtime/releases/backend-workers-f801edf.jar`；它是历史产物路径，当前部署应重新构建并记录自己的版本，不直接沿用此文件名。

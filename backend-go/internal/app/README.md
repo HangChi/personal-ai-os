@@ -1,5 +1,7 @@
 # P1基础运行时
 
+> 本页记录模块契约及分阶段验证范围。当前启动/模块组合见[Go 文档中心](../../docs/README.md)，两版最新能力与差异见[双端说明](../../../docs/backend-parity.md)；下文固定基线、测试数和 P1/P3 等范围不是当前全产品或生产批准。
+
 `NewHandler`仍是默认二进制的离线诊断入口。`OpenFoundation`是显式`--foundation`主命令使用的基础组合，已通过自建TLS双存储、真实二进制和网络故障验证；不能当作Java业务替代。
 
 调用方提供`config.Properties`、日志、显式Connector、原SQL目录的`fs.FS`与`Schema: "public"`。连接池默认按角色取10/4，也可显式传`PoolOptions`；OpenFoundation不读取宿主环境；显式主命令从canonical数据源绑定受限JDBC和Hikari上限/等待，未支持扩展连接前拒绝。迁移只读校验目录/Flyway历史；不migrate、repair或改SQL。默认严格拒绝BASELINE，显式允许时只接收已验收的V1标记。协调器使用原public表，自定义schema暂时拒绝；共享协调容量大于100在启动前明确拒绝。

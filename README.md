@@ -1,462 +1,135 @@
+<img src="frontend/public/favicon.svg" alt="Personal AI OS" width="64" height="64">
+
 # Personal AI OS
 
-开源、自托管、可扩展的**个人智能操作系统**。
+**把对话、任务、知识库、日程和长期记忆连接起来的开源个人 AI 工作台。**
 
-用自然语言和个人 AI 助手交互，让它帮你管理任务、检索自己的知识库、安排日程与提醒——全部跑在你自己的机器上。
+自托管，面向单用户。你可以让助手查资料、创建任务、安排日程，也可以查看它调用了什么工具、依据哪些资料作答，以及哪些操作正在等待你的确认。
 
-> **当前状态**：功能开发到阶段 28（生产安全加固），包含运行可靠性优化、生产 Compose、CSRF、Secure Cookie、HTTPS 反向代理入口和本地端口隔离。
-> 五个内置模块可用：对话、任务、知识库、日程与提醒、长期记忆；助手内置 15 个工具，
-> 支持 MCP 双向接入：既能连接外部 MCP Server，也能作为 MCP Server 向其他 AI 提供个人数据查询工具。
-> 「活动」页查看工具调用记录；「设置 → MCP」查看和管理 MCP 连接。
+[快速开始](#快速开始) · [文档中心](docs/README.md) · [Agent 实现](docs/agent-runtime.md) · [RAG 全流程](docs/rag.md) · [贡献指南](CONTRIBUTING.md)
 
-## 这个项目要做什么
+## 功能
 
-1. 用自然语言与个人 AI 助手交互
-2. 通过 AI 工具调用管理个人任务
-3. 构建个人知识库，支持 RAG 检索问答
-4. 管理个人日程与定时提醒
-5. 多轮对话与可持久化的会话记忆
-6. 通过 MCP 扩展外部工具
-7. 未来扩展 Coding Agent、资讯 Agent 等独立模块
+| 能力 | 项目如何实现 |
+| --- | --- |
+| 对话与执行 | 流式回答、会话模型选择、持久化 Agent Run、停止/继续、澄清问题、执行中引导和排队 |
+| 工具调用 | 任务、日程、提醒、记忆、知识检索和计划工具；统一参数校验、预算、幂等、审计和高风险操作确认 |
+| 个人知识库 | Markdown、文本、PDF、DOCX、图片摄入；结构切块、向量/关键词混合召回、重排、证据精审和引用溯源 |
+| 资料治理 | 知识空间、来源版本/适用范围/有效期、冲突审查、异步索引、公开网页采集 |
+| 任务与日程 | 任务项目/子任务/标签/看板、重复日程、日历交换、页面提醒和可选 Web Push/Webhook |
+| 长期记忆 | 显式记忆、置顶、相关性排序、近重复取代和默认关闭的自动沉淀 |
+| 扩展与维护 | MCP 双向接入、可选联网搜索、只读工作流、全局搜索、业务导入导出、备份与运行指标 |
 
-**明确不做**（第一版）：多租户 SaaS、支付系统、复杂权限管理。
-系统仍是**单用户、自托管**模型；需要公网访问时使用已提供的生产 Compose、认证、CSRF 和 HTTPS 配置。
+本项目不提供多租户隔离、团队角色权限或任意代码执行沙箱。模型使用本地 Ollama 或配置的 OpenAI 兼容端点；连接外部模型时，提交的对话和检索片段会发送给该提供商。
 
-## 技术栈
+## 两个后端版本
 
-| 层 | 技术 | 版本 |
-|---|---|---|
-| 后端 | Java / Spring Boot / Spring AI (BOM) | 21 / 4.1.1 / 2.0.1 |
-| Web | Spring Web MVC + SSE | — |
-| 持久化 | Spring Data JPA + Flyway | Flyway 12.4.0 |
-| 数据库 | PostgreSQL + pgvector | 17（镜像 `pgvector/pgvector:pg17`） |
-| 构建 | Maven（含 Wrapper） | 3.9+ |
-| 前端 | Vue 3 / TypeScript / Vite | 3.5 / — / 8 |
-| 前端生态 | Vue Router / Pinia / Element Plus / Axios | 5 / 4 / 2 / 1 |
-| 测试 | JUnit 5 + Mockito + Testcontainers | 由 Boot BOM 管理 |
+两版共用 `frontend/`、业务协议和 V1–V49 SQL 迁移来源，但启动方式和发布状态不同。
 
-版本选择依据与兼容性论证见 [`specs/001-project-skeleton/research.md`](specs/001-project-skeleton/research.md)。
+| | Java：`backend/` | Go：`backend-go/` |
+| --- | --- | --- |
+| 技术 | Java 21、Spring Boot 4.1.1、Spring AI 2.0.1 | Go 1.27.0+、显式 HTTP/业务模块装配 |
+| 当前定位 | 主后端，根目录 Compose 默认使用它 | 迁移候选，保留生产切换门禁 |
+| 默认启动 | 业务应用，默认端口 8080 | 离线诊断；业务模式必须显式开启 |
+| 数据迁移 | Flyway 执行，JPA 校验结构 | Java/独立 Flyway 先迁移，Go 只读校验历史 |
+| 文档入口 | [Java 指南](backend/README.md) | [Go 指南](backend-go/README.md) |
 
-## 目录结构
-
-```
-personal-ai-os/
-├── backend/                    Spring Boot 应用（根包 com.personalos）
-│   ├── mvnw / mvnw.cmd         Maven Wrapper（无需预装 Maven）
-│   ├── pom.xml
-│   └── src/
-│       ├── main/java/com/personalos/
-│       │   ├── PersonalOsApplication.java
-│       │   ├── common/         统一响应 / 错误码 / 全局异常 / 健康检查 / 公共配置 / AI 装配（common/ai）
-│       │   ├── chat/           阶段 1：会话与消息（含会话内上下文窗口）
-│       │   ├── memory/         阶段 8：长期记忆（跨会话，注入系统提示）
-│       │   ├── agent/          阶段 2：Agent 编排与工具调用（含审计查询）
-│       │   ├── task/           阶段 2：任务
-│       │   ├── knowledge/      阶段 3：知识库与 RAG
-│       │   ├── calendar/       阶段 4：日程与提醒
-│       │   ├── mcp/            MCP 客户端 + Personal AI OS MCP Server
-│       │   └── export/         阶段 12：数据导出（SPI + 组装）
-│       ├── main/resources/
-│       │   ├── application.yml
-│       │   └── db/migration/   Flyway 迁移脚本
-│       └── test/java/com/personalos/
-│           ├── PersonalOsApplicationTests.java      （Testcontainers 集成测试）
-│           └── common/                              （单元测试）
-├── frontend/                   Vue 3 + TypeScript + Vite
-│   └── src/{api,components,lib,notifications,router,stores,types,views,styles}
-│       ├── components/         公共组件（PageHeader/FilterBar/EmptyState/AppPagination/StatusTag/MarkdownRenderer/ThemeToggle）
-│       │   ├── chat/           对话页拆分：会话列表 / 消息 / 流式占位 / 工具轨迹 / 待确认 / 输入区 / 欢迎语
-│       │   ├── task/           任务页拆分：新建表单 / 表格 / 看板 / 编辑弹窗
-│       │   ├── calendar/       日程页拆分：通知条 / 到点提醒 / 新建表单 / 月网格 / 列表 / 编辑弹窗
-│       │   └── knowledge/      知识库页拆分：文档 / 检索 / 问答 / 命中列表
-│       ├── lib/                纯函数（calendar-dates / calendar-format / task-meta / format / theme / relative-time / session-group / board / highlight-text）
-│       └── styles/             设计令牌 tokens.css + 暗色覆盖 + hljs 暗色主题
-├── docs/                       架构与开发文档
-├── specs/                      Spec Kit 特性规格
-├── .specify/                   Spec Kit 配置与项目宪法
-├── compose.yml                 PostgreSQL + pgvector
-├── .env.example                环境变量模板
-└── LICENSE                     Apache-2.0
-```
-
-常用文档入口：
-
-- [本地开发指南](docs/development.md)：启动、测试、环境变量和数据库迁移。
-- [运维手册](docs/operations.md)：生产部署、备份恢复、保留策略、Web Push 和指标。
-- [接口清单](docs/api.md)：HTTP、SSE、认证和 CSRF 约定。
-- [安全策略](SECURITY.md)：公网部署前的强制检查与威胁边界。
-- [架构说明](docs/architecture.md)：模块边界、数据流和部署拓扑。
-- [MCP 指南](docs/mcp.md)：MCP Client 与 MCP Server 的配置、验证和安全边界。
+> [!IMPORTANT]
+> Go 候选仍拒绝生产 profile，`/readyz` 保持 503；已有功能或隔离测试通过不等于获准替换 Java 实例。完整差异见[双版本说明](docs/backend-parity.md)。不要让两版同时写入现有业务库。
 
 ## 快速开始
 
-> 已配置本机完整部署（宿主机 JAR）时，使用 `./scripts/dev/local-stack.sh up -d`，
-> 数据库、中间件、监控和前端统一显示在 `personal-ai-os` 分组中。Java 后端仍单独管理；
-> 配置与启停方式见[运维手册](docs/operations.md)。下列步骤仍适用于首次开发环境搭建。
+以下启动 **Java 后端 + 共用前端**。命令分别在仓库根目录或标明的子目录执行。
 
-前置：JDK 21、Docker（含 `docker compose`）、Node.js `^20.19.0 || >=22.12.0`。
-**无需预装 Maven** —— 使用仓库自带的 `backend/mvnw`。
-
-### 1. 启动基础设施
+前置要求：JDK 21、Docker Compose、Node.js 22.18+（覆盖前端逻辑测试要求）。Maven 使用仓库 Wrapper，无需单独安装。
 
 ```bash
+git clone https://github.com/HangChi/personal-ai-os.git
+cd personal-ai-os
 cp .env.example .env
 docker compose up -d
-docker compose ps      # 等待 postgres 变为 healthy
+docker compose ps
 ```
 
-### 2. 启动后端
+数据库默认绑定 `127.0.0.1:55432`。等待 `postgres` 健康后，在另一个终端启动后端：
 
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
 
-自检：
-
-```bash
-curl http://localhost:8080/api/v1/health
-curl http://localhost:8080/actuator/health
-```
-
-### 3. 启动前端
+再打开一个终端，从仓库根目录启动前端：
 
 ```bash
 cd frontend
-npm install
-npm run dev            # http://localhost:5173
+npm ci
+npm run dev -- --host 127.0.0.1
 ```
 
-首页会实时展示后端健康状态。更详细的步骤、配置项与排错见 [`docs/development.md`](docs/development.md)。
-
-## 构建与测试
+访问 <http://127.0.0.1:5173>。健康检查：
 
 ```bash
-# 后端：单元测试 + Testcontainers 集成测试（需 Docker 运行）
-# 覆盖率门禁 83% 行 / 65% 分支，绑在 test 阶段（CI 跑的就是这个）
-cd backend && ./mvnw -B test
-
-# 前端：与 CI 完全一致的五步
-cd frontend && npm run lint && npm run format:check && npm run type-check \
-  && npm run test:logic && npm run test:component
+curl http://127.0.0.1:8080/api/v1/health
 ```
 
-前端的测试是**两条独立链路**，日常按需选：
+默认模型配置为 Ollama：聊天 `qwen2.5:7b`，嵌入 `bge-m3`（1024 维）。需要使用 AI 时，先确保对应模型服务和模型可用，或按[配置指南](docs/configuration.md)配置自己的兼容端点。没有可用模型服务时，任务等本地业务仍可使用，AI 请求会报告配置或上游错误。
 
-| 命令 | 覆盖什么 | 耗时 |
-|---|---|---|
-| `npm run test:logic` | 纯函数与 store（Node 原生 ESM，零依赖） | 一秒内 |
-| `npm run test:component` | `.vue` 渲染与交互（vitest + happy-dom） | 十几秒 |
-
-改纯逻辑时跑前者即可；动模板、样式或事件时务必跑后者 —— 模板类缺陷（层叠、
-属性拼错、按键语义）纯函数测试按定义抓不到。
-
-## 阶段路线图
-
-| 阶段 | 内容 | 状态 |
-|---|---|---|
-| 0 | 项目骨架：Monorepo、后端基座、数据库迁移、前端基座、文档 | ✅ |
-| 1 | AI 对话与聊天历史（ChatClient + ChatMemory + SSE） | ✅ |
-| 2 | 任务 CRUD 与 Tool Calling（含两阶段人工确认与两层幂等） | ✅ |
-| 3 | 个人知识库与 RAG（pgvector 向量检索 + 引用溯源） | ✅ |
-| 4 | 日程与定时提醒（重复规则 + 到点提醒） | ✅ |
-| 6 | MCP 客户端接入（外部工具 + 策略分级 + 人工确认） | ✅ |
-| 7 | 会话重命名（部分更新语义 + 标题校验口径统一） | ✅ |
-| 8 | 长期记忆（显式写入 + 每次对话注入 + 管理页） | ✅ |
-| 9 | 可靠提醒（浏览器通知 + 站内降级 + 权限状态可见） | ✅ |
-| 10 | 富文档解析（PDF 文本层 / Word docx / 图片走视觉模型） | ✅ |
-| 11 | 工具审计与 MCP 状态（活动页审计 + 设置页 MCP 管理） | ✅ |
-| 12 | 数据导出（全部业务数据 → 单个 JSON 文件，首页一键下载） | ✅ |
-| 13 | 日历月视图（7×6 网格、切月、按本地时区归属修复） | ✅ |
-| 14 | 任务标签（0–5 个自由文本、按标签筛选、工具同步支持） | ✅ |
-| 15 | 单用户认证（Spring Security + 会话 Cookie，默认关闭） | ✅ |
-| 16 | 列表分页与站内搜索（会话 / 知识库，新增 /search 端点） | ✅ |
-| 17 | 跨模块全局搜索（顶栏一处搜五个模块，按模块分组） | ✅ |
-| 18 | 全站 UI 优化（设计令牌 + 深色模式 + 公共组件 + 逐页重构 + 左侧导航栏） | ✅ |
-| 19 | 对话知识库增强（自动 RAG + [n] 引用落库）与设置页（前端偏好层） | ✅ |
-| 20 | 对话页 UI 重设计（全高对话列 / 去气泡消息 / 代码块头部条 / 打字动画 / 工具行） | ✅ |
-| 21 | 消息分页（首屏只取最近一页，向前翻是显式动作） | ✅ |
-| 22 | 上下文治理（滚动摘要 / token 预算仪表盘 / 思考档位 / 消息附件） | ✅ |
-| 23 | 全站视觉重构（Element Plus 主题层 + 设计令牌梳理） | ✅ |
-| 24 | 聊天气泡重做（助手浅底+边框、用户浅主色，靠色相区分说话人） | ✅ |
-| 25 | 气泡纠错（补「元素底 vs 容器底」与视觉重量的审计口径） | ✅ |
-| 26 | 侧栏拖拽调宽（指针 + 键盘双通道，宽度按视口二次收敛） | ✅ |
-| 27 | 运行可靠性与规模优化（备份、保留策略、流式导出、Web Push、指标、密钥加密） | ✅ |
-| 28 | 生产安全加固（CSRF、Secure Cookie、生产 Compose、HTTPS 反代、内部网络） | ✅ |
-
-> 阶段 21 起是体验与工程质量轮次；阶段 27–28 的设计记录分别位于
-> [`specs/023-operational-optimization`](specs/023-operational-optimization) 和
-> [`specs/025-production-security`](specs/025-production-security)。
-
-> 编号 5 空置：原定的「Docker 部署与开源发布」不在当前规划内，暂不实施。
-> 阶段 6 保留既有编号，避免重编号导致 `specs/` 目录、迁移与提交历史错位。
-> 后续功能阶段从新编号继续。
-
-## Agent 执行进度与中断继续
-
-对话中的执行记录会实时显示工具名称、状态和耗时，命令类工具标注为「执行命令」，回答正文仍逐段显示。只有接入并实际调用的工具才会出现在记录中。
-
-新版对话使用后台执行记录：关闭或刷新页面不会取消任务；重新打开原会话可追赶执行进度，临时断网时自动重连。点停止会保存进度，随后可通过「继续任务」恢复同一任务。服务重启会尝试恢复结果确定的运行中任务。旧 SSE API 保留原有连接终止语义。
-
-需要人工确认时，内联卡片直接显示服务端生成的操作说明、影响范围和有效期。单次点击「允许本次操作」或「拒绝」即完成决定，不再弹二次确认。暂不选择会保留待确认；确认后直接执行并更新状态，不追加聊天消息，也不再次调用 Agent。
-
-恢复粒度为计划步骤与工具调用；同一执行身份下相同写工具和参数复用原结果。无法从任意外部命令内部的某条指令继续；工具在崩溃时结果不明会暂停并要求核查，系统不会自动重复执行。重新发送一条消息会创建新任务，不等同于点击「继续任务」。
-
-### 询问用户意图与执行中跟进
-
-缺少关键意图或必要信息时，Agent 可调用 `askUser` 展示问题与最多四个选项；你也可以自由输入。任务会停在「等待你的回答」，提交后继续原任务。问题与回答会保存，刷新页面仍可继续。澄清答案不会替代危险操作的人工授权。
-
-在「设置 → 对话 → 执行中发送消息」选择默认处理方式，设置即时生效并保存在当前设备。空闲时主按钮为「发送」，生成中原位置变为停止按钮，单次点击即可中断输出。生成中可通过发送快捷键提交跟进，无需在发送框再次选择：
-
-- **排队处理**：当前任务完成后按发送顺序处理。待处理消息显示在输入框上方，可取消、编辑，或单次点击「引导」改为当前任务的补充要求。编辑保留排队顺序和附件，改为引导后不会再次作为排队任务执行。
-- **引导当前对话**：新消息直接作为当前任务的补充要求，在下一个安全边界生效，正在执行的工具会先返回，再调整后续步骤；已成功的相同写操作会复用结果。
-
-等待回答、等待人工确认、显式停止或异常暂停时会保留队列。临时断网不会丢掉已接收的跟进消息；发送失败时可保留文本和附件重试。
-
-## MCP 集成
-
-Personal AI OS 支持两种 MCP 用法，两个开关相互独立，默认都关闭：
-
-| 模式 | 用途 | 配置 | 入口 |
-|---|---|---|---|
-| MCP Client | 让助手调用外部工具，例如文件系统或 GitHub | `MCP_ENABLED=true` 和 `MCP_SERVERS_<NAME>_*` | 对话中的工具调用；状态见「设置 → MCP」 |
-| MCP Server | 让 Cursor、Claude 等外部 AI 查询 Personal AI OS 数据 | `PERSONAL_MCP_SERVER_ENABLED=true` | `http://localhost:8080/mcp` |
-
-详细配置与排错见 [`docs/mcp.md`](docs/mcp.md)。
-
-### 作为 MCP Client：接入外部工具
-
-在 `.env` 里声明 server 即可让助手获得外部工具（默认不启用任何 server）：
+想把 Java 前后端也放入容器，可从根目录执行：
 
 ```bash
-MCP_ENABLED=true
-MCP_SERVERS_FILESYSTEM_COMMAND=npx
-MCP_SERVERS_FILESYSTEM_ARGS=-y,@modelcontextprotocol/server-filesystem,./mcp-sandbox
-MCP_SERVERS_FILESYSTEM_AUTO_TOOLS=read_file,list_directory,directory_tree
+docker compose --profile app up -d --build
 ```
 
-**策略分级（安全默认值）**：
+访问 <http://127.0.0.1:8088>；容器中的模型地址必须可从后端容器访问，不能直接沿用指向容器自身的 `localhost`。更多步骤见[开发指南](docs/development.md)和[运维手册](docs/operations.md)。
 
-- 列进 `AUTO_TOOLS` 的工具按**只读**处理，直接执行；
-- 其余全部按**变更类**处理，生成「待确认事项」，你在界面上确认后才会真正执行；
-- 漏配的代价是多弹一次确认，而不是一次未授权的写入。
+> [!WARNING]
+> 本地默认 `AUTH_ENABLED=false`，仅适合受信本机访问。Java 公网部署使用 `compose.production.yml`，配置认证、CSRF、Secure Cookie 和 HTTPS，详见[安全策略](SECURITY.md)。Go 的候选部署另见其独立部署文档。
 
-**运行期状态在「设置 → MCP」可查**：每个 server 是否连上、暴露几个工具、哪些是只读直行，
-连不上时给出原因。这是刻意补上的一块 —— server 连不上只降级不阻断启动（见下条），
-代价是这个故障原本**只出现在启动那一瞬间的日志里**，没有查询入口就等于静默失效。
+## 项目结构
 
-**几条刻意的设计选择**：
+```text
+backend/       Java 主后端、Flyway SQL、单元与集成测试
+backend-go/    Go 候选后端、独立部署与迁移对照测试
+frontend/      两版共用的 Vue 3 + TypeScript + Vite 工作台
+docs/          当前架构、Agent/RAG 实现、开发与运维文档
+scripts/       本地运行、备份、评测、隔离回归与双端对照工具
+specs/         特性规格、设计决策和有日期的验证证据
+deploy/        Java 反向代理与监控配置
+```
 
-- **外部工具经显式 Java 装饰层进入**（命名 `mcp_<server>_<工具>`、策略、审计、确认），
-  副作用路径仍收敛在本进程内 —— 模型不直接访问外部系统。
-- **故障区别对待**：server 连不上或超时只标记该 server 不可用（应用照常启动）；
-  工具名与内置工具冲突则**启动失败**（模型按名调用会落到错误的工具上，正确性问题不降级）。
-- **确认机制零特例**：MCP 的变更类工具复用「删除任务」同一套两阶段确认
-  （令牌 / 有效期 / 单次性），摘要由服务端依据参数生成，不采信模型文本。
-- **沙箱是 server 自己的事**：filesystem server 只访问启动参数里声明的目录，
-  所以 `ARGS` 里务必写专用目录（如 `./mcp-sandbox`），不要开放 home 或整个磁盘。
+数据使用 PostgreSQL 17 + pgvector。Redis、RabbitMQ、OpenSearch、S3 兼容存储均为可选扩展，各自承担缓存/会话、唤醒、搜索投影和附件存储职责。
 
-### 作为 MCP Server：让其他 AI 调用 Personal AI OS
+## 开发与验证
 
-项目也可以作为 MCP Server，对外提供个人数据工具。默认关闭，启用后提供只读工具：
-查询任务、检索知识库、查询日程和读取长期记忆；不提供绕过确认机制的写入工具。
+在仓库根目录执行：
 
 ```bash
-PERSONAL_MCP_SERVER_ENABLED=true
+# Java：需要 Docker，包含覆盖率门禁
+(cd backend && ./mvnw -B test)
+
+# Go：需 Go 1.27.0+；race 需要支持的平台及 C 工具链
+(cd backend-go && go test -race -p 1 -count=1 -timeout=20m ./...)
+(cd backend-go && go vet -tags=integration ./... && go build ./...)
+
+# 前端：先 npm ci
+(cd frontend && npm run lint && npm run format:check && npm run type-check \
+  && npm run test:logic && npm run test:component && npm run build)
+
+# 文档链接、工具目录与双端迁移来源检查；不调用模型
+python3 scripts/docs/check_docs.py
 ```
 
-本地启动后，Streamable HTTP 地址是 `http://localhost:8080/mcp`。在 Cursor、Claude Desktop
-或其他 MCP 客户端中配置这个地址即可。该端点复用后端认证；`AUTH_ENABLED=true` 时，客户端必须
-使用已登录会话访问。公网使用时必须放在 HTTPS 反向代理之后，并启用认证；不要把未认证的 MCP
-端点直接暴露到公网。
+真实模型质量评测会产生外部请求和费用，独立于上述工程回归，见[评测指南](docs/evaluation.md)。
 
-服务端工具名为 `personal_list_tasks`、`personal_search_knowledge`、
-`personal_list_calendar` 和 `personal_list_memories`。详细配置见
-[`docs/mcp.md`](docs/mcp.md)。前端「设置 → MCP」现在同时显示外部 MCP Client 的连接状态、重连操作，
-以及本系统作为 MCP Server 对外提供的 4 个工具目录。
+## 从哪里继续
 
-## 日程与提醒
+- 想使用工作台：[使用指南](docs/user-guide.md)、[对话快捷指令](docs/chat-commands.md)。
+- 想理解助手实现：[Agent 执行链路](docs/agent-runtime.md)、[工具目录与扩展](docs/agent-tools.md)、[记忆与上下文](docs/memory-and-context.md)。
+- 想理解知识问答：[RAG 总览](docs/rag.md)、[摄入与切块](docs/rag-ingestion.md)、[检索与证据](docs/rag-retrieval.md)。
+- 想部署或贡献：[开发指南](docs/development.md)、[运维手册](docs/operations.md)、[贡献指南](CONTRIBUTING.md)、[Apache-2.0](LICENSE)。
 
-支持「不重复 / 每天 / 每周 / 每月 / 工作日」四类重复规则，以及全天事件。
-提醒同时覆盖**日程**与**任务截止时间**；前端每 30 秒轮询一次「已到点未读」的提醒。
+## 贡献与许可证
 
-送达分两条通道：页面切到后台且**已授权通知**时弹浏览器通知，页面可见时用站内提示；
-未授权或被阻止时，日程页会明确写出当前状态与恢复方法。
-**限制（已在界面上写明）**：后台送达需要显式配置 Service Worker + Web Push；该通道默认关闭，
-启用方法见 [`docs/operations.md`](docs/operations.md) 第 7 节。
+欢迎提交缺陷、文档改进与 Pull Request；流程和双版本同步要求见[贡献指南](CONTRIBUTING.md)。安全问题通过[私有报告渠道](SECURITY.md)提交。
 
-```bash
-AI_CALENDAR_SCAN_ENABLED=true        # 定时扫描开关
-AI_CALENDAR_SCAN_INTERVAL_MS=60000   # 扫描间隔
-AI_CALENDAR_DEFAULT_LEAD=15m         # 任务提醒的默认提前量（日程可逐个覆盖）
-```
-
-**几条刻意的设计选择**：
-
-- **调度是「数据库状态驱动的周期扫描」**，不是为每条提醒注册内存定时任务 ——
-  后者重启即丢，用户会静默地收不到提醒。重启后行为一致这一点有测试与真机验证。
-- **幂等靠数据库唯一约束**（`来源类型 + 来源标识 + 发生时刻`）+ `ON CONFLICT DO NOTHING`，
-  不靠「先查再插」。反复扫描、重启、甚至系统时间回拨都不会产生重复提醒。
-- **删除日程会一并删除它的提醒**；扫描还会清理「来源已不存在」的孤儿提醒 ——
-  后者兜住那些不经过清理的删除路径（典型是任务删除：`task` 模块并不知道提醒的存在）。
-
-> **「到点提醒」的送达方式**：页面轮询 + 浏览器通知。页面在后台且已授权时弹系统通知，
-> 页面可见时用站内提示；后台送达需要显式启用 Web Push。默认关闭和完整配置见运维手册第 7 节。
-
-## 知识库配置
-
-上传即自动解析、分块、向量化，支持四类内容：
-
-| 类型 | 说明 |
-|---|---|
-| `.md` / `.markdown` / `.txt` | 需 UTF-8；严格解码，编码不对直接报错而不是"尽力解码"成乱码 |
-| `.pdf` | 取**文本层**；扫描件没有文本层，会明确提示需要 OCR（当前不支持） |
-| `.docx` | 段落与**表格单元格**都会被提取 |
-| `.png` / `.jpg` / `.jpeg` / `.webp` / `.gif` | 经视觉模型转录成文字；需要配置支持图片的模型 |
-
-单文件 ≤ 5 MiB。检索与问答走 pgvector 的余弦相似度，默认返回 4 条、相似度阈值 0.3。
-
-```bash
-AI_EMBEDDING_PROVIDER=ollama          # 默认，本地无需密钥
-OLLAMA_EMBEDDING_MODEL=bge-m3         # 1024 维
-AI_KNOWLEDGE_EMBEDDING_DIMENSIONS=1024  # 必须与迁移里的 vector(1024) 一致
-```
-
-> ⚠️ **换嵌入模型前先确认输出维度**：维度已写进 Flyway 迁移（`vector_store.embedding`）。
-> 维度不一致时应用会**在启动阶段就失败**并给出修复指引，而不是等到写入时才报 SQL 错。
-
-本地跑真实语义检索需要 `ollama pull bge-m3`（约 1.2GB）；
-没有真实模型时也可以用仓库自带的 mock（已实现 `/v1/embeddings`），
-但要同时把相似度阈值调到 `0.05` —— 词袋嵌入的相似度尺度比真实模型低一个量级，
-详见 [`docs/development.md`](docs/development.md) 第五节。
-**自动化测试不需要任何模型** —— 它用确定性词袋嵌入替代，详见 `docs/development.md`。
-
-## 配置模型提供商
-
-默认走**本地 Ollama**（无需密钥）；也可以指向任意 OpenAI 兼容服务（DeepSeek / 通义 / Kimi / 智谱 / vLLM 等）：
-
-```bash
-# 本地 Ollama（默认）
-AI_CHAT_PROVIDER=ollama OLLAMA_CHAT_MODEL=qwen2.5:7b
-
-# 云端 OpenAI 兼容服务
-AI_CHAT_PROVIDER=openai \
-OPENAI_BASE_URL=https://api.deepseek.com \
-OPENAI_API_KEY=sk-xxx \
-OPENAI_CHAT_MODEL=deepseek-chat
-```
-
-**没有任何模型也能跑**：不配置模型时应用照常启动（健康检查可用），对话接口返回明确的 `50300 AI 模型未配置`。
-用于本地联调的 OpenAI 兼容 mock 见 [`docs/development.md`](docs/development.md) 第五节。
-
-### 对话上下文读数
-
-发送框下方分别显示「已用 / 输入预算」和「模型上限」；`≈` 表示用量为估算，悬停可查看精确 token 数及窗口来源。预算控制历史裁剪，默认 32K 不代表模型只支持 32K。切换模型或生效配置后，窗口随实际模型更新。
-
-发送前会预留回复空间（默认 4096 token，深度思考时还会计入思考预算）及安全余量（默认 512 token），可选预算不会超过剩余输入上限。临近预算时，会在发送前尝试摘要旧历史；每次请求最多处理两个摘要批次，失败时保留旧摘要，聊天原文不会删除。
-
-每次实际模型调用都会检查完整提示，包括系统指令、当前输入、历史、附件、工具定义和工具往返。优先移出更早的完整对话轮次，过大的工具结果会保留调用标识并明确标注截断；当前用户输入和附件不会静默截断，仍放不下时返回明确的上下文错误。能识别模型编码时使用本地 tokenizer，其他模型及图片使用保守估算，不能视为端点能力的实测保证。
-
-仅在端点明确报告上下文超限、且该次调用尚未输出任何块时，才缩减输入后重试（默认一次，可配置为 0–2 次）。重试发生在单次模型调用内部，不会重新执行已完成的工具，也不会重复写入用户消息。若已输出内容或仍超限，则结束并提示缩小附件/检索范围或切换模型。
-
-窗口还会根据正常请求被动校准：端点在超限错误中明确声明较小窗口或输入上限时，立即收紧后续预算；未声明具体上限时只降低保护预算，标为估算，不伪装成已确认窗口。成功请求的真实 usage 用于记录「已验证输入下限」及上调偏低的 token 估算，成功一次不代表已验证最大容量。图片样本不会用于推断文本 tokenizer 比例。
-
-校准证据仅对当前运行配置及对应模型有效；切换/重新应用模型配置或重启后清空，进行中的旧请求不能污染新配置。不会改写手填窗口，也不会额外发送大段测试文本消耗额度。
-
-可通过 `CONTEXT_OUTPUT_RESERVE_TOKENS`、`CONTEXT_SAFETY_MARGIN_TOKENS`、`CONTEXT_IMAGE_RESERVE_TOKENS` 和 `CONTEXT_MAX_RETRIES` 调整保护参数。
-
-在「设置 → 模型配置」中可查询或手动填写每个对话模型的窗口。端点声明或手动配置优先于内置参考；未识别时显示「窗口未知」，使用保护性默认预算。查询优先读取模型详情，缺少有效字段时继续查模型列表，兼容嵌套字段和数字字符串；输入上限小于总窗口时使用较小值保护预算。端点未声明窗口时，可使用明确标注的官方参考或内置参考，并显示来源及未验证端点容量的提示；无法识别时保留未知并说明原因，不会从生成长度猜测窗口。支持「补全空缺窗口」顺序查询多个模型；认证失败、限流和网络故障会停止批量请求，已有填写值不会被覆盖。
-
-## 开启访问控制
-
-默认**不启用**：本地单用户下所有接口放行，clone 下来就能跑。
-
-要把服务暴露到公网，**必须先打开它** —— 否则任何能连上端口的人都能读写你的全部数据。
-
-```bash
-AUTH_ENABLED=true
-AUTH_USERNAME=admin          # 默认 admin
-AUTH_PASSWORD=<你的密码>      # 开启时必填
-```
-
-公网部署请直接使用 `compose.production.yml`，并将 `AUTH_PASSWORD` 设置为至少 16 字节的唯一密码。
-生产 profile 会强制启用 HTTPS 场景的 Secure Cookie、CSRF 令牌和内部网络隔离；本地 `compose.yml`
-仍默认只绑定 127.0.0.1，方便开发而不会监听所有网卡。
-
-三条与安全直接相关的行为：
-
-- `AUTH_ENABLED=true` 但没配密码 → **应用启动失败**并指出缺哪个变量。
-  这比「起来了但谁都能进」安全 —— 后者会让你以为自己开了认证。
-- 未登录访问受保护接口返回 **401 + 统一错误信封**，不是 302 跳 HTML 登录页
-  （SPA 拿到 HTML 会解析失败，症状是「点按钮没反应」）。
-- 密码只在环境变量里，启动时编码为 BCrypt，内存与日志中都没有明文。
-
-**健康检查始终放行**（`/api/v1/health`、`/actuator/health`）：监控探针不该持有凭据，
-否则「服务挂了」与「探针没登录」会混成同一个告警。
-
-### CSRF 与登录保护
-
-本地开发默认关闭 CSRF 以保持 `http://localhost` 的兼容性。生产 profile 会强制开启会话 CSRF：
-前端从 `/api/v1/auth/csrf` 获取令牌，并在所有写请求中发送 `X-CSRF-TOKEN`；缺失或错误令牌返回 403。
-登录失败锁定默认是 5 次 / 60 秒，成功登录会轮换会话并刷新 CSRF 令牌。
-
-## 数据备份
-
-首页「数据备份」卡片可一键把全部业务数据导出为**一个 JSON 文件**：
-`sessions`（含各自消息）、`tasks`、`calendarEvents`、`memories`、`knowledgeDocuments`（含分块文本）。
-顶层还有 `counts`，它的值是各数组的**实际长度**，用来核对「文件里到底有几条」。
-
-几条刻意的边界：
-
-- **不含向量**：向量是「分块文本 + 嵌入模型」的派生物，换模型即失效，
-  带上它只会让文件膨胀几十倍。
-- **知识库不含原始文件**：上传的 PDF / Word / 图片本身不落库（只保留解析出的分块）。
-  分块文本足以重建检索，但拿回原始文件只能重新上传 —— 界面上写明了这一点。
-- **只有导出，没有导入**：导入的难点不在搬运数据，而在「目标库已有数据时怎么办」
-  （按 id 覆盖？按内容合并？冲突谁优先？）。这些策略做错就是静默数据损坏，留给独立阶段。
-- **不压缩、不加密**：文件落在你自己的机器上，自制加密只会制造「以为安全」的错觉。
-
-对应端点 `GET /api/v1/export`，响应**直接是文件**（带 `Content-Disposition`），
-不包统一响应信封 —— 失败时才返回 `{code, message}`。
-
-### 数据库级备份（与上面的 JSON 导出互补）
-
-界面上的一键导出是**逻辑备份**：可读、可迁移、不含向量，但恢复要点「导入功能」——
-而导入还没做。真要「整库回到某个时间点」，用 `pg_dump`：
-
-```bash
-./scripts/dev/backup-db.sh        # 输出到 ./backups，默认保留最近 14 份
-```
-
-两者的分工：JSON 导出用于**看**和**带走**，`pg_dump` 用于**恢复**。
-恢复步骤、迁移回滚策略、故障排查见 [docs/operations.md](docs/operations.md)。
-
-## 开发约定
-
-本项目使用 [Spec Kit](https://github.com/github/spec-kit) 做规格驱动开发，**项目宪法是全仓库最高约束**：
-
-- 宪法：[`.specify/memory/constitution.md`](.specify/memory/constitution.md)
-- 规格：`specs/NNN-<feature>/`（spec → plan → research → data-model → contracts → tasks）
-- 阶段严格串行，不提前实现后续阶段
-
-关键工程约定：
-
-- 结构变更一律走 Flyway，`ddl-auto` 只能是 `validate`
-- 所有写操作经过 Service 层；不向前端暴露 JPA Entity
-- 统一响应结构；错误响应不得泄漏堆栈
-- 统一构造器注入，禁止字段注入
-- 仓库中不得出现任何密钥
-
-## 文档
-
-- [架构说明](docs/architecture.md)
-- [接口清单](docs/api.md)（48 个端点与特殊约定）
-- [本地开发指南](docs/development.md)
-- [运维手册](docs/operations.md)（部署 / 备份恢复 / 迁移回滚 / 故障排查）
-- [参与贡献](CONTRIBUTING.md)（环境、提交前必跑的命令、代码约定）
-- [安全策略](SECURITY.md)（**部署前必须逐条确认的 5 项**、已知取舍）
-- [阶段 0 规格](specs/001-project-skeleton/spec.md) ｜ [实现计划](specs/001-project-skeleton/plan.md) ｜ [版本决策与踩坑](specs/001-project-skeleton/research.md)
-
-## 许可证
-
-[Apache License 2.0](LICENSE)
+本项目采用 [Apache License 2.0](LICENSE)。Go 依赖与系统 PDF 组件的许可另见[第三方声明](backend-go/THIRD_PARTY_NOTICES.md)。

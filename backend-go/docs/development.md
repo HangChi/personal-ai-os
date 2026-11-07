@@ -1,10 +1,8 @@
-# Go 开发与贡献
+# Go 开发指南
 
-Go候选与Java基线共存，固定来源为`cb5d694d62fa93742b5789b97273e76d931ce335`。本阶段修改范围是`backend-go/`、`scripts/migration/`、`specs/033-go-rewrite/`和独立Go工作流；原Java、前端业务代码、42条SQL和原部署资产保持不变。阶段记录及代码按可审查的小批次提交，不把阶段完成等同于发布批准。
+要求 Go 1.27.0+；race 需要 C 工具链。PDF 需要 Poppler `pdfinfo`/`pdftotext`。Java/Flyway 对照需要 JDK 21、Maven 依赖与 Docker。通用开发及前端见[根开发指南](../../docs/development.md)。
 
-## 工具与验证
-
-模块最低Go1.27.0，本地验证使用1.27.1。race需要C工具链；PDF需要Poppler的`pdfinfo`/`pdftotext`。基础测试不需要应用凭据：
+## 本地检查与离线诊断
 
 ```bash
 cd backend-go
@@ -13,9 +11,31 @@ go mod verify
 go test -race -p 1 -count=1 -timeout=20m ./...
 go vet -tags=integration ./...
 go build ./...
+SERVER_PORT=8081 go run ./cmd/personalos
 ```
 
-真实设施测试从仓库根目录调用下列脚本。它们创建随机名称/回环端口/合成凭据的临时资源，并在finally只清理自身资源；禁止把既有服务地址或用户备份替换进夹具。
+默认固定回环监听，不加载 `.env`，不连接业务设施。`/livez` 200、`/readyz` 503；未知业务接口为 404，没有成功占位。首次下载与离线缓存是两种条件：若用 `GOPROXY=off GOTOOLCHAIN=local`，须先准备完整依赖与正确工具链。
+
+## 隔离业务运行
+
+1. 建立专用 PostgreSQL/pgvector 新库及账号、可信 CA/SAN；不能指向已有 Java 业务库。
+2. 使用 Java/独立 Flyway 执行 `backend/src/main/resources/db/migration/` 当前 V1–V49，完成 validate。Go 不 migrate/repair；固定基线测试仍核验原 V1–V42。
+3. 系统环境显式提供 `POSTGRES_HOST`、`POSTGRES_PORT`、`POSTGRES_DB`、`POSTGRES_USER`、`POSTGRES_PASSWORD`、`SERVER_PORT`；TLS 默认 verify-full，`GO_POSTGRES_ROOT_CERT` 指向专用 CA。`GO_POSTGRES_SSL_MODE` 不应被用来规避生产 TLS 校验。
+4. 按需要配置隔离模型端点、认证/CSRF和独立密钥。默认不读 `.env`，需要时只显式 opt-in `GO_DOTENV_ENABLED=true`；`APP_DOTENV_ENABLED=false` 强制禁用。解析不执行 shell。
+5. 在 `backend-go` 启动：
+
+```bash
+go run ./cmd/personalos --foundation --p8 \
+  --migrations /absolute/path/personal-ai-os/backend/src/main/resources/db/migration
+```
+
+`--foundation` 提供基础、任务/确认、模型、对话/Agent；`--p5` 加记忆/日历/提醒，`--p6` 包含 p5 并加知识，`--p7` 包含 p6 并加 MCP/搜索/导入导出，`--p8` 包含 p7 并加维护。容器模式另要求显式 `--container` 和认证/CSRF，见[部署](../deploy/README.md)。prod 拒绝及 readyz 503 始终保留。
+
+共用前端用 `VITE_PROXY_TARGET=http://127.0.0.1:8081` 启动；切换后重新登录，不复用 Spring 会话。角色/profile 与监听规则见[架构](architecture.md)。
+
+## 自动创建资源的隔离回归
+
+以下从仓库根目录运行；runner 创建自身随机容器/回环端口/合成凭据并清理，不得将既有服务或真实备份替换进夹具。
 
 ```bash
 python3 -m unittest discover -s scripts/migration -p 'test_*.py'
@@ -24,143 +44,14 @@ python3 scripts/migration/go_config_disposition.py
 python3 scripts/migration/run_go_postgres_tests.py --tls
 python3 scripts/migration/run_go_redis_tests.py --tls --backup
 python3 scripts/migration/run_go_s3_tests.py
-python3 scripts/migration/compare_go_p6.py
 python3 scripts/migration/run_go_demo_seed_tests.py
 python3 scripts/migration/run_go_eval_tests.py --fixture
 ```
 
-设施runner默认复用本机既有离线缓存。Linux/CI必须显式设置绝对路径`GO_TEST_GOCACHE`与`GO_TEST_GOPATH`，先用对应`GOCACHE`/`GOPATH`运行`go mod download`；子进程固定`GOPROXY=off`、`GOTOOLCHAIN=local`。Java Flyway oracle需要JDK21及原Maven依赖缓存，先在backend执行`./mvnw -B -DskipTests -Dapp.dotenv.enabled=false package`。不打印环境、Compose展开结果或带凭据的进程参数。
+Linux/CI 的设施 runner 需要显式绝对路径 `GO_TEST_GOCACHE`、`GO_TEST_GOPATH`，先准备依赖；子进程使用 `GOPROXY=off GOTOOLCHAIN=local`。Java oracle 需预先构建，运行条件见[原验证配方](validation-history.md)。不得把合成词袋模型的 fixture PASS 当作真实模型质量。
 
-独立[Go CI](../../.github/workflows/go.yml)执行全包race、integration vet、build、Python脚本/不可变基线检查和真实TLS task/confirmation/P8回归，保留失败日志。它不替代原Java/前端CI、真实浏览器、四设施故障、切换演练和人工发布审查；尚未经远端GitHub运行的配置不能声称远端通过。
+## 质量验证与贡献
 
-演示种子验证复用固定基线`scripts/dev/seed-demo-data.py`的七组数据配方，只替换HTTP/SQL边界。runner自行创建随机TLS库和认证Go进程，校验容器标签/名称/回环端口及业务表为空，禁止原main/reset，没有现有目标参数；用完自动停止并清理。真实回读任务状态/标签、全天/重复日程、记忆置顶、Markdown文档/向量、会话消息、31天合成用量和审计结果。原脚本默认清空现有业务表，不能直接用来验证Go，也不能把本测试当用户库/生产模型/浏览器验收。
+[评测指南](../../docs/evaluation.md)区分工程、检索、多阶段、Agent、RAGAS 与真实生产证据。真实模型/公开语料采集/容量测试需明确目标与调用预算；本指南不自动执行。既有失败、子集和完整范围均保留在 [validation-history](validation-history.md)和 [P8](../../specs/033-go-rewrite/p8-completion.md)。
 
-评估工具适配需已有固定Java基线构建产物，用于同一新建TLS库的Java/Go上传参数差分。`--fixture`仅使用26份明确合成的重复标题材料和确定性词袋模型，运行原129条查询与50次pure-vector噪声请求；它验证脚本接线，不验证原文章或真实模型质量。适配器禁止原重建main/delete_all、现有目标参数和任意文件上传，所有命中须属于本次清单。噪声工具的0建议值只是合成模型观测，不修改原0.007判平阈值或默认0.3检索阈值。
-
-`python3 scripts/migration/run_go_eval_tests.py --corpus-dir /absolute/provided-corpus`只读检查26个明确`juejin-<post_id>.md`文件的长度/UTF-8/链接与SHA；不提供目录时退出2/BLOCKED，不隐式搜索/tmp。即使文件齐全也只记FILES_PRESENT_NOT_AUTHENTICATED，不保证文章来源或真实模型质量，不自动运行采集/线上评估。真实验收应另外准备原全文、授权的模型环境和Java/Go质量对照，继续保留发布门禁。
-
-用户明确授权后可采集固定原清单的掘金公开正文，再用独立模式验证实际上传/切分/嵌入/落库/检索。采集器只创建新私有目录，不覆盖原语料；默认6篇，最多26篇，每篇间隔3秒，HTTPS验证/大小/时间均有界，遇无效正文立即停止。全文只保留在仓库外供本地测试，禁止提交或传播；来源、抓取时间、页面标题与哈希写入 manifest。命令中的目录必须是新的绝对路径且父目录真实存在：
-
-```bash
-python3 scripts/migration/fetch_go_juejin_corpus.py --limit 6 --output-dir /private/tmp/personalos-juejin-new-corpus
-python3 scripts/migration/run_go_eval_tests.py --downloaded-corpus-dir /private/tmp/personalos-juejin-new-corpus
-```
-
-采集不完整时退出2/PARTIAL，已保存且通过哈希检查的正文仍可用于第二条命令；不得为凑数跳过错误页或绕过站点保护。独立模式只运行答案文档全部齐备的原查询，缺失查询明确计数，绝不缩减答案列表；使用真实TLS库/API及本地确定性词袋模型，不需要用户模型密钥。它验证正文进入嵌入请求及向量存储，不证明真实模型语义质量或历史语料身份。下载模式把安全元数据/结果写入新的`p8-eval-juejin-<时间>.json`，保留原合成报告。2026-11-04实际16篇/142向量/84查询与50次噪声请求的两轮结果见[P8记录](../../specs/033-go-rewrite/p8-completion.md)。
-
-正常浏览器可显示全文而直接HTTP无法取得正文时，可从实际已呈现的`article-viewer`只读导出HTML和来源收据；不得绕过验证码/登录/保护，不读取既有浏览器资料。导出文件`rendered-<post_id>.html`应保留观察到的title/canonical及正文容器，收据`receipt-<post_id>.json`记录post_id/url/canonical/title/captured_at/path/html_sha256，`acquisition_method`为`normal-browser-rendered-article-viewer`。这是渲染后DOM，不得冒称原始HTTP响应或历史快照。
-
-```bash
-python3 scripts/migration/prepare_go_juejin_corpus.py import-rendered \
-  --input-dir /absolute/private-browser-export \
-  --post-id 7591207451778875418 7472359618326052901 7672711130193936424 7677521340606300170 \
-  --output-dir /absolute/new-imported-corpus
-python3 scripts/migration/prepare_go_juejin_corpus.py merge \
-  --corpus-dir /absolute/previous-acquisition \
-  --corpus-dir /absolute/new-imported-corpus \
-  --output-dir /absolute/new-full-corpus
-```
-
-两命令均离线，只读显式来源、创建新0700目录/0600文件；校验原提取器SHA、URL/canonical、文件和收据哈希，拒绝重复/未知ID/链接路径/标题漂移。合并保留原字节和时间、按原清单排序，再经原loader回读；覆盖不足仍返回2/PARTIAL。2026-11-04最后四篇已取得，26篇/210264正文字符完整，129条原查询材料齐备、零排除；来源和哈希见`p8-corpus-complete-20261104-231937.json`。先前16篇/84题、22篇/111题都是保留的历史范围，不代表新全量模型验收自动通过。
-
-## 获准真实模型的隔离验收
-
-只有用户明确授权后才运行此模式；指定模型配置文件，只读取聊天/嵌入provider、OpenAI兼容端点/密钥/模型名和thinking开关，系统中相同模型键优先，绝不加载文件内数据库、认证或通知配置。当前入口要求显式配置的两个provider均为openai、HTTPS且URL无凭据/查询；不猜模型名或回退模拟结果。
-
-```bash
-python3 scripts/migration/run_go_real_eval_tests.py \
-  --model-env-file /absolute/project/.env \
-  --downloaded-corpus-dir /absolute/downloaded-corpus
-```
-
-预检真实1024维嵌入与非空聊天后，Java和Go各使用新随机TLS数据库、原42迁移及认证API，执行完整答案覆盖的原查询、两次传统知识问答引用核验和50次纯向量噪声采样。嵌入缓存关闭，引用内容必须对应数据库真实分块SHA；不会修改原标注、判平阈值或默认相似度门槛。长文嵌入保守按16块分批，任一批失败不得进入最终写事务。
-
-默认`--mode retrieval`；另加`--mode multistage`只验证固定原问题“BRIN 索引适合什么场景”的完整前台流程。两端均重新入库并核验模型输入，要求READY、recall/rewrite/rerank/evidence全OK、零warning、恰好四次前台chat调用及精确持久引用；隔离进程显式关闭后台入库审查，避免污染计数，不改变应用默认值。该模式不跑直接检索/噪声套件，不生成检索比较；报告明确1题执行、83道材料齐备题未执行和45题缺材料。2026-11-04双端通过见`p8-eval-real-20261104-224539.json`；首轮多调用失败保留，完整多阶段质量和后台审查仍未验收。
-
-完整26篇材料另已跑过双端129条原查询、各两次传统问答/持久引用及50次噪声请求（`p8-eval-real-20261104-232203.json`），241向量/真实Java格式预期输入SHA核验通过。R@5同96.90%、各四条miss，严格MRR Go0.901421/Java0.900775，原判平MRR Go0.907623/Java0.908915；独立新复核保持质量未批准，旧子集结果不覆盖。完整库BRIN多阶段报告`p8-eval-real-20261104-232433.json`各四阶段/四次调用/引用通过，明确1题执行、128题未执行、零缺材料；上述83/45只属于旧16篇范围。所有模式按传入清单实际覆盖计数，不能用材料已齐或单题通过代替完整RAG/事实审查。
-
-如需将检索实现与独立索引/模型调用波动分开定位，可运行补充的同输入对照：
-
-```bash
-python3 scripts/migration/run_go_paired_eval_tests.py \
-  --model-env-file /absolute/project/.env \
-  --downloaded-corpus-dir /absolute/full-downloaded-corpus
-```
-
-必须26篇完整。只创建本次随机TLS库，Java真实上传一次并经Java格式oracle核验嵌入输入，然后Java执行129条原查询并记录真实base64 float32查询向量，停机连接归零后Go读取同一索引并依序接收精确向量回放。输入/模型/维度/编码/顺序不符即拒绝，不向上游回退或重试；正文和向量只在私有文件或内存。文档/向量/Flyway历史全行哈希前后保持，比较原严格及判平名次和完整标题顺序，差异保留并退出1。报告明确Go没有新嵌入调用，默认模型费用上限不变；这不是双端独立模型调用、噪声采样、回答/事实质量或发布验收，也不覆盖已有报告。
-
-2026-11-04首轮`p8-eval-paired-20261104-233557.json`实际退出0：129题完整标题顺序/严格及判平名次全相同，索引全行哈希不变；该轮R@5同96.124%、各五miss。164次真实embedding、零chat、129次Go精确回放，零上游失败/重试，进程/容器清理。只证明这组同输入结果一致，先前独立调用的四miss与指标差异保持；不得合并为同一轮或自动批准质量。
-
-原合成政策冲突/澄清场景使用独立入口，不调用原脚本的固定容器、端口、共享状态或`.env`运行时：
-
-```bash
-python3 scripts/migration/run_go_live_conflict_tests.py \
-  --model-env-file /absolute/project/.env --backend go
-python3 scripts/migration/run_go_live_conflict_tests.py \
-  --model-env-file /absolute/project/.env --backend java
-```
-
-每次新建TLS PostgreSQL/pgvector和独立OpenSearch（固定本地镜像digest、随机回环端口、tmpfs、内存限制），凭据/认证CSRF只属于本次夹具。验证原脚本固定SHA后仅执行原场景try/finally及最终断言，排除其共享环境/正式库准备代码；两份政策、三条问题及CONFLICT/CONFLICT/CLARIFY/双来源/不回答断言原样保留。另核对引用真实持久分块及四阶段全OK/每题三次前台chat；回答仅私有0600文件，Git只收状态/计数/来源SHA。首轮Go缺可选搜索服务的404失败保留，补齐本次真实OpenSearch后Go/Java各三场景全部通过，各11 embedding/9 chat、零上游失败或重试。报告`p8-live-conflicts-go-20261104-234459.json`、`p8-live-conflicts-java-20261104-234606.json`；不替代完整原18条项目知识RAG场景、129条公开文章多阶段或Agent/发布验收。
-
-另加`--mode ingestion-review`执行原两份合成政策后台审查：先关闭本次后台审查上传/设元数据，再停止旧进程并核对连接归零，只重启本次候选开启审查并重新登录。原110秒期限、两份CHECKED_CANDIDATES及OPEN冲突断言保留；UNAVAILABLE不手工重复提交，明确失败并保存状态。默认模型上限不变，既有用户库/配置及生产开关均不触碰。
-
-2026-11-04两端后台审查首轮通过，报告`p8-live-ingestion-review-go-20261104-234857.json`、`p8-live-ingestion-review-java-20261104-235054.json`，各4 embedding/2 chat、零失败重试、一次受控重启和清理归零。OPEN冲突实际Go1/Java2，原断言仅要求存在，保留数量差异而不据此声称全部结果等价；合成政策不是用户存量资料验收。
-
-另加`--mode no-evidence`运行一个补充负例“量子引力理论能否解释黑洞信息悖论的最终答案是什么？”，不是原标注查询。每端仍重新上传16篇并核验142向量；关闭隔离进程后台审查，明确执行原查询0条、84条材料齐备题未执行、45条缺材料，不跑检索/噪声套件或生成质量比较。严格要求answered=false、空引用/命中、固定无内容答复、INSUFFICIENT、四阶段全OK/零warning及恰好三次前台chat，不能调用最终回答模型。
-
-```bash
-python3 scripts/migration/run_go_real_eval_tests.py \
-  --model-env-file /absolute/project/.env \
-  --downloaded-corpus-dir /absolute/downloaded-corpus \
-  --mode no-evidence
-```
-
-默认首个失败即停止；如需独立Java对照，显式加`--backend java`，不重试Go去寻找通过样本。2026-11-04 Go报告`p8-eval-real-20261104-230130.json`与独立Java报告`p8-eval-real-20261104-230340.json`均FAIL/实际退出1：四阶段均OK、无warning、三次前台chat、answered=false、无引用或命中，但实际为CLARIFY，未满足严格INSUFFICIENT契约。保留失败，不把相同安全澄清行为认定为通过或已证明的业务缺陷；分类语义和事实验收继续开放。后续新增的安全计数/哈希字段不回填旧报告；回答与澄清正文仍仅私有本地留存。
-
-默认比较两端；可加`--backend java`或`--backend go`单独定位，但单端报告不生成对照结论。代理只允许精确的`/embeddings`、`/v1/embeddings`及对应chat路径；Java的base64向量保持请求/响应原格式，只在代理中按little-endian float32解码验证1024维/有限/非零，不改写Java基线或拆分其原有批次。原Java超出提供商批次限制时应如实失败。
-
-OpenAI知识文档输入现遵循固定Spring AI 2.0.1默认EMBED格式，包含标题/分块序号/文件名/文档ID；Ollama与普通查询字符串仍保持原行为。两端预期输入均由真实Java依赖oracle逐分块生成SHA，与各自本轮成功的真实嵌入回执比较，数据库原文/引用不变。不对已有库自动重建或重写向量。
-
-完整报告的`result=PASS`仅表示该轮执行完成，质量需同时审阅严格与原判平指标。可运行`python3 scripts/migration/review_go_real_eval.py --report specs/033-go-rewrite/p8-eval-real-20261104-222729.json --write`生成同时间戳的新`p8-real-model-review-<时间>.json`；也可显式`--output-file`指定规格目录内新文件，已有文件拒绝覆盖。旧`p8-real-model-review.json`保留。不请求模型、不改旧报告，拒绝失败/mock/multistage单题/no-evidence负例/指标或覆盖数漂移/原标注变更。报告按实际文档/原查询数区分子集与完整当前语料，二者都不批准历史身份、事实质量或发布。旧16篇实测两端R@5=100%，严格MRR Go0.937500/Java0.943452；原0.007判平后同0.946429，原严格退化保留。
-
-真实密钥只在独立验收/传输进程内存中，通过标准输入交给支持`--use-env-proxy`的Node运行时，使用内置fetch复用HTTPS连接；不会放入进程参数、子应用环境或文件。子应用仅持随机回环代理令牌。默认上限600请求、12聊天请求、100万输入字符、每次聊天最多1024输出token、上游90秒；不自动重试、不跟随重定向，保留证书验证。此为请求/用量上限，不等于金额承诺，报告记录提供商实际返回的token用量。完整回答和引用仅保存于新0700本地证据目录；仓库报告仅含来源/哈希/统计/原查询排序。每次失败另存，不覆盖旧报告；受控子集通过仍不自动认证历史26篇语料、多阶段RAG、事实正确性或发布门禁。
-
-## 完整多阶段、原项目与Agent验收
-
-完整26篇和原129题可以显式执行全部多阶段流程。此模式必须提供三个调用预算，不沿用默认单题预算；每次模型输出仍最多1024 token，不重试失败，不改原查询或可接受来源。以下示例是本次双端运行采用的有界预算：
-
-```bash
-python3 scripts/migration/run_go_real_eval_tests.py --model-env-file /absolute/project/.env --downloaded-corpus-dir /absolute/full-corpus --backend both --mode multistage-full --max-requests 2400 --max-chat-requests 1100 --max-input-characters 40000000
-python3 scripts/migration/review_go_real_eval.py --report specs/033-go-rewrite/p8-eval-real-TIMESTAMP.json --write
-```
-
-每题严格要求READY、四阶段OK、零warning、四次实际前台调用以及原可接受文档/持久分块/显式引用标记匹配。业务失败逐题保留并继续执行原顺序，上游失败立即停止；全部执行不等于全部通过。每端共享本次治理状态，独立模型调用与跨题冲突记录可能影响后续结果，不是逐题状态隔离实验。复核器接受完整执行且无上游失败的PASS/FAIL报告，检查原SHA、覆盖、调用总数与停机连接，保留保护性和降级失败，不批准事实或发布。单题和负例报告仍不能作为完整质量证据。
-
-2026-11-05全量报告`p8-eval-real-20261105-000811.json`Go严格79/129、Java84/129，实际退出1；独立复核已生成同时间戳新文件，质量未批准。Go批次在零证据分类修复前编译，修复后的新二进制负例另验通过；不将两次结果拼成完整新版通过。每端各一条显式引用不匹配及全部保护/降级失败保留，详见P8的T801t。
-
-原项目知识和Agent直接复用固定SHA校验后的原场景及断言；分别执行：
-
-```bash
-python3 scripts/migration/run_go_original_eval_tests.py --model-env-file /absolute/project/.env --backend both --mode project
-python3 scripts/migration/run_go_original_eval_tests.py --model-env-file /absolute/project/.env --backend both --mode agent
-```
-
-项目模式各18题基础/增强，使用本次TLS库及真实OpenSearch。Agent模式保留原滚动摘要默认行为、原六种行为和长历史事实；独立代理只允许登记工具和相互链接的调用历史，将真实非流式完成帧化为本地SSE，不验证上游流式首字延迟。默认RAG模型代理仍拒绝工具/流式请求。所有降级、重复工具保护及先前代理兼容失败均另存，不挑选绿色结果。
-
-2026-11-05原项目报告为Go严格31/36、Java30/36，全部预期来源进入前五但重排等降级保留；Agent修正后的报告为Go7/7、Java6/7，Java知识检索触发原50203保护。Go另已修复零相关证据误归CLARIFY，完整26篇负例严格INSUFFICIENT/空引用/三次前台调用通过，旧Java失败保留；证据见P8进度。
-
-## 本机并发读取补验
-
-```bash
-python3 scripts/migration/run_go_capacity_tests.py --concurrency 32 --requests 10000 --tasks 5000
-```
-
-三个规模参数均必填，最大32并发/每端10000请求/5000任务，只新建本次TLS库。固定Java合成任务/标签、30会话、10文档/向量后停止；两端依次读取同库，每工作线程独立CookieJar。逐响应哈希核对，前后业务全量导出不变，保留原始与按原UTC微秒规则归一化的哈希，停止连接归零后清理。此为数秒本机闭环读取观测，不包含模型、写入、真实备份或持续生产负载，不替代目标p95/错误率/峰值/时长验收。
-
-## 变更规则
-
-从固定Java断言推导Go期望值，不能从Go实现生成自己的期望。原Java测试文件及1119个声明逐项记账；补充真实副作用、事务/查询数、失败/取消与并发证据。跳过、观察项和同Java基线失败都必须保留，不能当成PASS。
-
-依赖固定版本并更新`THIRD_PARTY_NOTICES.md`；新增配置要补来源、默认值、支持/拒绝及脱敏测试。使用实际事务和租约，不通过重试未知写结果掩盖故障。测试先确认可重复的独立数据边界，禁止全库清理。完整完成检查为`go_inventory.py check-complete`，未verified项或任一未通过发布门禁必须使其失败。
-
-架构与接口见[architecture.md](architecture.md)，安全规则见[security.md](security.md)，本地/Compose/监控/备份运维见[部署说明](../deploy/README.md)。
+遵循[贡献指南](../../CONTRIBUTING.md)及[双端同步规则](../../docs/backend-parity.md)：保持协议和 SQL 单一来源，增加两版测试；不要修改固定基线/标注来消除差异，不把单项修复写成全量认证。敏感信息与未知外部写处理见[安全](security.md)。

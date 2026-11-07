@@ -1,5 +1,7 @@
 # 数据库事务基础（P1 子集）
 
+> 本页记录模块契约及分阶段验证范围。当前启动/模块组合见[Go 文档中心](../../../docs/README.md)，两版最新能力与差异见[双端说明](../../../../docs/backend-parity.md)；下文固定基线、测试数和 P1/P3 等范围不是当前全产品或生产批准。
+
 使用 Go 标准库 `database/sql` 管理连接池，真实连接器锁定 `github.com/jackc/pgx/v5 v5.12.0`。`Open` 必须接收调用方显式提供的 `driver.Connector`；没有默认 DSN、全局数据库或自动迁移，已接显式Foundation，默认离线诊断不连接。依赖许可证见 [第三方声明](../../../THIRD_PARTY_NOTICES.md)。
 
 ## 显式 PostgreSQL 连接器

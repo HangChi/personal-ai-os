@@ -1,5 +1,7 @@
 # 数据库租约与 fencing
 
+> 本页记录模块契约及分阶段验证范围。当前启动/模块组合见[Go 文档中心](../../../docs/README.md)，两版最新能力与差异见[双端说明](../../../../docs/backend-parity.md)；下文固定基线、测试数和 P1/P3 等范围不是当前全产品或生产批准。
+
 对应固定 Java DatabaseCoordination 的 acquire/renew/Lease/close；consume 位于 ratelimit。显式 New(Pool) 才启动 10 秒续租循环，已接显式Foundation，默认诊断不创建协调器。使用 V37 原表和数据库时钟，租期 120 秒；获取/释放为独立短事务，空闲 slot 按顺序通过 SKIP LOCKED 领取，持有期间不占用连接。容量 1–100，资源长度按 Java UTF-16 单元限制为 160（空资源保留）。
 
 Fence(ctx, Transaction) 必须在业务最终写事务中调用并处理错误，以所有者 UUID、未过期条件和行锁防止旧执行者写入；没有活动写事务、只读事务、结束事务和失效租约均拒绝。业务仓储使用 Pool.WithManagedTx 显式传递 Transaction，不能把 SQL 指针带出回调或自行提交/回滚。

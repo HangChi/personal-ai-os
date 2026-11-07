@@ -1,95 +1,62 @@
-# 参与贡献
+# 贡献指南
 
-先说清一件事：这是一个**个人自托管项目**，没有产品团队、没有路线图会议。
-接受贡献，但请按下面的方式提，能省掉双方很多来回。
+欢迎通过 Issue 和 Pull Request 改进 Personal AI OS。修正文档、复现缺陷、补充测试和改善体验都可以参与。较大的功能或架构变化请先用 Issue 说明使用场景、范围及与现有能力的关系。
 
-## 最快的参与方式
+## 开始开发
 
-1. **报 bug** —— 带上复现步骤与实测输出（见下文「报缺陷要带什么」）
-2. **改文档** —— 错别字、失效的命令、跑不通的步骤，直接提 PR，不必先开 issue
-3. **提功能** —— **先开 issue 说明场景**。项目按阶段串行推进，
-   一个「顺手加的功能」很可能与下一阶段的既定设计冲突
+1. 阅读[项目 README](README.md)、[开发指南](docs/development.md)和[架构](docs/architecture.md)。
+2. Java 使用 JDK 21、Maven Wrapper 和 Docker；前端推荐 Node 22.18+；Go 使用 1.27.0+，特有依赖见[Go 指南](backend-go/docs/development.md)。
+3. 建立专用开发配置，不使用现有用户库作为测试夹具，不提交 `.env`、Cookie、真实模型密钥或个人资料。
+4. 明确修改影响 Java、Go、前端与 SQL 哪些部分，按[双端同步规则](docs/backend-parity.md)维护。
 
-## 本地跑起来
+启动命令见开发指南，各个长驻进程应使用独立终端。无真实模型可用本地 mock；它不能替代语义评测。
 
-前置：JDK 21、Docker（含 `docker compose`）、Node.js `^20.19.0 || >=22.12.0`。
-不需要预装 Maven —— 用仓库自带的 `./mvnw`。
+## 提交前验证
 
-```bash
-cp .env.example .env          # 至少填 OPENAI_API_KEY 等模型配置
-docker compose up -d          # PostgreSQL 17 + pgvector，映射到 55432
-cd backend && ./mvnw spring-boot:run
-cd frontend && npm install && npm run dev
-```
-
-细节与排错见 [`docs/development.md`](docs/development.md)。
-
-## 提交前必须跑的命令
+按改动范围运行，并在 PR 中说明实际执行、未执行及原因：
 
 ```bash
-# 后端：单元 + Testcontainers 集成测试，含 83% 行 / 65% 分支覆盖率门禁
-cd backend && ./mvnw -B test
-
-# 前端：与 CI 完全一致的五步
-cd frontend && npm run lint && npm run format:check && npm run type-check \
-  && npm run test:logic && npm run test:component
+(cd backend && ./mvnw -B test)
+(cd backend-go && go test -race -p 1 -count=1 -timeout=20m ./...)
+(cd backend-go && go vet -tags=integration ./... && go build ./...)
+(cd frontend && npm run lint && npm run format:check && npm run type-check \
+  && npm run test:logic && npm run test:component && npm run build)
+python3 scripts/docs/check_docs.py
+python3 scripts/docs/generate_routes.py --check
 ```
 
-**PR 里请说明你跑了哪些**。CI 会跑同一套，但「等 CI 告诉我」比自己先跑一轮更慢。
+Java 测试需 Docker，包含行 83%/分支 65%覆盖率门禁。Go 设施测试、前端组件交互及真实模型验证各有独立范围；不要用编译通过、固定 oracle 或合成 fixture 声称生产验收。真实模型会产生外部请求和费用，需独立目标/授权/预算，见[评测指南](docs/evaluation.md)。
 
-> ⚠️ 本机若 `JAVA_HOME` 为空，`mvn` 可能落在非 21 的 JDK 上，症状是
-> 集成测试成片失败且日志里有 `IllegalClassFormatException`（class 主版本不认识）。
-> 显式指定：`JAVA_HOME=/path/to/jdk-21 ./mvnw -B test`。判据是这类异常的条数应为 **0**。
+## 实现约定
 
-## 代码约定
+项目约束与历史设计见[宪法](.specify/memory/constitution.md)及 `specs/`。主要规则：
 
-完整约束以项目宪法为准：[`.specify/memory/constitution.md`](.specify/memory/constitution.md)。
-最常被退回的几条：
+- SQL 只追加到 Java 唯一迁移目录，不修改已发布迁移；Go 不自行复制或执行迁移。
+- Controller 不直接操作仓储，不返回实体；业务 Service 承担规则，Java 使用构造器注入。
+- 模型、嵌入、解析、外部网络移出短事务；Go 传播 context/取消，持久任务提交验证租约与版本。
+- 写操作保留幂等、审计、人工确认及未知结果保护，不能用重试掩盖不确定副作用。
+- Agent 工具同步两版 Schema、分发、策略、证据、直接目录与测试；模型无自行批准能力。
+- 前端公共组件放 `src/components`，纯函数放 `src/lib`；生产组件自动注册，颜色使用现有 `--el-*`/`--os-*` 设计变量。
+- 保留固定 Java oracle、原标注与历史失败，不通过重写预期值消除差异。
 
-| 约定 | 说明 |
-|---|---|
-| 结构变更只走 Flyway | `ddl-auto` 只能是 `validate`；已合并的迁移**不得修改**，只能追加新的 |
-| 写操作必经 Service | Controller 不直接调 Repository，也不含业务逻辑 |
-| 不暴露 Entity | 对外一律 DTO |
-| 构造器注入 | 禁止字段注入 `@Autowired` |
-| 长耗时步骤移出事务 | 模型调用、嵌入、文档解析都不许在 `@Transactional` 里 |
-| 不提交密钥 | 含 `.env`、测试里的真实 token、日志里的完整 URL |
+## 文档同步
 
-前端另有几条（详见 `frontend/` 的结构）：
+README 面向首次访问者，当前指南在 `docs/`，Go 装配在 `backend-go/docs/`。改动 Agent、RAG、配置、状态、接口或迁移时同步两版入口及[差异表](docs/backend-parity.md)。接口变更运行 `python3 scripts/docs/generate_routes.py`，不要手改生成清单。
 
-- 公共组件放 `src/components/`，靠 unplugin 自动注册，**不要全局注册**
-- 纯函数放 `src/lib/`，并配 `.mjs` 测试；视图只做编排
-- 颜色只消费 `--el-*` / `--os-*` 变量，不写死色值
+有日期的评测/复盘保留实验范围和原始结果；新增结论另写报告并登记[报告索引](docs/reports/README.md)。不得把文档中的旧路径、测试数或分数当作当前服务的自动认证。
 
-## 报缺陷要带什么
+## Issue 与 PR
 
-缺了这三样，多半只能回你一句「复现不了」：
+缺陷报告请包含最小复现、预期/实际结果、后端版本/配置范围、时间及脱敏 `requestId`/响应。不要贴完整环境文件、提示词、Cookie、私有文档或上游错误原文。安全问题使用[私有报告流程](SECURITY.md)。
 
-1. **复现步骤**（尽量给 `curl` 或最小操作序列，而不是「点了几下就崩了」）
-2. **实际 vs 期望**（两句就够）
-3. **证据** —— 后端日志里带 `requestId` 的那几行、接口响应体、或数据库里的实际行
+PR 说明问题、修改后的行为、双版本影响、验证和残余限制；尽量保持单一主题。AI 辅助生成的贡献遵循同一标准，提交者应理解代码并核对测试与文档。
 
-不要贴完整的 `.env`；密钥请打码。
+提交信息推荐 `<type>(<scope>): <简述>`：
 
-## 关于 AI 辅助提交
-
-这个仓库的多数改动是借助 AI 完成的，**这不影响合并标准**：
-代码要能解释、测试要真能抓到缺陷、注释里不要写「此处待优化」。
-提 PR 时如果某段是生成的，请你自己先读懂 —— 审阅时我会问「为什么这么写」。
-
-## 提交信息
-
-格式：`<type>(<scope>): <中文简述>`
-
-```
-fix(knowledge): 文档替换加互斥，避免两代向量混存
-feat(chat): 会话级互斥，同会话并发流返回 409
-docs(ops): 备份恢复步骤补上 pg_restore 的 -c 参数
+```text
+fix(knowledge): 避免替换时混入两代向量
+feat(chat): 增加持久执行恢复
+docs(agent): 补充工具确认与未知结果说明
 ```
 
-类型：`feat` / `fix` / `refactor` / `test` / `docs` / `chore` / `perf`。
-scope 用模块名（`chat` / `task` / `knowledge` / `calendar` / `memory` / `mcp` / `ui` / `ops`）。
-
-## 许可证
-
-提交即表示同意以 [Apache License 2.0](LICENSE) 授权。
+类型可用 feat/fix/refactor/test/docs/chore/perf，scope 使用模块名。提交贡献即表示同意以 [Apache License 2.0](LICENSE)授权。

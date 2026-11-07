@@ -1,5 +1,7 @@
 # 模型并发门控
 
+> 本页记录模块契约及分阶段验证范围。当前启动/模块组合见[Go 文档中心](../../../docs/README.md)，两版最新能力与差异见[双端说明](../../../../docs/backend-parity.md)；下文固定基线、测试数和 P1/P3 等范围不是当前全产品或生产批准。
+
 对应固定 Java ModelConcurrencyGate，默认上限 4。本地 TryAcquire 非阻塞，独立测试构造 NewLocal；多实例必须显式 NewShared(limit, role, Coordinator)。三种 Worker 先获取 model-background(max(1,limit-1))，再获取 model-concurrency(limit)；api/combined 只取后者。limit=1 按原 Java 行为没有额外 API 槽，不擅自更改策略。
 
 拒绝或异常归还已取得的后台/本地许可；成功持有到 Release。关闭幂等，共享释放失败仍尝试后台清理并归还本地容量，不重试、不回退本地模式。共享容量仍受协调器 1–100 限制；错误通过显式返回值传递。已接Foundation HTTP与五角色基础装配；真实业务Worker按P4–P6迁移。

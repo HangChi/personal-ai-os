@@ -1,6 +1,6 @@
 # Go 架构与接口
 
-`cmd/personalos`解析显式环境和模块开关，`internal/app`组合生命周期、HTTP与业务服务；`internal/platform`负责配置、安全链、数据库、协调和观测，`internal/business`承载业务。保持原Vue前端、统一响应信封/错误码、HTTP/SSE及MCP契约，具体104路由/27工具/95钩子见[来源索引](../../specs/033-go-rewrite/surface.md)，兼容要求见[contracts.md](../../specs/033-go-rewrite/contracts.md)。
+`cmd/personalos`解析显式环境和模块开关，`internal/app`组合生命周期、HTTP与业务服务；`internal/platform`负责配置、安全链、数据库、协调和观测，`internal/business`承载业务。保持原Vue前端、统一响应信封/错误码、HTTP/SSE及MCP契约，固定迁移基线的104路由/27工具/95钩子见[来源索引](../../specs/033-go-rewrite/surface.md)，兼容要求见[contracts.md](../../specs/033-go-rewrite/contracts.md)。当前扩展后的路由见[自动清单](../../docs/reference/http-routes.md)，23项标准Agent工具及可选扩展见[工具目录](../../docs/agent-tools.md)；Go实现导航见[Agent](agent.md)与[RAG](rag.md)。
 
 ## 启动与角色
 
@@ -18,7 +18,7 @@ Worker业务端口拒绝API；管理端口独立。`/livez`只证明响应；`/r
 
 ## 数据与恢复
 
-PostgreSQL是任务、会话、Run、确认、幂等、索引与投递的事实来源；原42条迁移由独立Java Flyway执行，Go只读校验历史和脚本SHA/CRC。池与事务显式传递context；使用数据库时钟、原子领取、租约和fencing阻止陈旧执行器提交。确认占位先独立提交，再执行处理器并持久化最终状态。
+PostgreSQL是任务、会话、Run、确认、幂等、索引与投递的事实来源；当前共享V1–V49迁移由独立Java Flyway执行；原V1–V42仍作为不可变对照。Go只读校验历史和脚本SHA/CRC。池与事务显式传递context；使用数据库时钟、原子领取、租约和fencing阻止陈旧执行器提交。确认占位先独立提交，再执行处理器并持久化最终状态。
 
 幂等区分HTTP与TOOL。外部写结果不明时保留IN_PROGRESS，停止自动重放，不能用过期清理解除保护。legacy SSE断连取消上游且不落半截助手消息；持久Run读者断开后继续后台，显式停止才取消。事件游标/数据库状态支持重连，内存Hub仅加速通知。
 

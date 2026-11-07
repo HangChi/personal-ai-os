@@ -1,5 +1,9 @@
 # 原 SQL、历史与隔离恢复
 
+> 本页记录模块契约及分阶段验证范围。当前启动/模块组合见[Go 文档中心](../../../docs/README.md)，两版最新能力与差异见[双端说明](../../../../docs/backend-parity.md)；下文固定基线、测试数和 P1/P3 等范围不是当前全产品或生产批准。
+
+当前只读取 Java 共享目录 **V1–V49**；下面 V1–V42 的哈希、DDL 和恢复数字均属于固定 `cb5d694` oracle，不应改写。当前目录允许追加迁移但不复制 SQL，Go 不执行 migrate/repair。
+
 `LoadVersioned(fs.FS)` 只读取显式目录，按整数版本排序并计算原字节 SHA-256。当前支持原 Java 的单层 V1..Vn 文件；重复、缺号、非整数版本、repeatable/undo、符号链接/子目录、不可读、空白或非法 UTF-8/NUL 全部失败，不返回部分成功结果。非 SQL 普通文件可忽略。SQL 不拆分、不插值、不改换行或编码。
 
 目录单测逐一对照固定 Java 基线 cb5d694 的 inventory.json，必须包含全部 42 个原文件且哈希一致。当前不复制SQL到Go；Foundation启动只读校验历史，不提供Go生产迁移执行器。SHA-256 是来源完整性证据，**不是 Flyway checksum**。

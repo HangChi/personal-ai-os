@@ -1,5 +1,7 @@
 # Redis 扩展
 
+两版均支持相应扩展，但需按各自装配启用。Go 会话序列化与 Spring 不互通，切换需重新登录；TLS/专用客户端见[Go 安全](../backend-go/docs/security.md)，公共配置见[配置](configuration.md)。本文末实验仅属于标明日期。
+
 ## 共享会话
 
 部署多个 API 实例时，将各实例的 `REDIS_SESSION_ENABLED` 设为 `true`，并配置同一 `REDIS_SESSION_URI` 和 `REDIS_SESSION_NAMESPACE`。命名空间按环境隔离。使用独立、启用认证、配置 `noeviction` 的 Redis，按并发会话数量分配容量。生产连接使用 TLS，HTTPS 部署开启安全 Cookie。
