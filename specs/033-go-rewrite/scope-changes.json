@@ -2903,7 +2903,7 @@
     {
       "id": "scope:backend-quality-gates-20261107",
       "status": "in_progress",
-      "source_commit": "912a5575c2d7425639e40cc01bbf83a13b99da86",
+      "source_commit": "1592c5aed7f74f6d539ad5f280969851e2e48b5c",
       "summary": "Java 行/分支与 Go 完整集合语句分别要求 95%，新增变更代码门禁、13 项 Agent/RAG 关键场景和 18 个双版本共享契约。证据绑定完整源码提交；Go 分支仍未测量。",
       "files": [
         {
@@ -3010,6 +3010,11 @@
           "path": "testdata/agent-rag/execution-budget.json",
           "baseline_sha256": null,
           "candidate_sha256": "20434b7c1923871c4c6e93a0e8522be1caef1db0802c2e0e040ed7b8e55f6127"
+        },
+        {
+          "path": "docs/reports/quality-gates-2026-11-07.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "059fed58e2ac2603c60f6740f684d41b57b29326398e71093f86cdee70146997"
         }
       ],
       "parity": {
@@ -3025,7 +3030,8 @@
       "evidence": [
         "docs/testing.md",
         "scripts/coverage/critical-scenarios.json",
-        ".github/workflows/coverage.yml"
+        ".github/workflows/coverage.yml",
+        "docs/reports/quality-gates-2026-11-07.md"
       ],
       "limitations": [
         "质量门禁通过不代表真实模型质量或生产发布批准。",
@@ -3036,7 +3042,7 @@
     {
       "id": "scope:prior-documentation-and-test-additions-20261107",
       "status": "in_progress",
-      "source_commit": "1ed523a03ff54db39221775d9e1243ab1572b200",
+      "source_commit": "1592c5aed7f74f6d539ad5f280969851e2e48b5c",
       "summary": "登记此前已提交但未列入迁移增量清单的文档、离线检查和 Java 测试新增文件；按原提交逐文件核对字节，不改变固定基线或宣称迁移完成。",
       "files": [
         {
@@ -3467,7 +3473,7 @@
         {
           "path": "docs/reports/README.md",
           "baseline_sha256": null,
-          "candidate_sha256": "0f6fa85a61f982e0506bde40fdc79c178b4c1710102a23be7d4ad000de393d30"
+          "candidate_sha256": "570dffb92cce6a13cb1d41cd5c3402ee68d68f0716a8d10c51c2df0aa9e4067d"
         },
         {
           "path": "docs/reports/coverage-agent-rag-2026-11-07.md",

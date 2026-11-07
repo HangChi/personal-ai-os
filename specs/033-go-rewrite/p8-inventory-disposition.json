@@ -91,8 +91,8 @@
       "id": "file:.github/workflows/ci.yml",
       "path": ".github/workflows/ci.yml",
       "sha256": "f044786d5e5e8d6911b5a1192729aa12715db954b3bd713a8ed06bb8139289b8",
-      "disposition": "explicit-asset-adaptation",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:.gitignore",
@@ -245,8 +245,8 @@
       "id": "file:CONTRIBUTING.md",
       "path": "CONTRIBUTING.md",
       "sha256": "527241c6bf98eea820e705df7154781193cbac6296401e28733a3d62dcc778be",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:LICENSE",
@@ -259,15 +259,15 @@
       "id": "file:README.md",
       "path": "README.md",
       "sha256": "570f0bba752395c87519d25af3bac2648d2708c196400e8ff0cc0400ec756a32",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:SECURITY.md",
       "path": "SECURITY.md",
       "sha256": "917269dc48eb2a552fce949fe0256fb637b7d19a682622d8846b1977dd9cd2d9",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/.dockerignore",
@@ -3423,8 +3423,8 @@
       "id": "file:backend/src/test/java/com/personalos/agent/plan/AgentPlanServiceTest.java",
       "path": "backend/src/test/java/com/personalos/agent/plan/AgentPlanServiceTest.java",
       "sha256": "5cf7f361254fa0f4ec14a35aedd9ad28aafbab862d1252aeca74628deaaa71b9",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/agent/plan/AgentPlanToolsTest.java",
@@ -3437,8 +3437,8 @@
       "id": "file:backend/src/test/java/com/personalos/agent/plan/PlanPromptContributorTest.java",
       "path": "backend/src/test/java/com/personalos/agent/plan/PlanPromptContributorTest.java",
       "sha256": "3511b5fcf3139358d92cf0a60360a1484681478e8523c715bd5ce4aac1d59a14",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/agent/plan/PlanWiringTest.java",
@@ -3465,8 +3465,8 @@
       "id": "file:backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java",
       "path": "backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java",
       "sha256": "2fb09b5398bd417733f331a65dfd02ddc469569da7e2543b6f359dbffb926335",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/calendar/push/WebPushTransportTest.java",
@@ -3563,8 +3563,8 @@
       "id": "file:backend/src/test/java/com/personalos/chat/memory/JpaChatMemoryTest.java",
       "path": "backend/src/test/java/com/personalos/chat/memory/JpaChatMemoryTest.java",
       "sha256": "4772bae7c0748e8cc30fda5a4f69845e1efe83f6d58150e9a3334854a46a9275",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/metrics/ChatStreamMetricsTest.java",
@@ -3577,8 +3577,8 @@
       "id": "file:backend/src/test/java/com/personalos/chat/service/ChatAttachmentContextBuilderTest.java",
       "path": "backend/src/test/java/com/personalos/chat/service/ChatAttachmentContextBuilderTest.java",
       "sha256": "753dc5edadbd6874ce8d8b10cf69d9154f14740f4573538760abc0dbdb010709",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/service/ChatAttachmentServiceTest.java",
@@ -3591,8 +3591,8 @@
       "id": "file:backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java",
       "path": "backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java",
       "sha256": "78dbc6eef39c3603633dc3c758b8e023ad552954b9fb420febae29b57fde4ab4",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/service/ChatMessageServiceRewindTest.java",
@@ -3605,22 +3605,22 @@
       "id": "file:backend/src/test/java/com/personalos/chat/service/ChatPromptAssemblerTest.java",
       "path": "backend/src/test/java/com/personalos/chat/service/ChatPromptAssemblerTest.java",
       "sha256": "166936cfb847106ae7d46d0aa1d93f81afcfce796e081853f4870bf54c5d600d",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java",
       "path": "backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java",
       "sha256": "74be0c8e4dc6589646d07cb3d49dafd0e1a70798b4dad00dd0ba0b46af2dd2f4",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/service/ChatSummaryServiceTest.java",
       "path": "backend/src/test/java/com/personalos/chat/service/ChatSummaryServiceTest.java",
       "sha256": "3470b2c86bd8d1412dcef3b2cba2516451c93f18f6fcd7bfbb11dfa7898f4483",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/service/ChatTurnFinisherTest.java",
@@ -3633,8 +3633,8 @@
       "id": "file:backend/src/test/java/com/personalos/chat/service/UsageStatsServiceTest.java",
       "path": "backend/src/test/java/com/personalos/chat/service/UsageStatsServiceTest.java",
       "sha256": "a46ad541145f43aa64cad88f81a03bf286f51d2eb98b1e201acb287b92a522c9",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/chat/storage/S3AttachmentStoreIntegrationTest.java",
@@ -3675,15 +3675,15 @@
       "id": "file:backend/src/test/java/com/personalos/common/ai/AiChatClientProviderModelSelectionTest.java",
       "path": "backend/src/test/java/com/personalos/common/ai/AiChatClientProviderModelSelectionTest.java",
       "sha256": "4fbae7415a85e2239fd223c361b35d1ade27c6dac630760fa602641f13daa98c",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/ai/CalendarWriteGuardChatModelTest.java",
       "path": "backend/src/test/java/com/personalos/common/ai/CalendarWriteGuardChatModelTest.java",
       "sha256": "77381f1460cef7c89831fcf2b9c7131fe26c3e45cabf5d91bee77506e2c7280b",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/ai/ContextBudgetPersistenceIntegrationTest.java",
@@ -3696,8 +3696,8 @@
       "id": "file:backend/src/test/java/com/personalos/common/ai/ContextBudgetServiceTest.java",
       "path": "backend/src/test/java/com/personalos/common/ai/ContextBudgetServiceTest.java",
       "sha256": "076ae1d1fde44e1acdf3680fe9e4671b8a715fe4b21da2b1f4ab6798d6a5a64e",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/ai/ContextGuardChatModelTest.java",
@@ -3745,8 +3745,8 @@
       "id": "file:backend/src/test/java/com/personalos/common/ai/ToolSchemaOverheadTest.java",
       "path": "backend/src/test/java/com/personalos/common/ai/ToolSchemaOverheadTest.java",
       "sha256": "f56bb551cc0387cb4ea4e186a5482fdd9cfd0fba42800713c0a5d5213f28392e",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/ai/cache/CachedEmbeddingModelTest.java",
@@ -3808,8 +3808,8 @@
       "id": "file:backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java",
       "path": "backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java",
       "sha256": "5187bfeb73b2de8a408ebd327667214fb87e8dd09ffc15018d1f0fb454f3895a",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/ai/config/ModelKeyConverterTest.java",
@@ -3850,8 +3850,8 @@
       "id": "file:backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java",
       "path": "backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java",
       "sha256": "7b86e33afc8c9c4b057c50e60f96f2be8a19f2c5882d11c27ba67386df67c215",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/ai/config/ModelWindowProbeHttpTest.java",
@@ -3878,8 +3878,8 @@
       "id": "file:backend/src/test/java/com/personalos/common/ai/tool/ToolExecutorTest.java",
       "path": "backend/src/test/java/com/personalos/common/ai/tool/ToolExecutorTest.java",
       "sha256": "59f69259a6dadf891714b7e56d4885f6b3d2b3915be2252358ab0eed247f1d3f",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/api/ApiResponseTest.java",
@@ -3934,8 +3934,8 @@
       "id": "file:backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java",
       "path": "backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java",
       "sha256": "44bf7811192aaed965078106b08128033aa0a33d6d152fefbade7dd89892644f",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/common/confirmation/ConfirmationPromptContributorTest.java",
@@ -4193,8 +4193,8 @@
       "id": "file:backend/src/test/java/com/personalos/knowledge/rag/RagModelGatewayTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/rag/RagModelGatewayTest.java",
       "sha256": "ffda416b847c97e597c68ec890194ac097d909fb6c4276e8b5fde20be5742643",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
@@ -4207,8 +4207,8 @@
       "id": "file:backend/src/test/java/com/personalos/knowledge/reader/DocxDocumentReaderTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/reader/DocxDocumentReaderTest.java",
       "sha256": "6cfa139ce35044f7906c5c9eb85bf0f6c675f5f938926eb851cf724191eecfdb",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/reader/ImageDocumentReaderTest.java",
@@ -4326,8 +4326,8 @@
       "id": "file:backend/src/test/java/com/personalos/mcp/status/McpStatusServiceTest.java",
       "path": "backend/src/test/java/com/personalos/mcp/status/McpStatusServiceTest.java",
       "sha256": "07f0412ded2d7f04c1f822087d96c7c5ec3ca33db9c1f90fb96df4ca0a675be4",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/mcp/tool/McpToolCallbackProviderTest.java",
@@ -4375,8 +4375,8 @@
       "id": "file:backend/src/test/java/com/personalos/memory/MemoryServiceTest.java",
       "path": "backend/src/test/java/com/personalos/memory/MemoryServiceTest.java",
       "sha256": "58077f8063de097c83b274125096c8996cc09c7e46f0d88a5415bd89e0e019c8",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/memory/service/MemoryEmbeddingServiceTest.java",
@@ -4592,43 +4592,43 @@
       "id": "file:docs/agent-reliability.md",
       "path": "docs/agent-reliability.md",
       "sha256": "ff9fa90a5faa42d9adf84798f083cd23fea885e233f7d73a74d58a28e153826f",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/api.md",
       "path": "docs/api.md",
       "sha256": "df65642c51878fe219af2fe53afdb7b4cacf39ba729393908704984a6ec16644",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/architecture.md",
       "path": "docs/architecture.md",
       "sha256": "d3590c65b95a19f7c402b4c6f8c44043463154b7217d73846cb6e879f186112d",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/development.md",
       "path": "docs/development.md",
       "sha256": "34265e72696d12dbc2e5a9b101c72ff226291d7fb4178f539832796f89366ce1",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/distributed-workers.md",
       "path": "docs/distributed-workers.md",
       "sha256": "c905fbecf0bf82bd036182f50e40be9567b991869a89c1d96779bd76380f7746",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/e2e-report-2026-10-29.md",
       "path": "docs/e2e-report-2026-10-29.md",
       "sha256": "9778e2aa891003f522481e47918a634f44844b44ad4578d70c9638049465c1c6",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/mcp.md",
@@ -4641,29 +4641,29 @@
       "id": "file:docs/operations.md",
       "path": "docs/operations.md",
       "sha256": "cea7f5b3911f2e7668ff8e8f76d4557ae75a383d75e89ed6257704709aba77f4",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/redis-extensions.md",
       "path": "docs/redis-extensions.md",
       "sha256": "8c76f7c1074affb3cac31d07ff764c4f334e97efb281a2bd110d781896d1a713",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/reminder-stream-and-queue.md",
       "path": "docs/reminder-stream-and-queue.md",
       "sha256": "2284c0971ab2d645cb621fe4455067bcf22ce341d4222fd4b4fe128cc4deb349",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:docs/review-2026-10-27.md",
       "path": "docs/review-2026-10-27.md",
       "sha256": "8589efbd9ed611f59115637e736c2eb2a06cf4fde36e940ee6738acdff03a809",
-      "disposition": "retained-specification-or-history",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/.dockerignore",
@@ -6482,7 +6482,7 @@
       "id": "file:scripts/eval/README.md",
       "path": "scripts/eval/README.md",
       "sha256": "81b7035560d17ed1c11cc603b336ae030c9422f89f556a77d71194f293ed9e36",
-      "disposition": "retained-live-evaluation-open",
+      "disposition": "post-baseline-scope",
       "status": "in_progress"
     },
     {
@@ -7665,7 +7665,7 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
       "files": 72
     },
     {
@@ -7677,13 +7677,13 @@
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
       "files": 40
     },
     {
       "id": "scope:test-and-stream-shutdown-20261106",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
       "files": 43
     },
     {
@@ -7695,19 +7695,19 @@
     {
       "id": "scope:safe-automation-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
+      "source_commit": "7a852359f13108e3a4f50197867ef5c70548cf2f",
       "files": 75
     },
     {
       "id": "scope:recovery-and-rag-followup-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
       "files": 50
     },
     {
       "id": "scope:write-negotiation-and-bounded-search-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
       "files": 20
     },
     {
@@ -7721,6 +7721,24 @@
       "status": "in_progress",
       "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
       "files": 35
+    },
+    {
+      "id": "scope:agent-rag-coverage-20261107",
+      "status": "in_progress",
+      "source_commit": "7a852359f13108e3a4f50197867ef5c70548cf2f",
+      "files": 36
+    },
+    {
+      "id": "scope:backend-quality-gates-20261107",
+      "status": "in_progress",
+      "source_commit": "1592c5aed7f74f6d539ad5f280969851e2e48b5c",
+      "files": 22
+    },
+    {
+      "id": "scope:prior-documentation-and-test-additions-20261107",
+      "status": "in_progress",
+      "source_commit": "1592c5aed7f74f6d539ad5f280969851e2e48b5c",
+      "files": 104
     }
   ]
 }
