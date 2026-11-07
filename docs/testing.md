@@ -24,6 +24,12 @@ Java 行覆盖按 JaCoCo 的可执行行统计，有指令命中即为已覆盖�
 
 集成标签引入的支持包保留在分母。不新增业务排除项，不用旧 profile 或定向测试填补全量结果。各阶段创建本轮独立设施，不读取真实 .env，不连接既有业务库，不调用收费模型。
 
+默认集合也验证生产实现中的跨组件控制流：例如[工具执行循环](../backend-go/internal/business/chat/engine_tool_loop_contract_test.go)运行真实 Engine、Registry、幂等服务和模型协议客户端，只在 SQL 与 HTTP 传输边界注入合成输入；检查工具回执、引用编号、计划纠正与最终持久化，而非仅检查函数被调用。[文档更新与删除](../backend-go/internal/business/knowledge/document_mutation_contract_test.go)逐步注入存储故障，检查回滚和租约释放。
+
+SQL 边界替身不解释 SQL，不能证明 PostgreSQL 的约束、锁和隔离语义；这些仍由隔离数据库集合验证。[AMQP 连接测试](../backend-go/internal/business/knowledge/signal_connection_test.go)只验证未完成握手的取消与失败重试，不模拟成功发布或消费。默认集合覆盖率提升后，完整设施测试和原有门禁仍需运行，两个集合继续分别报告。
+
+2026-11-07 的[默认集合扩展报告](reports/default-coverage-2026-11-07.md)记录 Go 默认语句 91.8744%、完整集合语句 95.4579%，以及同一源码修订下的 Java 回归、关键场景和证据；这些是该次运行结果，不是今后提交自动继承的指标。
+
 ## Agent / RAG 必选场景
 
 [机器可读清单](../scripts/coverage/critical-scenarios.json)绑定两版实际测试方法和指定执行阶段。验收器读取新生成的 JUnit XML、Go JSON 和集成 runner 日志，要求以下场景全部通过：
