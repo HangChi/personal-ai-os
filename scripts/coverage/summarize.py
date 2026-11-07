@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Summarize JaCoCo branches and Go statements without counting duplicate blocks."""
+"""Gate Java lines/branches and Go statements, keeping the metrics separate."""
 
 import argparse
 import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
+from decimal import Decimal
 
 
 def metric(covered, total):
-    if total <= 0:
+    if total <= 0 or covered < 0 or covered > total:
         raise ValueError("Coverage denominator must be positive")
     return {"covered": covered, "total": total, "percent": 100 * covered / total}
 
@@ -63,14 +64,26 @@ def java_summary(path):
     return result
 
 
+def meets_minimum(measured, minimum):
+    """Compare integer counts before rounding; reject invalid policy values."""
+    minimum = Decimal(str(minimum))
+    if not minimum.is_finite() or not 0 <= minimum <= 100:
+        raise ValueError("Minimum must be a finite percentage between 0 and 100")
+    return Decimal(measured["covered"]) * 100 >= minimum * measured["total"]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--go-profile", action="append", type=Path, default=[], help="atomic profile or directory; repeatable")
     parser.add_argument("--write-go-profile", type=Path, help="write a deduplicated profile outside input directories")
     parser.add_argument("--java-report", type=Path, help="JaCoCo XML from a completed full run")
-    parser.add_argument("--minimum", type=float, default=95, help="minimum Java branches / Go statements, before rounding")
+    parser.add_argument("--minimum", type=Decimal, default=Decimal(95), help="fallback threshold for each named metric")
+    parser.add_argument("--java-line-minimum", type=Decimal)
+    parser.add_argument("--java-branch-minimum", type=Decimal)
+    parser.add_argument("--go-statement-minimum", type=Decimal)
     args = parser.parse_args()
-    if not 0 <= args.minimum <= 100 or not (args.java_report or args.go_profile):
+    thresholds = [args.minimum, args.java_line_minimum, args.java_branch_minimum, args.go_statement_minimum]
+    if any(value is not None and (not value.is_finite() or not 0 <= value <= 100) for value in thresholds) or not (args.java_report or args.go_profile):
         parser.error("Provide coverage inputs and a minimum between 0 and 100")
     result = {}
     if args.go_profile:
@@ -90,10 +103,19 @@ def main():
                     stream.write(f"{location} {statements} {hits}\n")
     if args.java_report:
         result["java"] = java_summary(args.java_report)
-    measured = ([result["go_statements"]] if "go_statements" in result else [])
-    measured += [result["java"]["branch"]] if "java" in result else []
-    result["minimum"] = args.minimum
-    result["passed"] = all(item["covered"] * 100 >= args.minimum * item["total"] for item in measured)
+    checks = {}
+    for name, item, minimum in [
+        ("go_statements", result.get("go_statements"), args.go_statement_minimum),
+        ("java_lines", result.get("java", {}).get("line"), args.java_line_minimum),
+        ("java_branches", result.get("java", {}).get("branch"), args.java_branch_minimum),
+    ]:
+        if item is not None:
+            threshold = args.minimum if minimum is None else minimum
+            checks[name] = {"minimum": float(threshold), "passed": meets_minimum(item, threshold)}
+    result["minimum"] = float(args.minimum)
+    result["checks"] = checks
+    result["go_branches"] = {"status": "not_measured", "reason": "native Go profiles measure statements"}
+    result["passed"] = all(check["passed"] for check in checks.values())
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["passed"] else 1
 

@@ -25,7 +25,7 @@ python3 scripts/docs/check_docs.py
 python3 scripts/docs/generate_routes.py --check
 ```
 
-Java 测试需 Docker，包含行 83%/分支 65%覆盖率门禁。Go 设施测试、前端组件交互及真实模型验证各有独立范围；不要用编译通过、固定 oracle 或合成 fixture 声称生产验收。真实模型会产生外部请求和费用，需独立目标/授权/预算，见[评测指南](docs/evaluation.md)。
+Java 测试需 Docker，包含行 95%/分支 95%覆盖率门禁。Go 设施测试、前端组件交互及真实模型验证各有独立范围；不要用编译通过、固定 oracle 或合成 fixture 声称生产验收。完整覆盖率、变更代码与共享契约要求见[质量门禁](docs/testing.md)。真实模型会产生外部请求和费用，需独立目标/授权/预算，见[评测指南](docs/evaluation.md)。
 
 ## 实现约定
 

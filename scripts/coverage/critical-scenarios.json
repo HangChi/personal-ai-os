@@ -1,0 +1,129 @@
+[
+  {
+    "id": "agent-budget-and-committed-write-evidence",
+    "java": [
+      "com.personalos.common.ai.AgentBudgetSharedContractTest#sharedExecutionBudgetPreservesSafetyBoundaries"
+    ],
+    "go": [
+      "TestSharedExecutionBudgetSafetyBoundaries"
+    ]
+  },
+  {
+    "id": "rag-structure-overlap-and-source-preservation",
+    "java": [
+      "com.personalos.knowledge.splitter.ChunkingSharedContractTest#sharedChunksPreserveStructureOverlapAndSource"
+    ],
+    "go": [
+      "TestSharedChunkingStructureOverlapAndSource"
+    ]
+  },
+  {
+    "id": "agent-idempotency-and-failed-call-replay",
+    "java": [
+      "com.personalos.common.ai.tool.ToolExecutorTest#returnedErrorsNotifyPlanAndBlockSameArgumentsWithoutReexecuting"
+    ],
+    "go": [
+      "TestDurableToolReplayAndFailureBudget"
+    ]
+  },
+  {
+    "id": "agent-human-confirmation-before-mutation",
+    "java": [
+      "com.personalos.task.confirmation.ConfirmationIntegrationTest#scheduleAndPriorityApplyOnlyAfterConfirmation",
+      "com.personalos.task.confirmation.ConfirmationIntegrationTest#confirmationIsSingleUse"
+    ],
+    "go": [
+      "TestTaskToolsExecuteCRUDAndHumanConfirmedMutations"
+    ]
+  },
+  {
+    "id": "agent-summary-forbids-new-tools",
+    "java": [
+      "com.personalos.chat.service.ChatCompletionBoundaryTest#summaryOnlyNeverRunsToolsOrRecovers"
+    ],
+    "go": [
+      "TestEngineSummaryOnlyBlocksModelToolsAndExternalReads"
+    ]
+  },
+  {
+    "id": "agent-timeout-and-recovery",
+    "java": [
+      "com.personalos.chat.service.ChatCompletionBoundaryTest#timeoutUsesDeterministicClosingExactlyOnce",
+      "com.personalos.chat.service.ChatCompletionBoundaryTest#cancellationBeforeRegistrationAndDuringStreamingCannotRecover"
+    ],
+    "go": [
+      "TestEngineAutomaticRecoveryUsesOneToolFreeClosingRequest",
+      "TestEnginePublishAndCheckpointFailuresRespectPersistenceBoundary"
+    ]
+  },
+  {
+    "id": "rag-retrieval-failure-and-no-evidence",
+    "java": [
+      "com.personalos.knowledge.rag.RagPipelineBoundaryTest#partialRewriteRecallFailureAndEmptyCandidatesAreExplicit",
+      "com.personalos.knowledge.rag.RagPipelineBoundaryTest#emptyEvidenceReviewDoesNotProduceAnAnswer"
+    ],
+    "go": [
+      "TestPipelineRewriteRecoveryAndFailedStages",
+      "TestPipelineNoRelevantEvidenceCannotBecomeClarification"
+    ]
+  },
+  {
+    "id": "rag-citation-contract",
+    "java": [
+      "com.personalos.knowledge.rag.CitationAuditTest#sharedContractRejectsInvalidClaimsWithoutReturningPartialAudit"
+    ],
+    "go": [
+      "TestCitationAuditSharedJavaGoContract"
+    ]
+  },
+  {
+    "id": "rag-evidence-and-conflict-contract",
+    "java": [
+      "com.personalos.knowledge.rag.EvidenceReviewContractTest#sharedReviewGradesGroundingAndEffectivePeriods",
+      "com.personalos.knowledge.rag.EvidenceReviewContractTest#sharedScopeRequiresCompleteTypedRowsAndPreservesOriginalEvidence"
+    ],
+    "go": [
+      "TestEvidenceReviewSharedJavaGoContract",
+      "TestRestoredConflictScopeSharedJavaGoContract"
+    ]
+  },
+  {
+    "id": "agent-plan-order-and-receipt-contract",
+    "java": [
+      "com.personalos.agent.plan.AgentPlanServiceTest#sharedPlanTransitionsPreserveOrderEvidenceAndTerminalStates"
+    ],
+    "go": [
+      "TestPostgresPlanSharedJavaGoTransitions"
+    ]
+  },
+  {
+    "id": "agent-human-input-contract",
+    "java": [
+      "com.personalos.agent.interaction.AgentInteractionServiceTest#sharedQuestionValidationAndAcceptedBoundaries"
+    ],
+    "go": [
+      "TestPostgresQuestionSharedJavaGoBoundaries"
+    ]
+  },
+  {
+    "id": "rag-hybrid-ranking-and-document-diversity",
+    "java": [
+      "com.personalos.knowledge.service.KnowledgeRetrievalServiceTest#hybridFusionLabelsBothChannelsAndDeduplicatesDocuments"
+    ],
+    "go": [
+      "TestRetrieverHybridRanksOverlapAndPreservesRawSimilarity",
+      "TestRetrieverChineseKeywordsAndSearchDocumentDiversity"
+    ]
+  },
+  {
+    "id": "rag-index-replacement-and-stale-evidence-removal",
+    "java": [
+      "com.personalos.knowledge.KnowledgeDocumentUpdateIntegrationTest#clearsStaleVectors",
+      "com.personalos.knowledge.KnowledgeDocumentUpdateIntegrationTest#refreshesVectorMetadata"
+    ],
+    "go": [
+      "TestP6DocumentAtomicReplaceMetadataDeleteAndPagination",
+      "TestP6RealOpenSearchProjectionHydrationVersionAndDelete"
+    ]
+  }
+]

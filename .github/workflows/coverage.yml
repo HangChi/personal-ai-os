@@ -1,0 +1,129 @@
+name: Backend Quality
+
+on:
+  push:
+    branches: [main, go]
+    paths:
+      [
+        "backend/**",
+        "backend-go/**",
+        "testdata/**",
+        "scripts/coverage/**",
+        "scripts/migration/**",
+        ".github/workflows/coverage.yml",
+      ]
+  pull_request:
+    paths:
+      [
+        "backend/**",
+        "backend-go/**",
+        "testdata/**",
+        "scripts/coverage/**",
+        "scripts/migration/**",
+        ".github/workflows/coverage.yml",
+      ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stages:
+    name: Coverage / ${{ matrix.stage }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        stage: [java, default, postgres, redis, p6]
+    env:
+      GOTOOLCHAIN: local
+      GOMAXPROCS: "4"
+      APP_DOTENV_ENABLED: "false"
+      GO_DOTENV_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend-go/go.mod
+          cache-dependency-path: backend-go/go.sum
+      - name: Prepare test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+          docker info > /dev/null
+          echo "GO_TEST_GOCACHE=$(go env GOCACHE)" >> "$GITHUB_ENV"
+          echo "GO_TEST_GOPATH=$(go env GOPATH)" >> "$GITHUB_ENV"
+          (cd backend-go && go mod download && go mod verify)
+      - name: Cache Flyway oracle dependencies
+        if: matrix.stage != 'java' && matrix.stage != 'default'
+        working-directory: backend
+        run: ./mvnw -B --no-transfer-progress -DskipTests -Djacoco.skip=true -Dapp.dotenv.enabled=false package
+      - name: Prepare disposable P6 images
+        if: matrix.stage == 'p6'
+        run: |
+          docker pull rabbitmq:4.4.0-management
+          docker pull opensearchproject/opensearch:3.9.0
+      - name: Run coverage gate regression tests
+        run: python3 -m unittest discover -s scripts/coverage -v
+      - name: Execute fresh complete stage
+        env:
+          COVERAGE_STAGE: ${{ matrix.stage }}
+        run: python3 scripts/coverage/run_suite.py --stage "$COVERAGE_STAGE" --output "$RUNNER_TEMP/quality"
+      - name: Upload stage evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: quality-${{ matrix.stage }}
+          path: ${{ runner.temp }}/quality/${{ matrix.stage }}
+          retention-days: 7
+          if-no-files-found: warn
+
+  quality-gate:
+    name: Java and Go / 95% and critical scenarios
+    needs: stages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: quality-*
+          path: ${{ runner.temp }}/artifacts
+      - name: Verify all coverage, changed code and critical scenarios
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/quality"
+          for stage in java default postgres redis p6; do
+            mv "$RUNNER_TEMP/artifacts/quality-$stage" "$RUNNER_TEMP/quality/$stage"
+          done
+          args=()
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            base=$(git merge-base "$BASE_SHA" HEAD)
+            args+=(--base "$base")
+          fi
+          python3 scripts/coverage/run_suite.py --stage check --output "$RUNNER_TEMP/quality" "${args[@]}"
+      - name: Upload quality summary
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: quality-summary
+          path: ${{ runner.temp }}/quality/summary.json
+          if-no-files-found: ignore

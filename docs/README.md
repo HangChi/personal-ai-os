@@ -4,6 +4,8 @@
 
 ## 按目标阅读
 
+开发提交验收：[Java / Go 测试与质量门禁](testing.md)。
+
 | 目标 | 推荐文档 |
 | --- | --- |
 | 第一次运行 | [根 README](../README.md) → [开发指南](development.md) → [配置](configuration.md) |

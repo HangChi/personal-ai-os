@@ -1,5 +1,9 @@
 import tempfile
 import unittest
+import contextlib
+import io
+import json
+from unittest.mock import patch
 from pathlib import Path
 
 import summarize
@@ -49,6 +53,24 @@ class CoverageMergeTest(unittest.TestCase):
         self.assertEqual(result["branch"]["percent"], 95)
         self.assertEqual(result["line"]["percent"], 99)
         self.assertEqual(result["sessions"], 1)
+
+    def test_java_branch_success_cannot_hide_line_failure(self):
+        path = self.root / "jacoco.xml"
+        path.write_text('<report><sessioninfo/><counter type="BRANCH" missed="0" covered="100"/>'
+                        '<counter type="LINE" missed="6" covered="94"/></report>')
+        output = io.StringIO()
+        with patch("sys.argv", ["summarize.py", "--java-report", str(path)]), contextlib.redirect_stdout(output):
+            self.assertEqual(summarize.main(), 1)
+        result = json.loads(output.getvalue())
+        self.assertTrue(result["checks"]["java_branches"]["passed"])
+        self.assertFalse(result["checks"]["java_lines"]["passed"])
+
+    def test_explicit_zero_threshold_is_not_replaced_with_default_95(self):
+        profile = self.profile("zero.out", "module/a.go:1.1,2.1 1 0\n")
+        output = io.StringIO()
+        with patch("sys.argv", ["summarize.py", "--go-profile", str(profile), "--go-statement-minimum", "0"]), contextlib.redirect_stdout(output):
+            self.assertEqual(summarize.main(), 0)
+        self.assertEqual(json.loads(output.getvalue())["go_branches"]["status"], "not_measured")
 
 
 if __name__ == "__main__":

@@ -75,6 +75,8 @@ mock 支持流式/非流式聊天、嵌入及部分任务工具：`创建任务�
 
 ## 工程检查
 
+覆盖率、变更代码、关键场景与双版本契约的完整要求见[测试与质量门禁](testing.md)。
+
 ```bash
 (cd backend && ./mvnw -B test)
 (cd backend-go && go test -race -p 1 -count=1 -timeout=20m ./...)
@@ -85,7 +87,7 @@ python3 scripts/docs/check_docs.py
 python3 scripts/docs/generate_routes.py --check
 ```
 
-Java 测试使用 Testcontainers，Docker 不可用会失败；`test` 包含 JaCoCo 行 83%/分支 65%门禁，报告在 `backend/target/site/jacoco/`。Go 设施验证使用创建临时容器的 runner，详见其指南。前端 `test:logic` 覆盖纯函数/store，`test:component` 使用 Vitest、happy-dom 与 Vue Test Utils 覆盖渲染和事件。编译成功不能代替交互验收。
+Java 测试使用 Testcontainers，Docker 不可用会失败；`test` 包含 JaCoCo 行 95%/分支 95%门禁，报告在 `backend/target/site/jacoco/`。Go 设施验证使用创建临时容器的 runner，详见其指南。前端 `test:logic` 覆盖纯函数/store，`test:component` 使用 Vitest、happy-dom 与 Vue Test Utils 覆盖渲染和事件。编译成功不能代替交互验收。
 
 [Java/前端 CI](../.github/workflows/ci.yml)与 [Go CI](../.github/workflows/go.yml)分开运行。文档检查命令为本地维护检查，不因写在这里就成为远端 CI 已执行的证据。真实模型、浏览器、性能和发布验证另见[评测指南](evaluation.md)。
 
