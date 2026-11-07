@@ -2,8 +2,10 @@
 
 Personal AI OS 同时支持 MCP Client 和 MCP Server。两个方向互不依赖，默认都关闭。
 
-本地 Maven / JAR 启动时会自动读取项目根目录 `.env`。外部 stdio 服务在后端所在机器上运行：
+Java 本地 Maven / JAR 启动时会自动读取项目根目录 `.env`。外部 stdio 服务在后端所在机器上运行：
 filesystem 示例需要 Node.js / npx，fetch 示例需要 uv / uvx；这些命令必须在后端进程的 PATH 中。
+
+Go 默认不读取 `.env`，需要显式 opt-in 或系统环境，并用 `--foundation --p7`（或 p8）装配 MCP；参见[Go 开发](../backend-go/docs/development.md)。内部 Agent/直接调用/对外只读目录的区别见[工具目录](agent-tools.md)。
 
 Java 和 Go 后端也提供内置联网搜索。在根目录 `.env` 或运行环境中设置
 `BRAVE_SEARCH_API_KEY` 并重启后端，然后在聊天中说「请联网查……」。应用把公开搜索关键词发给
