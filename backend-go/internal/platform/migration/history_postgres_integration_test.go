@@ -23,6 +23,14 @@ func historyFixture(t *testing.T) *database.Pool {
 }
 
 func historyDatabase(t *testing.T, restored bool) *database.Pool {
+	name := "personalos_go_test"
+	if restored {
+		name = "personalos_go_restore"
+	}
+	return historyDatabaseNamed(t, name)
+}
+
+func historyDatabaseNamed(t *testing.T, name string) *database.Pool {
 	t.Helper()
 	settings := database.DefaultPostgresOptions()
 	settings.Host, settings.Database = os.Getenv("GO_TEST_POSTGRES_HOST"), os.Getenv("GO_TEST_POSTGRES_DB")
@@ -32,11 +40,14 @@ func historyDatabase(t *testing.T, restored bool) *database.Pool {
 		t.Fatal("不是专用临时迁移库")
 	}
 	settings.Port = port
-	if restored {
+	if name != "personalos_go_test" {
 		if os.Getenv("GO_TEST_BACKUP") != "disposable" {
 			t.Fatal("恢复库没有显式临时测试标记")
 		}
-		settings.Database = "personalos_go_restore"
+		if name != "personalos_go_restore" && name != "personalos_go_backup_source" {
+			t.Fatal("不是专用备份测试库")
+		}
+		settings.Database = name
 	}
 	settings.SSLMode, settings.RootCert = os.Getenv("GO_TEST_POSTGRES_SSL_MODE"), os.Getenv("GO_TEST_POSTGRES_ROOT_CERT")
 	if settings.SSLMode == "" {
@@ -81,7 +92,7 @@ func TestRealFlywayHistoryReadOnlyValidation(t *testing.T) {
 	}
 	before := historyDigest()
 	status, err := validator.Validate(ctx)
-	if err != nil || status.Applied != 42 || status.CurrentVersion != 42 {
+	if err != nil || status.Applied != 49 || status.CurrentVersion != 49 {
 		t.Fatal("真实Flyway历史不兼容", err)
 	}
 	// 关闭/清空调用方目录切片不得更改已经构造的预期值。
@@ -118,7 +129,7 @@ func TestRealFlywayHistoryReadOnlyValidation(t *testing.T) {
 		"script":        "UPDATE go_history_probe.flyway_schema_history SET script='unexpected-sensitive-text' WHERE version='17'",
 		"description":   "UPDATE go_history_probe.flyway_schema_history SET description='unexpected-sensitive-text' WHERE version='17'",
 		"baseline":      "UPDATE go_history_probe.flyway_schema_history SET type='BASELINE',checksum=NULL WHERE version='1'",
-		"future":        "INSERT INTO go_history_probe.flyway_schema_history(installed_rank,version,description,type,script,checksum,installed_by,execution_time,success) VALUES(43,'43','future','SQL','V43__future.sql',0,'fixture',0,true)",
+		"future":        "INSERT INTO go_history_probe.flyway_schema_history(installed_rank,version,description,type,script,checksum,installed_by,execution_time,success) VALUES(50,'50','future','SQL','V50__future.sql',0,'fixture',0,true)",
 	} {
 		t.Run(name, func(t *testing.T) {
 			if err := pool.WithConn(ctx, func(conn *sql.Conn) error {

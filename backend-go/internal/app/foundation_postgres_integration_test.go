@@ -129,7 +129,7 @@ func TestFoundationPostgresHTTPAndSharedBudget(t *testing.T) {
 	f1 := fixtureFoundation(t, values, business)
 	f2 := fixtureFoundation(t, values, business)
 	appExec(t, f1, "DELETE FROM runtime_rate_bucket")
-	if f1.History().CurrentVersion != 42 || f1.Pool().Stats().MaxOpenConnections != 10 {
+	if f1.History().CurrentVersion != 49 || f1.Pool().Stats().MaxOpenConnections != 10 {
 		t.Fatal("历史/连接池组合错误")
 	}
 	s1 := httptest.NewServer(f1.Handler())

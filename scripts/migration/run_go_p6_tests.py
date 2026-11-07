@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """P6 real facilities, always disposable; never reads application secrets or existing stacks."""
+import argparse
+from pathlib import Path
 import json
 import os
 import secrets
@@ -17,6 +19,9 @@ def capture(args):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--coverage-dir", type=Path)
+    args = parser.parse_args()
     containers = []
     try:
         suffix = uuid.uuid4().hex[:12]
@@ -63,8 +68,9 @@ def main():
         os.environ['GO_TEST_KNOWLEDGE_RABBIT_URI'] = 'amqp://go_fixture:' + password + '@127.0.0.1:' + ports['rabbit'] + '/'
         os.environ['GO_TEST_KNOWLEDGE_SEARCH_URL'] = 'http://127.0.0.1:' + ports['search']
         print('P6 disposable RabbitMQ/OpenSearch + TLS Redis/PostgreSQL: ' + rabbit_image + ' ' + search_image, flush=True)
-        run_package(IMAGE, 'knowledge', tls_mode=True)
-        run_package(IMAGE, 'app', tls_mode=True, test_pattern='^TestFoundationP6')
+        run_package(IMAGE, 'knowledge', tls_mode=True, coverage_dir=args.coverage_dir)
+        run_package(IMAGE, 'app', tls_mode=True, test_pattern='^TestFoundationP6', coverage_dir=args.coverage_dir)
+        run_package(IMAGE, 'calendar', tls_mode=True, test_pattern='^TestCalendarBroadcast', coverage_dir=args.coverage_dir)
     finally:
         for container in reversed(containers):
             subprocess.run(['docker', 'rm', '--force', container], check=True, capture_output=True, timeout=30)

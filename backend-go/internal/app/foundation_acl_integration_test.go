@@ -81,7 +81,7 @@ DELETE FROM runtime_rate_bucket;`)
 		t.Fatal("最小权限不能启动已迁移的真实schema", err)
 	}
 	defer f.Close(context.Background())
-	if f.History().Applied != 42 {
+	if f.History().Applied != 49 {
 		t.Fatal("受限角色未读取完整Flyway历史")
 	}
 	w := httptest.NewRecorder()
@@ -119,8 +119,8 @@ DELETE FROM runtime_rate_bucket;`)
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if len(tables) != 40 {
-		t.Fatal("未检查完整42迁移后的40表（含历史）", len(tables))
+	if len(tables) != 49 {
+		t.Fatal("未检查完整49迁移后的49表（含历史）", len(tables))
 	}
 	for _, table := range tables {
 		if table == "flyway_schema_history" || table == "runtime_rate_bucket" || table == "runtime_lease" {

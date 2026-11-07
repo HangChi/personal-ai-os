@@ -47,7 +47,7 @@ func TestRealFlywayBaselineV1ReadOnlyHistorySchemaAndOldData(t *testing.T) {
 	}
 	before := digest()
 	status, err := validator.Validate(ctx)
-	if err != nil || status.Applied != 41 || status.CurrentVersion != 42 || status.BaselineVersion != 1 {
+	if err != nil || status.Applied != 48 || status.CurrentVersion != 49 || status.BaselineVersion != 1 {
 		t.Fatal("真实baseline历史未对齐", status, err)
 	}
 	normal, err := captureSchema(ctx, pool, "public")
@@ -100,7 +100,7 @@ func TestRealFlywayBaselineV1ReadOnlyHistorySchemaAndOldData(t *testing.T) {
 		"marker checksum": `UPDATE go_baseline_probe.flyway_schema_history SET checksum=0 WHERE type='BASELINE'`,
 		"baseline 2":      `UPDATE go_baseline_probe.flyway_schema_history SET version='2' WHERE type='BASELINE'`,
 		"SQL checksum":    `UPDATE go_baseline_probe.flyway_schema_history SET checksum=0 WHERE version='42'`,
-		"future":          `INSERT INTO go_baseline_probe.flyway_schema_history(installed_rank,version,description,type,script,checksum,installed_by,execution_time,success) VALUES(43,'43','future','SQL','V43__future.sql',0,'fixture',0,true)`,
+		"future":          `INSERT INTO go_baseline_probe.flyway_schema_history(installed_rank,version,description,type,script,checksum,installed_by,execution_time,success) VALUES(50,'50','future','SQL','V50__future.sql',0,'fixture',0,true)`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			if err := pool.WithConn(ctx, func(conn *sql.Conn) error {
@@ -119,5 +119,5 @@ func TestRealFlywayBaselineV1ReadOnlyHistorySchemaAndOldData(t *testing.T) {
 	if before != digest() {
 		t.Fatal("失败校验修改了原baseline")
 	}
-	t.Log("真实baseline1/41 SQL历史只读通过，七类DDL等价且原聊天数据保留")
+	t.Log("真实baseline1/48 SQL历史只读通过，七类DDL等价且原聊天数据保留")
 }

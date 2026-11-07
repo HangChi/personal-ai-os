@@ -30,7 +30,7 @@ BUSINESS_PACKAGES = {"idempotency", "confirmation", "task", "model", "chat", "ca
 PACKAGES = ["database", "ratelimit", "migration", "coordination", "modelgate", "health", *sorted(BUSINESS_PACKAGES), "app", "command"]
 
 
-def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None, test_pattern=None, p8_image=None, exercise=None):
+def run_package(image, package, tls_mode=False, flyway=False, backup=False, baseline=False, redis_env=None, test_pattern=None, p8_image=None, exercise=None, coverage_dir=None):
     caches = cache_environment()
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, POSTGRES_PASSWORD=password)
@@ -93,7 +93,7 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
             "GOMAXPROCS": "4",
         })
         if redis_env is not None:
-            if package not in {"app", "command", "knowledge"} or redis_env.get("GO_TEST_REDIS") != "disposable":
+            if package not in {"app", "command", "knowledge", "calendar"} or redis_env.get("GO_TEST_REDIS") != "disposable":
                 raise ValueError("组合测试只能接收脚本新建的app专用Redis")
             go_env.update({key: redis_env[key] for key in {
                 "GO_TEST_REDIS", "GO_TEST_REDIS_URI", "GO_TEST_REDIS_CA_PEM",
@@ -117,7 +117,13 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
         # The full app includes all fixed Servlet oracles and every phase's DB suite.
         # Keep assertion deadlines intact; allow the complete package its own bounded budget.
         package_timeout = "20m" if package == "app" else "2m"
-        subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=" + package_timeout, "-tags=integration", *test_filter, target],
+        coverage_args = []
+        if coverage_dir is not None:
+            output = Path(coverage_dir).resolve()
+            output.mkdir(parents=True, exist_ok=True)
+            coverage_args = ["-covermode=atomic", "-coverpkg=./...",
+                             "-coverprofile=" + str(output / ("postgres-" + package + ".out"))]
+        subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=" + package_timeout, "-tags=integration", *coverage_args, *test_filter, target],
                        cwd=ROOT / "backend-go", env=go_env, check=True, timeout=1230 if package == "app" else 180)
         if p8_image:
             if package != "app" or not tls_mode:
@@ -130,9 +136,19 @@ def run_package(image, package, tls_mode=False, flyway=False, backup=False, base
             from smoke_go_foundation import run as smoke_foundation
             with tempfile.TemporaryDirectory(prefix="personalos-go-foundation-build-") as directory:
                 binary = Path(directory, "personalos")
-                subprocess.run(["go", "build", "-race", "-o", str(binary), "./cmd/personalos"],
+                instrument = []
+                if coverage_dir is not None:
+                    process_coverage = Path(coverage_dir).resolve() / "command-process"
+                    process_coverage.mkdir(parents=True, exist_ok=True)
+                    go_env["GOCOVERDIR"] = str(process_coverage)
+                    instrument = ["-cover", "-covermode=atomic", "-coverpkg=./..."]
+                subprocess.run(["go", "build", "-race", *instrument, "-o", str(binary), "./cmd/personalos"],
                                cwd=ROOT / "backend-go", env=go_env, check=True, timeout=120)
                 smoke_foundation(binary, go_env)
+                if coverage_dir is not None:
+                    subprocess.run(["go", "tool", "covdata", "textfmt", "-i=" + str(process_coverage),
+                                    "-o=" + str(Path(coverage_dir).resolve() / "command-process.out")],
+                                   cwd=ROOT / "backend-go", env=go_env, check=True, timeout=60)
             active = capture(["docker", "exec", container, "psql", "-U", "go_fixture", "-d", "personalos_go_test", "-Atc",
                               "SELECT count(*) FROM pg_stat_activity WHERE application_name='personalos-go'"])
             if active != "0":
@@ -157,11 +173,12 @@ def main():
     parser.add_argument("--backup", action="store_true", help="隐含--flyway，只在新建容器填合成数据并备份恢复到另一空库")
     parser.add_argument("--baseline", action="store_true", help="隐含--flyway，另建非空旧schema验证真实baseline-on-migrate")
     parser.add_argument("--p8-image", help="在本次临时TLS库的容器网络中实际验证P8镜像五角色，不启动Compose")
+    parser.add_argument("--coverage-dir", type=Path, help="将各包全项目 atomic 覆盖率保存到该目录；默认单测与集成结果仍分别统计")
     args = parser.parse_args()
     if args.p8_image and (args.package != ["app"] or not args.tls):
         parser.error("--p8-image 必须与 --package app --tls 一起使用")
     for package in args.package or PACKAGES:
-        run_package(args.image, package, args.tls, args.flyway or args.backup or args.baseline, args.backup, args.baseline, test_pattern=args.run, p8_image=args.p8_image)
+        run_package(args.image, package, args.tls, args.flyway or args.backup or args.baseline, args.backup, args.baseline, test_pattern=args.run, p8_image=args.p8_image, coverage_dir=args.coverage_dir)
 
 
 if __name__ == "__main__":

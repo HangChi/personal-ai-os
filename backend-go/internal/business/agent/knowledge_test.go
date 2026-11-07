@@ -108,3 +108,33 @@ func TestKnowledgeToolValidationFailureAndCancellation(t *testing.T) {
 		t.Fatal("cancelled call reached retrieval", err, calls)
 	}
 }
+
+func TestKnowledgeToolRegistersGlobalCitationNumbersAndHonorsBlocks(t *testing.T) {
+	for _, status := range []string{"READY", "UNVERIFIED"} {
+		d := KnowledgeTool(knowledgeSearchFunc(func(context.Context, string, *int) (knowledge.RagResult, error) {
+			return knowledge.RagResult{Status: status, Hits: []knowledge.Hit{{DocumentID: "doc", DocumentTitle: "source", Content: "evidence"}}}, nil
+		}))
+		turn := testTurn()
+		registered := 0
+		turn.AddKnowledgeSources = func(h []knowledge.Hit) []knowledge.Citation {
+			registered += len(h)
+			return []knowledge.Citation{{Index: 7}}
+		}
+		result, e := d.Action(context.Background(), turn, map[string]any{"query": "evidence"})
+		if e != nil || result.Status != "OK" || registered != 1 {
+			t.Fatal(result, e, registered)
+		}
+		if status == "UNVERIFIED" && !strings.Contains(result.Message, "[7]") {
+			t.Fatal(result)
+		}
+		turn.KnowledgeBlocked = true
+		result, e = d.Action(context.Background(), turn, map[string]any{"query": "evidence"})
+		if e != nil || result.Status != "REJECTED" || registered != 1 {
+			t.Fatal(result, e)
+		}
+		turn.KnowledgeBlocked = false
+		if _, e = d.Action(context.Background(), turn, map[string]any{"query": "evidence", "topK": "invalid"}); e == nil {
+			t.Fatal("bad topK accepted")
+		}
+	}
+}

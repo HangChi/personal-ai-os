@@ -51,7 +51,7 @@ def child_environment(fixture, role, port, management, ca_file):
         raise ValueError("基础进程只接受本脚本新建并完成真实 Flyway 的数据库")
     if (fixture.get("GO_TEST_POSTGRES_HOST"), fixture.get("GO_TEST_POSTGRES_DB"), fixture.get("GO_TEST_POSTGRES_USER")) != ("127.0.0.1", "personalos_go_test", "go_fixture"):
         raise ValueError("基础进程禁止连接现有数据库")
-    env = {key: fixture[key] for key in ("PATH", "HOME", "TMPDIR") if key in fixture}
+    env = {key: fixture[key] for key in ("PATH", "HOME", "TMPDIR", "GOCOVERDIR") if key in fixture}
     env.update({
         "GO_DOTENV_ENABLED": "false", "APP_DOTENV_ENABLED": "false", "SERVER_PORT": str(port),
         "MANAGEMENT_SERVER_PORT": str(management), "APP_RUNTIME_ROLE": role,

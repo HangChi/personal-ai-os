@@ -167,7 +167,7 @@ func TestRealPostgresBackupRestoreSyntheticDataAndWrites(t *testing.T) {
 	if os.Getenv("GO_TEST_POSTGRES") != "disposable" || os.Getenv("GO_TEST_BACKUP") != "disposable" {
 		t.Skip("需--backup的合成数据专用恢复库")
 	}
-	source, restored := historyDatabase(t, false), historyDatabase(t, true)
+	source, restored := historyDatabaseNamed(t, "personalos_go_backup_source"), historyDatabase(t, true)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	scripts, err := LoadVersioned(os.DirFS(filepath.Join("..", "..", "..", "..", "backend", "src", "main", "resources", "db", "migration")))
@@ -178,7 +178,7 @@ func TestRealPostgresBackupRestoreSyntheticDataAndWrites(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result, err := validator.Validate(ctx); err != nil || result.Applied != 42 {
+	if result, err := validator.Validate(ctx); err != nil || result.Applied != 49 {
 		t.Fatal("恢复后的Flyway历史不兼容", err)
 	}
 	java, err := captureSchema(ctx, source, "public")
@@ -229,8 +229,8 @@ func TestRealPostgresBackupRestoreSyntheticDataAndWrites(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(want) != 50 || len(got) != len(want) {
-		t.Fatal("应逐项比较40张含历史表和10序列", len(want), len(got))
+	if len(want) != 59 || len(got) != len(want) {
+		t.Fatal("应逐项比较49张含历史表和10序列", len(want), len(got))
 	}
 	for key, value := range want {
 		if got[key] != value {

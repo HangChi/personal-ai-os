@@ -50,8 +50,8 @@ func TestPostgresOriginalMigrationsIntegration(t *testing.T) {
 	}
 	defer pool.Close()
 	scripts, err := LoadVersioned(os.DirFS(filepath.Join("..", "..", "..", "..", "backend", "src", "main", "resources", "db", "migration")))
-	if err != nil || len(scripts) != 42 {
-		t.Fatalf("必须加载全部 42 个原 SQL: %v", err)
+	if err != nil || len(scripts) != 49 {
+		t.Fatalf("必须加载全部 49 个原 SQL: %v", err)
 	}
 	for _, seeded := range []bool{false, true} {
 		name := "empty"
@@ -142,20 +142,21 @@ func TestPostgresOriginalMigrationsIntegration(t *testing.T) {
 					}
 					// 手工审查原 SQL 后列出最终表名；不从 Go 实现生成期望。
 					tables := strings.Fields(`agent_followup agent_plan agent_plan_step agent_question
-						ai_model_config ai_model_profile ai_model_profile_model calendar_event chat_context_preference
+						ai_model_config ai_model_profile ai_model_profile_model calendar_event calendar_ics_identity chat_context_preference
 						chat_message chat_message_citation chat_run chat_run_event chat_session confirmation
-						knowledge_candidate_generation knowledge_conflict knowledge_conflict_audit knowledge_document
+						knowledge_candidate_generation knowledge_capture knowledge_capture_version knowledge_conflict knowledge_conflict_audit knowledge_document
 						knowledge_index_job knowledge_review_job knowledge_search_outbox knowledge_source knowledge_space
-						memory operation_record reminder reminder_broadcast_state reminder_webhook_delivery
-						reminder_webhook_target runtime_lease runtime_rate_bucket task task_tag token_usage vector_store
-						web_push_delivery web_push_subscription work_signal_outbox`)
+						maintenance_check memory operation_record project reminder reminder_broadcast_state reminder_webhook_delivery
+						reminder_webhook_target runtime_heartbeat runtime_lease runtime_rate_bucket task task_tag token_usage vector_store
+						web_push_delivery web_push_subscription work_signal_outbox workflow workflow_attempt workflow_execution`)
 					if err := expectStrings("SELECT tablename FROM pg_tables WHERE schemaname=$1 ORDER BY tablename", tables, schema); err != nil {
 						return err
 					}
 					triggers := strings.Fields(`candidate_generation_documents candidate_generation_sources candidate_generation_vectors
 						knowledge_chunk_projection knowledge_chunk_review knowledge_document_projection knowledge_document_source
 						knowledge_index_signal knowledge_review_signal knowledge_search_signal knowledge_source_revision
-						review_attempt_reset search_projection_reset`)
+						review_attempt_reset search_projection_reset task_workspace_validate task_children_delete task_recurrence_generate
+						knowledge_capture_job_complete report_session_protect report_message_protect report_run_protect workflow_prepare`)
 					if err := expectStrings(`SELECT tgname FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
 						JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=$1 AND NOT t.tgisinternal ORDER BY tgname`, triggers, schema); err != nil {
 						return err

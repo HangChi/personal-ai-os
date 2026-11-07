@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"personal-ai-os/backend-go/internal/business/chat"
+	"personal-ai-os/backend-go/internal/business/knowledge"
 )
 
 func TestP8ConflictingEvidenceBypassesAnswerAndPersistsBothSources(t *testing.T) {
@@ -31,7 +32,7 @@ func TestP8ConflictingEvidenceBypassesAnswerAndPersistsBothSources(t *testing.T)
 	}
 	answer := "资料存在不同说法[1][2]，请核对适用日期后再确定标准。"
 	// The original Java contract stubs the retrieval boundary too; generation and persistence stay real.
-	f.Chat().Engine.RetrieveEvidence = func(_ context.Context, query string, _ int) (chat.RetrievedEvidence, error) {
+	f.Chat().Engine.RetrieveConversationEvidence = func(_ context.Context, query string, _ []knowledge.ConversationMessage, _ int) (chat.RetrievedEvidence, error) {
 		retrievals.Add(1)
 		if query != "标准是多少" {
 			t.Error("retrieval query changed")

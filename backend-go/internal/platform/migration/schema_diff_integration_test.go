@@ -111,7 +111,7 @@ func assertSchemaMatchesJavaFlyway(t *testing.T, pool *database.Pool, ctx contex
 	if err := compareSchema(java, goReplay); err != nil {
 		t.Fatal(err)
 	}
-	if len(java["tables"]) != 39 || len(java["triggers"]) != 13 || len(java["columns"]) == 0 || len(java["functions"]) == 0 {
+	if len(java["tables"]) != 48 || len(java["triggers"]) != 21 || len(java["columns"]) == 0 || len(java["functions"]) == 0 {
 		t.Fatal("Java真实结构未覆盖完整对象")
 	}
 	// 用真实DDL破坏副本，确认比较器能发现差异；绝不修改Java迁移的public。

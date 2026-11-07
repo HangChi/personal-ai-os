@@ -48,7 +48,7 @@ type Module struct {
 }
 
 // OpenModule consumes only enabled facilities; Redis clients remain caller-owned.
-func OpenModule(parent context.Context, o ModuleOptions) (m *Module, err error) {
+func OpenModule(parent context.Context, o ModuleOptions) (result *Module, err error) {
 	if parent == nil || o.Pool == nil || o.Properties == nil || o.Models == nil || o.Coordinator == nil || o.Logger == nil || o.Acquire == nil {
 		return nil, errors.New("P6模块依赖不完整")
 	}
@@ -117,7 +117,7 @@ func OpenModule(parent context.Context, o ModuleOptions) (m *Module, err error) 
 		return nil, e
 	}
 	ctx, cancel := context.WithCancel(parent)
-	m = &Module{Store: store, Stats: NewStats(), cancel: cancel}
+	m := &Module{Store: store, Stats: NewStats(), cancel: cancel}
 	defer func() {
 		if err != nil {
 			m.Close()

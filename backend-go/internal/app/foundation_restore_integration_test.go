@@ -35,7 +35,7 @@ func TestFoundationStartsFromRestoredBackup(t *testing.T) {
 					t.Error(err)
 				}
 			})
-			if f.History().CurrentVersion != 42 {
+			if f.History().CurrentVersion != 49 {
 				t.Fatal("恢复历史未被装配")
 			}
 			w := httptest.NewRecorder()

@@ -58,6 +58,38 @@ func TestP8RetentionFailureStopsNextPolicy(t *testing.T) {
 	}
 }
 
+func TestRetentionRejectsMissingDependenciesAndCancelledWork(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	if _, err := New(nil, config.RetentionProperties{}, nil); err == nil {
+		t.Fatal("nil store accepted")
+	}
+	service, _ := New(&retentionStore{}, config.RetentionProperties{TokenUsageDays: 1}, nil)
+	if _, err := service.Cleanup(nil); err == nil {
+		t.Fatal("nil context accepted")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err := service.Cleanup(ctx); !errors.Is(err, context.Canceled) {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		ctx    context.Context
+		logger *slog.Logger
+		store  Store
+	}{
+		{nil, logger, &retentionStore{}}, {context.Background(), nil, &retentionStore{}}, {context.Background(), logger, nil},
+	} {
+		if _, err := Start(tc.ctx, config.RetentionProperties{Cron: "* * * * * *"}, tc.store, tc.logger); err == nil {
+			t.Fatal("missing dependency accepted")
+		}
+	}
+	for _, store := range []*PostgresStore{nil, NewPostgresStore(nil)} {
+		if _, err := store.DeleteUsage(context.Background(), time.Now()); err == nil {
+			t.Fatal("nil database accepted")
+		}
+	}
+}
+
 func TestP8RetentionCronDisableCancellationAndDeduplication(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	for _, expression := range []string{"-", "0 30 4 * * *"} {

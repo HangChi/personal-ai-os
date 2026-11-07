@@ -76,7 +76,7 @@ func TestP6IndependentUploadsAndExpressionIndexPlan(t *testing.T) {
 	if !errors.Is(e, rollback) {
 		t.Fatal(e)
 	}
-	if scalar[int](t, s.Pool, "SELECT count(*) FROM pg_indexes WHERE indexname='idx_vector_store_document_id'") != 1 {
+	if scalar[int](t, s.Pool, "SELECT count(*) FROM pg_indexes WHERE schemaname='public' AND indexname='idx_vector_store_document_id'") != 1 {
 		t.Fatal("schema test did not restore the original index")
 	}
 }

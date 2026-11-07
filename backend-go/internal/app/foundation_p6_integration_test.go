@@ -25,7 +25,7 @@ import (
 	redisclient "personal-ai-os/backend-go/internal/platform/redis"
 )
 
-func p6Upstream(t *testing.T, calls *atomic.Int32) *httptest.Server {
+func p6Upstream(t *testing.T, calls *atomic.Int32, answers ...*atomic.Int32) *httptest.Server {
 	t.Helper()
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var input map[string]any
@@ -49,13 +49,19 @@ func p6Upstream(t *testing.T, calls *atomic.Int32) *httptest.Server {
 		}
 		calls.Add(1)
 		if input["stream"] == true {
+			for _, counter := range answers {
+				counter.Add(1)
+			}
 			p4Text(w, "根据资料[1]，执行数据库轮询。")
 			return
 		}
 		content := `{"queries":[]}`
 		messages, _ := input["messages"].([]any)
 		raw, _ := json.Marshal(messages)
-		if bytes.Contains(raw, []byte("逐字转录")) {
+		if bytes.Contains(raw, []byte("判断本轮是否需要知识库资料")) {
+			route, _ := json.Marshal(map[string]any{"retrieve": true, "query": "证据核验怎么处理"})
+			content = string(route)
+		} else if bytes.Contains(raw, []byte("逐字转录")) {
 			content = strings.Repeat("图片里的可读文字。", 50)
 		} else if bytes.Contains(raw, []byte("evidence")) || bytes.Contains(raw, []byte("证据")) {
 			content = `{"invalid":true}`
@@ -367,8 +373,8 @@ func TestFoundationP6DisabledIndexStillAcceptsDurableJobs(t *testing.T) {
 }
 
 func TestFoundationP6SecurityGovernanceAndGuardedChat(t *testing.T) {
-	var calls atomic.Int32
-	up := p6Upstream(t, &calls)
+	var calls, answers atomic.Int32
+	up := p6Upstream(t, &calls, &answers)
 	f := p6Foundation(t, "api", up, map[string]string{"app.auth.enabled": "true", "app.auth.password": "fixture-password", "app.security.csrf-enabled": "true", "app.knowledge.rag.enabled": "true", "app.knowledge.rag.ingestion-review-enabled": "false"}, nil)
 	p6Clean(t, f)
 	defer p6Clean(t, f)
@@ -428,7 +434,7 @@ func TestFoundationP6SecurityGovernanceAndGuardedChat(t *testing.T) {
 	if resp.StatusCode != 200 || !strings.Contains(text, "event: rag") || !strings.Contains(text, "暂不生成确定结论") || strings.Contains(text, "event: error") {
 		t.Fatal(resp.StatusCode, text)
 	}
-	if calls.Load()-before > 3 {
+	if calls.Load()-before != 4 || answers.Load() != 0 {
 		t.Fatal("guarded chat generated an answer", calls.Load()-before)
 	}
 	messages, e := f.Chat().Service.Messages(context.Background(), id, nil, nil)

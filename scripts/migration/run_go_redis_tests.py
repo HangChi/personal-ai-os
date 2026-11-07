@@ -25,7 +25,7 @@ def capture(command, **kwargs):
                           timeout=120, **kwargs).stdout.strip()
 
 
-def run_package(image, package, tls_mode=False, backup=False, test_pattern=None):
+def run_package(image, package, tls_mode=False, backup=False, test_pattern=None, coverage_dir=None):
     password = secrets.token_urlsafe(24)
     docker_env = dict(os.environ, GO_TEST_REDIS_PASSWORD=password)
     container = None
@@ -104,12 +104,17 @@ def run_package(image, package, tls_mode=False, backup=False, test_pattern=None)
             "GO_TEST_REDIS_CA_PEM": root_pem,
         })
         child_env.update(acl_uris)
-        if package in {"app", "command", "knowledge"}:
+        if package in {"app", "command", "knowledge", "calendar"}:
             # 外层持有自己的Redis，内层仅创建/清理自己的PostgreSQL；失败逐层finally清理。
             from run_go_postgres_tests import IMAGE as POSTGRES_IMAGE, run_package as run_postgres
-            run_postgres(POSTGRES_IMAGE, package, tls_mode=tls_mode, flyway=True, backup=backup and package == "app", redis_env=child_env, test_pattern=test_pattern)
+            run_postgres(POSTGRES_IMAGE, package, tls_mode=tls_mode, flyway=True, backup=backup and package == "app", redis_env=child_env, test_pattern=test_pattern, coverage_dir=coverage_dir)
         else:
-            subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration",
+            coverage_args = []
+            if coverage_dir is not None:
+                coverage_dir = Path(coverage_dir).resolve()
+                coverage_dir.mkdir(parents=True, exist_ok=True)
+                coverage_args = ["-covermode=atomic", "-coverpkg=./...", "-coverprofile=" + str(coverage_dir / ("redis-" + package + ".out"))]
+            subprocess.run(["go", "test", "-race", "-count=1", "-v", "-timeout=2m", "-tags=integration", *coverage_args,
                             ("./internal/business/model" if package == "model" else "./internal/platform/" + package)], cwd=ROOT / "backend-go", env=child_env,
                            check=True, timeout=180)
     finally:
@@ -128,9 +133,10 @@ def main():
     parser.add_argument("--package", choices=PACKAGES, action="append")
     parser.add_argument("--backup", action="store_true", help="app组合测试同时验证本次合成pg_dump恢复库的基础启动")
     parser.add_argument("--tls", action="store_true", help="新建临时 CA/证书，在真实 rediss 服务运行同一组测试")
+    parser.add_argument("--coverage-dir", type=Path, help="write independent integration coverage profiles")
     args = parser.parse_args()
     for package in args.package or PACKAGES:
-        run_package(args.image, package, args.tls, args.backup)
+        run_package(args.image, package, args.tls, args.backup, coverage_dir=args.coverage_dir)
 
 
 if __name__ == "__main__":
