@@ -2903,7 +2903,7 @@
     {
       "id": "scope:backend-quality-gates-20261107",
       "status": "in_progress",
-      "source_commit": "1592c5aed7f74f6d539ad5f280969851e2e48b5c",
+      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
       "summary": "Java 行/分支与 Go 完整集合语句分别要求 95%，新增变更代码门禁、13 项 Agent/RAG 关键场景和 18 个双版本共享契约。证据绑定完整源码提交；Go 分支仍未测量。",
       "files": [
         {
@@ -2919,7 +2919,7 @@
         {
           "path": "backend-go/docs/README.md",
           "baseline_sha256": null,
-          "candidate_sha256": "29673edacb5c70ac71cbbc476746026aa96415172feeb9fe8aa256347259e092"
+          "candidate_sha256": "88a0a01a3ed2827270e07ece3ab83e3c9c1dee010ddd48f869d94694850c4627"
         },
         {
           "path": "backend-go/internal/business/agent/budget_shared_contract_test.go",
@@ -2949,7 +2949,7 @@
         {
           "path": "docs/testing.md",
           "baseline_sha256": null,
-          "candidate_sha256": "611308871d916d2e0eca4ce5d0774ac8e6ff55678132146477280c1cc825ff4a"
+          "candidate_sha256": "b85f0fda16f3fbff48b5df6c3c555474429aa9c126fda3acb352c71aca436207"
         },
         {
           "path": "scripts/coverage/changed.py",
@@ -3042,7 +3042,7 @@
     {
       "id": "scope:prior-documentation-and-test-additions-20261107",
       "status": "in_progress",
-      "source_commit": "1592c5aed7f74f6d539ad5f280969851e2e48b5c",
+      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
       "summary": "登记此前已提交但未列入迁移增量清单的文档、离线检查和 Java 测试新增文件；按原提交逐文件核对字节，不改变固定基线或宣称迁移完成。",
       "files": [
         {
@@ -3473,7 +3473,7 @@
         {
           "path": "docs/reports/README.md",
           "baseline_sha256": null,
-          "candidate_sha256": "570dffb92cce6a13cb1d41cd5c3402ee68d68f0716a8d10c51c2df0aa9e4067d"
+          "candidate_sha256": "991f46b04575d2092fd5a869154211e76dfa88b40b04592357cf8449fa6a9ca1"
         },
         {
           "path": "docs/reports/coverage-agent-rag-2026-11-07.md",
@@ -3585,6 +3585,99 @@
       "limitations": [
         "仅修复既有来源登记缺口，不赋予历史结果新的验收结论。",
         "保持 in_progress；生产发布与迁移 release gates 不变。"
+      ]
+    },
+    {
+      "id": "scope:go-default-coverage-20261107",
+      "status": "in_progress",
+      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
+      "summary": "Go 默认集合新增 11 个测试文件，默认语句覆盖率 91.8744%，完整集合语句 95.4579%；Java 同步执行全量回归且行/分支均超过 95%。仅登记测试与报告，业务源码、固定基线与发布门禁不变。",
+      "files": [
+        {
+          "path": "backend-go/internal/app/serve_lifecycle_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "cf20224ad7a3e097a3097bb36f266e75c797ac251912978a2302dc4247d8a1e6"
+        },
+        {
+          "path": "backend-go/internal/business/calendar/broadcast_boundary_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "bf66fceb7437fe663ecd2c2945f472d20dc900f6acbc1df8a65d8e9157e7f914"
+        },
+        {
+          "path": "backend-go/internal/business/chat/agent_prompt_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "2ac15d4c7cd70cf60f3e08cb133e9d5c87ccdc2c98f668763e4c5f9f5b0c61e4"
+        },
+        {
+          "path": "backend-go/internal/business/chat/default_http_execution_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "6942def2f5d438ce98110ac511035fe9c27e383c3e710e4f8dbf790b48457255"
+        },
+        {
+          "path": "backend-go/internal/business/chat/engine_tool_loop_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "c0599f7cbd90d5fad67c467aac8a1138d772115a8965421fec223f7260e303cb"
+        },
+        {
+          "path": "backend-go/internal/business/chat/export_modules_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "5853132c70642791e07b4e593d05db9376740fb941297849348c40a00e1a31d1"
+        },
+        {
+          "path": "backend-go/internal/business/chat/lease_usage_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "587a4922f8d3c3382ecf1895f435f78d680dbedb228a04824a81eb042ad88c4f"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/document_mutation_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "74e35ba5cb44058e16d9af8397e465394b19d9569594927dc033aeaf5ca46869"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/signal_connection_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "2e58afc28d5e73a051a41b21528b3e4a48127c9e0aef5afec16099b893873e1c"
+        },
+        {
+          "path": "backend-go/internal/business/memory/prompt_capture_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "6dd134db8aa21a3f2cc5df5e194fddcf9dec170f423aff45ccd32a6189ddd2ac"
+        },
+        {
+          "path": "backend-go/internal/business/search/registry_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "9f55762e4c65b6998c2b47ee86fdb519c6a9a2fbf3412b531a4e094ba072e519"
+        },
+        {
+          "path": "docs/reports/default-coverage-2026-11-07.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "71cbe9c454f327e830a36d85fe41af36fae5cfe4d10a922e9f334aaa5e9491f0"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/test/java/com/personalos/chat/service/ChatCompletionBoundaryTest.java",
+          "backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java"
+        ],
+        "go": [
+          "backend-go/internal/business/chat/engine_tool_loop_contract_test.go",
+          "backend-go/internal/business/knowledge/document_mutation_contract_test.go"
+        ]
+      },
+      "parity_sha256": {
+        "backend/src/test/java/com/personalos/chat/service/ChatCompletionBoundaryTest.java": "62217ea5e8dce72a7533087fd6d84f415d9c74db3a08061afc0dc3540300c5ee",
+        "backend/src/test/java/com/personalos/knowledge/KnowledgeDocumentUpdateIntegrationTest.java": "cf6a11e09e0f140d2c912ad3c588c8eefd04ddc62909cbf7323d0f05b99bb458"
+      },
+      "evidence": [
+        "docs/reports/default-coverage-2026-11-07.md",
+        "docs/testing.md",
+        "backend-go/internal/business/chat/engine_tool_loop_contract_test.go",
+        "backend-go/internal/business/knowledge/document_mutation_contract_test.go"
+      ],
+      "limitations": [
+        "默认集合仍低于 95%，Go 分支未测量，不将完整集合语句指标当作默认或分支指标。",
+        "SQL 和协议边界替身不证明真实数据库锁/隔离与 AMQP 成功投递；保留全部隔离设施测试。",
+        "本记录保持 in_progress，不继承迁移 verified 状态，不改变固定 SQL oracle 或 release gates。"
       ]
     }
   ]

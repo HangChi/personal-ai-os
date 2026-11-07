@@ -7731,14 +7731,20 @@
     {
       "id": "scope:backend-quality-gates-20261107",
       "status": "in_progress",
-      "source_commit": "1592c5aed7f74f6d539ad5f280969851e2e48b5c",
+      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
       "files": 22
     },
     {
       "id": "scope:prior-documentation-and-test-additions-20261107",
       "status": "in_progress",
-      "source_commit": "1592c5aed7f74f6d539ad5f280969851e2e48b5c",
+      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
       "files": 104
+    },
+    {
+      "id": "scope:go-default-coverage-20261107",
+      "status": "in_progress",
+      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
+      "files": 12
     }
   ]
 }
