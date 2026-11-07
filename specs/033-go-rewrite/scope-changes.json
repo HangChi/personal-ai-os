@@ -1380,8 +1380,8 @@
     {
       "id": "scope:safe-automation-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
-      "summary": "登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。",
+      "source_commit": "7a852359f13108e3a4f50197867ef5c70548cf2f",
+      "summary": "登记035日程ICS、网页采集、只读工作流、维护中心及V44–V49追加迁移的双端候选；现有历史功能不因登记而自动验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。 2026-11-07 质量门禁优化：重绑本次文档、测试及阈值变更；发布状态不变。",
       "files": [
         {
           "path": "backend-go/go.mod",
@@ -1501,7 +1501,7 @@
         {
           "path": "backend/pom.xml",
           "baseline_sha256": "9a507857d5da3fd43f4d08f9f2c7017de4b0120a5457db6082984ef896d7f196",
-          "candidate_sha256": "f77c306ab6e3364f2ec561ce5b27f05b61d3465865d12c8028b5b1c8f299ccdd"
+          "candidate_sha256": "62126404bfa771806e35da8ea4b375b3a57ce29c7b858ed103821f0bc7267a06"
         },
         {
           "path": "backend/src/main/java/com/personalos/calendar/controller/CalendarExchangeController.java",
@@ -2695,13 +2695,13 @@
     {
       "id": "scope:agent-rag-coverage-20261107",
       "status": "in_progress",
-      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
-      "summary": "扩展双版本 Agent、RAG、工具执行、存储故障及 HTTP 边界回归；登记覆盖率扩展涉及的原基线文件，完整覆盖率报告独立给出。",
+      "source_commit": "7a852359f13108e3a4f50197867ef5c70548cf2f",
+      "summary": "扩展双版本 Agent、RAG、工具执行、存储故障及 HTTP 边界回归；登记覆盖率扩展涉及的原基线文件，完整覆盖率报告独立给出。 2026-11-07 质量门禁优化：重绑本次文档、测试及阈值变更；发布状态不变。",
       "files": [
         {
           "path": "CONTRIBUTING.md",
           "baseline_sha256": "527241c6bf98eea820e705df7154781193cbac6296401e28733a3d62dcc778be",
-          "candidate_sha256": "d6cd04534d570c4b85ccf12a2d3052d23878da18f50e0c5375d799ccfaa9231e"
+          "candidate_sha256": "bc9860fd728f92eef84411fc5318ee74d74b3dc708184babf7b44f2e94b3d4c0"
         },
         {
           "path": "README.md",
@@ -2841,7 +2841,7 @@
         {
           "path": "docs/development.md",
           "baseline_sha256": "34265e72696d12dbc2e5a9b101c72ff226291d7fb4178f539832796f89366ce1",
-          "candidate_sha256": "e7d2951a66239b8e0feec83e0e21a6cd7c1e76c32f61fe20a49ef519c228af81"
+          "candidate_sha256": "9c6e04befff6d493cceeea28bcee158a6836270755ee1f9d5cce5b778f1d95f2"
         },
         {
           "path": "docs/distributed-workers.md",
@@ -2898,6 +2898,139 @@
       "limitations": [
         "覆盖率表示已执行的代码路径，不证明真实模型质量、线上负载或发布就绪。",
         "原基线哈希与 release gates 不变；新用例不继承历史逐声明验收。"
+      ]
+    },
+    {
+      "id": "scope:backend-quality-gates-20261107",
+      "status": "in_progress",
+      "source_commit": "7a852359f13108e3a4f50197867ef5c70548cf2f",
+      "summary": "Java 行/分支与 Go 完整集合语句分别要求 95%，新增变更代码门禁、13 项 Agent/RAG 关键场景和 18 个双版本共享契约。证据绑定完整源码提交；Go 分支仍未测量。",
+      "files": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "baseline_sha256": "f044786d5e5e8d6911b5a1192729aa12715db954b3bd713a8ed06bb8139289b8",
+          "candidate_sha256": "5c011ed9368edc4e707d2ebc288f817b2502d18fa640e29cd1260a14ac6cab50"
+        },
+        {
+          "path": ".github/workflows/coverage.yml",
+          "baseline_sha256": null,
+          "candidate_sha256": "eaaeefa19fc7fbb1140f41d4736f4f09dfd0537d8bfb93f647869f026eb6ca5b"
+        },
+        {
+          "path": "backend-go/docs/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "29673edacb5c70ac71cbbc476746026aa96415172feeb9fe8aa256347259e092"
+        },
+        {
+          "path": "backend-go/internal/business/agent/budget_shared_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "f4f062eda68e55994d97738e2092435e3e2405cf0e442367f0906e6fe4ad5ccd"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/chunking_shared_contract_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "73c2083fd59f8408af2dc9fe6ceb42a6f7898d3da04610c1b904954adbe793c3"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/AgentBudgetSharedContractTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "a92f2681a5c0e9c6e9c0e4a0b50527d8182ebdf925ddb612732098470de3529c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/splitter/ChunkingSharedContractTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "3c6e9a3ecd94a48fe0189f3ab2773eb131fc193754b7b4fe4354c90380e58d9a"
+        },
+        {
+          "path": "docs/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "a1ed7c4ff83ceb23cc18cc6f9d2a690d7e2b56748e9a81aabedb2b599d816769"
+        },
+        {
+          "path": "docs/testing.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "0ac15c437816c3076314ea577d1bd930a0f1e7e849b7e5f45641917598c2247d"
+        },
+        {
+          "path": "scripts/coverage/changed.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "3d2f62888b3569a4178df457a6a7808c04c1c8da34eca6d2edd71edefdcc2b13"
+        },
+        {
+          "path": "scripts/coverage/critical-scenarios.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "620c71b78a79cae1cc5d2960b5819aa4c748a1fd599eb4e4300a21123157e2e5"
+        },
+        {
+          "path": "scripts/coverage/run_suite.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "63641824eb90ff02b9bd8c0f1a6c5a9a887d1c9029ba628a524a2abfc72b454c"
+        },
+        {
+          "path": "scripts/coverage/scenarios.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "c9b0b1b66dc9792316c6b8a89a0f0bc1e9b25bd160479363945c71ba8b116441"
+        },
+        {
+          "path": "scripts/coverage/summarize.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "193971649cc408ce6d3ff9bd33431966aeed1b455ea314d66b1d4005ba1c3018"
+        },
+        {
+          "path": "scripts/coverage/test_changed.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "71c420e3335497679867426436a65a4397f85219333230937af06f1a7f4608cb"
+        },
+        {
+          "path": "scripts/coverage/test_run_suite.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "102d42c049245e9b3df6feda5227df1daaaa0be6acb96e512b64a58f09a2d513"
+        },
+        {
+          "path": "scripts/coverage/test_scenarios.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "05ca4c64216bb0fd73eed539d7b2096ec3406162c64509070d6b016ee6d18dfc"
+        },
+        {
+          "path": "scripts/coverage/test_summarize.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "f6555047902e58b99517a5c84c918db2fe9d7dce0bfaad96bf55450c709116ca"
+        },
+        {
+          "path": "testdata/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "7ede39015ac811956522b7c03e970b44b55ac242fc49cae606bed8e931529843"
+        },
+        {
+          "path": "testdata/agent-rag/chunking.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "b04f7de9e2187b74add77b38af8d71f5493b91f559f17dd6c1acc4ddfeee18df"
+        },
+        {
+          "path": "testdata/agent-rag/execution-budget.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "20434b7c1923871c4c6e93a0e8522be1caef1db0802c2e0e040ed7b8e55f6127"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/test/java/com/personalos/common/ai/AgentBudgetSharedContractTest.java",
+          "backend/src/test/java/com/personalos/knowledge/splitter/ChunkingSharedContractTest.java"
+        ],
+        "go": [
+          "backend-go/internal/business/agent/budget_shared_contract_test.go",
+          "backend-go/internal/business/knowledge/chunking_shared_contract_test.go"
+        ]
+      },
+      "evidence": [
+        "docs/testing.md",
+        "scripts/coverage/critical-scenarios.json",
+        ".github/workflows/coverage.yml"
+      ],
+      "limitations": [
+        "质量门禁通过不代表真实模型质量或生产发布批准。",
+        "Go 原生 profile 只统计语句，分支覆盖率尚未测量。",
+        "本记录保持 in_progress，不改固定基线或 release gates。"
       ]
     }
   ]
