@@ -1,0 +1,768 @@
+{
+  "answer": "报销每天五百元 [1]。另有费用尚无依据。",
+  "citations": [
+    {
+      "index": 1,
+      "content": "报销限额每天五百元。"
+    }
+  ],
+  "cases": [
+    {
+      "name": "supported-grounded",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "CHECKED"
+    },
+    {
+      "name": "partial-grounded",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "PARTIAL",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "CHECKED"
+    },
+    {
+      "name": "unsupported-with-no-evidence",
+      "response": {
+        "claims": [
+          {
+            "claim": "另有费用尚无依据",
+            "status": "UNSUPPORTED",
+            "index": 0,
+            "quote": ""
+          }
+        ]
+      },
+      "expectedStatus": "CHECKED"
+    },
+    {
+      "name": "mixed-supported-and-unsupported",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "另有费用尚无依据",
+            "status": "UNSUPPORTED",
+            "index": 0,
+            "quote": ""
+          }
+        ]
+      },
+      "expectedStatus": "CHECKED"
+    },
+    {
+      "name": "missing-claims",
+      "response": {},
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "null-claims",
+      "response": {
+        "claims": null
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "object-claims",
+      "response": {
+        "claims": {}
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "string-claims",
+      "response": {
+        "claims": "invalid"
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "empty-claims",
+      "response": {
+        "claims": []
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "too-many-claims",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "missing-claim",
+      "response": {
+        "claims": [
+          {
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "null-claim",
+      "response": {
+        "claims": [
+          {
+            "claim": null,
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "wrong-type-claim",
+      "response": {
+        "claims": [
+          {
+            "claim": 12,
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "missing-status",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "null-status",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": null,
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "wrong-type-status",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": 12,
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "missing-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "null-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": null,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "wrong-type-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": true,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "missing-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "null-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": null
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "wrong-type-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": 12
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "blank-claim",
+      "response": {
+        "claims": [
+          {
+            "claim": "  ",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "claim-outside-answer",
+      "response": {
+        "claims": [
+          {
+            "claim": "凭空捏造的事实 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "unknown-status",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "VERIFIED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "fractional-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1.5,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "string-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": "1",
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "overflow-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 2147483648,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "unknown-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 2,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "zero-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 0,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "negative-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": -1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "missing-inline-marker",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "unsupported-with-index",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "UNSUPPORTED",
+            "index": 1,
+            "quote": ""
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "unsupported-with-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "UNSUPPORTED",
+            "index": 0,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "fabricated-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天八百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "short-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "blank-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "    "
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "partial-with-fabricated-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "PARTIAL",
+            "index": 1,
+            "quote": "每天八百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "duplicate-claims",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销每天五百元 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED"
+    },
+    {
+      "name": "mismatched-inline-marker",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [2]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED",
+      "answer": "报销每天五百元 [2]。"
+    },
+    {
+      "name": "oversized-marker-before-valid-marker",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [999999999999999999999999999999] [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "CHECKED",
+      "answer": "报销每天五百元 [999999999999999999999999999999] [1]。"
+    },
+    {
+      "name": "other-marker-before-valid-marker",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销每天五百元 [2][1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "CHECKED",
+      "answer": "报销每天五百元 [2][1]。"
+    },
+    {
+      "name": "unicode-four-codepoint-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "四个符号有依据 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "😀😃😄😁"
+          }
+        ]
+      },
+      "expectedStatus": "CHECKED",
+      "answer": "四个符号有依据 [1]。",
+      "citations": [
+        {
+          "index": 1,
+          "content": "四个符号：😀😃😄😁。"
+        }
+      ]
+    },
+    {
+      "name": "unicode-three-codepoint-quote",
+      "response": {
+        "claims": [
+          {
+            "claim": "三个符号有依据 [1]",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "😀😃😄"
+          }
+        ]
+      },
+      "expectedStatus": "UNVERIFIED",
+      "answer": "三个符号有依据 [1]。",
+      "citations": [
+        {
+          "index": 1,
+          "content": "三个符号：😀😃😄。"
+        }
+      ]
+    },
+    {
+      "name": "exactly-twelve-distinct-grounded-claims",
+      "answer": "报销项目0每天五百元 [1]。报销项目1每天五百元 [1]。报销项目2每天五百元 [1]。报销项目3每天五百元 [1]。报销项目4每天五百元 [1]。报销项目5每天五百元 [1]。报销项目6每天五百元 [1]。报销项目7每天五百元 [1]。报销项目8每天五百元 [1]。报销项目9每天五百元 [1]。报销项目10每天五百元 [1]。报销项目11每天五百元 [1]。",
+      "response": {
+        "claims": [
+          {
+            "claim": "报销项目0每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目1每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目2每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目3每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目4每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目5每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目6每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目7每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目8每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目9每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目10每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          },
+          {
+            "claim": "报销项目11每天五百元 [1]。",
+            "status": "SUPPORTED",
+            "index": 1,
+            "quote": "每天五百元"
+          }
+        ]
+      },
+      "expectedStatus": "CHECKED"
+    }
+  ]
+}

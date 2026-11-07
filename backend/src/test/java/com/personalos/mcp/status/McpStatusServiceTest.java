@@ -125,4 +125,12 @@ class McpStatusServiceTest {
         assertThat(json).doesNotContain("\"args\"");
         assertThat(json).doesNotContain("server-filesystem");
     }
+
+ @Test void reconnectRequiresRegistryAndKnownServer(){
+  var disabled=new McpStatusService(properties(false),providerOf(null));
+  org.assertj.core.api.Assertions.assertThatThrownBy(()->disabled.reconnect("filesystem")).hasMessageContaining("未启用");
+  var registry=mock(McpClientRegistry.class);var service=new McpStatusService(properties(true),providerOf(registry));
+  org.assertj.core.api.Assertions.assertThatThrownBy(()->service.reconnect("unknown")).hasMessageContaining("未知");
+  service.reconnect("filesystem");org.mockito.Mockito.verify(registry).reconnect("filesystem");
+ }
 }

@@ -305,4 +305,61 @@ class ChatSummaryServiceTest {
         String transcript = ChatSummaryService.buildTranscript(List.of(message(1, "begin " + "x".repeat(10000) + " end")), 200);
         assertThat(transcript).hasSize(200).contains("仅保留首尾供摘要").startsWith("用户：begin").endsWith(" end");
     }
+
+    @Test void missingEmptyDeletedAndDisabledSessionsDoNotWrite() {
+        var summaries = service(enabled(1));
+        summaries.refreshBeforeRequest(CID, 0);
+        summaries.refreshBeforeRequest(CID, -1);
+        verifyNoInteractions(sessionRepository);
+        given(sessionRepository.findById(CID)).willReturn(Optional.empty());
+        summaries.refresh(CID);
+        assertThat(summaries.renderForConversation(CID)).isEmpty();
+        var session = new ChatSessionEntity(CID, "标题", Instant.EPOCH, Instant.EPOCH);
+        session.applySummary("  ", 0);
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(session));
+        assertThat(summaries.renderForConversation(CID)).isEmpty();
+        given(chatMemory.contextStartSequence(CID)).willReturn(3);
+        given(messageRepository.findRangeBySequenceNo(eq(CID), anyInt(), anyInt())).willReturn(List.of(message(1, null)));
+        for (String content : new String[]{null, "  "}) {
+            stubModel(content);
+            summaries.refresh(CID);
+            verify(sessionRepository, never()).save(any());
+        }
+        stubModel("有效摘要");
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(session), Optional.empty());
+        summaries.refresh(CID);
+        verify(sessionRepository, never()).save(any());
+        service(new ContextProperties(new ContextProperties.Summary(false, 1, 4000, 1200, DEFAULT_TIMEOUT),
+                new ContextProperties.AutoMemory(false, 3))).refresh(CID);
+    }
+    @Test void preRequestMergesSummaryAndStopsAtBoundary() {
+        var session = new ChatSessionEntity(CID, "标题", Instant.EPOCH, Instant.EPOCH);
+        session.applySummary("历史约束", 1);
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(session));
+        given(messageRepository.findRangeBySequenceNo(CID, 2, 3)).willReturn(List.of(message(2, "新事实"), message(3, "新决定")));
+        stubModel("合并的事实");
+        service(enabled(100)).refreshBeforeRequest(CID, 3);
+        assertThat(session.getContextSummary()).isEqualTo("合并的事实");
+        assertThat(session.getSummaryUptoSeq()).isEqualTo(3);
+        verify(sessionRepository).save(session);
+        assertThat(ChatSummaryService.buildTranscript(List.of(
+                new ChatMessageEntity(CID, MessageRole.SYSTEM, "规则", 1, Instant.EPOCH),
+                new ChatMessageEntity(CID, MessageRole.TOOL, "结果", 2, Instant.EPOCH)), 100)).contains("系统：规则", "工具：结果");
+        assertThat(ChatSummaryService.buildTranscript(List.of(message(1, "abcdefgh")), 2)).hasSize(2);
+    }
+
+    @Test void blankExistingSummaryAndOversizedModelOutputRespectStorageLimit() {
+        var session = new ChatSessionEntity(CID, "标题", Instant.EPOCH, Instant.EPOCH);
+        session.applySummary("  ", 0);
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(session));
+        given(chatMemory.contextStartSequence(CID)).willReturn(2);
+        given(messageRepository.findRangeBySequenceNo(CID, 1, 1)).willReturn(List.of(message(1, "新事实")));
+        stubModel("x".repeat(1300));
+
+        service(enabled(1)).refresh(CID);
+
+        assertThat(session.getContextSummary()).isEqualTo("x".repeat(1200));
+        assertThat(session.getSummaryUptoSeq()).isEqualTo(1);
+        verify(sessionRepository).save(session);
+    }
 }

@@ -163,4 +163,11 @@ class PlanPromptContributorTest {
         assertThat(block.length()).isLessThanOrEqualTo(120);
         assertThat(block).contains("已截断");
     }
+    @Test void currentStepDetailIsOptionalButNonBlankCriteriaAreInjected() {
+        for (String detail : java.util.Arrays.asList(null, " ", "可验证的产出")) {
+            var dto = new PlanStepDto(1, "step", "RUNNING", detail, null, null, null, null, null);
+            String prompt = contributor.render(plan("ACTIVE", dto));
+            assertThat(prompt.contains("完成标准：")).isEqualTo(detail != null && !detail.isBlank());
+        }
+    }
 }

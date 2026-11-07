@@ -583,4 +583,37 @@ class ModelProfileServiceTest {
             throw new IllegalStateException("无法为测试实体注入 id", ex);
         }
     }
+
+    @Test
+    void modelListsIgnoreNullsAndPreserveAudioAcrossLegacyReplacement() {
+        var created = service.create(new SaveProfileCommand("profile", null, null, "OPENAI", "key",
+                null, null, null, java.util.Arrays.asList(null, " ", "chat"),
+                java.util.Arrays.asList(null, " ", "embed"), java.util.Arrays.asList(null, " ", "audio")));
+        assertThat(created.getChatModel()).isEqualTo("chat");
+        assertThat(created.getEmbeddingModel()).isEqualTo("embed");
+        assertThat(created.getAudioModel()).isEqualTo("audio");
+        service.replaceModels(created.getId(), java.util.Arrays.asList(null, " ", "next", "next"), null);
+        assertThat(service.modelsOf(created.getId())).extracting(AiModelProfileModelEntity::getModelName)
+                .containsExactlyInAnyOrder("next", "audio");
+        assertThat(ModelProfileService.reconcileWindow(512, 8192)).isEqualTo(8192);
+        assertThat(service.modelsOf(UUID.randomUUID())).isEmpty();
+        service.reorder(java.util.Arrays.asList(UUID.randomUUID(), created.getId(), created.getId()));
+        assertThat(table.get(created.getId()).getSortOrder()).isZero();
+        assertThatThrownBy(() -> service.create(command(null, null))).isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    void fallbackListHandlesLegacyNullTimestampsAndBlankModelNames() {
+        var profile = mock(AiModelProfileEntity.class);
+        var id = UUID.randomUUID();
+        when(profile.getId()).thenReturn(id);
+        when(repository.findById(id)).thenReturn(Optional.of(profile));
+        for (String name : java.util.Arrays.asList(null, " ", " chat ")) {
+            when(profile.getChatModel()).thenReturn(name);
+            when(profile.getEmbeddingModel()).thenReturn(name);
+            var result = service.modelsOf(id);
+            assertThat(result).hasSize(name != null && !name.isBlank() ? 2 : 0);
+            if (!result.isEmpty()) assertThat(result).extracting(AiModelProfileModelEntity::getModelName).containsOnly("chat");
+        }
+    }
 }

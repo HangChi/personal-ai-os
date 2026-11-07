@@ -1,0 +1,466 @@
+{
+  "cases": [
+    {
+      "name": "done-rejects-start",
+      "states": [
+        "DONE",
+        "PENDING"
+      ],
+      "action": "start",
+      "seq": 1,
+      "note": null,
+      "expectedError": 40900,
+      "expectedStates": [
+        "DONE",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "done-rejects-fail",
+      "states": [
+        "DONE",
+        "PENDING"
+      ],
+      "action": "fail",
+      "seq": 1,
+      "note": null,
+      "expectedError": 40900,
+      "expectedStates": [
+        "DONE",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "done-rejects-skip",
+      "states": [
+        "DONE",
+        "PENDING"
+      ],
+      "action": "skip",
+      "seq": 1,
+      "note": null,
+      "expectedError": 40900,
+      "expectedStates": [
+        "DONE",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "skipped-rejects-start",
+      "states": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "action": "start",
+      "seq": 1,
+      "note": null,
+      "expectedError": 40900,
+      "expectedStates": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "skipped-rejects-fail",
+      "states": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "action": "fail",
+      "seq": 1,
+      "note": null,
+      "expectedError": 40900,
+      "expectedStates": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "skipped-rejects-skip",
+      "states": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "action": "skip",
+      "seq": 1,
+      "note": null,
+      "expectedError": 40900,
+      "expectedStates": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "skipped-cannot-complete",
+      "states": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "action": "complete",
+      "seq": 1,
+      "note": "声称完成",
+      "expectedError": 40900,
+      "expectedStates": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "running-start-is-idempotent",
+      "states": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "action": "start",
+      "seq": 1,
+      "note": null,
+      "expectedError": 0,
+      "expectedStates": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "idempotent": true
+    },
+    {
+      "name": "done-complete-is-idempotent",
+      "states": [
+        "DONE",
+        "PENDING"
+      ],
+      "action": "complete",
+      "seq": 1,
+      "note": "不应覆盖原结论",
+      "expectedError": 0,
+      "expectedStates": [
+        "DONE",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "idempotent": true
+    },
+    {
+      "name": "fail-null-reason",
+      "states": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "action": "fail",
+      "seq": 1,
+      "note": null,
+      "expectedError": 0,
+      "expectedStates": [
+        "FAILED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "expectedReason": "未说明原因"
+    },
+    {
+      "name": "fail-blank-reason",
+      "states": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "action": "fail",
+      "seq": 1,
+      "note": "  ",
+      "expectedError": 0,
+      "expectedStates": [
+        "FAILED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "expectedReason": "未说明原因"
+    },
+    {
+      "name": "fail-trimmed-reason",
+      "states": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "action": "fail",
+      "seq": 1,
+      "note": "  接口不可用  ",
+      "expectedError": 0,
+      "expectedStates": [
+        "FAILED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "expectedReason": "接口不可用"
+    },
+    {
+      "name": "skip-null-reason",
+      "states": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "action": "skip",
+      "seq": 1,
+      "note": null,
+      "expectedError": 0,
+      "expectedStates": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "expectedReason": "未说明原因"
+    },
+    {
+      "name": "skip-blank-reason",
+      "states": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "action": "skip",
+      "seq": 1,
+      "note": "  ",
+      "expectedError": 0,
+      "expectedStates": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "expectedReason": "未说明原因"
+    },
+    {
+      "name": "skip-trimmed-reason",
+      "states": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "action": "skip",
+      "seq": 1,
+      "note": "  接口不可用  ",
+      "expectedError": 0,
+      "expectedStates": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "expectedReason": "接口不可用"
+    },
+    {
+      "name": "retry-clears-failure",
+      "states": [
+        "FAILED",
+        "PENDING"
+      ],
+      "action": "start",
+      "seq": 1,
+      "note": null,
+      "expectedError": 0,
+      "expectedStates": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "failed-cannot-complete",
+      "states": [
+        "FAILED",
+        "PENDING"
+      ],
+      "action": "complete",
+      "seq": 1,
+      "note": "声称恢复",
+      "expectedError": 40900,
+      "expectedStates": [
+        "FAILED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "cannot-start-out-of-order",
+      "states": [
+        "PENDING",
+        "PENDING"
+      ],
+      "action": "start",
+      "seq": 2,
+      "note": null,
+      "expectedError": 40900,
+      "expectedStates": [
+        "PENDING",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "cannot-complete-out-of-order",
+      "states": [
+        "FAILED",
+        "PENDING"
+      ],
+      "action": "complete",
+      "seq": 2,
+      "note": "结论",
+      "expectedError": 40900,
+      "expectedStates": [
+        "FAILED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "complete-requires-evidence",
+      "states": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "action": "complete",
+      "seq": 1,
+      "note": null,
+      "expectedError": 40000,
+      "expectedStates": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "pending-complete-records-start",
+      "states": [
+        "PENDING",
+        "PENDING"
+      ],
+      "action": "complete",
+      "seq": 1,
+      "note": "  已核对资料  ",
+      "expectedError": 0,
+      "expectedStates": [
+        "DONE",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "expectedToolResult": "已核对资料"
+    },
+    {
+      "name": "tool-receipt-is-evidence",
+      "states": [
+        "RUNNING",
+        "PENDING"
+      ],
+      "action": "complete",
+      "seq": 1,
+      "note": null,
+      "expectedError": 0,
+      "expectedStates": [
+        "DONE",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "toolResult": "找到三条任务",
+      "expectedToolResult": "找到三条任务"
+    },
+    {
+      "name": "skip-last-step-completes-plan",
+      "states": [
+        "DONE",
+        "PENDING"
+      ],
+      "action": "skip",
+      "seq": 2,
+      "note": null,
+      "expectedError": 0,
+      "expectedStates": [
+        "DONE",
+        "SKIPPED"
+      ],
+      "expectedPlanStatus": "COMPLETED",
+      "expectedReason": "未说明原因"
+    },
+    {
+      "name": "failed-step-can-be-explicitly-skipped",
+      "states": [
+        "FAILED",
+        "PENDING"
+      ],
+      "action": "skip",
+      "seq": 1,
+      "note": "改由用户处理",
+      "expectedError": 0,
+      "expectedStates": [
+        "SKIPPED",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE",
+      "expectedReason": "改由用户处理"
+    },
+    {
+      "name": "start-next-after-done",
+      "states": [
+        "DONE",
+        "PENDING"
+      ],
+      "action": "start",
+      "seq": 2,
+      "note": null,
+      "expectedError": 0,
+      "expectedStates": [
+        "DONE",
+        "RUNNING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "complete-last-after-skipped",
+      "states": [
+        "SKIPPED",
+        "RUNNING"
+      ],
+      "action": "complete",
+      "seq": 2,
+      "note": "已核对",
+      "expectedError": 0,
+      "expectedStates": [
+        "SKIPPED",
+        "DONE"
+      ],
+      "expectedPlanStatus": "COMPLETED",
+      "expectedToolResult": "已核对"
+    },
+    {
+      "name": "invalid-step-0",
+      "states": [
+        "PENDING",
+        "PENDING"
+      ],
+      "action": "start",
+      "seq": 0,
+      "note": null,
+      "expectedError": 40000,
+      "expectedStates": [
+        "PENDING",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    },
+    {
+      "name": "invalid-step-3",
+      "states": [
+        "PENDING",
+        "PENDING"
+      ],
+      "action": "start",
+      "seq": 3,
+      "note": null,
+      "expectedError": 40000,
+      "expectedStates": [
+        "PENDING",
+        "PENDING"
+      ],
+      "expectedPlanStatus": "ACTIVE"
+    }
+  ]
+}

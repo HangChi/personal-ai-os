@@ -454,4 +454,27 @@ class AiChatClientProviderModelSelectionTest {
         assertThat(provider.targetFor("qwen-max").model()).isSameAs(fresh);
         assertThat(calls).hasValue(2);
     }
+
+ @Test void namedCacheIsBoundedAndRepeatedGenerationSwitchFallsBackToCurrent(){
+  for(int i=0;i<33;i++)provider.targetFor("model-"+i);
+  provider.targetFor("model-0");
+  assertThat(resolver.calls.get()).isEqualTo(34);
+  provider.setModelResolver(new RuntimeChatModelResolver(){
+   public ChatModel resolve(String name){provider.replaceModel(new FakeModel("latest","synthetic"));return new FakeModel(name,"synthetic");}
+   public String defaultChatModel(){return "latest";}
+  });
+  assertThat(modelNameOf(provider.targetFor("racing").model())).isEqualTo("latest");
+ }
+ @Test void absentAndNonOpenAiOptionsDoNotApplyProviderSpecificParameters(){
+  var request=mock(ChatClient.ChatClientRequestSpec.class);
+  for(ChatOptions options:new ChatOptions[]{null,ChatOptions.builder().model("generic").build(),OpenAiChatOptions.builder().build()}){
+   var model=mock(ChatModel.class);when(model.getOptions()).thenReturn(options);
+   provider.replaceModel(model);provider.targetFor("named");
+   if(!(options instanceof OpenAiChatOptions))assertThat(provider.applyThinkingOptions(request,1)).isSameAs(request);
+  }
+  var bare=new AiChatClientProvider(emptyProvider(),emptyProvider(),emptyProvider(),emptyProvider(),mock(ChatMemory.class),new AiProperties(null,null),new ContextBudgetService(new AiProperties(null,null)));
+  assertThat(bare.applyThinkingOptions(request,1)).isSameAs(request);
+  assertThatThrownBy(bare::requireChatClient).isInstanceOf(BusinessException.class);
+  assertThatThrownBy(bare::requirePlainChatClient).isInstanceOf(BusinessException.class);
+ }
 }

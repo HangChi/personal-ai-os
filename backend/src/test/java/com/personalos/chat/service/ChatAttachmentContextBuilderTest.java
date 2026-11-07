@@ -113,4 +113,10 @@ class ChatAttachmentContextBuilderTest {
 
         assertThat(context.textBlock()).contains("broken.txt").contains("读取失败");
     }
+ @Test void imageAndTextBudgetsExplainEverySkippedAttachment(){
+  var big=dto("big","big.png","image/png");when(attachmentService.verify(any())).thenReturn(List.of(big));when(attachmentService.readBytes("big")).thenReturn(new byte[5*1024*1024+1]);assertThat(builder.build(List.of(big)).textBlock()).contains("图片超过");
+  var first=dto("1","one.txt","text/plain");var second=dto("2","two.txt","text/plain");var third=dto("3","three.txt","text/plain");
+  when(attachmentService.verify(any())).thenReturn(List.of(first,second,third));when(attachmentService.readBytes(anyString())).thenReturn("a".repeat(9000).getBytes(StandardCharsets.UTF_8));
+  assertThat(builder.build(List.of(first,second,third)).textBlock()).contains("已截断","本轮文本附件已达上限");
+ }
 }

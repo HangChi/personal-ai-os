@@ -515,4 +515,76 @@ class ModelConfigServiceTest {
     private static <T> ObjectProvider<T> emptyProvider() {
         return (ObjectProvider<T>) new StaticObjectProvider<>(List.of());
     }
+
+    @Test
+    void currentConfigurationResolvesLazyProfileAndEmptyProvider() {
+        var lazy = org.mockito.Mockito.mock(ObjectProvider.class);
+        var service = new ModelConfigService(repository, factory, provider, CLOCK, lazy,
+                "https://env.example.test", "key", "env-chat", "embed", "");
+        assertThat(service.current().chatModel()).isEqualTo("env-chat");
+        var profiles = mock(ModelProfileService.class);
+        var current = new ResolvedConfig("https://profile.example.test", "profile-key", "profile-chat", null,
+                "embed", null, null, java.util.Map.of());
+        when(lazy.getIfAvailable()).thenReturn(profiles);
+        when(profiles.resolveCurrent()).thenReturn(current);
+        assertThat(service.current()).isSameAs(current);
+        assertThat(service.defaultChatModel()).isEqualTo("profile-chat");
+        service.resolve(" other-model ");
+        verify(factory).create("https://profile.example.test", "profile-key", "other-model", null, java.util.Map.of());
+        for (String name : java.util.Arrays.asList(null, " ")) {
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.resolve(name))
+                    .isInstanceOf(com.personalos.common.exception.BusinessException.class);
+        }
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service("", "", "", "", "").resolve("model"))
+                .isInstanceOf(com.personalos.common.exception.BusinessException.class).hasMessageContaining("API Key");
+    }
+
+    @Test
+    void emptyKeyStartupAndModelConstructionErrorsKeepSavedConfiguration() {
+        var service = service("", "", "", "", "");
+        service.save(new SaveCommand(null, "", "chat", null, null));
+        service.applyOnStartup();
+        verify(factory, never()).create(any(), any(), any(), any(), any());
+        for (String message : java.util.Arrays.asList(null, " ", "upstream refused")) {
+            org.mockito.Mockito.doThrow(new IllegalStateException(message)).when(factory).create(any(), any(), any(), any(), any());
+            var withKey = service("https://env.example.test", "key", "chat", "embed", "");
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> withKey.applyResolved(withKey.resolve()))
+                    .isInstanceOf(com.personalos.common.exception.BusinessException.class);
+            assertThat(withKey.resolve().chatModel()).isEqualTo("chat");
+        }
+        for (String audio : java.util.Arrays.asList(null, "", " ", "whisper")) {
+            assertThat(new ResolvedConfig("base", "key", "chat", null, "embed", audio, null, null,
+                    java.util.Map.of()).hasAudioModel()).isEqualTo("whisper".equals(audio));
+        }
+        row = null;
+        var env = new org.springframework.mock.env.MockEnvironment().withProperty("OPENAI_CHAT_MODEL", " ");
+        var withEnv = new ModelConfigService(repository, factory, provider, CLOCK, null, env,
+                "", "", "chat", "embed", "");
+        assertThat(withEnv.resolve().sources().get("chatModel")).isEqualTo(ConfigSource.DEFAULT);
+    }
+
+    @Test void blankLegacyColumnsRespectExplicitSourceAndFallbackOrder() {
+        var svc = service("", "", "", "", "");
+        for (String db : java.util.Arrays.asList(null, " ", "db")) {
+            for (String env : java.util.Arrays.asList(null, " ", "env")) {
+                ConfigSource expected = db != null && !db.isBlank() ? ConfigSource.DATABASE
+                        : env == null ? ConfigSource.DEFAULT : ConfigSource.ENVIRONMENT;
+                assertThat((Object) org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                        ModelConfigService.class, "sourceOf", db, env)).isEqualTo(expected);
+                assertThat((Object) org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                        svc, "sourceOf", db, env, "KEY")).isEqualTo(expected);
+                String first = org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                        ModelConfigService.class, "firstNonBlank", db, env, "fallback");
+                assertThat(first).isEqualTo(db != null && !db.isBlank() ? db : env != null && !env.isBlank() ? env : "fallback");
+            }
+        }
+        assertThat((Boolean)org.springframework.test.util.ReflectionTestUtils.invokeMethod(svc, "isEnvDefined", "KEY")).isFalse();
+        var environment = new org.springframework.mock.env.MockEnvironment();
+        org.springframework.test.util.ReflectionTestUtils.setField(svc, "environment", environment);
+        for (String value : java.util.List.of(" ", "explicit")) {
+            environment.setProperty("KEY", value);
+            assertThat((Object)org.springframework.test.util.ReflectionTestUtils.invokeMethod(svc, "sourceOf", " ", "resolved", "KEY"))
+                    .isEqualTo(value.isBlank() ? ConfigSource.DEFAULT : ConfigSource.ENVIRONMENT);
+        }
+    }
 }

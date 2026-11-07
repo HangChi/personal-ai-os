@@ -322,4 +322,17 @@ class ContextBudgetServiceTest {
         assertThat(service.modelWindow("gpt-4o").source()).isEqualTo("configured");
         assertThat(service.contextWindowTokens("gpt-4o")).isEqualTo(16_384);
     }
+
+ @Test void nullableRegistrationsAndObservedProvenanceRemainConsistent(){
+  var service=new ContextBudgetService(props(32768));service.registerDefaultModel(null);service.registerWindowLookup(null);service.registerFixedOverhead(null);
+  assertThat(service.contextWindowTokens(null)).isEqualTo(32768);assertThat(service.fixedOverheadTokens()).isZero();
+  for(String value:java.util.Arrays.asList(null," ")){service.registerDefaultModel(()->value);assertThat(service.contextWindowTokens(null)).isEqualTo(32768);}
+  service.registerDefaultModel(()->{throw new IllegalStateException();});assertThat(service.contextWindowTokens(null)).isEqualTo(32768);
+  service.registerWindowLookup(name->8192);long epoch=service.evidence().generation();
+  service.evidence().rejected(epoch,"m",new RuntimeException("input is too long"),8192);assertThat(service.inputLimitSource("m")).isEqualTo("adaptive");
+  service.evidence().rejected(epoch,"m",new RuntimeException("max_input_tokens exceeded 2048"),8192);assertThat(service.inputLimitSource("m")).isEqualTo("endpoint");
+  service.evidence().rejected(epoch,"m",new RuntimeException("maximum context length 4096"),8192);assertThat(service.contextWindowTokens("m")).isEqualTo(4096);
+  service.registerWindowLookup(name->2048);assertThat(service.contextWindowTokens("m")).isEqualTo(2048);
+  assertThat(ContextBudgetService.toTokensByContent(null)).isZero();assertThat(ContextBudgetService.toTokensByContent("文本")).isPositive();
+ }
 }

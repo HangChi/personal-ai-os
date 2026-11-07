@@ -34,4 +34,25 @@ class TurnCitationCollectorTest {
         assertThat(collector.add(1, web)).extracting(WebSource.Numbered::index).containsExactly(2);
         assertThat(collector.snapshot()).extracting(ChatCitationDto::index).containsExactly(2, 3);
     }
+
+    @Test void preservesDistinctPassagesAndBothCitationCaps() {
+        var collector = new TurnCitationCollector();
+        var sources = java.util.stream.IntStream.range(0, 21)
+                .mapToObj(i -> new WebSource("title", "https://example.test/" + i, "body", "host")).toList();
+        assertThat(collector.add(0, sources)).hasSize(20);
+        assertThat(collector.add(0, List.of(sources.getFirst()))).hasSize(1);
+        var full = new TurnCitationCollector();
+        assertThat(full.add(60, sources)).isEmpty();
+        var initial = java.util.stream.IntStream.range(0, 60)
+                .mapToObj(i -> new ChatCitationDto(i + 1, "d" + i, "t", "f", 0, "c")).toList();
+        assertThat(full.addKnowledge(initial, List.of(new KnowledgeHitDto(null, "t", "f", 0, "body", .5)))).isEmpty();
+        var nullable = new TurnCitationCollector();
+        var hit = new KnowledgeHitDto(null, "t", "f", 2, "body", .5);
+        assertThat(nullable.addKnowledge(List.of(), List.of(hit, hit))).extracting(CitationDto::index).containsExactly(1, 1);
+        assertThat(nullable.snapshot()).singleElement().satisfies(c -> assertThat(c.documentId()).isEmpty());
+        var matches = List.of(new ChatCitationDto(1, "", "t", "f", 1, "body"),
+            new ChatCitationDto(2, "", "t", "f", 2, "other"),
+            new ChatCitationDto(3, "", "t", "f", 2, "body", "https://example.test"));
+        assertThat(new TurnCitationCollector().addKnowledge(matches, List.of(hit))).extracting(CitationDto::index).containsExactly(4);
+    }
 }

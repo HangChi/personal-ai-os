@@ -65,4 +65,27 @@ class CalendarWriteGuardChatModelTest {
         assertThat(text(guard.stream(prompt("晚上19点开会")).collectList().block())).isEqualTo("你指的是明天吗？");
         assertThat(raw.receivedInstructions()).hasSize(6);
     }
+
+    @Test void synchronousRepairCannotRepeatAfterBudgetIsSpent() {
+        budget.claimCalendarRepair();raw.enqueueText("已创建日程");
+        assertThat(guard.call(prompt("明天开会")).getResult().getOutput().getText()).contains("尚未创建");
+        raw.enqueueText("已创建日程");assertThat(text(guard.stream(prompt("明天开会")).collectList().block())).contains("尚未创建");
+        assertThat(raw.receivedInstructions()).hasSize(2);
+    }
+    @Test void emptyNonUserAndUnbudgetedPromptsCannotTriggerCalendarWrites() {
+        for(var p:List.of(new Prompt("明天开会"),new Prompt(List.of(new org.springframework.ai.chat.messages.SystemMessage("明天开会")),prompt("x").getOptions()),
+                new Prompt(List.of(new UserMessage("明天开会"),new UserMessage("创建待办任务")),prompt("x").getOptions()))) {
+            raw.enqueueText("已创建日程");assertThat(guard.call(p).getResult().getOutput().getText()).isEqualTo("已创建日程");
+        }
+        assertThat(guard.getOptions()).isEqualTo(raw.getOptions());
+    }
+    @Test void successfulRepairAndEmptyChunksRetainOriginalResponse() {
+        raw.enqueueText("已创建日程");raw.enqueueText("请告诉我日期");
+        assertThat(guard.call(prompt("明天开会")).getResult().getOutput().getText()).isEqualTo("请告诉我日期");
+        var delegate=org.mockito.Mockito.mock(org.springframework.ai.chat.model.ChatModel.class);
+        org.mockito.Mockito.when(delegate.stream(org.mockito.ArgumentMatchers.any(Prompt.class))).thenReturn(reactor.core.publisher.Flux.empty());
+        assertThat(new CalendarWriteGuardChatModel(delegate).stream(prompt("明天开会")).collectList().block()).isEmpty();
+        org.mockito.Mockito.when(delegate.call(org.mockito.ArgumentMatchers.any(Prompt.class))).thenReturn(new ChatResponse(List.of()));
+        assertThat(new CalendarWriteGuardChatModel(delegate).call(prompt("明天开会")).getResults()).isEmpty();
+    }
 }

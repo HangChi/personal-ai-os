@@ -151,4 +151,13 @@ class UsageStatsServiceTest {
                 .containsExactly("2026-10-25", "2026-10-26");
         assertThat(stats.totalTokens()).isEqualTo(33);
     }
+
+ @Test void nullableLegacyUsageAndZeroEstimatedDayRemainDistinct(){
+  var entity=Mockito.mock(com.personalos.chat.entity.TokenUsageEntity.class);
+  when(entity.getPromptTokens()).thenReturn(null);
+  when(repository.findFirstByConversationIdAndSourceOrderByCreatedAtDescIdDesc(anyString(),any())).thenReturn(java.util.Optional.of(entity));
+  assertThat(service.latestActualPromptTokens("c")).hasValue(0);
+  when(repository.aggregateByDay(any(),any(),anyString())).thenReturn(List.<Object[]>of(new Object[]{"2026-10-26","ESTIMATED",null,"bad",0}));
+  assertThat(service.stats(1).daily().getFirst().estimated()).isFalse();
+ }
 }

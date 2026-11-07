@@ -111,4 +111,16 @@ class WebPushServiceTest {
         assertThatThrownBy(() -> new WebPushSettings(true, "a", "", "mailto:x@y")).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new WebPushSettings(true, "a", "b", "invalid")).isInstanceOf(IllegalArgumentException.class);
     }
+ @Test void endpointKeyAndRetryBoundaryValues(){
+  for(String endpoint:List.of("https:/path","https://fcm.googleapis.com:443/x")){if(endpoint.contains(":443"))WebPushService.validateEndpoint(endpoint);else assertThatThrownBy(()->WebPushService.validateEndpoint(endpoint)).isInstanceOf(BusinessException.class);}
+  byte[] badPrefix=new byte[65];byte[] goodPrefix=new byte[65];goodPrefix[0]=4;
+  for(byte[] key:List.of(new byte[64],badPrefix,goodPrefix)){
+   String encoded=Base64.getUrlEncoder().withoutPadding().encodeToString(key);
+   assertThatThrownBy(()->service.subscribe(delivery.endpoint(),encoded,Base64.getUrlEncoder().withoutPadding().encodeToString(new byte[15]))).isInstanceOf(BusinessException.class);
+  }
+  for(int code:new int[]{199,299,300,499}){
+   clearInvocations(repository,transport);when(repository.claim(any())).thenReturn(List.of(delivery));try{when(transport.send(anyString(),anyString(),anyString(),any())).thenReturn(code);}catch(Exception ex){throw new AssertionError(ex);}service.dispatch();verify(repository).finish(eq(delivery),eq(code==299?"SENT":"FAILED"),any());
+  }
+  var last=new WebPushRepository.Delivery(delivery.subscriptionId(),delivery.reminderId(),5,delivery.endpoint(),"key","auth","meeting");when(repository.claim(any())).thenReturn(List.of(last));try{when(transport.send(anyString(),anyString(),anyString(),any())).thenReturn(200);}catch(Exception ex){throw new AssertionError(ex);}service.dispatch();verify(repository).finish(eq(last),eq("SENT"),any());
+ }
 }

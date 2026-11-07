@@ -163,4 +163,17 @@ class ChatMarkdownExporterTest {
         }
         return count;
     }
+
+    @Test void handlesLegacyNullableSnapshotsAndWebSources() {
+        givenSession(null, Instant.EPOCH);
+        when(messageService.list(CONVERSATION)).thenReturn(List.of(
+                message("USER", null, null, null),
+                message("ASSISTANT", "answer", List.of(
+                    new ChatCitationDto(1, "web", null, "host", 0, "snippet", "https://example.test"),
+                    new ChatCitationDto(2, "doc", " ", null, 0, "snippet")), List.of())));
+        var result = exporter.export(CONVERSATION);
+        assertThat(result.filename()).startsWith("未命名会话-");
+        assertThat(result.markdown()).contains("1. 《未命名》 <https://example.test>",
+                "2. 《未命名》（未命名，第 1 段）");
+    }
 }

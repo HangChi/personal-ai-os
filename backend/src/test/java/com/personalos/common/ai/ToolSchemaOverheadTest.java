@@ -147,4 +147,12 @@ class ToolSchemaOverheadTest {
         assertThat(ToolSchemaOverhead.compactLength(null)).isZero();
         assertThat(ToolSchemaOverhead.compactLength("")).isZero();
     }
+    @Test void absentToolObjectsAndIncompleteDefinitionsDoNotInflateOverhead() {
+        ToolCallback callback = mock(ToolCallback.class);
+        assertThat(overhead(null, List.of(callback)).chars()).isZero();
+        ToolDefinition definition = mock(ToolDefinition.class);
+        when(callback.getToolDefinition()).thenReturn(definition);
+        when(definition.inputSchema()).thenReturn(" " + (char)10 + (char)13 + (char)9 + "{}");
+        assertThat(overhead(List.of(), List.of(callback)).chars()).isEqualTo(2);
+    }
 }

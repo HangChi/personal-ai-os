@@ -167,4 +167,17 @@ class DotEnvParserTest {
         new DotEnvEnvironmentPostProcessor(dir.resolve("missing/deep/directory/more"))
                 .postProcessEnvironment(new org.springframework.core.env.StandardEnvironment(), null);
     }
+    @Test
+    void emptyAndAbsentFilesDoNotInstallPropertySources(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
+        // Keep all lookups inside a temporary tree, away from the project's real .env.
+        var deep = java.nio.file.Files.createDirectories(dir.resolve("a/b/c/d/e"));
+        var environment = new org.springframework.core.env.StandardEnvironment();
+        new DotEnvEnvironmentPostProcessor(deep).postProcessEnvironment(environment, null);
+        assertThat(environment.getPropertySources().contains("dotenv-systemEnvironment")).isFalse();
+        java.nio.file.Files.writeString(deep.resolve(".env"), "# empty file\n   =ignored\n");
+        new DotEnvEnvironmentPostProcessor(deep).postProcessEnvironment(environment, null);
+        assertThat(environment.getPropertySources().contains("dotenv-systemEnvironment")).isFalse();
+        assertThat(DotEnvEnvironmentPostProcessor.parse(List.of("   =ignored"))).isEmpty();
+        new DotEnvEnvironmentPostProcessor((java.nio.file.Path) null).postProcessEnvironment(environment, null);
+    }
 }

@@ -1,0 +1,1128 @@
+{
+  "hits": [
+    {
+      "content": "每周工作五天，每天八小时。"
+    },
+    {
+      "content": "每周工作四天，每天六小时。"
+    },
+    {
+      "content": "节假日另行安排，周末正常休息。"
+    }
+  ],
+  "cases": [
+    {
+      "name": "all-supported",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ],
+      "expectedConflicts": 0,
+      "expectedClarification": ""
+    },
+    {
+      "name": "supported-before-partial-preserves-input-order",
+      "response": {
+        "evidence": [
+          {
+            "index": 3,
+            "grade": "PARTIAL"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 1,
+            "grade": "IRRELEVANT"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        2,
+        3
+      ],
+      "expectedConflicts": 0,
+      "expectedClarification": ""
+    },
+    {
+      "name": "irrelevant-conflict-does-not-veto-answer",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "IRRELEVANT"
+          },
+          {
+            "index": 2,
+            "grade": "IRRELEVANT"
+          },
+          {
+            "index": 3,
+            "grade": "IRRELEVANT"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [],
+      "expectedConflicts": 0,
+      "expectedClarification": ""
+    },
+    {
+      "name": "retain-opposing-source-SUPPORTED-IRRELEVANT",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "IRRELEVANT"
+          },
+          {
+            "index": 3,
+            "grade": "IRRELEVANT"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2
+      ],
+      "expectedConflicts": 1,
+      "expectedClarification": ""
+    },
+    {
+      "name": "retain-opposing-source-IRRELEVANT-SUPPORTED",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "IRRELEVANT"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "IRRELEVANT"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        2,
+        1
+      ],
+      "expectedConflicts": 1,
+      "expectedClarification": ""
+    },
+    {
+      "name": "retain-opposing-source-PARTIAL-IRRELEVANT",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "PARTIAL"
+          },
+          {
+            "index": 2,
+            "grade": "IRRELEVANT"
+          },
+          {
+            "index": 3,
+            "grade": "IRRELEVANT"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2
+      ],
+      "expectedConflicts": 1,
+      "expectedClarification": ""
+    },
+    {
+      "name": "evidence-missing",
+      "response": {
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "evidence-null",
+      "response": {
+        "evidence": null,
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "evidence-object",
+      "response": {
+        "evidence": {},
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "evidence-string",
+      "response": {
+        "evidence": "invalid",
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "conflicts-missing",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "conflicts-null",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": null,
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "conflicts-object",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": {},
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "conflicts-string",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": "invalid",
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "grades-empty",
+      "response": {
+        "evidence": [],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "grades-incomplete",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "grades-duplicate",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "grades-zero",
+      "response": {
+        "evidence": [
+          {
+            "index": 0,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "grades-negative",
+      "response": {
+        "evidence": [
+          {
+            "index": -1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "grades-overflow",
+      "response": {
+        "evidence": [
+          {
+            "index": 4,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "grades-missing-index",
+      "response": {
+        "evidence": [
+          {
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "grades-unknown-grade",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "TRUSTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "grades-missing-grade",
+      "response": {
+        "evidence": [
+          {
+            "index": 1
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "left-zero",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 0,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "right-zero",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 0,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "left-overflow",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 4,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "right-overflow",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 4,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "self-conflict",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 1,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "short-left-quote",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "工作",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "short-right-quote",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "工作",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "fabricated-left-quote",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "不存在的制度",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "fabricated-right-quote",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "不存在的制度",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "null-left-quote",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": null,
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": false
+    },
+    {
+      "name": "left-before-right",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ],
+      "expectedConflicts": 0,
+      "expectedClarification": "资料适用时期不同，请明确询问日期或制度版本。",
+      "sources": [
+        {
+          "effectiveUntil": "2025-12-31"
+        },
+        {
+          "effectiveFrom": "2026-01-01"
+        },
+        null
+      ]
+    },
+    {
+      "name": "right-before-left",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ],
+      "expectedConflicts": 0,
+      "expectedClarification": "资料适用时期不同，请明确询问日期或制度版本。",
+      "sources": [
+        {
+          "effectiveFrom": "2026-01-01"
+        },
+        {
+          "effectiveUntil": "2025-12-31"
+        },
+        null
+      ]
+    },
+    {
+      "name": "preserve-model-clarification",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": "请指定查询年份"
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ],
+      "expectedConflicts": 0,
+      "expectedClarification": "请指定查询年份",
+      "sources": [
+        {
+          "effectiveUntil": "2025-12-31"
+        },
+        {
+          "effectiveFrom": "2026-01-01"
+        },
+        null
+      ]
+    },
+    {
+      "name": "touching-periods",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ],
+      "expectedConflicts": 1,
+      "expectedClarification": "",
+      "sources": [
+        {
+          "effectiveUntil": "2026-01-01"
+        },
+        {
+          "effectiveFrom": "2026-01-01"
+        },
+        null
+      ]
+    },
+    {
+      "name": "open-periods",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ],
+      "expectedConflicts": 1,
+      "expectedClarification": "",
+      "sources": [
+        {},
+        {},
+        null
+      ]
+    },
+    {
+      "name": "missing-left-source",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ],
+      "expectedConflicts": 1,
+      "expectedClarification": "",
+      "sources": [
+        null,
+        {
+          "effectiveFrom": "2026-01-01"
+        },
+        null
+      ]
+    },
+    {
+      "name": "missing-right-source",
+      "response": {
+        "evidence": [
+          {
+            "index": 1,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 2,
+            "grade": "SUPPORTED"
+          },
+          {
+            "index": 3,
+            "grade": "SUPPORTED"
+          }
+        ],
+        "conflicts": [
+          {
+            "left": 1,
+            "right": 2,
+            "leftQuote": "每周工作五天",
+            "rightQuote": "每周工作四天",
+            "reason": "工作天数不同"
+          }
+        ],
+        "clarification": ""
+      },
+      "valid": true,
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ],
+      "expectedConflicts": 1,
+      "expectedClarification": "",
+      "sources": [
+        {
+          "effectiveUntil": "2025-12-31"
+        },
+        null,
+        null
+      ]
+    }
+  ]
+}

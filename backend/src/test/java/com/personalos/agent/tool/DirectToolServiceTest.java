@@ -104,4 +104,18 @@ class DirectToolServiceTest {
         assertThat(service(callback("askUser")).catalog()).isEmpty();
         assertThat(service.catalog()).extracting(DirectToolService.Description::name).containsExactly("createTask");
     }
+
+ @Test void duplicateNamesMalformedKeysAndInvalidReceiptsDoNotExecuteTwice(){
+  var cb=callback("createTask");
+  assertThatIllegalStateException().isThrownBy(()->new DirectToolService(List.of(cb,cb),mock(IdempotencyService.class),json));
+  var service=service(cb);
+  for(String key:new String[]{null,"1-1-1-1-1","000000000000000000000000000000000000","zzzzzzzz-0000-4000-8000-000000000001"})
+   assertThatThrownBy(()->service.execute("c",key,"createTask",Map.of(),()->{})).isInstanceOf(BusinessException.class);
+  assertThatThrownBy(()->service.execute("c",KEY,null,Map.of(),()->{})).isInstanceOf(BusinessException.class);
+  for(String receipt:new String[]{"null","{}",json.toJson(ToolExecutionResult.duplicate("done",null)),json.toJson(ToolExecutionResult.rejected("invalid"))}){
+   when(cb.call(any(),any(ToolContext.class))).thenReturn(receipt);
+   var result=service.execute("c",UUID.randomUUID().toString(),"createTask",Map.of(),()->{}).result();
+   assertThat(result.status()).isIn("ERROR","DUPLICATE","REJECTED");
+  }
+ }
 }

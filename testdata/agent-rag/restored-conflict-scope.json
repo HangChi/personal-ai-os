@@ -1,0 +1,567 @@
+{
+  "cases": [
+    {
+      "name": "retain-both",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedConflicts": [
+        1,
+        2
+      ],
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "name": "dismiss-both",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": false,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": false,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedConflicts": [],
+      "expectedRelevant": [
+        1
+      ]
+    },
+    {
+      "name": "retain-second-only",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": false,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedConflicts": [
+        2
+      ],
+      "expectedRelevant": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "retain-first-only-reversed-rows",
+      "response": {
+        "conflicts": [
+          {
+            "index": 2,
+            "relevant": false,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedConflicts": [
+        1
+      ],
+      "expectedRelevant": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "missing",
+      "response": {},
+      "valid": false
+    },
+    {
+      "name": "null",
+      "response": {
+        "conflicts": null
+      },
+      "valid": false
+    },
+    {
+      "name": "empty",
+      "response": {
+        "conflicts": []
+      },
+      "valid": false
+    },
+    {
+      "name": "object",
+      "response": {
+        "conflicts": {}
+      },
+      "valid": false
+    },
+    {
+      "name": "incomplete",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "extra",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "duplicate",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "index-invalid-0",
+      "response": {
+        "conflicts": [
+          {
+            "index": null,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "index-invalid-1",
+      "response": {
+        "conflicts": [
+          {
+            "index": 0,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "index-invalid-2",
+      "response": {
+        "conflicts": [
+          {
+            "index": -1,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "index-invalid-3",
+      "response": {
+        "conflicts": [
+          {
+            "index": 3,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "index-invalid-4",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1.5,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "index-invalid-5",
+      "response": {
+        "conflicts": [
+          {
+            "index": "1",
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "index-invalid-6",
+      "response": {
+        "conflicts": [
+          {
+            "index": {},
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "relevant-invalid-0",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": null,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "relevant-invalid-1",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": "false",
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "relevant-invalid-2",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": 0,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "relevant-invalid-3",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": {},
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "reason-invalid-0",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": null
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "reason-invalid-1",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": ""
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "reason-invalid-2",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "   "
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "reason-invalid-3",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": 42
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "reason-invalid-4",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": {}
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "reason-invalid-5",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "index-missing",
+      "response": {
+        "conflicts": [
+          {
+            "relevant": true,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "relevant-missing",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "reason": "与当前问题有关"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "reason-missing",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "unicode-reason-exact-limit",
+      "response": {
+        "conflicts": [
+          {
+            "index": 1,
+            "relevant": true,
+            "reason": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          },
+          {
+            "index": 2,
+            "relevant": true,
+            "reason": "与当前问题有关"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedConflicts": [
+        1,
+        2
+      ],
+      "expectedRelevant": [
+        1,
+        2,
+        3
+      ]
+    }
+  ]
+}

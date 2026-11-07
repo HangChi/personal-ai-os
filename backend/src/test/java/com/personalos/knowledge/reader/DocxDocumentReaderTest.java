@@ -81,4 +81,16 @@ class DocxDocumentReaderTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("Word");
     }
+    @Test void tableParagraphsJoinWithoutBlankRuns() throws Exception {
+        byte[] bytes;
+        try (var doc = new XWPFDocument()) {
+            doc.createParagraph();
+            var cell = doc.createTable(1, 1).getRow(0).getCell(0);
+            cell.addParagraph().createRun().setText("first");
+            cell.addParagraph().createRun().setText(" ");
+            cell.addParagraph().createRun().setText("second");
+            var out = new ByteArrayOutputStream();doc.write(out);bytes=out.toByteArray();
+        }
+        assertThat(new DocxDocumentReader(bytes, METADATA).get().getFirst().getText()).contains("first second");
+    }
 }

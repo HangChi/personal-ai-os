@@ -277,4 +277,21 @@ class JpaChatMemoryTest {
         assertThat(messages.get(0)).isInstanceOf(AssistantMessage.class);
         assertThat(messages.get(0).getText()).isEqualTo("createTask: 任务已创建");
     }
+
+    @Test void emptyWindowStartsAfterMaxAndNullContentConsumesNoBudget() {
+        given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class))).willReturn(List.of());
+        given(messageRepository.findMaxSequenceNo(CID)).willReturn(8);
+        assertThat(memory.contextStartSequence(CID)).isEqualTo(9);
+        var nullable = new ChatMessageEntity(CID, MessageRole.USER, null, 9, Instant.EPOCH);
+        given(messageRepository.findRecentByConversationId(eq(CID), any(Pageable.class))).willReturn(List.of(nullable));
+        assertThat(memory.contextStartSequence(CID)).isEqualTo(9);
+        var session = new ChatSessionEntity(CID, "title", Instant.EPOCH, Instant.EPOCH);
+        given(sessionRepository.findById(CID)).willReturn(Optional.of(session));
+        session.setChatModel(null); assertThat(memory.contextStartSequence(CID)).isEqualTo(9);
+        session.setChatModel(" "); assertThat(memory.contextStartSequence(CID)).isEqualTo(9);
+        memory.add(CID, List.of(new SystemMessage("system")));
+        verify(messageRepository).saveAll(org.mockito.ArgumentMatchers.argThat(rows ->
+                java.util.stream.StreamSupport.stream(rows.spliterator(), false)
+                    .anyMatch(row -> row.getMessageType() == MessageRole.SYSTEM)));
+    }
 }

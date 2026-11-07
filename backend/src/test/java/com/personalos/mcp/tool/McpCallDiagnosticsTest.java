@@ -40,4 +40,19 @@ class McpCallDiagnosticsTest {
                 .doesNotContain("private-", "private password", "\n", "\u001b");
         assertThat(McpCallDiagnostics.sanitize("字".repeat(5000))).hasSize(1201).endsWith("…");
     }
+
+ @Test void nullContentNonTextAndNestedDiagnosticsAreBounded(){
+  var result=org.mockito.Mockito.mock(McpSchema.CallToolResult.class);
+  assertThat(McpCallDiagnostics.toolError("s","t",result).toString()).contains("未提供文本原因");
+  var nullText=org.mockito.Mockito.mock(McpSchema.TextContent.class);
+  var image=org.mockito.Mockito.mock(McpSchema.ImageContent.class);
+  org.mockito.Mockito.when(result.content()).thenReturn(java.util.List.of(nullText,image,new McpSchema.TextContent("first"),new McpSchema.TextContent("second")));
+  assertThat(McpCallDiagnostics.toolError("s","t",result).toString()).contains("first second");
+  org.mockito.Mockito.when(result.content()).thenReturn(java.util.List.of(new McpSchema.TextContent("😀".repeat(5000)),new McpSchema.TextContent("not included")));
+  assertThat(McpCallDiagnostics.toolError("s","t",result).toString()).doesNotContain("not included");
+  assertThat(McpCallDiagnostics.sanitize(null)).isEmpty();
+  Throwable chain=new McpError(new McpSchema.JSONRPCResponse.JSONRPCError(-1,"hidden"));
+  for(int i=0;i<18;i++)chain=new RuntimeException(chain);
+  assertThat(McpCallDiagnostics.protocolError(chain)).isNull();
+ }
 }

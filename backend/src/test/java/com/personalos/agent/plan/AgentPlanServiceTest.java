@@ -24,9 +24,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -109,6 +118,76 @@ class AgentPlanServiceTest {
     }
 
     // ------------------------------------------------------------ 创建
+
+    static Stream<Arguments> planCases() throws Exception {
+        var fixture = new ObjectMapper().readTree(Files.readString(Path.of("../testdata/agent-rag/plan-transitions.json")));
+        var cases = new ArrayList<Arguments>();
+        for (var test : fixture.path("cases")) cases.add(Arguments.of(test.path("name").asString(), test));
+        return cases.stream();
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("planCases")
+    void sharedPlanTransitionsPreserveOrderEvidenceAndTerminalStates(String name, JsonNode test) {
+        var plan = activePlan("共享状态机契约");
+        var steps = new ArrayList<AgentPlanStepEntity>();
+        for (var state : test.path("states")) {
+            var status = StepStatus.valueOf(state.asString());
+            var item = step(planId, steps.size() + 1, status == StepStatus.DONE ? StepStatus.RUNNING : status);
+            if (status == StepStatus.DONE) item.complete(Instant.now());
+            steps.add(item);
+        }
+        int seq = test.path("seq").asInt();
+        given(planRepository.findFirstByConversationIdAndStatusOrderByCreatedAtDesc("conv-1", PlanStatus.ACTIVE))
+                .willReturn(Optional.of(plan));
+        given(stepRepository.findByPlanIdOrderBySeqAsc(planId)).willReturn(steps);
+        given(stepRepository.findByPlanIdAndSeq(planId, seq))
+                .willReturn(seq > 0 && seq <= steps.size() ? Optional.of(steps.get(seq - 1)) : Optional.empty());
+        if (test.has("toolResult")) steps.get(seq - 1).bindTool("findTasks", test.path("toolResult").asString(), 400);
+        String note = test.path("note").isNull() ? null : test.path("note").asString();
+        var before = service.activePlan("conv-1").orElseThrow();
+        Supplier<PlanDto> action = () -> switch (test.path("action").asString()) {
+            case "start" -> service.startStep("conv-1", seq);
+            case "complete" -> service.completeStep("conv-1", seq, note);
+            case "fail" -> service.failStep("conv-1", seq, note);
+            case "skip" -> service.skipStep("conv-1", seq, note);
+            default -> throw new AssertionError("Unknown fixture action");
+        };
+        int error = test.path("expectedError").asInt();
+        if (error != 0) {
+            assertThatThrownBy(action::get).as(name).isInstanceOfSatisfying(BusinessException.class,
+                    ex -> assertThat(ex.getErrorCode().getCode()).isEqualTo(error));
+            verify(stepRepository, never()).save(any());
+            verify(planRepository, never()).save(any());
+            return;
+        }
+        var result = action.get();
+        assertThat(result.status()).as(name).isEqualTo(test.path("expectedPlanStatus").asString());
+        for (int i = 0; i < steps.size(); i++) {
+            assertThat(result.steps().get(i).status()).as(name + " step " + (i + 1))
+                    .isEqualTo(test.path("expectedStates").get(i).asString());
+        }
+        var changed = steps.get(seq - 1);
+        if (test.has("expectedReason")) {
+            assertThat(changed.getError()).isEqualTo(test.path("expectedReason").asString());
+            assertThat(changed.getFinishedAt()).isNotNull();
+        }
+        if (test.has("expectedToolResult")) assertThat(changed.getToolResult()).isEqualTo(test.path("expectedToolResult").asString());
+        if ("start".equals(test.path("action").asString())) {
+            assertThat(changed.getError()).isNull();
+            assertThat(changed.getFinishedAt()).isNull();
+            assertThat(changed.getStartedAt()).isNotNull();
+        }
+        if ("complete".equals(test.path("action").asString())) {
+            assertThat(changed.getStartedAt()).isNotNull();
+            assertThat(changed.getFinishedAt()).isNotNull();
+        }
+        if (test.path("idempotent").asBoolean(false)) {
+            assertThat(result).isEqualTo(before);
+            verify(stepRepository, never()).save(any());
+            verify(planRepository, never()).save(any());
+        }
+    }
 
     @Test
     @DisplayName("createPlan(): 步骤为空或超过上限都被拒绝，且不落库")
@@ -386,5 +465,27 @@ class AgentPlanServiceTest {
         assertThat(latest).isPresent();
         assertThat(latest.get().status()).isEqualTo("COMPLETED");
         assertThat(latest.get().doneCount()).isEqualTo(1);
+    }
+
+    @Test void startEnforcesFirstOpenStepAndToolEvidenceAllowsBlankSummary() {
+        var plan=activePlan("goal");var first=step(planId,1,StepStatus.PENDING);var second=step(planId,2,StepStatus.PENDING);
+        given(planRepository.findFirstByConversationIdAndStatusOrderByCreatedAtDesc("conv-1",PlanStatus.ACTIVE)).willReturn(Optional.of(plan));
+        given(stepRepository.findByPlanIdAndSeq(planId,1)).willReturn(Optional.of(first));
+        given(stepRepository.findByPlanIdAndSeq(planId,2)).willReturn(Optional.of(second));
+        given(stepRepository.findByPlanIdOrderBySeqAsc(planId)).willReturn(List.of(first,second));
+        assertThatThrownBy(()->service.startStep("conv-1",2)).isInstanceOf(BusinessException.class);
+        first.bindTool("lookup","receipt",100);
+        service.completeStep("conv-1",1," ");assertThat(first.getStatus()).isEqualTo(StepStatus.DONE);
+        assertThat(service.onToolFailure("conv-1","lookup",null)).isEmpty();
+        second.start(Instant.now());
+        given(stepRepository.findFirstByPlanIdAndStatusOrderBySeqAsc(planId,StepStatus.RUNNING)).willReturn(Optional.of(second));
+        assertThat(service.onToolFailure("conv-1","lookup",null)).isPresent();
+        assertThat(second.getError()).contains("未说明原因");
+        for(String goal:java.util.Arrays.asList(null," ")){
+            given(planRepository.findFirstByConversationIdAndStatusOrderByCreatedAtDesc("conv-1",PlanStatus.ACTIVE)).willReturn(Optional.empty());
+            assertThatThrownBy(()->service.revisePlan("conv-1","reason",goal,List.of("step"))).isInstanceOf(BusinessException.class);
+        }
+        for(List<String> titles:java.util.Arrays.<List<String>>asList(null,List.of()))
+            assertThatThrownBy(()->service.createPlan("conv-1","goal",titles)).isInstanceOf(BusinessException.class);
     }
 }

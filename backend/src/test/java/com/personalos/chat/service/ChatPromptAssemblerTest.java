@@ -189,4 +189,17 @@ class ChatPromptAssemblerTest {
         assembler.prepare(List.of(), "current", CONVERSATION, "attachment text", 1, "custom", 0);
         org.mockito.Mockito.verify(summaryService).refreshBeforeRequest(CONVERSATION, 5);
     }
+    @Test void optionalBlocksAndRetrievalRolesAreHandledSeparately() {
+        assertThat(assembler(contributor(null)).assemble(null, "question", CONVERSATION, null)).isEqualTo(BASE_PROMPT);
+        var messages = new java.util.ArrayList<ChatMessageEntity>();
+        for (var role : com.personalos.chat.entity.MessageRole.values()) {
+            var message = mock(ChatMessageEntity.class);
+            when(message.getMessageType()).thenReturn(role);when(message.getContent()).thenReturn(role.name());messages.add(message);
+        }
+        when(messageRepository.findRecentByConversationId(anyString(), any())).thenReturn(messages);
+        assertThat(assembler().retrievalHistory(CONVERSATION)).hasSize(2);
+        var properties = new AiProperties(new AiProperties.Memory(20, 32000), null);
+        var target = new ChatPromptAssembler(properties, new StaticObjectProvider<>(List.of()), summaryService, messageRepository, toolSchemaOverhead, contextBudget);
+        assertThat(target.fixedOverheadTokens()).isEqualTo(ContextBudgetService.toTokens(TOOL_CHARS + properties.systemPrompt().length()));
+    }
 }

@@ -397,4 +397,59 @@ class MemoryServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class);
         verify(repository, never()).deleteById(any());
     }
+
+    @Test
+    void pinnedOverflowRemainsAvailableAndUsageIsThrottled() {
+        var first=memory("first",Instant.now(),true);
+        var rest=memory("second",Instant.now(),true);
+        first.recordUsage(Instant.now());rest.recordUsage(Instant.now());
+        var tm=mock(PlatformTransactionManager.class);given(tm.getTransaction(any())).willReturn(mock(TransactionStatus.class));
+        var properties=new MemoryProperties(1,0.92,new MemoryProperties.Ranking(true,null,30),null);
+        var ranked=new MemoryService(repository,embeddingService,embeddingStore,properties,tm);
+        given(repository.findBySupersededByIsNullOrderByUpdatedAtDesc(any(Pageable.class))).willReturn(List.of(first,rest));
+        for(String query:java.util.Arrays.asList(null," ","x".repeat(201),"short")) {
+            assertThat(ranked.renderForPrompt(query)).contains("1. first","2. second");
+        }
+        verify(embeddingService).embed(org.mockito.ArgumentMatchers.eq("x".repeat(200)), any(java.time.Duration.class));
+        verify(embeddingService).embed(org.mockito.ArgumentMatchers.eq("short"), any(java.time.Duration.class));
+        verify(repository,never()).saveAll(any());
+        given(repository.findBySupersededByIsNullOrderByUpdatedAtDesc(any(Pageable.class))).willReturn(List.of(memory("x".repeat(6001),Instant.now())));
+        assertThat(ranked.renderForPrompt()).isEmpty();
+        given(repository.findBySupersededByIsNullOrderByUpdatedAtDesc(any(Pageable.class))).willReturn(List.of(first));
+        assertThat(ranked.renderForPrompt()).contains("first");
+    }
+    @Test
+    void nullIdentifiersAndPinnedOverLimitAreHandledAtPublicBoundary() {
+        assertThatThrownBy(()->service.delete(null)).isInstanceOf(BusinessException.class);
+        var id=UUID.randomUUID();var entity=memory("pinned",Instant.now());
+        ReflectionTestUtils.setField(entity,"id",id);
+        given(repository.findById(id)).willReturn(Optional.of(entity));
+        given(repository.save(entity)).willReturn(entity);
+        given(repository.countByPinnedTrueAndSupersededByIsNull()).willReturn(11L);
+        assertThat(service.setPinned(id.toString(),true).pinned()).isTrue();
+        assertThat(service.setPinned(id.toString(),false).pinned()).isFalse();
+    }
+    @Test void vectorUpdatesPreservePinAndIgnoreAlreadySupersededMatches() {
+        given(embeddingService.modelTag()).willReturn("offline-embedding");
+        given(embeddingService.embed(anyString())).willReturn(Optional.of(new float[]{0.1f, 0.2f}));
+        given(embeddingStore.save(any(), any(), anyString())).willReturn(false);
+        stubSaveAssigningId();
+        for (boolean inactive : new boolean[]{false, true}) {
+            UUID id = UUID.randomUUID();
+            var current = memory("待更新内容", Instant.EPOCH);
+            ReflectionTestUtils.setField(current, "id", id);
+            given(repository.findById(id)).willReturn(Optional.of(current));
+            UUID oldId = UUID.randomUUID();
+            var older = memory("近似历史内容", Instant.EPOCH);
+            ReflectionTestUtils.setField(older, "id", oldId);
+            UUID previous = inactive ? UUID.randomUUID() : null;
+            older.setSupersededBy(previous);
+            given(repository.findById(oldId)).willReturn(Optional.of(older));
+            given(embeddingStore.findSimilar(any(), eq("offline-embedding"), anyDouble(), eq(id)))
+                    .willReturn(Optional.of(new MemoryEmbeddingStore.SimilarMatch(oldId, 0.98)));
+            var updated = service.update(id.toString(), "更新后的事实");
+            assertThat(updated.pinned()).isFalse();
+            assertThat(older.getSupersededBy()).isEqualTo(inactive ? previous : id);
+        }
+    }
 }

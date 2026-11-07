@@ -315,4 +315,32 @@ class ChatSessionServiceTest {
     private static ChatSessionEntity existingSession(String id, String title) {
         return new ChatSessionEntity(id, title, Instant.now(), Instant.now());
     }
+
+    @Test void nullableSnapshotsAndFirstTitleGuardsAreSafe() {
+        for(String content:java.util.Arrays.asList(null," ")) service.initializeTitleFromFirstMessage("c",content);
+        var session=new ChatSessionEntity("c",ChatSessionService.DEFAULT_TITLE,Instant.EPOCH,Instant.EPOCH);
+        given(sessionRepository.findById("c")).willReturn(Optional.of(session));
+        given(messageRepository.countByConversationId("c")).willReturn(1L);
+        service.initializeTitleFromFirstMessage("c","first");
+        assertThat(session.getTitle()).isEqualTo(ChatSessionService.DEFAULT_TITLE);
+        assertThat((List<?>)org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,"parseAttachments",(Object)null)).isEmpty();
+        var attachment=new com.personalos.chat.dto.ChatAttachmentDto("a","f","text/plain",1);
+        org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,"deleteFilesAfterCommit",List.of());
+        org.springframework.test.util.ReflectionTestUtils.invokeMethod(service,"deleteFilesAfterCommit",List.of(attachment));
+        verify(attachmentService).deleteAll(List.of(attachment));
+    }
+    @Test void searchSpecificationHandlesBlankAndEscapedKeywords() {
+        org.mockito.Mockito.doAnswer(call -> {
+            org.springframework.data.jpa.domain.Specification<ChatSessionEntity> spec=call.getArgument(0);
+            var root=mock(jakarta.persistence.criteria.Root.class);
+            var cb=mock(jakarta.persistence.criteria.CriteriaBuilder.class);
+            var predicate=mock(jakarta.persistence.criteria.Predicate.class);
+            given(cb.conjunction()).willReturn(predicate);
+            given(cb.like(any(),any(String.class),any(Character.class))).willReturn(predicate);
+            spec.toPredicate(root,null,cb);
+            return org.springframework.data.domain.Page.empty();
+        }).when(sessionRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class),any(org.springframework.data.domain.Pageable.class));
+        for(String keyword:java.util.Arrays.asList(null," ","key%word"))
+            assertThat(service.search(new com.personalos.chat.dto.ChatSessionQuery(keyword,0,20)).items()).isEmpty();
+    }
 }
