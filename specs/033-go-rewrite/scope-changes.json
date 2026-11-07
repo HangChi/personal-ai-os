@@ -2903,7 +2903,7 @@
     {
       "id": "scope:backend-quality-gates-20261107",
       "status": "in_progress",
-      "source_commit": "7a852359f13108e3a4f50197867ef5c70548cf2f",
+      "source_commit": "912a5575c2d7425639e40cc01bbf83a13b99da86",
       "summary": "Java 行/分支与 Go 完整集合语句分别要求 95%，新增变更代码门禁、13 项 Agent/RAG 关键场景和 18 个双版本共享契约。证据绑定完整源码提交；Go 分支仍未测量。",
       "files": [
         {
@@ -2949,7 +2949,7 @@
         {
           "path": "docs/testing.md",
           "baseline_sha256": null,
-          "candidate_sha256": "0ac15c437816c3076314ea577d1bd930a0f1e7e849b7e5f45641917598c2247d"
+          "candidate_sha256": "611308871d916d2e0eca4ce5d0774ac8e6ff55678132146477280c1cc825ff4a"
         },
         {
           "path": "scripts/coverage/changed.py",
@@ -2959,7 +2959,7 @@
         {
           "path": "scripts/coverage/critical-scenarios.json",
           "baseline_sha256": null,
-          "candidate_sha256": "620c71b78a79cae1cc5d2960b5819aa4c748a1fd599eb4e4300a21123157e2e5"
+          "candidate_sha256": "7c07ce647df723957e82713fe9d887e49e28d89a3586abc5219f0ac787df995f"
         },
         {
           "path": "scripts/coverage/run_suite.py",
@@ -2969,7 +2969,7 @@
         {
           "path": "scripts/coverage/scenarios.py",
           "baseline_sha256": null,
-          "candidate_sha256": "c9b0b1b66dc9792316c6b8a89a0f0bc1e9b25bd160479363945c71ba8b116441"
+          "candidate_sha256": "413e5daeec5d6e3da005272ca5530dead9a680f5d976688b7d9e4ebfe06a770b"
         },
         {
           "path": "scripts/coverage/summarize.py",
@@ -2989,7 +2989,7 @@
         {
           "path": "scripts/coverage/test_scenarios.py",
           "baseline_sha256": null,
-          "candidate_sha256": "05ca4c64216bb0fd73eed539d7b2096ec3406162c64509070d6b016ee6d18dfc"
+          "candidate_sha256": "4f7aa5571ed3c3dea57873640c9c00e3eec003238e2c6b738bd4568729021e60"
         },
         {
           "path": "scripts/coverage/test_summarize.py",
