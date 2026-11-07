@@ -68,8 +68,8 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
-      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
+      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。",
       "files": [
         {
           "path": ".env.example",
@@ -184,12 +184,12 @@
         {
           "path": "backend-go/internal/business/knowledge/citation_audit_test.go",
           "baseline_sha256": null,
-          "candidate_sha256": "1321865722b3731824e1b776b9891c139ad3f26f235a9c7f0027712c636629ae"
+          "candidate_sha256": "d85f3b76a68bb18d58f01003838d21f44f11dfccae44848b79c0c858b8ce94cd"
         },
         {
           "path": "backend-go/internal/business/knowledge/module.go",
           "baseline_sha256": null,
-          "candidate_sha256": "101829b1d8f281722fd50b92791c32ab5b0dfa75e4715ad075b30f3fc08dd483"
+          "candidate_sha256": "58e32bfb69360a860ea61a1b0b669783db4e50bdc1c2cc74d48fd156d6270bb1"
         },
         {
           "path": "backend-go/internal/business/knowledge/oracle_integration_test.go",
@@ -324,7 +324,7 @@
         {
           "path": "backend/src/test/java/com/personalos/chat/service/TurnCitationCollectorTest.java",
           "baseline_sha256": null,
-          "candidate_sha256": "61f7fe605484154b02469a35527ea5ae8d114918f0f44f5f7125baf561183b42"
+          "candidate_sha256": "4ec7d5deec0cd55d26f2c9a6a18a77d29616c9381fc5ada046db77377dc6bdb8"
         },
         {
           "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeRagIntegrationTest.java",
@@ -334,7 +334,7 @@
         {
           "path": "backend/src/test/java/com/personalos/knowledge/rag/CitationAuditTest.java",
           "baseline_sha256": null,
-          "candidate_sha256": "f33dc1c86c3bed28fa641ac924e9ed99b10a4269336cc12f7741635f0a3e6a20"
+          "candidate_sha256": "017c4ac119e84306fe90f66fbb33139ef4750175a1eb2356c542cdd58abc9119"
         },
         {
           "path": "backend/src/test/java/com/personalos/mcp/tool/McpWebSourcesTest.java",
@@ -344,7 +344,7 @@
         {
           "path": "docs/mcp.md",
           "baseline_sha256": "5fb0a1174bbada8be293c5548f9eecfb7b9c00c347bf7b2d26826655a6b4ad55",
-          "candidate_sha256": "388ce869a9efb7591514f7dd7ac2eede034abce26e64dd7ce27bfa7a55080b71"
+          "candidate_sha256": "fbd4a4236c51dc10b61241c6a6dd41aceed83970f04fe00f8683826cc4c997b7"
         },
         {
           "path": "frontend/src/api/chat-runs.ts",
@@ -493,7 +493,8 @@
         "specs/039-evidence-aware-answers/validation.md",
         "specs/039-evidence-aware-answers/browser-report.json",
         "specs/039-evidence-aware-answers/contracts/answer-cases.json",
-        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json"
+        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json",
+        "docs/reports/coverage-agent-rag-2026-11-07.md"
       ],
       "limitations": [
         "Java 真实 HTTP + PostgreSQL 已验证检索故障 warning 后继续 delta/done、无 error 终态且降级轮引用为零；真实浏览器双端全流程回归仍待执行。",
@@ -561,8 +562,8 @@
     {
       "id": "scope:retry-safety-and-chat-commands-20261105",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
-      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
+      "summary": "按用户要求补强 MCP AUTO 执行所有权、远端稳定标识和未决回执保留；新增不经对话模型解析的显式快捷工具接口与发送框指令。共享的检索/引用入口在原组更新，避免重复登记。 Docker 跟进补充双端真实 HTTP + PostgreSQL 快捷工具回归，修复 Java 缺少必需请求头错误返回 500。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 已补两端真实 filesystem MCP 响应丢失/确认/重启验收与真实浏览器快捷指令对照。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。",
       "files": [
         {
           "path": "backend-go/internal/app/foundation_p8_integration_test.go",
@@ -672,7 +673,7 @@
         {
           "path": "backend/src/test/java/com/personalos/agent/tool/DirectToolServiceTest.java",
           "baseline_sha256": null,
-          "candidate_sha256": "3e2c7fab3fea709c1615acb20ebb9af51da2b1260cd20eaea20a9307e0fd33c9"
+          "candidate_sha256": "a02afb58c5671e177a2f1e688a02ac7b36cc06648a07103211168591a12138ad"
         },
         {
           "path": "backend/src/test/java/com/personalos/chat/controller/DirectToolControllerTest.java",
@@ -702,7 +703,7 @@
         {
           "path": "docs/chat-commands.md",
           "baseline_sha256": null,
-          "candidate_sha256": "ff6e22c3f55639e89258c14f12cf17b76abdb5ebd3ea83598b84355a65ebc4d8"
+          "candidate_sha256": "d3056f2b5f8573150f3cd97abd995df665d53a9ae6b01b5265543085c4b5898f"
         },
         {
           "path": "frontend/components.d.ts",
@@ -811,7 +812,8 @@
         "specs/039-evidence-aware-answers/validation.md",
         "specs/039-evidence-aware-answers/browser-report.json",
         "specs/039-evidence-aware-answers/contracts/answer-cases.json",
-        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json"
+        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json",
+        "docs/reports/coverage-agent-rag-2026-11-07.md"
       ],
       "limitations": [
         "已验证正式 filesystem MCP 2.1.0 的真实副作用与未知结果保护；不认证任意远端自身实现去重语义。",
@@ -827,8 +829,8 @@
     {
       "id": "scope:test-and-stream-shutdown-20261106",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
-      "summary": "Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
+      "summary": "Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。",
       "files": [
         {
           "path": "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
@@ -1066,7 +1068,7 @@
       "parity_sha256": {
         "backend-go/internal/app/foundation.go": "808651edbc8a0bdf966bbd8339a0771084976671ce3fd6bcc4cff1a7b3caab89",
         "backend-go/internal/app/foundation_p5.go": "34f08f7d2c5290a1ddf62eff4bfaa1e9c3847c3f69a2e16638cf8a39c4b889c2",
-        "backend-go/internal/app/foundation_postgres_integration_test.go": "10c5a539703854531882959b84a799cb432c4fb083de3540e02636dba5b88f10",
+        "backend-go/internal/app/foundation_postgres_integration_test.go": "c9c7f1187ca278f4794c05239b73b3be77a5809f16ce2c7373ac142bfdb2057b",
         "backend-go/internal/business/calendar/stream.go": "33dea6f6fc979630c9a62075accc930081d62652fba70da69d2e8c3c01ba4e91",
         "backend-go/internal/business/calendar/stream_test.go": "74649c6a2916953953a46900ee33b88f7e1c10cc1c8bcae9fcd168ece0005bb6"
       },
@@ -1083,7 +1085,8 @@
         "specs/039-evidence-aware-answers/validation.md",
         "specs/039-evidence-aware-answers/browser-report.json",
         "specs/039-evidence-aware-answers/contracts/answer-cases.json",
-        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json"
+        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json",
+        "docs/reports/coverage-agent-rag-2026-11-07.md"
       ],
       "limitations": [
         "测试基础设施与提醒 SSE 停机顺序的增量验证，不覆盖所有远端服务或生产故障模式。",
@@ -1788,8 +1791,8 @@
     {
       "id": "scope:recovery-and-rag-followup-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
-      "summary": "补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
+      "summary": "补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。",
       "files": [
         {
           "path": "backend-go/internal/business/chat/prompt.go",
@@ -1954,7 +1957,7 @@
         {
           "path": "backend/src/test/java/com/personalos/mcp/tool/McpCallDiagnosticsTest.java",
           "baseline_sha256": null,
-          "candidate_sha256": "e23a3a909f186802311dd06217ab8aed4def97c88fbf82497b57033f7303cffa"
+          "candidate_sha256": "3e1b62a905235d9b804e9a38c07a2233e27dc6eb6d53c47b0f558265cba42539"
         },
         {
           "path": "frontend/src/components/chat/ChatRunNotice.vue",
@@ -2065,7 +2068,8 @@
         "specs/039-evidence-aware-answers/validation.md",
         "specs/039-evidence-aware-answers/browser-report.json",
         "specs/039-evidence-aware-answers/contracts/answer-cases.json",
-        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json"
+        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json",
+        "docs/reports/coverage-agent-rag-2026-11-07.md"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
@@ -2076,8 +2080,8 @@
     {
       "id": "scope:write-negotiation-and-bounded-search-20261106",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
-      "summary": "写入前完成响应协商；SQL有界正文候选与Java批量加载；TLS夹具遵循证书配置；验证脚本发现JDK并加入CI；原SQL不可变且只允许登记追加版本。",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
+      "summary": "写入前完成响应协商；SQL有界正文候选与Java批量加载；TLS夹具遵循证书配置；验证脚本发现JDK并加入CI；原SQL不可变且只允许登记追加版本。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。",
       "files": [
         {
           "path": ".github/workflows/go.yml",
@@ -2152,7 +2156,7 @@
         {
           "path": "scripts/migration/run_go_postgres_tests.py",
           "baseline_sha256": null,
-          "candidate_sha256": "92f8344659c9893811c5da4ad391e28fc846eaa1b4e037155a70770b72c37a5c"
+          "candidate_sha256": "142361653f1ee727e96aae5aaa1261d142484b07585d7bc5f714949a02f1bb01"
         },
         {
           "path": "scripts/migration/test_go_p8_inventory_progress.py",
@@ -2202,7 +2206,8 @@
         "backend-go/internal/business/search/knowledge_integration_test.go",
         "backend/src/test/java/com/personalos/knowledge/KnowledgeSearchContributorTest.java",
         "scripts/migration/test_go_scope_changes.py",
-        "scripts/workspace/test_java_runtime.py"
+        "scripts/workspace/test_java_runtime.py",
+        "docs/reports/coverage-agent-rag-2026-11-07.md"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
@@ -2685,6 +2690,214 @@
         "路由与多轮编排使用模拟模型；隔离数据库不代表真实模型质量或实际日程修改已验收。",
         "24张隔离模拟API截图只验证前端交互与布局，不代表完整Java/Go双端真实服务E2E。",
         "原冻结清单、全部既有SQL与五项发布门禁保持不变；本组与原组仍为in_progress。"
+      ]
+    },
+    {
+      "id": "scope:agent-rag-coverage-20261107",
+      "status": "in_progress",
+      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
+      "summary": "扩展双版本 Agent、RAG、工具执行、存储故障及 HTTP 边界回归；登记覆盖率扩展涉及的原基线文件，完整覆盖率报告独立给出。",
+      "files": [
+        {
+          "path": "CONTRIBUTING.md",
+          "baseline_sha256": "527241c6bf98eea820e705df7154781193cbac6296401e28733a3d62dcc778be",
+          "candidate_sha256": "d6cd04534d570c4b85ccf12a2d3052d23878da18f50e0c5375d799ccfaa9231e"
+        },
+        {
+          "path": "README.md",
+          "baseline_sha256": "570f0bba752395c87519d25af3bac2648d2708c196400e8ff0cc0400ec756a32",
+          "candidate_sha256": "001e262325fc77881fd44618e5d13342151ac582698f164b2ee353fda77ab0a2"
+        },
+        {
+          "path": "SECURITY.md",
+          "baseline_sha256": "917269dc48eb2a552fce949fe0256fb637b7d19a682622d8846b1977dd9cd2d9",
+          "candidate_sha256": "c7d21cdf8aa55a406be4ab782fb92fa06d0727d305a6ac76e6f046c696bb92ab"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/agent/plan/AgentPlanServiceTest.java",
+          "baseline_sha256": "5cf7f361254fa0f4ec14a35aedd9ad28aafbab862d1252aeca74628deaaa71b9",
+          "candidate_sha256": "61562a2dd0d8e3544796e5b23f2231a6eb4b84f5db9fc7fede7be03d269db233"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/agent/plan/PlanPromptContributorTest.java",
+          "baseline_sha256": "3511b5fcf3139358d92cf0a60360a1484681478e8523c715bd5ce4aac1d59a14",
+          "candidate_sha256": "80fd2c4c572b1ea0d173317e55ac71bac8e4bc7cd62a75f2e80a04920b5a1652"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/push/WebPushServiceTest.java",
+          "baseline_sha256": "2fb09b5398bd417733f331a65dfd02ddc469569da7e2543b6f359dbffb926335",
+          "candidate_sha256": "508cb438777ed0a823b72d6528dba7acde5dba7c98253ec85a27ae35ae3b7401"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/memory/JpaChatMemoryTest.java",
+          "baseline_sha256": "4772bae7c0748e8cc30fda5a4f69845e1efe83f6d58150e9a3334854a46a9275",
+          "candidate_sha256": "6ada89e04e0704b69fafb4233cfc629014974e9d12a3f9bb17f57e883a18ec61"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/ChatAttachmentContextBuilderTest.java",
+          "baseline_sha256": "753dc5edadbd6874ce8d8b10cf69d9154f14740f4573538760abc0dbdb010709",
+          "candidate_sha256": "a1f53605f746fac02626783435436c0cc4fb3c740b4f3f30700e19b7eb56fe7c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/ChatMarkdownExporterTest.java",
+          "baseline_sha256": "78dbc6eef39c3603633dc3c758b8e023ad552954b9fb420febae29b57fde4ab4",
+          "candidate_sha256": "5952c3c11b8dd981ac5a9fd6ef60ac49d1b4fc5bccdddd9a9bb04e62f310e8af"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/ChatPromptAssemblerTest.java",
+          "baseline_sha256": "166936cfb847106ae7d46d0aa1d93f81afcfce796e081853f4870bf54c5d600d",
+          "candidate_sha256": "6081ffb568eafe16c2655ab0b1b81a6fd63fb46841e908d352421615345668e6"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/ChatSessionServiceTest.java",
+          "baseline_sha256": "74be0c8e4dc6589646d07cb3d49dafd0e1a70798b4dad00dd0ba0b46af2dd2f4",
+          "candidate_sha256": "a657f4d04ca54f69cd7d3e1ebbce996db9018da01d0438473426211276e3f48f"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/ChatSummaryServiceTest.java",
+          "baseline_sha256": "3470b2c86bd8d1412dcef3b2cba2516451c93f18f6fcd7bfbb11dfa7898f4483",
+          "candidate_sha256": "48c3a15c1912c74fbd401770ae282ff6e33b6124bebfd74c151d7765979b4d8c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/UsageStatsServiceTest.java",
+          "baseline_sha256": "a46ad541145f43aa64cad88f81a03bf286f51d2eb98b1e201acb287b92a522c9",
+          "candidate_sha256": "21a1c6e3656e2cf9a9589c0278edd6a8ada2af2f0c203ba3881661676bcfba59"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/AiChatClientProviderModelSelectionTest.java",
+          "baseline_sha256": "4fbae7415a85e2239fd223c361b35d1ade27c6dac630760fa602641f13daa98c",
+          "candidate_sha256": "968de3ae3aaf1bfd34de81adceedf452f88240c986cce66e27754fdaf5231ec3"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/CalendarWriteGuardChatModelTest.java",
+          "baseline_sha256": "77381f1460cef7c89831fcf2b9c7131fe26c3e45cabf5d91bee77506e2c7280b",
+          "candidate_sha256": "ec87454996721f2f180bc03bea454f0dc58ead7742615f0a1b5dbc458be09226"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/ContextBudgetServiceTest.java",
+          "baseline_sha256": "076ae1d1fde44e1acdf3680fe9e4671b8a715fe4b21da2b1f4ab6798d6a5a64e",
+          "candidate_sha256": "2c3835dfcccc39ee7b8e47ac2627331275e9f693e0e158550cbfa6d88919804c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/ToolSchemaOverheadTest.java",
+          "baseline_sha256": "f56bb551cc0387cb4ea4e186a5482fdd9cfd0fba42800713c0a5d5213f28392e",
+          "candidate_sha256": "fc64a15d40c63d7b7f772054de2dcb3aa09f6615aae99996bf8985c489575dd4"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/config/ModelConfigServiceTest.java",
+          "baseline_sha256": "5187bfeb73b2de8a408ebd327667214fb87e8dd09ffc15018d1f0fb454f3895a",
+          "candidate_sha256": "373f0eef4c63e0b1bc1f381d0375d7abe30fae21868f06a5c74f9d27bcf1df87"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/config/ModelProfileServiceTest.java",
+          "baseline_sha256": "7b86e33afc8c9c4b057c50e60f96f2be8a19f2c5882d11c27ba67386df67c215",
+          "candidate_sha256": "fd91e4cf9da5c18f7b718b4da926306a97386873357708489b7cb51cb8d8f820"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/tool/ToolExecutorTest.java",
+          "baseline_sha256": "59f69259a6dadf891714b7e56d4885f6b3d2b3915be2252358ab0eed247f1d3f",
+          "candidate_sha256": "e0379a24dd7e40eea0aca86476d5194891cb60272a2ff39c785ac1763fb5b1d8"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/config/DotEnvParserTest.java",
+          "baseline_sha256": "44bf7811192aaed965078106b08128033aa0a33d6d152fefbade7dd89892644f",
+          "candidate_sha256": "2a8de8843416b9cadb6a082b3709a54dfd5808822eb9a16f60b0a910ab0ec20e"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/rag/RagModelGatewayTest.java",
+          "baseline_sha256": "ffda416b847c97e597c68ec890194ac097d909fb6c4276e8b5fde20be5742643",
+          "candidate_sha256": "65eb1d7a01444d9a66db9247d22eb438f4340188cd8153eb7310a912d0893d00"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/reader/DocxDocumentReaderTest.java",
+          "baseline_sha256": "6cfa139ce35044f7906c5c9eb85bf0f6c675f5f938926eb851cf724191eecfdb",
+          "candidate_sha256": "e1f419abd109e82284c8ce9978cfd625a00231b8c93c176583d7c7fa609ca5aa"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/mcp/status/McpStatusServiceTest.java",
+          "baseline_sha256": "07f0412ded2d7f04c1f822087d96c7c5ec3ca33db9c1f90fb96df4ca0a675be4",
+          "candidate_sha256": "d73fb0d0849bfafadcb18971233b4a85218982f9601dffb010c7ddfc268a2b0c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/memory/MemoryServiceTest.java",
+          "baseline_sha256": "58077f8063de097c83b274125096c8996cc09c7e46f0d88a5415bd89e0e019c8",
+          "candidate_sha256": "f9e7d2d8804c4b26e276a42d99e6ceb983677a88c5cb030f1598695dc61cdf6e"
+        },
+        {
+          "path": "docs/agent-reliability.md",
+          "baseline_sha256": "ff9fa90a5faa42d9adf84798f083cd23fea885e233f7d73a74d58a28e153826f",
+          "candidate_sha256": "b9a4783b0d62f9e155177ecd7e499f7f98510210a9b9eaffe277e32fda3606f8"
+        },
+        {
+          "path": "docs/api.md",
+          "baseline_sha256": "df65642c51878fe219af2fe53afdb7b4cacf39ba729393908704984a6ec16644",
+          "candidate_sha256": "e8211f12645e5a0ed402de48d9b34083b047b5bb6265a2e0fbeb33ae30377428"
+        },
+        {
+          "path": "docs/architecture.md",
+          "baseline_sha256": "d3590c65b95a19f7c402b4c6f8c44043463154b7217d73846cb6e879f186112d",
+          "candidate_sha256": "9e7aa80a5f82f1f606bbc6bb98c02141fe1c62f326d28b3283390a3dd52fa687"
+        },
+        {
+          "path": "docs/development.md",
+          "baseline_sha256": "34265e72696d12dbc2e5a9b101c72ff226291d7fb4178f539832796f89366ce1",
+          "candidate_sha256": "e7d2951a66239b8e0feec83e0e21a6cd7c1e76c32f61fe20a49ef519c228af81"
+        },
+        {
+          "path": "docs/distributed-workers.md",
+          "baseline_sha256": "c905fbecf0bf82bd036182f50e40be9567b991869a89c1d96779bd76380f7746",
+          "candidate_sha256": "cfe753f8babbfb76572a3f4802bcddab6170155909babf0758e30102a0f49a56"
+        },
+        {
+          "path": "docs/e2e-report-2026-10-29.md",
+          "baseline_sha256": "9778e2aa891003f522481e47918a634f44844b44ad4578d70c9638049465c1c6",
+          "candidate_sha256": "973d8b9b942771fd0f5a9ff690eb8026eb02d6e3261ab61e3605a562b9cb9d76"
+        },
+        {
+          "path": "docs/operations.md",
+          "baseline_sha256": "cea7f5b3911f2e7668ff8e8f76d4557ae75a383d75e89ed6257704709aba77f4",
+          "candidate_sha256": "76f6ec942f77a258943af10d2e68d7a89af998079a4c2ff6c3208809fda3d132"
+        },
+        {
+          "path": "docs/redis-extensions.md",
+          "baseline_sha256": "8c76f7c1074affb3cac31d07ff764c4f334e97efb281a2bd110d781896d1a713",
+          "candidate_sha256": "7235006605cc09ce3d97169fcdef1359cfa874fbf1c7f6564ca61dd51e64799c"
+        },
+        {
+          "path": "docs/reminder-stream-and-queue.md",
+          "baseline_sha256": "2284c0971ab2d645cb621fe4455067bcf22ce341d4222fd4b4fe128cc4deb349",
+          "candidate_sha256": "2c0cb33c05a12d1cff43a0de63067df1224a5f8744407f6e4dbaf157e0523b7b"
+        },
+        {
+          "path": "docs/review-2026-10-27.md",
+          "baseline_sha256": "8589efbd9ed611f59115637e736c2eb2a06cf4fde36e940ee6738acdff03a809",
+          "candidate_sha256": "4955c5ae899b31d9904a66d3ac342a4327a09a289fb37a50824b83dac4d655ba"
+        },
+        {
+          "path": "scripts/eval/README.md",
+          "baseline_sha256": "81b7035560d17ed1c11cc603b336ae030c9422f89f556a77d71194f293ed9e36",
+          "candidate_sha256": "23568cbe881173cb119ad4b98ce12cdc5b848a0f594bb1eec040e6001764ccbd"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/test/java/com/personalos/knowledge/rag/RagPipelineBoundaryTest.java"
+        ],
+        "go": [
+          "backend-go/internal/business/knowledge/rag_failure_boundaries_test.go"
+        ]
+      },
+      "parity_sha256": {
+        "backend/src/test/java/com/personalos/knowledge/rag/RagPipelineBoundaryTest.java": "b817666425be10cb5bbc3ca421a4a0d63a693c74844c18e46e353a45815b6b16",
+        "backend-go/internal/business/knowledge/rag_failure_boundaries_test.go": "d9a8cdf3513fc8c0200083686c80c54aab8bb62e25eeb4b3c70af4686303da7c"
+      },
+      "evidence": [
+        "docs/reports/coverage-agent-rag-2026-11-07.md",
+        "testdata/README.md"
+      ],
+      "limitations": [
+        "覆盖率表示已执行的代码路径，不证明真实模型质量、线上负载或发布就绪。",
+        "原基线哈希与 release gates 不变；新用例不继承历史逐声明验收。"
       ]
     }
   ]
