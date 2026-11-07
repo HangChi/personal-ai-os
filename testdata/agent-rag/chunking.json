@@ -1,0 +1,96 @@
+{
+  "cases": [
+    {
+      "name": "empty",
+      "text": "",
+      "target": 20,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": []
+    },
+    {
+      "name": "blank",
+      "text": " \n\t",
+      "target": 20,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": []
+    },
+    {
+      "name": "unicode-source-preserved",
+      "text": "  合成证据😀与来源编号  ",
+      "target": 50,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "合成证据😀与来源编号"
+      ]
+    },
+    {
+      "name": "nested-heading-path",
+      "text": "# Root\nfirst\n## Child\nsecond\n## Sibling\nthird",
+      "target": 100,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "【章节：Root】\n# Root\nfirst",
+        "【章节：Root > Child】\n## Child\nsecond",
+        "【章节：Root > Sibling】\n## Sibling\nthird"
+      ]
+    },
+    {
+      "name": "fenced-comment-is-not-heading",
+      "text": "# Root\n~~~python\n## comment\nprint(1)\n~~~",
+      "target": 100,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "【章节：Root】\n# Root\n~~~python\n## comment\nprint(1)\n~~~"
+      ]
+    },
+    {
+      "name": "hard-split-overlap-keeps-order",
+      "text": "abcdefghij",
+      "target": 4,
+      "minimum": 1,
+      "overlap": 2,
+      "expected": [
+        "abcd",
+        "…cd\nefgh",
+        "…gh\nij"
+      ]
+    },
+    {
+      "name": "punctuation-break-before-target",
+      "text": "甲乙丙丁戊己。庚辛壬癸",
+      "target": 8,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "甲乙丙丁戊己。",
+        "庚辛壬癸"
+      ]
+    },
+    {
+      "name": "short-section-merges-with-one-prefix",
+      "text": "# A\nabcdefghijklmno\n# B\nx",
+      "target": 50,
+      "minimum": 10,
+      "overlap": 0,
+      "expected": [
+        "【章节：A】\n# A\nabcdefghijklmno\n\n# B\nx"
+      ]
+    },
+    {
+      "name": "paragraph-boundary-preserved",
+      "text": "abcd\n\nefgh",
+      "target": 6,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "abcd",
+        "efgh"
+      ]
+    }
+  ]
+}

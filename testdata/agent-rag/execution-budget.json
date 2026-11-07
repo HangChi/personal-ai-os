@@ -1,0 +1,37 @@
+{
+  "cases": [
+    {"name": "model-limit-is-inclusive-and-sticky", "models": 2, "failures": 3, "steps": [
+      {"op": "model", "allowed": true}, {"op": "model", "allowed": true},
+      {"op": "model", "allowed": false}, {"op": "tool", "name": "read", "digest": "a", "allowed": false}]},
+    {"name": "success-resets-consecutive-failures", "models": 4, "failures": 2, "steps": [
+      {"op": "record", "name": "read", "digest": "a", "status": "ERROR"},
+      {"op": "record", "name": "read", "digest": "b", "status": "OK"},
+      {"op": "record", "name": "read", "digest": "c", "status": "REJECTED"},
+      {"op": "model", "allowed": true}]},
+    {"name": "different-tools-share-failure-limit", "models": 4, "failures": 2, "steps": [
+      {"op": "record", "name": "read", "digest": "a", "status": "ERROR"},
+      {"op": "record", "name": "write", "digest": "b", "status": "REJECTED"},
+      {"op": "model", "allowed": false}]},
+    {"name": "identical-failed-call-cannot-replay", "models": 4, "failures": 3, "steps": [
+      {"op": "record", "name": "read", "digest": "a", "status": "ERROR"},
+      {"op": "tool", "name": "read", "digest": "a", "allowed": false},
+      {"op": "model", "allowed": false}]},
+    {"name": "corrected-arguments-can-continue", "models": 4, "failures": 3, "steps": [
+      {"op": "record", "name": "read", "digest": "bad", "status": "REJECTED"},
+      {"op": "tool", "name": "read", "digest": "fixed", "allowed": true},
+      {"op": "model", "allowed": true}]},
+    {"name": "pending-approval-is-not-a-successful-write", "models": 4, "failures": 3, "steps": [
+      {"op": "record", "name": "write", "digest": "a", "status": "REQUIRES_CONFIRMATION", "write": true},
+      {"op": "has_write", "name": "write", "expected": false}]},
+    {"name": "failed-write-is-not-committed", "models": 4, "failures": 3, "steps": [
+      {"op": "record", "name": "write", "digest": "a", "status": "ERROR", "write": true},
+      {"op": "has_write", "name": "write", "expected": false}]},
+    {"name": "successful-read-is-not-a-write", "models": 4, "failures": 3, "steps": [
+      {"op": "record", "name": "read", "digest": "a", "status": "OK"},
+      {"op": "has_write", "name": "read", "expected": false}]},
+    {"name": "write-evidence-is-tool-specific", "models": 4, "failures": 3, "steps": [
+      {"op": "record", "name": "write", "digest": "a", "status": "OK", "write": true},
+      {"op": "has_write", "name": "write", "expected": true},
+      {"op": "has_write", "name": "other", "expected": false}]}
+  ]
+}

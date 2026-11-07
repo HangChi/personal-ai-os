@@ -254,12 +254,8 @@
             </plugin>
 
             <!--
-              覆盖率（2026-10-26 补报告，P2 补门禁）。
-
-              阈值不拍脑袋：先跑了一轮拿到真实水位（84.7% 行 / 67.0% 分支），
-              再往下留约两档设为 83% / 65% —— 它的作用是拦住**断崖式下跌**
-              （有人删了一片测试），而不是精确控制到小数点。定 80% 这类整数
-              只会逼着后来的人写无意义的断言去凑数。
+              覆盖率：2026-11-07 完整回归后，行与分支门禁均提升至 95%。
+              不新增排除项；关键场景和双版本契约由 Backend Quality 独立验收。
 
               check 绑在 test 阶段而不是 verify：CI 跑的就是 ./mvnw test，
               绑 verify 等于这条规则永远不会执行。
@@ -283,13 +279,7 @@
                         </goals>
                     </execution>
                     <!--
-                      覆盖率门禁（P2）。
-
-                      阈值刻意**低于当前水位**（实测 84.7% 行 / 67.0% 分支），
-                      留约两个百分点给正常波动 —— 重构、删掉一个高覆盖的类、
-                      新增一个暂未完全覆盖的服务，都不该让构建挂掉。
-                      它的作用是拦住**断崖式下跌**（比如有人删了一片测试），
-                      而不是精确控制到小数点。
+                      完整 Java 集合的 LINE / BRANCH 均要求 COVEREDRATIO >= 0.95。
 
                       绑在 test 阶段：CI 跑的就是 ./mvnw test，
                       否则这条规则永远不会被执行，等于没有。
@@ -308,12 +298,12 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.83</minimum>
+                                            <minimum>0.95</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.65</minimum>
+                                            <minimum>0.95</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
