@@ -38,3 +38,10 @@ class ScenarioEvidenceTest(unittest.TestCase):
             scenarios.evaluate(policy + policy, {}, {})
         with self.assertRaises(ValueError):
             scenarios.evaluate([{"id": "one-sided", "java": ["C#m"]}], {}, {})
+
+    def test_pass_in_another_stage_does_not_satisfy_required_facility(self):
+        policy = [{"id": "search", "java": ["C#m"], "go": ["p6::TestSearch"]}]
+        self.assertFalse(scenarios.evaluate(policy, {"C#m": True},
+                         {"postgres::TestSearch": True, "p6::TestSearch": False})["passed"])
+        self.assertTrue(scenarios.evaluate(policy, {"C#m": True},
+                        {"postgres::TestSearch": False, "p6::TestSearch": True})["passed"])

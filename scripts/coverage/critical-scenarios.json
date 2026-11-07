@@ -5,7 +5,7 @@
       "com.personalos.common.ai.AgentBudgetSharedContractTest#sharedExecutionBudgetPreservesSafetyBoundaries"
     ],
     "go": [
-      "TestSharedExecutionBudgetSafetyBoundaries"
+      "default::TestSharedExecutionBudgetSafetyBoundaries"
     ]
   },
   {
@@ -14,7 +14,7 @@
       "com.personalos.knowledge.splitter.ChunkingSharedContractTest#sharedChunksPreserveStructureOverlapAndSource"
     ],
     "go": [
-      "TestSharedChunkingStructureOverlapAndSource"
+      "default::TestSharedChunkingStructureOverlapAndSource"
     ]
   },
   {
@@ -23,7 +23,7 @@
       "com.personalos.common.ai.tool.ToolExecutorTest#returnedErrorsNotifyPlanAndBlockSameArgumentsWithoutReexecuting"
     ],
     "go": [
-      "TestDurableToolReplayAndFailureBudget"
+      "default::TestDurableToolReplayAndFailureBudget"
     ]
   },
   {
@@ -33,7 +33,7 @@
       "com.personalos.task.confirmation.ConfirmationIntegrationTest#confirmationIsSingleUse"
     ],
     "go": [
-      "TestTaskToolsExecuteCRUDAndHumanConfirmedMutations"
+      "default::TestTaskToolsExecuteCRUDAndHumanConfirmedMutations"
     ]
   },
   {
@@ -42,7 +42,7 @@
       "com.personalos.chat.service.ChatCompletionBoundaryTest#summaryOnlyNeverRunsToolsOrRecovers"
     ],
     "go": [
-      "TestEngineSummaryOnlyBlocksModelToolsAndExternalReads"
+      "default::TestEngineSummaryOnlyBlocksModelToolsAndExternalReads"
     ]
   },
   {
@@ -52,8 +52,8 @@
       "com.personalos.chat.service.ChatCompletionBoundaryTest#cancellationBeforeRegistrationAndDuringStreamingCannotRecover"
     ],
     "go": [
-      "TestEngineAutomaticRecoveryUsesOneToolFreeClosingRequest",
-      "TestEnginePublishAndCheckpointFailuresRespectPersistenceBoundary"
+      "default::TestEngineAutomaticRecoveryUsesOneToolFreeClosingRequest",
+      "default::TestEnginePublishAndCheckpointFailuresRespectPersistenceBoundary"
     ]
   },
   {
@@ -63,8 +63,8 @@
       "com.personalos.knowledge.rag.RagPipelineBoundaryTest#emptyEvidenceReviewDoesNotProduceAnAnswer"
     ],
     "go": [
-      "TestPipelineRewriteRecoveryAndFailedStages",
-      "TestPipelineNoRelevantEvidenceCannotBecomeClarification"
+      "default::TestPipelineRewriteRecoveryAndFailedStages",
+      "default::TestPipelineNoRelevantEvidenceCannotBecomeClarification"
     ]
   },
   {
@@ -73,7 +73,7 @@
       "com.personalos.knowledge.rag.CitationAuditTest#sharedContractRejectsInvalidClaimsWithoutReturningPartialAudit"
     ],
     "go": [
-      "TestCitationAuditSharedJavaGoContract"
+      "default::TestCitationAuditSharedJavaGoContract"
     ]
   },
   {
@@ -83,8 +83,8 @@
       "com.personalos.knowledge.rag.EvidenceReviewContractTest#sharedScopeRequiresCompleteTypedRowsAndPreservesOriginalEvidence"
     ],
     "go": [
-      "TestEvidenceReviewSharedJavaGoContract",
-      "TestRestoredConflictScopeSharedJavaGoContract"
+      "default::TestEvidenceReviewSharedJavaGoContract",
+      "default::TestRestoredConflictScopeSharedJavaGoContract"
     ]
   },
   {
@@ -93,7 +93,7 @@
       "com.personalos.agent.plan.AgentPlanServiceTest#sharedPlanTransitionsPreserveOrderEvidenceAndTerminalStates"
     ],
     "go": [
-      "TestPostgresPlanSharedJavaGoTransitions"
+      "postgres::TestPostgresPlanSharedJavaGoTransitions"
     ]
   },
   {
@@ -102,7 +102,7 @@
       "com.personalos.agent.interaction.AgentInteractionServiceTest#sharedQuestionValidationAndAcceptedBoundaries"
     ],
     "go": [
-      "TestPostgresQuestionSharedJavaGoBoundaries"
+      "postgres::TestPostgresQuestionSharedJavaGoBoundaries"
     ]
   },
   {
@@ -111,8 +111,8 @@
       "com.personalos.knowledge.service.KnowledgeRetrievalServiceTest#hybridFusionLabelsBothChannelsAndDeduplicatesDocuments"
     ],
     "go": [
-      "TestRetrieverHybridRanksOverlapAndPreservesRawSimilarity",
-      "TestRetrieverChineseKeywordsAndSearchDocumentDiversity"
+      "default::TestRetrieverHybridRanksOverlapAndPreservesRawSimilarity",
+      "default::TestRetrieverChineseKeywordsAndSearchDocumentDiversity"
     ]
   },
   {
@@ -122,8 +122,8 @@
       "com.personalos.knowledge.KnowledgeDocumentUpdateIntegrationTest#refreshesVectorMetadata"
     ],
     "go": [
-      "TestP6DocumentAtomicReplaceMetadataDeleteAndPagination",
-      "TestP6RealOpenSearchProjectionHydrationVersionAndDelete"
+      "postgres::TestP6DocumentAtomicReplaceMetadataDeleteAndPagination",
+      "p6::TestP6RealOpenSearchProjectionHydrationVersionAndDelete"
     ]
   }
 ]

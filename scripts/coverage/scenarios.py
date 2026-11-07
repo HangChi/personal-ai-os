@@ -54,10 +54,11 @@ def evaluate(policy, java, go):
 
 def check(root):
     java = java_results(sorted((root / "java/junit").glob("TEST-*.xml")))
-    logs = []
+    go = {}
     for stage in ("default", "postgres", "redis", "p6"):
         # Only logs attested by successful stages may contribute.
         folder = root / stage
         manifest = json.loads((folder / "stage.json").read_text())
-        logs += [folder / name for name in manifest["files"] if re.fullmatch(r"run-\d+\.log", name)]
-    return evaluate(json.loads(POLICY.read_text()), java, go_results(logs))
+        logs = [folder / name for name in manifest["files"] if re.fullmatch(r"run-\d+\.log", name)]
+        go.update({stage + "::" + name: passed for name, passed in go_results(logs).items()})
+    return evaluate(json.loads(POLICY.read_text()), java, go)

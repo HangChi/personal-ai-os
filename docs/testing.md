@@ -26,7 +26,7 @@ Java 行覆盖按 JaCoCo 的可执行行统计，有指令命中即为已覆盖�
 
 ## Agent / RAG 必选场景
 
-[机器可读清单](../scripts/coverage/critical-scenarios.json)绑定两版实际测试方法。验收器读取新生成的 JUnit XML、Go JSON 和集成 runner 日志，要求以下场景全部通过：
+[机器可读清单](../scripts/coverage/critical-scenarios.json)绑定两版实际测试方法和指定执行阶段。验收器读取新生成的 JUnit XML、Go JSON 和集成 runner 日志，要求以下场景全部通过：
 
 | 范围 | 主要断言 |
 | --- | --- |
