@@ -11,6 +11,7 @@
 | Go 固定基线与 P8 | [迁移规格](../../specs/033-go-rewrite/README.md)、[P8](../../specs/033-go-rewrite/p8-completion.md)、[验证原记录](../../backend-go/docs/validation-history.md) | 固定 V1–V42 oracle 和各次隔离/真实模型证据；生产门禁独立 |
 | 2026-11-06/07 | [Java/Go RAG 与 RAGAS](../rag-evaluation-20261106.md) | 40 题、100 文档快照、同模型裁判与独立补评局限 |
 | 2026-11-07 | [Agent / RAG 测试与覆盖率](coverage-agent-rag-2026-11-07.md) | Java 分支 95.09%、Go 完整集合语句 95.05%（默认 89.16%）；全量/race、隔离设施、复现命令与剩余边界 |
+| 2026-11-07 后续 | [五维质量门禁验证](quality-gates-2026-11-07.md) | Java 行/分支与 Go 完整集合语句均超过 95%；13 项场景、182 个共享用例通过，变更覆盖门禁已接入，Go 分支未测量 |
 | 各特性阶段 | [规格索引](../../specs/README.md)、[E2E 报告索引](../../scripts/e2e/reports/README.md) | 规格、任务、验收原产物，不全部视为现有功能 |
 
 新增报告记录提交/构建、时间时区、数据/题集哈希、实际执行/未执行/失败、配置与调用成本、清理和残余。完整个人资料、模型密钥、Cookie、原始回答与环境文件不进入公开报告。方法见[评测指南](../evaluation.md)。
