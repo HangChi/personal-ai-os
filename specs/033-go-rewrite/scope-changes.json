@@ -3032,6 +3032,554 @@
         "Go 原生 profile 只统计语句，分支覆盖率尚未测量。",
         "本记录保持 in_progress，不改固定基线或 release gates。"
       ]
+    },
+    {
+      "id": "scope:prior-documentation-and-test-additions-20261107",
+      "status": "in_progress",
+      "source_commit": "1ed523a03ff54db39221775d9e1243ab1572b200",
+      "summary": "登记此前已提交但未列入迁移增量清单的文档、离线检查和 Java 测试新增文件；按原提交逐文件核对字节，不改变固定基线或宣称迁移完成。",
+      "files": [
+        {
+          "path": "backend/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "714787a9ba0b9071889c424b6161c55fc644cfc187083e43a434d6002af5625b"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/agent/ToolBoundaryContractsTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "d6aac583ea468004ecf3454c2b5179546d584dab13e65f8c68a78a8f60b0cea1"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/agent/interaction/AgentInteractionServiceTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "b65b22decf94bff841409d395b7f2d8b46849d7d819673bbae981e1f2547c071"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/agent/plan/AgentPlanStepEntityTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "013371e208ac31fd3ca0b019f2b52431fc2a3e38683870821ab0a13447a310e4"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/CalendarEventBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "2ae4f3e8975f88e7044e06de42d98673b9d901903593c6f2879b27200e50ddfe"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/CalendarExchangeBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "608e53fbad20907ba9b8bc167fb22bb0b98af50b6181628aa96ceacb92d9caa6"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/CalendarIcsBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "79e048416bc78418f65dce655cdc18d9aa5cfc8bf9f881eabfb32c9fdf9bf9a0"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/CalendarSearchContributorTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "ea86cffb06016903ea6f19ba35dc58fe00559049c602ad344b876ee452dc7bc1"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/messaging/ReminderBroadcastBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "bb152b1d53bf1b922fb57b78e584884d7e6f2480f589be4812b081244ccce60e"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "f48bd4f7c10154b206c72b84a178140054a4b3a8477a807a55ccfff26e7f7909"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/webhook/ReminderWebhookBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "6a0b7769a67a1472b5e4cf0f566321c48462a4298353e12c3e0e14c7ab200d39"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/ChatAttachmentJanitorTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "54414dc60ad11baac1b24ab9cb5bf87ea45b074fb35c873164c92424ad5ef926"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/ChatRunServiceTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "1ea84f8c74372a222e8c38507cc995bb9367781237cdb428a5412cbce12fdd89"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/controller/AudioTranscriptionControllerTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "2f2018aa08298294ac2e2d6a6a5c946d801df1baf89ce65ad3b24a480809ef3c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/controller/ChatSessionControllerBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "3b9467c7e587529a91da636025044f2b0e3bc75e27e9edb132a0fdf334a860f7"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/ChatAttachmentBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "5a4c01ff1da2b9067e692a9fca3f7c188a4171342b6f7e2008fc80a587c77aef"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/ChatCitationBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "a12cb5ee48283fc77ea12d7a61f37c36ee6dd8f11aa72caa3a08bd11de746c09"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/ChatCompletionBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "62217ea5e8dce72a7533087fd6d84f415d9c74db3a08061afc0dc3540300c5ee"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/RunEventDeliveryBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "2ce58ce1aa29c05600c69d85c34b60f577469b1681732d84f88542bf164e3862"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/service/WebSearchToolsBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "f14ea163b04c9d68f7cb48ff6cf86cd57853a8a2a1b201090a28731b8f259c1f"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/storage/S3AttachmentFailureTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "b1b6ca27b3a87cf4b47996ab4da3df3fb0b267aa84508bc2d007c32de42b5c2b"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/chat/storage/S3StorageConfigTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "f06b778bdaa6c5658911bd5cd7517eab1cb09188ace213977a35cdf99875f79a"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/BoundaryStateContractsTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "692c4bd2fa6c15bd43278d630831b2d7972184fe8100f8a886a0722e35e9ed92"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ControllerInputBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "b0bdfeae0511417c7d6a169f850da2d355780ceeb6fcc5f239b238e8b2d57885"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/ContextGuardBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "f8dbf2dc218a286481961be8e07ce330a891346b9c370035dc957ed74c0a02fc"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/ContextWindowEvidenceBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "861cbffbe8239991227553966b9d9d35fe0b737eeea6a4eccda3f58dbc6cc141"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/ModelWindowReferencesBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "a036515669ea1482105c25d509491051ee6e56ca7ea56e750d853d859d9dedde"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/cache/CacheFailureBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "c3b11e860980d4e43a6384b5595dcf1dc8a17ffd7905d6e840c06799511e152f"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/config/AudioTranscriptionBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "73b5634e341b98173c134b410f130d3f2a7ae5e07a66ec02a81a13176c95698a"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/config/ContextWindowRegistrarBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "7614e968d7305776928668c8127ffaf4cfe15b4840517c974accf929a2018db4"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/config/ModelConfigControllerBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "d8a46e48f74d832da263434ca7515ad191fe05f8ad73f86a9558c94e4d93fd25"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/config/ModelConnectionTestServiceTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "8ddc0204081e83ffd1eda82aad9efa68af69d5e595ef4c1d9358f3e51fc93257"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/config/ModelListProbeBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "b8b4ad2fd620438f9f639b418866af84f8820aea309d11c5ec817dd8d31bcb31"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/ai/config/ModelProfileControllerBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "4d4a0218cb6065db3e5be31ad6345da80de54f613e388eb519d8f94de06ab656"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/auth/SharedSessionEndpointBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "8e65c79cde6faad7f2162670af9586dc7564575bf9424b78b59bf30d9e482212"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/config/ProductionSecurityValidatorTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "475e83358748d54779a64a3f17bbc65f98216d9add554cbd63c964df8eaedb20"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/confirmation/ConfirmationBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "f35cec19f4aa9c1adf33cc1d958f620d3301d8c4d556e5cacd71db83cd15a4b0"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/document/PlainTextBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "03d3e34a3e6fe6c951d4c85f949c2a70d17ea60ec6c2e1e95f6259e9b1270ace"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/exception/ApiErrorControllerTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "ad67448ca7f164bdaab859b37b280de7ad4d8df455a74b55e8d61968a9849296"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/exception/GlobalExceptionBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "0eeae3b0a95ce9a355e9dee8a0cf74073c71862e5b4e8da32d6cf852ad54130a"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/web/CoordinationLeaseBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "31f89265d88d55eef6125eea9342701368b87928e3de58a6574a29c946b547a4"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/web/ModelConcurrencyGateBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "c5807ac8e1b68bed8ae559c33d213a678e09e89543349a155b958be48b6cb5ed"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/common/web/RateLimiterBackendBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "28810b10ba3870a90bed364c047c4e6ed252037e54186dd39809534a93501c45"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/export/DataImportBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "c7eb197506e4c0b2cbc75eadce506f8512da1fa4ca1163fdd14192d2802c33c8"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/export/DataImportControllerTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "e056388bd448514f2cdeedfcdc5754568210588dd017bdf1cd8e37203283d590"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/ConfigurationBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "f22bfc3f873bb824db100e7b0eab693e84de222f58f5977798349bfa295163b9"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/capture/PublicWebFetcherBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "c8085193003e1a7e6354abc450b04fe1ab06bcc7a515e9fb190c752c56fbc3cf"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/governance/IngestionReviewBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "692cc6a87e828b94edd016b878657e0f37ac37ecf9dd138695ae31d05c329c3b"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/governance/KnowledgeGovernanceBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "fb4231839eba7683635bb3d65e1202ac831fa312aca6c35946dce04ab66f174d"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/jobs/KnowledgeIndexJobsBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "e323d115cac77518d26d2aaa444e418fb882ddaf586ac8bb502e0ed848772373"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/jobs/messaging/WorkSignalRelayBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "c98065f7d736b236395bcba3456e7f7f97a2d8e728b295f9620d9893cc8e4b2c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/rag/CrossEncoderBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "f08c092e194554f153b7cc2cf3e3ded96323c4b4547395354fea3531a932e8f6"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/rag/EvidenceAnswerBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "829f762ba00ce305eb065cb9499c0223ed9a222a3c983ce47cec073e93b2763c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/rag/EvidenceReviewContractTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "cf20a4119fb1174704107f72891f624b1fa476df999cabc1d69d128709c4e242"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/rag/RagPipelineBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "b817666425be10cb5bbc3ca421a4a0d63a693c74844c18e46e353a45815b6b16"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/rag/RagResultContractTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "13dd002cdd38b2f8abfe329cc0b90cd4f3cfad27ff078d43354e543b2fee6d7a"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/reader/VisionEmptyResponseTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "1aeba6c24f673057d0964bf43a556a5ca9264cf8d72aad32dadb63d6df15cb03"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/search/OpenSearchFailureBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "c6375c6faa7a48c0b23c67a777ae4d5e2db7230ee68e479cdbc7531f895fdd16"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/search/SearchProjectionBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "532c428d17fba555958a8677f14ca0dbf38390e8f94b42a06131592bfd439813"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/service/KnowledgeDocumentBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "19a633fb92d8bfb5b0c5d64a4101ddc51f82e24a747c8383480494c2ba035d9b"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/service/KnowledgeQaBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "57bc1924c5b7445b6890a128003d6c2658bb169f73196c2bc936dacaa95ad31c"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/service/KnowledgeRetrievalServiceTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "0b7d17e98c0a0a817c7d2c08333ef1ffa4117e1a39d94cf78738ce29dcc2ea5b"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/service/VectorStoreInspectorBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "c89d60ed5d6de928df423a45216e2edbf7cd32294bb8cde97207021ae9ee2b52"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/splitter/MarkdownBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "2d9e15f0963b12506a55476b6e56ad0d758c32fb64965055533e0cd813572d06"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/mcp/McpRegistryLifecycleBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "10ce1c919d45a7c50a078d5327e03b763abf1a9e1f812e7a0bde2b71c4235998"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/mcp/server/PersonalMcpToolsBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "76c61e5516a9e488a91b3bbfd558eafabe7df88aa14f106d4110caa1e2319066"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/mcp/tool/McpCallbackInputBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "d185f70897875680eab61d474562bd2006dd7ac9a11e7232a6518f22dc7887b9"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/mcp/tool/McpWebSourcesBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "34853ec10b748400334e07ee32dac261f077cf6849810a862271611cd9574ab3"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/memory/service/AutoMemoryBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "7e665f867ffdbcc5a77b13f91e5006dec4b7fd35e986b6a1e2eb321ad0ea514e"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/task/TaskSearchBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "e9d2addacc9d36b3d49f70421af151a0cb76dcea5d045aa5303c5e5ec3002d74"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/task/controller/WorkspaceControllerBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "cbee84caee7b40e197f3060182ccbc0e3d14ae45a689c48fd683f277b2de00e1"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/task/service/TaskOptionalFieldsTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "49ebe545f0d7f0e2699507006637220351b45e8f5bc81f9ed371a922c64184bf"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/task/service/WorkspaceBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "39773b8653bec1f6e2fbbc34f9c7f3068d5a01b2d0cabb078cac7a4e67d34e5a"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/workflow/service/WorkflowBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "523b6654c7225a4807a5a0776c818d97317957ded048f51f2bffd37cab57117f"
+        },
+        {
+          "path": "docs/agent-runtime.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "090f50b0028415e397e083ee3bcff8ae9dba053b5d57743a3f436bb02a9d8daf"
+        },
+        {
+          "path": "docs/agent-tools.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "fb23c43df5f3a4c8a91a1f1407c9d00c0975fef2e212faf1eef00387883f4ab4"
+        },
+        {
+          "path": "docs/backend-parity.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "478e77c8d1ad9617b5340e5afe6f5fff9fb9dc7b3bebb05bfdbaa5375487dc88"
+        },
+        {
+          "path": "docs/configuration.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "646f8882551616ae80c208805fc6f2afcc128292406df184fc26844df2ef98f0"
+        },
+        {
+          "path": "docs/evaluation.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "3f4beac4e757ca6ba07e4dfe0c9914450c5c4b497cab0fc5e8feedbd62644371"
+        },
+        {
+          "path": "docs/memory-and-context.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "a9f139b2900efd58957b3659f79e6b3d6858140d112722f485cac69abb9e17f0"
+        },
+        {
+          "path": "docs/rag-evaluation-20261106.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "ac7e70dc900cc97c36c4244d57227a9d70a33d6ac0454944fd1c7fa4c8baa41a"
+        },
+        {
+          "path": "docs/rag-ingestion.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "a00187613386c11a4e99003e9ade09d41cece74d0700550168370449c2d01dd4"
+        },
+        {
+          "path": "docs/rag-retrieval.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "6b718f1431a9e150182b4eddf08719586c326363a99c844c85e53ad53f835839"
+        },
+        {
+          "path": "docs/rag.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "310cd7bf44fec5405c7e6a33d2d0bbfa678769103e3da1a6f56d8a78fd183f64"
+        },
+        {
+          "path": "docs/reference/http-routes.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "d9b95883d049a3a695fe5c537e4d71fcb902bb4060c6ee68ab93aec3b7aab8b4"
+        },
+        {
+          "path": "docs/reports/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "0f6fa85a61f982e0506bde40fdc79c178b4c1710102a23be7d4ad000de393d30"
+        },
+        {
+          "path": "docs/reports/coverage-agent-rag-2026-11-07.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "4cae566528fb339041f9f03be78730e082fc9ed75b6833c8d280740a598592ee"
+        },
+        {
+          "path": "docs/reports/retrieval-baseline-2026-10-26.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "8cdbc4466c279f680c1c171fd5e9268c8f47e798cb3fd194f5c56fe997f1d995"
+        },
+        {
+          "path": "docs/user-guide.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "38d8b5bd089ff26df75a24affde469f398cd20892c493f719506d49d716bbf51"
+        },
+        {
+          "path": "frontend/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "4df79fa1c820731d19757a6fceeec44ee80178194cab1ce0526e411d3e58ea23"
+        },
+        {
+          "path": "scripts/docs/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "652aeb2576018ef72ba7224e61fec8e1743c458141e752d55cbae69a4d912a0f"
+        },
+        {
+          "path": "scripts/docs/check_docs.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "d6ddba5bac740b5aaa54fe39a010cdc0df0fa02eb4513119ca8953f4e47c2b73"
+        },
+        {
+          "path": "scripts/docs/generate_routes.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "1bb381f89491f8bce811015147404bbd14d5aad34396a840cf6ea2593db84b2b"
+        },
+        {
+          "path": "scripts/e2e/reports/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "a6ecfab2b1f368e537d1d699be4f772f83c3edec1c1969357a872187b45dd6f1"
+        },
+        {
+          "path": "scripts/eval/ragas-compare.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "4c8b9065320caebd09f157b933fcddadbd83449ba6364a64804b522fb59d92ae"
+        },
+        {
+          "path": "scripts/eval/ragas-comparison-cases.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "81aacb540b81ae34ddaf430629ac95a7ddcea100a7c5c31468a35992ae8c8ef6"
+        },
+        {
+          "path": "scripts/eval/requirements-ragas.txt",
+          "baseline_sha256": null,
+          "candidate_sha256": "25ab73983717ee40024c5c1838a5e22153c8c3324ce4cfa55d69c797aca8a29e"
+        },
+        {
+          "path": "scripts/eval/test_ragas_compare.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "bc34bcf87918cbd2baeb36bb42e1003825bacd8b728a2276f7f950adab18f49e"
+        },
+        {
+          "path": "specs/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "693c6c0af95bd56daa8b2308573cd904f794c36bb25d9b2bfa9f0eb3a1a5818e"
+        },
+        {
+          "path": "testdata/agent-rag/citation-audit.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "5a6f1abf9f88ed80d903f3c3b135734b1ce0768453fabcbad851c42f04985d06"
+        },
+        {
+          "path": "testdata/agent-rag/evidence-review.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "c0de8c43dc26b195ea6e4f955d2e37e9e61405f306d038209accd56b8ec2bf70"
+        },
+        {
+          "path": "testdata/agent-rag/plan-transitions.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "bfe1a462be5c908bc0eef6ed456d93a81f91e5ce05d7b16bfe855cff540a4d62"
+        },
+        {
+          "path": "testdata/agent-rag/questions.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "5152fccfd6bf2736a9b365e79634718f738a948f8ddf36bcc2bf32d87bca255e"
+        },
+        {
+          "path": "testdata/agent-rag/restored-conflict-scope.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "2be20a2757d7900325c0634fdc05830f011aa065e4c70b07864c007b1fb77e15"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/test/java/com/personalos/knowledge/rag/CitationAuditTest.java"
+        ],
+        "go": [
+          "backend-go/internal/business/knowledge/citation_audit_test.go"
+        ]
+      },
+      "parity_sha256": {
+        "backend/src/test/java/com/personalos/knowledge/rag/CitationAuditTest.java": "017c4ac119e84306fe90f66fbb33139ef4750175a1eb2356c542cdd58abc9119",
+        "backend-go/internal/business/knowledge/citation_audit_test.go": "d85f3b76a68bb18d58f01003838d21f44f11dfccae44848b79c0c858b8ce94cd"
+      },
+      "evidence": [
+        "docs/reports/coverage-agent-rag-2026-11-07.md",
+        "testdata/README.md"
+      ],
+      "limitations": [
+        "仅修复既有来源登记缺口，不赋予历史结果新的验收结论。",
+        "保持 in_progress；生产发布与迁移 release gates 不变。"
+      ]
     }
   ]
 }
