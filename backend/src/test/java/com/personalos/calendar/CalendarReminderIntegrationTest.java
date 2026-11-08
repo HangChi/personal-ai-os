@@ -193,6 +193,25 @@ class CalendarReminderIntegrationTest extends ContainerContextTest {
         model.reset();
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings={"missing-end","invalid-order","invalid-until"})
+    void rejectedUpdateRollsBackEarlierMutationsAndKeepsPendingReminder(String kind) {
+        Instant now=Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        UUID id=createEvent("原会议",now,now.plusSeconds(1800),15);
+        scanner.scan(now);
+        var before=eventService.get(id);
+        var reminder=reminderService.list(null,false,null).stream().filter(r->r.sourceId().equals(id)).findFirst().orElseThrow();
+        var request=new UpdateEventRequest("不应保存的标题","不应保存的描述","不应保存的地点",false,
+            kind.equals("invalid-until")?null:now,
+            kind.equals("invalid-order")?now.minusSeconds(1):null,
+            null,kind.equals("invalid-until")?now.minusSeconds(1):null,null,30);
+        assertThatThrownBy(()->eventService.update(id,request)).isInstanceOf(BusinessException.class);
+        assertThat(eventService.get(id)).isEqualTo(before);
+        assertThat(reminderRepository.findById(reminder.id())).isPresent();
+        scanner.scan(now);
+        assertThat(reminderRepository.countBySourceTypeAndSourceId(ReminderSource.CALENDAR_EVENT,id)).isEqualTo(1);
+    }
+
     @Test
     @DisplayName("任务完成、清除截止时间和改期会清理旧待提醒，已读历史保留")
     void taskChangesInvalidatePendingReminders() {

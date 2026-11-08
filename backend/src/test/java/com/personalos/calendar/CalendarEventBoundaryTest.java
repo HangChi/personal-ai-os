@@ -14,6 +14,23 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 
 class CalendarEventBoundaryTest {
+ @org.junit.jupiter.params.ParameterizedTest
+ @org.junit.jupiter.params.provider.CsvSource({
+  "2026-11-08T15:59:00Z,2026-11-08T16:00:00Z",
+  "2026-11-08T16:00:00Z,2026-11-08T16:00:00Z",
+  "2026-11-10T16:00:00Z,2026-11-10T16:00:00Z"
+ })
+ void allDayNormalizationUsesLocalDateAndKeepsExclusiveMultiDayEnd(String rawEnd,String expectedEnd){
+  var events=mock(CalendarEventRepository.class);var reminders=mock(ReminderRepository.class);
+  when(events.save(any())).thenAnswer(call->call.getArgument(0));
+  var service=new CalendarEventService(events,reminders,new RecurrenceCalculator(ZoneId.of("Asia/Shanghai")),properties(),ZoneId.of("Asia/Shanghai"));
+  var event=service.create(new CreateEventRequest("全天日程",null,null,true,Instant.parse("2026-11-07T18:00:00Z"),Instant.parse(rawEnd),null,null,null));
+  assertThat(event.startsAt()).isEqualTo(Instant.parse("2026-11-07T16:00:00Z"));
+  assertThat(event.endsAt()).isEqualTo(Instant.parse(expectedEnd));
+  assertThat(event.allDay()).isTrue();
+  assertThat(event.recurrenceType()).isEqualTo("NONE");
+  verifyNoInteractions(reminders);
+ }
  static final Instant AT=Instant.parse("2026-11-07T10:00:00Z");static final UUID ID=UUID.randomUUID();
  static CalendarProperties properties(){return new CalendarProperties(false,1,0,null,null,null,90,100,500);}
  @Test void partialUpdatesPreserveOmittedValuesAndRebuildOnlyPendingReminders(){

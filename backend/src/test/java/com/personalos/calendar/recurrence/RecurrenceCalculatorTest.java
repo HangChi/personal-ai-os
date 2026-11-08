@@ -22,6 +22,22 @@ import org.junit.jupiter.api.Test;
  * {@code America/New_York} 验证「本地时刻不漂移」这个设计主张。
  */
 class RecurrenceCalculatorTest {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({
+        "DAILY,2026-10-31T13:00:00Z,2026-11-01T14:00:00Z",
+        "WEEKLY,2026-10-25T13:00:00Z,2026-11-01T14:00:00Z",
+        "MONTHLY,2026-10-01T13:00:00Z,2026-11-01T14:00:00Z"
+    })
+    void fallBackKeepsLocalNineOClockAndInclusiveUntil(RecurrenceType rule,String first,String last) {
+        var zone=ZoneId.of("America/New_York");
+        var calculator=new RecurrenceCalculator(zone);
+        var start=Instant.parse(first);var until=Instant.parse(last);
+        assertThat(calculator.occurrences(rule,start,until,start,until.plusSeconds(1)))
+            .containsExactly(start,until)
+            .allSatisfy(at->assertThat(at.atZone(zone).toLocalTime()).isEqualTo(LocalTime.of(9,0)));
+        assertThat(calculator.occurrences(rule,start,until.minusNanos(1),until,until)).isEmpty();
+        assertThat(calculator.occurrences(rule,start,until,until,until)).containsExactly(until);
+    }
 
     private static final ZoneId UTC = ZoneOffset.UTC;
 
