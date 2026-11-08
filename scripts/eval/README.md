@@ -75,3 +75,31 @@ noise 从公开古典文学整理语料中选出 20 篇独立完整作品；不�
 默认 freeze 配额为 1000 篇新技术正文、30 篇技术近似资料、20 篇文学作品；目标总数由现有文档数自动加算。可以用 technical-count/hard-count/literature-count 和 batch 分批执行，后续批次会排除已入库来源。import 仍使用 knowledge-scale.py。只有所有批次核验成功后才 merge；merge 强制核验总配额 1000/30/20 和原文档、分块内容、计数及搜索投影。
 
 若冻结后发现个别正文无法索引，先检查任务终态与实际持久化状态。reconcile 仅在离线检查明确失败、原文哈希匹配且目标文档不存在时创建新的派生批次；保留原计划、失败任务和原始正文，绝不删除成功文档。未导入正文不计入新增数，并由后续批次补足数量。
+
+## 定制问答、证据相关性与完整生产流程
+
+knowledge-adversarial-eval.py prepare 冻结 60 题：24 技术、12 近似资料混淆、4 多来源、8 无答案、4 缺少适用条件、4 文学对照和4 历史回归。新参考答案逐事实附原文锚点，再由独立模型检查；模型标签不能称为人工金标。技术问题按主题分层抽样，报告必须记录实际抽样母集，不能声称代表全部文档。问答及原文锚点不提交到仓库。
+
+可以在首个已验证批次上先生成题目，并指定 expected-documents 为最终总数。此时禁止采集回答；追加完成后必须 bind，核对来源 ID、原文哈希、无答案实体和最终总数。bind 不改问题、参考答案或来源标签。此方法缩短等待，但题目抽样母集仍是生成时已完成的批次。
+
+~~~bash
+.cache/ragas-venv/bin/python scripts/eval/knowledge-adversarial-eval.py prepare \
+  --output .cache/NEW-RUN/eval --corpus .cache/NEW-RUN/import
+.cache/ragas-venv/bin/python scripts/eval/knowledge-scale-eval.py collect \
+  --output .cache/NEW-RUN/eval --java-jar /absolute/path/current-backend.jar \
+  --include-pipeline --preserve-temperature --context-limit 4
+.cache/ragas-venv/bin/python scripts/eval/knowledge-adversarial-eval.py audit \
+  --output .cache/NEW-RUN/eval --corpus .cache/NEW-RUN/import --concurrency 4
+.cache/ragas-venv/bin/python scripts/eval/knowledge-scale-eval.py judge \
+  --output .cache/NEW-RUN/eval --judge-model deepseek-v4.1-flash --trace-judge --concurrency 4
+.cache/ragas-venv/bin/python scripts/eval/knowledge-adversarial-eval.py summarize \
+  --output .cache/NEW-RUN/eval --corpus .cache/NEW-RUN/import
+~~~
+
+context-limit 应与待测服务的实际设置一致，本次是 4；它是上下文上限，不是相关性精度的固定分母。baseline/rerank 共享最多 40 块原问题候选，只改变排序。production 单独调用真实 knowledge/ask 接口，保留改写、候选合并、重排、证据审查、冲突和拒答流程，不能把它解释为只开关重排的消融。三组均保留当前生成温度；候选缓存与嵌入缓存关闭。
+
+audit 合并共享候选与生产流程最终证据，对每个分块独立判断 relevant/irrelevant/uncertain，相关事实必须有匹配原文的锚点。仅格式差异可忽略，标识符下划线、大小写、数字和标点仍保留。精度为已判相关块/已完成判定的选中块，另报判定覆盖率；空上下文不是完美精度。证据召回是冻结参考事实的覆盖率；候选池相关块召回仅限已判候选池，均不是全库穷尽相关文档召回。首位已知来源命中、R@5/MRR 只作额外诊断。
+
+回答审查逐项记录事实、支持原文、引用编号和行为；支持且与问题相关的事实/全部事实为回答事实精度，覆盖参考事实/全部参考事实为事实召回。拒答、澄清、条件化回答、冲突与系统 UNVERIFIED 分开报告。诗作对照题里文学不是噪声，技术题里的文学暴露才计入无关内容指标。
+
+RAGAS 保留 Faithfulness、FactualCorrectness F1、ContextPrecision、ContextRecall、AnswerRelevancy 原值；trace-judge 额外保存事实拆解、NLI 和反向问题，错误与补评历史不覆盖。汇总分别列有效样本、失败、零分及配对区间。它们不是人工答案准确率。完整生产流程可在隔离库写入冲突记录，核心文档/向量/来源/空间及现有实例必须保持不变；采集结束验证并清理临时数据库、索引和进程。

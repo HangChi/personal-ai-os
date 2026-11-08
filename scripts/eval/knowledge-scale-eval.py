@@ -4,6 +4,7 @@ Reuses product recall and answer implementations through a local-only Java harne
 """
 import argparse
 import asyncio
+import contextvars
 from collections import Counter
 import importlib.util
 import json
@@ -162,6 +163,8 @@ def collect(args):
     import httpx
     out = args.output.resolve()
     cases = load(out / 'cases.json')
+    if load(out/'dataset.json').get('collection_manifest_pending'):
+        raise ValueError('Bind the frozen questions to the final verified collection before collecting responses')
     env, model = comparison.config(), comparison.profile()
     original = comparison.snapshot('personal_ai_os')
     if original['knowledge_document']['count'] != load(out / 'dataset.json')['expected_documents']:
@@ -171,10 +174,13 @@ def collect(args):
         append(out/'preflight-history.jsonl',previous)
         previous = {}
     artifact_hash = sha(args.java_jar.read_bytes())
+    collector_hash=sha(Path(__file__).read_bytes())
     harness_hash = sha((ROOT / 'scripts/eval/java/KnowledgeScaleHarness.java').read_bytes())
     cases_hash = sha((out / 'cases.json').read_bytes())
     if previous.get('collection_complete'):
         raise ValueError('Collection already complete')
+    if previous and previous.get('collector_script_sha256',collector_hash)!=collector_hash:
+        raise ValueError('Cannot resume with a changed collector script')
     if previous and previous['source_snapshot'] != original:
         raise ValueError('Cannot resume against a changed knowledge snapshot')
     if previous and any(previous[k] != v for k,v in dict(artifact_sha256=artifact_hash,
@@ -194,7 +200,8 @@ def collect(args):
         models={k:v for k,v in model.items() if k != 'api_key'}, reranker_model=env['RAG_RERANKER_MODEL'],
         reranker_protocol=protocol,reranker_endpoint_sha256=endpoint_hash,
         cleanup_complete=False,collection_complete=False,
-        artifact_sha256=artifact_hash,harness_sha256=harness_hash,candidate_limit=40,context_limit=5,
+        artifact_sha256=artifact_hash,harness_sha256=harness_hash,candidate_limit=40,context_limit=args.context_limit,
+        collector_script_sha256=collector_hash,
         commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         worktree_dirty=bool(subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True).strip()),
         boot_embedding_provider=env.get('AI_EMBEDDING_PROVIDER'),
@@ -206,6 +213,17 @@ def collect(args):
             'Fixed top-5 diversified contexts bypass production evidence sufficiency and conflict guards.',
             'Negative cases measure textual refusal only, not production guarded status.',
             'Title lookup is reported separately. One run per question and variant.'])
+    meta['include_pipeline'] = args.include_pipeline
+    meta['temperature'] = model['temperature'] if args.preserve_temperature else 0
+    if previous and (previous.get('include_pipeline', False) != args.include_pipeline or previous.get('temperature') != meta['temperature'] or previous.get('context_limit')!=args.context_limit):
+        raise ValueError('Cannot resume with changed pipeline or temperature configuration')
+    if args.include_pipeline:
+        meta['experiment']='Frozen-pool RRF/cross-encoder ablation plus a separately reported native production pipeline'
+        meta['pipeline_budget_ms']=int(env.get('RAG_BUDGET_MS','20000'))
+        meta['evidence_timeout_ms']=int(env.get('RAG_EVIDENCE_TIMEOUT_MS','12000'))
+        meta['limitations']=['Baseline/rerank use a shared original-query candidate pool and bypass evidence guards.',
+            'Production uses native rewrite, rerank, evidence review, conflict and refusal behavior; it is not an isolated reranker ablation.',
+            'Single run per question; actual selected evidence is independently model judged.']
     save(out / 'metadata.json', meta)
     client = httpx.Client(timeout=120, trust_env=False)
     search = httpx.Client(base_url=env.get('OPENSEARCH_ENDPOINT', 'http://127.0.0.1:9200'),
@@ -217,7 +235,8 @@ def collect(args):
         comparison.clone(database)
         if comparison.snapshot(database) != original:
             raise ValueError('Snapshot copy mismatch')
-        comparison.sql(database, 'UPDATE ai_model_profile SET temperature=0 WHERE active')
+        if not args.preserve_temperature:
+            comparison.sql(database, 'UPDATE ai_model_profile SET temperature=0 WHERE active')
         if env.get('OPENSEARCH_ENABLED', 'false').lower() == 'true':
             info = search.get('/' + env.get('OPENSEARCH_INDEX', 'personalos-chunks-v1'))
             info.raise_for_status()
@@ -254,7 +273,7 @@ def collect(args):
             REDIS_ENABLED='false', RABBITMQ_ENABLED='false', S3_ENABLED='false', WEB_PUSH_ENABLED='false',
             REMINDER_WEBHOOK_ENABLED='false', AI_CONTEXT_SUMMARY_ENABLED='false', AI_CONTEXT_AUTO_MEMORY_ENABLED='false',
             APP_MEMORY_BACKFILL_ENABLED='false', AI_CALENDAR_SCAN_ENABLED='false', MCP_ENABLED='false',
-            PERSONAL_MCP_SERVER_ENABLED='false', SPRING_AI_MCP_SERVER_ENABLED='false', RAG_ENABLED='false',
+            PERSONAL_MCP_SERVER_ENABLED='false', SPRING_AI_MCP_SERVER_ENABLED='false', RAG_ENABLED='true' if args.include_pipeline else 'false',
             APP_KNOWLEDGE_JOBS_ENABLED='false', APP_KNOWLEDGE_RAG_INGESTION_REVIEW_ENABLED='false',
             EMBEDDING_CACHE_ENABLED='false', RAG_CANDIDATE_CACHE_ENABLED='false', OPENSEARCH_INDEX=index,
             AI_CHAT_UPLOAD_DIR=str(out / 'uploads'))
@@ -289,7 +308,7 @@ def collect(args):
                 if (variant,case['id']) in done:
                     continue
                 hits = pool[variant]
-                contexts = select_context(hits)
+                contexts = select_context(hits,args.context_limit)
                 row = dict(variant=variant, case_id=case['id'], suite=case['suite'], category=case['category'],
                     ranking=rank_metrics(hits,case['expected_document_ids']), contexts=contexts,
                     recall_ms=pool['recall_ms'], rerank_ms=pool['rerank_ms'] if variant=='rerank' else 0)
@@ -305,9 +324,31 @@ def collect(args):
                 append(out / 'responses.jsonl',row)
                 print(json.dumps(dict(case=case['id'],variant=variant,rank=row['ranking']['rank'],
                     ms=round(row['total_ms']),error=row.get('error_type')),ensure_ascii=False),flush=True)
+            if args.include_pipeline and ('production',case['id']) not in done and case['suite']=='semantic':
+                start=time.monotonic()
+                row=dict(variant='production',case_id=case['id'],suite=case['suite'],category=case['category'])
+                try:
+                    response=api.call('POST','/knowledge/ask',dict(question=case['question'],topK=args.context_limit))
+                    contexts=response.get('retrieval',{}).get('hits',[])
+                    if not all(chunks.get((h['documentId'],h['chunkIndex'])) == sha(h['content']) for h in contexts):
+                        raise ValueError('Production evidence changed from frozen chunks')
+                    row.update(response=response,contexts=contexts,metrics=response_metrics(case,response,contexts,chunks),
+                        ranking=rank_metrics(contexts,case['expected_document_ids']),ranking_scope='selected_evidence_only')
+                except Exception as error:
+                    row.update(error_type=type(error).__name__,contexts=[])
+                row['total_ms']=1000*(time.monotonic()-start)
+                append(out/'responses.jsonl',row)
+                print(json.dumps(dict(case=case['id'],variant='production',status=row.get('response',{}).get('retrieval',{}).get('status'),
+                    ms=round(row['total_ms']),error=row.get('error_type')),ensure_ascii=False),flush=True)
         meta['collection_complete'] = True
-        meta['isolated_snapshot_unchanged'] = comparison.snapshot(database)==original
+        after_snapshot=comparison.snapshot(database)
+        meta['isolated_snapshot_unchanged'] = after_snapshot==original
+        meta['isolated_core_unchanged'] = all(after_snapshot[t]==original[t] for t in original if t!='knowledge_conflict')
+        meta['isolated_post_snapshot']=after_snapshot
         meta['original_snapshot_unchanged'] = comparison.snapshot('personal_ai_os')==original
+        if not meta['isolated_core_unchanged'] or not meta['original_snapshot_unchanged']:
+            meta['collection_complete']=False
+            raise ValueError('Knowledge snapshot changed during collection; judgments must not proceed')
     finally:
         if process and process.poll() is None:
             process.terminate()
@@ -334,7 +375,8 @@ async def judge(args):
         raise ValueError('Complete collection before judging')
     cases = {r['id']:r for r in load(out / 'cases.json')}
     rows = records(out / 'responses.jsonl')
-    expected = {(v,c) for v in ['baseline','rerank'] for c in cases}
+    variants=['baseline','rerank']+(['production'] if meta.get('include_pipeline') else [])
+    expected = {(v,c) for v in variants for c in cases if v!='production' or cases[c]['suite']=='semantic'}
     if len(rows)!=len(expected) or {(r['variant'],r['case_id']) for r in rows} != expected:
         raise ValueError('Require exactly one response for every case and variant')
     old = {(r['variant'],r['case_id'],r['metric']):r for r in records(out / 'ragas.jsonl')}
@@ -363,6 +405,15 @@ async def judge(args):
     embedding_model = meta['boot_embedding_model']
     embeddings = OpenAIEmbeddings(client=embedding_client,model=embedding_model)
     llm = llm_factory(judge_model,client=client,temperature=0,max_tokens=4096,extra_body={'enable_thinking':False})
+    trace_context=contextvars.ContextVar('ragas_case_metric',default={})
+    if args.trace_judge:
+        original_generate=llm.agenerate
+        async def traced_generate(prompt,response_model):
+            result=await original_generate(prompt,response_model)
+            append(out/'ragas-traces.jsonl',dict(**trace_context.get(),schema=response_model.__name__,
+                prompt=prompt,parsed=result.model_dump(mode='json'),recorded_at=now()))
+            return result
+        llm.agenerate=traced_generate
     scorers = dict(faithfulness=Faithfulness(llm=llm),factual_correctness=FactualCorrectness(llm=llm,mode='f1'),
         context_precision=ContextPrecision(llm=llm),context_recall=ContextRecall(llm=llm),
         answer_relevancy=AnswerRelevancy(llm=llm,embeddings=embeddings,strictness=3))
@@ -392,6 +443,7 @@ async def judge(args):
             async with semaphore:
                 start = time.monotonic()
                 try:
+                    trace_context.set(dict(variant=row['variant'],case_id=row['case_id'],metric=name))
                     value = float((await asyncio.wait_for(scorers[name].ascore(**params),180)).value)
                     if not math.isfinite(value):
                         raise ValueError('Nonfinite RAGAS score')
@@ -410,6 +462,7 @@ async def judge(args):
             same_model_as_generator=judge_model==meta['models']['chat_model'],temperature=0,concurrency=args.concurrency,
             embedding_model=embedding_model,answer_relevancy_strictness=3,
             usage=dict(usage),metrics=list(scorers),factual_correctness_mode='f1',
+            parsed_intermediates_saved=args.trace_judge,
             language='RAGAS default English prompts over Chinese questions and mixed-language contexts'))
 
 def mean(values):
@@ -488,6 +541,10 @@ def main():
     parser.add_argument('--java-jar',type=Path,default=ROOT/'.cache/local-runtime/releases/backend-scale-batch16-20261108.jar')
     parser.add_argument('--judge-model')
     parser.add_argument('--concurrency',type=int,default=4)
+    parser.add_argument('--include-pipeline',action='store_true',help='Also exercise the real production QA endpoint in isolation')
+    parser.add_argument('--preserve-temperature',action='store_true',help='Keep the active product model temperature')
+    parser.add_argument('--trace-judge',action='store_true',help='Save parsed RAGAS fact/NLI/reverse-question intermediates privately')
+    parser.add_argument('--context-limit',type=int,choices=range(1,21),default=5)
     args = parser.parse_args()
     if args.command=='judge':
         asyncio.run(judge(args))
