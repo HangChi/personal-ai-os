@@ -389,7 +389,7 @@ func Vision(runtime interface {
 	return func(ctx context.Context, data []byte, mime string) (string, error) {
 		client, e := runtime.Target(ctx, "")
 		if e != nil {
-			return "", unsupported("当前未配置 AI 模型，无法解析图片（请先配置 ollama 或 openai）")
+			return "", unsupported("当前未配置 AI 模型，无法解析图片或扫描版 PDF（请先配置 ollama 或 openai）")
 		}
 		result, e := client.Call(ctx, model.ChatRequest{Messages: []model.Message{{Role: "user", Content: "请把这张图片里的文字逐字转录出来，尽量保留原有的分段与列表结构。只输出转录结果，不要解释，不要补充图片里没有的内容。如果图片里没有任何可读文字，只回复两个字：无文本", Images: []model.Image{{MIME: mime, Data: data}}}}})
 		if e != nil {

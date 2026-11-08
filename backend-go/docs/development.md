@@ -1,6 +1,6 @@
 # Go 开发指南
 
-要求 Go 1.27.0+；race 需要 C 工具链。PDF 需要 Poppler `pdfinfo`/`pdftotext`。Java/Flyway 对照需要 JDK 21、Maven 依赖与 Docker。通用开发及前端见[根开发指南](../../docs/development.md)。
+要求 Go 1.27.0+；race 需要 C 工具链。PDF 需要 Poppler `pdfinfo`/`pdftotext`/`pdftoppm`。Java/Flyway 对照需要 JDK 21、Maven 依赖与 Docker。通用开发及前端见[根开发指南](../../docs/development.md)。
 
 ## 本地检查与离线诊断
 

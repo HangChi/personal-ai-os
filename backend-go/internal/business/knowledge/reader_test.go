@@ -115,17 +115,29 @@ func TestVisionNormalizationMIMEAndErrors(t *testing.T) {
 	}
 }
 func pdfFixture(text string, pages int) []byte {
+	texts := make([]string, pages)
+	for i := range texts {
+		texts[i] = text
+	}
+	return pdfFixturePages(texts...)
+}
+func pdfFixturePages(texts ...string) []byte {
 	var b bytes.Buffer
 	fmt.Fprint(&b, "%PDF-1.4\n")
-	objects := []string{"<< /Type /Catalog /Pages 2 0 R >>", fmt.Sprintf("<< /Type /Pages /Count %d /Kids [", pages)}
-	for i := 0; i < pages; i++ {
-		objects[1] += fmt.Sprintf("%d 0 R ", 5+i)
+	objects := []string{"<< /Type /Catalog /Pages 2 0 R >>", fmt.Sprintf("<< /Type /Pages /Count %d /Kids [", len(texts))}
+	for i := range texts {
+		objects[1] += fmt.Sprintf("%d 0 R ", 4+2*i)
 	}
 	objects[1] += "] >>"
-	stream := "BT /F1 12 Tf 50 700 Td (" + text + ") Tj ET"
-	objects = append(objects, fmt.Sprintf("<< /Length %d >>\nstream\n%s\nendstream", len(stream), stream), "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
-	for i := 0; i < pages; i++ {
-		objects = append(objects, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 3 0 R /Resources << /Font << /F1 4 0 R >> >> >>")
+	objects = append(objects, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+	for i, value := range texts {
+		stream := "q 80 0 0 80 10 10 cm BI /W 1 /H 1 /CS /DeviceGray /BPC 8 /F /ASCIIHexDecode ID 00> EI Q"
+		if value != "" {
+			stream = "BT /F1 12 Tf 10 70 Td (" + value + ") Tj ET"
+		}
+		objects = append(objects,
+			fmt.Sprintf("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 120 120] /Contents %d 0 R /Resources << /Font << /F1 3 0 R >> >> >>", 5+2*i),
+			fmt.Sprintf("<< /Length %d >>\nstream\n%s\nendstream", len(stream), stream))
 	}
 	offsets := []int{0}
 	for i, obj := range objects {
@@ -149,8 +161,39 @@ func TestPDFTextEmptyBrokenAndPageLimit(t *testing.T) {
 	for _, tt := range []struct {
 		b    []byte
 		part string
-	}{{pdfFixture("", 1), "未提取到文本"}, {[]byte("broken"), "PDF 解析失败"}, {pdfFixture("hello", 501), "500 页"}} {
+	}{{pdfFixture("", 1), "视觉模型"}, {[]byte("broken"), "PDF 解析失败"}, {pdfFixture("hello", 501), "500 页"}} {
 		_, e = r.Prepare(context.Background(), "x.pdf", "", tt.b)
 		expectBusiness(t, e, api.UnsupportedDocument, tt.part)
 	}
+}
+
+func TestPDFVisionPagesAndOrder(t *testing.T) {
+	r := Reader{Properties: testProperties(t)}
+	calls := 0
+	r.Vision = func(_ context.Context, image []byte, mime string) (string, error) {
+		calls++
+		if mime != "image/jpeg" || len(image) < 2 || image[0] != 0xff || image[1] != 0xd8 {
+			t.Fatalf("rendered image: %s %x", mime, image)
+		}
+		return "scanned middle page", nil
+	}
+	u, e := r.Prepare(context.Background(), "x.pdf", "", pdfFixturePages("first page", "", "last page"))
+	if e != nil || u.Text != "first page\n\nscanned middle page\n\nlast page" || calls != 1 {
+		t.Fatalf("mixed pages: %+v %v calls=%d", u, e, calls)
+	}
+	u, e = r.Prepare(context.Background(), "x.pdf", "", pdfFixturePages(""))
+	if e != nil || u.Text != "scanned middle page" || calls != 2 {
+		t.Fatalf("scan page: %+v %v calls=%d", u, e, calls)
+	}
+	r.Vision = func(context.Context, []byte, string) (string, error) { return "无文本", nil }
+	_, e = r.Prepare(context.Background(), "x.pdf", "", pdfFixturePages(""))
+	expectBusiness(t, e, api.UnsupportedDocument, "未提取到文本")
+	upstream := api.NewBusinessError(api.AIUpstreamError, "upstream")
+	r.Vision = func(context.Context, []byte, string) (string, error) { return "", upstream }
+	_, e = r.Prepare(context.Background(), "x.pdf", "", pdfFixturePages(""))
+	if e != upstream {
+		t.Fatal(e)
+	}
+	_, e = r.Prepare(context.Background(), "x.pdf", "", pdfFixture("", 21))
+	expectBusiness(t, e, api.UnsupportedDocument, "20 页")
 }

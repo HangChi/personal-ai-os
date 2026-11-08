@@ -2,68 +2,93 @@ package com.personalos.knowledge.reader;
 
 import com.personalos.common.api.ErrorCode;
 import com.personalos.common.exception.BusinessException;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.imageio.ImageIO;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.DocumentReader;
 
-/**
- * PDF 解析器：只取**文本层**。
- *
- * <h2>为什么不做 OCR</h2>
- * 扫描版 PDF 的每一页都是一张图，取文本层会得到空串。此时正确行为是**明确告诉用户**
- * 「这可能是扫描件，需要 OCR，当前未支持」，而不是引入 Tesseract（系统级依赖 + 中文语言包，
- * 与自托管单机「开箱即用」冲突，见 research R-01 / spec Assumptions）。
- *
- * <h2>为什么加密单独区分</h2>
- * 「PDF 已加密」和「PDF 损坏」对用户是两条完全不同的出路（前者去掉密码，后者重新导出）。
- * 归一成一句「解析失败」等于让用户去猜。
- *
- * <h2>关于超时</h2>
- * PDFBox 的 {@code getText} 是<b>同步且不可中断</b>的，没有超时参数
- * （{@code MemoryUsageSetting} 只管内存与磁盘的分配，不限制耗时）。
- * 这里用「页数上限 + 内存上限」两道闸门代替超时：500 页 + 16MB 堆内
- * 已经把单次解析的输入量约束住，而真正拖垮请求的是<b>超大输入</b>而不是
- * 「同样输入跑得特别慢」。给一个外层线程池超时并不能真正终止解析
- * （中断不生效，线程会继续跑到结束），只会让调用方先返回、后台继续烧 CPU，
- * 反而掩盖问题。
- */
+/** Extracts the text layer page by page and transcribes pages without readable text. */
 public class PdfDocumentReader implements DocumentReader {
-
-    /**
-     * 页数上限（审查 P2）：超出直接拒绝。
-     *
-     * <p>超大 PDF 会让解析 + 逐块嵌入都变成分钟级操作，且个人知识库场景下
-     * 500 页以上的文档几乎没有全文检索价值。给一个明确上限，比「让用户等到超时」
-     * 更诚实。
-     */
     private static final int MAX_PAGES = 500;
+    private static final int MAX_VISION_PAGES = 20;
+    private static final int MAX_RENDERED_PIXELS = 4_000_000;
+    private static final int MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+    private static final float RENDER_DPI = 144;
 
     private final byte[] bytes;
     private final Map<String, Object> metadata;
+    private final VisionTextExtractor extractor;
 
-    public PdfDocumentReader(byte[] bytes, Map<String, Object> metadata) {
+    public PdfDocumentReader(byte[] bytes, Map<String, Object> metadata,
+                             VisionTextExtractor extractor) {
         this.bytes = bytes;
         this.metadata = metadata;
+        this.extractor = extractor;
     }
 
     @Override
     public List<Document> get() {
-        String text;
+        List<String> pages = new ArrayList<>();
         try (PDDocument pdf = Loader.loadPDF(bytes, "", null, "",
                 MemoryUsageSetting.setupMixed(16 * 1024 * 1024).streamCache)) {
-            // 16MB 以内全内存，超出部分落临时文件——避免几百 MB 的 PDF 一次性吃光堆
             if (pdf.getNumberOfPages() > MAX_PAGES) {
                 throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
                         "PDF 页数超过上限（" + MAX_PAGES + " 页），请拆分后分批上传");
             }
-            text = new PDFTextStripper().getText(pdf);
+            PDFTextStripper stripper = new PDFTextStripper();
+            stripper.setPageEnd("\f");
+            String[] extractedPages = stripper.getText(pdf).split("\f", -1);
+            if (extractedPages.length < pdf.getNumberOfPages()) {
+                throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
+                        "PDF 解析失败：无法确定页面顺序");
+            }
+            List<String> pageTexts = new ArrayList<>();
+            List<Boolean> needsVision = new ArrayList<>();
+            int visionPages = 0;
+            for (int index = 0; index < pdf.getNumberOfPages(); index++) {
+                String text = ReaderSupport.normalize(extractedPages[index]);
+                boolean scan = text.isEmpty() && hasContent(pdf.getPage(index));
+                pageTexts.add(text);
+                needsVision.add(scan);
+                if (scan) {
+                    if (++visionPages > MAX_VISION_PAGES) {
+                        throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
+                                "PDF 需视觉识别的页面超过上限（" + MAX_VISION_PAGES + " 页），请拆分后上传");
+                    }
+                }
+            }
+            if (visionPages > 0 && extractor == null) {
+                throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
+                        "当前未配置视觉模型，无法解析扫描版 PDF");
+            }
+            PDFRenderer renderer = visionPages > 0 ? new PDFRenderer(pdf) : null;
+            if (renderer != null) {
+                renderer.setSubsamplingAllowed(true);
+            }
+            for (int index = 0; index < pageTexts.size(); index++) {
+                String text = pageTexts.get(index);
+                if (needsVision.get(index)) {
+                    text = ReaderSupport.normalize(extractor.extract(
+                            renderPage(renderer, pdf.getPage(index), index), "image/jpeg"));
+                }
+                if (!text.isEmpty()) {
+                    pages.add(text);
+                }
+            }
         } catch (InvalidPasswordException ex) {
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
                     "PDF 已加密，无法提取文本（请先去除密码后重新上传）");
@@ -71,6 +96,30 @@ public class PdfDocumentReader implements DocumentReader {
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
                     "PDF 解析失败：文件可能已损坏，或不是有效的 PDF");
         }
-        return ReaderSupport.toDocuments(text, metadata);
+        return ReaderSupport.toDocuments(String.join("\n\n", pages), metadata);
+    }
+
+    private static boolean hasContent(PDPage page) throws IOException {
+        try (InputStream content = page.getContents()) {
+            return content.read() != -1;
+        }
+    }
+
+    private static byte[] renderPage(PDFRenderer renderer, PDPage page, int index) throws IOException {
+        double width = page.getCropBox().getWidth() * RENDER_DPI / 72;
+        double height = page.getCropBox().getHeight() * RENDER_DPI / 72;
+        if (!Double.isFinite(width) || !Double.isFinite(height) || width <= 0 || height <= 0
+                || width * height > MAX_RENDERED_PIXELS) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
+                    "PDF 第 " + (index + 1) + " 页尺寸过大，无法进行视觉识别");
+        }
+        BufferedImage image = renderer.renderImageWithDPI(index, RENDER_DPI, ImageType.RGB);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        if (!ImageIO.write(image, "jpeg", output) || output.size() == 0
+                || output.size() > MAX_IMAGE_BYTES) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
+                    "PDF 第 " + (index + 1) + " 页图像过大，无法进行视觉识别");
+        }
+        return output.toByteArray();
     }
 }

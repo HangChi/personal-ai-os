@@ -38,7 +38,7 @@ public class DocumentReaderFactory {
     public DocumentReader create(String extension, String contentType,
                                  byte[] bytes, Map<String, Object> metadata) {
         if ("pdf".equals(extension)) {
-            return new PdfDocumentReader(bytes, metadata);
+            return new PdfDocumentReader(bytes, metadata, visionTextExtractor);
         }
         if ("docx".equals(extension)) {
             return new DocxDocumentReader(bytes, metadata);

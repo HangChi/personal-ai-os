@@ -87,6 +87,13 @@ class KnowledgeIndexJobsIntegrationTest extends ContainerContextTest {
         assertThat(jdbc.queryForObject("select payload is null from knowledge_index_job where id=?",Boolean.class,id)).isTrue();
         assertThat(jobs.runNext()).isFalse();
     }
+    @Test void queuedUploadAcceptsFilesAbovePreviousFiveMiBLimit() {
+        byte[] content = new byte[6 * 1024 * 1024];
+        Arrays.fill(content, (byte) 'a');
+        var job = jobs.submit(UUID.randomUUID(), null, "large.txt", null, content);
+        assertThat(job.status()).isEqualTo("PENDING");
+        assertThat(count("knowledge_document")).isZero();
+    }
     @Test void replacementKeepsOldContentUntilNewIndexAndReceiptCommit() {
         var original=submit("旧版本内容"); jobs.runNext();
         var replace=jobs.submit(UUID.randomUUID(),original.documentId(),"new.md",null,text("新版本内容"));

@@ -7,18 +7,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.personalos.common.exception.BusinessException;
 import com.personalos.knowledge.dto.KnowledgeHitDto;
+import com.personalos.knowledge.reader.VisionTextExtractor;
 import com.personalos.knowledge.repository.KnowledgeDocumentRepository;
 import com.personalos.knowledge.service.KnowledgeDocumentService;
 import com.personalos.knowledge.service.KnowledgeRetrievalService;
 import com.personalos.support.DeterministicEmbeddingModel;
 import com.personalos.support.ScriptedToolCallingChatModel;
 import java.io.ByteArrayOutputStream;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -74,6 +80,16 @@ class RichDocumentIngestIntegrationTest extends ContainerContextTest {
         ScriptedToolCallingChatModel scriptedChatModel() {
             return new ScriptedToolCallingChatModel();
         }
+
+        @Bean
+        @Primary
+        VisionTextExtractor deterministicVisionTextExtractor() {
+            return (image, mime) -> {
+                assertThat(mime).isEqualTo("image/jpeg");
+                assertThat(image).startsWith((byte) 0xff, (byte) 0xd8);
+                return "PostgreSQL scanned lecture transaction isolation levels";
+            };
+        }
     }
 
     private final KnowledgeDocumentService documentService;
@@ -117,8 +133,19 @@ class RichDocumentIngestIntegrationTest extends ContainerContextTest {
     }
 
     @Test
-    @DisplayName("扫描版 PDF（无文本层）→ 40003，且文档表零写入")
-    void scannedPdfIsRejectedWithoutWrites() throws Exception {
+    @DisplayName("图像型 PDF 经视觉转录后入库并可检索")
+    void scannedPdfIsIngestedAndRetrievable() throws Exception {
+        var document = documentService.ingest("scan.pdf", "扫描讲义", scannedPdf());
+        assertThat(document.charCount()).isGreaterThan(20);
+        assertThat(document.chunkCount()).isGreaterThan(0);
+        List<KnowledgeHitDto> hits = retrievalService.search("scanned lecture transaction", 3);
+        assertThat(hits).isNotEmpty();
+        assertThat(hits.get(0).content()).contains("scanned lecture");
+    }
+
+    @Test
+    @DisplayName("空白 PDF（无文本层）→ 40003，且文档表零写入")
+    void blankPdfIsRejectedWithoutWrites() throws Exception {
         byte[] blank = blankPdf();
 
         assertThatThrownBy(() -> documentService.ingest("scan.pdf", null, blank))
@@ -178,6 +205,26 @@ class RichDocumentIngestIntegrationTest extends ContainerContextTest {
     private static byte[] blankPdf() throws Exception {
         try (PDDocument document = new PDDocument()) {
             document.addPage(new PDPage());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            document.save(out);
+            return out.toByteArray();
+        }
+    }
+
+    private static byte[] scannedPdf() throws Exception {
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage();
+            document.addPage(page);
+            BufferedImage scan = new BufferedImage(600, 200, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = scan.createGraphics();
+            graphics.setColor(Color.WHITE);
+            graphics.fillRect(0, 0, 600, 200);
+            graphics.setColor(Color.BLACK);
+            graphics.drawString("PostgreSQL scanned lecture", 20, 100);
+            graphics.dispose();
+            try (PDPageContentStream content = new PDPageContentStream(document, page)) {
+                content.drawImage(LosslessFactory.createFromImage(document, scan), 30, 500, 540, 180);
+            }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             document.save(out);
             return out.toByteArray();

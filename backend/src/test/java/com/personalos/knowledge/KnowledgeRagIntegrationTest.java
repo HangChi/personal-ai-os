@@ -342,8 +342,8 @@ class KnowledgeRagIntegrationTest extends ContainerContextTest {
         assertThat(empty.status()).isEqualTo(400);
         assertThat(empty.body()).contains("\"code\":40003");
 
-        // 超出应用层上限（配置为 5 MiB）
-        byte[] oversized = new byte[6 * 1024 * 1024];
+        // 超出应用层上限（默认 10 MiB），但仍低于容器的 12 MB 限制
+        byte[] oversized = new byte[11 * 1024 * 1024];
         java.util.Arrays.fill(oversized, (byte) 'a');
         HttpTestClient.Response tooLarge = http.upload("/api/v1/knowledge/documents", "大文件.txt",
                 oversized, Map.of());

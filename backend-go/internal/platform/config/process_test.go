@@ -37,6 +37,30 @@ func TestProcessPropertiesExplicitSources(t *testing.T) {
 	}
 }
 
+func TestProcessUploadLimitsMatchCurrentDefaults(t *testing.T) {
+	p, _, err := LoadProcessProperties(nil, t.TempDir(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	value, found, err := p.Get("app.knowledge.max-file-size-bytes")
+	if err != nil || !found || value != "10485760" {
+		t.Fatalf("knowledge upload limit: %q, found=%v, err=%v", value, found, err)
+	}
+	multipart, err := p.Multipart()
+	if err != nil || multipart.MaxFileBytes != 12<<20 || multipart.MaxRequestBytes != 14<<20 {
+		t.Fatalf("multipart upload limits: %+v, err=%v", multipart, err)
+	}
+
+	p, _, err = LoadProcessProperties(map[string]string{"AI_KNOWLEDGE_MAX_FILE_SIZE": "6291456"}, t.TempDir(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	value, found, err = p.Get("app.knowledge.max-file-size-bytes")
+	if err != nil || !found || value != "6291456" {
+		t.Fatalf("knowledge upload override: %q, found=%v, err=%v", value, found, err)
+	}
+}
+
 func TestProcessRuntimeProfilesAndBounds(t *testing.T) {
 	for _, test := range []struct {
 		profiles string

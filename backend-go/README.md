@@ -7,7 +7,7 @@ Java 主后端的 Go 迁移候选，与 [共用前端](../frontend/README.md)及
 
 ## 构建与诊断
 
-要求 Go 1.27.0+，race 需要 C 工具链，PDF 需要 Poppler `pdfinfo`/`pdftotext`。依赖及许可证见 [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)。
+要求 Go 1.27.0+，race 需要 C 工具链，PDF 需要 Poppler `pdfinfo`/`pdftotext`/`pdftoppm`。依赖及许可证见 [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)。
 
 ```bash
 cd backend-go

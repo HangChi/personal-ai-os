@@ -127,7 +127,7 @@ func (r Reader) Prepare(ctx context.Context, filename, title string, data []byte
 	text := ""
 	switch ext {
 	case "pdf":
-		text, err = readPDF(ctx, data)
+		text, err = readPDF(ctx, data, r.Vision)
 	case "docx":
 		text, err = readDOCX(data)
 	case "png", "jpg", "jpeg", "webp", "gif":
@@ -150,7 +150,7 @@ func (r Reader) Prepare(ctx context.Context, filename, title string, data []byte
 	if ext == "pdf" || ext == "docx" || strings.HasPrefix(mime, "image/") {
 		text = strip(strings.ReplaceAll(text, "\uFEFF", ""))
 		if text == "" {
-			return Upload{}, unsupported("未提取到文本（如果是扫描件或纯图片，需要 OCR，当前未支持）")
+			return Upload{}, unsupported("未提取到文本（请确认文件包含可读文字，或检查视觉模型识别结果）")
 		}
 	}
 	if strip(text) == "" {
@@ -169,38 +169,55 @@ func (r Reader) Prepare(ctx context.Context, filename, title string, data []byte
 
 type limitedOutput struct {
 	bytes.Buffer
-	max int
+	max      int
+	overflow bool
+	cancel   context.CancelFunc
 }
 
 func (b *limitedOutput) Write(p []byte) (int, error) {
 	if len(p) > b.max-b.Len() {
+		b.overflow = true
+		if b.cancel != nil {
+			b.cancel()
+		}
 		return 0, errors.New("解析结果超出安全上限")
 	}
 	return b.Buffer.Write(p)
 }
 func pdfCommand(ctx context.Context, binary string, data []byte, args ...string) (string, error) {
-	command := exec.CommandContext(ctx, binary, args...)
+	out, err := pdfCommandBytes(ctx, binary, data, 64<<20, args...)
+	return string(out), err
+}
+func pdfCommandBytes(ctx context.Context, binary string, data []byte, limit int, args ...string) ([]byte, error) {
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	command := exec.CommandContext(runCtx, binary, args...)
 	command.Stdin = bytes.NewReader(data)
 	command.WaitDelay = time.Second
-	out := &limitedOutput{max: 64 << 20}
+	out := &limitedOutput{max: limit, cancel: cancel}
 	diagnostic := &limitedOutput{max: 8192}
 	command.Stdout = out
 	command.Stderr = diagnostic
 	if err := command.Run(); err != nil {
 		if ctx.Err() != nil {
-			return "", unsupported("PDF 解析超时或已取消")
+			return nil, unsupported("PDF 解析或视觉识别超时或已取消")
+		}
+		if out.overflow {
+			return nil, unsupported("PDF 解析结果或页面图像超过安全上限")
 		}
 		if strings.Contains(strings.ToLower(diagnostic.String()), "password") {
-			return "", unsupported("PDF 已加密，无法提取文本（请先去除密码后重新上传）")
+			return nil, unsupported("PDF 已加密，无法提取文本（请先去除密码后重新上传）")
 		}
-		return "", unsupported("PDF 解析失败：文件可能已损坏，或不是有效的 PDF")
+		return nil, unsupported("PDF 解析失败：文件可能已损坏，或不是有效的 PDF")
 	}
-	return out.String(), nil
+	return out.Bytes(), nil
 }
-func readPDF(ctx context.Context, data []byte) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+func readPDF(ctx context.Context, data []byte, vision VisionExtractor) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	info, err := pdfCommand(ctx, "pdfinfo", data, "-")
+	parseCtx, parseCancel := context.WithTimeout(ctx, 10*time.Second)
+	defer parseCancel()
+	info, err := pdfCommand(parseCtx, "pdfinfo", data, "-")
 	if err != nil {
 		return "", err
 	}
@@ -216,7 +233,57 @@ func readPDF(ctx context.Context, data []byte) (string, error) {
 	if pages < 1 {
 		return "", unsupported("PDF 解析失败：文件可能已损坏，或不是有效的 PDF")
 	}
-	return pdfCommand(ctx, "pdftotext", data, "-enc", "UTF-8", "-nopgbrk", "-", "-")
+	text, err := pdfCommand(parseCtx, "pdftotext", data, "-enc", "UTF-8", "-", "-")
+	if err != nil {
+		return "", err
+	}
+	textPages := strings.Split(text, "\f")
+	if len(textPages) < pages {
+		return "", unsupported("PDF 解析失败：无法确定页面顺序")
+	}
+	visionPages := 0
+	for _, pageText := range textPages[:pages] {
+		if strip(strings.ReplaceAll(pageText, "\uFEFF", "")) == "" {
+			visionPages++
+		}
+	}
+	if visionPages > 20 {
+		return "", unsupported("PDF 需视觉识别的页面超过上限（20 页），请拆分后上传")
+	}
+	if visionPages > 0 && vision == nil {
+		return "", unsupported("当前未配置视觉模型，无法解析扫描版 PDF")
+	}
+	var result []string
+	for i := 0; i < pages; i++ {
+		pageText := strip(strings.ReplaceAll(textPages[i], "\uFEFF", ""))
+		if pageText == "" {
+			renderCtx, renderCancel := context.WithTimeout(ctx, 10*time.Second)
+			image, renderErr := pdfCommandBytes(renderCtx, "pdftoppm", data, 4<<20,
+				"-f", strconv.Itoa(i+1), "-l", strconv.Itoa(i+1), "-singlefile",
+				"-scale-to", "2000", "-jpeg", "-jpegopt", "quality=80", "-")
+			renderCancel()
+			if renderErr != nil {
+				return "", renderErr
+			}
+			if len(image) < 2 || image[0] != 0xff || image[1] != 0xd8 {
+				return "", unsupported("PDF 页面渲染失败，无法进行视觉识别")
+			}
+			visionCtx, visionCancel := context.WithTimeout(ctx, 45*time.Second)
+			pageText, err = vision(visionCtx, image, "image/jpeg")
+			visionCancel()
+			if err != nil {
+				return "", err
+			}
+			pageText = strip(strings.ReplaceAll(pageText, "\uFEFF", ""))
+			if pageText == "无文本" {
+				pageText = ""
+			}
+		}
+		if pageText != "" {
+			result = append(result, pageText)
+		}
+	}
+	return strings.Join(result, "\n\n"), nil
 }
 
 type xmlNode struct {

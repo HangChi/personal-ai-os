@@ -11,7 +11,7 @@
 
 ## P6：文档解析
 
-DOCX 使用 Go 标准库 `archive/zip`、`encoding/xml`，未引入第三方解析库。PDF 延用外部 Poppler，另调用同一发行版的 `pdfinfo` 做完整 500 页限制。P6主机验收使用26.10.0；工具不嵌入Go二进制。P8容器通过Debian官方签名仓库单独安装`poppler-utils`及其共享库，保留镜像内`/usr/share/doc/poppler-utils/copyright`和依赖包许可证；容器工具版本须以实际镜像验收为准，不能声称与主机版本相同。分发镜像需遵守相应GPL及系统包许可证，不能仅以本仓库Apache-2.0覆盖。Go模块依赖没有变化。
+DOCX 使用 Go 标准库 `archive/zip`、`encoding/xml`，未引入第三方解析库。PDF 延用外部 Poppler，调用同一发行版的 `pdfinfo` 检查页数、`pdftotext` 提取文本层、`pdftoppm` 渲染扫描页。P6主机验收使用26.10.0；工具不嵌入Go二进制。P8容器通过Debian官方签名仓库单独安装`poppler-utils`及其共享库，保留镜像内`/usr/share/doc/poppler-utils/copyright`和依赖包许可证；容器工具版本须以实际镜像验收为准，不能声称与主机版本相同。分发镜像需遵守相应GPL及系统包许可证，不能仅以本仓库Apache-2.0覆盖。Go模块依赖没有变化。
 
 ## Micrometer 1.17.1 直方图边界算法
 

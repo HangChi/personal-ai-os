@@ -51,7 +51,7 @@ public class ChatClientVisionTextExtractor implements VisionTextExtractor {
             client = aiProvider.requirePlainChatClient();
         } catch (BusinessException ex) {
             throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,
-                    "当前未配置 AI 模型，无法解析图片（请先在 .env 中配置 ollama 或 openai）");
+                    "当前未配置 AI 模型，无法解析图片或扫描版 PDF（请先在 .env 中配置 ollama 或 openai）");
         }
 
         Media media = new Media(MimeTypeUtils.parseMimeType(mimeType), new ByteArrayResource(image));

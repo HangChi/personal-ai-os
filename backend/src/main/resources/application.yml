@@ -26,10 +26,10 @@ spring:
     multipart:
       # 容器层上限必须**大于**应用层的上限，否则超限文件在进入控制器之前就被拒，
       # 用户看到的是容器层文案，应用层那句更可读的提示永远走不到。
-      # 当前应用层上限：知识库 5MB（app.knowledge.max-file-size-bytes）、
-      # 聊天附件 6MB（app.chat.max-attachment-bytes）。这里留 2MB 余量。
-      max-file-size: 8MB
-      max-request-size: 10MB
+      # 当前应用层上限：知识库 10 MiB（app.knowledge.max-file-size-bytes）、
+      # 聊天附件 6 MiB（app.chat.max-attachment-bytes）。给 multipart 边界留余量。
+      max-file-size: 12MB
+      max-request-size: 14MB
 
   mvc:
     async:
@@ -287,7 +287,7 @@ app:
     embedding-dimensions: ${AI_KNOWLEDGE_EMBEDDING_DIMENSIONS:1024}
     top-k: ${AI_KNOWLEDGE_TOP_K:4}
     similarity-threshold: ${AI_KNOWLEDGE_SIMILARITY_THRESHOLD:0.3}
-    max-file-size-bytes: ${AI_KNOWLEDGE_MAX_FILE_SIZE:5242880}
+    max-file-size-bytes: ${AI_KNOWLEDGE_MAX_FILE_SIZE:10485760}
     # 允许的扩展名（阶段 10 起支持 PDF 文本层、Word docx 与图片）
     allowed-extensions: ${AI_KNOWLEDGE_ALLOWED_EXTENSIONS:md,markdown,txt,pdf,docx,png,jpg,jpeg,webp,gif}
     # 分块参数（2026-10-25 起改用结构感知切分，见 MarkdownStructureTextSplitter）

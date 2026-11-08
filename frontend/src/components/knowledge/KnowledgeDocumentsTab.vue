@@ -55,7 +55,7 @@ const jobSummary = computed(() => {
 })
 
 const ACCEPT = '.md,.markdown,.txt,.pdf,.docx,.png,.jpg,.jpeg,.webp,.gif'
-const MAX_BYTES = 5 * 1024 * 1024
+const MAX_BYTES = 10 * 1024 * 1024
 
 let jobPolling: ReturnType<typeof setInterval> | undefined
 onMounted(() => {
@@ -79,7 +79,7 @@ function pickFile(): void {
  */
 function acceptFile(file: File): boolean {
   if (file.size > MAX_BYTES) {
-    ElMessage.warning('文件超过 5 MiB 上限，请压缩或拆分后再上传')
+    ElMessage.warning('文件超过 10 MiB 上限，请压缩或拆分后再上传')
     return false
   }
   selectedFile.value = file
@@ -348,13 +348,13 @@ function onDrop(event: DragEvent): void {
         </el-table-column>
         <!--
           字符数列：解析出的文本长度（分块前）。它与「大小」不是一回事 ——
-          扫描版 PDF 体积很大但字符数接近 0，一眼能看出「这篇没解析出什么内容」。
+          字符数反映解析后的文本长度；扫描页经视觉模型转录后计入。
           该字段阶段 3 起后端一直没写入（恒为 0），阶段 10 才修复；展示出来也让回归能被肉眼发现。
         -->
         <el-table-column label="字符数" width="80" align="right">
           <template #header>
             <el-tooltip
-              content="解析出的文本字符数（分块前）；扫描版 PDF 体积大但字符数接近 0，说明没解析出内容"
+              content="解析出的文本字符数（分块前）；扫描页经视觉模型转录后计入"
               placement="top"
             >
               <span class="kd__column-hint">字符数 ?</span>
@@ -425,7 +425,7 @@ function onDrop(event: DragEvent): void {
           >
         </div>
 
-        <p class="kd__hint">单文件最大 5 MiB；扫描版 PDF 暂不支持。</p>
+        <p class="kd__hint">单文件最大 10 MiB；扫描版 PDF 使用视觉模型逐页转录，最多识别 20 页。</p>
       </el-card>
       <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
     </el-dialog>

@@ -71,7 +71,7 @@ Go 对隐式重试只接受基线（框架 max-attempts=1、SDK max-retries=0）
 | 变量 | 默认 | 影响 |
 | --- | --- | --- |
 | `AI_KNOWLEDGE_EMBEDDING_DIMENSIONS` | 1024 | 必须与数据库列和真实输出一致 |
-| `AI_KNOWLEDGE_MAX_FILE_SIZE` | 5242880 | 单文件 5 MiB；仍受 multipart 限制 |
+| `AI_KNOWLEDGE_MAX_FILE_SIZE` | 10485760 | 单文件 10 MiB；仍受 multipart 限制 |
 | `AI_KNOWLEDGE_CHUNK_SIZE_CHARS` | 1200 | 字符目标，非 token 上限 |
 | `AI_KNOWLEDGE_CHUNK_OVERLAP_CHARS` | 0 | 长段切分重叠 |
 | `AI_KNOWLEDGE_MIN_CHUNK_SIZE_CHARS` | 350 | 短片合并门槛，非所有最终块的硬下限 |

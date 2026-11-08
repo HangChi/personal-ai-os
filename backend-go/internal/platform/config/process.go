@@ -2,6 +2,7 @@ package config
 
 import (
 	"maps"
+	"slices"
 	"time"
 )
 
@@ -14,6 +15,16 @@ func LoadProcessProperties(system map[string]string, directory string, overrides
 		return nil, env, err
 	}
 	properties, err := LoadBaselineProperties(PropertyOptions{System: system, DotEnv: env.dotenv.values, Overrides: overrides})
+	if err != nil {
+		return nil, env, err
+	}
+	// The embedded comparison baseline is frozen at an older Java commit.
+	// Keep live upload limits current while preserving explicit override precedence.
+	properties.sources = slices.Insert(properties.sources, 2, BindingSource{Values: map[string]string{
+		"app.knowledge.max-file-size-bytes":         "${AI_KNOWLEDGE_MAX_FILE_SIZE:10485760}",
+		"spring.servlet.multipart.max-file-size":    "12MB",
+		"spring.servlet.multipart.max-request-size": "14MB",
+	}})
 	return properties, env, err
 }
 
