@@ -32,6 +32,11 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         this.enabled=enabled;this.budget=Math.max(1000,Math.min(60000,budget));
     }
     private long evidenceTimeout=12000;
+    private boolean queryRewriteEnabled=true;
+    @org.springframework.beans.factory.annotation.Autowired
+    void configureQueryRewrite(@Value("${app.knowledge.rag.query-rewrite-enabled:true}") boolean enabled) {
+        queryRewriteEnabled=enabled;
+    }
     @org.springframework.beans.factory.annotation.Autowired
     void configureEvidenceTimeout(@Value("${app.knowledge.rag.evidence-timeout-ms:12000}") long timeout) {
         evidenceTimeout=Math.max(1000,Math.min(30000,timeout));
@@ -90,7 +95,9 @@ public class RagRetrievalPipeline implements KnowledgeSearchPort {
         var initial = enrich(recall.candidates(query, 40));
         stage(stages, "recall", start, 1, initial.size(), "OK");
         start=System.nanoTime();
-        try {
+        if (!queryRewriteEnabled) {
+            stage(stages,"rewrite",start,1,1,"SKIPPED");
+        } else try {
             var rewritten=model.call("保持原问题的对象、时间和限制，只补充检索用同义词和拆分子问题，不生成答案，不虚构实体。返回 {\"queries\":[\"改写1\",\"改写2\"]}，最多两条，每条不超过500字符。",json.writeValueAsString(Map.of("query",query)),remaining(deadline));
             if(!rewritten.path("queries").isArray() || rewritten.path("queries").size()>2) throw new IllegalArgumentException("Invalid rewrites");
             for(var q:rewritten.path("queries")) {String text=q.asString("").strip();if(text.isEmpty()||text.length()>500) throw new IllegalArgumentException("Invalid query");queries.add(text);}

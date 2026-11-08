@@ -20,7 +20,7 @@ const states: Record<string, string> = {
   UNVERIFIED: '证据核对未完成',
   INSUFFICIENT: '没有足够证据',
 }
-const stageStates: Record<string, string> = { OK: '完成', FALLBACK: '已降级', EMPTY: '无结果' }
+const stageStates: Record<string, string> = { OK: '完成', FALLBACK: '已降级', EMPTY: '无结果', SKIPPED: '已跳过' }
 const warnings = computed(() => [...new Set(props.retrieval?.warnings.filter(Boolean) ?? [])])
 const sources = computed(() => {
   const seen = new Set<string>()

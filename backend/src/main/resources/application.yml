@@ -432,6 +432,7 @@ app:
   knowledge:
     rag:
       enabled: ${RAG_ENABLED:true}
+      query-rewrite-enabled: ${RAG_QUERY_REWRITE_ENABLED:true}
       budget-ms: ${RAG_BUDGET_MS:20000}
       evidence-timeout-ms: ${RAG_EVIDENCE_TIMEOUT_MS:12000}
       reranker:

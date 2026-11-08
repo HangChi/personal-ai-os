@@ -140,7 +140,12 @@ func OpenModule(parent context.Context, o ModuleOptions) (result *Module, err er
 		return nil, e
 	}
 	reviewer := &EvidenceReviewer{Model: m.Gateway}
+	queryRewrite, e := queryRewriteEnabled(o.Properties)
+	if e != nil {
+		return nil, e
+	}
 	m.Pipeline = &Pipeline{Recall: m.Retriever, Model: m.Gateway, Review: reviewer, Governance: m.Governance, Enabled: enabled, Budget: budget, EvidenceTimeout: evidence, TopK: settings.TopK, RRFK: settings.RRFK, Stats: m.Stats}
+	m.Pipeline.QueryRewriteDisabled = !queryRewrite
 	rerank, e := flag("app.knowledge.rag.reranker.enabled", false)
 	if e != nil {
 		return nil, e

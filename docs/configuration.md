@@ -80,6 +80,7 @@ Go 对隐式重试只接受基线（框架 max-attempts=1、SDK max-retries=0）
 | `AI_KNOWLEDGE_HYBRID_ENABLED` | true | PostgreSQL 关键词通道，不关闭 OpenSearch 双通道 |
 | `AI_KNOWLEDGE_RRF_K/KEYWORD_CHANNEL_WEIGHT` | 60 / 1.0 | 位置融合及关键词权重 |
 | `RAG_ENABLED` | true | 多阶段改写/重排/证据；关闭后问答仍可能调用最终模型 |
+| `RAG_QUERY_REWRITE_ENABLED` | true | 查询扩展改写；false 只用原问题召回，保留对话路由、重排与证据精审 |
 | `RAG_BUDGET_MS/RAG_EVIDENCE_TIMEOUT_MS` | 20000 / 12000 | 辅助流水线预算，不是端到端 SLA |
 | `RAG_RERANKER_ENABLED` | false | 可选 CrossEncoder；关闭时仍可用 LLM 重排 |
 | `RAG_RERANKER_PROTOCOL` | cohere | 支持 cohere/dashscope 协议；配 endpoint/key/model |

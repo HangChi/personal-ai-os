@@ -67,6 +67,31 @@ describe('RAG 证据与治理界面', () => {
     expect(wrapper.text()).toContain('研发部')
     wrapper.unmount()
   })
+  it('关闭查询改写时展示已跳过，继续展示重排和精审且不误报降级', () => {
+    const wrapper = mount(RagTrace, {
+      props: {
+        retrieval: {
+          ...retrieval,
+          status: 'READY',
+          warnings: [],
+          queries: ['报销多少'],
+          stages: [
+            { name: 'rewrite', status: 'SKIPPED', durationMs: 0, inputCount: 1, outputCount: 1 },
+            { name: 'rerank', status: 'OK', durationMs: 10, inputCount: 2, outputCount: 2 },
+            { name: 'evidence', status: 'OK', durationMs: 20, inputCount: 2, outputCount: 1 },
+          ],
+        },
+      },
+    })
+    const stages = wrapper.findAll('.rag-trace__stage-title').map((stage) => stage.text())
+    expect(stages).toEqual(['查询改写已跳过', '候选重排完成', '证据精审完成'])
+    expect(wrapper.get('summary').text()).toContain('已找到可用证据')
+    expect(wrapper.get('summary').text()).not.toContain('条提示')
+    expect(wrapper.find('.rag-trace__notices').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('已降级')
+    expect(wrapper.get('.rag-trace__queries').text()).toBe('检索问题：报销多少')
+    wrapper.unmount()
+  })
   it('合并同文档分块与重复提示，区分无结果和降级，省略空元数据', async () => {
     const wrapper = mount(RagTrace, {
       props: {

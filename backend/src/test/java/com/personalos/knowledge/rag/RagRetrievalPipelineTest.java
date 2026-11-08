@@ -24,6 +24,57 @@ class RagRetrievalPipelineTest {
     void responses(String rewrite,String order,String evidence) {
         when(model.call(anyString(),anyString(),anyLong())).thenReturn(json.readTree(rewrite),json.readTree(order),json.readTree(evidence));
     }
+    @Test void disablingRewriteStillReranksAndReviewsOriginalCandidates() {
+        pipeline.configureQueryRewrite(false);
+        when(model.call(anyString(),anyString(),anyLong())).thenReturn(
+            json.readTree("""
+                {"order":[2,1]}
+                """), json.readTree("""
+                {"evidence":[{"index":1,"grade":"SUPPORTED"},{"index":2,"grade":"IRRELEVANT"}],"conflicts":[],"clarification":""}
+                """));
+        var result=pipeline.retrieve("报销多少？",1);
+        assertThat(result.status()).isEqualTo("READY");
+        assertThat(result.hits()).containsExactly(b);
+        assertThat(result.queries()).containsExactly("报销多少？");
+        assertThat(result.warnings()).isEmpty();
+        assertThat(result.stages()).extracting(RagResult.Stage::status).containsExactly("OK","SKIPPED","OK","OK");
+        verify(recall).candidates("报销多少？",40);
+        verify(recall,times(1)).candidates(anyString(),anyInt());
+        verify(model,times(2)).call(anyString(),anyString(),anyLong());
+    }
+    @Test void disablingRewriteWithNoCandidatesDoesNotCallModels() {
+        pipeline.configureQueryRewrite(false);
+        when(recall.candidates(anyString(),anyInt())).thenReturn(List.of());
+        var result=pipeline.retrieve("未知制度",4);
+        assertThat(result.status()).isEqualTo("INSUFFICIENT");
+        assertThat(result.hits()).isEmpty();
+        assertThat(result.queries()).containsExactly("未知制度");
+        assertThat(result.warnings()).isEmpty();
+        verifyNoInteractions(model);
+        verify(recall,times(1)).candidates(anyString(),anyInt());
+    }
+    @Test void disablingExpansionPreservesConversationRoutingAndConflictGuard() {
+        pipeline.configureQueryRewrite(false);
+        when(model.call(anyString(),anyString(),anyLong())).thenReturn(
+            json.readTree("""
+                {"retrieve":true,"query":"试用期住宿报销限额"}
+                """),json.readTree("""
+                {"order":[1,2]}
+                """),json.readTree("""
+                {"evidence":[{"index":1,"grade":"SUPPORTED"},{"index":2,"grade":"SUPPORTED"}],
+                 "conflicts":[{"left":1,"right":2,"leftQuote":"每天五百元","rightQuote":"每天八百元"}],"clarification":""}
+                """));
+        var result=pipeline.retrieveForConversation("那试用期呢",1,List.of(
+            new com.personalos.knowledge.spi.KnowledgeSearchPort.ConversationMessage("USER","住宿报销标准是多少")));
+        assertThat(result.status()).isEqualTo("CONFLICT");
+        assertThat(result.guarded()).isTrue();
+        assertThat(result.hits()).containsExactly(a,b);
+        assertThat(result.queries()).containsExactly("试用期住宿报销限额");
+        assertThat(result.stages().get(1).status()).isEqualTo("SKIPPED");
+        verify(recall).candidates("试用期住宿报销限额",40);
+        verify(recall,times(1)).candidates(anyString(),anyInt());
+        verify(model,never()).call(startsWith("保持原问题"),anyString(),anyLong());
+    }
     @Test void conversationActionsSkipIrrelevantEvidenceAndBoundHistory() {
         when(model.call(anyString(), anyString(), anyLong())).thenAnswer(call -> {
             assertThat((Long) call.getArgument(2)).isBetween(1L, 4000L);

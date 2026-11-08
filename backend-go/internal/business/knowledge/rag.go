@@ -281,6 +281,7 @@ type Pipeline struct {
 	Governance              RAGGovernance
 	Reranker                Reranker
 	Enabled                 bool
+	QueryRewriteDisabled    bool
 	Budget, EvidenceTimeout time.Duration
 	TopK, RRFK              int
 	Stats                   *Stats
@@ -340,31 +341,36 @@ func (p *Pipeline) retrieve(parent context.Context, q, answerQuestion string, to
 	}
 	stage("recall", "OK", start, 1, len(initial))
 	start = time.Now()
-	raw, e := p.Model.Call(ctx, `保持原问题的对象、时间和限制，只补充检索用同义词和拆分子问题，不生成答案，不虚构实体。返回 {"queries":["改写1","改写2"]}，最多两条，每条不超过500字符。`, map[string]any{"query": q}, remaining(8*time.Second))
-	var rewritten struct {
-		Queries []string `json:"queries"`
-	}
-	if e == nil {
-		e = json.Unmarshal(raw, &rewritten)
-		if rewritten.Queries == nil || len(rewritten.Queries) > 2 {
-			e = errors.New("invalid rewrites")
-		}
-		for _, text := range rewritten.Queries {
-			if strip(text) == "" || chars(text) > 500 {
-				e = errors.New("invalid query")
-			}
-		}
-	}
-	if e != nil {
-		result.Warnings = append(result.Warnings, "查询改写不可用，保留原问题召回")
-		stage("rewrite", "FALLBACK", start, 1, 1)
+	var raw json.RawMessage
+	if p.QueryRewriteDisabled {
+		stage("rewrite", "SKIPPED", start, 1, 1)
 	} else {
-		for _, text := range rewritten.Queries {
-			if text = strip(text); !contains(result.Queries, text) {
-				result.Queries = append(result.Queries, text)
+		raw, e = p.Model.Call(ctx, `保持原问题的对象、时间和限制，只补充检索用同义词和拆分子问题，不生成答案，不虚构实体。返回 {"queries":["改写1","改写2"]}，最多两条，每条不超过500字符。`, map[string]any{"query": q}, remaining(8*time.Second))
+		var rewritten struct {
+			Queries []string `json:"queries"`
+		}
+		if e == nil {
+			e = json.Unmarshal(raw, &rewritten)
+			if rewritten.Queries == nil || len(rewritten.Queries) > 2 {
+				e = errors.New("invalid rewrites")
+			}
+			for _, text := range rewritten.Queries {
+				if strip(text) == "" || chars(text) > 500 {
+					e = errors.New("invalid query")
+				}
 			}
 		}
-		stage("rewrite", "OK", start, 1, len(result.Queries))
+		if e != nil {
+			result.Warnings = append(result.Warnings, "查询改写不可用，保留原问题召回")
+			stage("rewrite", "FALLBACK", start, 1, 1)
+		} else {
+			for _, text := range rewritten.Queries {
+				if text = strip(text); !contains(result.Queries, text) {
+					result.Queries = append(result.Queries, text)
+				}
+			}
+			stage("rewrite", "OK", start, 1, len(result.Queries))
+		}
 	}
 	candidates := map[string]Hit{}
 	ranks := map[string]float64{}
