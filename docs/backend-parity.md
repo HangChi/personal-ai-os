@@ -36,7 +36,7 @@ Java 路径均相对 `backend/src/main/java/com/personalos/`；Go 相对 `backen
 | PDF | PDFBox 文本层 | Poppler 外部进程；需要系统依赖 |
 | 同步知识入库 | 短元数据事务 + 外部向量写 + 失败补偿 | 解析/全部嵌入完成后单个短事务提交 |
 | 异步知识入库 | 事务外准备 + 租约/fencing 短事务提交 | 同类原子提交边界 |
-| OpenAI 文档嵌入 | Spring AI 默认 EMBED 元数据格式；token 批处理 | 对照相同格式；保守按 16 块批处理 |
+| OpenAI 文档嵌入 | Spring AI 默认 EMBED 元数据格式；异步/替换/导入同时限制 token 与每批 16 块，同步新增仍走 VectorStore 默认路径 | 对照相同格式；保守按 16 块批处理 |
 | 零相关证据分类 | 历史严格负例出现 CLARIFY，失败保留 | 已有对应 INSUFFICIENT 修复与单独负例证据 |
 | 共享登录 | Servlet/Spring 会话序列化 | Go 会话序列化；切换需重新登录 |
 | 模型隐式重试配置 | 可配置框架参数，默认一次/SDK 无重试 | 当前只接受一次/SDK零重试基线；不支持值启动拒绝 |

@@ -117,7 +117,7 @@ public class KnowledgeIndexJobs {
                 var chunks=documents.chunksFor(upload,claim.job().documentId());
                 if (chunks.isEmpty()) throw new BusinessException(ErrorCode.UNSUPPORTED_DOCUMENT,"解析后没有可索引的内容");
                 jobs.progress(claim,40,"计算嵌入");
-                var output=embeddings.embed(chunks,EmbeddingOptions.builder().build(),new TokenCountBatchingStrategy());
+                var output=embeddings.embed(chunks,EmbeddingOptions.builder().build(),new BoundedEmbeddingBatchingStrategy());
                 if (output.size()!=chunks.size()) throw new IllegalStateException("向量数量不匹配");
                 List<IndexedChunk> prepared=new ArrayList<>();
                 for (int i=0;i<chunks.size();i++) {

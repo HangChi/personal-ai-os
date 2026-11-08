@@ -386,7 +386,7 @@ public class KnowledgeDocumentService {
         List<float[]> output;
         try {
             output = embeddings.embed(chunks, org.springframework.ai.embedding.EmbeddingOptions.builder().build(),
-                    new org.springframework.ai.embedding.TokenCountBatchingStrategy());
+                    new BoundedEmbeddingBatchingStrategy());
         } catch (RuntimeException ex) { throw translateVectorFailure(ex); }
         if (output.size() != chunks.size()) throw new IllegalStateException("向量数量不匹配");
         List<VectorStoreInspector.IndexedChunk> prepared = new ArrayList<>();

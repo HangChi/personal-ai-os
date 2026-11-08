@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingOptions;
-import org.springframework.ai.embedding.TokenCountBatchingStrategy;
+import com.personalos.knowledge.service.BoundedEmbeddingBatchingStrategy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -425,7 +425,7 @@ public class DataImportService {
             List<IndexedChunk> indexed = new ArrayList<>();
             if (!chunks.isEmpty()) {
                 List<float[]> vectors = embeddingModel.embed(chunks, EmbeddingOptions.builder().build(),
-                        new TokenCountBatchingStrategy());
+                        new BoundedEmbeddingBatchingStrategy());
                 if (vectors.size() != chunks.size()) {
                     throw new BusinessException(ErrorCode.INTERNAL_ERROR, "嵌入模型返回的向量数量与分块数量不一致");
                 }
