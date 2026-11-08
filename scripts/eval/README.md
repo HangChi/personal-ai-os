@@ -53,3 +53,25 @@ collect 只在本机隔离实例注册评测入口，复用业务召回与问答
 P/R 的相关性标签是已知支持文档，非穷尽人工判断；按文档去重后使用固定 k 分母。RAGAS 对语义正例计算 Faithfulness、FactualCorrectness F1、ContextPrecision、ContextRecall、AnswerRelevancy（strictness=3，使用当前嵌入模型）；报告有效样本和失败。无答案题单独统计文本拒答，不能当生产守卫状态通过。JSONL 支持中断恢复，保留原失败及成本记录；完成采集后才运行裁判，避免影响延迟。
 
 精度的 k 按任务选择，不固定为 5。本题集以 P@1 表达首位已知支持来源命中，辅以 R@5、MRR/nDCG；它们不等于答案正确率。由于多数题只标一篇来源，P@3/P@5 仅作为不完整标签下的诊断项；不通过调整分母把它们改成另一种“精度”。若要测前五篇的实际相关比例，需要独立标注两组的合并候选并区分未判定文档。上下文最多 5 个分块与排序前 5 篇文档也不是同一单位。
+
+## 新增技术资料与干扰语料
+
+knowledge-adversarial-corpus.py 使用独立私有目录。discover-juejin-sitemap.py 从公开站点地图补充入口，再采完整正文和真实来源；采集上限应高于入库配额，为非技术文章、重复来源和不可索引正文留出筛选余量。已有索引卡指向的文章也按已有来源排除。分类是模型对标题、正文前 2500 字和后 1000 字的筛选，不能称为人工审核；正文自身完整保存。
+
+~~~bash
+.cache/ragas-venv/bin/python scripts/eval/discover-juejin-sitemap.py \
+  --output .cache/NEW-RUN/seeds.json --sample 4000
+.cache/ragas-venv/bin/python scripts/eval/fetch-juejin-scale.py \
+  --output .cache/NEW-RUN/juejin --seeds .cache/NEW-RUN/seeds.json \
+  --limit 1650 --pause 1.5
+.cache/ragas-venv/bin/python scripts/eval/knowledge-adversarial-corpus.py noise --output .cache/NEW-RUN
+.cache/ragas-venv/bin/python scripts/eval/knowledge-adversarial-corpus.py classify --output .cache/NEW-RUN
+~~~
+
+noise 从公开古典文学整理语料中选出 20 篇独立完整作品；不是把一本书随意切成 20 个文档。另选 30 篇真实技术近似资料，实际相关性仍须逐题判断，不能把整个“易混淆”分组全标成负例。基准角色仅留在私有清单；产品来源元数据使用正常技术/文学范围。
+
+冻结前用当前构建的类和依赖编译运行 java/KnowledgeCorpusCheck.java，复用产品分块器和嵌入批处理器，不请求模型。检查参数须与产品分块配置相同，本次使用 1200/350/0。把 JSON 行和诊断保存为输出目录的 chunk-preflight.log；冻结器会要求使用哈希匹配且本地批处理验证通过的正文。过长代码块仍保留在原始缓存，不能截断后冒充完整文档入库。
+
+默认 freeze 配额为 1000 篇新技术正文、30 篇技术近似资料、20 篇文学作品；目标总数由现有文档数自动加算。可以用 technical-count/hard-count/literature-count 和 batch 分批执行，后续批次会排除已入库来源。import 仍使用 knowledge-scale.py。只有所有批次核验成功后才 merge；merge 强制核验总配额 1000/30/20 和原文档、分块内容、计数及搜索投影。
+
+若冻结后发现个别正文无法索引，先检查任务终态与实际持久化状态。reconcile 仅在离线检查明确失败、原文哈希匹配且目标文档不存在时创建新的派生批次；保留原计划、失败任务和原始正文，绝不删除成功文档。未导入正文不计入新增数，并由后续批次补足数量。

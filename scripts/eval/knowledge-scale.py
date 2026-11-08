@@ -200,7 +200,11 @@ def ingest(args):
         raise ValueError('Unexpected concurrent documents; refusing to exceed target')
     spaces = api.call('GET', '/knowledge/governance/spaces')
     for group in corpus['groups']:
-        name = ('掘金博客正文·扩充1000' if group == 'juejin' else '官方技术正文·' + ('Python 3.14' if group == 'python' else 'PostgreSQL 17.9'))
+        default_names = {'juejin':'掘金博客正文·扩充1000', 'python':'官方技术正文·Python 3.14',
+            'postgresql':'官方技术正文·PostgreSQL 17.9'}
+        name = corpus.get('space_names', {}).get(group) or default_names.get(group)
+        if not name:
+            raise ValueError('Explicit provenance space required for group: ' + group)
         space = next((s for s in spaces if s['name'] == name), None)
         if not space:
             space = api.call('POST', '/knowledge/governance/spaces', {'name': name})
@@ -221,7 +225,7 @@ def ingest(args):
             raise ValueError('Indexed document has no chunks')
         if not record.get('provenanceSaved'):
             api.call('PUT', '/knowledge/governance/sources/' + job['documentId'], dict(spaceId=state['spaces'][doc['group']],
-                version=doc['version'], scope=('掘金作者博客；' if doc['group'] == 'juejin' else '官方技术参考；') + doc['relative'], authority=doc['source_url'],
+                version=doc['version'], scope=doc.get('scope') or ('掘金作者博客；' if doc['group'] == 'juejin' else '官方技术参考；') + doc['relative'], authority=doc['source_url'],
                 lifecycle='ACTIVE', effectiveFrom=None, effectiveUntil=None))
         record.update(documentId=job['documentId'], chars=result['charCount'], chunks=result['chunkCount'], provenanceSaved=True)
         save(manifest, state)
@@ -294,7 +298,8 @@ def ingest(args):
     imported = [d for d in docs if d['id'] in owned]
     counts_match = all(after.get(d['id'], {}).get('chunks') == d['chunkCount'] for d in docs)
     provenance = sql("SELECT count(*) FROM knowledge_source WHERE document_id IN (" + ','.join("'" + d + "'" for d in owned) + ')')
-    pagination = [api.call('GET', '/knowledge/documents/search?page=' + str(p) + '&size=20') for p in [0, 24, 49]]
+    last_page = max(0, (len(docs)-1)//20)
+    pagination = [api.call('GET', '/knowledge/documents/search?page=' + str(p) + '&size=20') for p in sorted({0, last_page//2, last_page})]
     report = dict(completed_at=now(), target=corpus['target'], before=corpus['before'], added=len(imported), total=len(docs),
         groups=corpus['groups'], added_chars=sum(d['charCount'] for d in imported), added_bytes=sum(d['sizeBytes'] for d in imported),
         added_chunks=sum(d['chunkCount'] for d in imported), total_chunks=sum(d['chunkCount'] for d in docs),

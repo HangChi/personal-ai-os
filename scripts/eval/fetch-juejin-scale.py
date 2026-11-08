@@ -35,9 +35,13 @@ def main():
     (out / 'raw').mkdir(exist_ok=True)
     state_path = out / 'manifest.json'
     state = scale.load(state_path) if state_path.exists() else dict(started_at=scale.now(), documents=[], observations=[], requested=args.limit)
+    if 'access_restriction' in state.get('stopped_reason', ''):
+        raise ValueError('Prior crawl stopped on access restriction; refusing a bypass restart')
+    state['requested'] = args.limit
+    state.pop('stopped_reason', None)
     seeds = article_ids(args.seeds.read_text())
     seeds += [d['slug'].split('-')[1] for d in scale.load(args.seeds)['documents'] if d.get('slug', '').startswith('juejin-')]
-    queue = deque(dict.fromkeys(seeds))
+    queue = deque(dict.fromkeys(state.get('pending_ids', []) + seeds))
     visited = {o['post_id'] for o in state['observations']}
     seen = {d['body_sha256'] for d in state['documents']}
     client = httpx.Client(timeout=35, follow_redirects=False)
@@ -69,7 +73,7 @@ def main():
                 continue
             soup = BeautifulSoup(response.text, 'html.parser')
             body = soup.select_one('.article-viewer')
-            if response.status_code != 200 or body is None or len(body.get_text(strip=True)) < 400:
+            if response.status_code != 200 or body is None:
                 state['observations'].append(dict(post_id=post_id, status='BODY_MISSING_OR_ACCESS_RESTRICTED', http_status=response.status_code))
                 state['stopped_reason'] = 'access_restriction_or_missing_article_body; no bypass attempted'
                 break
@@ -80,6 +84,9 @@ def main():
             for candidate in article_ids(response.text):
                 if candidate not in visited:
                     queue.append(candidate)
+            if len(body.get_text(strip=True)) < 400:
+                state['observations'].append(dict(post_id=post_id, status='SHORT_COMPLETE_ARTICLE_SKIPPED'))
+                continue
             title_tag = soup.select_one('h1.article-title') or soup.select_one('meta[property=og:title]') or soup.title
             title = ' '.join((title_tag.get('content') or title_tag.get_text(' ', strip=True)).split())
             author_tag = soup.select_one('.author-info-box .username') or soup.select_one('.author-info-box .name') or soup.select_one('meta[name=author]')
@@ -110,10 +117,12 @@ def main():
             state['documents'].append(dict(slug=filename[:-3], filename=filename, title=('【掘金正文】' + title)[:300],
                 group='juejin', version='公开页快照 ' + scale.now()[:10], relative=post_id, source_url=url, author=author,
                 raw_sha256=scale.sha(response.content), body_sha256=digest, sha256=scale.sha(content), chars=len(content)))
+            state['pending_ids'] = list(dict.fromkeys(queue))
             state['observations'].append(dict(post_id=post_id, status='FULL_BODY_COLLECTED', chars=len(text)))
             scale.save(state_path, state)
             print(scale.now(), 'Juejin full texts', len(state['documents']), '/', args.limit, 'queue', len(queue), title[:60], flush=True)
     finally:
+        state['pending_ids'] = list(dict.fromkeys(queue))
         state['finished_at'] = scale.now()
         scale.save(state_path, state)
         client.close()
