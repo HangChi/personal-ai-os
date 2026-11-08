@@ -12,7 +12,10 @@
 | `rag-live-eval.py`、`rag-live-cases.json` | 固定项目文档的基础/增强对照；依赖既有本机设施与配置 |
 | `rag-live-conflicts.py`、`rag-live-ingestion.py` | 合成政策冲突/澄清与后台审查；先核查其隔离状态和目标 |
 | `ragas-compare.py`、`ragas-comparison-cases.json` | 同知识快照双端采集、RAGAS 裁判、离线汇总 |
+| `fetch-juejin-scale.py` | 只采公开掘金正文；遇访问限制立即停止，正文与抓取回执放私有缓存 |
+| `knowledge-scale.py` | 冻结官方/博客正文并经后台任务追加到目标数量；检查原文档哈希、分块、来源与投影 |
 | `requirements-ragas.txt` | 裁判依赖，建议专用虚拟环境 |
+| `requirements-knowledge-scale.txt` | 语料采集/转换加 RAGAS 的依赖版本 |
 | `test_*.py` | 评测器离线回归，不请求真实模型 |
 
 ```bash
