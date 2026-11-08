@@ -24,6 +24,8 @@ Java 路径均相对 `backend/src/main/java/com/personalos/`；Go 相对 `backen
 
 可从 [Java 入口](../backend/README.md)、[Go 入口](../backend-go/README.md)、[前端入口](../frontend/README.md)分别开始。目录级映射表示职责对应，不承诺逐行实现一致。
 
+两端切块同步保护围栏/缩进/行内代码、Markdown 与连续多行制表符表格、列表、引用和块级公式；超长原子结构不按目标字符数拆开，涉及受保护块的相邻重叠跳过。共享 `chunking.json` 验证完整内容、边界识别、空白保留和普通文本兼容行为，实际读取格式差异仍以各自解析器为准。
+
 ## 当前必须区分的行为
 
 | 事项 | Java | Go |

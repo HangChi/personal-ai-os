@@ -91,6 +91,290 @@
         "abcd",
         "efgh"
       ]
+    },
+    {
+      "name": "long-fenced-code-whitespace-is-atomic",
+      "text": "before\n\n```python\n    first = 1  \n\n    # still code\n    second = first + 2\n```\n\nafter",
+      "target": 20,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "before",
+        "```python\n    first = 1  \n\n    # still code\n    second = first + 2\n```",
+        "after"
+      ]
+    },
+    {
+      "name": "fence-marker-and-length-must-match",
+      "text": "~~~~python\n```\n# not a heading\n~~~\nprint(1)\n~~~~\n\n# Real\nend",
+      "target": 20,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "~~~~python\n```\n# not a heading\n~~~\nprint(1)\n~~~~",
+        "【章节：Real】\n# Real\nend"
+      ]
+    },
+    {
+      "name": "unclosed-fence-protects-to-eof",
+      "text": "```\n# comment\n\nabcdefghijklmnopqrstuvwxyz\n",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "```\n# comment\n\nabcdefghijklmnopqrstuvwxyz\n"
+      ]
+    },
+    {
+      "name": "indented-code-preserves-leading-spaces",
+      "text": "    # not a heading\n    value = 1  \n\n    print(value)",
+      "target": 15,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "    # not a heading\n    value = 1  \n\n    print(value)"
+      ]
+    },
+    {
+      "name": "markdown-table-keeps-header-and-rows",
+      "text": "before\n\n| key | value |\n| --- | --- |\n| name | abcdefghijklmnopqrstuvwxyz |\n| other | 1234567890 |\n\nafter",
+      "target": 20,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "before",
+        "| key | value |\n| --- | --- |\n| name | abcdefghijklmnopqrstuvwxyz |\n| other | 1234567890 |",
+        "after"
+      ]
+    },
+    {
+      "name": "tabular-docx-text-keeps-rows",
+      "text": "key\tvalue\nname\tabcdefghijklmnopqrstuvwxyz\nother\t1234567890",
+      "target": 15,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "key\tvalue\nname\tabcdefghijklmnopqrstuvwxyz\nother\t1234567890"
+      ]
+    },
+    {
+      "name": "nested-list-and-blank-lines-are-atomic",
+      "text": "- first item\n  continuation\n\n  - nested item\n- second item with enough content\n\nafter",
+      "target": 15,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "- first item\n  continuation\n\n  - nested item\n- second item with enough content",
+        "after"
+      ]
+    },
+    {
+      "name": "quoted-block-is-atomic",
+      "text": "> quoted text\n>\n> second paragraph with enough content\n\n> still quoted\n\nafter",
+      "target": 15,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "> quoted text\n>\n> second paragraph with enough content\n\n> still quoted",
+        "after"
+      ]
+    },
+    {
+      "name": "display-math-is-atomic",
+      "text": "$$\nx = abcdefghijklmnopqrstuvwxyz\n\ny = 1234567890\n$$\n\nafter",
+      "target": 15,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "$$\nx = abcdefghijklmnopqrstuvwxyz\n\ny = 1234567890\n$$",
+        "after"
+      ]
+    },
+    {
+      "name": "bracket-math-is-atomic",
+      "text": "\\[\nx = abcdefghijklmnopqrstuvwxyz\n\\]",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "\\[\nx = abcdefghijklmnopqrstuvwxyz\n\\]"
+      ]
+    },
+    {
+      "name": "inline-code-is-not-hard-split",
+      "text": "before `abcdefghijklmnopqrstuvwxyz` after",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "before",
+        "`abcdefghijklmnopqrstuvwxyz`",
+        "after"
+      ]
+    },
+    {
+      "name": "overlap-does-not-copy-partial-structures",
+      "text": "before\n\n```python\n    first = 1  \n\n    # still code\n    second = first + 2\n```\n\nafter",
+      "target": 20,
+      "minimum": 1,
+      "overlap": 5,
+      "expected": [
+        "before",
+        "```python\n    first = 1  \n\n    # still code\n    second = first + 2\n```",
+        "after"
+      ]
+    },
+    {
+      "name": "surrogate-pair-is-not-hard-split",
+      "text": "abc😀def",
+      "target": 4,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "abc😀",
+        "def"
+      ]
+    },
+    {
+      "name": "shorter-fence-and-trailing-text-do-not-close",
+      "text": "````python\n```\n# still code\n``` trailing text\nprint(1)\n`````\n\n# Real\nend",
+      "target": 15,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "````python\n```\n# still code\n``` trailing text\nprint(1)\n`````",
+        "【章节：Real】\n# Real\nend"
+      ]
+    },
+    {
+      "name": "multiline-inline-code-keeps-heading-and-blank-lines",
+      "text": "``first\n\n# not a heading\nsecond``",
+      "target": 10,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "``first\n\n# not a heading\nsecond``"
+      ]
+    },
+    {
+      "name": "indented-fence-keeps-original-whitespace",
+      "text": "   ```python\n    x = 1  \n\n    print(x)\n   ```",
+      "target": 10,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "   ```python\n    x = 1  \n\n    print(x)\n   ```"
+      ]
+    },
+    {
+      "name": "inline-code-block-skips-overlap",
+      "text": "first\n\n`abcdefghijk`\n\nlast",
+      "target": 10,
+      "minimum": 1,
+      "overlap": 4,
+      "expected": [
+        "first",
+        "`abcdefghijk`",
+        "last"
+      ]
+    },
+    {
+      "name": "ordinary-tab-is-not-a-table",
+      "text": "abcdefgh\tijklmnopqr",
+      "target": 10,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "abcdefgh",
+        "ijklmnopqr"
+      ]
+    },
+    {
+      "name": "list-does-not-consume-following-heading",
+      "text": "- first item\n- second item\n# Real\nend",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "- first item\n- second item",
+        "【章节：Real】\n# Real\nend"
+      ]
+    },
+    {
+      "name": "indented-code-symbols-are-not-other-blocks",
+      "text": "    > not a quote\n\n    - not a list\n    $$ not a formula\n    x = 1  ",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "    > not a quote\n\n    - not a list\n    $$ not a formula\n    x = 1  "
+      ]
+    },
+    {
+      "name": "indented-code-after-heading-is-atomic",
+      "text": "# Real\n    # code comment\n    abcdefghijklmnopqrstuvwxyz",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "【章节：Real】\n# Real",
+        "【章节：Real】\n    # code comment\n    abcdefghijklmnopqrstuvwxyz"
+      ]
+    },
+    {
+      "name": "quote-lazy-continuation-is-atomic",
+      "text": "> quote\nabcdefghijklmnopqrstuvwxyz\n\nnext",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "> quote\nabcdefghijklmnopqrstuvwxyz",
+        "next"
+      ]
+    },
+    {
+      "name": "crlf-fenced-code-preserves-original",
+      "text": "```python\r\n    value = 1  \r\n\r\n    value += 2\r\n```",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "```python\r\n    value = 1  \r\n\r\n    value += 2\r\n```"
+      ]
+    },
+    {
+      "name": "multiple-backtick-inline-code-is-atomic",
+      "text": "before ``abc`defghijklmnop`` after",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "before",
+        "``abc`defghijklmnop``",
+        "after"
+      ]
+    },
+    {
+      "text": "# Title\n```go\n# not heading\n```\n\nnext paragraph.",
+      "target": 35,
+      "minimum": 10,
+      "overlap": 0,
+      "name": "heading-adjacent-to-fence-keeps-existing-separator",
+      "expected": [
+        "【章节：Title】\n# Title\n```go\n# not heading\n```",
+        "【章节：Title】\nnext paragraph."
+      ]
+    },
+    {
+      "name": "crlf-list-is-atomic",
+      "text": "- first item\r\n- second long item\r\n\r\nafter",
+      "target": 12,
+      "minimum": 1,
+      "overlap": 0,
+      "expected": [
+        "- first item\r\n- second long item\r",
+        "after"
+      ]
     }
   ]
 }

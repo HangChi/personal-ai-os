@@ -22,8 +22,8 @@ import org.springframework.ai.transformer.splitter.TextSplitter;
  *   <li>**按标题分节**：以 {@code # ~ ######} 为边界，每节记录完整标题路径
  *       （如 {@code 1. B-tree > 内部结构}）。没有标题的文本（PDF/docx 提取结果）
  *       自然退化为单节，后续按段落处理 —— 兼容行为不需要额外分支。</li>
- *   <li>**超长节按段落递归切**：按空行分段，逐段累积到目标长度；单段仍然超长时，
- *       才用 {@link TokenTextSplitter} 硬切兜底。</li>
+ *   <li>**保护结构再按段落切**：代码、表格、列表、引用和多行公式不可拆开；普通
+ *       段落累积到目标长度，超长普通段落才按字符兜底。</li>
  *   <li>**标题路径前缀**：每块前面加 {@code 【章节：…】}。这让检索能命中章节信息，
  *       也让模型看到片段在原文中的位置。</li>
  *   <li>**短块合并**：低于最小字符数的块并入相邻块，避免出现只有半句话的噪声块
@@ -32,19 +32,12 @@ import org.springframework.ai.transformer.splitter.TextSplitter;
  *
  * <h2>重叠</h2>
  * 支持可配置的字符重叠（默认 0）。结构切分已在自然边界断开，重叠的收益主要来自
- * 跨节的上下文衔接；开太大则块会膨胀、总块数上升。
+ * 同节的上下文衔接；包含受保护结构的相邻块跳过重叠，防止复制半段结构。
  */
 public class MarkdownStructureTextSplitter extends TextSplitter {
 
     private static final Pattern HEADING = Pattern.compile("^(#{1,6})\\s+(.+?)\\s*#*$");
-
-    /**
-     * 代码围栏行：行首（strip 后）至少三个反引号或波浪号，允许后跟语言标注。
-     *
-     * <p>只匹配行首的连续标记，避免把行内的 `` `code` `` 当成围栏 ——
-     * 行内代码永远不会单独成行且以三个反引号开头。
-     */
-    private static final Pattern FENCE = Pattern.compile("^(`{3,}|~{3,})");
+    private static final Pattern PARAGRAPH_SEPARATOR = Pattern.compile("\n\\s*\n");
 
     /** 标题路径前缀的最大长度，避免前缀比正文还长 */
     private static final int MAX_PREFIX_LENGTH = 120;
@@ -72,9 +65,9 @@ public class MarkdownStructureTextSplitter extends TextSplitter {
         // 既白占 token，又让嵌入混入互不相关的章节名（2026-10-25 实测踩到）。
         List<Piece> pieces = new ArrayList<>();
         for (Section section : sections) {
-            for (String raw : splitSection(section)) {
-                if (!raw.isBlank()) {
-                    pieces.add(new Piece(section.headingPath(), raw.strip()));
+            for (Block block : splitSection(section)) {
+                if (!block.text().isBlank()) {
+                    pieces.add(new Piece(section.headingPath(), block.text()));
                 }
             }
         }
@@ -92,6 +85,9 @@ public class MarkdownStructureTextSplitter extends TextSplitter {
     private record Piece(List<String> headingPath, String text) {
     }
 
+    private record Block(String text, boolean protectedContent) {}
+    private record Unit(String text, boolean protectedContent, int start, int end) {}
+
     // ------------------------------------------------------------------ 分节
 
     /** 一节：标题路径 + 正文 */
@@ -104,21 +100,17 @@ public class MarkdownStructureTextSplitter extends TextSplitter {
         String[] stack = new String[6];
         StringBuilder body = new StringBuilder();
         List<String> currentPath = List.of();
-        // 代码围栏状态：围栏内的 `# 注释` 不是标题
-        boolean inFence = false;
+        List<MarkdownBlockScanner.Span> protectedSpans = MarkdownBlockScanner.headingProtection(text);
+        int spanIndex = 0;
+        int offset = 0;
 
-        for (String line : text.split("\n")) {
-            // 围栏行本身必须原样进正文，且要先于标题匹配处理 ——
-            // 反引号开头的行不会被 HEADING 命中，但顺序写反会让 ``` 被 strip 掉后误判
-            if (isFenceLine(line)) {
-                inFence = !inFence;
-                body.append(line).append('\n');
-                continue;
-            }
-            // 围栏内的任何行都不参与标题识别：此前代码直接把每行喂给 HEADING，
-            // 于是代码块里的 `# 注释`、`## 小标题` 被当成真标题，
-            // 切点落在代码中间，片段语义随之破碎（评测里表现为同一条代码被切散）。
-            Matcher matcher = inFence ? null : HEADING.matcher(line.strip());
+        for (String line : text.split("\n", -1)) {
+            while (spanIndex < protectedSpans.size() && offset >= protectedSpans.get(spanIndex).end()) spanIndex++;
+            boolean protectedLine = spanIndex < protectedSpans.size()
+                    && offset >= protectedSpans.get(spanIndex).start();
+            offset += line.length() + 1;
+            String newline = offset <= text.length() ? "\n" : "";
+            Matcher matcher = protectedLine ? null : HEADING.matcher(line.strip());
             if (matcher != null && matcher.matches()) {
                 // 新标题：先把上一节收尾
                 if (body.toString().isBlank() == false || !currentPath.isEmpty()) {
@@ -133,10 +125,10 @@ public class MarkdownStructureTextSplitter extends TextSplitter {
                 currentPath = headingPath(stack);
                 body.setLength(0);
                 // 标题行本身也进正文：它是这段话最好的摘要
-                body.append(line.strip()).append('\n');
+                body.append(line.strip()).append(newline);
                 continue;
             }
-            body.append(line).append('\n');
+            body.append(line).append(newline);
         }
         if (body.toString().isBlank() == false || !currentPath.isEmpty()) {
             sections.add(new Section(currentPath, body.toString()));
@@ -154,80 +146,115 @@ public class MarkdownStructureTextSplitter extends TextSplitter {
         return path;
     }
 
-    /**
-     * 是否是代码围栏行（{@code ```} 或 {@code ~~~}，允许前置空白与语言标注）。
-     *
-     * <p>只认「行首（可含 ≤3 空格缩进）+ 至少三个同类标记」：Markdown 规范里
-     * 四空格缩进是代码块但由缩进表达、不靠围栏，这里不处理 —— 缩进代码块里的
-     * {@code #} 同样会被误判为标题，但那种写法在本项目的语料里不存在，且修正它
-     * 需要完整的缩进层级跟踪，收益不抵风险。
-     */
-    private static boolean isFenceLine(String line) {
-        String trimmed = line.strip();
-        return FENCE.matcher(trimmed).find();
-    }
-
     // ------------------------------------------------------------------ 切节
 
-    private List<String> splitSection(Section section) {
-        String body = section.body().strip();
+    private List<Block> splitSection(Section section) {
+        String body = MarkdownBlockScanner.trimOutsideBlocks(section.body(), MarkdownBlockScanner.blocks(section.body()));
         if (body.isEmpty()) {
             return List.of();
         }
+        List<MarkdownBlockScanner.Span> spans = MarkdownBlockScanner.blocks(body);
         if (body.length() <= targetChars) {
-            return List.of(body);
+            return List.of(new Block(body, !spans.isEmpty() || !MarkdownBlockScanner.inlineCode(body).isEmpty()));
         }
 
-        List<String> pieces = new ArrayList<>();
+        List<Unit> units = new ArrayList<>();
+        int offset = 0;
+        for (MarkdownBlockScanner.Span span : spans) {
+            addParagraphs(units, body.substring(offset, span.start()), offset);
+            units.add(new Unit(body.substring(span.start(), span.end()), true, span.start(), span.end()));
+            offset = span.end();
+        }
+        addParagraphs(units, body.substring(offset), offset);
+
+        List<Block> pieces = new ArrayList<>();
         StringBuilder current = new StringBuilder();
-        for (String paragraph : body.split("\n\\s*\n")) {
-            String trimmed = paragraph.strip();
-            if (trimmed.isEmpty()) {
-                continue;
-            }
-            if (trimmed.length() > targetChars) {
-                // 单段就超长（常见于无换行的长文或代码块）：硬切兜底
+        boolean protectedContent = false;
+        for (int index = 0; index < units.size(); index++) {
+            Unit unit = units.get(index);
+            String value = unit.text();
+            if (value.length() > targetChars) {
                 if (!current.isEmpty()) {
-                    pieces.add(current.toString());
+                    pieces.add(new Block(current.toString(), protectedContent));
                     current.setLength(0);
+                    protectedContent = false;
                 }
-                pieces.addAll(hardSplit(trimmed));
+                // 原子结构可超过目标长度，不能为凑块大小破坏代码/表格。
+                if (unit.protectedContent()) pieces.add(new Block(value, true));
+                else pieces.addAll(hardSplit(value));
                 continue;
             }
-            if (current.length() + trimmed.length() + 2 > targetChars && !current.isEmpty()) {
-                pieces.add(current.toString());
+            // 拆出原子结构时不凭空在相邻行之间增加空行，保留原有分隔。
+            String separator = index > 0 && (unit.protectedContent() || units.get(index - 1).protectedContent())
+                    ? body.substring(units.get(index - 1).end(), unit.start()) : "\n\n";
+            if (current.length() + value.length() + separator.length() > targetChars && !current.isEmpty()) {
+                pieces.add(new Block(current.toString(), protectedContent));
                 current.setLength(0);
+                protectedContent = false;
             }
             if (!current.isEmpty()) {
-                current.append("\n\n");
+                current.append(separator);
             }
-            current.append(trimmed);
+            current.append(value);
+            protectedContent |= unit.protectedContent() || !MarkdownBlockScanner.inlineCode(value).isEmpty();
         }
         if (!current.isEmpty()) {
-            pieces.add(current.toString());
+            pieces.add(new Block(current.toString(), protectedContent));
         }
 
         return applyOverlap(pieces);
     }
 
+    private void addParagraphs(List<Unit> units, String text, int offset) {
+        // 行内代码中允许换行/空行，也先作为原子范围跳过段落分隔符。
+        List<MarkdownBlockScanner.Span> inline = MarkdownBlockScanner.inlineCode(text);
+        Matcher separators = PARAGRAPH_SEPARATOR.matcher(text);
+        int start = 0;
+        int span = 0;
+        while (separators.find()) {
+            while (span < inline.size() && inline.get(span).end() <= separators.start()) span++;
+            if (span < inline.size() && inline.get(span).start() < separators.end()) continue;
+            addParagraph(units, text.substring(start, separators.start()), offset + start);
+            start = separators.end();
+        }
+        addParagraph(units, text.substring(start), offset + start);
+    }
+
+    private void addParagraph(List<Unit> units, String text, int offset) {
+        String value = text.strip();
+        if (!value.isEmpty()) {
+            int start = offset + text.length() - text.stripLeading().length();
+            units.add(new Unit(value, false, start, start + value.length()));
+        }
+    }
+
     /**
      * 兜底：单段超过目标长度时按**字符**切，并尽量在句末断开。
      *
-     * <p>为什么不用 {@link TokenTextSplitter} 兜底：本切分器的目标长度是**字符**，
+     * <p>本切分器的目标长度是**字符**，
      * 而 token 切分器的 800 token 在中文上可能落到 3000 字符 —— 实测出现过
      * 3089 字符的块，远超 1200 的目标，且和「按字符控制块大小」的语义不一致。
      * 一个原则：既然对外承诺的是字符数，兜底也必须以字符为准。
      */
-    private List<String> hardSplit(String text) {
-        List<String> pieces = new ArrayList<>();
+    private List<Block> hardSplit(String text) {
+        List<Block> pieces = new ArrayList<>();
         String remaining = text;
         while (remaining.length() > targetChars) {
             int cut = findBreakPoint(remaining);
-            pieces.add(remaining.substring(0, cut).strip());
+            for (MarkdownBlockScanner.Span span : MarkdownBlockScanner.inlineCode(remaining)) {
+                if (span.start() < cut && cut < span.end()) {
+                    cut = span.start() > 0 ? span.start() : span.end();
+                    break;
+                }
+            }
+            if (cut < remaining.length() && Character.isHighSurrogate(remaining.charAt(cut - 1))
+                    && Character.isLowSurrogate(remaining.charAt(cut))) cut++;
+            String value = remaining.substring(0, cut).strip();
+            pieces.add(new Block(value, !MarkdownBlockScanner.inlineCode(value).isEmpty()));
             remaining = remaining.substring(cut).strip();
         }
         if (!remaining.isEmpty()) {
-            pieces.add(remaining);
+            pieces.add(new Block(remaining, !MarkdownBlockScanner.inlineCode(remaining).isEmpty()));
         }
         return pieces;
     }
@@ -269,18 +296,26 @@ public class MarkdownStructureTextSplitter extends TextSplitter {
     // ------------------------------------------------------------------ 重叠与合并
 
     /** 给相邻块之间加字符重叠：把前一块的尾部拼到下一块开头 */
-    private List<String> applyOverlap(List<String> blocks) {
+    private List<Block> applyOverlap(List<Block> blocks) {
         if (overlapChars <= 0 || blocks.size() < 2) {
             return blocks;
         }
-        List<String> result = new ArrayList<>(blocks.size());
+        List<Block> result = new ArrayList<>(blocks.size());
         result.add(blocks.get(0));
         for (int index = 1; index < blocks.size(); index++) {
-            String previous = blocks.get(index - 1);
+            Block current = blocks.get(index);
+            Block prior = blocks.get(index - 1);
+            if (current.protectedContent() || prior.protectedContent()) {
+                result.add(current);
+                continue;
+            }
+            String previous = prior.text();
             String tail = previous.length() <= overlapChars
                     ? previous
                     : previous.substring(previous.length() - overlapChars);
-            result.add("…" + tail + "\n" + blocks.get(index));
+            // 重叠起点也不能落在 UTF-16 代理对中间。
+            if (!tail.isEmpty() && Character.isLowSurrogate(tail.charAt(0))) tail = tail.substring(1);
+            result.add(new Block("…" + tail + "\n" + current.text(), false));
         }
         return result;
     }

@@ -1,6 +1,7 @@
 package knowledge
 
 import (
+	"context"
 	"strings"
 	"testing"
 )
@@ -46,5 +47,63 @@ func TestMarkdownFenceOverlapMinimumAndLongPrefix(t *testing.T) {
 	}
 	if len(SplitMarkdown(" \n", 10, 1, 0)) != 0 {
 		t.Fatal("blank")
+	}
+}
+
+func TestMarkdownOversizedProtectedStructures(t *testing.T) {
+	structures := []string{
+		"```python\n    # 注释不是标题\n\n" + strings.Repeat("    print('完整代码')  \n", 180) + "```",
+		"    # 缩进代码\n\n" + strings.Repeat("    print('保留缩进')  \n", 180),
+		"| 名称 | 值 |\n| --- | --- |\n" + strings.Repeat("| key | 完整表格内容 |\n", 180),
+		"名称\t值\n" + strings.Repeat("key\t完整表格内容\n", 180),
+		"- 父项\n  - 子项\n\n" + strings.Repeat("- 完整列表内容\n", 180),
+		"> 引用开始\n>\n" + strings.Repeat("> 完整引用内容\n", 180),
+		"$$\n" + strings.Repeat("x = a + b + c + d\n", 180) + "$$",
+		"`" + strings.Repeat("inline_call_", 180) + "`",
+	}
+	for _, structure := range structures {
+		exact := strings.TrimRight(structure, " \t\r\n")
+		blocks := SplitMarkdown("# 文档\n\n前言。\n\n"+exact+"\n\n后记。", 1200, 350, 120)
+		whole := 0
+		for _, block := range blocks {
+			if strings.Contains(block, exact) {
+				whole++
+			}
+		}
+		joined := strings.Join(blocks, "\n")
+		if whole != 1 || strings.Count(joined, exact) != 1 || !strings.Contains(joined, "前言。") || !strings.Contains(joined, "后记。") {
+			t.Fatalf("结构被截断、复制或正文丢失：%q", blocks)
+		}
+	}
+}
+
+func TestMarkdownCodeWhitespaceAndPlainTextBudget(t *testing.T) {
+	code := "    first = 1  \n\n    second = 2\t "
+	blocks := SplitMarkdown(code, 12, 1, 8)
+	if len(blocks) != 1 || blocks[0] != code {
+		t.Fatalf("代码空白变化：%q", blocks)
+	}
+	text := strings.Repeat("普通正文。", 1000)
+	blocks = SplitMarkdown(text, 1200, 1, 0)
+	if len(blocks) < 2 || strings.Join(blocks, "") != text {
+		t.Fatal("普通文本切分回归")
+	}
+	for _, block := range blocks {
+		if chars(block) > 1200 {
+			t.Fatal("普通块超限")
+		}
+	}
+}
+
+func TestMarkdownUTF8UploadKeepsProtectedCode(t *testing.T) {
+	code := "   ```python\r\n    # 原始注释\r\n\r\n    value = 1  \r\n   ```"
+	reader := Reader{Properties: testProperties(t)}
+	upload, err := reader.Prepare(context.Background(), "code.md", "", []byte("\uFEFF"+code))
+	if err != nil {
+		t.Fatal(err)
+	}
+	chunks := SplitMarkdown(upload.Text, 12, 1, 8)
+	if len(chunks) != 1 || chunks[0] != code || upload.Filename != "code.md" {
+		t.Fatalf("读取或切分改变代码：%+v %q", upload, chunks)
 	}
 }

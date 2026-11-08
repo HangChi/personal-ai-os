@@ -1,6 +1,6 @@
 # Java / Go 共用测试夹具
 
-`agent-rag/` 保存两版后端共用的 Agent 与 RAG 行为契约，共 182 个用例。所有内容均为合成数据；模型输出直接由测试桩返回，不调用真实模型。夹具描述输入与预期结果，业务校验仍由各版实际服务执行。
+`agent-rag/` 保存两版后端共用的 Agent 与 RAG 行为契约，共 208 个用例。所有内容均为合成数据；模型输出直接由测试桩返回，不调用真实模型。夹具描述输入与预期结果，业务校验仍由各版实际服务执行。
 
 | 文件 | 用例数 | 验证内容 |
 | --- | ---: | --- |
@@ -10,7 +10,7 @@
 | `plan-transitions.json` | 28 | 计划状态迁移、终态保护、幂等、完成凭据 |
 | `questions.json` | 19 | 结构化提问、选项长度、重复标签、执行状态约束 |
 | `execution-budget.json` | 9 | 模型/失败预算、失败调用防重放、成功写入凭据 |
-| `chunking.json` | 9 | 标题、围栏、自然断点、短块合并、字符重叠与原文保持 |
+| `chunking.json` | 35 | 标题、代码/表格/列表/引用/公式保护、自然断点、短块合并、字符重叠与原文保持 |
 
 Java 消费者位于 `backend/src/test/java/com/personalos/` 下的 `knowledge/rag`、`agent/plan` 和 `agent/interaction`；Go 消费者位于 `backend-go/internal/business/` 下的 `knowledge` 和 `chat`。各版另有针对本地类型与工具回执存储的测试，不计入上述共享用例数。新增或调整共享契约时，应同步验证两版，不能只修改其中一版的预期。
 
