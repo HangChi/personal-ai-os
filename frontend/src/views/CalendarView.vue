@@ -43,7 +43,8 @@ const {
 } = storeToRefs(calendarStore)
 
 onMounted(() => {
-  void calendarStore.loadOccurrences()
+  // 首次列表与切换视图使用同一月份，同时重置 store 保留的旧窗口、页码和每页条数。
+  void switchViewMode(viewMode.value)
 })
 
 async function enableNotifications(): Promise<void> {
