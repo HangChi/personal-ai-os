@@ -2331,8 +2331,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java",
       "path": "backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java",
       "sha256": "15519d6b024b56b473920fa5b24f949485049fc2a1d4f65bca5278d9c6006380",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeJobController.java",
@@ -2429,15 +2429,15 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/reader/ChatClientVisionTextExtractor.java",
       "path": "backend/src/main/java/com/personalos/knowledge/reader/ChatClientVisionTextExtractor.java",
       "sha256": "62a01f1b35ee62efd16b495c3214efeeb8645af1a42e5797db3400868a3973f0",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/reader/DocumentReaderFactory.java",
       "path": "backend/src/main/java/com/personalos/knowledge/reader/DocumentReaderFactory.java",
       "sha256": "5a63f5a9858f63ceafba7c4848fd3d76b0e690979a4010c710bb1fb14824e916",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/reader/DocxDocumentReader.java",
@@ -2464,15 +2464,15 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/reader/PdfDocumentReader.java",
       "path": "backend/src/main/java/com/personalos/knowledge/reader/PdfDocumentReader.java",
       "sha256": "f6b224bb538ccef9a3cdcfa80165fd63d5e5ffb70df916c4c2ef9bba8ef177d8",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/reader/ReaderSupport.java",
       "path": "backend/src/main/java/com/personalos/knowledge/reader/ReaderSupport.java",
       "sha256": "3acef3c01df4882acd6af423a9d8236b045d16e8122f50455b7c5ba1349fd243",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/reader/VisionTextExtractor.java",
@@ -2541,8 +2541,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java",
       "path": "backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java",
       "sha256": "0035b1bd41b96c2a0a40cf8dc4dc25161e28dfb2864f12b511a6a893321e85e1",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/service/KnowledgeQaService.java",
@@ -2583,8 +2583,8 @@
       "id": "file:backend/src/main/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitter.java",
       "path": "backend/src/main/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitter.java",
       "sha256": "e90d9ca71b332c21ce41804f02dab47db2fbf3a044bd652905ed671f2ede9c06",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/java/com/personalos/knowledge/startup/VectorDimensionValidator.java",
@@ -3101,8 +3101,8 @@
       "id": "file:backend/src/main/resources/application.yml",
       "path": "backend/src/main/resources/application.yml",
       "sha256": "068bc97f8ec29a3a646c42d2bc5e367ad527e6dd82bc567e5056b771c2c253e7",
-      "disposition": "explicit-config-adaptation",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/main/resources/db/migration/V10__create_task_tag.sql",
@@ -3479,8 +3479,8 @@
       "id": "file:backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java",
       "path": "backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java",
       "sha256": "67a652ac8bdb2a3363a2fcad02a547827379b0cd4991c72777a95ee1912f414c",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/calendar/service/ReminderStreamDeliveryTest.java",
@@ -4221,8 +4221,8 @@
       "id": "file:backend/src/test/java/com/personalos/knowledge/reader/PdfDocumentReaderTest.java",
       "path": "backend/src/test/java/com/personalos/knowledge/reader/PdfDocumentReaderTest.java",
       "sha256": "eac025201dd7443019e356b69a68032afa1690a5f8da8cd4be72819ac23f6b17",
-      "disposition": "prior-stage-evidence",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:backend/src/test/java/com/personalos/knowledge/search/OpenSearchGatewayIntegrationTest.java",
@@ -4746,8 +4746,8 @@
       "id": "file:frontend/nginx.conf",
       "path": "frontend/nginx.conf",
       "sha256": "a298093e020a62bb6a2a07ed7263d01a90f309aa1ab92c3179c01c9df38ffb5a",
-      "disposition": "retained-frontend",
-      "status": "implemented"
+      "disposition": "post-baseline-scope",
+      "status": "in_progress"
     },
     {
       "id": "file:frontend/package-lock.json",
@@ -7659,19 +7659,19 @@
     {
       "id": "scope:calendar-import-recurrence-20261105",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 6
     },
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 72
     },
     {
       "id": "scope:dashboard-independent-statistics-20261105",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 2
     },
     {
@@ -7683,13 +7683,13 @@
     {
       "id": "scope:test-and-stream-shutdown-20261106",
       "status": "in_progress",
-      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 43
     },
     {
       "id": "scope:task-workspace-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 50
     },
     {
@@ -7701,7 +7701,7 @@
     {
       "id": "scope:recovery-and-rag-followup-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 50
     },
     {
@@ -7713,31 +7713,31 @@
     {
       "id": "scope:workspace-ui-consolidation-20261106",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 37
     },
     {
       "id": "scope:chat-evidence-context-20261106",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 35
     },
     {
       "id": "scope:agent-rag-coverage-20261107",
       "status": "in_progress",
-      "source_commit": "7a852359f13108e3a4f50197867ef5c70548cf2f",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 36
     },
     {
       "id": "scope:backend-quality-gates-20261107",
       "status": "in_progress",
-      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 22
     },
     {
       "id": "scope:prior-documentation-and-test-additions-20261107",
       "status": "in_progress",
-      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 104
     },
     {
@@ -7745,6 +7745,30 @@
       "status": "in_progress",
       "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
       "files": 12
+    },
+    {
+      "id": "scope:knowledge-ingestion-boundaries-20261109",
+      "status": "in_progress",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "files": 21
+    },
+    {
+      "id": "scope:query-rewrite-config-20261109",
+      "status": "in_progress",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "files": 4
+    },
+    {
+      "id": "scope:calendar-boundary-regressions-20261109",
+      "status": "in_progress",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "files": 2
+    },
+    {
+      "id": "scope:corpus-evaluation-additions-20261109",
+      "status": "in_progress",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "files": 16
     }
   ]
 }

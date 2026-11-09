@@ -5,8 +5,8 @@
     {
       "id": "scope:calendar-import-recurrence-20261105",
       "status": "in_progress",
-      "source_commit": "f52f87f69949f613e95403f8f4a6c6dea73f7af6",
-      "summary": "五种日程重复规则导入修复，Java / Go 均已通过独立 PostgreSQL 导出—导入往返，保留重复截止时间和提醒提前量。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "五种日程重复规则导入修复，Java / Go 均已通过独立 PostgreSQL 导出—导入往返，保留重复截止时间和提醒提前量。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": "backend-go/internal/business/dataimport/import.go",
@@ -21,7 +21,7 @@
         {
           "path": "backend/src/main/java/com/personalos/export/DataImportService.java",
           "baseline_sha256": "131e98c17a09c74357e95847179db4c7ff066749466575a21d56bea94125fd7c",
-          "candidate_sha256": "9e622bcabbd29fa3eed1b606645f7a52da7546fa59523c4e54743de332541e03"
+          "candidate_sha256": "d2dbabfad736cf7b60d0233e34c5dcd33ff42e53a998f7a566812e14615a84d9"
         },
         {
           "path": "backend/src/test/java/com/personalos/export/DataImportCalendarTest.java",
@@ -57,7 +57,8 @@
         "specs/033-go-rewrite/retry-command-validation-20261105.md",
         "specs/033-go-rewrite/retry-followup-validation-20261105.md",
         "specs/033-go-rewrite/retry-followup-results-20261105.json",
-        "specs/033-go-rewrite/optimization-validation-20261106.md"
+        "specs/033-go-rewrite/optimization-validation-20261106.md",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "真实数据库回归使用合成数据；不代表生产提醒送达或迁移发布批准。",
@@ -68,13 +69,13 @@
     {
       "id": "scope:chat-retrieval-and-citation-candidate-20261105",
       "status": "in_progress",
-      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
-      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "检索失败改为非终态 warning，并显式登记接手时已有的联网搜索、工具来源收集、持久引用和展示候选；登记不代表整组行为已验收。 共享入口同步包含本轮重试保护和快捷工具调用；详见 2026-11-05 增量验证记录，原搜索/引用验收边界不变。 Docker 跟进已将旧 error 集成断言改为严格检查 warning、无 error 及完成顺序。 容器集成测试同步采用提前关闭上下文的公共清理顺序，防止停库后再清理缓存上下文。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": ".env.example",
           "baseline_sha256": "d611717a56585a876341166b81fe390e5dce132e26195aec82c3f2048629b307",
-          "candidate_sha256": "1c01901188607599a53130e155008458d6cbb5c034992fd2280fe8f807fb7367"
+          "candidate_sha256": "67494e8c93f1b0d108b67a92c768d2e079e069ac1fab3bfd60746ed3726ab4be"
         },
         {
           "path": "backend-go/internal/app/foundation.go",
@@ -189,7 +190,7 @@
         {
           "path": "backend-go/internal/business/knowledge/module.go",
           "baseline_sha256": null,
-          "candidate_sha256": "58e32bfb69360a860ea61a1b0b669783db4e50bdc1c2cc74d48fd156d6270bb1"
+          "candidate_sha256": "52b9921c0dc10d5ba8fd2819b136fc60dbac5a67dcbac6e8ed19bd463805e231"
         },
         {
           "path": "backend-go/internal/business/knowledge/oracle_integration_test.go",
@@ -204,7 +205,7 @@
         {
           "path": "backend-go/internal/business/knowledge/rag.go",
           "baseline_sha256": null,
-          "candidate_sha256": "50c7fbb648e1428eb98213eeff9e8c097ee522840044ea756a5f2b09abd3ff9b"
+          "candidate_sha256": "54ad2bcd4196ad3ed10aab1b0475abdbd523ac8b5a1d79b843c5cf36880f536e"
         },
         {
           "path": "backend-go/internal/business/knowledge/rag_parity_test.go",
@@ -329,7 +330,7 @@
         {
           "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeRagIntegrationTest.java",
           "baseline_sha256": "96c901f62312377bf362763389d24899c49b39f6f61a37541f47ad8bc9b7ca10",
-          "candidate_sha256": "0fe286e414ee3379fce8470231318b45bd59d27fc0df8dbb21d24ec9be107e3c"
+          "candidate_sha256": "8250d730dc92fc085a78676fe7f4608fffc609c7f936042b598f2908376a38f8"
         },
         {
           "path": "backend/src/test/java/com/personalos/knowledge/rag/CitationAuditTest.java",
@@ -494,7 +495,8 @@
         "specs/039-evidence-aware-answers/browser-report.json",
         "specs/039-evidence-aware-answers/contracts/answer-cases.json",
         "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json",
-        "docs/reports/coverage-agent-rag-2026-11-07.md"
+        "docs/reports/coverage-agent-rag-2026-11-07.md",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "Java 真实 HTTP + PostgreSQL 已验证检索故障 warning 后继续 delta/done、无 error 终态且降级轮引用为零；真实浏览器双端全流程回归仍待执行。",
@@ -507,8 +509,8 @@
     {
       "id": "scope:dashboard-independent-statistics-20261105",
       "status": "in_progress",
-      "source_commit": "4c7d6976f962ed793cc099f5582c7f133257e029",
-      "summary": "首页独立读取两端既有统计接口；筛选隔离、失败、零值、加载和重试组件回归已通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "首页独立读取两端既有统计接口；筛选隔离、失败、零值、加载和重试组件回归已通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": "frontend/src/views/HomeView.vue",
@@ -541,7 +543,8 @@
         "frontend/test/component/home-stats.test.ts",
         "specs/033-go-rewrite/optimization-validation-20261106.md",
         "specs/036-workspace-ui/validation.md",
-        "specs/036-workspace-ui/browser-report.json"
+        "specs/036-workspace-ui/browser-report.json",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "两端统计接口实现静态核对；真实 HTTP + 浏览器联调待执行。",
@@ -555,7 +558,7 @@
         "backend/src/main/java/com/personalos/memory/controller/MemoryController.java": "8a57a2980ef1092342d91ce37628610e741971a83ed60053d83d45a8555457c2",
         "backend-go/internal/business/task/http.go": "268bc51ad8e93cc3c7c6d9ec9959dc443ae2b808f313f67f35d14ea4ad267033",
         "backend-go/internal/business/calendar/http.go": "fda8137feb6da84d4e55e59afeb5be24189960c0d3ba0b3d918fa86517651ff5",
-        "backend-go/internal/business/knowledge/http.go": "eabb7adbb71f83a5c6b422b19c18df6bafb9b909573764911ef3f544ed2e3423",
+        "backend-go/internal/business/knowledge/http.go": "a766fc0b46a94f2221a6859fc0bb9a694860205eab39bcf4f2bb258b73ee25cf",
         "backend-go/internal/business/memory/http.go": "1664480a0cb83fb84b752de1bd07317ee9b83828d2db4b016687bb30400af27f"
       }
     },
@@ -829,8 +832,8 @@
     {
       "id": "scope:test-and-stream-shutdown-20261106",
       "status": "in_progress",
-      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
-      "summary": "Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "Java 类属容器在停库前关闭并驱逐 Spring 测试上下文；Java 与 Go 都在 HTTP 优雅停机前完成提醒 SSE，保留普通在途请求资源。真实连接回归、Java 全量原覆盖率门槛与 Go 竞态检查通过。 2026-11-06 随后续工作台、安全自动化、对话恢复及本轮优化重绑候选源码；新增行为不继承历史验收。 037调整共享检索接线后同步双端责任源码锚点；本组原文件字节未改，不继承新增行为验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": "backend-go/internal/app/foundation_stream_shutdown_integration_test.go",
@@ -865,7 +868,7 @@
         {
           "path": "backend/src/test/java/com/personalos/calendar/CalendarReminderIntegrationTest.java",
           "baseline_sha256": "e87d5f6270a52c82a256c3945ff538321e8a9d7362b649a6fda72c5ea84107b2",
-          "candidate_sha256": "6d093f3bcdfe70ed7e855c1b5360330bb827e3ec95934d92992bb8ddeea2b679"
+          "candidate_sha256": "f3228b23c5fbcacd745f0b293dc02584cd7c308c0e4734f5f1dbb60a8d8cc600"
         },
         {
           "path": "backend/src/test/java/com/personalos/calendar/push/WebPushRepositoryIntegrationTest.java",
@@ -975,7 +978,7 @@
         {
           "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeIndexJobsIntegrationTest.java",
           "baseline_sha256": "dffbb97aec613b891ba55845a152894729b35dac9491aab23ee67fdc901cee4c",
-          "candidate_sha256": "539ba576b12aeab833aad4c8d7c65d7661107d32e7d4c4cce2a8faf766121e98"
+          "candidate_sha256": "ffd524de0a9dece9f8459c7d8748136fba39748cbd688990d5b168dd7201c01c"
         },
         {
           "path": "backend/src/test/java/com/personalos/knowledge/KnowledgeMinLengthIntegrationTest.java",
@@ -985,7 +988,7 @@
         {
           "path": "backend/src/test/java/com/personalos/knowledge/RichDocumentIngestIntegrationTest.java",
           "baseline_sha256": "657b27e6c04bd90a0f5bd783be6ce7e27b83f6dfa79986f8f6bffd8e0916bc62",
-          "candidate_sha256": "9403c14344793f57f9c9618c97e4bcedf79c2326bda9a6b9967dcc335f75c27c"
+          "candidate_sha256": "3584623a38f19208dacea8fc3ddbc1a6445e7809d5e73f43c748d5e25157eadc"
         },
         {
           "path": "backend/src/test/java/com/personalos/knowledge/VectorStoreIndexMigrationTest.java",
@@ -1066,11 +1069,11 @@
         ]
       },
       "parity_sha256": {
+        "backend-go/internal/business/calendar/stream.go": "33dea6f6fc979630c9a62075accc930081d62652fba70da69d2e8c3c01ba4e91",
+        "backend-go/internal/business/calendar/stream_test.go": "74649c6a2916953953a46900ee33b88f7e1c10cc1c8bcae9fcd168ece0005bb6",
         "backend-go/internal/app/foundation.go": "808651edbc8a0bdf966bbd8339a0771084976671ce3fd6bcc4cff1a7b3caab89",
         "backend-go/internal/app/foundation_p5.go": "34f08f7d2c5290a1ddf62eff4bfaa1e9c3847c3f69a2e16638cf8a39c4b889c2",
-        "backend-go/internal/app/foundation_postgres_integration_test.go": "c9c7f1187ca278f4794c05239b73b3be77a5809f16ce2c7373ac142bfdb2057b",
-        "backend-go/internal/business/calendar/stream.go": "33dea6f6fc979630c9a62075accc930081d62652fba70da69d2e8c3c01ba4e91",
-        "backend-go/internal/business/calendar/stream_test.go": "74649c6a2916953953a46900ee33b88f7e1c10cc1c8bcae9fcd168ece0005bb6"
+        "backend-go/internal/app/foundation_postgres_integration_test.go": "c9c7f1187ca278f4794c05239b73b3be77a5809f16ce2c7373ac142bfdb2057b"
       },
       "evidence": [
         "specs/033-go-rewrite/retry-followup-validation-20261105.md",
@@ -1086,7 +1089,8 @@
         "specs/039-evidence-aware-answers/browser-report.json",
         "specs/039-evidence-aware-answers/contracts/answer-cases.json",
         "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json",
-        "docs/reports/coverage-agent-rag-2026-11-07.md"
+        "docs/reports/coverage-agent-rag-2026-11-07.md",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "测试基础设施与提醒 SSE 停机顺序的增量验证，不覆盖所有远端服务或生产故障模式。",
@@ -1098,8 +1102,8 @@
     {
       "id": "scope:task-workspace-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "48a58c4619a53e78fba8f9170ead2eedd3988b70",
-      "summary": "登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "登记034项目、一级子任务、周期任务、今日工作台与导入导出字段的双端候选；本轮未修改已有功能实现。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": "backend-go/internal/business/dataimport/payload.go",
@@ -1209,7 +1213,7 @@
         {
           "path": "backend/src/test/java/com/personalos/task/TaskWorkspaceIntegrationTest.java",
           "baseline_sha256": null,
-          "candidate_sha256": "2a0aefee3af716854a8ede9066c5bd865a34d1d4cc14344945c43064f2dbae46"
+          "candidate_sha256": "1f308adaf09c413c87692fac5ece8acbcec41672ed0b2cf84cf4d5261fd3445e"
         },
         {
           "path": "frontend/src/api/tasks.ts",
@@ -1369,7 +1373,8 @@
         "specs/036-workspace-ui/validation.md",
         "specs/036-workspace-ui/browser-report.json",
         "specs/038-task-create-layout/validation.md",
-        "specs/038-task-create-layout/browser-report.json"
+        "specs/038-task-create-layout/browser-report.json",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
@@ -1791,8 +1796,8 @@
     {
       "id": "scope:recovery-and-rag-followup-candidate-20261106",
       "status": "in_progress",
-      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
-      "summary": "补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "补登上次台账之后已有的对话恢复、草稿隔离、RAG冲突范围、MCP诊断、Push及上下文对照候选；明确区分源码登记与真实模型质量验收。 2026-11-06 同步036工作区UI的共享入口、排版与交互；仅重绑候选源码，不升级原业务验收。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": "backend-go/internal/business/chat/prompt.go",
@@ -1847,7 +1852,7 @@
         {
           "path": "backend-go/internal/business/knowledge/http.go",
           "baseline_sha256": null,
-          "candidate_sha256": "eabb7adbb71f83a5c6b422b19c18df6bafb9b909573764911ef3f544ed2e3423"
+          "candidate_sha256": "a766fc0b46a94f2221a6859fc0bb9a694860205eab39bcf4f2bb258b73ee25cf"
         },
         {
           "path": "backend-go/internal/business/mcp/diagnostics.go",
@@ -1952,7 +1957,7 @@
         {
           "path": "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java",
           "baseline_sha256": "c2d0d6ae90132b56c3706bcf656d5b57c20436a8c41c2a29ce9a318efd160037",
-          "candidate_sha256": "019aad6b3ca3ba333ab3e5c89907ceb0eee88165d6a0d4c8994f8c96fd3822c1"
+          "candidate_sha256": "dc1435fa02cb2ec066a0d15a6872f6c127410469adac5f2dd4f32fad579deda0"
         },
         {
           "path": "backend/src/test/java/com/personalos/mcp/tool/McpCallDiagnosticsTest.java",
@@ -1972,7 +1977,7 @@
         {
           "path": "frontend/src/components/knowledge/RagTrace.vue",
           "baseline_sha256": "8c38d75a6b125535fd67815cf0aab81a6de31c69c0b637d00c73a5712465cfec",
-          "candidate_sha256": "50193bb8efdd3c33c698ddb8edd160529b7b24d0cc13eae259112e2091e40634"
+          "candidate_sha256": "8fc4289a6957961b29b86bb9a2e2f666cd73b5a5e581e918acb5f55227bbf433"
         },
         {
           "path": "frontend/src/stores/ui.ts",
@@ -1982,7 +1987,7 @@
         {
           "path": "frontend/src/views/CalendarView.vue",
           "baseline_sha256": "5f93963e3766bc9e215174aec9a97f0040d5b98b8acd0cfcd6f238745792f4c8",
-          "candidate_sha256": "996cc614b4326f6b51414cde6340e5b68be51720b10f9da8e7947abe668b052f"
+          "candidate_sha256": "fb96d4287e75123e58c269e1496d161f79a7fb82aaf570be9e39f0ba248183ad"
         },
         {
           "path": "frontend/src/views/KnowledgeView.vue",
@@ -2027,7 +2032,7 @@
         {
           "path": "frontend/test/component/knowledge-rag.test.ts",
           "baseline_sha256": "dde64999b0d63a1dd318e1b00f00aedb2f3d79b9981cfabbaac5dc34ff09d18d",
-          "candidate_sha256": "9e6144f6c0070b64f9623c2be93ddc83abc11efc50eacf458de3314212e85544"
+          "candidate_sha256": "313d787bfdf5120e736f9ff5f05ab6b78194b93852abf7f0b849ab5ba6e90c5a"
         },
         {
           "path": "backend-go/internal/business/knowledge/evidence_scope.go",
@@ -2058,7 +2063,7 @@
         ]
       },
       "parity_sha256": {
-        "backend-go/internal/business/knowledge/rag.go": "50c7fbb648e1428eb98213eeff9e8c097ee522840044ea756a5f2b09abd3ff9b"
+        "backend-go/internal/business/knowledge/rag.go": "54ad2bcd4196ad3ed10aab1b0475abdbd523ac8b5a1d79b843c5cf36880f536e"
       },
       "evidence": [
         "specs/033-go-rewrite/optimization-validation-20261106.md",
@@ -2069,7 +2074,8 @@
         "specs/039-evidence-aware-answers/browser-report.json",
         "specs/039-evidence-aware-answers/contracts/answer-cases.json",
         "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json",
-        "docs/reports/coverage-agent-rag-2026-11-07.md"
+        "docs/reports/coverage-agent-rag-2026-11-07.md",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",
@@ -2217,8 +2223,8 @@
     {
       "id": "scope:workspace-ui-consolidation-20261106",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
-      "summary": "036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "036工作区UI整合：知识与记忆、运行中心、设置维护归组；列表优先、表单/抽屉、手机会话与设置偏好细节；保留既有配色和API契约。 后续增加后台索引任务默认折叠、状态摘要和独立刷新，保留错误提示与轮询。 037同步对话检索路由、上下文与统一来源展示的共享入口；仅推进候选源码，不继承整组旧验收。 038同步新建任务两列布局、更多设置与顶栏搜索圆角矩形；只推进候选源码，不继承或升级整组业务验收。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": "frontend/src/components/PageHeader.vue",
@@ -2233,7 +2239,7 @@
         {
           "path": "frontend/src/components/knowledge/KnowledgeDocumentsTab.vue",
           "baseline_sha256": "50b3fb633b57d0666578445b11d25ebd48127d50ba88476739396291bc065ca9",
-          "candidate_sha256": "1c62b31db05053df7df0c89d88a012c84e83a0dbff6820e260b25ad865dbdb59"
+          "candidate_sha256": "21f07d412b834dae6a09b864235974c6135b0ae43cd3b316a5263aa94a5d8c09"
         },
         {
           "path": "frontend/src/components/knowledge/KnowledgeGovernanceTab.vue",
@@ -2420,13 +2426,13 @@
         ]
       },
       "parity_sha256": {
-        "backend-go/internal/business/knowledge/http.go": "eabb7adbb71f83a5c6b422b19c18df6bafb9b909573764911ef3f544ed2e3423",
-        "backend-go/internal/business/memory/http.go": "1664480a0cb83fb84b752de1bd07317ee9b83828d2db4b016687bb30400af27f",
+        "backend/src/main/java/com/personalos/common/ai/config/ModelProfileService.java": "71a1c9e83706cef2aacbbbc7f30b5ed440f23f3f26068c412a94c27c437cacd8",
+        "backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java": "9ad8b47de37a2ff9f8d88b7d45220c21d8a98604f20ad657ce5202ba5672dfb8",
+        "backend/src/main/java/com/personalos/memory/service/MemoryService.java": "74856eedddb744ed62aa4c06bc8fff7d20e595769e91e52b1e0d1bad3f7c3896",
         "backend-go/internal/business/model/read.go": "e041750568e5db986276e95f60c548d7965aba4772f12a7faddf8d30ba39cb34",
         "backend-go/internal/business/model/write.go": "5da0d176b44ce598602d43184fb068a75964a6b97ec6224210f6e5b1f8c7fd31",
-        "backend/src/main/java/com/personalos/common/ai/config/ModelProfileService.java": "71a1c9e83706cef2aacbbbc7f30b5ed440f23f3f26068c412a94c27c437cacd8",
-        "backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java": "0035b1bd41b96c2a0a40cf8dc4dc25161e28dfb2864f12b511a6a893321e85e1",
-        "backend/src/main/java/com/personalos/memory/service/MemoryService.java": "74856eedddb744ed62aa4c06bc8fff7d20e595769e91e52b1e0d1bad3f7c3896"
+        "backend-go/internal/business/knowledge/http.go": "a766fc0b46a94f2221a6859fc0bb9a694860205eab39bcf4f2bb258b73ee25cf",
+        "backend-go/internal/business/memory/http.go": "1664480a0cb83fb84b752de1bd07317ee9b83828d2db4b016687bb30400af27f"
       },
       "evidence": [
         "specs/036-workspace-ui/validation.md",
@@ -2445,7 +2451,8 @@
         "specs/039-evidence-aware-answers/validation.md",
         "specs/039-evidence-aware-answers/browser-report.json",
         "specs/039-evidence-aware-answers/contracts/answer-cases.json",
-        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json"
+        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "Java/Go责任文件只是未修改的接口/业务依赖，哈希绑定不代表新增或完成双端行为验收。",
@@ -2457,8 +2464,8 @@
     {
       "id": "scope:chat-evidence-context-20261106",
       "status": "in_progress",
-      "source_commit": "23bdcf4f2e92406e4d6e21986b4f9c5909a4723a",
-      "summary": "037对话增强结合有界历史做只读检索路由，操作续改不被资料澄清短路；统一流式/完成来源入口、去重抽屉与检索过程，隐藏普通空来源。独立问答保持资料边界，保留真正冲突与降级说明。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "037对话增强结合有界历史做只读检索路由，操作续改不被资料澄清短路；统一流式/完成来源入口、去重抽屉与检索过程，隐藏普通空来源。独立问答保持资料边界，保留真正冲突与降级说明。 039同步有界逐项作答、独立核对、历史冲突范围与来源原文对照；仅推进候选源码，模拟模型验证不等同整组验收。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": "backend-go/internal/business/chat/conversation_integration_test.go",
@@ -2483,7 +2490,7 @@
         {
           "path": "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java",
           "baseline_sha256": "eec047083a8a2af1dac273bb3ee640ca17de14545764cd2545c0f026aa4a3921",
-          "candidate_sha256": "b63746f24ba7aa2258d8c950f2601a630cab1d43a77fe87c3e312d7d4231efdb"
+          "candidate_sha256": "3636bd0ef6e991991e06a0caf806739cedeef207a41f5c5b5fbd5a6ba7f4e019"
         },
         {
           "path": "backend/src/main/java/com/personalos/knowledge/spi/KnowledgeSearchPort.java",
@@ -2661,16 +2668,16 @@
         ]
       },
       "parity_sha256": {
-        "backend-go/internal/app/foundation.go": "808651edbc8a0bdf966bbd8339a0771084976671ce3fd6bcc4cff1a7b3caab89",
-        "backend-go/internal/business/chat/module.go": "d23c217b9a47c098a10d90b91d3c7696a7e8ac1407ea873612f500312e966862",
+        "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java": "69176203d9913c52e342006cc344c2d87aa784e6e2749c8b36dff52c927bab7a",
+        "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java": "be359c0c321947d13a2f1af1d498650e053e9a7f71825582bd262ad5d7e80649",
+        "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java": "dc1435fa02cb2ec066a0d15a6872f6c127410469adac5f2dd4f32fad579deda0",
+        "backend/src/main/java/com/personalos/knowledge/rag/RagResult.java": "0f4cd6fc569eff283f70654db1311274d8ce3e5732418d11a92dc22467cd3aa1",
+        "backend/src/main/java/com/personalos/knowledge/rag/EvidenceReview.java": "21f28745abff340f490ac5db98eb65d9fc68f3ccb88cc5d717e22ba75e416991",
         "backend-go/internal/business/chat/retrieval.go": "d1fe30824b0e91158571395c134e46d440fd482a97f212fe4764be36f8180fd7",
         "backend-go/internal/business/chat/stream.go": "2c9b678b5e6e5f97b126438ce2fe0b70372fcd3fcbc8cb7ffcb5dfd2b3ebfb77",
-        "backend-go/internal/business/knowledge/evidence_scope.go": "372ff9ac526c36510c9db0c6c52b19ae28c26d90f16f523362011b57cecc7367",
-        "backend/src/main/java/com/personalos/chat/service/ChatCompletionService.java": "69176203d9913c52e342006cc344c2d87aa784e6e2749c8b36dff52c927bab7a",
-        "backend/src/main/java/com/personalos/knowledge/rag/EvidenceReview.java": "21f28745abff340f490ac5db98eb65d9fc68f3ccb88cc5d717e22ba75e416991",
-        "backend/src/main/java/com/personalos/knowledge/rag/RagResult.java": "0f4cd6fc569eff283f70654db1311274d8ce3e5732418d11a92dc22467cd3aa1",
-        "backend/src/test/java/com/personalos/chat/ChatKnowledgeIntegrationTest.java": "be359c0c321947d13a2f1af1d498650e053e9a7f71825582bd262ad5d7e80649",
-        "backend/src/test/java/com/personalos/knowledge/rag/RagRetrievalPipelineTest.java": "019aad6b3ca3ba333ab3e5c89907ceb0eee88165d6a0d4c8994f8c96fd3822c1"
+        "backend-go/internal/business/chat/module.go": "d23c217b9a47c098a10d90b91d3c7696a7e8ac1407ea873612f500312e966862",
+        "backend-go/internal/app/foundation.go": "808651edbc8a0bdf966bbd8339a0771084976671ce3fd6bcc4cff1a7b3caab89",
+        "backend-go/internal/business/knowledge/evidence_scope.go": "372ff9ac526c36510c9db0c6c52b19ae28c26d90f16f523362011b57cecc7367"
       },
       "evidence": [
         "specs/037-conversational-knowledge/validation.md",
@@ -2684,7 +2691,8 @@
         "specs/039-evidence-aware-answers/validation.md",
         "specs/039-evidence-aware-answers/browser-report.json",
         "specs/039-evidence-aware-answers/contracts/answer-cases.json",
-        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json"
+        "specs/039-evidence-aware-answers/contracts/java-rag-pipeline.json",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "路由与多轮编排使用模拟模型；隔离数据库不代表真实模型质量或实际日程修改已验收。",
@@ -2695,8 +2703,8 @@
     {
       "id": "scope:agent-rag-coverage-20261107",
       "status": "in_progress",
-      "source_commit": "7a852359f13108e3a4f50197867ef5c70548cf2f",
-      "summary": "扩展双版本 Agent、RAG、工具执行、存储故障及 HTTP 边界回归；登记覆盖率扩展涉及的原基线文件，完整覆盖率报告独立给出。 2026-11-07 质量门禁优化：重绑本次文档、测试及阈值变更；发布状态不变。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "扩展双版本 Agent、RAG、工具执行、存储故障及 HTTP 边界回归；登记覆盖率扩展涉及的原基线文件，完整覆盖率报告独立给出。 2026-11-07 质量门禁优化：重绑本次文档、测试及阈值变更；发布状态不变。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": "CONTRIBUTING.md",
@@ -2876,7 +2884,7 @@
         {
           "path": "scripts/eval/README.md",
           "baseline_sha256": "81b7035560d17ed1c11cc603b336ae030c9422f89f556a77d71194f293ed9e36",
-          "candidate_sha256": "23568cbe881173cb119ad4b98ce12cdc5b848a0f594bb1eec040e6001764ccbd"
+          "candidate_sha256": "aa7c64dd29fada4c48ec55a3c71a5da777ce3a923067bee35fafa9b745aef050"
         }
       ],
       "parity": {
@@ -2893,7 +2901,8 @@
       },
       "evidence": [
         "docs/reports/coverage-agent-rag-2026-11-07.md",
-        "testdata/README.md"
+        "testdata/README.md",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "覆盖率表示已执行的代码路径，不证明真实模型质量、线上负载或发布就绪。",
@@ -2903,8 +2912,8 @@
     {
       "id": "scope:backend-quality-gates-20261107",
       "status": "in_progress",
-      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
-      "summary": "Java 行/分支与 Go 完整集合语句分别要求 95%，新增变更代码门禁、13 项 Agent/RAG 关键场景和 18 个双版本共享契约。证据绑定完整源码提交；Go 分支仍未测量。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "Java 行/分支与 Go 完整集合语句分别要求 95%，新增变更代码门禁、13 项 Agent/RAG 关键场景和 18 个双版本共享契约。证据绑定完整源码提交；Go 分支仍未测量。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": ".github/workflows/ci.yml",
@@ -2999,12 +3008,12 @@
         {
           "path": "testdata/README.md",
           "baseline_sha256": null,
-          "candidate_sha256": "7ede39015ac811956522b7c03e970b44b55ac242fc49cae606bed8e931529843"
+          "candidate_sha256": "020692cda85838ff5efec8115d02fe2ef69dc361daa1aff816f1838cc54c25be"
         },
         {
           "path": "testdata/agent-rag/chunking.json",
           "baseline_sha256": null,
-          "candidate_sha256": "b04f7de9e2187b74add77b38af8d71f5493b91f559f17dd6c1acc4ddfeee18df"
+          "candidate_sha256": "bd3ebfd60c5693a5b77eef5bfe3e32d1effbb10bfee464ee6e7e2b5372278100"
         },
         {
           "path": "testdata/agent-rag/execution-budget.json",
@@ -3031,19 +3040,21 @@
         "docs/testing.md",
         "scripts/coverage/critical-scenarios.json",
         ".github/workflows/coverage.yml",
-        "docs/reports/quality-gates-2026-11-07.md"
+        "docs/reports/quality-gates-2026-11-07.md",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "质量门禁通过不代表真实模型质量或生产发布批准。",
         "Go 原生 profile 只统计语句，分支覆盖率尚未测量。",
         "本记录保持 in_progress，不改固定基线或 release gates。"
-      ]
+      ],
+      "parity_sha256": {}
     },
     {
       "id": "scope:prior-documentation-and-test-additions-20261107",
       "status": "in_progress",
-      "source_commit": "e784f6bdd10fc82e04e029da288ea06a1672d21c",
-      "summary": "登记此前已提交但未列入迁移增量清单的文档、离线检查和 Java 测试新增文件；按原提交逐文件核对字节，不改变固定基线或宣称迁移完成。",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "登记此前已提交但未列入迁移增量清单的文档、离线检查和 Java 测试新增文件；按原提交逐文件核对字节，不改变固定基线或宣称迁移完成。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
           "path": "backend/README.md",
@@ -3068,7 +3079,7 @@
         {
           "path": "backend/src/test/java/com/personalos/calendar/CalendarEventBoundaryTest.java",
           "baseline_sha256": null,
-          "candidate_sha256": "2ae4f3e8975f88e7044e06de42d98673b9d901903593c6f2879b27200e50ddfe"
+          "candidate_sha256": "bb7d80f46a216305951492d33c5ba4ec8c1a0c7ca5472144f03edd5eec209c4c"
         },
         {
           "path": "backend/src/test/java/com/personalos/calendar/CalendarExchangeBoundaryTest.java",
@@ -3428,17 +3439,17 @@
         {
           "path": "docs/backend-parity.md",
           "baseline_sha256": null,
-          "candidate_sha256": "478e77c8d1ad9617b5340e5afe6f5fff9fb9dc7b3bebb05bfdbaa5375487dc88"
+          "candidate_sha256": "eaefd2e7fe5b1464c6c422cc733c09586961aeb77e59a8237f950fbfff048045"
         },
         {
           "path": "docs/configuration.md",
           "baseline_sha256": null,
-          "candidate_sha256": "646f8882551616ae80c208805fc6f2afcc128292406df184fc26844df2ef98f0"
+          "candidate_sha256": "7725630dafd8d46b241c944d0ce3bdebabbf8d292427482dd78d81ae5c8784e4"
         },
         {
           "path": "docs/evaluation.md",
           "baseline_sha256": null,
-          "candidate_sha256": "3f4beac4e757ca6ba07e4dfe0c9914450c5c4b497cab0fc5e8feedbd62644371"
+          "candidate_sha256": "4745aa846b9a085e670c1a01b467ce4bfacaadf7e1ddf8b91982022fd8c30593"
         },
         {
           "path": "docs/memory-and-context.md",
@@ -3453,7 +3464,7 @@
         {
           "path": "docs/rag-ingestion.md",
           "baseline_sha256": null,
-          "candidate_sha256": "a00187613386c11a4e99003e9ade09d41cece74d0700550168370449c2d01dd4"
+          "candidate_sha256": "a3c41ef65ad8041d48011779644a1b6e2a81291aebd5055a7beb307bd09d73c3"
         },
         {
           "path": "docs/rag-retrieval.md",
@@ -3463,7 +3474,7 @@
         {
           "path": "docs/rag.md",
           "baseline_sha256": null,
-          "candidate_sha256": "310cd7bf44fec5405c7e6a33d2d0bbfa678769103e3da1a6f56d8a78fd183f64"
+          "candidate_sha256": "3efd2a4c8ebdf3ff1e3a74564d4cec9cca432820e20753693ce8fffffacbdba2"
         },
         {
           "path": "docs/reference/http-routes.md",
@@ -3473,7 +3484,7 @@
         {
           "path": "docs/reports/README.md",
           "baseline_sha256": null,
-          "candidate_sha256": "991f46b04575d2092fd5a869154211e76dfa88b40b04592357cf8449fa6a9ca1"
+          "candidate_sha256": "506ed86a166e0f7ab59c3b93b3fe261536838231380540a97d86f44d8ef3c33a"
         },
         {
           "path": "docs/reports/coverage-agent-rag-2026-11-07.md",
@@ -3488,7 +3499,7 @@
         {
           "path": "docs/user-guide.md",
           "baseline_sha256": null,
-          "candidate_sha256": "38d8b5bd089ff26df75a24affde469f398cd20892c493f719506d49d716bbf51"
+          "candidate_sha256": "a055340a2aaffa4186e4ef6513aa5a00cdb41522d916ccdff42e6b066fbd103c"
         },
         {
           "path": "frontend/README.md",
@@ -3580,7 +3591,8 @@
       },
       "evidence": [
         "docs/reports/coverage-agent-rag-2026-11-07.md",
-        "testdata/README.md"
+        "testdata/README.md",
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md"
       ],
       "limitations": [
         "仅修复既有来源登记缺口，不赋予历史结果新的验收结论。",
@@ -3679,6 +3691,342 @@
         "SQL 和协议边界替身不证明真实数据库锁/隔离与 AMQP 成功投递；保留全部隔离设施测试。",
         "本记录保持 in_progress，不继承迁移 verified 状态，不改变固定 SQL oracle 或 release gates。"
       ]
+    },
+    {
+      "id": "scope:knowledge-ingestion-boundaries-20261109",
+      "status": "in_progress",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "嵌入条数/Token双重分批、扫描PDF与10MiB上传、受保护Markdown结构及真实边界回归；仅登记已提交增量。",
+      "files": [
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/jobs/KnowledgeIndexJobs.java",
+          "baseline_sha256": "15519d6b024b56b473920fa5b24f949485049fc2a1d4f65bca5278d9c6006380",
+          "candidate_sha256": "cb0837f5fd5f945de125601dd9c016f7afb93ac6cea23fd2cfb94c06701b2505"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/reader/ChatClientVisionTextExtractor.java",
+          "baseline_sha256": "62a01f1b35ee62efd16b495c3214efeeb8645af1a42e5797db3400868a3973f0",
+          "candidate_sha256": "68adccb2b6a9ea2c938c73d2b8fe6382456c1ed9f2ebd5bbe655c07e52ca8ef5"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/reader/DocumentReaderFactory.java",
+          "baseline_sha256": "5a63f5a9858f63ceafba7c4848fd3d76b0e690979a4010c710bb1fb14824e916",
+          "candidate_sha256": "26cea848b5ba4808e1425db344e2ff8b577bdeed37e73bf598745509b3b78bb5"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/reader/PdfDocumentReader.java",
+          "baseline_sha256": "f6b224bb538ccef9a3cdcfa80165fd63d5e5ffb70df916c4c2ef9bba8ef177d8",
+          "candidate_sha256": "6f387734fc5ce361ca8ad2325584e189f06eb9f876fcd738260c0e674015c750"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/reader/ReaderSupport.java",
+          "baseline_sha256": "3acef3c01df4882acd6af423a9d8236b045d16e8122f50455b7c5ba1349fd243",
+          "candidate_sha256": "430e0d3de968903072c04e0d3a5c8b91e0655a19a0a6b7727d84072ee10bcde4"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/service/BoundedEmbeddingBatchingStrategy.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "b41e9ae2962c0072c0c3612653ac3381d43462386548f77b3d956aec736012b0"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java",
+          "baseline_sha256": "0035b1bd41b96c2a0a40cf8dc4dc25161e28dfb2864f12b511a6a893321e85e1",
+          "candidate_sha256": "9ad8b47de37a2ff9f8d88b7d45220c21d8a98604f20ad657ce5202ba5672dfb8"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/splitter/MarkdownBlockScanner.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "73d8e8eb869711319ef8407dcfe3277770328ad84ad7a3cb24eaab2efe7e0fa2"
+        },
+        {
+          "path": "backend/src/main/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitter.java",
+          "baseline_sha256": "e90d9ca71b332c21ce41804f02dab47db2fbf3a044bd652905ed671f2ede9c06",
+          "candidate_sha256": "758d59114b3493cc44e829604d010915ecda5286ef85f3046a4f3a0fd9d83872"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/reader/PdfDocumentReaderTest.java",
+          "baseline_sha256": "eac025201dd7443019e356b69a68032afa1690a5f8da8cd4be72819ac23f6b17",
+          "candidate_sha256": "2754983b2b553030e2a78c60244e2aa640c87510017649c618a47521d8db4605"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/service/BoundedEmbeddingBatchingStrategyTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "58c82c2994a7c874943f016a07ba907b553264e92dc4f7aa4ec2c7dd9514f2a2"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/splitter/ProtectedMarkdownBlocksTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "033f7d10114d3378c24e5777e4b8184dcf4041aa94ef23d22db62a55f106c2de"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/splitter/MarkdownBlockScannerBoundaryTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "09f62861e8130e6a4ebed7898a2a983dc2490c67dd6cedd7dab7d2e7349e4b4a"
+        },
+        {
+          "path": "frontend/nginx.conf",
+          "baseline_sha256": "a298093e020a62bb6a2a07ed7263d01a90f309aa1ab92c3179c01c9df38ffb5a",
+          "candidate_sha256": "80225c7bb49ddbb5e888eccbea5480e91e451d606b03209417468c7f968f297a"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/reader.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "f4fae39c48f59f532a0802ca76fb6de28c58088162d45daa6b2cb9bf670313d2"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/reader_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "c2aa5a541a74d3e206ec507a2681f3e6518bb170fcf2cee19dc1d0cfc7131827"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/markdown_blocks.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "72860ab8007718610d2d9a57eadf505c8e64b6e02634bd6591c079d47b11931d"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/splitter.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "077ad3bbbbb0f7e40ca1443fa113d1755f25239035bca64fa4468e6a03401864"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/splitter_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "7f382c1e47e3cc4ac7af44f98be6ea48199f644b7ce3c3fea8d5e048c72e9144"
+        },
+        {
+          "path": "backend-go/internal/platform/config/process.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "5872e44afe72221c24344a5eaf30dee8d12e1c8869de447eccd4cbac1a44eccd"
+        },
+        {
+          "path": "backend-go/internal/platform/config/process_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "ee38cfc5cc3f22aa879a321ab14753dd9d03f13d710ea2b783b8130039a65d51"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/knowledge/reader/PdfDocumentReader.java",
+          "backend/src/main/java/com/personalos/knowledge/splitter/MarkdownStructureTextSplitter.java"
+        ],
+        "go": [
+          "backend-go/internal/business/knowledge/reader.go",
+          "backend-go/internal/business/knowledge/splitter.go"
+        ]
+      },
+      "evidence": [
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md",
+        "backend/src/test/java/com/personalos/knowledge/reader/PdfDocumentReaderTest.java",
+        "backend/src/test/java/com/personalos/knowledge/service/BoundedEmbeddingBatchingStrategyTest.java",
+        "backend/src/test/java/com/personalos/knowledge/splitter/ProtectedMarkdownBlocksTest.java",
+        "backend/src/test/java/com/personalos/knowledge/splitter/MarkdownBlockScannerBoundaryTest.java"
+      ],
+      "limitations": [
+        "本组仅登记候选源码与职责，不宣称真实模型质量、生产切换或Go发布批准。",
+        "Java第一版收尾与Go迁移五个发布门禁分别验收；保留固定oracle、旧报告和未完成状态。"
+      ],
+      "parity_sha256": {}
+    },
+    {
+      "id": "scope:query-rewrite-config-20261109",
+      "status": "in_progress",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "RAG查询扩展开关与精确查询模式、双端默认值和阶段SKIPPED回归；application.yml同时记录PDF视觉与上传配置。",
+      "files": [
+        {
+          "path": "backend/src/main/resources/application.yml",
+          "baseline_sha256": "068bc97f8ec29a3a646c42d2bc5e367ad527e6dd82bc567e5056b771c2c253e7",
+          "candidate_sha256": "5907a60c4fdfc02dc3145b918b5a8480dcd3f0bf4f9f5b97dc2b64339785303b"
+        },
+        {
+          "path": "backend/src/test/java/com/personalos/knowledge/rag/QueryRewriteConfigurationTest.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "42a8ff8f91900376df31a1ae74d6c6bd4caba503657d0f0ea81081c218946edb"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/query_rewrite.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "b2abc6fbe1c052da8914152a9d864d5d6927751298833b8e795baef2b6efd90c"
+        },
+        {
+          "path": "backend-go/internal/business/knowledge/query_rewrite_test.go",
+          "baseline_sha256": null,
+          "candidate_sha256": "0ef15524c1754680977df77bce22dcc5eb25c090ec267f2e53cd3fab1b314411"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java"
+        ],
+        "go": [
+          "backend-go/internal/business/knowledge/query_rewrite.go",
+          "backend-go/internal/business/knowledge/rag.go"
+        ]
+      },
+      "evidence": [
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md",
+        "backend/src/test/java/com/personalos/knowledge/rag/QueryRewriteConfigurationTest.java"
+      ],
+      "limitations": [
+        "本组仅登记候选源码与职责，不宣称真实模型质量、生产切换或Go发布批准。",
+        "Java第一版收尾与Go迁移五个发布门禁分别验收；保留固定oracle、旧报告和未完成状态。"
+      ],
+      "parity_sha256": {
+        "backend-go/internal/business/knowledge/rag.go": "54ad2bcd4196ad3ed10aab1b0475abdbd523ac8b5a1d79b843c5cf36880f536e",
+        "backend/src/main/java/com/personalos/knowledge/rag/RagRetrievalPipeline.java": "3636bd0ef6e991991e06a0caf806739cedeef207a41f5c5b5fbd5a6ba7f4e019"
+      }
+    },
+    {
+      "id": "scope:calendar-boundary-regressions-20261109",
+      "status": "in_progress",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "登记重复日程时区边界回归和日历首次窗口/视图切换组件测试；现有业务语义不因登记变更。",
+      "files": [
+        {
+          "path": "backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java",
+          "baseline_sha256": "67a652ac8bdb2a3363a2fcad02a547827379b0cd4991c72777a95ee1912f414c",
+          "candidate_sha256": "09ad88e4762e5fa46ad9cfc3a671117eccd80dffc6fa2d5517d86770b4884bb3"
+        },
+        {
+          "path": "frontend/test/component/calendar-view.test.ts",
+          "baseline_sha256": null,
+          "candidate_sha256": "a2ec55d7bc39f504295314b767b92be8bf8dafe1505c71b42adef767cfe5cf62"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/calendar/service/CalendarEventService.java"
+        ],
+        "go": [
+          "backend-go/internal/business/calendar/events.go"
+        ]
+      },
+      "evidence": [
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md",
+        "backend/src/test/java/com/personalos/calendar/recurrence/RecurrenceCalculatorTest.java",
+        "frontend/test/component/calendar-view.test.ts"
+      ],
+      "limitations": [
+        "本组仅登记候选源码与职责，不宣称真实模型质量、生产切换或Go发布批准。",
+        "Java第一版收尾与Go迁移五个发布门禁分别验收；保留固定oracle、旧报告和未完成状态。"
+      ],
+      "parity_sha256": {
+        "backend/src/main/java/com/personalos/calendar/service/CalendarEventService.java": "767af14353fc2594a52e434903d3fe3c5b0de0771cebaac2906880026a776586",
+        "backend-go/internal/business/calendar/events.go": "caf172a5eeb07b8cb4e134d5f9f6f7b04eb45678de06357305165e1847857ebb"
+      }
+    },
+    {
+      "id": "scope:corpus-evaluation-additions-20261109",
+      "status": "in_progress",
+      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "summary": "登记公开语料采集、断点入库、冻结候选重排/对抗评测、离线回归和原始报告；保留失败及裁判/曝光限制，不当作双端质量批准。",
+      "files": [
+        {
+          "path": "docs/reports/knowledge-1000-2026-11-08.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "fed692caa6d0c21f63071133b5f8069b0f702e98e435d4b2d113165808b5fbc1"
+        },
+        {
+          "path": "docs/reports/knowledge-adversarial-2026-11-08.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "4cdd0763973c8164c0c192ddeb6797fa2402e631020e0390eacd8a94592892a7"
+        },
+        {
+          "path": "docs/reports/knowledge-adversarial-2026-11-08.metrics.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "bc8600f670f3fed919b83b945630d500714a0989ac563161b29b693b0860857b"
+        },
+        {
+          "path": "scripts/eval/discover-juejin-sitemap.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "2683f154460738c76d1c6b5b24191a7d7ff91850bbf0fffc48a32d0939102119"
+        },
+        {
+          "path": "scripts/eval/fetch-juejin-scale.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "deed181da6f4b01d288c272040a9138c753c8328e55e9977149e96faf5838941"
+        },
+        {
+          "path": "scripts/eval/java/KnowledgeCorpusCheck.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "afcccf96fd34f27c67e82dafb47ae76d3951618bf18651daeb45fbcc023b88e9"
+        },
+        {
+          "path": "scripts/eval/java/KnowledgeScaleHarness.java",
+          "baseline_sha256": null,
+          "candidate_sha256": "09d76b7574e1fae59c6b94154ba368c66c049a0b56a0f72a464b19cfc889639f"
+        },
+        {
+          "path": "scripts/eval/knowledge-adversarial-corpus.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "43b03e96e45fcf4b1369218c032ccdb18340d199b5092382ea7b79cfd4223ee7"
+        },
+        {
+          "path": "scripts/eval/knowledge-adversarial-eval.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "f40cfc4c62ba09e6f69fee9726757bfe6ae7f22eb09767d1920857ece0e58f4a"
+        },
+        {
+          "path": "scripts/eval/knowledge-scale-cases.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "23bad4340253f2731565635ea90a8c5c86d7ba92ca2665d000ebccbdefa11ab3"
+        },
+        {
+          "path": "scripts/eval/knowledge-scale-eval.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "c1ac04cbb766c8f2a2977c3a8af3aadfb81ca4a1452a61b0fa9ea01ba0619b6a"
+        },
+        {
+          "path": "scripts/eval/knowledge-scale.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "7bf7ddae80566dbaa8cb87c9f21e036f60448802cdf5a35743031a3f86635822"
+        },
+        {
+          "path": "scripts/eval/requirements-knowledge-scale.txt",
+          "baseline_sha256": null,
+          "candidate_sha256": "4c567e559ae32c750a609422420b0e6734d208b62dfa0397774deb00b795f6ab"
+        },
+        {
+          "path": "scripts/eval/test_knowledge_adversarial.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "9edb9995679be1571a355190f991f3d88e8305d918a7429264b09c2d3fb02dac"
+        },
+        {
+          "path": "scripts/eval/test_knowledge_corpus.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "a6a13a2d35d224561f2fe5956d4c73415228637ca2ee3ddd4e6aa460d3a1728d"
+        },
+        {
+          "path": "scripts/eval/test_knowledge_scale.py",
+          "baseline_sha256": null,
+          "candidate_sha256": "910ae475cc74f55877f9aabe88bae83d16d6efbca2f485eec860ba715e6d842f"
+        }
+      ],
+      "parity": {
+        "java": [
+          "backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java"
+        ],
+        "go": [
+          "backend-go/internal/business/knowledge/reader.go"
+        ]
+      },
+      "evidence": [
+        "specs/033-go-rewrite/closeout-scope-review-20261109.md",
+        "docs/reports/knowledge-1000-2026-11-08.md",
+        "docs/reports/knowledge-adversarial-2026-11-08.md",
+        "docs/reports/knowledge-adversarial-2026-11-08.metrics.json",
+        "scripts/eval/test_knowledge_adversarial.py",
+        "scripts/eval/test_knowledge_corpus.py",
+        "scripts/eval/test_knowledge_scale.py"
+      ],
+      "limitations": [
+        "本组仅登记候选源码与职责，不宣称真实模型质量、生产切换或Go发布批准。",
+        "Java第一版收尾与Go迁移五个发布门禁分别验收；保留固定oracle、旧报告和未完成状态。"
+      ],
+      "parity_sha256": {
+        "backend-go/internal/business/knowledge/reader.go": "f4fae39c48f59f532a0802ca76fb6de28c58088162d45daa6b2cb9bf670313d2",
+        "backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java": "9ad8b47de37a2ff9f8d88b7d45220c21d8a98604f20ad657ce5202ba5672dfb8"
+      }
     }
   ]
 }
