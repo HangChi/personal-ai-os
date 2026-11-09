@@ -7773,8 +7773,8 @@
     {
       "id": "scope:desktop-installers-20261110",
       "status": "in_progress",
-      "source_commit": "7d4b8fffeb1f8a083aaa174410e3271670f877c0",
-      "files": 28
+      "source_commit": "4c8bc0a4446a20b85853399e95bbab3311556c12",
+      "files": 29
     }
   ]
 }

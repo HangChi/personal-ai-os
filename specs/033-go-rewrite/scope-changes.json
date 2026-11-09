@@ -4035,7 +4035,7 @@
     {
       "id": "scope:desktop-installers-20261110",
       "status": "in_progress",
-      "source_commit": "7d4b8fffeb1f8a083aaa174410e3271670f877c0",
+      "source_commit": "4c8bc0a4446a20b85853399e95bbab3311556c12",
       "summary": "用户明确要求完整本地 exe/dmg：Electron 桌面窗口与首次配置、内置 Temurin JRE/独立 PostgreSQL pgvector、回环认证及 CSRF、服务生命周期、持久化界面偏好和原生平台构建。复用当前 Java 后端/前端，不替换 Go 候选。",
       "files": [
         {
@@ -4177,6 +4177,11 @@
           "path": "specs/040-desktop-installers/research.md",
           "baseline_sha256": null,
           "candidate_sha256": "623e4dd67d74cb83d26a1f2e808e201e3f9aa392c0bac6b95794ac98e3fa09bf"
+        },
+        {
+          "path": "specs/040-desktop-installers/release-request.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "2f4ffd2908291298576ac57036ccfdd81c2e27237aa65908320bb7d97e9bc7f1"
         }
       ],
       "parity": {
