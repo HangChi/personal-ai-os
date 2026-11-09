@@ -32,6 +32,7 @@
       "category": "public.app-category.productivity",
       "target": ["dmg", "zip"],
       "identity": "-",
+      "signIgnore": ["/Contents/Resources/runtime/"],
       "hardenedRuntime": false,
       "minimumSystemVersion": "14.0"
     },

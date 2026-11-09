@@ -58,5 +58,8 @@ GitHub Actions 的 `Desktop Installers` 工作流分别在 Windows x64、Apple S
 runner 构建，执行独立新数据库的启动/认证/迁移/模型桩/重启持久化/退出回归，再检验打包资源。
 工作流只上传构建附件，不自动发布未经核验的 release。
 
+`Desktop Release Draft` 仅在显式提交发布请求后，将对应的三平台成功构建在云端汇总，
+逐文件核对来源、原生回归和 SHA-256 后上传预发布草稿；草稿核验后才正式发布。
+
 桌面安装新增依赖与替代方案见 [设计决策](../specs/040-desktop-installers/research.md)，
 第三方许可见 [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)。
