@@ -4035,9 +4035,14 @@
     {
       "id": "scope:desktop-installers-20261110",
       "status": "in_progress",
-      "source_commit": "6913766972e3cc41053b568295fbb4a77bcdaa04",
+      "source_commit": "7d4b8fffeb1f8a083aaa174410e3271670f877c0",
       "summary": "用户明确要求完整本地 exe/dmg：Electron 桌面窗口与首次配置、内置 Temurin JRE/独立 PostgreSQL pgvector、回环认证及 CSRF、服务生命周期、持久化界面偏好和原生平台构建。复用当前 Java 后端/前端，不替换 Go 候选。",
       "files": [
+        {
+          "path": ".github/workflows/desktop-release.yml",
+          "baseline_sha256": null,
+          "candidate_sha256": "008e17c4494405626b42655706a4cf5407c330cdbafb24fa13a9e9f1912c957e"
+        },
         {
           "path": ".github/workflows/desktop.yml",
           "baseline_sha256": null,
@@ -4051,7 +4056,7 @@
         {
           "path": "desktop/README.md",
           "baseline_sha256": null,
-          "candidate_sha256": "3de1fec4fe8e2e987011e243077431af5004c36743fd57f1df9d25f28829b0e2"
+          "candidate_sha256": "8adab77c6daf83bfa73538df95b8da2e04188773b30f60a7b6baaaa37617e1e7"
         },
         {
           "path": "desktop/THIRD_PARTY_NOTICES.md",
@@ -4076,7 +4081,7 @@
         {
           "path": "desktop/package.json",
           "baseline_sha256": null,
-          "candidate_sha256": "eea77e7ace22efe9ae6b6bf6d4483ef43af0ae12be626ee1e1d0f21822ceaddb"
+          "candidate_sha256": "a90741bfae0d73c37d2c23e031236418a4213bed7e812ad634df2c7988d4657c"
         },
         {
           "path": "desktop/runtime-lock.json",
@@ -4087,6 +4092,11 @@
           "path": "desktop/scripts/prepare-resources.cjs",
           "baseline_sha256": null,
           "candidate_sha256": "e5f9822e14e34b9baa678ccc2df29676755210a324904df101ea9a0715784f9d"
+        },
+        {
+          "path": "desktop/scripts/publish-draft.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "3634b141941d0114cddafde89e0173131e3076b84148e1bec90c8c47ae310299"
         },
         {
           "path": "desktop/scripts/render-icon.cjs",
@@ -4157,6 +4167,11 @@
           "path": "desktop/test/desktop.test.cjs",
           "baseline_sha256": null,
           "candidate_sha256": "8fe8003c30ed3a38ebccdaca9fc84eb5da07e61b08736a40b204aa0424d7a953"
+        },
+        {
+          "path": "desktop/test/publish.test.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "e3e74132b5382f9b948cc1fd3f85aac8315fda6ecf34e9a963b8d6f044345d37"
         },
         {
           "path": "specs/040-desktop-installers/research.md",
