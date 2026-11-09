@@ -20,6 +20,7 @@ import urllib.request
 import go_runtime
 from p8_model_fixture import Handler
 from p8_context_probe import RequestObservations, verify_context_boundaries
+from current_budget_cases import install_current_budget_cases
 from run_go_local_tests import free_port, reap
 from run_go_postgres_tests import IMAGE, ROOT, run_package
 
@@ -334,12 +335,18 @@ def exercise(container, fixture):
                             print("Synthetic E2E stream error: " + json.dumps(result.first("error"), ensure_ascii=False), flush=True)
                         return result
                     suite.stream_chat = stream_chat
-                    restoration_failures = isolate_budget_case(suite)
-                    result = suite.run(GROUPS)
+                    if MODE in {"acceptance", "budget"}:
+                        current = install_current_budget_cases(suite, BACKEND)
+                        if MODE == "budget":
+                            suite.CASES = current
+                        restoration_failures = []
+                    else:
+                        restoration_failures = isolate_budget_case(suite)
+                    result = suite.run(None if MODE == "budget" else GROUPS)
                     if restoration_failures:
                         raise AssertionError("Original E2E budget restoration failed")
                     if result != 0:
-                        raise AssertionError("Original E2E failures recorded in specs/033-go-rewrite/p8-e2e")
+                        raise AssertionError("E2E failures recorded in " + str(suite.REPORT_DIR))
     finally:
         model.shutdown()
         model.server_close()
@@ -351,7 +358,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("go", "java"), default="go")
     parser.add_argument("--groups", nargs="+")
-    parser.add_argument("--mode", choices=("e2e", "cancel", "browser", "plan", "memory", "context"), default="e2e")
+    parser.add_argument("--mode", choices=("e2e", "acceptance", "budget", "cancel", "browser", "plan", "memory", "context"),
+                        default="e2e", help="e2e preserves frozen cases; acceptance splits G4; budget runs its two current cases")
     parser.add_argument("--output", type=Path, help="new evidence directory; refuses an existing path")
     parser.add_argument("--java-jar", type=Path, default=JAVA_JAR, help="Java release artifact to exercise")
     arguments = parser.parse_args()
