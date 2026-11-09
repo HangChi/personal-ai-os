@@ -19479,9 +19479,12 @@
         "scripts/workspace/test_java_runtime.py",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "docs/reports/coverage-agent-rag-2026-11-07.md"
+        "docs/reports/coverage-agent-rag-2026-11-07.md",
+        "specs/033-go-rewrite/current-budget-acceptance-20261109.md",
+        "scripts/migration/current_budget_cases.py",
+        "scripts/migration/test_current_budget_cases.py"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:write-negotiation-and-bounded-search-20261106：写入前完成响应协商；SQL有界正文候选与Java批量加载；TLS夹具遵循证书配置；验证脚本发现JDK并加入CI；原SQL不可变且只允许登记追加版本。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:write-negotiation-and-bounded-search-20261106：写入前完成响应协商；SQL有界正文候选与Java批量加载；TLS夹具遵循证书配置；验证脚本发现JDK并加入CI；原SQL不可变且只允许登记追加版本。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。 2026-11-09 CI追加Java/Go独立当前预算双场景验收；仅绑定已提交的测试入口与候选配置，不提升任何发布门禁。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "file:backend/src/main/java/com/personalos/knowledge/startup/VectorDimensionValidator.java": {
       "status": "implemented",
@@ -23078,9 +23081,12 @@
         "scripts/workspace/test_java_runtime.py",
         "specs/033-go-rewrite/p8-inventory-review.md",
         "specs/033-go-rewrite/p8-completion.md",
-        "docs/reports/coverage-agent-rag-2026-11-07.md"
+        "docs/reports/coverage-agent-rag-2026-11-07.md",
+        "specs/033-go-rewrite/current-budget-acceptance-20261109.md",
+        "scripts/migration/current_budget_cases.py",
+        "scripts/migration/test_current_budget_cases.py"
       ],
-      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:write-negotiation-and-bounded-search-20261106：写入前完成响应协商；SQL有界正文候选与Java批量加载；TLS夹具遵循证书配置；验证脚本发现JDK并加入CI；原SQL不可变且只允许登记追加版本。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
+      "note": "P8职责处置：冻结哈希仅代表原基线；增量范围 scope:write-negotiation-and-bounded-search-20261106：写入前完成响应协商；SQL有界正文候选与Java批量加载；TLS夹具遵循证书配置；验证脚本发现JDK并加入CI；原SQL不可变且只允许登记追加版本。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。 2026-11-09 CI追加Java/Go独立当前预算双场景验收；仅绑定已提交的测试入口与候选配置，不提升任何发布门禁。；双端回归与发布验收仍以增量清单为准，不继承原通过状态。"
     },
     "tool:Tool:searchKnowledge": {
       "status": "implemented",

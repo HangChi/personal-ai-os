@@ -2086,13 +2086,13 @@
     {
       "id": "scope:write-negotiation-and-bounded-search-20261106",
       "status": "in_progress",
-      "source_commit": "74722b31b5f751b582059e78eb6131f83368a36b",
-      "summary": "写入前完成响应协商；SQL有界正文候选与Java批量加载；TLS夹具遵循证书配置；验证脚本发现JDK并加入CI；原SQL不可变且只允许登记追加版本。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。",
+      "source_commit": "8b04264ca64b4b974fe3ea7abf5afead9279a1e5",
+      "summary": "写入前完成响应协商；SQL有界正文候选与Java批量加载；TLS夹具遵循证书配置；验证脚本发现JDK并加入CI；原SQL不可变且只允许登记追加版本。 2026-11-07 同步覆盖率扩展后的候选字节；仅重绑已提交源码，不继承整组验收或提升发布门禁。 2026-11-09 CI追加Java/Go独立当前预算双场景验收；仅绑定已提交的测试入口与候选配置，不提升任何发布门禁。",
       "files": [
         {
           "path": ".github/workflows/go.yml",
           "baseline_sha256": null,
-          "candidate_sha256": "a2c9134600747d683eaa745b48b787c8151fe75980518704d8ffa67dba8e81d5"
+          "candidate_sha256": "9b901c71a16353b19afb13161f3b442d8e2cf09649d0624788b505759be17afd"
         },
         {
           "path": "backend-go/internal/business/exchange/http.go",
@@ -2213,7 +2213,10 @@
         "backend/src/test/java/com/personalos/knowledge/KnowledgeSearchContributorTest.java",
         "scripts/migration/test_go_scope_changes.py",
         "scripts/workspace/test_java_runtime.py",
-        "docs/reports/coverage-agent-rag-2026-11-07.md"
+        "docs/reports/coverage-agent-rag-2026-11-07.md",
+        "specs/033-go-rewrite/current-budget-acceptance-20261109.md",
+        "scripts/migration/current_budget_cases.py",
+        "scripts/migration/test_current_budget_cases.py"
       ],
       "limitations": [
         "当前记录绑定候选源码与有限回归，不代表线上数据、真实外部服务、完整双端E2E或迁移发布批准。",

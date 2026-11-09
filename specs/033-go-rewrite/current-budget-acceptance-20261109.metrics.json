@@ -2923,5 +2923,13 @@
     "scripts/migration/run_go_e2e_tests.py": "2edba3f3d937b79594a240e3122b9ff4390f29a249a2b98d1777d4144de6705f",
     "scripts/migration/test_current_budget_cases.py": "391c0d6559bfc80bc8f5b700a81359b6da9d7609ea452da29bf2558ecb943b61",
     ".github/workflows/go.yml": "9b901c71a16353b19afb13161f3b442d8e2cf09649d0624788b505759be17afd"
+  },
+  "final_checks": {
+    "migration_unittests_passed": 192,
+    "inventory": "passed",
+    "derived_p8": "passed",
+    "frozen_inventory": "unchanged",
+    "release_gates": "unchanged",
+    "ci_scope_source_commit": "8b04264ca64b4b974fe3ea7abf5afead9279a1e5"
   }
 }
