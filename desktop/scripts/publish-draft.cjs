@@ -40,7 +40,7 @@ async function verifyArtifacts(directory, request) {
 }
 
 function gh(args, options = {}) {
-  return execFileSync('gh', args, { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, ...options }).trim();
+  return (execFileSync('gh', args, { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, ...options }) || '').trim();
 }
 
 async function main() {
