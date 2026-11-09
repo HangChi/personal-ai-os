@@ -72,6 +72,15 @@ jobs:
           python3 scripts/migration/go_p8_test_progress.py
           python3 scripts/migration/go_p8_inventory_progress.py
           git diff --exit-code -- backend/src/main/resources/db/migration
+      - name: Current budget acceptance on Java and Go
+        shell: bash
+        run: |
+          set -euo pipefail
+          for backend in java go; do
+            python3 scripts/migration/run_go_e2e_tests.py --backend "$backend" --mode budget \
+              --output "$RUNNER_TEMP/go-reports/current-budget-$backend" \
+              2>&1 | tee "$RUNNER_TEMP/go-reports/current-budget-$backend.log"
+          done
       - name: Disposable TLS PostgreSQL regressions
         shell: bash
         run: |
