@@ -84,3 +84,7 @@ python3 scripts/migration/go_inventory.py generate \
 ## 继续实施的入口
 
 P1–P7已完成，当前继续[P8 全量验证、运维与切换](tasks.md#p8-全量验证运维与切换)。原项目宪法、根README/贡献/历史Java文档保留；Go新增说明由本页及backend-go文档承载，技术迁移依据见plan.md，禁止通过覆盖历史说明解除发布门禁。
+
+## Java 第一版本地收尾（2026-11-09）
+
+[收尾验证](java-v1-closeout-20261109.md)记录三个工程门禁修复、当前 Java 发布物的五阶段质量检查、关键流程和真实数据隔离恢复；保留历史 E2E 预算失败。此记录不解除上述 Go 发布门禁，也不表示已部署。
