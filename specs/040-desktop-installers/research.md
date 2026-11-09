@@ -29,8 +29,9 @@ Java 主后端与共用前端继续复用；Go 生产候选门禁不变。
 ## 分发边界
 
 本机为 Apple Silicon，可验证原生 macOS 包；Windows x64、Intel macOS 在对应 GitHub
-Actions runner 构建和执行真实原生数据库/后端回归。没有平台签名证书时，安装包必须
-如实标记未签名，不能宣称通过 Apple notarization 或 Windows 可信发布者验证。
+Actions runner 构建和执行真实原生数据库/后端回归。没有平台发布者证书时，macOS 使用
+ad-hoc 签名并执行 codesign --verify --deep --strict，避免重打包后残留无效上游签名。
+如实标记没有受信发布者签名，不能宣称通过 Apple notarization 或 Windows 可信发布者验证。
 
 ## 官方资料
 

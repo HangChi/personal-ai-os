@@ -31,7 +31,7 @@
       "icon": "build/icon.png",
       "category": "public.app-category.productivity",
       "target": ["dmg", "zip"],
-      "identity": null,
+      "identity": "-",
       "hardenedRuntime": false,
       "minimumSystemVersion": "14.0"
     },

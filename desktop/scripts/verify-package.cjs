@@ -8,6 +8,7 @@ if (process.platform === 'darwin') {
   const folders = fs.readdirSync(path.join(desktop, 'dist')).filter(name => name === 'mac' || name.startsWith('mac-'));
   const folder = folders.find(name => name.endsWith(process.arch)) || folders[0];
   resources = path.join(desktop, 'dist', folder, 'Personal AI OS.app/Contents/Resources/runtime');
+  execFileSync('codesign', ['--verify', '--deep', '--strict', path.join(desktop, 'dist', folder, 'Personal AI OS.app')], { stdio: 'inherit' });
 } else {
   resources = path.join(desktop, 'dist/win-unpacked/resources/runtime');
 }
