@@ -7725,7 +7725,7 @@
     {
       "id": "scope:agent-rag-coverage-20261107",
       "status": "in_progress",
-      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "source_commit": "0ec150662f7c221045f1fcc00f45a7cdb9c796bc",
       "files": 36
     },
     {
@@ -7769,6 +7769,12 @@
       "status": "in_progress",
       "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
       "files": 16
+    },
+    {
+      "id": "scope:desktop-installers-20261110",
+      "status": "in_progress",
+      "source_commit": "0ec150662f7c221045f1fcc00f45a7cdb9c796bc",
+      "files": 25
     }
   ]
 }

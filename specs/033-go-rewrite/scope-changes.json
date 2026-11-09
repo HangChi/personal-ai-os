@@ -2706,7 +2706,7 @@
     {
       "id": "scope:agent-rag-coverage-20261107",
       "status": "in_progress",
-      "source_commit": "0f7d5fa4f7d7382115820f508d54331572c62c0a",
+      "source_commit": "0ec150662f7c221045f1fcc00f45a7cdb9c796bc",
       "summary": "扩展双版本 Agent、RAG、工具执行、存储故障及 HTTP 边界回归；登记覆盖率扩展涉及的原基线文件，完整覆盖率报告独立给出。 2026-11-07 质量门禁优化：重绑本次文档、测试及阈值变更；发布状态不变。 2026-11-09 收尾审查：登记11月7日后的嵌入批次限制、扫描PDF/上传上限、结构切块、查询改写配置或其回归/文档增量；本组实际变更逐文件见closeout-scope-review-20261109.md，不继承历史通过结论。",
       "files": [
         {
@@ -2717,7 +2717,7 @@
         {
           "path": "README.md",
           "baseline_sha256": "570f0bba752395c87519d25af3bac2648d2708c196400e8ff0cc0400ec756a32",
-          "candidate_sha256": "001e262325fc77881fd44618e5d13342151ac582698f164b2ee353fda77ab0a2"
+          "candidate_sha256": "99bb0a0be4b0c688ed87a49f1280449c57988e9adcf71a28521a3a2f9066fd35"
         },
         {
           "path": "SECURITY.md",
@@ -2909,7 +2909,8 @@
       ],
       "limitations": [
         "覆盖率表示已执行的代码路径，不证明真实模型质量、线上负载或发布就绪。",
-        "原基线哈希与 release gates 不变；新用例不继承历史逐声明验收。"
+        "原基线哈希与 release gates 不变；新用例不继承历史逐声明验收。",
+        "2026-11-10 仅 README 增加桌面安装版入口；逐文件复核本组其他字节不变，重新绑定源码提交，不提升迁移状态。"
       ]
     },
     {
@@ -4030,6 +4031,160 @@
         "backend-go/internal/business/knowledge/reader.go": "f4fae39c48f59f532a0802ca76fb6de28c58088162d45daa6b2cb9bf670313d2",
         "backend/src/main/java/com/personalos/knowledge/service/KnowledgeDocumentService.java": "9ad8b47de37a2ff9f8d88b7d45220c21d8a98604f20ad657ce5202ba5672dfb8"
       }
+    },
+    {
+      "id": "scope:desktop-installers-20261110",
+      "status": "in_progress",
+      "source_commit": "0ec150662f7c221045f1fcc00f45a7cdb9c796bc",
+      "summary": "用户明确要求完整本地 exe/dmg：Electron 桌面窗口与首次配置、内置 Temurin JRE/独立 PostgreSQL pgvector、回环认证及 CSRF、服务生命周期、持久化界面偏好和原生平台构建。复用当前 Java 后端/前端，不替换 Go 候选。",
+      "files": [
+        {
+          "path": ".github/workflows/desktop.yml",
+          "baseline_sha256": null,
+          "candidate_sha256": "085f653990407fa4ed4fda186a6be5c085a09d5bc11e849d2173765e3b94972f"
+        },
+        {
+          "path": "desktop/.gitignore",
+          "baseline_sha256": null,
+          "candidate_sha256": "adee59ced565fea718f4e3c9373861ad5d542165e4afa184353eb17c753f2b75"
+        },
+        {
+          "path": "desktop/README.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "bd05dadd4e2628028b081536229652703d9b5ecb4cd5cd1722609069d48449c6"
+        },
+        {
+          "path": "desktop/THIRD_PARTY_NOTICES.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "8e1d0df243281740a828e814c2bfb1f4181e34de3183e270ab3dd7c8d3f1205a"
+        },
+        {
+          "path": "desktop/build/icon.png",
+          "baseline_sha256": null,
+          "candidate_sha256": "77319d1abca23abcfc7485807679a9db912c6ab46746757a5268deacb0d0fdc3"
+        },
+        {
+          "path": "desktop/licenses/pg0-MIT.txt",
+          "baseline_sha256": null,
+          "candidate_sha256": "70e384ac4a7906847066a2e323d895ece22ded56090f21fb8ed4f90715960e99"
+        },
+        {
+          "path": "desktop/package-lock.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "9fbc399085a8211eeeb22a815c517fdb263315aaa7b2c26d2cf5c539b3dd77b6"
+        },
+        {
+          "path": "desktop/package.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "c378b9680795cc82a2c3aafb4f849e637e2cbcb1ffcbb9ea5f49f438263a30a5"
+        },
+        {
+          "path": "desktop/runtime-lock.json",
+          "baseline_sha256": null,
+          "candidate_sha256": "6425fab23d4b6c1a5f6cb906ad46926ee24fa7fddf508b2795214292705f1860"
+        },
+        {
+          "path": "desktop/scripts/prepare-resources.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "e5f9822e14e34b9baa678ccc2df29676755210a324904df101ea9a0715784f9d"
+        },
+        {
+          "path": "desktop/scripts/render-icon.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "2b958fb4cc1eba12e8909091e0822d9361111f67f06e4c4b86bc66256b30c5a0"
+        },
+        {
+          "path": "desktop/scripts/smoke.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "1aec3599019c464d61eabd532892edf615dfcf436da461c7685f8ba5a362e41e"
+        },
+        {
+          "path": "desktop/scripts/stage-artifacts.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "e41fadbe048500d28fc7c3f4447ea9588bbc571b17ed1bd18ccfd52b7830ebeb"
+        },
+        {
+          "path": "desktop/scripts/ui-smoke.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "60d29dc09d90f18db0fdda3e5da0e3ab7b25d9c46043d4e2b2291148959960e9"
+        },
+        {
+          "path": "desktop/scripts/verify-package.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "f0e3b533912ff6d9a05ff93db9c3ba9df4da06ddd99e35156ea9529544d7a855"
+        },
+        {
+          "path": "desktop/src/config.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "6dfc22c39b877be7cecdb354618f4fb776f2f33843c618157def40afbac5857b"
+        },
+        {
+          "path": "desktop/src/main.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "5c7ff5fd280a48cbf48114bcaa0d0625b59529f49ff1550a33cd9243825945d7"
+        },
+        {
+          "path": "desktop/src/preload.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "355cd5fe32ce6407ded0247fc98f92205be218b2f8a915506b6ab9a8ac945505"
+        },
+        {
+          "path": "desktop/src/proxy.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "9a32e69857772e2aeef0fcc7825fbe7b027bde6ba2298165c030ec58fa194fb0"
+        },
+        {
+          "path": "desktop/src/runtime.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "22bf5ef273926778334ae81fda28117f28d7e46a5305d8f1e34004fbebfe1916"
+        },
+        {
+          "path": "desktop/src/setup.css",
+          "baseline_sha256": null,
+          "candidate_sha256": "0c30885e1528a6d00e56c2c97661cbb12aa919d282e6f8681d91426580ced92b"
+        },
+        {
+          "path": "desktop/src/setup.html",
+          "baseline_sha256": null,
+          "candidate_sha256": "99269a4a412e0373edf2d6cfb2d83eac853e6e7ea887952d57b26bbdbc9e74ff"
+        },
+        {
+          "path": "desktop/src/setup.js",
+          "baseline_sha256": null,
+          "candidate_sha256": "a82f0fd339b2d5916f92aa46387a851b7ed37142a592c02ca874dcc95a9bb407"
+        },
+        {
+          "path": "desktop/test/desktop.test.cjs",
+          "baseline_sha256": null,
+          "candidate_sha256": "8fe8003c30ed3a38ebccdaca9fc84eb5da07e61b08736a40b204aa0424d7a953"
+        },
+        {
+          "path": "specs/040-desktop-installers/research.md",
+          "baseline_sha256": null,
+          "candidate_sha256": "acd67ec8242b38c524ceaad2602472af43182c5f2cfc2fdcb350ce8b8fe350d9"
+        }
+      ],
+      "parity": {
+        "java": [
+          "desktop/src/runtime.cjs"
+        ],
+        "go": [
+          "backend-go/README.md"
+        ]
+      },
+      "parity_sha256": {
+        "backend-go/README.md": "ea833738b475a510ef4597c307acd4a76337ba749d3feba78c3a98ac520096ce"
+      },
+      "evidence": [
+        "specs/040-desktop-installers/research.md",
+        "desktop/README.md"
+      ],
+      "limitations": [
+        "桌面仅使用 Java；Go 后端生产替换和原五项 release gates 保持未批准。",
+        "Apple Silicon 本地真实运行时/迁移/认证/模型桩/知识摄入/重启与窗口回归通过；Windows x64 和 Intel macOS 原生构建与回归待远端执行，不能据此标 verified。",
+        "无签名证书，首次分发为未签名预览；不代表 Apple notarization、Windows 发布者验证或现有实例部署。",
+        "桌面 PostgreSQL 18.1 使用全新独立目录，不导入或改写现有 PostgreSQL 17 物理目录；模型权重不随应用分发。"
+      ]
     }
   ]
 }
