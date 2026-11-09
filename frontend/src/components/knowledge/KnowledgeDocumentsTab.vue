@@ -353,10 +353,7 @@ function onDrop(event: DragEvent): void {
         -->
         <el-table-column label="字符数" width="80" align="right">
           <template #header>
-            <el-tooltip
-              content="解析出的文本字符数（分块前）；扫描页经视觉模型转录后计入"
-              placement="top"
-            >
+            <el-tooltip content="解析出的文本字符数（分块前）；扫描页经视觉模型转录后计入" placement="top">
               <span class="kd__column-hint">字符数 ?</span>
             </el-tooltip>
           </template>

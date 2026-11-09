@@ -26,6 +26,15 @@ from run_go_postgres_tests import IMAGE, ROOT, run_package
 BACKEND = "go"
 GROUPS = None
 MODE = "e2e"
+REPORT_ROOT = None
+JAVA_JAR = ROOT / "backend/target/personal-ai-os-backend-0.1.0-SNAPSHOT.jar"
+
+
+def create_report_root(path):
+    """New evidence must never overwrite an earlier acceptance run."""
+    output = Path(path).resolve()
+    output.mkdir(parents=True, exist_ok=False)
+    return output
 
 
 def isolate_budget_case(suite):
@@ -70,7 +79,7 @@ def candidate(directory, binary, values):
                 reap(state["pid"])
         return
     # The Java artifact is built by the unchanged verify gate; startup has no dotenv or shared DB.
-    jar = ROOT / "backend/target/personal-ai-os-backend-0.1.0-SNAPSHOT.jar"
+    jar = JAVA_JAR
     if not jar.is_file():
         raise FileNotFoundError("Build the unchanged Java baseline with verify first")
     port = free_port()
@@ -269,6 +278,8 @@ def exercise(container, fixture):
                         browser_environment.update(GO_P8_UI_BASE="http://127.0.0.1:" + str(state["port"]),
                             GO_P8_UI_USERNAME=values["AUTH_USERNAME"], GO_P8_UI_PASSWORD=values["AUTH_PASSWORD"],
                             GO_P8_UI_TEMP=str(directory), GO_P8_UI_BACKEND=BACKEND)
+                        if REPORT_ROOT is not None:
+                            browser_environment["GO_P8_UI_REPORT"] = str(REPORT_ROOT / ("browser-" + BACKEND + ".json"))
                         subprocess.run(["node", str(ROOT / "scripts/migration/run_go_browser_tests.mjs")],
                                        env=browser_environment, cwd=ROOT, check=True, timeout=240)
                         return
@@ -278,7 +289,8 @@ def exercise(container, fixture):
                     suite.HOST, suite.PORT = "127.0.0.1", state["port"]
                     suite.BASE = "http://127.0.0.1:" + str(state["port"]) + suite.BASE_PATH
                     suite.PG_CONTAINER, suite.PG_USER, suite.PG_DB = container, fixture["GO_TEST_POSTGRES_USER"], fixture["GO_TEST_POSTGRES_DB"]
-                    suite.REPORT_DIR = ROOT / "specs/033-go-rewrite/p8-e2e" / BACKEND
+                    suite.REPORT_DIR = (REPORT_ROOT if REPORT_ROOT is not None else
+                                        ROOT / "specs/033-go-rewrite/p8-e2e") / BACKEND
                     jar = http.cookiejar.CookieJar()
                     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPCookieProcessor(jar))
                     csrf = ""
@@ -340,8 +352,12 @@ if __name__ == "__main__":
     parser.add_argument("--backend", choices=("go", "java"), default="go")
     parser.add_argument("--groups", nargs="+")
     parser.add_argument("--mode", choices=("e2e", "cancel", "browser", "plan", "memory", "context"), default="e2e")
+    parser.add_argument("--output", type=Path, help="new evidence directory; refuses an existing path")
+    parser.add_argument("--java-jar", type=Path, default=JAVA_JAR, help="Java release artifact to exercise")
     arguments = parser.parse_args()
     BACKEND, GROUPS = arguments.backend, set(arguments.groups) if arguments.groups else None
     MODE = arguments.mode
+    REPORT_ROOT = create_report_root(arguments.output) if arguments.output is not None else None
+    JAVA_JAR = arguments.java_jar.resolve()
     # No P8 mutation tests before the original suite: G0 requires the new migration DB to be empty.
     run_package(IMAGE, "app", tls_mode=True, test_pattern="^TestP8ContainerListenerBoundary$", exercise=exercise)

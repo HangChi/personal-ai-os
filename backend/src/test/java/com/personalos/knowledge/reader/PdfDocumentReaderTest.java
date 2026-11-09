@@ -153,4 +153,28 @@ class PdfDocumentReaderTest {
                 (image, mime) -> "recognized").get())
                 .isInstanceOf(BusinessException.class).hasMessageContaining("20 页");
     }
+
+    @Test
+    void oversizedPageIsRejectedBeforeCallingVision() throws Exception {
+        try (PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(pdfWithPages("SCAN"))) {
+            pdf.getPage(0).setMediaBox(new org.apache.pdfbox.pdmodel.common.PDRectangle(2000, 2000));
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            pdf.save(out);
+            assertThatThrownBy(() -> new PdfDocumentReader(out.toByteArray(), METADATA,
+                    (image, mime) -> { throw new AssertionError("oversized page must not call vision"); }).get())
+                    .isInstanceOf(BusinessException.class).hasMessageContaining("第 1 页尺寸过大");
+        }
+    }
+
+    @Test
+    void pageCountLimitIsCheckedBeforeExtractingOrCallingVision() throws Exception {
+        try (PDDocument pdf = new PDDocument()) {
+            for (int index = 0; index < 501; index++) pdf.addPage(new PDPage());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            pdf.save(out);
+            assertThatThrownBy(() -> new PdfDocumentReader(out.toByteArray(), METADATA,
+                    (image, mime) -> { throw new AssertionError("page limit must precede vision"); }).get())
+                    .isInstanceOf(BusinessException.class).hasMessageContaining("500 页");
+        }
+    }
 }

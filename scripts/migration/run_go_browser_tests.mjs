@@ -142,7 +142,7 @@ try {
   }
   throw error
 } finally {
-  writeFileSync(join(root, 'specs/033-go-rewrite/p8-e2e', `browser-${report.backend}.json`), JSON.stringify(report, null, 2) + '\n')
+  writeFileSync(process.env.GO_P8_UI_REPORT ?? join(root, 'specs/033-go-rewrite/p8-e2e', `browser-${report.backend}.json`), JSON.stringify(report, null, 2) + '\n')
   if (browser) await browser.close()
   await server.close()
 }

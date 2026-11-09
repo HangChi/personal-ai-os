@@ -1,8 +1,21 @@
 import types
 import unittest
+import tempfile
+from pathlib import Path
 from unittest.mock import Mock
 
-from run_go_e2e_tests import isolate_budget_case
+from run_go_e2e_tests import create_report_root, isolate_budget_case
+
+
+class EvidenceIsolationTest(unittest.TestCase):
+    def test_new_report_directory_refuses_to_overwrite_previous_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = create_report_root(Path(temporary) / "new" / "run")
+            evidence = output / "result.json"
+            evidence.write_text('{"status":"failed"}')
+            with self.assertRaises(FileExistsError):
+                create_report_root(output)
+            self.assertEqual(evidence.read_text(), '{"status":"failed"}')
 
 
 class BudgetIsolationTest(unittest.TestCase):
