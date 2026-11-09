@@ -1,5 +1,20 @@
 # P8 原 E2E 与真实浏览器记录
 
+## 当前预算验收（2026-11-09）
+
+新的 `--mode acceptance` 保留其他83项原用例，将旧G4预算用例拆为两项必过契约：旧历史过长时裁剪模型请求、保持当前输入和存储历史原样；当前输入自身超限时返回41301、零模型调用且保留原文和中断回执。`--mode budget` 单独运行这两项。模型请求观察仅在各预算场景内开启，保留32次请求上限，不影响其余用例。
+
+```bash
+python3 scripts/migration/run_go_e2e_tests.py --backend java --mode acceptance --output .cache/java-current-e2e-new
+python3 scripts/migration/run_go_e2e_tests.py --backend go --mode acceptance --output .cache/go-current-e2e-new
+python3 scripts/migration/run_go_e2e_tests.py --backend java --mode budget --output .cache/java-budget-new
+python3 scripts/migration/run_go_e2e_tests.py --backend go --mode budget --output .cache/go-budget-new
+```
+
+Java需先构建，或通过 `--java-jar` 指定已验证产物。每个输出目录必须是新目录。新套件双端均为83通过、0失败、0错误、1跳过、1观察；单独预算验收双端均2/2通过。执行证据和现有限制见[预算验收拆分记录](../current-budget-acceptance-20261109.md)。Go候选CI已加入双端预算验收。
+
+默认 `--mode e2e` 和 `--mode context` 继续用于冻结迁移对照，保留旧断言及其失败，不自动采用新契约或改写历史结果。下文是当时的原始记录，其42迁移范围不代表新运行的49迁移范围。
+
 所有运行都由 `scripts/migration/run_go_e2e_tests.py` 新建TLS PostgreSQL/pgvector库、重放原42迁移、启动合成模型和独立认证进程。没有改原 `scripts/e2e/e2e_suite.py` 的断言。原前端生产构建使用Vite独立preview代理；禁用项目配置和.env读取，浏览器只允许本次回环origin。Java显式 `SERVER_ADDRESS=127.0.0.1`、禁用dotenv。
 
 ## 原 E2E
