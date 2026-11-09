@@ -8,6 +8,8 @@
 
 [快速开始](#快速开始) · [文档中心](docs/README.md) · [Agent 实现](docs/agent-runtime.md) · [RAG 全流程](docs/rag.md) · [贡献指南](CONTRIBUTING.md)
 
+Windows / macOS 完整本地桌面安装版的范围、首次配置、数据位置与构建方式见 [桌面版指南](desktop/README.md)。桌面版内置运行环境及独立数据库，不接管下面的开发或 Compose 实例。
+
 ## 功能
 
 | 能力 | 项目如何实现 |

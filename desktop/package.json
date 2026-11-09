@@ -1,0 +1,48 @@
+{
+  "name": "personal-ai-os-desktop",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Personal AI OS 完整本地桌面版",
+  "author": "Personal AI OS contributors",
+  "license": "Apache-2.0",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.cjs",
+    "prepare:resources": "node scripts/prepare-resources.cjs",
+    "smoke": "node scripts/smoke.cjs",
+    "test:ui": "node scripts/ui-smoke.cjs",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "io.github.hangchi.personal-ai-os",
+    "productName": "Personal AI OS",
+    "artifactName": "Personal-AI-OS-${version}-${os}-${arch}.${ext}",
+    "directories": { "output": "dist" },
+    "files": ["src/**/*", "package.json"],
+    "extraResources": [{ "from": "resources", "to": "runtime" }],
+    "asar": true,
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.productivity",
+      "target": ["dmg", "zip"],
+      "identity": null,
+      "hardenedRuntime": false,
+      "minimumSystemVersion": "14.0"
+    },
+    "dmg": { "title": "Personal AI OS" },
+    "win": { "icon": "build/icon.png", "target": ["nsis"], "signAndEditExecutable": false },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

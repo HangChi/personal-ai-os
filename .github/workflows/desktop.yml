@@ -1,0 +1,102 @@
+name: Desktop Installers
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/desktop-installers]
+    paths: ['desktop/**', '.github/workflows/desktop.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  installers:
+    name: Desktop / ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            target: darwin-arm64
+            arch: arm64
+          - os: macos-15-intel
+            target: darwin-x64
+            arch: x64
+          - os: windows-2025
+            target: win32-x64
+            arch: x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    env:
+      APP_DOTENV_ENABLED: 'false'
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            desktop/package-lock.json
+      - name: Build unchanged Java backend
+        working-directory: backend
+        run: ./mvnw -B --no-transfer-progress -DskipTests package
+      - name: Build frontend
+        working-directory: frontend
+        run: npm ci && npm run build
+      - name: Install desktop build tools and test boundaries
+        working-directory: desktop
+        run: npm ci && npm test
+      - name: Prepare pinned offline runtimes
+        working-directory: desktop
+        run: npm run prepare:resources
+      - name: Verify native database and backend lifecycle
+        working-directory: desktop
+        run: npm run smoke
+      - name: Verify first-run desktop window and automatic login
+        working-directory: desktop
+        run: npm run test:ui
+      - name: Build platform installers
+        working-directory: desktop
+        run: |
+          if [[ "${{ matrix.target }}" == "darwin-x64" ]]; then
+            npm run dist -- --x64 --config.mac.minimumSystemVersion=15.0
+          else
+            npm run dist -- --${{ matrix.arch }}
+          fi
+      - name: Verify packaged runtime
+        working-directory: desktop
+        run: |
+          node scripts/verify-package.cjs
+      - name: Stage checksums and build evidence
+        working-directory: desktop
+        run: node scripts/stage-artifacts.cjs
+      - name: Upload installers and evidence
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-${{ matrix.target }}
+          path: desktop/artifacts/
+          if-no-files-found: error
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-failure-${{ matrix.target }}
+          path: |
+            desktop/artifacts/
+            desktop/dist/builder-debug.yml
+          if-no-files-found: ignore

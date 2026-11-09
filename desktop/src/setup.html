@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+  <title>Personal AI OS · 本地工作台</title>
+  <link rel="stylesheet" href="setup.css">
+  <script src="setup.js" defer></script>
+</head>
+<body>
+  <main>
+    <aside>
+      <div class="brand"><span class="mark" aria-hidden="true">P<span></span></span>Personal AI OS</div>
+      <p class="eyebrow">你的本地工作台</p>
+      <h1>让想法，<br>连接到行动。</h1>
+      <p class="intro">对话、任务、资料和日程，<br>在自己的电脑上有序连接。</p>
+      <ol class="steps" aria-label="启动进度">
+        <li id="step-setup" aria-current="step"><span>1</span><div>连接模型<small>选择你使用的 AI 服务</small></div></li>
+        <li id="step-database"><span>2</span><div>准备本地数据<small>首次启动自动完成</small></div></li>
+        <li id="step-backend"><span>3</span><div>打开工作台<small>之后双击应用即可进入</small></div></li>
+      </ol>
+      <p class="local-note">对话与资料保存在本机。使用外部模型时，请求中的内容会发送给你配置的服务商。</p>
+    </aside>
+    <section class="content">
+      <header><span class="badge">完整本地版</span><span id="version"></span></header>
+      <div id="setup-panel">
+        <h2>先连接你使用的模型</h2>
+        <p class="description">支持 OpenAI 兼容服务，也可连接本机 Ollama。应用不附带模型权重。</p>
+        <div class="presets" role="group" aria-label="填入示例配置">
+          <button type="button" id="local-preset">本机 Ollama 示例</button>
+          <button type="button" id="cloud-preset">兼容 API 示例</button>
+        </div>
+        <form id="config-form">
+          <fieldset>
+            <legend>对话模型</legend>
+            <label for="chatUrl">服务地址 <span>Base URL，包含服务要求的路径</span></label>
+            <input id="chatUrl" name="chatUrl" type="url" placeholder="https://api.example.com/v1" required autocomplete="off">
+            <div class="fields">
+              <div><label for="chatModel">模型名称</label><input id="chatModel" name="chatModel" placeholder="服务商提供的模型 ID" required maxlength="120"></div>
+              <div><label for="chatKey">API Key <span>本地服务可留空</span></label><input id="chatKey" name="chatKey" type="password" autocomplete="off" maxlength="500"></div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>知识库嵌入模型</legend>
+            <p class="hint">需输出 <strong>1024 维</strong>向量，例如 bge-m3。可使用独立于对话模型的服务。</p>
+            <label for="embeddingUrl">服务地址</label>
+            <input id="embeddingUrl" name="embeddingUrl" type="url" placeholder="http://127.0.0.1:11434/v1" required autocomplete="off">
+            <div class="fields">
+              <div><label for="embeddingModel">模型名称</label><input id="embeddingModel" name="embeddingModel" placeholder="bge-m3" required maxlength="120"></div>
+              <div><label for="embeddingKey">API Key <span>本地服务可留空</span></label><input id="embeddingKey" name="embeddingKey" type="password" autocomplete="off" maxlength="500"></div>
+            </div>
+          </fieldset>
+          <p id="encryption-note" class="hint"></p>
+          <p id="form-error" role="alert" tabindex="-1" hidden></p>
+          <button id="save" class="primary" type="submit">保存并启动工作台 <span aria-hidden="true">→</span></button>
+          <p class="footnote">此操作保存配置并启动应用，不发送模型测试请求。进入后可在设置中测试连接。</p>
+        </form>
+      </div>
+      <div id="progress-panel" hidden>
+        <div class="progress-symbol" aria-hidden="true"><span></span></div>
+        <h2 id="progress-title">正在准备工作台</h2>
+        <p id="status" role="status" aria-live="polite"></p>
+        <p class="description">首次启动会解压数据库并创建数据结构，请稍候。之后启动会更快。</p>
+        <div class="actions"><button id="retry" class="primary" type="button" hidden>重新启动</button><button id="edit-config" type="button" hidden>检查模型配置</button><button id="logs" type="button">打开日志目录</button></div>
+      </div>
+      <footer>数据保存在 <span id="data-directory"></span><br>卸载应用保留本地数据；可从“工作台”菜单打开数据目录。</footer>
+    </section>
+  </main>
+</body>
+</html>

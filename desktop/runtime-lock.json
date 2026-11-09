@@ -1,0 +1,19 @@
+{
+  "pg0Version": "0.16.1",
+  "postgresVersion": "18.1.0",
+  "temurinVersion": "21.0.13+9",
+  "platforms": {
+    "darwin-arm64": {
+      "pg0": { "url": "https://github.com/vectorize-io/pg0/releases/download/v0.16.1/pg0-darwin-aarch64", "sha256": "f5ef9b2eb614d241a31920f248b63a277ca6fd3bb0dbff952a306c600857e9cf" },
+      "jre": { "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jre_aarch64_mac_hotspot_21.0.13_9.tar.gz", "sha256": "225bab0a09491ef06835488cd942f5d2befa9a0410a2484f0c8bbcf7506ec09a" }
+    },
+    "darwin-x64": {
+      "pg0": { "url": "https://github.com/vectorize-io/pg0/releases/download/v0.16.1/pg0-darwin-x86_64", "sha256": "edd9918aa0e92f84c6408bb7b5ce19607523abf33b23279ecafcea62b99d8044" },
+      "jre": { "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jre_x64_mac_hotspot_21.0.13_9.tar.gz", "sha256": "c909674b1c10c261b9a3fb7e9c0efebd303e33f88a4fe84be7135b5e2d711f89" }
+    },
+    "win32-x64": {
+      "pg0": { "url": "https://github.com/vectorize-io/pg0/releases/download/v0.16.1/pg0-windows-x86_64.exe", "sha256": "da580cc8fd390ba01158bea192d6bb6d4b0f583abc468ced7f9c582370c34cb6" },
+      "jre": { "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jre_x64_windows_hotspot_21.0.13_9.zip", "sha256": "2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628" }
+    }
+  }
+}
